@@ -1,7 +1,7 @@
 ---
-title: Introduction to config plugins
-description: An introduction to Expo config plugins.
-sidebar_title: Introduction
+title: 配置插件简介
+description: Expo 配置插件简介。
+sidebar_title: 简介
 searchRank: 5
 ---
 
@@ -10,74 +10,74 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { ConfigPluginHierarchy } from '~/ui/components/ConfigPluginHierarchy';
 
-When using [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) in a project, native project (**android** and **ios** directories) changes are implemented without directly interacting with the native project files. Instead, you can use a config plugin to automatically configure your native project beyond what can be configured using the default app config props.
+在项目中使用 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 时，本机项目（**android** 和 **ios** 目录）的更改是在不直接与本机项目文件交互的情况下实现的。相反，你可以使用 config plugin，在默认 app config props 所能配置的范围之外，自动配置你的本机项目。
 
-## What is a config plugin
+## 什么是 config plugin
 
-A config plugin is a top-level custom configuration point that is not built into the [app config](/workflow/configuration). Using a config plugin, you can modify native projects created during the [prebuild](/workflow/continuous-native-generation/#usage) process in CNG projects.
+config plugin 是一个顶层的自定义配置入口点，它并不是内置在 [app config](/workflow/configuration) 中的。使用 config plugin，你可以在 CNG 项目的 [prebuild](/workflow/continuous-native-generation/#usage) 过程中修改生成的本机项目。
 
-A config plugin is referenced in the `plugins` property of the [app config](/workflow/configuration) file and is made up of one or more plugin functions. These plugin functions are written in JavaScript and are executed during the prebuild process.
+config plugin 会在 [app config](/workflow/configuration) 文件的 `plugins` 属性中引用，它由一个或多个插件函数组成。这些插件函数使用 JavaScript 编写，并在 prebuild 过程中执行。
 
-## Glossary
+## 术语表
 
-A typical config plugin is made up of one or more plugin functions that work together. The following diagram shows how the different parts of a config plugin interact with each other:
+一个典型的 config plugin 由一个或多个协同工作的插件函数组成。下图展示了 config plugin 的不同部分如何相互作用：
 
 <ConfigPluginHierarchy highlightedNodeId="1" />
 
-In the following guides, we will use the above diagram to highlight specific terminology explained below:
+在下面的指南中，我们将使用上图来突出显示下面解释的特定术语：
 
 ### Plugin
 
-The top-level config plugin which is referenced in your app config's `plugins` array. This is the entry point for your plugin. Conventionally, it is named `with<Plugin Name>`. For example, `withMyPlugin`. It is made of one or more [plugin functions](#plugin-function).
+在你的 app config 的 `plugins` 数组中引用的顶层 config plugin。这是你的插件的入口点。按照惯例，它被命名为 `with<Plugin Name>`。例如，`withMyPlugin`。它由一个或多个 [plugin function](#plugin-function) 组成。
 
 ### Plugin function
 
-One or more functions inside a config plugin that are called _plugin functions_. They wrap the underlying logic of performing platform-specific modifications. Technically, plugin functions look just like the function for the top-level plugin itself, and could be used as a plugin independently. Breaking plugins into smaller functions is often helpful for testing and debugging.
+config plugin 内部的一个或多个函数，称为 _plugin functions_。它们封装了执行平台特定修改的底层逻辑。从技术上讲，plugin function 看起来与顶层 plugin 本身的函数完全一样，并且可以独立作为插件使用。将插件拆分为更小的函数通常有助于测试和调试。
 
 ### Mod plugin function
 
-Wrapper functions from `expo/config-plugins` library that provide a safe way to modify native files using `mods`. As a developer, you will use these functions in your config plugin instead of underlying `mods`.
+来自 `expo/config-plugins` 库的包装函数，它们提供了一种安全的方式，使用 `mods` 来修改本机文件。作为开发者，你会在 config plugin 中使用这些函数，而不是直接使用底层的 `mods`。
 
 ### Mod
 
-The underlying platform-specific modifiers (like `mods.android.manifest` and `mods.ios.infoplist`) that directly modify native project files during prebuild.
+底层的平台特定修改器（例如 `mods.android.manifest` 和 `mods.ios.infoplist`），它们会在 prebuild 期间直接修改本机项目文件。
 
-## Why use a config plugin
+## 为什么使用 config plugin
 
-Config plugins can add native configuration to your project that isn't included by default. They can be used to generate app icons, set the app name, configure **AndroidManifest.xml** and **Info.plist**, and so on.
+config plugin 可以为你的项目添加默认情况下不包含的本机配置。它们可用于生成应用图标、设置应用名称、配置 **AndroidManifest.xml** 和 **Info.plist** 等。
 
-In CNG projects, it is best to avoid modifying these native projects manually, because you cannot regenerate them safely without potentially overwriting manual modifications. Config plugins allow you to modify these native projects in a _predictable way_ by consolidating your native project changes into a configuration file and applying them when you run `npx expo prebuild` (either manually or automatically during a CI/CD process). For example, when you change the name of your app in app config and run `npx expo prebuild`, the name will change in your native projects automatically without the need to manually update **AndroidManifest.xml** and **Info.plist** files.
+在 CNG 项目中，最好避免手动修改这些本机项目，因为你无法在不可能覆盖手动修改的情况下安全地重新生成它们。config plugin 允许你以 _可预测的方式_ 修改这些本机项目：将你的本机项目更改整合到一个配置文件中，并在你运行 `npx expo prebuild` 时应用它们（无论是手动运行还是在 CI/CD 流程中自动运行）。例如，当你在 app config 中更改应用名称并运行 `npx expo prebuild` 时，名称会自动更新到你的本机项目中，而无需手动更新 **AndroidManifest.xml** 和 **Info.plist** 文件。
 
-## Characteristics of a config plugin
+## config plugin 的特性
 
-Config plugins have the following characteristics:
+config plugin 具有以下特性：
 
-- Plugins are **synchronous** functions that accept an [ExpoConfig](/workflow/configuration) and return a modified `ExpoConfig`. In rare cases, plugins can also be asynchronous if available methods to communicate with native projects are asynchronous, but they won't be performant.
-- Plugins should be named using the following convention: `with<Plugin Functionality>`, for example, `withFacebook`
-- Plugins should be synchronous and their return value should be serializable, except for adding any [`mods`](#mods)
-- Plugins are always evaluated during the app config evaluation phase.
-- Optionally, a second argument can be passed to the plugin to configure it
-- Mods are only evaluated during the **syncing** phase of `npx expo prebuild` (prebuild process) and modify native files during code generation. Because of that, any modifications made to app config in a config plugin should be outside of a mod to ensure that they are executed in non-prebuild configuration scenarios.
+- 插件是接受一个 [ExpoConfig](/workflow/configuration) 并返回修改后的 `ExpoConfig` 的**同步**函数。在极少数情况下，如果用于与本机项目通信的方法是异步的，插件也可以是异步的，但它们不会具有良好的性能。
+- 插件应按照以下约定命名：`with<Plugin Functionality>`，例如 `withFacebook`
+- 插件应为同步的，并且其返回值应可序列化，除非要添加任何 [`mods`](#mods)
+- 插件总是在 app config 评估阶段执行。
+- 可选地，可以向插件传递第二个参数来对其进行配置
+- Mods 仅在 `npx expo prebuild` 的 **syncing** 阶段（prebuild 过程）被评估，并在代码生成期间修改本机文件。因此，config plugin 中对 app config 所做的任何修改都应位于 mod 之外，以确保它们会在非 prebuild 配置场景中执行。
 
-## Get started
+## 开始使用
 
 <BoxLink
-  title="Create a config plugin"
-  description="Comprehensive guide on how to create and use config plugins in your Expo project."
+  title="创建一个 config plugin"
+  description="关于如何在你的 Expo 项目中创建和使用 config plugin 的全面指南。"
   href="/config-plugins/plugins/"
   Icon={BookOpen02Icon}
 />
 
 <BoxLink
   title="Mods"
-  description="Comprehensive guide on how mods work, how to create them, and their best practices."
+  description="关于 mods 如何工作、如何创建它们以及最佳实践的全面指南。"
   href="/config-plugins/mods/"
   Icon={BookOpen02Icon}
 />
 
 <BoxLink
-  title="Best practices for development and debugging"
-  description="Learn about best practices for development and debugging config plugins."
+  title="开发和调试的最佳实践"
+  description="了解 config plugin 开发和调试的最佳实践。"
   href="/config-plugins/development-and-debugging/"
   Icon={BookOpen02Icon}
 />

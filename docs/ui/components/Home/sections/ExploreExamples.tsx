@@ -10,9 +10,8 @@ export function ExploreExamples() {
   return (
     <>
       <Header
-        title="Explore examples"
-        description="Explore a variety of example projects showcasing how to use Expo and seamlessly integrate it
-        with popular services."
+        title="查看示例"
+        description="浏览各种示例项目，了解如何使用 Expo 并将其与常用服务无缝集成。"
       />
       <div
         className={mergeClasses(
@@ -28,17 +27,17 @@ export function ExploreExamples() {
           icon={<StickerCircleDuotoneIcon className="size-16!" />}
         />
         <GridBox
-          title="Router + menus"
+          title="Router + 菜单"
           link="https://github.com/expo/examples/tree/master/with-router-menus"
           icon={<Rows03DuotoneIcon className="size-16!" />}
         />
         <GridBox
-          title="API Routes + Open AI"
+          title="API 路由 + OpenAI"
           link="https://github.com/expo/examples/tree/master/with-openai"
           icon={<MessageChatSquareDuotoneIcon className="size-16!" />}
         />
         <GridBox
-          title="View all examples"
+          title="查看全部示例"
           link="https://github.com/expo/examples"
           icon={<GithubIcon className="size-16!" />}
         />

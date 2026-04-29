@@ -1,6 +1,6 @@
 ---
 title: SecureStore
-description: A library that provides a way to encrypt and securely store key-value pairs locally on the device.
+description: 一个库，提供在设备本地加密并安全存储键值对的方法。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-secure-store'
 packageName: 'expo-secure-store'
 iconUrl: '/static/images/packages/expo-secure-store.png'
@@ -16,19 +16,19 @@ import {
 } from '~/ui/components/ConfigSection';
 import { SnackInline } from '~/ui/components/Snippet';
 
-`expo-secure-store` provides a way to encrypt and securely store key-value pairs locally on the device. Each Expo project has a separate storage system and has no access to the storage of other Expo projects.
+`expo-secure-store` 提供了一种在设备本地加密并安全存储键值对的方法。每个 Expo 项目都有各自独立的存储系统，无法访问其他 Expo 项目的存储。
 
-**Large payloads can be rejected by the underlying platform. Historically, some iOS releases refused values above roughly 2048 bytes. Expo does not enforce a limit, so make sure to handle native errors if you plan to store very large strings.**
+**底层平台可能会拒绝较大的负载。历史上，某些 iOS 版本会拒绝大约超过 2048 字节的值。Expo 不会强制限制，因此如果你计划存储非常大的字符串，请务必处理原生错误。**
 
-**The `requireAuthentication` option is not supported in Expo Go when biometric authentication is available due to a missing `NSFaceIDUsageDescription` key.**
+**由于缺少 `NSFaceIDUsageDescription` 键，当可用生物识别认证时，Expo Go 中不支持 `requireAuthentication` 选项。**
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Configuration in app config
+## 在 app 配置中进行配置
 
-You can configure `expo-secure-store` using its built-in [config plugin](/config-plugins/introduction/) if you use config plugins in your project ([Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)). The plugin allows you to configure various properties that cannot be set at runtime and require building a new app binary to take effect. If your app does **not** use CNG, then you'll need to manually configure the library.
+如果你的项目使用配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-secure-store` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
 
 <ConfigPluginExample>
 
@@ -40,7 +40,7 @@ You can configure `expo-secure-store` using its built-in [config plugin](/config
         "expo-secure-store",
         {
           "configureAndroidBackup": true,
-          "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
+          "faceIDPermission": "允许 $(PRODUCT_NAME) 访问你的 Face ID 生物识别数据。"
         }
       ]
     ]
@@ -56,53 +56,53 @@ You can configure `expo-secure-store` using its built-in [config plugin](/config
       name: 'configureAndroidBackup',
       platform: 'android',
       description:
-        'A boolean indicating whether to configure automatic Android backup to work correctly with `expo-secure-store`. [Learn more](#android-auto-backup).',
+        '一个布尔值，用于指示是否配置 Android 自动备份以使其与 `expo-secure-store` 正常工作。[了解更多](#android-auto-backup)。',
       default: 'true',
     },
     {
       name: 'faceIDPermission',
       platform: 'ios',
-      description: 'A string to set the [`NSFaceIDUsageDescription`](#ios) permission message.',
-      default: '"Allow $(PRODUCT_NAME) to access your Face ID biometric data."',
+      description: '用于设置 [`NSFaceIDUsageDescription`](#ios) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的 Face ID 生物识别数据。"'
     },
   ]}
 />
 
 <ConfigReactNative>
 
-Add `NSFaceIDUsageDescription` key to **Info.plist**:
+将 `NSFaceIDUsageDescription` 键添加到 **Info.plist**：
 
 ```xml Info.plist
 <key>NSFaceIDUsageDescription</key>
-<string>Allow $(PRODUCT_NAME) to access your Face ID biometric data.</string>
+<string>允许 $(PRODUCT_NAME) 访问你的 Face ID 生物识别数据。</string>
 ```
 
 </ConfigReactNative>
 
-## Platform value storage
+## 平台值存储
 
 ### Android
 
-On Android, values are stored in [`SharedPreferences`](https://developer.android.com/training/data-storage/shared-preferences), encrypted with [Android's Keystore system](https://developer.android.com/training/articles/keystore.html).
+在 Android 上，值存储在 [`SharedPreferences`](https://developer.android.com/training/data-storage/shared-preferences) 中，并使用 [Android 的 Keystore 系统](https://developer.android.com/training/articles/keystore.html)进行加密。
 
 ### iOS
 
-On iOS, values are stored using the [keychain services](https://developer.apple.com/documentation/security/keychain_services) as `kSecClassGenericPassword`. **Due to the underlying nature of iOS Keychain, data stored with `expo-secure-store` will persist across app uninstallations when the app is reinstalled with the same bundle ID.** This is an expected behavior of the iOS Keychain system and should be considered when designing your app's data handling. iOS has the additional option of being able to set the value's `kSecAttrAccessible` attribute, which controls when the value is available to be fetched.
+在 iOS 上，值使用 [keychain services](https://developer.apple.com/documentation/security/keychain_services) 作为 `kSecClassGenericPassword` 存储。**由于 iOS Keychain 的底层特性，当应用使用相同的 bundle ID 重新安装时，通过 `expo-secure-store` 存储的数据将会在应用卸载后继续保留。** 这是 iOS Keychain 系统的预期行为，在设计应用的数据处理方式时应考虑到这一点。iOS 还提供了额外的选项，可以设置值的 `kSecAttrAccessible` 属性，用于控制何时可以获取该值。
 
-## Data persistence
+## 数据持久性
 
-`expo-secure-store` is designed to provide a persistent data storage solution across app restarts and updates. However, it is important not to rely on it as a single source of truth for irreplaceable, critical data.
+`expo-secure-store` 旨在提供一种在应用重启和更新之间保持持久的数据存储方案。然而，不应将其作为不可替代的关键数据的唯一事实来源。
 
-- **On Android:** Data saved using `expo-secure-store` **will not be preserved upon app uninstallation**.
-- **On iOS:** Data saved using `expo-secure-store` **will persist across app uninstallations** if the app is reinstalled with the same bundle ID. This is due to how the iOS Keychain manages stored credentials. Keep in mind that this is not guaranteed and you should never rely on this implementation detail.
+- **在 Android 上：** 使用 `expo-secure-store` 保存的数据**在卸载应用后不会保留**。
+- **在 iOS 上：** 如果应用使用相同的 bundle ID 重新安装，使用 `expo-secure-store` 保存的数据**会在应用卸载后继续保留**。这是由于 iOS Keychain 管理已存储凭据的方式所致。请记住，这并不能得到保证，你绝不应依赖这一实现细节。
 
-Additionally, any data protected with the `requireAuthentication` option set to `true` will become inaccessible if there are changes to the user's biometric settings, such as adding a new fingerprint.
+此外，任何使用 `requireAuthentication` 选项并将其设置为 `true` 保护的数据，在用户的生物识别设置发生变化时（例如添加新的指纹）将变得无法访问。
 
-#### Exempting encryption prompt
+#### 免除加密提示
 
-Apple App Store Connect prompts you to select the type of encryption algorithm your app implements. This is known as **Export Compliance Information**. It is asked when publishing the app or submitting for TestFlight.
+Apple App Store Connect 会提示你选择应用所实现的加密算法类型。这被称为 **出口合规信息**（Export Compliance Information）。在发布应用或提交 TestFlight 时会出现此提示。
 
-When using `expo-secure-store`, you can set the [`ios.config.usesNonExemptEncryption`](../config/app/#usesnonexemptencryption) property to `false` in the app config:
+使用 `expo-secure-store` 时，你可以在应用配置中将 [`ios.config.usesNonExemptEncryption`](../config/app/#usesnonexemptencryption) 属性设置为 `false`：
 
 {/* prettier-ignore */}
 ```json app.json
@@ -118,20 +118,20 @@ When using `expo-secure-store`, you can set the [`ios.config.usesNonExemptEncryp
 }
 ```
 
-Setting this property automatically handles the compliance information prompt.
+设置此属性会自动处理合规信息提示。
 
-## Android Auto Backup
+## Android 自动备份
 
-[Android Auto Backup for Apps](https://developer.android.com/identity/data/autobackup) automatically backs up a user's data from apps that target and run on Android 6.0 (API level 23) or higher.
+[应用的 Android 自动备份](https://developer.android.com/identity/data/autobackup) 会自动为目标平台为 Android 6.0（API 级别 23）或更高版本并在其上运行的应用备份用户数据。
 
-The Auto Backup system has to be configured to exclude `expo-secure-store` shared preferences entries, as it's impossible to decrypt them after restoring the backup &mdash; app's entries are deleted from the Android Key Store when the app is uninstalled.
+自动备份系统必须配置为排除 `expo-secure-store` 的 shared preferences 条目，因为在恢复备份后无法解密它们——应用卸载时，应用的条目会从 Android 密钥库中删除。
 
-If your app doesn't have any custom backup configuration, `expo-secure-store` will automatically configure the Auto Backup system to ignore the `expo-secure-store` data.
+如果你的应用没有任何自定义备份配置，`expo-secure-store` 会自动配置自动备份系统以忽略 `expo-secure-store` 数据。
 
-If you are using your own Auto Backup configuration, you should exclude the `SecureStore` under the `sharedpref` domain and set the `configureAndroidBackup` to `false` in the [config plugin configuration](#example-appjson-with-config-plugin).
+如果你正在使用自己的自动备份配置，你应当在 `sharedpref` 域下排除 `SecureStore`，并在 [config plugin 配置](#example-appjson-with-config-plugin) 中将 `configureAndroidBackup` 设置为 `false`。
 
 ```xml
-<!--  Auto Backup configuration for Android 12 and higher -->
+<!--  Android 12 及更高版本的自动备份配置 -->
 <data-extraction-rules>
   <cloud-backup>
     <include domain="sharedpref" path="."/>
@@ -145,14 +145,14 @@ If you are using your own Auto Backup configuration, you should exclude the `Sec
 ```
 
 ```xml
-<!--  Auto Backup configuration for Android 11 and lower -->
+<!--  Android 11 及更低版本的自动备份配置 -->
 <full-backup-content>
   <include domain="sharedpref" path="."/>
   <exclude domain="sharedpref" path="SecureStore"/>
 </full-backup-content>
 ```
 
-## Usage
+## 用法
 
 <SnackInline label='SecureStore' dependencies={['expo-secure-store']} platforms={['ios', 'android']}>
 
@@ -168,9 +168,9 @@ async function save(key, value) {
 async function getValueFor(key) {
   let result = await SecureStore.getItemAsync(key);
   if (result) {
-    alert("🔐 Here's your value 🔐 \n" + result);
+    alert("🔐 这是你的值 🔐 \n" + result);
   } else {
-    alert('No values stored under that key.');
+    alert('该键下未存储任何值。');
   }
 }
 
@@ -180,8 +180,8 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.paragraph}>Save an item, and grab it later!</Text>
-      {/* @hide Add some TextInput components... */}
+      <Text style={styles.paragraph}>保存一个项目，然后稍后取回它！</Text>
+      {/* @hide 添加一些 TextInput 组件... */}
 
       <TextInput
         style={styles.textInput}
@@ -197,20 +197,20 @@ export default function App() {
       />
       {/* @end */}
       <Button
-        title="Save this key/value pair"
+        title="保存此键/值对"
         onPress={() => {
           save(key, value);
           onChangeKey('Your key here');
           onChangeValue('Your value here');
         }}
       />
-      <Text style={styles.paragraph}>🔐 Enter your key 🔐</Text>
+      <Text style={styles.paragraph}>🔐 输入你的键 🔐</Text>
       <TextInput
         style={styles.textInput}
         onSubmitEditing={event => {
           getValueFor(event.nativeEvent.text);
         }}
-        placeholder="Enter the key for the value you want to get"
+        placeholder="输入你想获取的值对应的键"
       />
     </View>
   );

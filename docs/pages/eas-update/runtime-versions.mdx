@@ -1,35 +1,35 @@
 ---
-title: Runtime versions and updates
-sidebar_title: Runtime versions
-description: Learn about different runtime version policies and how they may suit your project.
+title: 运行时版本和更新
+sidebar_title: 运行时版本
+description: 了解不同的运行时版本策略，以及它们如何适合您的项目。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-Runtime versions are a property that guarantees compatibility between a build's native code and an update. When a project is made into a build, the build will contain some native code that cannot be changed with an update. Therefore, an update must be compatible with a build's native code to run on the build.
+Runtime version 是一种属性，用于保证构建版本中的原生代码与更新之间的兼容性。当一个项目被制作成一个构建版本时，该构建版本会包含一些无法通过更新更改的原生代码。因此，更新必须与构建版本的原生代码兼容，才能在该构建版本上运行。
 
-To illustrate how builds and updates interact, take a look at the following diagram:
+为了说明构建版本与更新如何交互，请看下图：
 
 <ContentSpotlight
-  alt="Native and update layers diagram"
+  alt="原生层与更新层示意图"
   src="/static/images/eas-update/layers.png"
 />
 
-Builds can be thought of as two layers: a native layer that's built into the app's binary, and an update layer, that is swappable with other compatible updates. This separation allows us to ship bug fixes to builds as long as the update with the bug fix can run on the native layer inside the build. The `"runtimeVersion"` property allows us to guarantee that an update is compatible with a specific build's native code.
+可以将构建版本理解为两层：一层是内置于应用二进制文件中的原生层，另一层是可与其他兼容更新互换的更新层。通过这种分离，只要包含修复的更新能够在构建版本内的原生层上运行，我们就可以向构建版本推送 bug 修复。`"runtimeVersion"` 属性使我们能够保证某个更新与特定构建版本的原生代码兼容。
 
-Since updates must be compatible with a build's native code, any time native code is updated, we're required to make a new build before publishing an update. Some developers only update native code when upgrading to a new Expo SDK, while others may upgrade native code between builds or at other intervals. Below is an explanation of different situations and configurations that may suit your project.
+由于更新必须与构建版本的原生代码兼容，因此每当原生代码更新时，我们都必须先制作一个新的构建版本，然后才能发布更新。有些开发者只会在升级到新的 Expo SDK 时更新原生代码，而另一些开发者可能会在不同构建版本之间或其他时间间隔更新原生代码。下面将解释一些可能适合你项目的不同情况和配置。
 
-## Setting `"runtimeVersion"`
+## 设置 `"runtimeVersion"`
 
-To make managing the `"runtimeVersion"` property easier between builds and updates, we've created policies that derive the runtime version from another piece of information already present in your project. If these policies do not match the development flow of a project, there's also an option to set the `"runtimeVersion"` manually.
+为了让在构建版本和更新之间管理 `"runtimeVersion"` 属性更容易，我们创建了若干策略，可根据项目中已存在的另一项信息推导出 runtime version。如果这些策略不符合项目的开发流程，也可以选择手动设置 `"runtimeVersion"`。
 
-### Runtime version policies
+### Runtime version 策略
 
-The available policies are documented in the [`expo-updates` library documentation](/versions/latest/sdk/updates/#automatic-configuration-using-runtime-version-policies).
+可用的策略记录在 [`expo-updates` 库文档](/versions/latest/sdk/updates/#automatic-configuration-using-runtime-version-policies) 中。
 
-### Custom runtime version
+### 自定义 runtime version
 
-You can also set a custom runtime version that meets the [runtime version formatting requirements](/versions/latest/config/app/#runtimeversion):
+你也可以设置一个符合 [runtime version 格式要求](/versions/latest/config/app/#runtimeversion) 的自定义 runtime version：
 
 ```json
 {
@@ -39,11 +39,11 @@ You can also set a custom runtime version that meets the [runtime version format
 }
 ```
 
-This option is good for developers who want to manage the runtime version manually, separately from any other version numbers present in a project's app config. It gives the developer complete control over which updates are compatible with which builds.
+对于希望手动管理 runtime version、并将其与项目 app config 中存在的其他版本号分开管理的开发者来说，这个选项很合适。它让开发者能够完全控制哪些更新与哪些构建版本兼容。
 
-### Platform-specific runtime version
+### 平台特定的 runtime version
 
-You can also set runtime version per-platform, for example
+你也可以按平台设置 runtime version，例如
 
 ```json
 {
@@ -55,7 +55,7 @@ You can also set runtime version per-platform, for example
 }
 ```
 
-Or:
+或者：
 
 ```json
 {
@@ -69,28 +69,28 @@ Or:
 }
 ```
 
-When both a top level runtime and a platform specific runtime are set, the platform specific one takes precedence.
+当同时设置了顶层 runtime 和平台特定 runtime 时，平台特定的设置优先生效。
 
-## Avoiding incompatible updates
+## 避免不兼容的更新
 
-The main issue that can arise when publishing updates is that the update could rely on native code that the build it's running on does not support. For instance, imagine we made a build with a runtime version of `"1.0.0"`. Then, we submitted that build to the app stores and released it to the public.
+发布更新时可能出现的主要问题是，更新可能依赖于其运行所在构建版本所不支持的原生代码。例如，假设我们制作了一个 runtime version 为 `"1.0.0"` 的构建版本。然后，我们将该构建版本提交到应用商店并向公众发布。
 
-Later on, imagine that we developed an update that relied on a newly installed native library, like the `expo-camera` library, and we did not update the `"runtimeVersion"` property, so that it is still `"1.0.0"`. If we published an update, the builds with the `"runtimeVersion"` of `"1.0.0"` would think the incoming update with the same runtime version was compatible and it would attempt to load the update. Since the update would make calls to code that does not exist inside the build, `expo-updates` may detect an error and attempt to roll back to the previously working update ([learn more about error recovery behavior](/eas-update/error-recovery/)).
+之后，假设我们开发了一个依赖于新安装的原生库的更新，比如 `expo-camera` 库，而我们没有更新 `"runtimeVersion"` 属性，因此它仍然是 `"1.0.0"`。如果我们发布这个更新，`"runtimeVersion"` 为 `"1.0.0"` 的构建版本会认为这个具有相同 runtime version 的新更新是兼容的，并会尝试加载该更新。由于这个更新会调用构建版本中不存在的代码，`expo-updates` 可能会检测到错误并尝试回滚到之前正常工作的更新（[了解更多关于错误恢复行为的信息](/eas-update/error-recovery/)）。
 
-The following are some strategies to avoid deploying updates that are incompatible with a build's native code.
+以下是一些避免部署与构建版本原生代码不兼容的更新的策略。
 
-### Use a runtime version policy that automatically updates the runtime version when native code is updated
+### 使用会在原生代码更新时自动更新 runtime version 的策略
 
-The `"appVersion"` policy will increment the runtime version whenever the app version is incremented, but if you forget to bump the app version when changing the native runtime, then you'll have a runtime version mismatch. If you want to make incompatible updates extremely unlikely, at the cost of making it necessary to create builds more often, then you can use the `"fingerprint"` policy. This will increment the runtime version whenever anything that may impact the native runtime changes ([learn more about fingerprinting](/versions/latest/sdk/fingerprint/)).
+`"appVersion"` 策略会在 app version 增加时同步增加 runtime version，但如果你在更改原生 runtime 时忘记提升 app version，就会导致 runtime version 不匹配。如果你想让不兼容更新的可能性极低，代价是需要更频繁地创建构建版本，那么可以使用 `"fingerprint"` 策略。它会在任何可能影响原生 runtime 的内容发生变化时增加 runtime version（[了解更多关于 fingerprinting 的信息](/versions/latest/sdk/fingerprint/)）。
 
-### Manually increment the runtime version
+### 手动递增 runtime version
 
-Whenever installing or updating native code, [manually increment the `"runtimeVersion"` property](/eas-update/runtime-versions/#custom-runtime-version) in the project's [app config](/workflow/configuration/).
+每当安装或更新原生代码时，在项目的 [app config](/workflow/configuration/) 中[手动递增 `"runtimeVersion"` 属性](/eas-update/runtime-versions/#custom-runtime-version)。
 
-### Roll out the update gradually
+### 逐步发布更新
 
-If you're not sure about the impact of a new update, you can roll it out to a small group of users first. Use [rollouts](/eas-update/rollouts/) to publish the update to a small percentage of users and monitor the error rate for the update on the EAS dashboard. If you are noticing high error rates, then cancel the rollout. If you already rolled it out fully, then [roll it back](/eas-update/rollbacks/).
+如果你不确定新更新的影响，可以先向一小部分用户发布。使用 [rollouts](/eas-update/rollouts/) 将更新发布给一小部分用户，并在 EAS 控制台上监控该更新的错误率。如果你发现错误率较高，就取消 rollout。如果你已经完全发布了它，那么就[回滚它](/eas-update/rollbacks/)。
 
-### Manually verify updates with a smaller group of users
+### 用更小的用户群手动验证更新
 
-When you deploy to production, create a preview build that uses the same runtime but points to a different channel. Test your updates on those builds before promoting them to production (learn more about this in the [deployment guide](/eas-update/deployment/#deploying-previews)). Alternatively, you can opt-in certain users of your app to receive the update by overriding update parameters at runtime ([learn more](/eas-update/override/)).
+当你部署到生产环境时，创建一个使用相同 runtime 但指向不同 channel 的预览构建版本。在将更新推广到生产环境之前，先在这些构建版本上测试你的更新（在 [部署指南](/eas-update/deployment/#deploying-previews) 中了解更多）。或者，你也可以通过在运行时覆盖更新参数，让应用中的某些用户接收该更新（[了解更多](/eas-update/override/)）。

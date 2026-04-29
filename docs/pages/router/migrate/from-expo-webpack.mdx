@@ -1,115 +1,115 @@
 ---
-title: Migrate from Expo Webpack
+title: 从 Expo Webpack 迁移
 sidebar_title: Expo Webpack
-description: Learn how to migrate a website using Expo Webpack to Expo Router.
+description: 了解如何将使用 Expo Webpack 的网站迁移到 Expo Router。
 ---
 
 import { NoIcon, PendingIcon, YesIcon } from '~/ui/components/DocIcons';
 import { Terminal } from '~/ui/components/Snippet';
 
-The original **Expo for web** version was based on Webpack 4 and focused primarily on building single-page applications (SPAs). This approach was based on [Create React App](https://create-react-app.dev/) and enabled building simple web apps with Expo SDK and React Native for web.
+原始的 **Expo for web** 版本基于 Webpack 4，主要专注于构建单页应用（SPA）。这种方式基于 [Create React App](https://create-react-app.dev/)，并支持使用 Expo SDK 和 React Native for web 构建简单的 Web 应用。
 
-Expo Router is the new approach to building powerful universal apps that run on web and native. This guide will help you migrate your existing website to Expo Router.
+Expo Router 是一种全新的方式，用于构建可在 web 和 native 上运行的强大通用应用。本指南将帮助你把现有网站迁移到 Expo Router。
 
-Both React Navigation and Expo Router are Expo frameworks for routing and navigation. Expo Router is a wrapper around React Navigation and has many shared concepts.
+React Navigation 和 Expo Router 都是 Expo 的路由和导航框架。Expo Router 是对 React Navigation 的一层封装，并共享许多概念。
 
-## Pitch
+## 介绍
 
-> **warning** `@expo/webpack-config` is [deprecated](/more/release-statuses/#deprecated) and not receiving any new feature updates.
+> **warning** `@expo/webpack-config` 已[弃用](/more/release-statuses/#deprecated)，并且不再接收任何新功能更新。
 
-Expo Router supports [static rendering on web](/router/web/static-rendering), which enables search engine optimization (SEO), social media previews, and faster loading times, unlike Expo Webpack. Along with the benefits of React Navigation, it enables automatic deep linking, [type safety](/router/reference/typed-routes), [deferred bundling](/router/web/async-routes), [modular HTML templates](/router/web/static-rendering#root-html), [static rendering on web](/router/web/static-rendering), and more.
+Expo Router 支持 [Web 静态渲染](/router/web/static-rendering)，这使得搜索引擎优化（SEO）、社交媒体预览以及更快的加载时间成为可能，这与 Expo Webpack 不同。结合 React Navigation 的优点，它支持自动深度链接、[类型安全](/router/reference/typed-routes)、[延迟打包](/router/web/async-routes)、[模块化 HTML 模板](/router/web/static-rendering#root-html)、[Web 静态渲染](/router/web/static-rendering) 等更多功能。
 
-Expo Router is also designed to fix the main cross-platform issue with Expo Webpack by sharing navigation between web and native without compromising functionality or performance.
+Expo Router 还旨在通过在 web 和 native 之间共享导航，而不牺牲功能或性能，来解决 Expo Webpack 的主要跨平台问题。
 
-## Anti-pitch
+## 反向介绍
 
-Expo Router uses a custom bundler stack based on [Metro](https://metrobundler.dev/). It is the same bundler used by React Native. This is great for ensuring maximum code reusability and solves many forked behavior issues from using different bundlers across platforms. This also means certain bundling features may not be available in Expo Router yet.
+Expo Router 使用基于 [Metro](https://metrobundler.dev/) 的自定义打包器栈。它与 React Native 使用的是同一个打包器。这对于确保最大的代码复用性非常有帮助，并解决了由于跨平台使用不同打包器而产生的许多分叉行为问题。这也意味着 Expo Router 目前可能还不支持某些打包功能。
 
-Ultimately as a full universal framework, Expo Router is a substantially more robust solution than `@expo/webpack-config`, which is a bundler integration. It should be used for all new Expo web projects.
+归根结底，作为一个完整的通用框架，Expo Router 比 `@expo/webpack-config` 这种打包器集成方案要强大得多。所有新的 Expo web 项目都应该使用它。
 
 ## Expo CLI
 
-Unlike `@expo/webpack-config`, Expo Router uses the same CLI commands and features for web and native. Refer to the table below for more information on the differences between Expo Router and `@expo/webpack-config`.
+与 `@expo/webpack-config` 不同，Expo Router 在 web 和 native 上使用相同的 CLI 命令和功能。有关 Expo Router 与 `@expo/webpack-config` 差异的更多信息，请参阅下表。
 
-| Feature                  | Expo Router                                       | `@expo/webpack-config` |
+| 功能                     | Expo Router                                      | `@expo/webpack-config` |
 | ------------------------ | ------------------------------------------------- | ---------------------- |
-| Start command            | `npx expo start`                                  | `npx expo start`       |
-| Bundle command           | `npx expo export`                                 | `npx expo export:web`  |
-| Output directory         | **dist**                                          | **web-build**          |
-| Static directory         | **public**                                        | **web**                |
-| Config file              | **metro.config.js**                               | **webpack.config.js**  |
-| Default config           | `@expo/metro-config`                              | `@expo/webpack-config` |
-| Bundle Splitting         | <YesIcon /> (SDK 50 • web)                        | <YesIcon />            |
-| Global CSS               | <YesIcon /> (SDK 50 • web)                        | <YesIcon />            |
-| CSS Modules              | <YesIcon /> (SDK 50 • web)                        | <NoIcon />             |
-| Static Font Optimization | <YesIcon /> (SDK 50 • web)                        | <NoIcon />             |
-| API Routes               | <YesIcon /> (SDK 50)                              | <NoIcon />             |
-| Multi-platform           | <YesIcon />                                       | <NoIcon />             |
-| Fast Refresh             | <YesIcon />                                       | <NoIcon />             |
-| Error Overlay            | <YesIcon />                                       | <NoIcon />             |
-| Lazy bundling            | <YesIcon />                                       | <NoIcon />             |
-| Static Generation        | <YesIcon />                                       | <NoIcon />             |
-| Environment Variables    | <YesIcon />                                       | <NoIcon />             |
-| `tsconfig.json` paths    | <YesIcon />                                       | <NoIcon />             |
-| Tree Shaking             | <PendingIcon /> ([Partial support][tree-shaking]) | <YesIcon />            |
+| 启动命令                 | `npx expo start`                                  | `npx expo start`       |
+| 打包命令                 | `npx expo export`                                 | `npx expo export:web`  |
+| 输出目录                 | **dist**                                          | **web-build**          |
+| 静态目录                 | **public**                                        | **web**                |
+| 配置文件                 | **metro.config.js**                               | **webpack.config.js**  |
+| 默认配置                 | `@expo/metro-config`                              | `@expo/webpack-config` |
+| 打包拆分                 | <YesIcon /> (SDK 50 • web)                        | <YesIcon />            |
+| 全局 CSS                | <YesIcon /> (SDK 50 • web)                        | <YesIcon />            |
+| CSS 模块                | <YesIcon /> (SDK 50 • web)                        | <NoIcon />             |
+| 静态字体优化             | <YesIcon /> (SDK 50 • web)                        | <NoIcon />             |
+| API 路由                | <YesIcon /> (SDK 50)                              | <NoIcon />             |
+| 多平台                   | <YesIcon />                                       | <NoIcon />             |
+| 快速刷新                 | <YesIcon />                                       | <NoIcon />             |
+| 错误覆盖层               | <YesIcon />                                       | <NoIcon />             |
+| 延迟打包                 | <YesIcon />                                       | <NoIcon />             |
+| 静态生成                 | <YesIcon />                                       | <NoIcon />             |
+| 环境变量                 | <YesIcon />                                       | <NoIcon />             |
+| `tsconfig.json` 路径     | <YesIcon />                                       | <NoIcon />             |
+| Tree Shaking             | <PendingIcon /> ([部分支持][tree-shaking])        | <YesIcon />            |
 
-## HTML template
+## HTML 模板
 
-In `@expo/webpack-config` all routes shared a single HTML file. This file was based on the template in `web/index.html` which was then modified by the `@expo/webpack-config` to include the necessary scripts and stylesheets.
+在 `@expo/webpack-config` 中，所有路由共享一个 HTML 文件。这个文件基于 `web/index.html` 中的模板，然后由 `@expo/webpack-config` 修改以包含必要的脚本和样式表。
 
-In Expo Router, there are two different rendering patterns:
+在 Expo Router 中，有两种不同的渲染模式：
 
-- **Recommended**: `web.output: "static"` which outputs a new HTML file for each route in the app. This approach lets you [dynamically generate the entire HTML template using the **src/app/+html.tsx** file](/router/web/static-rendering#root-html).
-- **Not recommended**: `web.output: "single"` which outputs a single-page application. This approach lets you use `public/index.html` as the template HTML file.
+- **推荐**：`web.output: "static"`，它会为应用中的每条路由输出一个新的 HTML 文件。这种方式允许你使用 [**src/app/+html.tsx** 文件动态生成整个 HTML 模板](/router/web/static-rendering#root-html)。
+- **不推荐**：`web.output: "single"`，它会输出一个单页应用。这种方式允许你使用 `public/index.html` 作为模板 HTML 文件。
 
-## Static resources
+## 静态资源
 
-In `@expo/webpack-config`, you could host static files in the `web` directory, which would be served from the website's root. For example, `web/favicon.ico` was served from `https://example.com/favicon.ico`.
+在 `@expo/webpack-config` 中，你可以在 `web` 目录下托管静态文件，这些文件会从网站根路径提供。例如，`web/favicon.ico` 会以 `https://example.com/favicon.ico` 的形式提供。
 
-In Expo Router, you can use the **public** directory to host static files. For example, **public/favicon.ico** is served from `https://example.com/favicon.ico`. Unlike Webpack, Expo Router's hosting works on native too. Make sure to host the files from a server before using them in production.
+在 Expo Router 中，你可以使用 **public** 目录来托管静态文件。例如，**public/favicon.ico** 会以 `https://example.com/favicon.ico` 的形式提供。与 Webpack 不同，Expo Router 的托管方式在 native 上也有效。请确保在生产环境中使用这些文件之前，先从服务器托管它们。
 
-## Bundling for production
+## 为生产环境打包
 
-In `@expo/webpack-config`, you could bundle your website for production using `npx expo export:web`. This would output a bundle to the **web-build** directory.
+在 `@expo/webpack-config` 中，你可以使用 `npx expo export:web` 为生产环境打包你的网站。这会将打包结果输出到 **web-build** 目录。
 
-In Expo Router, use the `npx expo export --platform web` command to export to the **dist** directory. You can generate sourcemaps with the `--dump-sourcemap` flag. On build, the contents of the **public** directory will be copied to the **dist** directory.
+在 Expo Router 中，使用 `npx expo export --platform web` 命令导出到 **dist** 目录。你可以使用 `--dump-sourcemap` 标志生成 sourcemap。构建时，**public** 目录的内容会被复制到 **dist** 目录。
 
-## Babel configuration
+## Babel 配置
 
-Like before, the root [**babel.config.js**](/versions/latest/config/babel/) file is used for both web and native. You can change the preset by using the `platform` property in the API caller:
+和以前一样，根目录的 [**babel.config.js**](/versions/latest/config/babel/) 文件同时用于 web 和 native。你可以通过在 API 调用者中使用 `platform` 属性来更改 preset：
 
 ```js babel.config.js
 module.exports = api => {
-  // Get the platform from the API caller...
+  // 从 API 调用者中获取平台...
   const platform = api.caller(caller => caller && caller.platform);
 
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      // Add a web-only plugin...
+      // 添加一个仅限 web 的插件...
       platform === 'web' && 'custom-web-only-plugin',
     ].filter(Boolean),
   };
 };
 ```
 
-## Dev server
+## 开发服务器
 
-In Expo Router, all platforms are hosted from the same dev server on the same port. This is convenient for emulating the production behavior of the app. All logs and hot module reloading go through the same port as well.
+在 Expo Router 中，所有平台都由同一个开发服务器在同一个端口上托管。这对于模拟应用的生产行为非常方便。所有日志和热模块重载也都通过同一个端口。
 
-Due to limitations on native, hosting with fake HTTPS is not currently supported. This feature is less important now than in 2018, as you can test secure features such as camera and location on localhost using a web browser like Chrome.
+由于 native 上的限制，目前不支持使用伪造的 HTTPS 托管。与 2018 年相比，这项功能现在没那么重要了，因为你可以使用 Chrome 之类的 Web 浏览器在 localhost 上测试相机和定位等安全功能。
 
-## Expo constants
+## Expo 常量
 
-The [`expo-constants`](/versions/latest/sdk/constants/) library can be used to access the **app.json** in-app. Behind the scenes, this is accomplished by setting `process.env.APP_MANIFEST` with the stringified contents of the **app.json** file.
+[`expo-constants`](/versions/latest/sdk/constants/) 库可用于在应用内访问 **app.json**。在底层，这是通过将 **app.json** 文件的字符串化内容设置到 `process.env.APP_MANIFEST` 来实现的。
 
-In Expo Router, this is done using Babel with the `babel-preset-expo`. If you modify the **app.json**, restart the Babel cache with `npx expo start --clear` to see the updates.
+在 Expo Router 中，这是使用 `babel-preset-expo` 通过 Babel 完成的。如果你修改了 **app.json**，请使用 `npx expo start --clear` 重新启动 Babel 缓存以查看更新。
 
-## Base path and subpath hosting
+## 基础路径和子路径托管
 
-> **important** [Experimental](/more/release-statuses/#experimental) functionality.
+> **important** [实验性](/more/release-statuses/#experimental) 功能。
 
-In `@expo/webpack-config`, you could bundle your website to be hosted from a subpath by using the `PUBLIC_URL` environment variable or the `homepage` field in the project's **package.json**:
+在 `@expo/webpack-config` 中，你可以使用 `PUBLIC_URL` 环境变量或项目 **package.json** 中的 `homepage` 字段，将网站打包后托管在子路径下：
 
 ```json package.json
 {
@@ -117,7 +117,7 @@ In `@expo/webpack-config`, you could bundle your website to be hosted from a sub
 }
 ```
 
-In Expo Router, you can use the experimental `baseUrl` field in the project's **app.json**:
+在 Expo Router 中，你可以在项目的 **app.json** 中使用实验性的 `baseUrl` 字段：
 
 ```json app.json
 {
@@ -129,13 +129,13 @@ In Expo Router, you can use the experimental `baseUrl` field in the project's **
 }
 ```
 
-Unlike the previous system, this will also update the routing to account for the base path. For example, if you have a route `/profile` and you set the base path to `/evanbacon/my-website`, then the route will be `/evanbacon/my-website/profile`.
+与之前的系统不同，这也会更新路由以考虑基础路径。例如，如果你有一个路由 `/profile`，并将基础路径设置为 `/evanbacon/my-website`，那么该路由将变为 `/evanbacon/my-website/profile`。
 
-See [hosting with sub-paths](/more/expo-cli#hosting-with-sub-paths) for more information.
+有关更多信息，请参阅[使用子路径托管](/more/expo-cli#hosting-with-sub-paths)。
 
-## Fast refresh
+## 快速刷新
 
-In `@expo/webpack-config` you could install `@pmmmwh/react-refresh-webpack-plugin` and add the following to the **webpack.config.js**:
+在 `@expo/webpack-config` 中，你可以安装 `@pmmmwh/react-refresh-webpack-plugin`，并将以下内容添加到 **webpack.config.js**：
 
 ```js webpack.config.js
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
@@ -144,7 +144,7 @@ const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
 
-  // Use the React refresh plugin in development mode
+  // 在开发模式下使用 React refresh 插件
   if (env.mode === 'development') {
     config.plugins.push(new ReactRefreshWebpackPlugin({ disableRefreshCheck: true }));
   }
@@ -153,37 +153,37 @@ module.exports = async function (env, argv) {
 };
 ```
 
-In Expo Router, **Fast Refresh is enabled by default** using the official Fast Refresh implementation by Meta.
+在 Expo Router 中，**默认已启用快速刷新**，使用的是 Meta 提供的官方 Fast Refresh 实现。
 
-## Favicons
+## 图标
 
-Like `@expo/webpack-config`, Expo Router supports generating the **favicon.ico** file based on the `web.favicon` field in the **app.json**.
+与 `@expo/webpack-config` 类似，Expo Router 支持根据 **app.json** 中的 `web.favicon` 字段生成 **favicon.ico** 文件。
 
-## Service workers
+## Service worker
 
-> **warning** Be careful adding service workers as they are known to cause unexpected behavior on web. If you accidentally ship a service worker that aggressively caches your website, users cannot request updates easily. For the best offline mobile experience, create a native app with Expo. Unlike websites with service workers, native apps can be updated through the app store to clear the cached experience. This would be similar to resetting the user's native browser (which they may have to do if the service worker is aggressive enough). See [why service workers are suboptimal](https://github.com/facebook/create-react-app/issues/2398) for more information.
+> **warning** 添加 service worker 时要小心，因为它们已知会在 web 上导致意外行为。如果你不小心发布了一个会积极缓存网站的 service worker，用户将无法轻松请求更新。若想获得最佳的离线移动体验，请使用 Expo 创建原生应用。与带有 service worker 的网站不同，原生应用可以通过应用商店更新来清除缓存体验。这类似于重置用户的原生浏览器（如果 service worker 过于激进，他们可能也需要这样做）。有关更多信息，请参阅[为什么 service worker 并不是最佳方案](https://github.com/facebook/create-react-app/issues/2398)。
 
-Expo Webpack didn't have built-in service worker support. However, you could add it yourself by using the `workbox-webpack-plugin` and adding it to the **webpack.config.js**.
+Expo Webpack 没有内置的 service worker 支持。不过，你可以通过使用 `workbox-webpack-plugin` 并将其添加到 **webpack.config.js** 来自行添加。
 
-Workbox doesn't have a Metro integration, but because Workbox doesn't require one of the core features of a bundler (transformation, resolution, serialization), it can easily be used as a post-build step. Follow the guide for [using Workbox CLI](https://developer.chrome.com/docs/workbox/modules/workbox-cli/), and wherever it refers to a "build script" use `npx expo export -p web` instead.
+Workbox 没有 Metro 集成，但由于 Workbox 不需要打包器的核心功能之一（转换、解析、序列化），所以它可以很容易地作为构建后的步骤来使用。请遵循[使用 Workbox CLI](https://developer.chrome.com/docs/workbox/modules/workbox-cli/) 的指南，并且在它提到“构建脚本”时，改为使用 `npx expo export -p web`。
 
-For example, here's a possible flow for setting up Workbox. Create a new project with the following command:
+例如，下面是设置 Workbox 的一个可能流程。使用以下命令创建一个新项目：
 
 <Terminal
   cmd={['$ npm create expo -t tabs my-app', '', '$ cd my-app']}
   cmdCopy="npm create expo -t tabs my-app && cd my-app"
 />
 
-Next, create a root HTML file for the app and add the service worker registration script:
+接下来，为应用创建一个根 HTML 文件，并添加 service worker 注册脚本：
 
 ```tsx src/app/+html.tsx
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
-// This file is web-only and used to configure the root HTML for every
-// web page during static rendering.
-// The contents of this function only run in Node.js environments and
-// do not have access to the DOM or browser APIs.
+// 此文件仅用于 web，并用于在静态渲染期间为每个
+// Web 页面配置根 HTML。
+// 这个函数的内容只会在 Node.js 环境中运行，
+// 无法访问 DOM 或浏览器 API。
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -192,16 +192,16 @@ export default function Root({ children }: PropsWithChildren) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-        {/* Bootstrap the service worker. */}
+        {/* 启动 service worker。 */}
         <script dangerouslySetInnerHTML={{ __html: sw }} />
 
         {/*
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
-          However, body scrolling is often nice to have for mobile web. If you want to enable it, remove this line.
+          在 web 上禁用 body 滚动。这会让 ScrollView 组件的行为更接近 native。
+          不过，body 滚动对于移动端 web 来说通常也很有用。如果你想启用它，请删除这一行。
         */}
         <ScrollViewStyleReset />
 
-        {/* Add any additional <head> elements that you want globally available on web... */}
+        {/* 添加任何你希望在 web 上全局可用的额外 <head> 元素... */}
       </head>
       <body>{children}</body>
     </html>
@@ -221,11 +221,11 @@ if ('serviceWorker' in navigator) {
 `;
 ```
 
-Now build the app before running the wizard:
+现在，在运行向导之前先构建应用：
 
 <Terminal cmd={['$ npx expo export -p web']} />
 
-Run the wizard command, select `dist` as the root of the app, and the defaults for everything else:
+运行向导命令，选择 `dist` 作为应用根目录，并对其他所有选项使用默认值：
 
 <Terminal
   cmd={[
@@ -239,7 +239,7 @@ Run the wizard command, select `dist` as the root of the app, and the defaults f
   ]}
 />
 
-Finally, run `npx workbox-cli generateSW workbox-config.js` to generate the service worker config. Going forward, you can add a build script in **package.json** to run both scripts in the correct order:
+最后，运行 `npx workbox-cli generateSW workbox-config.js` 来生成 service worker 配置。从现在开始，你可以在 **package.json** 中添加一个构建脚本，以正确顺序运行这两个脚本：
 
 ```json package.json
 {
@@ -249,14 +249,14 @@ Finally, run `npx workbox-cli generateSW workbox-config.js` to generate the serv
 }
 ```
 
-## PWA manifests
+## PWA 清单
 
-Unlike `@expo/webpack-config`, Expo Router does not automatically attempt to generate the PWA manifest configuration. You can create one in **public/manifest.json**:
+与 `@expo/webpack-config` 不同，Expo Router 不会自动尝试生成 PWA 清单配置。你可以在 **public/manifest.json** 中创建一个：
 
 ```json
 {
   "short_name": "Expo App",
-  "name": "Expo Router Sample",
+  "name": "Expo Router 示例",
   "icons": [
     {
       "src": "favicon.ico",
@@ -281,16 +281,15 @@ Unlike `@expo/webpack-config`, Expo Router does not automatically attempt to gen
 }
 ```
 
-You can link this in your HTML file using the `link` tag:
+你可以在 HTML 文件中使用 `link` 标签来链接它：
 
 ```tsx src/app/+html.tsx
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
-// This file is web-only and used to configure the root HTML for every
-// web page during static rendering.
-// The contents of this function only run in Node.js environments and
-// do not have access to the DOM or browser APIs.
+// 此文件仅用于 Web，并用于为静态渲染期间的每个 Web 页面配置根 HTML。
+// 此函数中的内容只会在 Node.js 环境中运行，
+// 且无法访问 DOM 或浏览器 API。
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -299,16 +298,16 @@ export default function Root({ children }: PropsWithChildren) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-        {/* Link the PWA manifest file. */}
+        {/* 链接 PWA 清单文件。 */}
         <link rel="manifest" href="/manifest.json" />
 
         {/*
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
-          However, body scrolling is often nice to have for mobile web. If you want to enable it, remove this line.
+          禁用 Web 端的 body 滚动。这使得 ScrollView 组件的行为更接近原生端。
+          但是，body 滚动在移动 Web 上通常很有用。如果你想启用它，请删除这一行。
         */}
         <ScrollViewStyleReset />
 
-        {/* Add any additional <head> elements that you want globally available on web... */}
+        {/* 添加任何你希望在 Web 上全局可用的其他 <head> 元素... */}
       </head>
       <body>{children}</body>
     </html>
@@ -316,16 +315,16 @@ export default function Root({ children }: PropsWithChildren) {
 }
 ```
 
-## Bundler plugins
+## 打包器插件
 
-If you were using custom bundler plugins, see [Expo Metro config](/versions/latest/config/metro) for adding custom functionality to your bundler pipeline.
+如果你之前使用过自定义打包器插件，请参阅 [Expo Metro 配置](/versions/latest/config/metro) 以了解如何为你的打包管道添加自定义功能。
 
-## Navigation
+## 导航
 
-If you used React Navigation for navigating between screens in `@expo/webpack-config`, see the [migration guide for React Navigation](/router/migrate/from-react-navigation).
+如果你在 `@expo/webpack-config` 中使用 React Navigation 在各个屏幕之间导航，请参阅 [React Navigation 迁移指南](/router/migrate/from-react-navigation)。
 
-## Deployment
+## 部署
 
-Check out [Publishing websites](/guides/publishing-websites) on how to deploy Expo Router websites to various hosting providers.
+查看 [发布网站](/guides/publishing-websites)，了解如何将 Expo Router 网站部署到各种托管服务提供商。
 
 [tree-shaking]: /guides/tree-shaking

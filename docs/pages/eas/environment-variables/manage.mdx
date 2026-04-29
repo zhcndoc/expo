@@ -1,72 +1,72 @@
 ---
-title: Create and manage environment variables in EAS
-sidebar_title: Create and manage
-description: Learn how to create, scope, and consume environment variables with EAS dashboard and EAS CLI.
+title: 在 EAS 中创建和管理环境变量
+sidebar_title: 创建和管理
+description: 了解如何使用 EAS 仪表板和 EAS CLI 创建、作用域化和使用环境变量。
 searchRank: 7
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-The following sections cover how to create, scope, and consume environment variables with EAS dashboard and EAS CLI.
+以下章节介绍如何使用 EAS 仪表盘和 EAS CLI 创建、作用域以及消费环境变量。
 
-## Create environment variables
+## 创建环境变量
 
-- [**Choose an environment or multiple environments**](/eas/environment-variables/#available-environments): `development`, `preview`, and `production` are available by default. A variable can be reused across them or customized per environment.
-- [**Choose scope**](/eas/environment-variables/#scope): Project-wide variables apply to one project. Account-wide variables can be reused across projects and are merged with project variables at build time.
-- [**Choose visibility**](/eas/environment-variables/#visibility-settings-for-environment-variables): Use **secret** for values that should never leave EAS servers, **sensitive** for values that may be revealed locally, and **plain text** for non-sensitive values.
+- [**选择一个环境或多个环境**](/eas/environment-variables/#available-environments)：默认可用 `development`、`preview` 和 `production`。一个变量可以在这些环境之间复用，也可以按环境定制。
+- [**选择作用域**](/eas/environment-variables/#scope)：项目级变量适用于单个项目。账户级变量可以在多个项目之间复用，并且会在构建时与项目变量合并。
+- [**选择可见性**](/eas/environment-variables/#visibility-settings-for-environment-variables)：对绝不应离开 EAS 服务器的值使用 **secret**，对可能在本地被显示的值使用 **sensitive**，对非敏感值使用 **plain text**。
 
-### Create variables in the dashboard
+### 在仪表盘中创建变量
 
-To create a new environment variable on EAS servers, in your project dashboard, you can navigate to the **Project settings** > [**Environment variables**](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) and then click on the **Add Variables** button.
+要在 EAS 服务器上创建新的环境变量，你可以在项目仪表盘中导航到 **Project settings** > [**Environment variables**](https://expo.dev/accounts/[account]/projects/[project]/environment-variables)，然后点击 **Add Variables** 按钮。
 
 <ContentSpotlight
-  alt="Environment variable form in an EAS project dashboard"
+  alt="EAS 项目仪表盘中的环境变量表单"
   src="/static/images/env-vars/creation-form.png"
   className="max-w-[600px]"
 />
 
-Use the [environment variables creation form](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) page to set the name, value, environment(s), visibility, and optional description.
+使用 [environment variables creation form](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 页面来设置名称、值、环境、可见性以及可选描述。
 
 <ContentSpotlight
-  alt="Create an environment variable form"
+  alt="创建环境变量表单"
   src="/static/images/env-vars/add.png"
   className="max-w-[600px]"
 />
 
-Created variables appear in the list with their scope, visibility, and environment tags. Based on the environment variables in this example, the list may look like this:
+创建的变量会在列表中显示其作用域、可见性和环境标签。根据此示例中的环境变量，列表可能如下所示：
 
 <ContentSpotlight
-  alt="List of successfully created environment variables"
+  alt="成功创建的环境变量列表"
   src="/static/images/env-vars/list.png"
   className="max-w-[600px]"
 />
 
-In the above example list:
+在上面的示例列表中：
 
-- The `SENTRY_AUTH_TOKEN` variable is a sensitive environment variable. It is used to authenticate Sentry to upload source maps after builds and updates, and has to be accessible outside of EAS servers.
-- The `GOOGLE_SERVICES_JSON` variable is a secret environment variable and uses an uploaded file. It is used to authenticate Google to access the Google Services JSON file, and has to be stored securely on EAS servers. This uploaded JSON file is typically added to your project's **.gitignore**.
-- All other variables, such as `APP_VARIANT` and `EXPO_PUBLIC_API_URL`, are plain text environment variables.
+- `SENTRY_AUTH_TOKEN` 变量是一个敏感环境变量。它用于在构建和更新后对 Sentry 进行身份验证以上传 source map，并且必须可在 EAS 服务器之外访问。
+- `GOOGLE_SERVICES_JSON` 变量是一个 secret 环境变量，并使用了上传的文件。它用于对 Google 进行身份验证以访问 Google Services JSON 文件，并且必须安全地存储在 EAS 服务器上。这个上传的 JSON 文件通常会添加到项目的 **.gitignore** 中。
+- 其他所有变量，例如 `APP_VARIANT` 和 `EXPO_PUBLIC_API_URL`，都是纯文本环境变量。
 
-### Create variables with EAS CLI
+### 使用 EAS CLI 创建变量
 
-Use `eas env:create` to add variables and `eas env:list` to verify what is set.
+使用 `eas env:create` 添加变量，并使用 `eas env:list` 验证已设置的内容。
 
 <Terminal
   cmd={[
-    '# Example to create a new plain text environment variable for the preview environment',
+    '# 示例：为 preview 环境创建一个新的纯文本环境变量',
     '$ eas env:create --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment preview --visibility plaintext',
     '',
-    '# Example to list all environment variables for the preview environment',
+    '# 示例：列出 preview 环境的所有环境变量',
     '$ eas env:list --environment preview',
   ]}
 />
 
-## Using environment variables in your code
+## 在代码中使用环境变量
 
-### Client-side values
+### 客户端值
 
-The environment variables with the [`EXPO_PUBLIC_`](/guides/environment-variables) prefix are available as `process.env` variables in your app's code. You can use them dynamically to configure your app behavior based on their values:
+带有 [`EXPO_PUBLIC_`](/guides/environment-variables) 前缀的环境变量，会在你应用的代码中作为 `process.env` 变量可用。你可以动态使用它们，根据其值来配置应用行为：
 
 ```tsx
 import { Button } from 'react-native';
@@ -81,19 +81,19 @@ function Post() {
     });
   }
 
-  return <Button onPress={onPress} title="Post" />;
+  return <Button onPress={onPress} title="发布" />;
 }
 ```
 
-In the above example, `EXPO_PUBLIC_API_URL` is used to dynamically set the API URL for the fetch request.
+在上面的示例中，`EXPO_PUBLIC_API_URL` 被用于动态设置 fetch 请求的 API URL。
 
-> **warning** Do not put secrets in `EXPO_PUBLIC_` variables. Everything in client bundles is readable by end users.
+> **warning** 不要把密钥放进 `EXPO_PUBLIC_` 变量中。客户端包中的所有内容最终都可被终端用户读取。
 
-### Build-time and app config
+### 构建时和应用配置
 
-Other variables that are without the `EXPO_PUBLIC_` prefix can be used during [app config](/workflow/configuration) resolution to configure your app's behavior. For example, the `APP_VARIANT` variable is used to determine the app name, package name, and bundle identifier for the selected [app variant](/build-reference/variants/):
+其他不带 `EXPO_PUBLIC_` 前缀的变量可以在 [app config](/workflow/configuration) 解析期间使用，以配置应用行为。例如，`APP_VARIANT` 变量用于确定所选 [app variant](/build-reference/variants/) 的应用名称、包名和 bundle 标识符：
 
-Use non-prefixed variables in dynamic app config. Keep visibility at least **sensitive** if you need to resolve config locally (plain text and sensitive are readable in EAS CLI; secrets stay on the server).
+在动态 app config 中使用非前缀变量。如果你需要在本地解析配置，可见性至少保持为 **sensitive**（plain text 和 sensitive 可通过 EAS CLI 读取；secrets 会保留在服务器上）。
 
 ```js app.config.js
 const IS_DEV = process.env.APP_VARIANT === 'development';
@@ -113,29 +113,29 @@ const getUniqueIdentifier = () => {
 
 const getAppName = () => {
   if (IS_DEV) {
-    return 'StickerSmash (Dev)';
+    return 'StickerSmash（开发）';
   }
 
   if (IS_PREVIEW) {
-    return 'StickerSmash (Preview)';
+    return 'StickerSmash（预览）';
   }
 
-  return 'StickerSmash: Emoji Stickers';
+  return 'StickerSmash：Emoji 贴纸';
 };
 
 export default {
-  /* @info Using <CODE>getAppName()</CODE> for "name" property */
+  /* @info 对 "name" 属性使用 <CODE>getAppName()</CODE> */
   name: getAppName(),
   /* @end */
   /* @hide ... */ /* @end */
   ios: {
-    /* @info Using <CODE>getUniqueIdentifier()</CODE> for "bundleIdentifier" property */
+    /* @info 对 "bundleIdentifier" 属性使用 <CODE>getUniqueIdentifier()</CODE> */
     bundleIdentifier: getUniqueIdentifier(),
     /* @end */
     /* @hide ... */ /* @end */
   },
   android: {
-    /* @info Using <CODE>getUniqueIdentifier()</CODE> for "package" property */
+    /* @info 对 "package" 属性使用 <CODE>getUniqueIdentifier()</CODE> */
     package: getUniqueIdentifier(),
     /* @end */
     /* @hide ... */ /* @end */
@@ -143,9 +143,9 @@ export default {
 };
 ```
 
-### Secrets and file variables
+### 密钥和文件变量
 
-An environment variable such as `GOOGLE_SERVICES_JSON` is a secret file variable that is not readable outside of EAS servers and is used to provide the git ignored **google-services.json** file to an EAS Build job. To use it in the app config, you can use the `process.env` variable and provide a fallback value in case the variable is not set (for local development when you usually have it inside your project's repository):
+像 `GOOGLE_SERVICES_JSON` 这样的环境变量是一个 secret 文件变量，无法在 EAS 服务器之外读取，用于向 EAS Build 任务提供被 git 忽略的 **google-services.json** 文件。要在 app config 中使用它，你可以使用 `process.env` 变量，并在变量未设置时提供一个回退值（用于本地开发时，通常它位于项目仓库中）：
 
 ```js app.config.js
 export default {
@@ -155,87 +155,87 @@ export default {
 };
 ```
 
-## Manage environment variables
+## 管理环境变量
 
-You can use [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) in your project or account to create, update, and delete environment variables.
+你可以使用项目或账户中的 [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 来创建、更新和删除环境变量。
 
-You can also use EAS CLI to manage them. The following commands are provided as examples for the `production` environment. When using these commands, replace `production` with the environment you want to manage.
+你也可以使用 EAS CLI 来管理它们。以下命令以 `production` 环境为例。使用这些命令时，请将 `production` 替换为你要管理的环境。
 
 <Terminal
   cmd={[
-    '# To create a new environment variable',
+    '# 创建一个新的环境变量',
     '$ eas env:create --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment production --visibility plaintext',
     '',
-    '# To update an existing environment variable',
+    '# 更新一个已有的环境变量',
     '$ eas env:update --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment production --visibility plaintext',
     '',
-    '# To delete an existing environment variable',
+    '# 删除一个已有的环境变量',
     '$ eas env:delete',
     '',
-    '# To list all environment variables',
+    '# 列出所有环境变量',
     '$ eas env:list --environment production',
     '',
-    '# To pull environment variables into a .env file',
+    '# 将环境变量拉取到 .env 文件中',
     '$ eas env:pull --environment production',
   ]}
 />
 
-> **info** **Tip:** See the [EAS CLI command reference](https://github.com/expo/eas-cli/blob/main/packages/eas-cli/README.md) for more information about the above commands.
+> **info** **提示：** 查看 [EAS CLI 命令参考](https://github.com/expo/eas-cli/blob/main/packages/eas-cli/README.md) 以获取有关上述命令的更多信息。
 
-### Pull variables for local development
+### 为本地开发拉取变量
 
-The efficient way to use EAS environment variables for local development is to pull them into a **.env** file using the `eas env:pull --environment environment-name` command:
+在本地开发中使用 EAS 环境变量的高效方式，是使用 `eas env:pull --environment environment-name` 命令将它们拉取到 **.env** 文件中：
 
-For example, to pull the environment variables for the `production` environment into a **.env** file, you can run:
+例如，要将 `production` 环境的环境变量拉取到 **.env** 文件中，你可以运行：
 
 <Terminal cmd={['$ eas env:pull --environment production']} />
 
-The created file may look like the following:
+创建的文件可能如下所示：
 
 ```bash .env.local
-# Environment: production
+# 环境：production
 
 APP_VARIANT=development
 EXPO_PUBLIC_API_URL=https://staging.my-api-url.mycompany.com
-# GOOGLE_SERVICES_JSON=***** (secret variables are not available for reading)
+# GOOGLE_SERVICES_JSON=*****（secret 变量不可读取）
 SENTRY_AUTH_TOKEN=token
 ```
 
-> **info** **Tip:** Keep generated **.env** files in **.gitignore** to avoid leaks and precedence conflicts between local and cloud jobs.
+> **info** **提示：** 请将生成的 **.env** 文件保留在 **.gitignore** 中，以避免泄漏以及本地与云端任务之间的优先级冲突。
 
-You can also use the **Export** option in the EAS dashboard to download the file and store it inside your project.
+你也可以在 EAS 仪表盘中使用 **Export** 选项下载文件，并将其存储到你的项目中。
 
 <ContentSpotlight
-  alt="Export environment variables to a .env file from the EAS dashboard"
+  alt="从 EAS 仪表盘导出环境变量到 .env 文件"
   src="/static/images/env-vars/export.png"
   className="max-w-[600px]"
 />
 
-## Custom environments
+## 自定义环境
 
-> **important** Creating custom environments is available for [Enterprise and production](/billing/plans/#plans) plans.
+> **important** 创建自定义环境适用于 [Enterprise 和 production](/billing/plans/#plans) 套餐。
 
-The three default environments are sufficient for most use-cases, but if your project relies on complex workflows and requires the flexibility to create more environments, using custom environments may come in handy.
+这三个默认环境对于大多数用例已经足够，但如果你的项目依赖复杂工作流，并且需要创建更多环境的灵活性，那么使用自定义环境可能会很有用。
 
-### Create a custom environment in EAS dashboard
+### 在 EAS 仪表盘中创建自定义环境
 
-To create a custom environment in EAS dashboard:
+要在 EAS 仪表盘中创建自定义环境：
 
-- In your project, navigate to the **Project settings** > [**Environment variables**](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) and then click on the **Add Variables** button.
-- Under **Environments**, click the **plus (+) icon** to enter a name for a custom environment.
+- 在你的项目中，导航到 **Project settings** > [**Environment variables**](https://expo.dev/accounts/[account]/projects/[project]/environment-variables)，然后点击 **Add Variables** 按钮。
+- 在 **Environments** 下，点击 **plus (+) icon** 以输入自定义环境的名称。
 
 <ContentSpotlight
-  alt="Create a custom environment in an EAS project dashboard"
+  alt="在 EAS 项目仪表盘中创建自定义环境"
   src="/static/images/env-vars/custom-environment.png"
   className="max-w-[600px]"
 />
 
-- After creating the environment, it will be pre-selected under the **Custom environments** section.
-- As long as there is at least one environment variable linked to this environment, it will show up as a selectable option for all environment variables for that account or project.
+- 创建环境后，它会在 **Custom environments** 部分下预先选中。
+- 只要至少有一个环境变量关联到这个环境，它就会作为该账户或项目下所有环境变量的可选项显示出来。
 
-### Create a custom environment with EAS CLI
+### 使用 EAS CLI 创建自定义环境
 
-To assign an environment variable to custom environments, use your custom environment name in place of the environment. For example, the command below creates a new variable `EXPO_PUBLIC_API_URL` and assigns it to the custom `staging` environment:
+要将环境变量分配给自定义环境，请在环境位置使用你的自定义环境名称。例如，下面的命令会创建一个新的变量 `EXPO_PUBLIC_API_URL`，并将其分配到自定义的 `staging` 环境：
 
 <Terminal
   cmd={[

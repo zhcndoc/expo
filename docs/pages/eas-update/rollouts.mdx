@@ -1,71 +1,71 @@
 ---
-title: Rollouts
-description: Learn how to incrementally deploy updates to your users by using a rollout mechanism.
+title: 发布
+description: 了解如何通过使用发布机制逐步向用户部署更新。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-A rollout allows you to roll out a change to a portion of your users to catch bugs or other issues before releasing that change to all your users.
+一次 rollout 允许你将变更发布给部分用户，以便在将该变更发布给所有用户之前捕获 bug 或其他问题。
 
-EAS provides **per-update and branch-based rollout mechanisms** depending on your use case.
+EAS 提供**按更新和基于分支的 rollout 机制**，具体取决于你的使用场景。
 
-## Per-update rollouts
+## 按更新的 rollout
 
-This rollout mechanism allows you to specify a percentage of users that should receive a new update when you publish it, and then increase that percentage gradually afterwards.
+这种 rollout 机制允许你在发布新更新时指定应接收该更新的用户百分比，然后在之后逐步增加该百分比。
 
-### Starting
+### 开始
 
-To start an update-based rollout, add the `--rollout-percentage` flag to your normal `eas update` command:
+要启动基于更新的 rollout，请在普通的 `eas update` 命令中添加 `--rollout-percentage` 标志：
 
 <Terminal cmd={['$ eas update --rollout-percentage=10']} />
 
-In this example, when published, the update will only be available to 10% of your end users.
+在此示例中，发布后，该更新将仅对 10% 的终端用户可用。
 
-### Progressing
+### 进展
 
-To edit the percentage of an update-based rollout:
+要编辑基于更新的 rollout 百分比：
 
 <Terminal cmd={['$ eas update:edit']} />
 
-You will be guided through the process of selecting the update to edit and asked for the new percentage.
+系统会引导你选择要编辑的更新，并询问新的百分比。
 
-### Ending
+### 结束
 
-When ending an update-based rollout, you have two options:
+在结束基于更新的 rollout 时，你有两个选项：
 
-- **Roll out fully**: To accomplish this end state, progress the rollout as detailed above and set the percentage to 100.
-- **Revert back to previous state**: To accomplish this, run `eas update:revert-update-rollout` which will guide you through reverting back to the previous state.
+- **完全发布**：要实现此最终状态，请按上述方式推进 rollout，并将百分比设置为 100。
+- **恢复到之前的状态**：要实现此目的，请运行 `eas update:revert-update-rollout`，它会引导你恢复到之前的状态。
 
-### Additional notes
+### 其他说明
 
-- Only one update can be rolled out on a branch at one time.
-- When a rollout is in progress, it must be ended using one of the options above before a new update (with the same runtime version) can be published. This prevents accidentally clobbering the rollout.
-- To see the state of the rollout, use the `eas update:list` or `eas update:view` commands.
-- Reverting a rollout that is created on a branch with an existing update will republish the control update. This ensures that all clients are reverted back to the previous state.
-- A rollout can be started on a branch with no current update, in which case the first update will be rolled out to the specified percentage of users. When reverted, a rollback-to-embedded update will be created, which will revert the clients to their previous state (embedded update).
+- 在同一时间，一个分支上只能有一个更新处于 rollout 状态。
+- 当 rollout 正在进行时，必须先使用上述选项之一结束它，之后才能发布一个新的更新（具有相同的 runtime version）。这可以防止意外覆盖 rollout。
+- 要查看 rollout 的状态，请使用 `eas update:list` 或 `eas update:view` 命令。
+- 回滚在已有更新的分支上创建的 rollout 时，会重新发布控制更新。这可确保所有客户端都回退到之前的状态。
+- 可以在没有当前更新的分支上启动 rollout，在这种情况下，第一条更新将按指定百分比发布给用户。回滚时，将创建一个回滚到嵌入式更新（rollback-to-embedded update），这会将客户端恢复到之前的状态（嵌入式更新）。
 
-## Branch-based rollouts
+## 基于分支的 rollouts
 
-This rollout mechanism allows you to incrementally roll out a set of updates on a new branch to a percentage of end users and leave the remaining percentage of users on the current branch.
+这种 rollout 机制允许你将一组更新在新分支上逐步发布给一定比例的终端用户，并让剩余比例的用户继续停留在当前分支上。
 
-### Starting
+### 开始
 
-To start a branch-based rollout, run the following EAS CLI command:
+要启动基于分支的 rollout，请运行以下 EAS CLI 命令：
 
 <Terminal cmd={['$ eas channel:rollout']} />
 
-In the terminal, an interactive guide will assist you in selecting a channel, choosing a branch for the rollout, and setting the percentage of users for the rollout. To increase or decrease the rollout amount, run the command again and choose the `Edit` option to adjust the rollout percentage.
+在终端中，交互式指南将帮助你选择 channel、为 rollout 选择一个 branch，并设置 rollout 的用户百分比。要增加或减少 rollout 的比例，请再次运行该命令，并选择 `Edit` 选项来调整 rollout 百分比。
 
-### Ending
+### 结束
 
-Two methods are available to end a rollout when you choose the `End` option in the interactive guide:
+当你在交互式指南中选择 `End` 选项时，可使用两种方法结束 rollout：
 
-- **Republish and revert:** Use this option when you are confident with the state of the new branch. This will republish the latest update from the new branch to the old branch, and all users will be pointed to the old branch.
-- **Revert:** Choose to disregard the updates on the new branch and return users to the old branch.
+- **重新发布并回滚**：当你对新分支的状态有信心时，使用此选项。这会将新分支中的最新更新重新发布到旧分支，并且所有用户都将被指向旧分支。
+- **回滚**：选择忽略新分支上的更新，并将用户返回到旧分支。
 
-### Additional notes
+### 其他说明
 
-- Only one branch can be rolled out on a channel at a single time.
-- To see the state of the rollout, use the `eas channel:rollout` command.
-- When a rollout is in progress, you can publish updates to both rolled out and current branches by running `eas update --branch [branch]`, for example.
-- `eas update --channel [channel]` cannot be used when a rollout is in progress since it cannot know which branch in the rollout to associate the update with.
+- 在同一个 channel 上，同一时间只能 rollout 一个分支。
+- 要查看 rollout 的状态，请使用 `eas channel:rollout` 命令。
+- 当 rollout 正在进行时，你可以通过运行 `eas update --branch [branch]` 来向已 rollout 的分支和当前分支发布更新，例如。
+- `eas update --channel [channel]` 在 rollout 进行中不能使用，因为它无法知道应将更新关联到 rollout 中的哪个分支。

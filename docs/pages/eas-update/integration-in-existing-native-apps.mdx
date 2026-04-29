@@ -1,7 +1,7 @@
 ---
-title: Using EAS Update in an existing native app
-sidebar_title: Integrate in existing native apps
-description: Learn how to integrate EAS Update into your existing native Android and iOS app to enable over-the-air updates.
+title: 在现有原生应用中使用 EAS Update
+sidebar_title: 集成到现有原生应用
+description: 了解如何将 EAS Update 集成到你现有的原生 Android 和 iOS 应用中，以启用空中更新。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
@@ -9,75 +9,75 @@ import { FAQ } from '~/ui/components/FAQ';
 import { Terminal, DiffBlock } from '~/ui/components/Snippet';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-> **info** If your project is a **greenfield React Native app** &mdash; primarily built with React Native from the start, and the entry point of the app is React Native, then skip this guide and proceed to [Get started with EAS Update](/eas-update/getting-started/).
+> **info** 如果你的项目是一个 **greenfield React Native app** &mdash; 从一开始主要使用 React Native 构建，并且应用的入口点就是 React Native，那么请跳过本指南，直接继续阅读 [Get started with EAS Update](/eas-update/getting-started/)。
 
-This guide explains how to integrate EAS Update in an existing native app, sometimes referred to as a brownfield app. It assumes that you are using Expo SDK 52 or later, and React Native 0.76 or later.
+本指南说明如何在现有原生应用中集成 EAS Update，这类应用有时也称为 brownfield app。本文假设你使用的是 Expo SDK 52 或更高版本，以及 React Native 0.76 或更高版本。
 
-Instructions are not available for older Expo SDK and React Native versions. Additional hands-on support for integrating with older versions can only be provided for enterprise customers ([contact us](https://expo.dev/contact)).
+较旧的 Expo SDK 和 React Native 版本不提供相关说明。对于旧版本集成的额外手把手支持，仅可为企业客户提供（[联系我们](https://expo.dev/contact)）。
 
-## Prerequisites
+## 前提条件
 
-> **warning** The following instructions may not work for all projects. The specifics of integrating EAS Update into existing projects depend heavily on the specifics of your app, and so you may need to adapt the instructions to your unique setup. If you encounter issues, [create an issue on GitHub](https://github.com/expo/expo/issues) or open a pull request to suggest improvements to this guide.
+> **warning** 以下说明可能并不适用于所有项目。将 EAS Update 集成到现有项目中的具体方式高度依赖于你的应用细节，因此你可能需要根据自己的独特配置对这些步骤进行调整。如果遇到问题，请[在 GitHub 上创建 issue](https://github.com/expo/expo/issues) 或提交 pull request 来建议改进本指南。
 
-You should have a brownfield native project with React Native installed and configured to render a root view. If you don't have this yet, follow the [Integration with Existing Apps](https://reactnative.dev/docs/integration-with-existing-apps) guide from the React Native documentation and then come back here once you have followed the steps.
+你应该已经有一个 brownfield 原生项目，其中安装并配置了 React Native，且能够渲染根视图。如果你还没有完成这些，请先阅读 React Native 文档中的 [Integration with Existing Apps](https://reactnative.dev/docs/integration-with-existing-apps) 指南，然后在完成步骤后再回来继续。
 
-- Your app must be using the [latest Expo SDK version and its supported React Native version](/versions/latest/#each-expo-sdk-version-depends-on-a-react-native-version).
-- Remove any other update library integration from your app, such as react-native-code-push, and ensure that your app compiles and runs successfully in both debug and release on your supported platforms.
-- Support for Expo modules (through the `expo` package) must be installed and configured in your project. [Learn more](/brownfield/overview/).
-- Your **metro.config.js** [must extend `expo/metro-config`](/guides/customizing-metro/#customizing) .
-- Your **babel.config.js** [must extend `babel-preset-expo`](/versions/latest/config/babel/).
-- The command `npx expo export -p android` must run successfully in your project if it supports Android, and `npx expo export -p ios` if it supports iOS.
+- 你的应用必须使用[最新的 Expo SDK 版本及其支持的 React Native 版本](/versions/latest/#each-expo-sdk-version-depends-on-a-react-native-version)。
+- 从应用中移除任何其他更新库集成，例如 react-native-code-push，并确保你的应用在所支持的平台上以 debug 和 release 模式都能成功编译和运行。
+- 项目中必须安装并配置对 Expo modules（通过 `expo` 包）的支持。[了解更多](/brownfield/overview/)。
+- 你的 **metro.config.js** [必须扩展 `expo/metro-config`](/guides/customizing-metro/#customizing) 。
+- 你的 **babel.config.js** [必须扩展 `babel-preset-expo`](/versions/latest/config/babel/)。
+- 如果项目支持 Android，则命令 `npx expo export -p android` 必须能在项目中成功运行；如果项目支持 iOS，则 `npx expo export -p ios` 也必须能成功运行。
 
-## Installation and basic configuration
+## 安装和基础配置
 
-Follow steps 1, 2, 3, and 4 from the [Get started with EAS Update](/eas-update/getting-started/) guide.
+按照 [Get started with EAS Update](/eas-update/getting-started/) 指南中的第 1、2、3、4 步操作。
 
-After this is complete, you will have installed and authenticated with `eas-cli`, installed `expo-updates` to your project, initialized an associated EAS project, and added basic configuration to your native projects.
+完成后，你将已经安装并通过 `eas-cli` 完成身份验证，已将 `expo-updates` 安装到项目中，已初始化关联的 EAS 项目，并为原生项目添加了基础配置。
 
-## Opt out of automatic setup
+## 取消自动设置
 
-The next step is to disable the default behavior of `expo-updates` to automatically set itself up in a way that supports greenfield React Native projects.
+下一步是禁用 `expo-updates` 的默认行为，使其不再以适用于 greenfield React Native 项目的方式自动完成自身设置。
 
-### Disable automatic setup on Android
+### 在 Android 上禁用自动设置
 
-Modify **android/gradle.properties** to set the property that disables automatic updates initialization, as in the example below:
+修改 **android/gradle.properties**，设置用于禁用自动更新初始化的属性，如下例所示：
 
 <DiffBlock source="/static/diffs/eas-update-custom-initialization.diff" />
 
-### Disable automatic setup on iOS
+### 在 iOS 上禁用自动设置
 
-Pass in the environment variable to CocoaPods installation to disable automatic updates initialization.
+通过向 CocoaPods 安装传入环境变量来禁用自动更新初始化。
 
 <Terminal cmd={['$ EX_UPDATES_CUSTOM_INIT=1 npx pod-install']} />
 
-## Set up your React Native app to use expo-updates for loading the release bundle
+## 设置 React Native 应用以在加载发布版 bundle 时使用 expo-updates
 
-The next step is to integrate `expo-updates` into your Android and iOS projects so that your app will use `expo-updates` as the source of your app JavaScript in release builds.
+下一步是将 `expo-updates` 集成到你的 Android 和 iOS 项目中，这样你的应用在 release 构建中会使用 `expo-updates` 作为 JavaScript 代码来源。
 
-### Integrating expo-updates with your React Native bundling
+### 将 expo-updates 集成到 React Native 打包流程中
 
-1. Ensure that your Metro config extends the Expo config, as in this example:
+1. 确保你的 Metro 配置扩展了 Expo 配置，如下例所示：
 
    ```js metro.config.js
-   // Learn more https://docs.expo.dev/guides/customizing-metro
+   // 了解更多 https://docs.expo.dev/guides/customizing-metro
    const { getDefaultConfig } = require('expo/metro-config');
 
    /** @type {import('expo/metro-config').MetroConfig} */
    const config = getDefaultConfig(__dirname); // eslint-disable-line no-undef
 
-   // Make any custom changes you need for your project by
-   // directly modifying "config"
+   // 根据项目需要直接修改 "config"
+   // 以添加任何自定义更改
 
    module.exports = config;
    ```
 
-2. If you are using a custom entry point, be sure to include Expo initialization there. This ensures that Expo libraries (including `expo-updates`) are all initialized properly. Here are two examples:
+2. 如果你使用自定义入口点，请务必在那里包含 Expo 初始化。这可确保 Expo 库（包括 `expo-updates`）都能正确初始化。下面有两个示例：
 
    ```jsx First Custom Entry Point file example
-   // Expo recommends using registerRootComponent().
-   // It registers the component with the react-native AppRegistry,
-   // and performs all required Expo initialization
-   // (including expo-updates setup)
+   // Expo 建议使用 registerRootComponent()。
+   // 它会将组件注册到 react-native 的 AppRegistry，
+   // 并执行所有必需的 Expo 初始化
+   // （包括 expo-updates 设置）
 
    import App from './App';
    import { registerRootComponent } from 'expo';
@@ -86,9 +86,9 @@ The next step is to integrate `expo-updates` into your Android and iOS projects 
    ```
 
    ```jsx Second custom entry point file example
-   // If you need to keep an existing entry point that uses AppRegistry directly,
-   // you will need to add a call to Expo's initialization before registering the
-   // app, as shown below.
+   // 如果你需要保留一个直接使用 AppRegistry 的现有入口点，
+   // 你需要在注册应用之前先添加对 Expo 初始化的调用，
+   // 如下所示。
    import App from './App';
    import 'expo/src/Expo.fx';
    import { AppRegistry } from 'react-native';
@@ -100,17 +100,17 @@ The next step is to integrate `expo-updates` into your Android and iOS projects 
    AppRegistry.registerComponent('App', () => getApp());
    ```
 
-### Integrating expo-updates on Android
+### 在 Android 上集成 expo-updates
 
-The following instructions assume you have an app written in Kotlin. You will need to update two files: **MainApplication.kt** and **MainActivity.kt**.
+以下说明假设你的应用使用 Kotlin 编写。你需要更新两个文件：**MainApplication.kt** 和 **MainActivity.kt**。
 
-#### MainApplication changes
+#### MainApplication 更改
 
-Open **android/app/src/main/java/com/\<your-app-name\>/MainApplication.kt** and follow the steps below.
+打开 **android/app/src/main/java/com/\<your-app-name\>/MainApplication.kt** 并按以下步骤操作。
 
-1. Your application class should implement `ReactApplication`.
-2. Override `reactHost` to use `ExpoReactHostFactory.getDefaultReactHost()`. This sets up the React host with proper expo-updates integration.
-3. In `onCreate()`, call `loadReactNative()` and `ApplicationLifecycleDispatcher.onApplicationCreate()` to initialize Expo modules.
+1. 你的 Application 类应实现 `ReactApplication`。
+2. 重写 `reactHost`，使用 `ExpoReactHostFactory.getDefaultReactHost()`。这会以正确的 expo-updates 集成来设置 React host。
+3. 在 `onCreate()` 中调用 `loadReactNative()` 和 `ApplicationLifecycleDispatcher.onApplicationCreate()` 来初始化 Expo modules。
 
 ```kotlin android/app/src/main/java/com/<your-app-name>/MainApplication.kt
 package com.yourpackagename
@@ -128,22 +128,22 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ExpoReactHostFactory
 
-// Step 1
+// 步骤 1
 class MainApplication : Application(), ReactApplication {
 
-  // Step 2
+  // 步骤 2
   override val reactHost: ReactHost by lazy {
     ExpoReactHostFactory.getDefaultReactHost(
       context = applicationContext,
       packageList =
         PackageList(this).packages.apply {
-          // Packages that cannot be autolinked yet can be added manually here, for example:
+          // 目前无法自动链接的包可以在这里手动添加，例如：
           // add(MyReactNativePackage())
         }
     )
   }
 
-  // Step 3
+  // 步骤 3
   override fun onCreate() {
     super.onCreate()
     DefaultNewArchitectureEntryPoint.releaseLevel = try {
@@ -162,13 +162,13 @@ class MainApplication : Application(), ReactApplication {
 }
 ```
 
-#### MainActivity changes
+#### MainActivity 更改
 
-Open **android/app/src/main/java/com/\<your-app-name\>/MainActivity.kt** and follow the steps below.
+打开 **android/app/src/main/java/com/\<your-app-name\>/MainActivity.kt** 并按以下步骤操作。
 
-1. Your React Native activity should subclass `com.facebook.react.ReactActivity`.
-2. Override `getMainComponentName()` to return the name of the app you registered in your JS entry point above.
-3. Override `createReactActivityDelegate()` using `ReactActivityDelegateWrapper` as shown below.
+1. 你的 React Native Activity 应继承 `com.facebook.react.ReactActivity`。
+2. 重写 `getMainComponentName()`，返回你在上面 JS 入口点中注册的应用名称。
+3. 按如下方式使用 `ReactActivityDelegateWrapper` 重写 `createReactActivityDelegate()`。
 
 ```kotlin android/app/src/main/java/com/<your-app-name>/MainActivity.kt
 package com.yourpackagename
@@ -182,16 +182,16 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 import expo.modules.ReactActivityDelegateWrapper
 
-// Step 1
+// 步骤 1
 class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(null)
   }
 
-  // Step 2
+  // 步骤 2
   override fun getMainComponentName(): String = "App"
 
-  // Step 3
+  // 步骤 3
   override fun createReactActivityDelegate(): ReactActivityDelegate {
     return ReactActivityDelegateWrapper(
       this,
@@ -205,23 +205,23 @@ class MainActivity : ReactActivity() {
 }
 ```
 
-### Integrating expo-updates on iOS
+### 在 iOS 上集成 expo-updates
 
-The following instructions assume you have an app written in Swift, with one or more native screens that have custom UIViewControllers. We will add a custom view controller that renders your React Native app.
+以下说明假设你的应用使用 Swift 编写，并且有一个或多个带有自定义 UIViewController 的原生界面。我们将添加一个自定义视图控制器来渲染你的 React Native 应用。
 
 <Tabs>
 
-<Tab label="SDK 53 and later">
+<Tab label="SDK 53 及以后版本">
 
-#### AppDelegate changes
+#### AppDelegate 更改
 
-1. Modify **AppDelegate.swift** so that it extends `ExpoAppDelegate`.
-2. If you are not already doing so, add a public method to get the running `AppDelegate` instance, so that your custom view controller can access it later.
-3. Add a reference to the singleton instance of the `expo-updates` `AppController` class, which manages the updates system on iOS.
-4. Add a new class, `CustomReactNativeFactoryDelegate`, that extends `ExpoReactNativeFactoryDelegate` and overrides the `bundleUrl()` method to return the correct bundle URL for updates, if the updates system is running.
-5. The `didFinishLaunchingWithOptions()` method needs to perform two steps:
-   1. Initialize the `ExpoReactNativeFactory` using the `CustomReactNativeFactoryDelegate` created above. This will be used later to create the React Native root view.
-   2. Call `AppController.initializeWithoutStarting()`. This creates the controller instance, but defers the rest of the updates startup procedure until it is needed.
+1. 修改 **AppDelegate.swift**，使其继承 `ExpoAppDelegate`。
+2. 如果你还没有这样做，请添加一个公共方法来获取正在运行的 `AppDelegate` 实例，以便你的自定义视图控制器稍后可以访问它。
+3. 添加对 `expo-updates` 的单例 `AppController` 类的引用，它负责管理 iOS 上的更新系统。
+4. 添加一个新的类 `CustomReactNativeFactoryDelegate`，它继承 `ExpoReactNativeFactoryDelegate`，并重写 `bundleUrl()` 方法，以便在更新系统运行时返回正确的更新 bundle URL。
+5. `didFinishLaunchingWithOptions()` 方法需要执行两个步骤：
+   1. 使用上面创建的 `CustomReactNativeFactoryDelegate` 初始化 `ExpoReactNativeFactory`。之后它将用于创建 React Native 根视图。
+   2. 调用 `AppController.initializeWithoutStarting()`。这会创建控制器实例，但会将更新启动流程的其余部分延后到真正需要时再执行。
 
 ```swift ios/<your-app-name>/AppDelegate.swift
 import Expo
@@ -231,11 +231,11 @@ import ReactAppDependencyProvider
 import UIKit
 
 @UIApplicationMain
-// Step 1
+// 步骤 1
 class AppDelegate: ExpoAppDelegate {
   var launchOptions: [UIApplication.LaunchOptionsKey: Any]?
 
-  // Step 2
+  // 步骤 2
   public static func shared() -> AppDelegate {
     guard let delegate = UIApplication.shared.delegate as? AppDelegate else {
       fatalError("Could not get app delegate")
@@ -243,12 +243,12 @@ class AppDelegate: ExpoAppDelegate {
     return delegate
   }
 
-  // Step 3
+  // 步骤 3
   var updatesController: (any InternalAppControllerInterface)?
 
-  // Step 5
+  // 步骤 5
   private func initializeReactNativeAndUpdates(_ launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {
-    // Step 5.1
+    // 步骤 5.1
     self.launchOptions = launchOptions
     let delegate = CustomReactNativeFactoryDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
@@ -256,13 +256,13 @@ class AppDelegate: ExpoAppDelegate {
 
     reactNativeFactoryDelegate = delegate
     reactNativeFactory = factory
-    // Step 5.2
+    // 步骤 5.2
     AppController.initializeWithoutStarting()
   }
 
   /**
-   Application launch initializes the custom view controller: all React Native
-   and updates initialization is handled there
+   应用启动时会初始化自定义视图控制器；所有 React Native
+   和更新初始化都在其中处理
    */
   override func application(
     _ application: UIApplication,
@@ -270,7 +270,7 @@ class AppDelegate: ExpoAppDelegate {
   ) -> Bool {
     initializeReactNativeAndUpdates(launchOptions)
 
-    // Create custom view controller, where the React Native view will be created
+    // 创建自定义视图控制器，React Native 视图将在其中创建
     self.window = UIWindow(frame: UIScreen.main.bounds)
     let controller = CustomViewController()
     controller.view.clipsToBounds = true
@@ -286,11 +286,11 @@ class AppDelegate: ExpoAppDelegate {
   }
 }
 
-// Step 4
+// 步骤 4
 class CustomReactNativeFactoryDelegate: ExpoReactNativeFactoryDelegate {
   let bundledUrl = Bundle.main.url(forResource: "main", withExtension: "jsbundle")
   override func sourceURL(for bridge: RCTBridge) -> URL? {
-    // needed to return the correct URL for expo-dev-client.
+    // 需要返回适用于 expo-dev-client 的正确 URL。
     bridge.bundleURL ?? bundleURL()
   }
 
@@ -303,16 +303,16 @@ class CustomReactNativeFactoryDelegate: ExpoReactNativeFactoryDelegate {
 }
 ```
 
-#### Implementing a custom view controller
+#### 实现自定义视图控制器
 
-1. The view controller should implement the updates protocol `AppControllerDelegate`.
-2. The view controller initialization should
-   1. Set the app delegate's updates controller instance, so that its `bundleURL()` method above works correctly for updates.
-   2. Set the `AppController` delegate to the view controller instance
-   3. Start the `AppController`
-3. Finally, the view controller must implement the one method in the `AppControllerDelegate` protocol, `appController(_ appController: AppControllerInterface, didStartWithSuccess success: Bool)`. This method will be called once the updates system is fully initialized, and the latest update (or the embedded bundle) is ready to be rendered.
-   1. Create the React Native root view using the `ExpoReactNativeFactory` created by the app delegate. The app name passed in must match the app name that you registered in your JS entry point above.
-   2. Add this root view to the view controller.
+1. 视图控制器应实现更新协议 `AppControllerDelegate`。
+2. 视图控制器初始化应当：
+   1. 设置 app delegate 的 updates controller 实例，以便上面的 `bundleURL()` 方法能够正确用于更新。
+   2. 将 `AppController` 的 delegate 设置为该视图控制器实例
+   3. 启动 `AppController`
+3. 最后，视图控制器必须实现 `AppControllerDelegate` 协议中的一个方法，`appController(_ appController: AppControllerInterface, didStartWithSuccess success: Bool)`。当更新系统完全初始化完成，并且最新更新（或内置 bundle）已准备好渲染时，会调用此方法。
+   1. 使用 app delegate 创建的 `ExpoReactNativeFactory` 创建 React Native 根视图。传入的应用名称必须与上面 JS 入口点中注册的应用名称一致。
+   2. 将此根视图添加到视图控制器中。
 
 ```swift ios/<your-app-name>/CustomViewController.swift
 import UIKit
@@ -321,21 +321,21 @@ import ExpoModulesCore
 
 
 /**
- Custom view controller that handles React Native and expo-updates initialization
+ 自定义视图控制器，负责处理 React Native 和 expo-updates 初始化
  */
-// Step 1
+// 步骤 1
 public class CustomViewController: UIViewController, AppControllerDelegate {
   let appDelegate = AppDelegate.shared()
 
-  // Step 2
+  // 步骤 2
   public convenience init() {
     self.init(nibName: nil, bundle: nil)
     self.view.backgroundColor = .clear
-    // Step 2.1
+    // 步骤 2.1
     appDelegate.updatesController = AppController.sharedInstance
-    // Step 2.2
+    // 步骤 2.2
     AppController.sharedInstance.delegate = self
-    // Step 2.3
+    // 步骤 2.3
     AppController.sharedInstance.start()
   }
 
@@ -348,7 +348,7 @@ public class CustomViewController: UIViewController, AppControllerDelegate {
     fatalError("init(coder:) has not been implemented")
   }
 
-  // Step 3
+  // 步骤 3
   public func appController(
     _ appController: AppControllerInterface,
     didStartWithSuccess success: Bool
@@ -357,7 +357,7 @@ public class CustomViewController: UIViewController, AppControllerDelegate {
   }
 
   private func createView() {
-    // Step 3.1
+    // 步骤 3.1
     guard let rootViewFactory: RCTRootViewFactory = appDelegate.reactNativeFactory?.rootViewFactory else {
       fatalError("rootViewFactory has not been initialized")
     }
@@ -366,7 +366,7 @@ public class CustomViewController: UIViewController, AppControllerDelegate {
       initialProperties: [:],
       launchOptions: appDelegate.launchOptions
     )
-    // Step 3.2
+    // 步骤 3.2
     let controller = self
     controller.view.clipsToBounds = true
     controller.view.addSubview(rootView)
@@ -385,15 +385,15 @@ public class CustomViewController: UIViewController, AppControllerDelegate {
 
 <Tab label="SDK 52">
 
-#### AppDelegate changes
+#### AppDelegate 更改
 
-1. Modify **AppDelegate.swift** so that it extends `EXAppDelegateWrapper`.
-2. If you are not already doing so, add a public method to get the running `AppDelegate` instance, so that your custom view controller can access it later.
-3. Add a reference to the singleton instance of the `expo-updates` `AppController` class, which manages the updates system on iOS.
-4. Override the `bundleUrl()` method to return the correct bundle URL for updates, if the updates system is running.
-5. The `didFinishLaunchingWithOptions()` method needs to perform two steps:
-   1. Initialize the root view factory used later to create the React Native root view.
-   2. Call `AppController.initializeWithoutStarting()` . This creates the controller instance, but defers the rest of the updates startup procedure until it is needed.
+1. 修改 **AppDelegate.swift**，使其继承 `EXAppDelegateWrapper`。
+2. 如果你还没有这样做，请添加一个公共方法来获取正在运行的 `AppDelegate` 实例，以便你的自定义视图控制器稍后可以访问它。
+3. 添加对 `expo-updates` 的单例 `AppController` 类的引用，它负责管理 iOS 上的更新系统。
+4. 重写 `bundleUrl()` 方法，以便在更新系统运行时返回正确的更新 bundle URL。
+5. `didFinishLaunchingWithOptions()` 方法需要执行两个步骤：
+   1. 初始化之后用于创建 React Native 根视图的 root view factory。
+   2. 调用 `AppController.initializeWithoutStarting()`。这会创建控制器实例，但会将更新启动流程的其余部分延后到真正需要时再执行。
 
 ```swift ios/<your-app-name>/AppDelegate.swift
 import ExpoModulesCore
@@ -402,12 +402,12 @@ import React
 import UIKit
 
 @UIApplicationMain
-// Step 1
+// 步骤 1
 class AppDelegate: EXAppDelegateWrapper {
   let bundledUrl = Bundle.main.url(forResource: "main", withExtension: "jsbundle")
   var launchOptions: [UIApplication.LaunchOptionsKey: Any]?
 
-  // Step 2
+  // 步骤 2
   public static func shared() -> AppDelegate {
     guard let delegate = UIApplication.shared.delegate as? AppDelegate else {
       fatalError("Could not get app delegate")
@@ -415,10 +415,10 @@ class AppDelegate: EXAppDelegateWrapper {
     return delegate
   }
 
-  // Step 3
+  // 步骤 3
   var updatesController: (any InternalAppControllerInterface)?
 
-  // Step 4
+  // 步骤 4
   override func bundleURL() -> URL? {
     if let updatesUrl = updatesController?.launchAssetUrl() {
       return updatesUrl
@@ -426,20 +426,20 @@ class AppDelegate: EXAppDelegateWrapper {
     return bundledUrl
   }
 
-  // Step 5
+  // 步骤 5
   private func initializeReactNativeAndUpdates(_ launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {
-    // Step 5.1
+    // 步骤 5.1
     self.launchOptions = launchOptions
     self.moduleName = "App"
     self.initialProps = [:]
     self.rootViewFactory = createRCTRootViewFactory()
-    // Step 5.2
+    // 步骤 5.2
     AppController.initializeWithoutStarting()
   }
 
   /**
-   * Application launch initializes the custom view controller; all React Native
-   * and updates initialization is handled there
+   * 应用启动时会初始化自定义视图控制器；所有 React Native
+   * 和更新初始化都在其中处理
    */
   override func application(
     _ application: UIApplication,
@@ -448,7 +448,7 @@ class AppDelegate: EXAppDelegateWrapper {
 
     initializeReactNativeAndUpdates(launchOptions)
 
-    // Create custom view controller, where the React Native view will be created
+    // 创建自定义视图控制器，React Native 视图将在其中创建
     self.window = UIWindow(frame: UIScreen.main.bounds)
     let controller = CustomViewController()
     controller.view.clipsToBounds = true
@@ -459,35 +459,35 @@ class AppDelegate: EXAppDelegateWrapper {
 }
 ```
 
-#### Implementing a custom view controller
+#### 实现自定义视图控制器
 
-1. The view controller should implement the updates protocol `AppControllerDelegate`.
-2. The view controller initialization should
-   1. Set the app delegate's updates controller instance, so that its `bundleURL()` method above works correctly for updates.
-   2. Set the `AppController` delegate to the view controller instance
-   3. Start the `AppController`
-3. Finally, the view controller must implement the one method in the `AppControllerDelegate` protocol, `appController(_ appController: AppControllerInterface, didStartWithSuccess success: Bool)`. This method will be called once the updates system is fully initialized, and the latest update (or the embedded bundle) is ready to be rendered.
-   1. Create the React Native root view using the root view factory created by the app delegate. The app name passed in must match the app name that you registered in your JS entry point above.
-   2. Add this root view to the view controller.
+1. 视图控制器应实现更新协议 `AppControllerDelegate`。
+2. 视图控制器初始化应当：
+   1. 设置 app delegate 的 updates controller 实例，以便上面的 `bundleURL()` 方法能够正确用于更新。
+   2. 将 `AppController` 的 delegate 设置为该视图控制器实例
+   3. 启动 `AppController`
+3. 最后，视图控制器必须实现 `AppControllerDelegate` 协议中的一个方法，`appController(_ appController: AppControllerInterface, didStartWithSuccess success: Bool)`。当更新系统完全初始化完成，并且最新更新（或内置 bundle）已准备好渲染时，会调用此方法。
+   1. 使用 app delegate 创建的 root view factory 创建 React Native 根视图。传入的应用名称必须与上面 JS 入口点中注册的应用名称一致。
+   2. 将此根视图添加到视图控制器中。
 
 ```swift ios/<your-app-name>/CustomViewController.swift
 import UIKit
 import EXUpdates
 import ExpoModulesCore
 
-// Step 1
+// 步骤 1
 public class CustomViewController: UIViewController, AppControllerDelegate {
   let appDelegate = AppDelegate.shared()
 
-  // Step 2
+  // 步骤 2
   public convenience init() {
     self.init(nibName: nil, bundle: nil)
     self.view.backgroundColor = .clear
-    // Step 2.1
+    // 步骤 2.1
     appDelegate.updatesController = AppController.sharedInstance
-    // Step 2.2
+    // 步骤 2.2
     AppController.sharedInstance.delegate = self
-    // Step 2.3
+    // 步骤 2.3
     AppController.sharedInstance.start()
   }
 
@@ -500,7 +500,7 @@ public class CustomViewController: UIViewController, AppControllerDelegate {
     fatalError("init(coder:) has not been implemented")
   }
 
-  // Step 3
+  // 步骤 3
   public func appController(
     _ appController: AppControllerInterface,
     didStartWithSuccess success: Bool
@@ -509,7 +509,7 @@ public class CustomViewController: UIViewController, AppControllerDelegate {
   }
 
   private func createView() {
-    // Step 3.1
+    // 步骤 3.1
     guard let rootViewFactory: RCTRootViewFactory = appDelegate.reactNativeFactory?.rootViewFactory else {
       fatalError("rootViewFactory has not been initialized")
     }
@@ -518,7 +518,7 @@ public class CustomViewController: UIViewController, AppControllerDelegate {
       initialProperties: appDelegate.initialProps,
       launchOptions: appDelegate.launchOptions
     )
-    // Step 3.2
+    // 步骤 3.2
     let controller = self
     controller.view.clipsToBounds = true
     controller.view.addSubview(rootView)
@@ -537,21 +537,21 @@ public class CustomViewController: UIViewController, AppControllerDelegate {
 
 </Tabs>
 
-## Common questions
+## 常见问题
 
 <FAQ>
 
-<Collapsible summary="How long will this take to add to my app?">
+<Collapsible summary="将其添加到我的应用需要多长时间？">
 
-Assuming you are using the latest version of React Native supported by the Expo SDK, and you are comfortable with the React Native integration in your native projects, then you can likely integrate EAS Update in a similar amount of time as it would take you to integrate with a tool like CodePush or Sentry.
+假设你使用的是 Expo SDK 支持的最新版本 React Native，并且你对原生项目中的 React Native 集成很熟悉，那么你很可能可以在与集成 CodePush 或 Sentry 等工具相近的时间内集成 EAS Update。
 
-The most important factor is the React Native version that your app uses. If your app uses anything older than the latest supported version by the Expo SDK (as referenced at the top of this guide), then you will want to upgrade to that version first, and the time that will take is heavily dependent on the size and complexity of the app and skill and experience level of the team working on it.
+最重要的因素是你的应用所使用的 React Native 版本。如果你的应用使用的是比 Expo SDK 当前支持的最新版本更旧的版本（如本指南顶部所引用的版本），那么你应该先升级到该版本，而所需时间将高度取决于应用的规模和复杂度，以及负责该工作的团队的技能和经验水平。
 
 </Collapsible>
 
-<Collapsible summary="I'm migrating from CodePush, what else do I need to know?">
+<Collapsible summary="我正在从 CodePush 迁移，我还需要知道什么？">
 
-To learn more, see [Migrating from CodePush](/eas-update/codepush/) guide.
+要了解更多信息，请参阅 [从 CodePush 迁移](/eas-update/codepush/) 指南。
 
 </Collapsible>
 

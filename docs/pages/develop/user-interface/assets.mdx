@@ -1,40 +1,40 @@
 ---
-title: Assets
-description: Learn about using static assets in your project, including images, videos, sounds, database files, and fonts.
+title: 资源
+description: 了解如何在你的项目中使用静态资源，包括图片、视频、声音、数据库文件和字体。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-A **static asset** is a file that is bundled with your app's binary (native binary). This file type is not part of your app's JavaScript bundle which contain your app's code. Common types of static assets include images, videos, sounds, database files for SQLite, and fonts. These assets can be served locally from your project or remotely over the network.
+A **静态资源** 是与应用的二进制文件（原生二进制）一起打包的文件。此类文件不属于应用的 JavaScript bundle，其中包含你的应用代码。静态资源的常见类型包括图片、视频、音频、SQLite 数据库文件和字体。这些资源可以从你的项目中本地提供，也可以通过网络远程提供。
 
-This guide covers different ways you can load and use static assets in your project and also provides additional information on how to optimize and minify assets.
+本指南介绍了在项目中加载和使用静态资源的不同方式，并提供了有关如何优化和压缩资源的补充信息。
 
-## Serve an asset locally
+## 本地提供资源
 
-When an asset is stored in your project's file system, it can be embedded in your app binary at build time or loaded at runtime. You can import it like a JavaScript module using `require` or `import` statements.
+当资源存储在项目的文件系统中时，可以在构建时将其嵌入到应用二进制文件中，或者在运行时加载。你可以像使用 JavaScript 模块一样，通过 `require` 或 `import` 语句来导入它。
 
-For example, to render an image called **example.png** in **App.js**, you can use `require` to import the image from the project's **assets/images** directory and pass it to the `<Image>` component:
+例如，要在 **App.js** 中渲染一张名为 **example.png** 的图片，你可以使用 `require` 从项目的 **assets/images** 目录导入该图片，并将其传递给 `<Image>` 组件：
 
 ```tsx src/app/index.tsx
 <Image source={require('./assets/images/example.png')} />
 ```
 
-In the above example, the bundler reads the imported image's metadata and automatically provides the width and height. For more information, see [Static Image Resources](https://reactnative.dev/docs/images#static-image-resources).
+在上面的示例中，打包器会读取所导入图片的元数据，并自动提供宽度和高度。有关更多信息，请参阅 [静态图片资源](https://reactnative.dev/docs/images#static-image-resources)。
 
-Libraries such as `expo-image` and `expo-file-system` work similarly to the `<Image>` component with local assets.
+`expo-image` 和 `expo-file-system` 等库与 `<Image>` 组件处理本地资源的方式类似。
 
-### How are assets served locally
+### 资源如何在本地提供
 
-Locally stored assets are served over HTTP in development. They are automatically bundled into your app binary at the build time for production apps and served from disk on a device.
+本地存储的资源在开发环境中通过 HTTP 提供。在生产应用中，它们会在构建时自动打包进应用二进制文件，并在设备上从磁盘提供。
 
-### Load an asset at build time with `expo-asset` config plugin
+### 使用 `expo-asset` 配置插件在构建时加载资源
 
-To load an asset at build time, you can use the [config plugin](/versions/latest/sdk/asset/#example-appjson-with-config-plugin) from the `expo-asset` library. This plugin will embed the asset file in your native project.
+要在构建时加载资源，你可以使用 `expo-asset` 库中的 [配置插件](/versions/latest/sdk/asset/#example-appjson-with-config-plugin)。此插件会将资源文件嵌入到你的原生项目中。
 
 <Step label="1">
 
-Install the `expo-asset` library.
+安装 `expo-asset` 库。
 
 <Terminal cmd={['$ npx expo install expo-asset']} />
 
@@ -42,9 +42,9 @@ Install the `expo-asset` library.
 
 <Step label="2">
 
-Add the config plugin to your project's [app config](/versions/latest/config/app/#plugins) file. The configuration must contain the path to the asset file using [`assets`](/versions/latest/sdk/asset/#configurable-properties) property which takes an array of one or more files or directories to link to the native project.
+将配置插件添加到项目的 [app config](/versions/latest/config/app/#plugins) 文件中。配置必须使用 [`assets`](/versions/latest/sdk/asset/#configurable-properties) 属性包含资源文件的路径，该属性接受一个或多个要链接到原生项目的文件或目录数组。
 
-The path to each asset file must be relative to your project's root since the app config file is located in the project's root directory.
+由于 app config 文件位于项目根目录中，因此每个资源文件的路径都必须相对于项目根目录。
 
 ```json app.json
 {
@@ -53,7 +53,7 @@ The path to each asset file must be relative to your project's root since the ap
       [
         "expo-asset",
         {
-          /* @info The path to the asset file is relative to the project's root. */
+          /* @info 资源文件的路径相对于项目根目录。 */
           "assets": ["./assets/images/example.png"]
           /* @end */
         }
@@ -67,9 +67,9 @@ The path to each asset file must be relative to your project's root since the ap
 
 <Step label="3">
 
-After embedding the asset with the config plugin, [create a new development build](/develop/development-builds/create-a-build/). Now, you can import and use the asset in your project without using a `require` or an `import` statement.
+使用配置插件嵌入资源后，创建一个新的 [开发构建](/develop/development-builds/create-a-build/)。现在，你可以在项目中导入并使用该资源，而无需使用 `require` 或 `import` 语句。
 
-For example, the **example.png** is linked by the above config plugin. You can directly import it into your component and use its resource name as the URI. Note that when rendering assets without using `require`, you need to explicitly provide a width / height.
+例如，上面的配置插件已链接 **example.png**。你可以直接将其导入到组件中，并使用其资源名称作为 URI。请注意，在不使用 `require` 渲染资源时，需要显式提供宽度 / 高度。
 
 ```tsx src/app/index.tsx
 import { Image } from 'expo-image';
@@ -82,15 +82,15 @@ export default function HomeScreen() {
 
 </Step>
 
-> **info** Different file formats are supported with the `expo-asset` config plugin. For more information on these formats, see [Assets API reference](/versions/latest/sdk/asset/#configurable-properties). If you don't see a file format supported by the config plugin, you can use the [`useAssets`](#load-an-asset-at-runtime-with-useassets-hook) hook to load the asset at runtime.
+> **信息** `expo-asset` 配置插件支持不同的文件格式。有关这些格式的更多信息，请参阅 [Assets API 参考](/versions/latest/sdk/asset/#configurable-properties)。如果你没有看到配置插件支持的文件格式，可以使用 [`useAssets`](#load-an-asset-at-runtime-with-useassets-hook) Hook 在运行时加载资源。
 
-### Load an asset at runtime with `useAssets` hook
+### 使用 `useAssets` Hook 在运行时加载资源
 
-The `useAssets` hook from `expo-asset` library allows loading assets asynchronously. This hook downloads and stores an asset locally and after the asset is loaded, it returns a list of that asset's instances.
+`expo-asset` 库中的 `useAssets` Hook 允许异步加载资源。此 Hook 会下载资源并将其存储在本地，资源加载完成后会返回该资源实例的列表。
 
 <Step label="1">
 
-Install the `expo-asset` library.
+安装 `expo-asset` 库。
 
 <Terminal cmd={['$ npx expo install expo-asset']} />
 
@@ -98,7 +98,7 @@ Install the `expo-asset` library.
 
 <Step label="2">
 
-Import the [`useAssets`](/versions/latest/sdk/asset/#useassetsmoduleids) hook from the `expo-asset` library in your screen component:
+在屏幕组件中从 `expo-asset` 库导入 [`useAssets`](/versions/latest/sdk/asset/#useassetsmoduleids) Hook：
 
 ```tsx src/app/index.tsx
 import { useAssets } from 'expo-asset';
@@ -115,9 +115,9 @@ export default function HomeScreen() {
 
 </Step>
 
-## Serve an asset remotely
+## 远程提供资源
 
-When an asset is served remotely, it is not bundled into the app binary at build time. You can use the URL of the asset resource in your project if it is hosted remotely. For example, pass the URL to the `<Image>` component to render a remote image:
+当资源是远程提供时，它不会在构建时打包进应用二进制文件中。如果资源托管在远程位置，你可以在项目中使用该资源的 URL。例如，将 URL 传递给 `<Image>` 组件以渲染远程图片：
 
 ```jsx App.js
 import { Image } from 'expo-image';
@@ -130,32 +130,32 @@ function App() {
 }
 ```
 
-There is no guarantee about the availability of images served remotely using a web URL because an internet connection may not be available, or the asset might be removed.
+通过网页 URL 提供的远程图片，其可用性无法保证，因为可能无法连接互联网，或者资源可能已被移除。
 
-Additionally, loading assets remotely also requires you to provide an asset's metadata. In the above example, since the bundler cannot retrieve the image's width and height, those values are passed explicitly to the `<Image>` component. If you don't, the image will default to 0px by 0px.
+此外，远程加载资源还要求你提供资源元数据。在上面的示例中，由于打包器无法获取图片的宽度和高度，因此这些值被显式传递给 `<Image>` 组件。如果不这样做，图片默认会显示为 0px x 0px。
 
-## Additional information
+## 其他信息
 
-### Manual optimization methods
+### 手动优化方法
 
-#### Images
+#### 图片
 
-You can compress images using the following:
+你可以使用以下工具压缩图片：
 
 - [`guetzli`](https://github.com/google/guetzli)
 - [`pngcrush`](https://pmt.sourceforge.io/pngcrush/)
 - [`optipng`](http://optipng.sourceforge.net/)
 
-Some image optimizers are lossless. They re-encode your image to be smaller without any change or loss in the pixels displayed. When you need each pixel to be untouched from the original image, a lossless optimizer and a lossless image format like PNG are a good choice.
+某些图片优化器是无损的。它们会对图片重新编码，使其更小，同时不会改变或丢失显示的像素。当你需要确保每个像素都与原始图片完全一致时，无损优化器和像 PNG 这样的无损图片格式是不错的选择。
 
-Other image optimizers are lossy. The optimized image differs from the original image. Often, lossy optimizers are more efficient because they discard visual information that reduces file size while making the image look nearly identical to humans. Tools like `imagemagick` can use comparison algorithms like [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) to show how similar two images look. It's quite common for an optimized image that is over 95% similar to the original image to be far less than 95% of the original file size.
+其他图片优化器是有损的。优化后的图片与原始图片不同。通常，有损优化器更高效，因为它们会丢弃可减少文件大小但对人眼几乎没有差别的视觉信息。像 `imagemagick` 这样的工具可以使用 [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) 等比较算法来展示两张图片的相似程度。优化后图片与原始图片相似度超过 95% 而文件大小远小于原始文件大小的情况非常常见。
 
-#### Other assets
+#### 其他资源
 
-For assets like GIFs or videos, or non-code and non-image assets, it's up to you to optimize and minify those assets.
+对于 GIF 或视频等资源，或者非代码和非图片资源，如何优化和压缩这些资源由你自行决定。
 
-> **Note**: GIFs are a very inefficient format. Modern video codecs can produce significantly smaller file sizes with better quality.
+> **注意**：GIF 是一种非常低效的格式。现代视频编解码器可以在更高质量下生成显著更小的文件大小。
 
-### Fonts
+### 字体
 
-See [Add a custom font](/develop/user-interface/fonts/#add-a-custom-font) for more information on how to add a custom font to your app.
+有关如何向应用添加自定义字体的更多信息，请参阅 [添加自定义字体](/develop/user-interface/fonts/#add-a-custom-font)。

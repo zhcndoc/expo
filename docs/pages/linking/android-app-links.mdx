@@ -1,6 +1,6 @@
 ---
 title: Android App Links
-description: Learn how to configure Android App Links to open your Expo app from a standard web URL.
+description: 了解如何配置 Android App Links，以便通过标准网页 URL 打开您的 Expo 应用。
 hasVideoLink: true
 ---
 
@@ -9,23 +9,23 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-To configure Android App Links for your app, you need to:
+要为你的应用配置 Android App Links，你需要：
 
-- Add `intentFilters` and set `autoVerify` to true in your project's app config
-- Set up two-way association to verify your website and native app
+- 在项目的 app 配置中添加 `intentFilters` 并将 `autoVerify` 设置为 true
+- 设置双向关联以验证你的网站和原生应用
 
 <VideoBoxLink
   videoId="kNbEEYlFIPs"
   time={399}
-  title="Watch: Set up Android App Links with Expo Router"
-  description="Configure intent filters with autoVerify, set up the two-way association between your website and app, and verify Android App Links."
+  title="观看：使用 Expo Router 设置 Android App Links"
+  description="配置带有 autoVerify 的 intent filters，设置你的网站和应用之间的双向关联，并验证 Android App Links。"
 />
 
-## Add `intentFilters` to the app config
+## 将 `intentFilters` 添加到 app 配置中
 
-Configure your app config by adding the `android.intentFilters` property and setting the `autoVerify` attribute to `true`. Specifying `autoVerify` is required for Android App Links to work correctly.
+通过添加 `android.intentFilters` 属性并将 `autoVerify` 属性设置为 `true` 来配置你的 app 配置。指定 `autoVerify` 是 Android App Links 正常工作的必要条件。
 
-The following example shows a basic configuration that enables your app to appear in the standard Android dialog as an option for handling any links to the `webapp.io` domain. It also uses the regular `https` scheme since [Android App Links](/linking/overview/#android-app-links) are different from [standard deep links](/linking/into-other-apps/).
+下面的示例展示了一个基础配置，它允许你的应用在标准 Android 对话框中显示为处理指向 `webapp.io` 域的任何链接的选项。它还使用常规的 `https` scheme，因为 [Android App Links](/linking/overview/#android-app-links) 与 [标准深度链接](/linking/into-other-apps/) 不同。
 
 ```json app.json|collapseHeight=454
 {
@@ -34,7 +34,7 @@ The following example shows a basic configuration that enables your app to appea
       "intentFilters": [
         {
           "action": "VIEW",
-          /* @info Add the <CODE>autoVerify</CODE> property to the intent filter in app config to enable app links.*/
+          /* @info 在 app 配置中的 intent filter 中添加 <CODE>autoVerify</CODE> 属性以启用 app links。*/
           "autoVerify": true,
           /* @end */
           "data": [
@@ -52,43 +52,43 @@ The following example shows a basic configuration that enables your app to appea
 }
 ```
 
-## Set up two-way association
+## 设置双向关联
 
-To setup **two-way association** between the website and Android app, you will need the following:
+要在网站和 Android 应用之间设置**双向关联**，你需要以下内容：
 
-- **Website verification:** This requires creating a **assetlinks.json** file inside the **/.well-known** directory and hosting it on the target website. This file is used to verify that the app opened from a given link is the correct app.
-- **Native app verification:** This requires some form of code signing that references the target website domain (URL).
+- **网站验证：** 这需要在 **/.well-known** 目录中创建一个 **assetlinks.json** 文件，并将其托管在目标网站上。此文件用于验证从给定链接打开的应用是否为正确的应用。
+- **原生应用验证：** 这需要某种引用目标网站域名（URL）的代码签名。
 
-### Create assetlinks.json file
+### 创建 assetlinks.json 文件
 
 <Step label="1">
 
-Create an **assetlinks.json** file for the website verification (also known as [digital asset links](https://developers.google.com/digital-asset-links/v1/getting-started) file) at **/.well-known/assetlinks.json**. This file is used to verify that the app opened for a given link.
+为网站验证创建一个 **assetlinks.json** 文件（也称为 [digital asset links](https://developers.google.com/digital-asset-links/v1/getting-started) 文件），位置为 **/.well-known/assetlinks.json**。此文件用于验证针对给定链接打开的应用。
 
-If you're using Expo Router to build your website (or any other modern React framework such as Remix, Next.js, and so on), create **assetlinks.json** at **public/.well-known/assetlinks.json**. For legacy Expo webpack projects, create the file at **web/.well-known/assetlinks.json**.
+如果你使用 Expo Router 来构建网站（或者使用任何其他现代 React 框架，例如 Remix、Next.js 等），请在 **public/.well-known/assetlinks.json** 创建 **assetlinks.json**。对于旧版 Expo webpack 项目，请在 **web/.well-known/assetlinks.json** 创建该文件。
 
 </Step>
 
 <Step label="2">
 
-Get the value of `package_name` from your app config, under `android.package`.
+从 app 配置中的 `android.package` 下获取 `package_name` 的值。
 
 </Step>
 
 <Step label="3">
 
-Get the value of `sha256_cert_fingerprints` from your app's signing certificate. If you're using [EAS Build](/build/setup/) to build your Android app, after creating a build:
+从应用的签名证书中获取 `sha256_cert_fingerprints` 的值。如果你使用 [EAS Build](/build/setup/) 来构建 Android 应用，在创建构建后：
 
-- Run `eas credentials -p android` command, and select the build profile to get its fingerprint value.
-- Copy the fingerprint value listed under `SHA256 Fingerprint`.
+- 运行 `eas credentials -p android` 命令，并选择构建配置文件以获取其指纹值。
+- 复制 `SHA256 Fingerprint` 下列出的指纹值。
 
-<Collapsible summary="Alternate method to obtain the SHA256 certificate fingerprint from Google Play Console">
+<Collapsible summary="从 Google Play Console 获取 SHA256 证书指纹的替代方法">
 
-If you're not using EAS to manage code signing, you can find the **sha256_cert_fingerprints** by building and submitting your app manually to the [Google Play Console](https://play.google.com/console/):
+如果你没有使用 EAS 来管理代码签名，你可以通过手动构建并将应用提交到 [Google Play Console](https://play.google.com/console/) 来查找 **sha256_cert_fingerprints**：
 
-- Inside the Google Play Console's dashboard, go to **Release > Setup > App Signing**.
-- Find the correct **Digital Asset Links JSON** snippet for your app.
-- Copy the value looks like `14:6D:E9:83...` and paste it into your **public/.well-known/assetlinks.json** file under `sha256_cert_fingerprints`.
+- 在 Google Play Console 的仪表板中，进入 **Release > Setup > App Signing**。
+- 找到适用于你应用的正确 **Digital Asset Links JSON** 片段。
+- 复制看起来像 `14:6D:E9:83...` 的值，并将其粘贴到你的 **public/.well-known/assetlinks.json** 文件中的 `sha256_cert_fingerprints` 下。
 
 </Collapsible>
 
@@ -96,7 +96,7 @@ If you're not using EAS to manage code signing, you can find the **sha256_cert_f
 
 <Step label="4">
 
-Add `package_name` and `sha256_cert_fingerprints` to the **assetlinks.json** file:
+将 `package_name` 和 `sha256_cert_fingerprints` 添加到 **assetlinks.json** 文件中：
 
 ```json public/.well-known/assetlinks.json
 [
@@ -104,12 +104,12 @@ Add `package_name` and `sha256_cert_fingerprints` to the **assetlinks.json** fil
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      /* @info Replace <CODE>com.example</CODE> with your app's package name. */
+      /* @info 将 <CODE>com.example</CODE> 替换为你的应用包名。 */
       "package_name": "com.example",
       /* @end */
       "sha256_cert_fingerprints": [
-        // Supports multiple fingerprints for different apps and keys
-        /* @info Replace <CODE>14:6D:E9:83...</CODE> with your app's SHA256 certificate fingerprint. */
+        // 支持不同应用和密钥的多个指纹
+        /* @info 将 <CODE>14:6D:E9:83...</CODE> 替换为你的应用的 SHA256 证书指纹。 */
         "14:6D:E9:83:51:7F:66:01:84:93:4F:2F:5E:E0:8F:3A:D6:F4:CA:41:1A:CF:45:BF:8D:10:76:76:CD"
         /* @end */
       ]
@@ -118,39 +118,39 @@ Add `package_name` and `sha256_cert_fingerprints` to the **assetlinks.json** fil
 ]
 ```
 
-> **info** You can add multiple fingerprints to the `sha256_cert_fingerprints` array to support different variants of your app. For more information, see [Android's documentation on how to declare website associations](https://developer.android.com/training/app-links/verify-android-applinks#web-assoc).
+> **info** 你可以向 `sha256_cert_fingerprints` 数组中添加多个指纹，以支持你应用的不同变体。有关更多信息，请参阅 [Android 关于如何声明网站关联的文档](https://developer.android.com/training/app-links/verify-android-applinks#web-assoc)。
 
 </Step>
 
-### Host assetlinks.json file
+### 托管 assetlinks.json 文件
 
-Host the **assetlinks.json** file using a web server with your domain. This file must be served with the content-type `application/json` and accessible over an HTTPS connection. Verify that your browser can access this file by typing the complete URL in the address bar.
+使用与你的域名对应的 web 服务器托管 **assetlinks.json** 文件。此文件必须以 `application/json` 内容类型提供，并可通过 HTTPS 连接访问。通过在地址栏中输入完整 URL 来验证浏览器是否可以访问此文件。
 
-### Native app verification
+### 原生应用验证
 
-Install the app on an Android device to trigger the [Android app verification](https://developer.android.com/training/app-links/verify-android-applinks#web-assoc) process.
+在 Android 设备上安装应用以触发 [Android 应用验证](https://developer.android.com/training/app-links/verify-android-applinks#web-assoc) 流程。
 
-Once you have your app opened, see [Handle links into your app](/linking/into-your-app/#handle-urls) for more information on how to handle inbound links and show the user the content they requested.
+当你的应用已打开后，请参阅 [处理进入应用的链接](/linking/into-your-app/#handle-urls) 了解如何处理传入链接并向用户显示其请求的内容。
 
-## Debugging
+## 调试
 
-The Expo CLI enables you to test Android App Links without deploying a website. Utilizing the [`--tunnel`](/more/expo-cli/#tunneling) functionality, you can forward your dev server to a publicly available HTTPS URL.
+Expo CLI 允许你在不部署网站的情况下测试 Android App Links。利用 [`--tunnel`](/more/expo-cli/#tunneling) 功能，你可以将开发服务器转发到一个公开可用的 HTTPS URL。
 
 <Step label="1">
 
-Set the environment variable `EXPO_TUNNEL_SUBDOMAIN=my-custom-domain` where `my-custom-domain` is a unique string that you use during development. This ensures that your tunnel URL is consistent across dev server restarts.
+将环境变量 `EXPO_TUNNEL_SUBDOMAIN=my-custom-domain` 设置为你在开发期间使用的唯一字符串 `my-custom-domain`。这可以确保你的 tunnel URL 在开发服务器重启之间保持一致。
 
 </Step>
 
 <Step label="2">
 
-Add `intentFilters` to your app config as [described above](#add-intentfilters-to-the-app-config). Replace the `host` value with a Ngrok URL: `my-custom-domain.ngrok.io`.
+按照[上文所述](#add-intentfilters-to-the-app-config)在 app 配置中添加 `intentFilters`。将 `host` 值替换为 Ngrok URL：`my-custom-domain.ngrok.io`。
 
 </Step>
 
 <Step label="3">
 
-Start your dev server with the `--tunnel` flag:
+使用 `--tunnel` 标志启动你的开发服务器：
 
 <Terminal cmd={['$ npx expo start --tunnel']} />
 
@@ -158,7 +158,7 @@ Start your dev server with the `--tunnel` flag:
 
 <Step label="4">
 
-Compile the development build on your device:
+在你的设备上编译开发构建：
 
 <Terminal cmd={['$ npx expo run:android']} />
 
@@ -166,7 +166,7 @@ Compile the development build on your device:
 
 <Step label="5">
 
-Use the following `adb` command to start the intent activity and open the link on your app or type the custom domain link in your device's web browser.
+使用以下 `adb` 命令启动 intent activity，并在你的应用中打开链接，或者在设备的 web 浏览器中输入自定义域名链接。
 
 <Terminal
   cmd={[
@@ -176,11 +176,11 @@ Use the following `adb` command to start the intent activity and open the link o
 
 </Step>
 
-## Troubleshooting
+## 故障排查
 
-Here are some common tips to help you troubleshoot when implementing Android App Links:
+以下是一些在实现 Android App Links 时帮助你排查问题的常见建议：
 
-- Ensure your website is served over HTTPS and with the content-type `application/json`
-- [Verify Android app links](https://developer.android.com/training/app-links/verify-android-applinks)
-- Android verification may take 20 seconds or longer to take effect, so be sure to wait until it is completed.
-- If you update your web files, rebuild the native app to trigger a server update on the vendor side (Google)
+- 确保你的网站通过 HTTPS 提供服务，并且内容类型为 `application/json`
+- [验证 Android app links](https://developer.android.com/training/app-links/verify-android-applinks)
+- Android 验证可能需要 20 秒或更长时间才会生效，因此请确保等待其完成。
+- 如果你更新了网页文件，请重新构建原生应用，以触发供应商端（Google）的服务器更新

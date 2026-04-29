@@ -1,6 +1,6 @@
 ---
-title: Migrate from CodePush
-description: A guide to help migrate from CodePush to EAS Update.
+title: 从 CodePush 迁移
+description: 帮助从 CodePush 迁移到 EAS Update 的指南。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
@@ -8,39 +8,39 @@ import { FAQ } from '~/ui/components/FAQ';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-This guide explains how to transition a React Native project that uses CodePush to use EAS Update which offers [many advantages](/eas-update/introduction/#pitch). It assumes that you're using the default React Native project structure. For assistance with migrating brownfield native apps to EAS Update, see [Using EAS Update in an existing native app](/eas-update/integration-in-existing-native-apps/).
+本指南说明如何将使用 CodePush 的 React Native 项目迁移为使用 EAS Update，后者提供了[许多优势](/eas-update/introduction/#pitch)。本文假设你使用的是默认的 React Native 项目结构。有关将棕地原生应用迁移到 EAS Update 的帮助，请参阅[在现有原生应用中使用 EAS Update](/eas-update/integration-in-existing-native-apps/)。
 
-To learn more about the differences between CodePush and EAS Update, see [Conceptual differences between CodePush and EAS Update](#conceptual-differences-between-codepush-and-eas-update) and the [What to do without CodePush post on the Expo Blog](https://expo.dev/blog/what-to-do-without-codepush).
+要了解 CodePush 和 EAS Update 之间的更多差异，请参阅[CodePush 和 EAS Update 之间的概念差异](#conceptual-differences-between-codepush-and-eas-update)以及 Expo 博客上的[不使用 CodePush 该怎么办](https://expo.dev/blog/what-to-do-without-codepush)。
 
 <Step label="1">
-## Ensure your app is using the latest Expo SDK version
+## 确保你的应用使用的是最新的 Expo SDK 版本
 
-To migrate from CodePush to EAS Update, we recommend that you use the latest Expo SDK version. Instructions are not available for older Expo SDK and React Native version. While you may be able to migrate successfully by adapting the instructions as needed for the older Expo SDK and React Native version that your app uses, additional hands-on support for integrating with older versions can only be provided for enterprise customers ([contact us](https://expo.dev/contact)).
+要从 CodePush 迁移到 EAS Update，我们建议你使用最新的 Expo SDK 版本。旧版 Expo SDK 和 React Native 版本没有相应说明。虽然你可以根据需要调整说明，以便在应用所使用的旧版 Expo SDK 和 React Native 版本上成功迁移，但对旧版本集成的额外人工支持仅面向企业客户提供（[联系我们](https://expo.dev/contact)）。
 
 </Step>
 
 <Step label="2">
-## Uninstall CodePush
+## 卸载 CodePush
 
-To avoid conflicts and unexpected behavior, it's recommended to uninstall CodePush if you're using EAS Update. This is because your app could periodically fetch updates from both services, leading to issues, especially if you're using different configurations for each service.
+为避免冲突和意外行为，如果你正在使用 EAS Update，建议卸载 CodePush。这是因为你的应用可能会定期从这两项服务获取更新，从而导致问题，尤其是在两项服务使用不同配置时。
 
-Remove the CodePush SDK from your project by uninstalling the `react-native-code-push` package:
+通过卸载 `react-native-code-push` 包，从项目中移除 CodePush SDK：
 
 <Terminal cmd={['$ npm uninstall react-native-code-push']} />
 
-You'll also need to remove CodePush references from JS and native code. See this [GitHub comment](https://github.com/Microsoft/react-native-code-push/issues/1101#issuecomment-350204507) for more detailed instructions.
+你还需要从 JS 和原生代码中移除 CodePush 引用。有关更详细的说明，请参阅这个[GitHub 评论](https://github.com/Microsoft/react-native-code-push/issues/1101#issuecomment-350204507)。
 
 </Step>
 
 <Step label="3">
-## Add an `expo` key to your `app.json`
+## 在你的 `app.json` 中添加一个 `expo` 键
 
-Ensure that your project has an **app.json** file with an `expo` object. If you don't have anything specific to configure in your **app.json** file yet, you can create a minimal file with an empty `expo` object like this:
+确保你的项目有一个带有 `expo` 对象的 **app.json** 文件。如果你目前还没有在 **app.json** 文件中配置任何特定内容，你可以创建一个包含空 `expo` 对象的最小文件，如下所示：
 
 ```json app.json
 {
   "expo": {
-    //... any other existing keys you have
+    //... 你已有的其他键
   }
 }
 ```
@@ -48,109 +48,109 @@ Ensure that your project has an **app.json** file with an `expo` object. If you 
 </Step>
 
 <Step label="4">
-## Follow the "Getting Started" guide
+## 按照“Getting Started”指南操作
 
-The instructions in the [EAS Update Getting Started guide](/eas-update/getting-started/) will guide you through setting up EAS Update in your project.
+[EAS Update 入门指南](/eas-update/getting-started/)中的说明将引导你在项目中完成 EAS Update 的设置。
 
 </Step>
 
 <Step label="5">
-## Resubmit your app
+## 重新提交你的应用
 
-Since you have changed the update provider from CodePush to EAS Update, you will need to rebuild your app and submit the new build to the respective app stores (Google Play Store and Apple App Store) to ensure the update mechanism works as expected for your end-users.
+由于你已将更新提供方从 CodePush 改为 EAS Update，你需要重新构建应用，并将新构建提交到相应的应用商店（Google Play Store 和 Apple App Store），以确保更新机制能够按预期为最终用户工作。
 
-Follow the respective store guidelines for submitting a new build of your application:
+请按照各自商店的指南提交应用的新构建：
 
-- [Submitting to Google Play Store](/submit/android)
-- [Submitting to Apple App Store](/submit/ios)
+- [提交到 Google Play Store](/submit/android)
+- [提交到 Apple App Store](/submit/ios)
 
-After successfully submitting your app, users will be able to download and use the latest build with EAS Update integration. If your app is not updating as expected, [validate your configuration](/eas-update/debug).
+成功提交应用后，用户将能够下载并使用集成了 EAS Update 的最新构建。如果你的应用更新行为不符合预期，请[验证你的配置](/eas-update/debug)。
 
 </Step>
 
-## Common questions
+## 常见问题
 
 <FAQ>
 
-<Collapsible summary="How do I release mandatory/critical updates with EAS Update?">
+<Collapsible summary="我如何使用 EAS Update 发布强制/关键更新？">
 
-CodePush CLI has a `--mandatory` flag that allows you to release mandatory updates. You can build this functionality with EAS Update but there is no specific flag for it.
+CodePush CLI 有一个 `--mandatory` 标志，可用于发布强制更新。你可以用 EAS Update 实现这一功能，但没有专门的标志。
 
-[Learn more about mandatory/critical updates](/eas-update/download-updates/#criticalmandatory-updates).
-
-</Collapsible>
-
-<Collapsible summary="How do I include a message in an update?">
-
-CodePush CLI has a `--description` flag that allows you to include a message in an update. You can build this functionality with EAS Update using the `extra` field in your app config.
-
-Refer the `--message` flag in this example: [`expo/UpdatesAPIDemo`](https://github.com/expo/UpdatesAPIDemo).
+[了解有关强制/关键更新的更多信息](/eas-update/download-updates/#criticalmandatory-updates)。
 
 </Collapsible>
 
-<Collapsible summary="How do I switch the 'deployment' that is being used at runtime, similar to the sync() function in CodePush?">
+<Collapsible summary="我如何在更新中包含消息？">
 
-This is possible using `Updates.setUpdateURLAndRequestHeadersOverride()`. Learn more in the [Override update configuration at runtime](/eas-update/override/) guide.
+CodePush CLI 有一个 `--description` 标志，可用于在更新中包含消息。你可以在 EAS Update 中使用应用配置里的 `extra` 字段来实现这一功能。
 
-</Collapsible>
-
-<Collapsible summary="How do I handle different environments (such as staging and production) with EAS Update?">
-
-With EAS Update, you can use channels and branches to manage different environments and rollouts. [Learn more](/eas-update/eas-cli/).
+请参考此示例中的 `--message` 标志：[`expo/UpdatesAPIDemo`](https://github.com/expo/UpdatesAPIDemo)。
 
 </Collapsible>
 
-<Collapsible summary="How do I roll back updates with EAS Update?">
+<Collapsible summary="我如何像 CodePush 中的 sync() 函数那样，在运行时切换正在使用的 'deployment'？">
 
-You can roll back updates using `eas update:rollback`. Learn more in the [Rollback to a previous update](/eas-update/rollbacks/) guide.
-
-</Collapsible>
-
-<Collapsible summary="How do I gradually roll out updates with EAS Update?">
-
-EAS Update supports various strategies for gradually rolling out updates, so you can pick which approach best fits your needs. [Learn more](/eas-update/rollouts/).
+可以使用 `Updates.setUpdateURLAndRequestHeadersOverride()` 实现。更多信息请参阅[在运行时覆盖更新配置](/eas-update/override/)指南。
 
 </Collapsible>
 
-<Collapsible summary="How can I have direct control over when an update is downloaded and applied?">
+<Collapsible summary="我如何通过 EAS Update 处理不同环境（例如 staging 和 production）？">
 
-Learn more about different strategies for downloading and applying updates in the [Downloading updates](/eas-update/download-updates/) guide, such as checking for updates while the app is running or even when backgrounded with `Updates.checkForUpdateAsync()`.
-
-</Collapsible>
-
-<Collapsible summary="Does EAS Update support end-to-end code signing?">
-
-Yes, EAS Update supports end-to-end code signing. It is available for EAS Production and Enterprise plan subscribers. Learn more in the [Code signing](/eas-update/code-signing/) guide.
+使用 EAS Update 时，你可以通过 channels 和 branches 来管理不同环境和发布。 [了解更多](/eas-update/eas-cli/)。
 
 </Collapsible>
 
-<Collapsible summary="What else should I know about?">
+<Collapsible summary="我如何使用 EAS Update 回滚更新？">
 
-- Expo Orbit: The macOS, Windows, and Linux desktop launcher app. You can [launch updates](/review/with-orbit/) directly from the website with it in one click, among other features.
-- You can monitor the adoption of updates from the EAS website. [Learn more](/eas-update/download-updates/#monitoring-adoption-of-updates). You can also roll out and roll back updates from the website.
-- You can use EAS Update to achieve a web-like preview workflow. [Learn more](/eas-update/preview).
-- Each update and build created with EAS is associated with a [fingerprint](/versions/latest/sdk/fingerprint/). You can diff these fingerprints through the website UI or with `eas fingerprint:compare` to see what changed in the native runtime of your app between your builds and updates, to understand build/update compatibility, and guide your decision about when to bump the [`runtimeVersion`](/eas-update/runtime-versions/).
+你可以使用 `eas update:rollback` 回滚更新。更多信息请参阅[回滚到先前更新](/eas-update/rollbacks/)指南。
+
+</Collapsible>
+
+<Collapsible summary="我如何逐步发布 EAS Update 更新？">
+
+EAS Update 支持多种逐步发布更新的策略，因此你可以选择最适合你需求的方法。 [了解更多](/eas-update/rollouts/)。
+
+</Collapsible>
+
+<Collapsible summary="我如何直接控制更新何时下载并应用？">
+
+有关下载和应用更新的不同策略，请参阅[下载更新](/eas-update/download-updates/)指南，例如在应用运行时检查更新，甚至在后台时使用 `Updates.checkForUpdateAsync()` 检查更新。
+
+</Collapsible>
+
+<Collapsible summary="EAS Update 是否支持端到端代码签名？">
+
+是的，EAS Update 支持端到端代码签名。EAS Production 和 Enterprise 套餐订阅者可用。更多信息请参阅[代码签名](/eas-update/code-signing/)指南。
+
+</Collapsible>
+
+<Collapsible summary="我还应该了解什么？">
+
+- Expo Orbit：适用于 macOS、Windows 和 Linux 的桌面启动器应用。你可以通过它从网站上一键[启动更新](/review/with-orbit/)，以及使用其他功能。
+- 你可以在 EAS 网站上监控更新的采用情况。[了解更多](/eas-update/download-updates/#monitoring-adoption-of-updates)。你也可以在网站上发布和回滚更新。
+- 你可以使用 EAS Update 实现类似 Web 的预览工作流。 [了解更多](/eas-update/preview)。
+- 使用 EAS 创建的每个更新和构建都关联一个[fingerprint](/versions/latest/sdk/fingerprint/)。你可以通过网站 UI 或使用 `eas fingerprint:compare` 来比较这些 fingerprint，查看应用原生运行时在构建和更新之间发生了哪些变化，以便理解构建/更新兼容性，并决定何时升级 [`runtimeVersion`](/eas-update/runtime-versions/)。
 
 </Collapsible>
 
 </FAQ>
 
-## Conceptual differences between CodePush and EAS Update
+## CodePush 和 EAS Update 之间的概念差异
 
-CodePush and EAS Update are both services that allow you to send hotfixes to the JavaScript code of your app, but they take slightly different approaches, and so you may need to adapt your release process when moving to EAS Update.
+CodePush 和 EAS Update 都允许你向应用的 JavaScript 代码发送热修复，但它们采用的方式略有不同，因此当迁移到 EAS Update 时，你可能需要调整发布流程。
 
-<Collapsible summary="Differences in how updates are organized within streams">
+<Collapsible summary="更新在 stream 中的组织方式差异">
 
-**CodePush has single streams of updates for deployments**. What this means is that you can point a build to a deployment, and it will pull updates from that. If you want to change the deployment that is targeted by a build, you can do this at runtime through a JavaScript API.
+**CodePush 为部署使用单一更新流**。这意味着你可以将一个构建指向某个 deployment，它会从那里拉取更新。如果你想更改某个构建所针对的 deployment，可以在运行时通过 JavaScript API 实现。
 
-**EAS Update has multiple streams of updates** — one that correspond to your source control branches (called branches), and another called channels, which point to branches. The mapping between channels and branches is handled on the server side, and a channel can point to different branches for each runtime version (additionally, more advanced logic may be expressed, such as to support incremental rollouts). Builds are not directly associated with branches, but rather with channels. Each build points to a single channel, which is set at build time and cannot be modified at runtime. The reason for this is that it ensures that certain branches (for example: development, staging) don't automatically go out to production &mdash; your preview updates don't go to your production users. This helps you separate the two main uses of EAS Update: previews and production hotfixes.
+**EAS Update 有多个更新流**——一个对应你的源代码控制分支（称为 branches），另一个称为 channels，它们指向 branches。channels 和 branches 之间的映射在服务端处理，并且一个 channel 可以针对每个 runtime version 指向不同的 branches（此外，还可以表达更高级的逻辑，例如支持增量发布）。构建并不直接关联 branches，而是关联 channels。每个构建都指向单个 channel，该 channel 在构建时设置，且不能在运行时修改。这样做的原因是，它能确保某些 branches（例如：development、staging）不会自动发布到生产环境——你的预览更新不会发送给生产用户。这有助于你区分 EAS Update 的两种主要用途：预览和生产热修复。
 
 </Collapsible>
 
-<Collapsible summary="Differences in how updates are selected at runtime">
+<Collapsible summary="运行时如何选择更新的差异">
 
-A key distinction between CodePush and EAS Update that can impact your release process is that **with CodePush, the client controls the target update deployment at runtime**, and **with EAS Update, it is controlled on the server side, by mapping channels to branches**. This means that you can't include code in your app using EAS Update to instruct it to load a different stream of updates depending on runtime criteria, such as the current user role (for example: distribute beta releases to employees) - it will only load the branch that is mapped on EAS Update servers to the corresponding channel (such as production or staging).
+CodePush 和 EAS Update 之间的一个关键区别，会影响你的发布流程：**在 CodePush 中，客户端在运行时控制目标更新 deployment**，而**在 EAS Update 中，这由服务端通过将 channels 映射到 branches 来控制**。这意味着你不能在使用 EAS Update 的应用中加入代码，让它根据运行时条件（例如当前用户角色，如向员工分发 beta 版本）加载不同的更新流——它只会加载 EAS Update 服务器上映射到相应 channel 的 branch（例如 production 或 staging）。
 
-The ability to control the target deployment at runtime is commonly used with CodePush in staging environments to allow non-technical stakeholders to test features from a single build on Google Play Beta / TestFlight. The current alternative for this with EAS Update is to use [development builds](/eas-update/expo-dev-client/). We're currently working on providing a way to do this with release builds.
+在 CodePush 中，运行时控制目标 deployment 的能力通常用于 staging 环境，以便非技术相关方能够从 Google Play Beta / TestFlight 上的单个构建中测试功能。EAS Update 对应的当前替代方案是使用[开发构建](/eas-update/expo-dev-client/)。我们目前正在努力提供一种使用发布构建实现这一点的方法。
 
 </Collapsible>

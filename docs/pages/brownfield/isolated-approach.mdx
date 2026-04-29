@@ -1,7 +1,7 @@
 ---
-title: How to add Expo to a native app using the isolated approach
-sidebar_title: Isolated approach
-description: A guide for adding Expo and React Native as a native library and integrating it into an existing (brownfield) native app using the isolated approach.
+title: 如何使用隔离方法将 Expo 添加到原生应用
+sidebar_title: 隔离方法
+description: 一份关于将 Expo 和 React Native 作为原生库添加，并使用隔离方法将其集成到现有（brownfield）原生应用中的指南。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -12,48 +12,48 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-In the isolated approach, your React Native code is developed and maintained separately from your native project. You package it as a native library, using an AAR for Android or XCFramework for iOS, and integrate it into your native app like any other dependency.
+在隔离式方案中，你的 React Native 代码是独立于原生项目进行开发和维护的。你将其打包为原生库，Android 使用 AAR，iOS 使用 XCFramework，并像其他依赖一样将其集成到原生应用中。
 
-This approach is ideal when you want to minimize the impact of React Native on your existing native build process, or when you have separate teams for native and React Native development. Using this approach, native developers don't need Node.js, Yarn, or any React Native build tooling, and they can just consume pre-built artifacts.
+当你希望尽量减少 React Native 对现有原生构建流程的影响，或者原生开发与 React Native 开发由不同团队负责时，这种方案最为理想。使用这种方案后，原生开发者不需要 Node.js、Yarn 或任何 React Native 构建工具链，他们只需使用已经构建好的产物即可。
 
-> **info** For an alternative approach where React Native is integrated directly into your native project, see the [integrated approach guide](/brownfield/integrated-approach/).
+> **info** 如果你想了解另一种将 React Native 直接集成到原生项目中的方案，请参阅 [集成式方案指南](/brownfield/integrated-approach/)。
 
-## Prerequisites
+## 前提条件
 
-To integrate React Native into your existing application, you'll need to set up a JavaScript development environment. This includes installing Node.js to run Expo CLI and Yarn to manage the project's JavaScript dependencies.
+要将 React Native 集成到现有应用中，你需要先搭建 JavaScript 开发环境。这包括安装用于运行 Expo CLI 的 Node.js，以及用于管理项目 JavaScript 依赖的 Yarn。
 
-- [Node.js (LTS)](https://nodejs.org/en/): The runtime to execute JavaScript code and Expo CLI.
-- [Yarn](https://yarnpkg.com/): A package manager for installing and managing JavaScript dependencies.
+- [Node.js (LTS)](https://nodejs.org/en/): 用于执行 JavaScript 代码和 Expo CLI 的运行时。
+- [Yarn](https://yarnpkg.com/): 用于安装和管理 JavaScript 依赖的包管理器。
 
-Learn more from the [Set up environment guide](/get-started/set-up-your-environment/).
+更多信息请参阅 [环境搭建指南](/get-started/set-up-your-environment/)。
 
-## Set up an Expo project
+## 设置 Expo 项目
 
 <Step label="1">
 
-### Create a new Expo project
+### 创建新的 Expo 项目
 
-Run the following command to create a new directory named **my-project** that contains your new Expo project. While you can name the project anything, this guide uses **my-project** for consistency.
+运行以下命令创建一个名为 **my-project** 的新目录，其中包含你的新 Expo 项目。虽然你可以将项目命名为任意名称，但本指南为保持一致性，使用 **my-project**。
 
 <Terminal cmd={['$ npx create-expo-app@latest my-project --template default@sdk-55']} />
 
-The **my-project** does not need to live inside your existing native app and can be created in a separate repository or a monorepo. The new project includes an example TypeScript application to help you get started.
+**my-project** 不需要放在现有原生应用内部，也可以创建在单独的仓库中或 monorepo 中。新项目包含一个示例 TypeScript 应用，帮助你快速开始。
 
 </Step>
 
 <Step label="2">
-### Install expo-brownfield
+### 安装 expo-brownfield
 
-Navigate to your new Expo project and install the `expo-brownfield` library, which provides the tools to build your React Native code as native libraries and integrate them into your existing native app.
+进入你的新 Expo 项目并安装 `expo-brownfield` 库，它提供了将 React Native 代码构建为原生库并集成到现有原生应用中的工具。
 
 <Terminal cmd={['$ npx expo install expo-brownfield']} />
 
 </Step>
 
 <Step label="3">
-### Adjust the config plugin (optional)
+### 调整配置插件（可选）
 
-`expo-brownfield` should automatically add an entry to the `plugins` array in your **app.json**, using the default configuration, which is sufficient for most projects.
+`expo-brownfield` 应会自动使用默认配置在你的 **app.json** 中的 `plugins` 数组里添加一项，这对于大多数项目来说已经足够。
 
 ```json app.json
 {
@@ -63,9 +63,9 @@ Navigate to your new Expo project and install the `expo-brownfield` library, whi
 }
 ```
 
-The defaults are derived from your app config (for example, target names are based on your app's scheme or slug). You can also pass options to customize the target names, bundle identifiers, and publishing configuration.
+默认值会根据你的应用配置推导而来（例如，目标名称会基于应用的 scheme 或 slug）。你也可以传入选项来自定义目标名称、包标识符和发布配置。
 
-<Collapsible summary="Custom expo-brownfield configuration">
+<Collapsible summary="自定义 expo-brownfield 配置">
 ```json app.json
 {
   "expo": {
@@ -91,69 +91,69 @@ The defaults are derived from your app config (for example, target names are bas
 ```
 </Collapsible>
 
-See the [`expo-brownfield` API reference](/versions/v55.0.0/sdk/brownfield/) for details on all available options.
+有关所有可用选项的详细信息，请参阅 [`expo-brownfield` API 参考](/versions/v55.0.0/sdk/brownfield/)。
 
 </Step>
 
-## Export your Expo project as a native library
+## 将 Expo 项目导出为原生库
 
-Once you have your Expo project set up, use the `expo-brownfield` CLI to build your React Native code as AARs for Android and XCFrameworks for iOS.
+完成 Expo 项目设置后，使用 `expo-brownfield` CLI 将你的 React Native 代码构建为 Android 的 AAR 和 iOS 的 XCFramework。
 
 <Tabs>
 <Tab label="Android">
 
-From your Expo project directory, run:
+在你的 Expo 项目目录中运行：
 
 <Terminal cmd={['$ npx expo-brownfield build:android']} />
 
-This will build the AAR and publish it to a Maven repository. By default, it publishes to your local Maven repository (`~/.m2`), but it can also be configured to publish to a remote repository.
-The produced artifact name will be determined by your config plugin settings, in this case `com.username.myproject:brownfield:1.0.0`.
+这会构建 AAR 并将其发布到 Maven 仓库。默认情况下，它会发布到你的本地 Maven 仓库（`~/.m2`），但也可以配置为发布到远程仓库。
+生成的产物名称将由你的配置插件设置决定，在这个例子中是 `com.username.myproject:brownfield:1.0.0`。
 
-See the [API reference](/versions/v55.0.0/sdk/brownfield/) for more details on build options, such as building only debug or release, specifying a custom output directory, and more.
+有关构建选项的更多细节，例如仅构建 debug 或 release、指定自定义输出目录等，请参阅 [API 参考](/versions/v55.0.0/sdk/brownfield/)。
 
 </Tab>
 <Tab label="iOS">
 
-From your Expo project directory, run:
+在你的 Expo 项目目录中运行：
 
 <Terminal cmd={['$ npx expo-brownfield build:ios']} />
 
-This will build the XCFramework artifacts: compile the framework target for both device and simulator architectures, package them into XCFrameworks, and copy the Hermes engine framework.
+这会构建 XCFramework 产物：为设备和模拟器架构分别编译 framework 目标，将它们打包为 XCFramework，并复制 Hermes 引擎 framework。
 
-When the build process is completed, the output is placed in the **./artifacts** directory and contains:
+构建过程完成后，输出会放在 **./artifacts** 目录中，并包含：
 
-- **\{TargetName\}.xcframework** - Your Expo project as a native library
-- **hermesvm.xcframework** - The Hermes JavaScript engine
+- **\{TargetName\}.xcframework** - 你的 Expo 项目作为原生库
+- **hermesvm.xcframework** - Hermes JavaScript 引擎
 
-See the [`expo-brownfield` API reference](/versions/v55.0.0/sdk/brownfield/) for more details on build options, such as building only debug or release, specifying a custom output directory, and more.
+有关构建选项的更多细节，例如仅构建 debug 或 release、指定自定义输出目录等，请参阅 [`expo-brownfield` API 参考](/versions/v55.0.0/sdk/brownfield/)。
 
 </Tab>
 </Tabs>
 
-<Collapsible summary="Debugging native targets">
+<Collapsible summary="调试原生目标">
 
-If you need to debug native code of the Expo project targets, you can run `npx expo prebuild` to generate the native projects with the brownfield library targets, inside the **android** and **ios`** directories.
+如果你需要调试 Expo 项目目标的原生代码，可以运行 `npx expo prebuild` 来生成带有 brownfield 库目标的原生项目，位于 **android** 和 **ios** 目录中。
 
 <Terminal cmd={['$ npx expo prebuild']} />
 
-The above command generates the following:
+上述命令会生成以下内容：
 
-- **Android**: A separate library module containing `ReactNativeHostManager`, `BrownfieldActivity`, `ReactNativeFragment`, `ReactNativeViewFactory`, and `BrownfieldMessaging`.
-- **iOS**: A separate Xcode framework target containing `ReactNativeHostManager`, `ReactNativeViewController`, `ReactNativeView` (SwiftUI), `BrownfieldMessaging`, and `ReactNativeDelegate`.
+- **Android**：一个单独的库模块，包含 `ReactNativeHostManager`、`BrownfieldActivity`、`ReactNativeFragment`、`ReactNativeViewFactory` 和 `BrownfieldMessaging`。
+- **iOS**：一个单独的 Xcode framework 目标，包含 `ReactNativeHostManager`、`ReactNativeViewController`、`ReactNativeView`（SwiftUI）、`BrownfieldMessaging` 和 `ReactNativeDelegate`。
 
 </Collapsible >
 
-## Integrate into your native app
+## 集成到你的原生应用中
 
-With the artifacts built, you can now integrate them into your existing native app. The exact steps will depend on your project structure and build system, but the general process involves adding the pre-built artifacts as dependencies and initializing the React Native host.
+在构建好产物后，你现在可以将它们集成到现有原生应用中。具体步骤将取决于你的项目结构和构建系统，但整体流程包括将预构建产物作为依赖添加进去，并初始化 React Native host。
 
 <Tabs>
 <Tab label="Android">
 
 <Step label="1">
-#### Add the Maven dependency
+#### 添加 Maven 依赖
 
-Start by adding the dependency to your app's **build.gradle.kts**. The group, artifact name, and version should match your config plugin settings:
+首先将依赖添加到你的应用 **build.gradle.kts** 中。group、artifact 名称和版本应与你的配置插件设置一致：
 
 ```kotlin app/build.gradle.kts
 dependencies {
@@ -161,7 +161,7 @@ dependencies {
 }
 ```
 
-If the library was published to local Maven, make sure to add `mavenLocal()` to your repository configuration:
+如果该库是发布到本地 Maven，请确保在仓库配置中添加 `mavenLocal()`：
 
 ```kotlin settings.gradle.kts
 dependencyResolutionManagement {
@@ -176,9 +176,9 @@ dependencyResolutionManagement {
 </Step>
 
 <Step label="2">
-#### Show a React Native screen
+#### 显示 React Native 屏幕
 
-Create an activity that extends `BrownfieldActivity` and use the `showReactNativeFragment()` extension:
+创建一个继承自 `BrownfieldActivity` 的 activity，并使用 `showReactNativeFragment()` 扩展方法：
 
 ```kotlin ExpoActivity.kt
 import android.os.Bundle
@@ -193,7 +193,7 @@ class ExpoActivity : BrownfieldActivity() {
 }
 ```
 
-Add the activity to your **AndroidManifest.xml** with a non-ActionBar theme:
+在你的 **AndroidManifest.xml** 中添加该 activity，并使用一个非 ActionBar 主题：
 
 ```xml AndroidManifest.xml
 <activity
@@ -203,13 +203,13 @@ Add the activity to your **AndroidManifest.xml** with a non-ActionBar theme:
 />
 ```
 
-Then launch it from anywhere in your app:
+然后在应用中的任意位置启动它：
 
 ```kotlin
 startActivity(Intent(this, ExpoActivity::class.java))
 ```
 
-`BrownfieldActivity` extends `AppCompatActivity` and handles forwarding configuration changes to Expo modules. The `showReactNativeFragment()` extension also sets up native back button handling automatically.
+`BrownfieldActivity` 继承自 `AppCompatActivity`，并负责将配置变化转发给 Expo 模块。`showReactNativeFragment()` 扩展方法也会自动配置原生返回按钮处理。
 
 </Step>
 
@@ -217,29 +217,29 @@ startActivity(Intent(this, ExpoActivity::class.java))
 <Tab label="iOS">
 
 <Step label="1">
-#### Add XCFrameworks to your project
+#### 将 XCFramework 添加到项目中
 
-Drag both XCFramework files (\{TargetName\}**.xcframework** and **hermesvm.xcframework**) into your Xcode project navigator. In the dialog that appears:
+将两个 XCFramework 文件（\{TargetName\}**.xcframework** 和 **hermesvm.xcframework**）拖入 Xcode 项目导航器。在弹出的对话框中：
 
-- Check **Copy items if needed**
-- Add them to your app target
+- 勾选 **Copy items if needed**
+- 将它们添加到你的 app target
 
 {/* vale off */}
 
-Then, in your target's **General** tab under **Frameworks, Libraries, and Embedded Content**, ensure both frameworks are set to **Embed & Sign**.
+然后，在你的 target 的 **General** 选项卡中，找到 **Frameworks, Libraries, and Embedded Content**，确保这两个 framework 都设置为 **Embed & Sign**。
 
 {/* vale on */}
 
 </Step>
 
 <Step label="2">
-#### Initialize React Native
+#### 初始化 React Native
 
-Call `ReactNativeHostManager.shared.initialize()` early in your app's lifecycle. A good place is your `AppDelegate`:
+在应用生命周期的早期调用 `ReactNativeHostManager.shared.initialize()`。一个合适的位置是你的 `AppDelegate`：
 
 ```swift AppDelegate.swift
 import UIKit
-import MyAppBrownfield // Replace with your target name
+import MyAppBrownfield // 将其替换为你的 target 名称
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -256,7 +256,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 </Step>
 
 <Step label="3">
-#### Present a React Native view
+#### 展示 React Native 视图
 
 <Tabs>
 <Tab label="UIKit">
@@ -273,7 +273,7 @@ class ViewController: UIViewController {
 }
 ```
 
-The `ReactNativeViewController` also accepts optional `initialProps` and `launchOptions` parameters:
+`ReactNativeViewController` 也接受可选的 `initialProps` 和 `launchOptions` 参数：
 
 ```swift
 let rnViewController = ReactNativeViewController(
@@ -294,7 +294,7 @@ struct ContentView: View {
   @State private var showReactNative = false
 
   var body: some View {
-    Button("Open React Native") {
+    Button("打开 React Native") {
       showReactNative = true
     }
     .fullScreenCover(isPresented: $showReactNative) {
@@ -312,33 +312,33 @@ struct ContentView: View {
 </Tab>
 </Tabs>
 
-## Test your integration
+## 测试你的集成
 
-You have completed all the basic steps to integrate React Native with your application. Now it's time to test it out. The exact process will depend on whether you're running a debug or release build.
+你已经完成了将 React Native 集成到应用中的所有基础步骤。现在是时候测试一下了。具体流程取决于你运行的是 debug 还是 release 构建。
 
-### Development (debug builds)
+### 开发（debug 构建）
 
-Now run the following command in the React Native directory to start the [Metro bundler](https://metrobundler.dev/)
+现在在 React Native 目录中运行以下命令，以启动 [Metro bundler](https://metrobundler.dev/)
 
 <Terminal cmd={['$ npx expo start']} />
 
-Then, build and run the native app from Android Studio or Xcode. When you navigate to the React Native screen, it will load from the Metro dev server with hot reloading support.
+然后，从 Android Studio 或 Xcode 构建并运行原生应用。当你进入 React Native 屏幕时，它会从 Metro 开发服务器加载，并支持热重载。
 
-### Production (release builds)
+### 生产（release 构建）
 
-In release builds, the JavaScript bundle is embedded in the artifact (AAR or XCFramework), so the Metro server is not needed. Build the native app in Release configuration and verify the React Native screen loads correctly.
+在 release 构建中，JavaScript bundle 会嵌入到产物（AAR 或 XCFramework）中，因此不需要 Metro 服务器。以 Release 配置构建原生应用，并确认 React Native 屏幕能够正确加载。
 
-## Next steps
+## 下一步
 
 <BoxLink
-  title="Lifecycle listeners"
-  description="Configure application lifecycle listeners for deeper integration with Expo modules."
+  title="生命周期监听器"
+  description="为 Expo 模块配置应用生命周期监听器，以实现更深度的集成。"
   href="/brownfield/lifecycle-listeners/"
   Icon={BookOpen02Icon}
 />
 <BoxLink
-  title="expo-brownfield API reference"
-  description="Explore the full JavaScript API for communication, navigation, and more."
+  title="expo-brownfield API 参考"
+  description="查看用于通信、导航等功能的完整 JavaScript API。"
   href="/versions/v55.0.0/sdk/brownfield/"
   Icon={BookOpen02Icon}
 />

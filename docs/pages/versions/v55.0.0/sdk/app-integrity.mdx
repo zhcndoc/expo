@@ -1,6 +1,6 @@
 ---
 title: AppIntegrity
-description: A library that provides access to Google's Play Integrity API on Android and Apple's App Attest service on iOS.
+description: 一个库，提供对 Android 上的 Google Play Integrity API 和 iOS 上的 Apple App Attest 服务的访问。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-app-integrity'
 packageName: '@expo/app-integrity'
 platforms: ['android', 'ios', 'expo-go']
@@ -10,32 +10,32 @@ isAlpha: true
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
 
-> **important** **This library is currently in [alpha](/more/release-statuses/#alpha) and will frequently experience breaking changes.**
+> **重要** **此库目前处于 [alpha](/more/release-statuses/#alpha) 阶段，并且将频繁发生破坏性变更。**
 
-`@expo/app-integrity` provides APIs to help ensure your backend resources are accessed only by legitimate installations of your app running on genuine devices. It uses Google's [Play Integrity APIs](https://developer.android.com/google/play/integrity) on Android and Apple's [App Attest service](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity) on iOS to verify app authenticity, helping prevent unauthorized clients, modified apps, or automated scripts from making requests to your server.
+`@expo/app-integrity` 提供了 API，帮助确保你的后端资源仅被运行在真实设备上的、你应用的合法安装实例访问。它在 Android 上使用 Google 的 [Play Integrity APIs](https://developer.android.com/google/play/integrity)，在 iOS 上使用 Apple 的 [App Attest service](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity) 来验证应用的真实性，帮助防止未经授权的客户端、被修改的应用或自动化脚本向你的服务器发起请求。
 
-Generally, `@expo/app-integrity` helps your server tell the difference between:
+通常，`@expo/app-integrity` 可帮助你的服务器区分以下两者：
 
-- Your **real app** running on a **real device**
-- Anything else (modified apps, scripts, emulators)
+- 运行在**真实设备**上的**真实应用**
+- 其他任何情况（被修改的应用、脚本、模拟器）
 
-It does this by using the platform-recommended app attestation services.
+它通过使用平台推荐的应用证明服务来实现这一点。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Usage on Android
+## Android 上的用法
 
-`@expo/app-integrity` uses Play Integrity's [Standard request flow](https://developer.android.com/google/play/integrity/standard) for integrity checks.
+`@expo/app-integrity` 使用 Play Integrity 的 [标准请求流程](https://developer.android.com/google/play/integrity/standard)进行完整性检查。
 
-### Configuration
+### 配置
 
-Refer to the [Play Integrity setup guide](https://developer.android.com/google/play/integrity/setup#set-integrity-responses) for instructions to enable integrity APIs in your app.
+请参阅 [Play Integrity 设置指南](https://developer.android.com/google/play/integrity/setup#set-integrity-responses)，了解如何在你的应用中启用完整性 API。
 
-### Prepare the integrity token provider (one time)
+### 准备完整性令牌提供程序（一次性）
 
-You need to prepare the integrity token provider before you make integrity check requests. You can do this when your app launches or in the background before the integrity check is needed.
+在发起完整性检查请求之前，你需要先准备完整性令牌提供程序。你可以在应用启动时执行此操作，或者在需要完整性检查之前在后台完成。
 
 ```js
 import * as AppIntegrity from '@expo/app-integrity';
@@ -44,101 +44,101 @@ const cloudProjectNumber = 'your-cloud-project-number';
 await AppIntegrity.prepareIntegrityTokenProviderAsync(cloudProjectNumber);
 ```
 
-### Request an integrity token (on demand)
+### 请求完整性令牌（按需）
 
-Whenever your app makes a server request that you want to check is genuine, you request an integrity token and send it to your app's backend server for decryption and verification. Then, your backend server can determine how to act.
+每当你的应用发起你希望验证真实性的服务器请求时，你都需要请求一个完整性令牌，并将其发送到应用的后端服务器进行解密和验证。然后，后端服务器可以决定如何处理。
 
 ```js
 const requestHash = '2cp24z...';
 const result = await AppIntegrity.requestIntegrityCheckAsync(requestHash);
 ```
 
-Before calling [`requestIntegrityCheckAsync`](#appintegrityrequestintegritycheckasyncrequesthash), ensure that [`prepareIntegrityTokenProviderAsync`](#appintegrityprepareintegritytokenproviderasynccloudprojectnumber) was called successfully.
+在调用 [`requestIntegrityCheckAsync`](#appintegrityrequestintegritycheckasyncrequesthash) 之前，请确保已成功调用 [`prepareIntegrityTokenProviderAsync`](#appintegrityprepareintegritytokenproviderasynccloudprojectnumber)。
 
-In this example, `requestHash` is a hash unique to the specific user action being verified. You can call [`requestIntegrityCheckAsync`](#appintegrityprepareintegritytokenproviderasynccloudprojectnumber) multiple times with different hashes for different user actions.
+在此示例中，`requestHash` 是与正在验证的特定用户操作唯一对应的哈希。对于不同的用户操作，你可以使用不同的哈希多次调用 [`requestIntegrityCheckAsync`](#appintegrityprepareintegritytokenproviderasynccloudprojectnumber)。
 
-On success, send the result to your server for verification.
+成功后，将结果发送到你的服务器进行验证。
 
-> **Note**: If your app uses the same token provider for too long, the token provider can expire which results in the `ERR_APP_INTEGRITY_PROVIDER_INVALID` error on the next token request. You should handle this error by requesting a new provider by calling `prepareIntegrityTokenProviderAsync` again.
+> **注意**：如果你的应用长时间使用同一个令牌提供程序，令牌提供程序可能会过期，从而在下一次令牌请求时导致 `ERR_APP_INTEGRITY_PROVIDER_INVALID` 错误。你应通过再次调用 `prepareIntegrityTokenProviderAsync` 来请求新的提供程序，从而处理此错误。
 
-### Decrypt and verify the integrity verdict
+### 解密并验证完整性判定结果
 
-Refer [Play Integrity's guide](https://developer.android.com/google/play/integrity/standard#decrypt-and) to verify the integrity token in your server.
+请参阅 [Play Integrity 指南](https://developer.android.com/google/play/integrity/standard#decrypt-and)，了解如何在你的服务器中验证完整性令牌。
 
-### Additional resources
+### 其他资源
 
-- [Google Pay Integrity documentation](https://developer.android.com/google/play/integrity/overview): Refer to Google's official guide to understand the APIs and verification flow that power `@expo/app-integrity`.
+- [Google Play Integrity 文档](https://developer.android.com/google/play/integrity/overview)：请参阅 Google 的官方指南，了解支撑 `@expo/app-integrity` 的 API 和验证流程。
 
-- [Play Integrity Standard request flow](https://developer.android.com/google/play/integrity/standard): This page describes making standard API requests for integrity verdicts, which are supported on Android 5.0 (API level 21) or higher. You can make a standard API request for an integrity verdict whenever your app is making a server call to check whether the interaction is genuine.
+- [Play Integrity 标准请求流程](https://developer.android.com/google/play/integrity/standard)：此页面描述了如何发起标准 API 请求来获取完整性判定结果，该流程支持 Android 5.0（API 级别 21）及更高版本。每当你的应用向服务器发起调用以检查交互是否真实时，都可以发起标准 API 请求来获取完整性判定结果。
 
-- [About Integrity verdicts](https://developer.android.com/google/play/integrity/verdicts): The integrity verdict communicates information about the validity of devices, apps, and accounts. Your app's server can use the resulting payload in a decrypted, verified verdict to determine how best to proceed with a particular action or request in your app.
+- [关于完整性判定结果](https://developer.android.com/google/play/integrity/verdicts)：完整性判定结果会传达有关设备、应用和账号有效性的信息。你的应用服务器可以使用解密并验证后的判定结果载荷，来决定如何针对应用中的特定操作或请求采取最佳处理方式。
 
-- [Handling error codes](https://developer.android.com/google/play/integrity/reference/com/google/android/play/core/integrity/model/StandardIntegrityErrorCode): If your app makes a Play Integrity API request and the call fails, your app receives an error code. These errors can happen for various reasons, such as environmental issues like a weak network connection, problems with your API integration, or malicious activity and active attacks.
+- [处理错误代码](https://developer.android.com/google/play/integrity/reference/com/google/android/play/core/integrity/model/StandardIntegrityErrorCode)：如果你的应用发起了 Play Integrity API 请求但调用失败，应用会收到一个错误代码。这些错误可能由于多种原因发生，例如网络连接较弱等环境问题、API 集成问题，或恶意活动与主动攻击。
 
-## Usage on iOS
+## iOS 上的用法
 
-### Configuration
+### 配置
 
-In Xcode, go to **Signing & Capabilities**, click **+ Capability**, add **App Attest**. Xcode will automatically add the required entitlement to your app.
+在 Xcode 中，进入 **Signing & Capabilities**，点击 **+ Capability**，添加 **App Attest**。Xcode 会自动将所需的 entitlement 添加到你的应用中。
 
-> **Note**: To use the App Attest service, your app must have an App ID that you register on the Apple Developer website.
+> **注意**：要使用 App Attest 服务，你的应用必须拥有一个你在 Apple Developer 网站上注册的 App ID。
 
-For verification logic on your server, see [Validating apps that connect to your server](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server).
+有关服务器端的验证逻辑，请参阅 [验证连接到你服务器的应用](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)。
 
-### Check if the device supports app attestation
+### 检查设备是否支持应用证明
 
-Not all devices can use the App Attest service, so it's important to have your app run a compatibility check before accessing the service. If the user's app doesn't pass the compatibility check, gracefully bypass the service. You can check for availability by reading the `isSupported` property.
+并非所有设备都能使用 App Attest 服务，因此在访问该服务之前，让应用先运行兼容性检查非常重要。如果用户的应用未通过兼容性检查，应优雅地绕过该服务。你可以通过读取 `isSupported` 属性来检查可用性。
 
 ```js
 import * as AppIntegrity from '@expo/app-integrity';
 
 if (AppIntegrity.isSupported) {
-  // Perform key generation and attestation.
+  // 执行密钥生成和证明。
 }
-// Continue with your server API access.
+// 继续访问你的服务器 API。
 ```
 
-> **Note**: App Attest is not supported on iOS Simulator.
+> **注意**：App Attest 不支持 iOS 模拟器。
 
-> **info** Most app extensions don't support App Attest. Generally, when executing code in these extensions, bypass key generation and attestation, even if the `isSupported` method property is `true`. The only app extensions that support App Attest are watchOS extensions in watchOS 9 or later. For these extensions, you can use the results from `isSupported` to indicate whether your WatchKit extension bypasses attestation.
+> **信息** 大多数应用扩展不支持 App Attest。通常，在这些扩展中执行代码时，即使 `isSupported` 方法属性为 `true`，也应绕过密钥生成和证明。唯一支持 App Attest 的应用扩展是 watchOS 9 或更高版本中的 watchOS 扩展。对于这些扩展，你可以使用 `isSupported` 的结果来判断你的 WatchKit 扩展是否应绕过证明。
 
-### Create a key pair
+### 创建密钥对
 
-For each user account on each device running your app, generate a unique, hardware-based, cryptographic key pair by calling the `generateKey` method.
+对于运行你应用的每台设备上的每个用户账号，通过调用 `generateKey` 方法生成一个唯一的、基于硬件的加密密钥对。
 
 ```js
 const keyId = await AppIntegrity.generateKeyAsync();
 ```
 
-On success, the method returns a key identifier (`keyId`) that you use later to access the key. Record the identifier in persistent storage because there's no way to use the key without the identifier and no way to get the identifier later. The device automatically stores the associated private key in the Secure Enclave, from where the App Attest service can use it to create signatures, but from where no process can ever directly read or modify it, ensuring its security.
+成功后，该方法会返回一个密钥标识符（`keyId`），你稍后会用它来访问该密钥。请将该标识符记录在持久化存储中，因为没有标识符就无法使用该密钥，而且之后也无法再获取这个标识符。设备会自动将关联的私钥存储在 Secure Enclave 中，App Attest 服务可以从中使用它来创建签名，但任何进程都无法直接读取或修改它，从而确保其安全性。
 
-> **info** If you create a key pair in an App Clip, use the same key pair in the corresponding app. To support this, be sure to store the identifier in a shared container accessible from your full app. See Expo’s guide on sharing a database between apps/extensions using [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/#sharing-a-database-between-appsextensions-ios), or use React Native MMKV's [App Groups / extensions](https://github.com/mrousavy/react-native-mmkv?tab=readme-ov-file#app-groups-or-extensions) shared storage to persist the identifier across both targets.
+> **信息** 如果你在 App Clip 中创建了密钥对，请在对应的完整应用中使用同一密钥对。为支持这一点，请务必将标识符存储在完整应用可访问的共享容器中。请参阅 Expo 关于使用 [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/#sharing-a-database-between-appsextensions-ios) 在应用/扩展之间共享数据库的指南，或者使用 React Native MMKV 的 [App Groups / extensions](https://github.com/mrousavy/react-native-mmkv?tab=readme-ov-file#app-groups-or-extensions) 共享存储来在两个目标之间持久化该标识符。
 
-Don't reuse a key among multiple users on a device because this weakens security protections. In particular, it becomes hard to detect an attack that uses a single compromised device to serve multiple remote users running a compromised version of your app. For more information, see [Assessing fraud risk](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk).
+不要在同一设备上为多个用户重复使用同一个密钥，因为这会削弱安全防护。尤其是，这会使得检测一种攻击变得困难：攻击者利用一台被攻破的设备为多个远程用户提供被攻破版本的应用服务。更多信息请参阅 [评估欺诈风险](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk)。
 
-### Get a challenge from your server
+### 从服务器获取挑战
 
-Request a unique, one-time challenge from your server. This challenge will be embedded in the attestation step below, ensuring it can't be reused by an attacker. The challenge should be at least 16 bytes long to provide enough entropy so that guessing it is infeasible.
+从你的服务器请求一个唯一的、一次性的挑战。该挑战会嵌入到下面的证明步骤中，确保它不能被攻击者复用。该挑战应至少为 16 字节长，以提供足够的熵，使其无法被猜测。
 
-### Certify the key pairs as valid
+### 将密钥对认证为有效
 
-Pass the `keyId` alongwith the challenge from your server created in the previous steps in `attestKey` method as shown below:
+将 `keyId` 与前面步骤中从你的服务器创建的挑战一起传入 `attestKey` 方法，如下所示：
 
 ```js
 const attestationObject = await AppIntegrity.attestKeyAsync(keyId, challenge);
 ```
 
-On success, send the received `attestationObject` and the `keyId` to your server for verification.
+成功后，将收到的 `attestationObject` 和 `keyId` 发送到你的服务器进行验证。
 
-If the method returns `ERR_APP_INTEGRITY_SERVER_UNAVAILABLE` error, try attestation again later with the same key. For any other error, discard the key identifier and create a new key when you want to try again.
+如果该方法返回 `ERR_APP_INTEGRITY_SERVER_UNAVAILABLE` 错误，请稍后使用同一个密钥再次尝试证明。对于任何其他错误，请丢弃该密钥标识符，并在下次重试时创建一个新密钥。
 
-> **info** If your app already has millions of daily active users and you want to start calling the `attestKey` method to initiate attestation from your app, review the [Preparing to use the app attest service](https://developer.apple.com/documentation/DeviceCheck/preparing-to-use-the-app-attest-service) for guidance on safely ramping your users.
+> **信息** 如果你的应用已经拥有数百万日活跃用户，并且你希望开始从应用中调用 `attestKey` 方法以发起证明，请查阅 [准备使用 app attest 服务](https://developer.apple.com/documentation/DeviceCheck/preparing-to-use-the-app-attest-service) 以了解如何安全地逐步放量用户。
 
-Your server deems the app instance to be valid if it can successfully verify the attestation object. In this case, be sure to persistently store the key identifier &mdash; not the attestation object &mdash; in your app to sign server requests in the future.
+如果服务器能够成功验证证明对象，就会判定该应用实例有效。在这种情况下，请务必将密钥标识符——而不是证明对象——持久化存储在应用中，以便将来用于对服务器请求进行签名。
 
-### Generate assertions on sensitive requests
+### 对敏感请求生成断言
 
-After successfully verifying a key's attestation, your server can require the app to assert its legitimacy for any or all future server requests. The app does this by signing the request. In the app, obtain a unique, one-time challenge from the server. You use a challenge here, like for attestation, to avoid replay attacks.
+在成功验证某个密钥的证明后，你的服务器可以要求应用在未来的任意或全部服务器请求中证明其合法性。应用通过对请求进行签名来完成这一点。在应用中，从服务器获取一个唯一的、一次性的挑战。这里像证明一样使用挑战，是为了避免重放攻击。
 
 ```js
 const challenge = 'A string from your server';
@@ -150,23 +150,23 @@ const request = {
 const assertion = await AppIntegrity.generateAssertionAsync(keyId, JSON.stringify(request));
 ```
 
-On success, pass the assertion object, along with the client data, to the server. If the assertion object fails verification, it's your responsibility to decide how to handle the request.
+成功后，将断言对象连同客户端数据一起传递给服务器。如果断言对象验证失败，应由你来决定如何处理该请求。
 
-There's no restriction on the number of assertions that you can make with a key. Nevertheless, you typically reserve assertions for requests made at sensitive moments in your app's life cycle, like when the app downloads premium content.
+使用一个密钥可以生成断言的次数没有限制。不过，通常你会将断言保留用于应用生命周期中敏感时刻发起的请求，例如应用下载高级内容时。
 
-### Start over on reinstallation
+### 在重新安装后重新开始
 
-The keys that you generate remain valid through regular app updates, but don't survive app reinstallation, device migration, or restoration of a device from a backup. In these cases, you need to start the process from the beginning and generate a new key. Try to limit new key generation to only these events, or to the addition of new users. Keeping the key count low on a device helps when trying to detect certain kinds of fraud.
+你生成的密钥会在常规应用更新中保持有效，但在应用重新安装、设备迁移或从备份恢复设备时不会保留。在这些情况下，你需要从头开始并生成一个新密钥。尽量将新密钥生成限制在这些事件发生时，或者新增用户时。保持设备上的密钥数量较少，有助于检测某些类型的欺诈。
 
-### Additional resources
+### 其他资源
 
-- [Apple's App Attest documentation](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity): Refer to Apple's official guide to understand the APIs and verification flow that power `@expo/app-integrity`.
+- [Apple 的 App Attest 文档](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity)：请参阅 Apple 的官方指南，了解支撑 `@expo/app-integrity` 的 API 和验证流程。
 
-- [Validating apps that connect to your server](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server): Verify the app attestation and assertion on your server.
+- [验证连接到你服务器的应用](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)：在你的服务器上验证应用证明和断言。
 
-- [Assessing fraud risk](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk): Request and analyze risk data using server-to-server calls.
+- [评估欺诈风险](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk)：通过服务器到服务器的调用请求并分析风险数据。
 
-- [Preparing to use the app attest service](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service): Test your implementation in a development environment and onboard users gradually.
+- [准备使用 app attest 服务](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service)：在开发环境中测试你的实现，并逐步引导用户上线。
 
 ## API
 

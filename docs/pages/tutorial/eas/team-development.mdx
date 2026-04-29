@@ -1,7 +1,7 @@
 ---
-title: Share previews with your team
-sidebar_title: Share previews
-description: Learn how to use EAS Update to send OTA updates and share previews with a team.
+title: 与你的团队分享预览
+sidebar_title: 分享预览
+description: 了解如何使用 EAS Update 发送 OTA 更新并与团队共享预览。
 hasVideoLink: true
 ---
 
@@ -12,23 +12,23 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-Updates generally fix small bugs and push small changes in between app store releases. They allow updating the non-native parts of our example app, such as JavaScript code, styling, and images.
+Updates 通常用于在应用商店发布版本之间修复小错误并推送小改动。它们允许更新我们示例应用中非原生的部分，例如 JavaScript 代码、样式和图片。
 
-In this chapter, we'll use [EAS Update](/eas-update/introduction/) to share changes with our team. This will help [us and our team quickly share previews](/review/overview/) of the change.
+在本章中，我们将使用 [EAS Update](/eas-update/introduction/) 与团队共享更改。这将帮助[我们和团队快速共享预览](/review/overview/)该更改。
 
 <VideoBoxLink
   videoId="vPKh-tNm-yI"
-  title="Watch: How to share previews with your team"
-  description="Set up EAS Update to share preview versions of your app with your team between app store releases."
+  title="观看：如何与团队共享预览"
+  description="设置 EAS Update，以便在应用商店发布版本之间与团队共享应用的预览版。"
 />
 
 ---
 
 <Step label="1">
 
-## Install expo-updates library
+## 安装 expo-updates 库
 
-To initialize our project and send an update, we need to use the [`expo-updates`](/versions/latest/sdk/updates/) library. Run the following command to install it:
+要初始化我们的项目并发送更新，我们需要使用 [`expo-updates`](/versions/latest/sdk/updates/) 库。运行以下命令进行安装：
 
 <Terminal cmd={['$ npx expo install expo-updates']} />
 
@@ -36,21 +36,21 @@ To initialize our project and send an update, we need to use the [`expo-updates`
 
 <Step label="2">
 
-## Configure EAS Update
+## 配置 EAS Update
 
-To initialize our project with EAS Update, we need to follow these steps:
+要使用 EAS Update 初始化我们的项目，我们需要按照以下步骤进行：
 
-- Since we are using dynamic **app.config.js** for our app's configuration, adding [`updates`](/versions/latest/config/app/#updates) and [`runtimeVersion`](/eas-update/runtime-versions/#setting-runtimeversion) properties are required to make our project compatible with EAS Update. Run the following command to obtain these properties and their values from EAS and manually copy them to **app.config.js**:
+- 由于我们正在为应用配置使用动态 **app.config.js**，因此需要添加 [`updates`](/versions/latest/config/app/#updates) 和 [`runtimeVersion`](/eas-update/runtime-versions/#setting-runtimeversion) 属性，以使我们的项目与 EAS Update 兼容。运行以下命令，从 EAS 获取这些属性及其值，并手动将它们复制到 **app.config.js** 中：
 
 <Terminal cmd={['$ eas update:configure']} />
 
-<Collapsible summary="What about non-dynamic (app.json) projects?">
+<Collapsible summary="非动态（app.json）项目怎么办？">
 
-If a project doesn't use dynamic app config (uses **app.json** instead of **app.config.js**), the above command will configure our app to be compatible with EAS Update and add the right properties to **app.json** and **eas.json**.
+如果项目不使用动态 app config（使用 **app.json** 而不是 **app.config.js**），上述命令会将我们的应用配置为与 EAS Update 兼容，并将正确的属性添加到 **app.json** 和 **eas.json** 中。
 
 </Collapsible>
 
-- Re-run `eas update:configure` to continue with the setup process. A [`channel`](/eas/json/#channel) should be added to every build profile in **eas.json**:
+- 重新运行 `eas update:configure` 以继续设置流程。应将一个 [`channel`](/eas/json/#channel) 添加到 **eas.json** 中的每个构建配置：
 
 {/* prettier-ignore */}
 ```json eas.json
@@ -82,11 +82,11 @@ If a project doesn't use dynamic app config (uses **app.json** instead of **app.
 }
 ```
 
-> **info** Notice that the `eas update:configure` command adds the `channel` to every build profile in **eas.json**. However, our `ios-simulator` profile extends the `development` profile and having a separate `channel` doesn't make sense. We can safely remove `ios-simulator.channel` from the above configuration.
+> **info** 请注意，`eas update:configure` 命令会将 `channel` 添加到 **eas.json** 中的每个构建配置中。不过，我们的 `ios-simulator` 配置继承自 `development` 配置，单独的 `channel` 并没有意义。我们可以安全地从上面的配置中删除 `ios-simulator.channel`。
 
-<Collapsible summary="What is a channel?">
+<Collapsible summary="什么是 channel？">
 
-[Channels](/eas-update/how-it-works/#conceptual-overview) are used to group builds together. If we have an Android and iOS build, both on the app store, we can give them both a channel of production. Later, we can tell EAS Update to target the production channel, so our update will affect all builds with a production channel.
+[Channels](/eas-update/how-it-works/#conceptual-overview) 用于将构建分组在一起。如果我们有一个 Android 构建和一个 iOS 构建，而且它们都在应用商店中，我们可以将它们的 channel 都设置为 production。之后，我们可以告诉 EAS Update 目标为 production channel，这样我们的更新就会影响所有具有 production channel 的构建。
 
 </Collapsible>
 
@@ -94,25 +94,25 @@ If a project doesn't use dynamic app config (uses **app.json** instead of **app.
 
 <Step label="3">
 
-## Create a development build
+## 创建开发构建
 
-We need to create a new development build since our last build doesn't contain the `expo-updates` library. Run the following command:
+我们需要创建一个新的开发构建，因为上一次构建不包含 `expo-updates` 库。运行以下命令：
 
 <Terminal cmd={['$ eas build --platform android --profile development']} />
 
-> We are using a development build for Android devices to demonstrate updates. However, we can use `--platform all` or `--platform ios` to create a build for both platforms or just for iOS.
+> 我们使用 Android 设备的开发构建来演示更新。不过，我们也可以使用 `--platform all` 或 `--platform ios` 来创建适用于两个平台的构建，或者仅为 iOS 创建构建。
 
-After the new version of the development build is created, make sure to install it on a device.
+在新的开发构建版本创建完成后，请确保将其安装到设备上。
 
 </Step>
 
 <Step label="4">
 
-## Modify the JavaScript code of the app
+## 修改应用的 JavaScript 代码
 
-Let's modify our example app's JavaScript code. If you are not using [Sticker Smash app](/tutorial/eas/introduction/#prerequisites), you can modify any piece of your code to see the changes in the app.
+让我们修改示例应用的 JavaScript 代码。如果你没有使用 [Sticker Smash app](/tutorial/eas/introduction/#prerequisites)，你可以修改代码中的任意部分来查看应用中的变化。
 
-We'll modify the text of the first button in our example app that says **Choose a photo** to **Select a photo**.
+我们将把示例应用中第一个按钮的文本从 **Choose a photo** 改为 **Select a photo**。
 
 ```tsx app/(tabs)/index.tsx
 <Button theme="primary" label="Select a photo" onPress={pickImageAsync} />
@@ -122,27 +122,27 @@ We'll modify the text of the first button in our example app that says **Choose 
 
 <Step label="5">
 
-## Publish an update
+## 发布更新
 
-Instead of creating a new build to share this change with our team for testing, let's publish an update:
+与其创建一个新的构建来与团队共享此更改进行测试，不如发布一个更新：
 
 <Terminal cmd={['$ eas update --channel development --message "Change first button label"']} />
 
-In the command above, we used the `development` channel. Every update is associated with a [channel name](/eas-update/how-it-works/#publishing-an-update). It is similar to every commit that we make with git, which is associated with a git branch.
+在上面的命令中，我们使用了 `development` channel。每个更新都关联一个 [channel name](/eas-update/how-it-works/#publishing-an-update)。这类似于我们在 git 中提交的每个 commit，都关联着一个 git 分支。
 
-So, by using the channel `development` in our build profile and then publishing an, we're asking EAS to deliver this update to builds with the `development` channel. When we make an EAS Update channel it automatically gets mapped to a branch with the same name.
+因此，通过在构建配置中使用 `development` channel，然后发布更新，我们是在请求 EAS 将此更新推送到具有 `development` channel 的构建。 当我们创建一个 EAS Update channel 时，它会自动映射到一个同名分支。
 
-After the update is published, the CLI will prompt us with information about it.
+更新发布后，CLI 会提示我们相关信息。
 
 <ContentSpotlight
-  alt="EAS Update published successfully with CLI prompt"
+  alt="EAS Update 已通过 CLI 提示成功发布"
   src="/static/images/tutorial/eas/update-01.png"
 />
 
-Click on the **Website link** to see the Update on the EAS dashboard under **Over-the-air updates** > **Update groups**:
+点击 **Website link**，在 EAS 仪表板的 **Over-the-air updates** > **Update groups** 下查看该更新：
 
 <ContentSpotlight
-  alt="EAS dashboard shows the latest published update for the development build"
+  alt="EAS 仪表板显示开发构建最新发布的更新"
   src="/static/images/tutorial/eas/update-02.png"
   className="max-w-[800px]"
 />
@@ -151,42 +151,42 @@ Click on the **Website link** to see the Update on the EAS dashboard under **Ove
 
 <Step label="6">
 
-## Preview the update live in a development build
+## 在开发构建中实时预览更新
 
-To preview the live update in a development build:
+要在开发构建中预览实时更新：
 
-- Log in to your Expo account within the development build.
-- Open the **Extensions** tab.
-- Look for **Branch: development** listed under **EAS Update**.
-- Tap on **Open** to access the update.
+- 在开发构建中登录你的 Expo 账户。
+- 打开 **Extensions** 选项卡。
+- 在 **EAS Update** 下查找列出的 **Branch: development**。
+- 点击 **Open** 以访问该更新。
 
 </Step>
 
 <Step label="7">
 
-## Sharing changes with preview or production builds
+## 与预览或生产构建共享更改
 
-Updates for non-development builds (preview or production) are automatically downloaded to the device when the app starts up and makes a request for any new updates.
+非开发构建（preview 或 production）的更新会在应用启动并请求任何新更新时自动下载到设备。
 
-Any team member running the preview or production build will receive the update with the changes we push to those specific branches.
+任何运行预览或生产构建的团队成员都会收到我们推送到这些特定分支的更改更新。
 
-For example, for a `preview` build, we can run:
+例如，对于 `preview` 构建，我们可以运行：
 
 <Terminal cmd={['$ eas update --channel preview --message "Change first button label"']} />
 
-Here is an example where we've published an update for the `preview` build. To test the update, force close and reopen the app twice to download and view the changes:
+下面是一个我们已为 `preview` 构建发布更新的示例。要测试该更新，请强制关闭并重新打开应用两次，以下载并查看更改：
 
 <ContentSpotlight file="tutorial/eas/running-update-on-dev.mp4" />
 
 </Step>
 
-## Summary
+## 总结
 
 <ProgressTracker
   currentChapterIndex={9}
   name="EAS_TUTORIAL"
-  summary="We successfully configured  EAS Update to manage and publish over-the-air updates across platforms, and explored methods to fetch updates to review."
-  nextChapterDescription="In the next chapter, learn about the process of triggering builds from a GitHub repository."
-  nextChapterTitle="Trigger builds from a GitHub repository"
+  summary="我们已成功配置 EAS Update 来管理并发布跨平台的空中更新，并探索了获取更新进行审查的方法。"
+  nextChapterDescription="在下一章中，了解如何从 GitHub 仓库触发构建的流程。"
+  nextChapterTitle="从 GitHub 仓库触发构建"
   nextChapterLink="/tutorial/eas/using-github/"
 />

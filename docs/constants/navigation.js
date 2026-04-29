@@ -67,18 +67,18 @@ const generalDirectories = fs
 // --- Navigation ---
 
 export const home = [
-  makeSection('Get started', [
+  makeSection('开始使用', [
     makePage('get-started/create-a-project.mdx'),
     makePage('get-started/set-up-your-environment.mdx'),
     makePage('get-started/start-developing.mdx'),
     makePage('get-started/next-steps.mdx'),
   ]),
   makeSection('AI', [makePage('skills.mdx'), makePage('llms.mdx')]),
-  makeSection('Develop', [
+  makeSection('开发', [
     makePage('develop/tools.mdx'),
     makePage('develop/app-navigation.mdx'),
     makeGroup(
-      'User interface',
+      '用户界面',
       [
         makePage('develop/user-interface/splash-screen-and-app-icon.mdx'),
         makePage('develop/user-interface/safe-areas.mdx'),
@@ -93,7 +93,7 @@ export const home = [
       { expanded: false }
     ),
     makeGroup(
-      'Development builds',
+      '开发构建',
       [
         makePage('develop/development-builds/introduction.mdx'),
         makePage('develop/development-builds/expo-go-to-dev-build.mdx'),
@@ -106,7 +106,7 @@ export const home = [
       { expanded: false }
     ),
     makeGroup(
-      'Config plugins',
+      '配置插件',
       [
         makePage('config-plugins/introduction.mdx'),
         makePage('config-plugins/plugins.mdx'),
@@ -119,7 +119,7 @@ export const home = [
       { expanded: false }
     ),
     makeGroup(
-      'Debugging',
+      '调试',
       [
         makePage('debugging/errors-and-warnings.mdx'),
         makePage('debugging/runtime-issues.mdx'),
@@ -133,25 +133,25 @@ export const home = [
     makePage('develop/authentication.mdx'),
     makePage('develop/unit-testing.mdx'),
   ]),
-  makeSection('Review', [
+  makeSection('评审', [
     makePage('review/overview.mdx'),
     makePage('review/share-previews-with-your-team.mdx'),
     makePage('review/with-orbit.mdx'),
   ]),
-  makeSection('Deploy', [
+  makeSection('发布', [
     makePage('deploy/build-project.mdx'),
     makePage('deploy/submit-to-app-stores.mdx'),
     makePage('deploy/app-stores-metadata.mdx'),
     makePage('deploy/send-over-the-air-updates.mdx'),
     makePage('deploy/web.mdx'),
   ]),
-  makeSection('Monitor', [makePage('monitoring/services.mdx')]),
-  makeSection('More', [makePage('core-concepts.mdx'), makePage('faq.mdx')]),
+  makeSection('监控', [makePage('monitoring/services.mdx')]),
+  makeSection('更多', [makePage('core-concepts.mdx'), makePage('faq.mdx')]),
 ];
 
 export const general = [
   makeSection('', [makePage('guides/overview.mdx')]),
-  makeSection('Development process', [
+  makeSection('开发流程', [
     makePage('workflow/overview.mdx'),
     makePage('workflow/configuration.mdx'),
     makePage('workflow/continuous-native-generation.mdx'),
@@ -160,7 +160,7 @@ export const general = [
     makePage('guides/permissions.mdx'),
     makePage('guides/environment-variables.mdx'),
     makeGroup(
-      'Linking',
+      '深度链接',
       [
         makePage('linking/overview.mdx'),
         makePage('linking/into-other-apps.mdx'),
@@ -173,12 +173,12 @@ export const general = [
       }
     ),
     makeGroup(
-      'Write native code',
+      '编写原生代码',
       [makePage('workflow/customizing.mdx'), makePage('guides/adopting-prebuild.mdx')],
       { expanded: false }
     ),
     makeGroup(
-      'Build locally',
+      '本地构建',
       [
         makePage('guides/local-app-overview.mdx'),
         makePage('guides/local-app-development.mdx'),
@@ -203,7 +203,7 @@ export const general = [
       { expanded: false }
     ),
     makeGroup(
-      'Bundling',
+      '打包',
       [
         makePage('guides/customizing-metro.mdx'),
         makePage('guides/analyzing-bundles.mdx'),
@@ -213,7 +213,7 @@ export const general = [
       ],
       { expanded: false }
     ),
-    makeSection('Existing React Native apps', [
+    makeSection('现有 React Native 应用', [
       makePage('bare/overview.mdx'),
       makePage('bare/installing-expo-modules.mdx'),
       makePage('bare/using-expo-cli.mdx'),
@@ -221,14 +221,14 @@ export const general = [
       makePage('bare/install-dev-builds-in-bare.mdx'),
       makePage('bare/upgrade.mdx'),
     ]),
-    makeSection('Existing native apps', [
+    makeSection('现有原生应用', [
       makePage('brownfield/overview.mdx'),
       makePage('brownfield/isolated-approach.mdx'),
       makePage('brownfield/integrated-approach.mdx'),
       makePage('brownfield/lifecycle-listeners.mdx'),
     ]),
     makeGroup(
-      'Reference',
+      '参考',
       [
         makePage('guides/monorepos.mdx'),
         makePage('workflow/logging.mdx'),
@@ -245,14 +245,14 @@ export const general = [
   makeSection('Expo Router', [
     makePage('router/introduction.mdx'),
     makePage('router/installation.mdx'),
-    makeGroup('Router 101', [
+    makeGroup('Router 入门', [
       makePage('router/basics/core-concepts.mdx'),
       makePage('router/basics/notation.mdx'),
       makePage('router/basics/navigation-layouts.mdx'),
       makePage('router/basics/navigation.mdx'),
       makePage('router/basics/common-navigation-patterns.mdx'),
     ]),
-    makeGroup('Navigation patterns', [
+    makeGroup('导航模式', [
       makePage('router/advanced/stack.mdx'),
       makePage('router/advanced/tabs.mdx'),
       makePage('router/advanced/native-tabs.mdx'),
@@ -283,7 +283,7 @@ export const general = [
       makePage('router/web/server-rendering.mdx'),
       makePage('router/web/async-routes.mdx'),
     ]),
-    makeGroup('Reference', [
+    makeGroup('参考', [
       makePage('router/error-handling.mdx'),
       makePage('router/reference/url-parameters.mdx'),
       makePage('router/reference/color.mdx'),
@@ -317,7 +317,7 @@ export const general = [
         makePage('modules/existing-library.mdx'),
         makePage('modules/additional-platform-support.mdx'),
       ]),
-      makeSection('Reference', [
+      makeSection('参考', [
         makePage('modules/module-api.mdx'),
         makePage('modules/inline-modules-reference.mdx'),
         makePage('modules/android-lifecycle-listeners.mdx'),
@@ -331,7 +331,7 @@ export const general = [
     ],
     { expanded: false }
   ),
-  makeSection('Push notifications', [
+  makeSection('推送通知', [
     makePage('push-notifications/overview.mdx'),
     makePage('push-notifications/what-you-need-to-know.mdx'),
     makePage('push-notifications/push-notifications-setup.mdx'),
@@ -347,39 +347,39 @@ export const general = [
       { expanded: false }
     ),
   ]),
-  makeSection('Integrations', [
-    makeGroup('Analytics and error reports', [
+  makeSection('集成', [
+    makeGroup('分析与错误报告', [
       makePage('guides/using-analytics.mdx'),
       makePage('guides/using-sentry.mdx'),
       makePage('guides/using-bugsnag.mdx'),
       makePage('guides/using-logrocket.mdx'),
       makePage('guides/using-vexo.mdx'),
     ]),
-    makeGroup('Authentication', [
+    makeGroup('认证', [
       makePage('guides/using-authentication.mdx'),
       makePage('guides/using-clerk.mdx'),
       makePage('guides/facebook-authentication.mdx'),
       makePage('guides/google-authentication.mdx'),
     ]),
     makeGroup('CMS', [makePage('guides/using-a-cms.mdx')]),
-    makeGroup('Database and SDKs', [
+    makeGroup('数据库与 SDK', [
       makePage('guides/using-convex.mdx'),
       makePage('guides/using-firebase.mdx'),
       makePage('guides/using-supabase.mdx'),
     ]),
-    makeGroup('Emails', [makePage('guides/using-resend.mdx')]),
-    makeGroup('Feature flags', [makePage('guides/using-feature-flags.mdx')]),
-    makeGroup('In-app purchases', [makePage('guides/in-app-purchases.mdx')]),
-    makeGroup('Push notifications', [makePage('guides/using-push-notifications-services.mdx')]),
-    makeGroup('Tools', [makePage('guides/using-eslint.mdx'), makePage('guides/typescript.mdx')]),
-    makeGroup('TV apps', [makePage('guides/building-for-tv.mdx')]),
-    makeGroup('Web apps', [makePage('guides/using-nextjs.mdx')]),
+    makeGroup('邮件', [makePage('guides/using-resend.mdx')]),
+    makeGroup('功能开关', [makePage('guides/using-feature-flags.mdx')]),
+    makeGroup('应用内购买', [makePage('guides/in-app-purchases.mdx')]),
+    makeGroup('推送通知', [makePage('guides/using-push-notifications-services.mdx')]),
+    makeGroup('工具', [makePage('guides/using-eslint.mdx'), makePage('guides/typescript.mdx')]),
+    makeGroup('TV 应用', [makePage('guides/building-for-tv.mdx')]),
+    makeGroup('Web 应用', [makePage('guides/using-nextjs.mdx')]),
   ]),
   makeSection(
-    'More',
+    '更多',
     [
       makePage('workflow/upgrading-expo-sdk-walkthrough.mdx'),
-      makeSection('Assorted', [
+      makeSection('杂项', [
         makePage('guides/authentication.mdx'),
         makePage('guides/using-hermes.mdx'),
         makePage('guides/ios-developer-mode.mdx'),
@@ -396,7 +396,7 @@ export const general = [
         makePage('guides/expo-ui-swift-ui/index.mdx'),
         makePage('guides/expo-ui-swift-ui/extending.mdx'),
       ]),
-      makeSection('Troubleshooting', [
+      makeSection('故障排查', [
         makePage('troubleshooting/overview.mdx'),
         makePage('troubleshooting/application-has-not-been-registered.mdx'),
         makePage('troubleshooting/clear-cache-macos-linux.mdx'),
@@ -514,35 +514,35 @@ export const eas = [
       { expanded: false }
     ),
   ]),
-  makeSection('EAS Submit', [
+  makeSection('EAS 提交', [
     makePage('submit/introduction.mdx'),
     makePage('submit/android.mdx'),
     makePage('submit/ios.mdx'),
     makePage('submit/eas-json.mdx'),
   ]),
-  makeSection('EAS Hosting', [
+  makeSection('EAS 托管', [
     makePage('eas/hosting/introduction.mdx'),
     makePage('eas/hosting/get-started.mdx'),
     makePage('eas/hosting/deployments-and-aliases.mdx'),
     makePage('eas/hosting/custom-domain.mdx'),
     makePage('eas/hosting/api-routes.mdx'),
     makePage('eas/hosting/workflows.mdx'),
-    makeGroup('Reference', [
+    makeGroup('参考', [
       makePage('eas/hosting/reference/caching.mdx'),
       makePage('eas/hosting/reference/responses-and-headers.mdx'),
       makePage('eas/hosting/reference/worker-runtime.mdx'),
     ]),
   ]),
-  makeSection('EAS Update', [
+  makeSection('EAS 更新', [
     makePage('eas-update/introduction.mdx'),
     makePage('eas-update/getting-started.mdx'),
-    makeGroup('Preview', [
+    makeGroup('预览', [
       makePage('eas-update/preview.mdx'),
       makePage('eas-update/override.mdx'),
       makePage('eas-update/expo-dev-client.mdx'),
       makePage('eas-update/github-actions.mdx'),
     ]),
-    makeGroup('Deployment', [
+    makeGroup('部署', [
       makePage('eas-update/deployment.mdx'),
       makePage('eas-update/download-updates.mdx'),
       makePage('eas-update/rollouts.mdx'),
@@ -551,16 +551,16 @@ export const eas = [
       makePage('eas-update/optimize-assets.mdx'),
       makePage('eas-update/deployment-patterns.mdx'),
     ]),
-    makeGroup('Concepts', [
+    makeGroup('概念', [
       makePage('eas-update/how-it-works.mdx'),
       makePage('eas-update/eas-cli.mdx'),
       makePage('eas-update/runtime-versions.mdx'),
     ]),
-    makeGroup('Troubleshooting', [
+    makeGroup('故障排查', [
       makePage('eas-update/debug.mdx'),
       makePage('eas-update/error-recovery.mdx'),
     ]),
-    makeGroup('Reference', [
+    makeGroup('参考', [
       makePage('eas-update/code-signing.mdx'),
       makePage('eas-update/asset-selection.mdx'),
       makePage('eas-update/standalone-service.mdx'),
@@ -572,7 +572,7 @@ export const eas = [
       makePage('eas-update/integration-in-existing-native-apps.mdx'),
     ]),
   ]),
-  makeSection('EAS Metadata', [
+  makeSection('EAS 元数据', [
     makePage('eas/metadata/index.mdx'),
     makePage('eas/metadata/getting-started.mdx'),
     makeGroup(
@@ -581,14 +581,14 @@ export const eas = [
       { expanded: false }
     ),
   ]),
-  makeSection('EAS Insights', [makePage('eas-insights/introduction.mdx')]),
-  makeSection('Distribution', [
+  makeSection('EAS 洞察', [makePage('eas-insights/introduction.mdx')]),
+  makeSection('分发', [
     makePage('distribution/introduction.mdx'),
     makePage('distribution/app-stores.mdx'),
     makePage('distribution/app-transfers.mdx'),
     makePage('distribution/app-size.mdx'),
   ]),
-  makeSection('Reference', [
+  makeSection('参考', [
     makePage('eas/webhooks.mdx'),
     makeSection('Expo accounts', [
       makePage('accounts/account-types.mdx'),
@@ -646,11 +646,11 @@ export const learn = [
     ],
     { expanded: true }
   ),
-  makeSection('More', [makePage('additional-resources/index.mdx')]),
+  makeSection('更多', [makePage('additional-resources/index.mdx')]),
 ];
 
 const preview = [
-  makeSection('Preview', [
+  makeSection('预览', [
     makePage('preview/introduction.mdx'),
     makeGroup('Expo Router', [makePage('preview/singular.mdx'), { expanded: true }]),
   ]),
@@ -663,7 +663,7 @@ const archive = [
       makePage('archive/classic-updates/configuring-updates.mdx'),
       makePage('archive/classic-updates/preloading-and-caching-assets.mdx'),
     ]),
-    makeSection('Distribution', [
+    makeSection('分发', [
       makePage('archive/classic-updates/release-channels.mdx'),
       makePage('archive/classic-updates/advanced-release-channels.mdx'),
       makePage('archive/classic-updates/hosting-your-app.mdx'),
@@ -673,12 +673,12 @@ const archive = [
     makeSection('Workflow', [makePage('archive/classic-updates/publishing.mdx')]),
     makeSection('Bare Workflow', [makePage('archive/classic-updates/updating-your-app.mdx')]),
   ]),
-  makeSection('Technical Specs', [makePage('archive/technical-specs/expo-updates-0.mdx')]),
-  makeSection('Push Notifications', [
+  makeSection('技术规格', [makePage('archive/technical-specs/expo-updates-0.mdx')]),
+  makeSection('推送通知', [
     makePage('archive/push-notifications/sending-notifications-custom-fcm-legacy.mdx'),
     makePage('archive/push-notifications/notification-channels.mdx'),
   ]),
-  makeSection('More', [
+  makeSection('更多', [
     makePage('archive/publishing-websites-webpack.mdx'),
     makePage('archive/customizing-webpack.mdx'),
     makePage('archive/e2e-tests.mdx'),
@@ -721,7 +721,7 @@ const versionsReference = VERSIONS.reduce(
         ),
         { expanded: true }
       ),
-      makeSection('Technical specs', [
+      makeSection('技术规格', [
         makePage('technical-specs/expo-updates-1.mdx'),
         makePage('technical-specs/expo-sfv-0.mdx'),
       ]),

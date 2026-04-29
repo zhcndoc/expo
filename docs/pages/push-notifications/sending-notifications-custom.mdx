@@ -1,20 +1,20 @@
 ---
-title: Send notifications with FCM and APNs
+title: 使用 FCM 和 APNs 发送通知
 hideFromSearch: true
-description: Learn how to send notifications with FCM and APNs.
+description: 了解如何使用 FCM 和 APNs 发送通知。
 ---
 
 import { DiffBlock } from '~/ui/components/Snippet';
 
-You may need finer-grained control over your notifications, in which case communicating directly with FCM and APNs may be necessary. The Expo platform does not lock you into using Expo Application Services, and the `expo-notifications` API is push-service agnostic.
+你可能需要对通知进行更细粒度的控制，在这种情况下，直接与 FCM 和 APNs 通信可能是必要的。Expo 平台不会强制你使用 Expo Application Services，而 `expo-notifications` API 与推送服务无关。
 
-> **Note**: This guide does not aim to be a comprehensive resource for sending notifications via FCM or APNs. We recommend you read the official documentation to make sure you're following the latest instructions.
+> **注意**：本指南并不旨在成为通过 FCM 或 APNs 发送通知的完整资源。我们建议你阅读官方文档，以确保你遵循的是最新说明。
 
-## Obtaining a device token for FCM or APNs
+## 获取 FCM 或 APNs 的设备令牌
 
-When using Expo notification service, you use the `ExpoPushToken` obtained with [`getExpoPushTokenAsync`](/versions/latest/sdk/notifications/#getexpopushtokenasyncoptions-expotokenoptions-expopushtoken).
+使用 Expo 通知服务时，你会使用通过 [`getExpoPushTokenAsync`](/versions/latest/sdk/notifications/#getexpopushtokenasyncoptions-expotokenoptions-expopushtoken) 获取的 `ExpoPushToken`。
 
-If you instead want to send notifications via FCM or APNs, you need to obtain the native device token with [`getDevicePushTokenAsync`](/versions/latest/sdk/notifications/#getdevicepushtokenasync-devicepushtoken).
+如果你改为希望通过 FCM 或 APNs 发送通知，则需要使用 [`getDevicePushTokenAsync`](/versions/latest/sdk/notifications/#getdevicepushtokenasync-devicepushtoken) 获取原生设备令牌。
 
 <DiffBlock
   raw={`diff --git a/App.js b/App.js
@@ -26,26 +26,26 @@ index 0000000..1111111 100644
  // ...
 -const token = (await Notifications.getExpoPushTokenAsync()).data;
 +const token = (await Notifications.getDevicePushTokenAsync()).data;
- // send token to your server`}
+ // 将令牌发送到你的服务器`}
 />
 
-## FCMv1 server
+## FCMv1 服务器
 
-This guide is based on [Firebase official documentation](https://firebase.google.com/docs/cloud-messaging/server).
+本指南基于 [Firebase 官方文档](https://firebase.google.com/docs/cloud-messaging/server)。
 
-Communicating with FCM is done by sending a POST request. However, before sending or receiving any notifications, you'll need to follow the steps to [configure FCM](/push-notifications/fcm-credentials/) and get your `FCM-SERVER-KEY`.
+与 FCM 通信是通过发送 POST 请求完成的。不过，在发送或接收任何通知之前，你需要先按照步骤[配置 FCM](/push-notifications/fcm-credentials/) 并获取你的 `FCM-SERVER-KEY`。
 
-### Getting an authentication token
+### 获取认证令牌
 
-FCM requires an Oauth 2.0 access token, which must be obtained via one of the methods described in ["Update authorization of send requests"](https://firebase.google.com/docs/cloud-messaging/send/v1-api#authorize-http-v1-send-requests).
+FCM 需要一个 Oauth 2.0 访问令牌，该令牌必须通过 ["Update authorization of send requests"](https://firebase.google.com/docs/cloud-messaging/send/v1-api#authorize-http-v1-send-requests) 中描述的方法之一获得。
 
-For testing purposes, you can use the Google Auth Library and your private key file obtained above, to obtain a short lived token for a single notification, as in this Node example adapted from Firebase documentation:
+出于测试目的，你可以使用 Google Auth Library 和上面获得的私钥文件，为单条通知获取一个短期令牌，如下面这个根据 Firebase 文档改编的 Node 示例所示：
 
 ```ts
 import { JWT } from 'google-auth-library';
 
 function getAccessTokenAsync(
-  key: string // Contents of your FCM private key file
+  key: string // 你的 FCM 私钥文件内容
 ) {
   return new Promise(function (resolve, reject) {
     const jwtClient = new JWT(
@@ -66,14 +66,14 @@ function getAccessTokenAsync(
 }
 ```
 
-### Sending the notification
+### 发送通知
 
-The example code below calls `getAccessTokenAsync()` above to get the Oauth 2.0 token, then constructs and sends the notification POST request. Note that unlike FCM legacy protocol, the endpoint for the request includes the name of your Firebase project.
+下面的示例代码调用上面的 `getAccessTokenAsync()` 来获取 Oauth 2.0 令牌，然后构造并发送通知 POST 请求。请注意，与 FCM 旧版协议不同，请求的端点包含你的 Firebase 项目名称。
 
 ```ts
-// FCM_SERVER_KEY: Environment variable with the path to your FCM private key file
-// FCM_PROJECT_NAME: Your Firebase project name
-// FCM_DEVICE_TOKEN: The client's device token (see above in this document)
+// FCM_SERVER_KEY: 指向你的 FCM 私钥文件路径的环境变量
+// FCM_PROJECT_NAME: 你的 Firebase 项目名称
+// FCM_DEVICE_TOKEN: 客户端的设备令牌（见本文上方）
 
 async function sendFCMv1Notification() {
   const key = require(process.env.FCM_SERVER_KEY);
@@ -115,26 +115,26 @@ async function sendFCMv1Notification() {
 }
 ```
 
-The `experienceId` and `scopeKey` fields are only applicable when using Expo Go (from SDK 53, push notifications support is removed from Expo Go). Otherwise, your notifications will not go through to your app. FCM has a list of supported fields in the [notification payload](https://firebase.google.com/docs/cloud-messaging/http-server-ref#notification-payload-support), and you can see which ones are supported by `expo-notifications` on Android by looking at the [FirebaseRemoteMessage](/versions/latest/sdk/notifications/#firebaseremotemessage).
+`experienceId` 和 `scopeKey` 字段仅在使用 Expo Go 时适用（从 SDK 53 开始，Expo Go 中已移除推送通知支持）。否则，你的通知将不会送达你的应用。FCM 在 [通知负载](https://firebase.google.com/docs/cloud-messaging/http-server-ref#notification-payload-support) 中提供了一份受支持字段列表，你也可以通过查看 [FirebaseRemoteMessage](/versions/latest/sdk/notifications/#firebaseremotemessage) 来了解 `expo-notifications` 在 Android 上支持哪些字段。
 
-FCM also provides some [server-side libraries in a few different languages](https://firebase.google.com/docs/cloud-messaging/send/admin-sdk) you can use instead of raw `fetch` requests.
+FCM 还提供了一些可用于替代原始 `fetch` 请求的 [多种语言的服务端库](https://firebase.google.com/docs/cloud-messaging/send/admin-sdk)。
 
-### How to find FCM server key
+### 如何查找 FCM 服务器密钥
 
-Your FCM server key can be found by making sure you've followed the [configuration steps](/push-notifications/push-notifications-setup/#android), and instead of uploading your FCM key to Expo, you would use that key directly in your server (as the `FCM-SERVER-KEY` in the previous example).
+你可以通过确保已遵循[配置步骤](/push-notifications/push-notifications-setup/#android)来找到你的 FCM 服务器密钥；并且不是将你的 FCM 密钥上传到 Expo，而是直接在你的服务器中使用该密钥（作为前一个示例中的 `FCM-SERVER-KEY`）。
 
-## APNs server
+## APNs 服务器
 
-> **info** This documentation is based on [Apple's documentation](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html), and this section covers the basics to get you started.
+> **信息** 本文档基于 [Apple 的文档](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html)，本节将介绍帮助你入门的基础内容。
 
-Communicating with APNs is a little more complicated than with FCM. Some libraries wrap all of this functionality into one or two function calls such as [`node-apn`](https://github.com/node-apn/node-apn). However, in the examples below, a minimum set of libraries are used.
+与 APNs 通信比与 FCM 通信要复杂一些。一些库会将所有这些功能封装到一两个函数调用中，例如 [`node-apn`](https://github.com/node-apn/node-apn)。不过，在下面的示例中，仅使用了一组最少的库。
 
-### Client APNs entitlement
+### 客户端 APNs 权限
 
-Receiving push notifications only works if your iOS app has the APNs entitlement. For apps using [CNG](/workflow/continuous-native-generation/),
-the Expo config needs to be modified in one of two ways:
+只有当你的 iOS 应用具有 APNs 权限时，接收推送通知才有效。对于使用 [CNG](/workflow/continuous-native-generation/) 的应用，
+Expo 配置需要通过以下两种方式之一进行修改：
 
-- **Recommended**: Add the `expo-notifications` library to your app, and ensure that its plugin appears in the `plugins` array of your [app config](/workflow/configuration/):
+- **推荐**：将 `expo-notifications` 库添加到你的应用中，并确保其插件出现在你的 [app config](/workflow/configuration/) 的 `plugins` 数组中：
 
 {/* prettier-ignore */}
 ```json app.json
@@ -149,8 +149,8 @@ the Expo config needs to be modified in one of two ways:
 }
 ```
 
-- If you do not plan to use the `expo-notifications` library, then you should [add the `aps-environment` entitlement manually to the Expo configuration](/build-reference/ios-capabilities/#entitlements),
-  as in the example below:
+- 如果你不打算使用 `expo-notifications` 库，那么你应该 [手动将 `aps-environment` entitlement 添加到 Expo 配置中](/build-reference/ios-capabilities/#entitlements)，
+  如下面的示例所示：
 
 ```json app.json
 {
@@ -166,17 +166,17 @@ the Expo config needs to be modified in one of two ways:
 }
 ```
 
-If you are not using CNG, then you should [add the push notification entitlement in Xcode](https://developer.apple.com/documentation/usernotifications/registering-your-app-with-apns).
+如果你没有使用 CNG，那么你应该 [在 Xcode 中添加推送通知 entitlement](https://developer.apple.com/documentation/usernotifications/registering-your-app-with-apns)。
 
-> **Note**: If you are upgrading an Expo app from a version from SDK 51 and earlier, you should refer to [this FYI document](https://expo.fyi/apns-entitlement-sdk-51).
+> **注意**：如果你正在将一个 Expo 应用从 SDK 51 及更早版本升级，那么你应该参考 [这份 FYI 文档](https://expo.fyi/apns-entitlement-sdk-51)。
 
-### Authorization
+### 授权
 
-Initially, before sending requests to APNS, you need permission to send notifications to your app. This is granted via a JSON web token which is generated using iOS developer credentials:
+最初，在向 APNS 发送请求之前，你需要获得向你的应用发送通知的权限。这是通过一个 JSON web token 授予的，该 token 使用 iOS 开发者凭据生成：
 
-- APN key (`.p8` file) associated with your app
-- Key ID of the above `.p8` file
-- Your Apple Team ID
+- 与你的应用关联的 APN key（`.p8` 文件）
+- 上述 `.p8` 文件的 Key ID
+- 你的 Apple Team ID
 
 ```js
 const jwt = require("jsonwebtoken");
@@ -195,11 +195,11 @@ const authorizationToken = jwt.sign(
 );
 ```
 
-### HTTP/2 connection
+### HTTP/2 连接
 
-After getting the `authorizationToken`, you can open up an HTTP/2 connection to Apple's servers. In development, send requests to `api.sandbox.push.apple.com`. In production, send requests to `api.push.apple.com`.
+在获得 `authorizationToken` 之后，你可以与 Apple 的服务器建立 HTTP/2 连接。在开发环境中，请向 `api.sandbox.push.apple.com` 发送请求。在生产环境中，请向 `api.push.apple.com` 发送请求。
 
-Here's how to construct the request:
+下面是构造请求的方法：
 
 ```js
 const http2 = require('http2');
@@ -212,8 +212,8 @@ const request = client.request({
   ':method': 'POST',
   ':scheme': 'https',
   'apns-topic': 'YOUR-BUNDLE-IDENTIFIER',
-  ':path': '/3/device/' + nativeDeviceToken, // This is the native device token you grabbed client-side
-  authorization: `bearer ${authorizationToken}`, // This is the JSON web token generated in the "Authorization" step
+  ':path': '/3/device/' + nativeDeviceToken, // 这是你在客户端获取到的原生设备令牌
+  authorization: `bearer ${authorizationToken}`, // 这是在“授权”步骤中生成的 JSON web token
 });
 request.setEncoding('utf8');
 
@@ -221,17 +221,17 @@ request.write(
   JSON.stringify({
     aps: {
       alert: {
-        title: "\uD83D\uDCE7 You've got mail!",
-        body: 'Hello world! \uD83C\uDF10',
+        title: "\uD83D\uDCE7 你有新邮件！",
+        body: '你好，世界！ \uD83C\uDF10',
       },
     },
-    experienceId: '@yourExpoUsername/yourProjectSlug', // Required only when testing in legacy Expo Go (in SDK 52 and earlier)
-    scopeKey: '@yourExpoUsername/yourProjectSlug', // Required only when testing in legacy Expo Go (in SDK 52 and earlier)
+    experienceId: '@yourExpoUsername/yourProjectSlug', // 仅在使用旧版 Expo Go 进行测试时需要（SDK 52 及更早版本）
+    scopeKey: '@yourExpoUsername/yourProjectSlug', // 仅在使用旧版 Expo Go 进行测试时需要（SDK 52 及更早版本）
   })
 );
 request.end();
 ```
 
-> This example is minimal and includes no error handling and connection pooling. For testing purposes, you can refer to [`sendNotificationToAPNS`](https://github.com/expo/expo/blob/main/docs/public/static/examples/sendNotificationToAPNS.js) example code.
+> 此示例为最小示例，不包含错误处理和连接池。若用于测试，你可以参考 [`sendNotificationToAPNS`](https://github.com/expo/expo/blob/main/docs/public/static/examples/sendNotificationToAPNS.js) 示例代码。
 
-APNs provide their full list of supported fields in the [notification payload](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Payload-key-reference).
+APNs 在 [通知负载](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Payload-key-reference) 中提供了其支持字段的完整列表。

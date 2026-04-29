@@ -1,7 +1,7 @@
 ---
-title: Using Firebase
+title: 使用 Firebase
 maxHeadingDepth: 4
-description: A guide on getting started and using Firebase JS SDK and React Native Firebase library.
+description: 一份关于开始使用 Firebase JS SDK 和 React Native Firebase 库的指南。
 ---
 
 import { BoxLink } from '~/ui/components/BoxLink';
@@ -11,75 +11,75 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
 <RedirectNotification>
-  The `expo-firebase-analytics` and `expo-firebase-recaptcha` libraries have been removed from SDK
-  48 onwards. We recommend using [React Native Firebase](#using-react-native-firebase) which
-  provides capabilities similar to these libraries.
+  `expo-firebase-analytics` 和 `expo-firebase-recaptcha` 库已从 SDK
+  48 起被移除。我们建议使用 [React Native Firebase](#using-react-native-firebase)，它
+  提供了与这些库类似的功能。
 </RedirectNotification>
 
-[Firebase](https://firebase.google.com/) is a Backend-as-a-Service (BaaS) app development platform that provides hosted backend services such as real-time database, cloud storage, authentication, crash reporting, analytics, and so on.
-It is built on Google's infrastructure and scales automatically.
+[Firebase](https://firebase.google.com/) 是一个 Backend-as-a-Service (BaaS) 应用开发平台，提供实时数据库、云存储、身份验证、崩溃报告、分析等托管后端服务。
+它构建于 Google 的基础设施之上，并可自动扩展。
 
-There are two different ways you can use Firebase in your projects:
+在你的项目中使用 Firebase 有两种不同的方式：
 
-- Using [Firebase JS SDK](#using-firebase-js-sdk)
-- Using [React Native Firebase](#using-react-native-firebase)
+- 使用 [Firebase JS SDK](#using-firebase-js-sdk)
+- 使用 [React Native Firebase](#using-react-native-firebase)
 
-React Native supports both the JS SDK and the native SDK. The following sections will guide you through when to use which SDK and all the configuration steps required to use Firebase in your Expo projects.
+React Native 同时支持 JS SDK 和原生 SDK。以下各节将指导你何时使用哪种 SDK，以及在 Expo 项目中使用 Firebase 所需的全部配置步骤。
 
-## Prerequisites
+## 先决条件
 
-Before proceeding, make sure that you have created a new Firebase project or have an existing one using the [Firebase console](https://console.firebase.google.com/).
+在继续之前，请确保你已经使用 [Firebase 控制台](https://console.firebase.google.com/) 创建了一个新的 Firebase 项目，或者已经有一个现有项目。
 
-## Using Firebase JS SDK
+## 使用 Firebase JS SDK
 
-The [Firebase JS SDK](https://firebase.google.com/docs/web/setup) is a JavaScript library that allows you to interact with Firebase services in your project.
-It supports services such as [Authentication](https://firebase.google.com/docs/auth), [Firestore](https://firebase.google.com/docs/firestore), [Realtime Database](https://firebase.google.com/docs/database), and [Storage](https://firebase.google.com/docs/storage) in a React Native app.
+[Firebase JS SDK](https://firebase.google.com/docs/web/setup) 是一个 JavaScript 库，可让你在项目中与 Firebase 服务交互。
+它支持在 React Native 应用中使用 [Authentication](https://firebase.google.com/docs/auth)、[Firestore](https://firebase.google.com/docs/firestore)、[Realtime Database](https://firebase.google.com/docs/database) 和 [Storage](https://firebase.google.com/docs/storage) 等服务。
 
-### When to use Firebase JS SDK
+### 何时使用 Firebase JS SDK
 
-You can consider using the Firebase JS SDK when you:
+在以下情况下，你可以考虑使用 Firebase JS SDK：
 
-- Want to use Firebase services such as Authentication, Firestore, Realtime Database, and Storage in your app and want to develop your app with [**Expo Go**](/get-started/set-up-your-environment/).
-- Want a quick start with Firebase services.
-- Want to create a universal app for Android, iOS, and the web.
+- 想在应用中使用 Authentication、Firestore、Realtime Database 和 Storage 等 Firebase 服务，并希望使用 [**Expo Go**](/get-started/set-up-your-environment/) 开发应用。
+- 想快速开始使用 Firebase 服务。
+- 想为 Android、iOS 和 Web 创建一个通用应用。
 
-#### Caveats
+#### 注意事项
 
-Firebase JS SDK does not support all services for mobile apps. Some of these services are Analytics, Dynamic Links and Crashlytics. See the [React Native Firebase](#using-react-native-firebase) section if you want to use these services.
+Firebase JS SDK 不支持移动应用的所有服务。其中一些服务包括 Analytics、Dynamic Links 和 Crashlytics。如果你想使用这些服务，请参见 [React Native Firebase](#using-react-native-firebase) 部分。
 
-### Install and initialize Firebase JS SDK
+### 安装并初始化 Firebase JS SDK
 
-> **warning** Expo SDK only supports `firebase@12.0.0` and above. Versions before this version cause ES module resolution errors.
+> **warning** Expo SDK 仅支持 `firebase@12.0.0` 及以上版本。早于此版本会导致 ES 模块解析错误。
 
 <Step label="1">
-#### Install the SDK
+#### 安装 SDK
 
-After you have created your [Expo project](/get-started/create-a-project/), you can install the Firebase JS SDK using the following command:
+在你创建好 [Expo 项目](/get-started/create-a-project/) 后，可以使用以下命令安装 Firebase JS SDK：
 
 <Terminal cmd={['$ npx expo install firebase']} />
 
 </Step>
 
 <Step label="2">
-#### Initialize the SDK in your project
+#### 在项目中初始化 SDK
 
-To initialize the Firebase instance in your Expo project, you must create a config object and pass it to the `initializeApp()` method imported from the `firebase/app` module.
+要在 Expo 项目中初始化 Firebase 实例，你必须创建一个配置对象，并将其传递给从 `firebase/app` 模块导入的 `initializeApp()` 方法。
 
-The config object requires an API key and other unique identifiers. To obtain these values, you will have to register a web app in your Firebase project. You can find these instructions in the [Firebase documentation](https://firebase.google.com/docs/web/setup#register-app).
+配置对象需要 API 密钥和其他唯一标识符。要获取这些值，你需要在 Firebase 项目中注册一个 Web 应用。你可以在 [Firebase 文档](https://firebase.google.com/docs/web/setup#register-app) 中找到这些说明。
 
-After you have the API key and other identifiers, you can paste the following code snippet by creating a new **firebaseConfig.js** file in your project's root directory or any other directory where you keep the configuration files.
+在获得 API 密钥和其他标识符后，你可以通过在项目根目录或你存放配置文件的任何其他目录中创建一个新的 **firebaseConfig.js** 文件，粘贴下面的代码片段。
 
 ```js firebaseConfig.js
 import { initializeApp } from 'firebase/app';
 
-// Optionally import the services that you want to use
+// 可选地导入你想使用的服务
 // import {...} from 'firebase/auth';
 // import {...} from 'firebase/database';
 // import {...} from 'firebase/firestore';
 // import {...} from 'firebase/functions';
 // import {...} from 'firebase/storage';
 
-// Initialize Firebase
+// 初始化 Firebase
 const firebaseConfig = {
   apiKey: 'api-key',
   authDomain: 'project-id.firebaseapp.com',
@@ -92,135 +92,135 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-// For more information on how to access Firebase in your project,
-// see the Firebase documentation: https://firebase.google.com/docs/web/setup#access-firebase
+// 有关如何在项目中访问 Firebase 的更多信息，
+// 请参阅 Firebase 文档：https://firebase.google.com/docs/web/setup#access-firebase
 ```
 
-You do not have to install other plugins or configurations to use Firebase JS SDK.
+使用 Firebase JS SDK 不需要安装其他插件或进行额外配置。
 
-Firebase version 9 and above provide a modular API. You can directly import any service you want to use from the `firebase` package. For example, if you want to use an authentication service in your project, you can import the `auth` module from the `firebase/auth` package.
+Firebase 9 及以上版本提供了模块化 API。你可以直接从 `firebase` 包中导入你想使用的任何服务。例如，如果你想在项目中使用身份验证服务，可以从 `firebase/auth` 包中导入 `auth` 模块。
 
-> **info** **Troubleshooting tip:** If you encounter issues related to authentication persistence with Firebase JS SDK, see the guide for [setting up persistence to keep users logged in between reloads](https://expo.fyi/firebase-js-auth-setup).
+> **info** **故障排除提示：** 如果你在使用 Firebase JS SDK 时遇到与身份验证持久性相关的问题，请参阅关于[设置持久性以在重新加载之间保持用户登录状态](https://expo.fyi/firebase-js-auth-setup)的指南。
 
 </Step>
 
-### Next steps
+### 下一步
 
 <BoxLink
-  title="Authentication"
-  description="For more information on how to use Authentication in your project, see Firebase documentation."
+  title="身份验证"
+  description="有关如何在项目中使用身份验证的更多信息，请参阅 Firebase 文档。"
   href="https://firebase.google.com/docs/auth/web/start"
 />
 
 <BoxLink
   title="Firestore"
-  description="For more information on how to use Firestore database in your project, see Firebase documentation."
+  description="有关如何在项目中使用 Firestore 数据库的更多信息，请参阅 Firebase 文档。"
   href="https://firebase.google.com/docs/firestore/quickstart"
 />
 
 <BoxLink
   title="Realtime Database"
-  description="For more information on how to use Realtime Database in your project, see Firebase documentation."
+  description="有关如何在项目中使用 Realtime Database 的更多信息，请参阅 Firebase 文档。"
   href="https://firebase.google.com/docs/database"
 />
 
 <BoxLink
   title="Storage"
-  description="For more information on how to use Storage, see Firebase documentation."
+  description="有关如何使用 Storage 的更多信息，请参阅 Firebase 文档。"
   href="https://firebase.google.com/docs/storage/web/start"
 />
 
 <BoxLink
-  title="Firebase Storage example"
-  description="Learn how to use Firebase Storage in an Expo project with our example."
+  title="Firebase Storage 示例"
+  description="了解如何在 Expo 项目中使用 Firebase Storage，我们有相应示例。"
   href="https://github.com/expo/examples/tree/master/with-firebase-storage-upload"
 />
 
 <BoxLink
-  title="Managing API keys for Firebase projects"
-  description="For more information about managing API Key and unique identifiers in a Firebase project."
+  title="管理 Firebase 项目的 API 密钥"
+  description="有关在 Firebase 项目中管理 API Key 和唯一标识符的更多信息。"
   href="https://firebase.google.com/docs/projects/api-keys"
 />
 
 <BoxLink
-  title="Migrate from Expo Firebase packages to React Native Firebase"
-  description="For more information on migrating from expo-firebase-analytics or expo-firebase-recaptcha packages to React Native Firebase."
+  title="从 Expo Firebase 包迁移到 React Native Firebase"
+  description="有关将 expo-firebase-analytics 或 expo-firebase-recaptcha 包迁移到 React Native Firebase 的更多信息。"
   href="https://expo.fyi/firebase-migration-guide"
 />
 
-## Using React Native Firebase
+## 使用 React Native Firebase
 
-[React Native Firebase](https://rnfirebase.io/) provides access to native code by wrapping the native SDKs for Android and iOS into a JavaScript API.
-Each Firebase service is available as a module that can be added as a dependency to your project. For example, the `auth` module provides access to the Firebase Authentication service.
+[React Native Firebase](https://rnfirebase.io/) 通过将 Android 和 iOS 的原生 SDK 封装为 JavaScript API，提供对原生代码的访问。
+每个 Firebase 服务都以模块形式提供，可以作为依赖项添加到你的项目中。例如，`auth` 模块提供对 Firebase Authentication 服务的访问。
 
-### When to use React Native Firebase
+### 何时使用 React Native Firebase
 
-You can consider using React Native Firebase when:
+在以下情况下，你可以考虑使用 React Native Firebase：
 
-- Your app requires access to Firebase services not supported by the Firebase JS SDK, such as [Dynamic Links](https://rnfirebase.io/screencasts/dynamic-links-overview), [Crashlytics](https://rnfirebase.io/crashlytics/usage), and so on.
-  For more information on the additional capabilities offered by the native SDK's, see [React Native Firebase documentation](https://rnfirebase.io/faqs-and-tips#why-react-native-firebase-over-firebase-js-sdk).
-- You want to use native SDKs in your app.
-- You have a bare React Native app with React Native Firebase already configured but are migrating to use Expo SDK.
-- You want to use [Firebase Analytics](https://rnfirebase.io/analytics/usage) in your app.
+- 你的应用需要访问 Firebase JS SDK 不支持的 Firebase 服务，例如 [Dynamic Links](https://rnfirebase.io/screencasts/dynamic-links-overview)、[Crashlytics](https://rnfirebase.io/crashlytics/usage) 等。
+  有关原生 SDK 提供的额外功能的更多信息，请参阅 [React Native Firebase 文档](https://rnfirebase.io/faqs-and-tips#why-react-native-firebase-over-firebase-js-sdk)。
+- 你想在应用中使用原生 SDK。
+- 你有一个已经配置好 React Native Firebase 的裸 React Native 应用，但正在迁移到使用 Expo SDK。
+- 你想在应用中使用 [Firebase Analytics](https://rnfirebase.io/analytics/usage)。
 
-<Collapsible summary="Migrating from Expo Firebase packages?">
+<Collapsible summary="从 Expo Firebase 包迁移？">
 
-If your project has been previously using `expo-firebase-analytics` and `expo-firebase-recaptcha` packages, you can migrate to the React Native Firebase library. For more information, see [Firebase migration guide](https://expo.fyi/firebase-migration-guide).
+如果你的项目之前使用过 `expo-firebase-analytics` 和 `expo-firebase-recaptcha` 包，你可以迁移到 React Native Firebase 库。有关更多信息，请参阅 [Firebase 迁移指南](https://expo.fyi/firebase-migration-guide)。
 
 </Collapsible>
 
-#### Caveats
+#### 注意事项
 
-React Native Firebase requires [custom native code and cannot be used with Expo Go](/workflow/customizing/).
+React Native Firebase 需要 [自定义原生代码，无法与 Expo Go 一起使用](/workflow/customizing/)。
 
-### Install and initialize React Native Firebase
+### 安装并初始化 React Native Firebase
 
 <Step label="1">
-#### Install expo-dev-client
+#### 安装 expo-dev-client
 
-Since React Native Firebase requires custom native code, you need to install the `expo-dev-client` library in your project.
-It allows configuring any native code required by React Native Firebase using [Config plugins](/config-plugins/introduction/) without writing native code yourself.
+由于 React Native Firebase 需要自定义原生代码，你需要在项目中安装 `expo-dev-client` 库。
+它允许你使用 [Config plugins](/config-plugins/introduction/) 配置 React Native Firebase 所需的任何原生代码，而无需自己编写原生代码。
 
-To install [`expo-dev-client`](/develop/development-builds/create-a-build/), run the following command in your project:
+要安装 [`expo-dev-client`](/develop/development-builds/create-a-build/)，请在项目中运行以下命令：
 
 <Terminal cmd={['$ npx expo install expo-dev-client']} />
 </Step>
 
 <Step label="2">
-#### Install React Native Firebase
+#### 安装 React Native Firebase
 
-To use React Native Firebase, it is necessary to install the `@react-native-firebase/app` module. This module provides the core functionality for all other modules.
-It also adds custom native code in your project using a config plugin. You can install it using the following command:
+要使用 React Native Firebase，必须安装 `@react-native-firebase/app` 模块。该模块为其他所有模块提供核心功能。
+它还会通过 config plugin 在项目中添加自定义原生代码。你可以使用以下命令安装它：
 
 <Terminal cmd={['$ npx expo install @react-native-firebase/app']} />
 
-**At this point, you must follow the instructions from [React Native Firebase documentation](https://rnfirebase.io/#managed-workflow)** as it covers all the steps required to configure your project with the library.
+**此时，你必须遵循 [React Native Firebase 文档](https://rnfirebase.io/#managed-workflow) 中的说明**，因为其中涵盖了使用该库配置项目所需的全部步骤。
 
-Once you have configured the React Native Firebase library in your project, come back to this guide to learn how to run your project in the next step.
+一旦你在项目中配置好了 React Native Firebase 库，就返回本指南，继续了解下一步如何运行你的项目。
 
 </Step>
 
 <Step label="3">
-#### Run the project
+#### 运行项目
 
-If you are using **[EAS Build](/build/introduction/), you can create and install a development build** on your devices. You do not need to run the project locally before creating a development build.
-For more information on creating a development build, see the section on [installing a development build](/develop/development-builds/create-a-build/).
+如果你使用的是 **[EAS Build](/build/introduction/)，可以创建并在设备上安装开发构建**。在创建开发构建之前，你不需要先在本地运行项目。
+有关创建开发构建的更多信息，请参阅[安装开发构建](/develop/development-builds/create-a-build/)部分。
 
-<Collapsible summary="Run project locally?">
+<Collapsible summary="在本地运行项目？">
 
-If you want to run the project locally, you need both Android Studio and Xcode installed and configured on your machine. See [Local app development](/guides/local-app-development/) guide for more information.
+如果你想在本地运行项目，你的机器上需要同时安装并配置好 Android Studio 和 Xcode。有关更多信息，请参阅[本地应用开发](/guides/local-app-development/)指南。
 
-If a particular React Native Firebase module requires custom native configuration steps, you must add it as a `plugin` to [app config](/workflow/configuration/) file. Then, to run the project locally, run the `npx expo prebuild --clean` command to apply the native changes before the `npx expo run` commands.
+如果某个 React Native Firebase 模块需要自定义原生配置步骤，你必须将其作为 `plugin` 添加到 [app 配置](/workflow/configuration/)文件中。然后，要在本地运行项目，请在执行 `npx expo run` 命令之前先运行 `npx expo prebuild --clean` 命令以应用原生更改。
 
 </Collapsible>
 </Step>
 
-### Next steps
+### 下一步
 
-After configuring React Native Firebase library, you can use any module it provides in your Expo project.
+配置好 React Native Firebase 库后，你就可以在 Expo 项目中使用它提供的任何模块。
 
 <BoxLink
-  title="React Native Firebase documentation"
-  description="For more information to install and use a certain module from React Native Firebase, we recommend you to check their documentation."
+  title="React Native Firebase 文档"
+  description="有关安装和使用 React Native Firebase 的某个模块的更多信息，我们建议你查看其文档。"
   href="https://rnfirebase.io/"
 />

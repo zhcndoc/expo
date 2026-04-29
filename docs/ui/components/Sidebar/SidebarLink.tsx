@@ -75,7 +75,7 @@ export const SidebarLink = ({ info, className, children }: SidebarLinkProps) => 
         )}
       />
       {children}
-      {info.isDeprecated && <span className="sr-only">Deprecated</span>}
+      {info.isDeprecated && <span className="sr-only">已弃用</span>}
       {info.hasVideoLink && !isSelected && (
         <PlaySquareIcon className="icon-xs text-icon-secondary ml-1.5" aria-hidden="true" />
       )}
@@ -96,7 +96,7 @@ export const SidebarLink = ({ info, className, children }: SidebarLinkProps) => 
               ? 'bg-palette-blue10 text-palette-white dark:text-palette-black'
               : 'border-palette-blue10 text-palette-blue10 dark:border-palette-blue9 dark:text-palette-blue9 bg-none'
           )}>
-          NEW
+          新
         </div>
       )}
       {info.isAlpha && (
@@ -107,7 +107,7 @@ export const SidebarLink = ({ info, className, children }: SidebarLinkProps) => 
               ? 'bg-palette-purple10 text-palette-white dark:text-palette-black'
               : 'border-palette-purple10 text-palette-purple11 dark:border-palette-purple9 dark:text-palette-purple10 bg-none'
           )}>
-          ALPHA
+          Alpha
         </div>
       )}
       {info.isBeta && (
@@ -118,7 +118,7 @@ export const SidebarLink = ({ info, className, children }: SidebarLinkProps) => 
               ? 'bg-palette-purple10 text-palette-white dark:text-palette-black'
               : 'border-palette-purple10 text-palette-purple11 dark:border-palette-purple9 dark:text-palette-purple10 bg-none'
           )}>
-          BETA
+          Beta
         </div>
       )}
       {info.isPreview && (

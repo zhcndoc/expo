@@ -1,6 +1,6 @@
 ---
-title: Video (expo-video)
-description: A library that provides an API to implement video playback in apps.
+title: 视频 (expo-video)
+description: 一个提供用于在应用中实现视频播放 API 的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-54/packages/expo-video'
 packageName: 'expo-video'
 iconUrl: '/static/images/packages/expo-video.png'
@@ -14,19 +14,19 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
 import { SnackInline } from '~/ui/components/Snippet';
 import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
-`expo-video` is a cross-platform, performant video component for React Native and Expo with Web support.
+`expo-video` 是一个适用于 React Native 和 Expo 的跨平台、高性能视频组件，并支持 Web。
 
-#### Known issues&ensp;<PlatformTags platforms={['android']} />
+#### 已知问题&ensp;<PlatformTags platforms={['android']} />
 
-When two [`VideoView`](#videoview) components are overlapping and have the [`contentFit`](#contentfit) prop set to [`cover`](#videocontentfit), one of the videos may be displayed out of bounds. This is a [known upstream issue](https://github.com/androidx/media/issues/1107). To work around this issue, use the [`surfaceType`](#surfacetype) prop and set it to [`textureView`](#surfacetype-1).
+当两个 [`VideoView`](#videoview) 组件重叠，且它们的 [`contentFit`](#contentfit) 属性设置为 [`cover`](#videocontentfit) 时，其中一个视频可能会显示到边界外。这是一个[已知的上游问题](https://github.com/androidx/media/issues/1107)。要规避这个问题，请使用 [`surfaceType`](#surfacetype) 属性并将其设置为 [`textureView`](#surfacetype-1)。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Configuration in app config
+## 在 app 配置中进行配置
 
-You can configure `expo-video` using its built-in [config plugin](/config-plugins/introduction/) if you use config plugins in your project ([Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)). The plugin allows you to configure various properties that cannot be set at runtime and require building a new app binary to take effect. If your app does **not** use CNG, then you'll need to manually configure the library.
+如果你在项目中使用配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），可以使用 `expo-video` 内置的[配置插件](/config-plugins/introduction/)进行配置。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
 
 <ConfigPluginExample>
 ```json app.json
@@ -51,22 +51,22 @@ You can configure `expo-video` using its built-in [config plugin](/config-plugin
     {
       name: 'supportsBackgroundPlayback',
       description:
-        'A boolean value to enable background playback on iOS. If `true`, the `audio` key is added to the `UIBackgroundModes` array in the **Info.plist** file. If `false`, the key is removed. When `undefined`, the key is not modified.',
+        '一个布尔值，用于在 iOS 上启用后台播放。如果为 `true`，会在 **Info.plist** 文件中的 `UIBackgroundModes` 数组中添加 `audio` 键。如果为 `false`，则会移除该键。当为 `undefined` 时，不会修改该键。',
       platform: 'ios',
       default: 'undefined',
     },
     {
       name: 'supportsPictureInPicture',
       description:
-        'A boolean value to enable Picture-in-Picture on Android and iOS. If `true`, enables the `android:supportsPictureInPicture` property on Android and adds the `audio` key to the `UIBackgroundModes` array in the **Info.plist** file on iOS. If `false`, the key is removed. When `undefined`, the configuration is not modified.',
+        '一个布尔值，用于在 Android 和 iOS 上启用画中画。如果为 `true`，会在 Android 上启用 `android:supportsPictureInPicture` 属性，并在 iOS 的 **Info.plist** 文件中的 `UIBackgroundModes` 数组中添加 `audio` 键。如果为 `false`，则会移除该键。当为 `undefined` 时，不会修改该配置。',
       default: 'undefined',
     },
   ]}
 />
 
-## Usage
+## 用法
 
-Here's a simple example of a video with a play and pause button.
+下面是一个带播放和暂停按钮的视频简单示例。
 
 <SnackInline label='Video' dependencies={['expo-video']}>
 
@@ -91,7 +91,7 @@ export default function VideoScreen() {
       <VideoView style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
       <View style={styles.controlsContainer}>
         <Button
-          title={isPlaying ? 'Pause' : 'Play'}
+          title={isPlaying ? '暂停' : '播放'}
           onPress={() => {
             if (isPlaying) {
               player.pause();
@@ -125,63 +125,62 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
-### Receiving events
+### 接收事件
 
-The changes in properties of the [`VideoPlayer`](#videoplayer) do not update the React state. Therefore, to display the information about the current state of the `VideoPlayer`, it is necessary to listen to the [events](#videoplayerevents) it emits.
-The event system is based on the [`EventEmitter`](../sdk/expo/#eventemitter) class and [hooks](../sdk/expo/#hooks) from the [`expo`](../sdk/expo) package. There are a few ways to listen to events:
+[`VideoPlayer`](#videoplayer) 属性的变化不会更新 React 状态。因此，要显示有关 `VideoPlayer` 当前状态的信息，需要监听它发出的[事件](#videoplayerevents)。事件系统基于 [`expo`](../sdk/expo) 包中的 [`EventEmitter`](../sdk/expo/#eventemitter) 类和 [hooks](../sdk/expo/#hooks)。监听事件有几种方式：
 
 #### `useEvent` hook
 
-Creates a listener that will return a stateful value that can be used in a component. It also cleans up automatically when the component unmounts.
+创建一个监听器，它会返回一个可用于组件中的有状态值。当组件卸载时，它也会自动清理。
 
 ```tsx useEvent
 import { useEvent } from 'expo';
-// ... Other imports, definition of the component, creating the player etc.
+// ... 其他导入，组件定义，创建播放器等。
 
 const { status, error } = useEvent(player, 'statusChange', { status: player.status });
-// Rest of the component...
+// 组件的其余部分...
 ```
 
 #### `useEventListener` hook
 
-Built around the `Player.addListener` and `Player.removeListener` methods, creates an event listener with automatic cleanup.
+基于 `Player.addListener` 和 `Player.removeListener` 方法构建，创建一个带自动清理的事件监听器。
 
 ```tsx useEventListener
 import { useEventListener } from 'expo';
-// ...Other imports, definition of the component, creating the player etc.
+// ...其他导入，组件定义，创建播放器等。
 
 useEventListener(player, 'statusChange', ({ status, error }) => {
   setPlayerStatus(status);
   setPlayerError(error);
-  console.log('Player status changed: ', status);
+  console.log('播放器状态已更改：', status);
 });
-// Rest of the component...
+// 组件的其余部分...
 ```
 
-#### `Player.addListener` method
+#### `Player.addListener` 方法
 
-Most flexible way to listen to events, but requires manual cleanup and more boilerplate code.
+监听事件最灵活的方式，但需要手动清理，并且需要更多样板代码。
 
 ```tsx Player.addListener
-// ...Imports, definition of the component, creating the player etc.
+// ...导入，组件定义，创建播放器等。
 
 useEffect(() => {
   const subscription = player.addListener('statusChange', ({ status, error }) => {
     setPlayerStatus(status);
     setPlayerError(error);
-    console.log('Player status changed: ', status);
+    console.log('播放器状态已更改：', status);
   });
 
   return () => {
     subscription.remove();
   };
 }, []);
-// Rest of the component...
+// 组件的其余部分...
 ```
 
-### Playing local media from the assets directory
+### 从 assets 目录播放本地媒体
 
-`expo-video` supports playing local media loaded using the `require` function. You can use the result as a source directly, or assign it to the `assetId` parameter of a [`VideoSource`](#videosource) if you also want to configure other properties.
+`expo-video` 支持播放使用 `require` 函数加载的本地媒体。你可以直接将结果作为源使用，或者如果你还想配置其他属性，也可以将其赋值给 [`VideoSource`](#videosource) 的 `assetId` 参数。
 
 ```tsx Playing local media
 import { VideoSource } from 'expo-video';
@@ -196,19 +195,19 @@ const videoSource: VideoSource = {
   },
 };
 
-const player1 = useVideoPlayer(assetId); // You can use the `asset` directly as a video source
+const player1 = useVideoPlayer(assetId); // 你可以直接将 `asset` 作为视频源使用
 const player2 = useVideoPlayer(videoSource);
 ```
 
-### Preloading videos
+### 预加载视频
 
-While another video is playing, a video can be loaded before showing it in the view. This allows for quicker transitions between subsequent videos and a better user experience.
+在另一个视频播放时，可以先加载一个视频，再将其显示到视图中。这可以让后续视频之间的切换更快，并带来更好的用户体验。
 
-To preload a video, you have to create a `VideoPlayer` with a video source. Even when the player is not connected to a `VideoView`, it will fill the buffers. Once it is connected to the `VideoView`, it will be able to start playing without buffering.
+要预加载视频，你需要创建一个带有视频源的 `VideoPlayer`。即使播放器没有连接到 `VideoView`，它也会填充缓冲区。一旦连接到 `VideoView`，它就能够在不缓冲的情况下开始播放。
 
-In some cases, it is beneficial to preload a video later in the screen lifecycle. In that case, a `VideoPlayer` with a `null` source should be created. To start preloading, replace the player source with a video source using the `replace()` function.
+在某些情况下，在屏幕生命周期的稍后阶段再预加载视频会更有利。在这种情况下，应创建一个源为 `null` 的 `VideoPlayer`。要开始预加载，可以使用 `replace()` 函数将播放器源替换为视频源。
 
-Here is an example of how to preload a video:
+以下是预加载视频的示例：
 
 <SnackInline label='Preloading videos' dependencies={['expo-video']}>
 
@@ -251,7 +250,7 @@ export default function PreloadingVideoPlayerScreen() {
     <View style={styles.contentContainer}>
       <VideoView player={currentPlayer} style={styles.video} nativeControls={false} />
       <TouchableOpacity style={styles.button} onPress={replacePlayer}>
-        <Text style={styles.buttonText}>Replace Player</Text>
+        <Text style={styles.buttonText}>替换播放器</Text>
       </TouchableOpacity>
     </View>
   );
@@ -289,33 +288,33 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
-### Using the VideoPlayer directly
+### 直接使用 VideoPlayer
 
-In most cases, the [`useVideoPlayer`](#usevideoplayersource-setup) hook should be used to create a `VideoPlayer` instance. It manages the player's lifecycle and ensures that it is properly disposed of when the component is unmounted. However, in some advanced use cases, it might be necessary to create a `VideoPlayer` that does not get automatically destroyed when the component is unmounted.
-In those cases, the `VideoPlayer` can be created using the [`createVideoPlayer`](#videocreatevideoplayersource) function. You need be aware of the risks that come with this approach, as it is your responsibility to call the [`release()`](../sdk/expo/#release) method when the player is no longer needed. If not handled properly, this approach may lead to memory leaks.
+在大多数情况下，应使用 [`useVideoPlayer`](#usevideoplayersource-setup) hook 来创建 `VideoPlayer` 实例。它会管理播放器的生命周期，并确保在组件卸载时正确释放。然而，在某些高级用例中，可能需要创建一个不会在组件卸载时自动销毁的 `VideoPlayer`。
+在这些情况下，可以使用 [`createVideoPlayer`](#videocreatevideoplayersource) 函数创建 `VideoPlayer`。你需要注意这种方式带来的风险，因为当播放器不再需要时，必须由你负责调用 [`release()`](../sdk/expo/#release) 方法。如果处理不当，这种方式可能会导致内存泄漏。
 
 ```tsx Creating player instance
 import { createVideoPlayer } from 'expo-video';
 const player = createVideoPlayer(videoSource);
 ```
 
-> **warning** On Android, mounting multiple `VideoView` components at the same time with the same `VideoPlayer` instance will not work due to a [platform limitation](https://github.com/expo/expo/issues/35012).
+> **警告** 在 Android 上，由于[平台限制](https://github.com/expo/expo/issues/35012)，同时挂载多个使用同一个 `VideoPlayer` 实例的 `VideoView` 组件将无法工作。
 
-### Caching videos
+### 缓存视频
 
-If your app frequently replays the same video, caching can be utilized to minimize network usage and enhance user experience, albeit at the cost of increased device storage usage. `expo-video` supports video caching on `Android` and `iOS` platforms. This feature can be activated by setting the [`useCaching`](#videosource) property of a [`VideoSource`](#videosource) object to `true`.
+如果你的应用经常重复播放同一个视频，可以利用缓存来尽量减少网络使用并提升用户体验，代价是会增加设备存储占用。`expo-video` 支持在 `Android` 和 `iOS` 平台上缓存视频。通过将 [`VideoSource`](#videosource) 对象的 [`useCaching`](#videosource) 属性设置为 `true`，即可启用该功能。
 
-The cache is persistent and will be cleared on a least-recently-used basis once the preferred size is exceeded. Furthermore, the system can clear the cache due to low storage availability, so it's not advisable to depend on the cache to store critical data.
+缓存是持久化的，一旦超过首选大小，系统会按最近最少使用原则清理缓存。此外，由于存储空间不足，系统也可能清理缓存，因此不建议依赖缓存来存储关键数据。
 
-The cache functions offline. If a portion or the entirety of a video is cached, it can be played from the cache even when the device is offline until the cached data is exhausted.
+缓存可在离线状态下工作。如果视频的部分或全部内容已经缓存，即使设备离线，也可以从缓存中播放，直到缓存数据耗尽。
 
-> Due to platform limitations, the cache cannot be used with HLS video sources on iOS. Caching DRM-protected videos is not supported on Android and iOS.
+> 由于平台限制，iOS 上的 HLS 视频源不能使用缓存。Android 和 iOS 不支持缓存受 DRM 保护的视频。
 
-### Managing the cache
+### 管理缓存
 
-- The preferred cache size in bytes can be defined using the [`setVideoCacheSizeAsync`](#videosetvideocachesizeasyncsizebytes) function. The default cache size is 1GB.
-- The [`getCurrentVideoCacheSize`](#videogetcurrentvideocachesize) can be used to get the current storage occupied by the cache in bytes.
-- All cached videos can be cleared using the [`clearVideoCacheAsync`](#videoclearvideocacheasync) function.
+- 可以使用 [`setVideoCacheSizeAsync`](#videosetvideocachesizeasyncsizebytes) 函数定义首选缓存大小（以字节为单位）。默认缓存大小为 1GB。
+- 可以使用 [`getCurrentVideoCacheSize`](#videogetcurrentvideocachesize) 获取缓存当前占用的存储空间（以字节为单位）。
+- 可以使用 [`clearVideoCacheAsync`](#videoclearvideocacheasync) 函数清除所有已缓存的视频。
 
 ## API
 

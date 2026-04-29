@@ -1,7 +1,7 @@
 ---
-title: Syntax for EAS Workflows
-sidebar_title: Syntax
-description: Reference guide for the EAS Workflows configuration file syntax.
+title: EAS Workflows 语法
+sidebar_title: 语法
+description: EAS Workflows 配置文件语法参考指南。
 maxHeadingDepth: 5
 ---
 
@@ -11,17 +11,17 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 
-A workflow is a configurable automated process made up of one or more jobs. You must create a YAML file to define your workflow configuration.
+工作流是一个可配置的自动化流程，由一个或多个作业组成。你必须创建一个 YAML 文件来定义你的工作流配置。
 
-To get started with workflows, see [Get Started with EAS Workflows](/eas/workflows/get-started) or see [Examples](/eas/workflows/examples/introduction) for complete workflow configurations.
+要开始使用工作流，请参见 [EAS Workflows 入门](/eas/workflows/get-started) 或查看 [示例](/eas/workflows/examples/introduction) 以获取完整的工作流配置。
 
-## Workflow files
+## 工作流文件
 
-Workflow files use YAML syntax and must have either a `.yml` or `.yaml` file extension. If you're new to YAML and want to learn more, see [Learn YAML in Y minutes](https://learnxinyminutes.com/docs/yaml/).
+工作流文件使用 YAML 语法，文件扩展名必须是 `.yml` 或 `.yaml`。如果你是 YAML 新手并想进一步了解，请参见 [一分钟学习 YAML](https://learnxinyminutes.com/docs/yaml/)。
 
-Workflow files are located in the **.eas/workflows** directory in your project. The **.eas** directory should be at the same level as your [**eas.json**](/build/eas-json/) file.
+工作流文件位于项目中的 **.eas/workflows** 目录下。**.eas** 目录应与你的 [**eas.json**](/build/eas-json/) 文件处于同一级别。
 
-For example:
+例如：
 
 <FileTree
   files={[
@@ -32,13 +32,13 @@ For example:
   ]}
 />
 
-## Configuration reference
+## 配置参考
 
-Below is a reference for the syntax of the workflow configuration file.
+下面是工作流配置文件语法的参考说明。
 
 ## `name`
 
-The human-friendly name of the workflow. This is displayed on the EAS dashboard on the workflows list page and is the title of the workflow's detail page.
+工作流的人类可读名称。它会显示在 EAS 控制台的工作流列表页面上，并作为工作流详情页的标题。
 
 ```yaml
 # @info #
@@ -48,33 +48,33 @@ name: My workflow
 
 ## `on`
 
-The `on` key defines which GitHub events trigger the workflow. Any workflow can be triggered with the `eas workflow:run` command, regardless of the `on` key.
+`on` 键定义哪些 GitHub 事件会触发该工作流。无论 `on` 键如何设置，任何工作流都可以通过 `eas workflow:run` 命令触发。
 
 ```yaml
 on:
-  # Trigger on pushes to main branch
+  # 在推送到 main 分支时触发
   push:
     branches:
       - main
-  # And on pull requests starting with 'version-'
+  # 以及在以 'version-' 开头的拉取请求时触发
   pull_request:
     branches:
       - version-*
 ```
 
-> **info** You can skip `push` and `pull_request` triggered workflow runs by including `[eas skip]`, `[skip eas]`, or `[no eas]` in the commit message.
+> **info** 你可以在提交信息中包含 `[eas skip]`、`[skip eas]` 或 `[no eas]` 来跳过由 `push` 和 `pull_request` 触发的工作流运行。
 
 ### `on.push`
 
-Runs your workflow when you push a commit to matching branches and/or tags.
+当你将提交推送到匹配的分支和/或标签时运行你的工作流。
 
-With the `branches` list, you can trigger the workflow only when those specified branches are pushed to. For example, if you use `branches: ['main']`, only pushes to the `main` branch will trigger the workflow. Supports globs. By using the `!` prefix you can specify branches to ignore (you still need to provide at least one branch pattern without it).
+使用 `branches` 列表，你可以仅在推送到指定分支时触发工作流。例如，如果你使用 `branches: ['main']`，只有推送到 `main` 分支时才会触发工作流。支持 glob。通过使用 `!` 前缀，你可以指定要忽略的分支（你仍需要提供至少一个不带 `!` 的分支模式）。
 
-With the `tags` list, you can trigger the workflow only when those specified tags are pushed. For example, if you use `tags: ['v1']`, only the `v1` tag being pushed will trigger the workflow. Supports globs. By using the `!` prefix you can specify tags to ignore (you still need to provide at least one tag pattern without it).
+使用 `tags` 列表，你可以仅在推送指定标签时触发工作流。例如，如果你使用 `tags: ['v1']`，只有推送 `v1` 标签时才会触发工作流。支持 glob。通过使用 `!` 前缀，你可以指定要忽略的标签（你仍需要提供至少一个不带 `!` 的标签模式）。
 
-With the `paths` list, you can trigger the workflow only when changes are made to files matching the specified paths. For example, if you use `paths: ['apps/mobile/**']`, only changes to files in the `apps/mobile` directory will trigger the workflow. Supports globs. By default, changes to any path will trigger the workflow.
+使用 `paths` 列表，你可以仅在文件变更匹配指定路径时触发工作流。例如，如果你使用 `paths: ['apps/mobile/**']`，只有 `apps/mobile` 目录中的文件发生变化时才会触发工作流。支持 glob。默认情况下，任何路径的变化都会触发工作流。
 
-When neither `branches` nor `tags` are provided, `branches` defaults to `['*']` and `tags` defaults to `[]`, which means the workflow will trigger on push events to all branches and will not trigger on tag pushes. If only one of the two lists is provided the other defaults to `[]`.
+当未提供 `branches` 和 `tags` 时，`branches` 默认为 `['*']`，`tags` 默认为 `[]`，这意味着工作流会在所有分支的 push 事件上触发，而不会在标签推送时触发。如果只提供了两个列表中的一个，另一个默认为 `[]`。
 
 ```yaml
 on:
@@ -84,29 +84,29 @@ on:
     branches:
       - main
       - feature/**
-      - !feature/test-** # other branch names and globs
+      - !feature/test-** # 其他分支名称和 glob
 
 
     tags:
       - v1
       - v2*
-      - !v2-preview** # other tag names and globs
+      - !v2-preview** # 其他标签名称和 glob
 
 
     paths:
       - apps/mobile/**
       - packages/shared/**
-      - !**/*.md # ignore markdown files
+      - !**/*.md # 忽略 markdown 文件
 
 ```
 
 ### `on.pull_request`
 
-Runs your workflow when you create or update a pull request that targets one of the matching branches.
+当你创建或更新一个目标分支匹配的拉取请求时运行你的工作流。
 
-With the `branches` list, you can trigger the workflow only when those specified branches are the target of the pull request. For example, if you use `branches: ['main']`, only pull requests to merge into the main branch will trigger the workflow. Supports globs. Defaults to `['*']` when not provided, which means the workflow will trigger on pull request events to all branches. By using the `!` prefix you can specify branches to ignore (you still need to provide at least one branch pattern without it).
+使用 `branches` 列表，你可以仅在拉取请求的目标分支是指定分支时触发工作流。例如，如果你使用 `branches: ['main']`，只有合并到 main 分支的拉取请求才会触发工作流。支持 glob。未提供时默认为 `['*']`，这意味着工作流会在所有分支的拉取请求事件上触发。通过使用 `!` 前缀，你可以指定要忽略的分支（你仍需要提供至少一个不带 `!` 的分支模式）。
 
-With the `types` list, you can trigger the workflow only on the specified pull request event types. For example, if you use `types: ['opened']`, only the `pull_request.opened` event (sent when a pull request is first opened) will trigger the workflow. Defaults to `['opened', 'reopened', 'synchronize']` when not provided. Supported event types:
+使用 `types` 列表，你可以仅在指定的拉取请求事件类型上触发工作流。例如，如果你使用 `types: ['opened']`，只有 `pull_request.opened` 事件（即拉取请求首次打开时发送的事件）才会触发工作流。未提供时默认为 `['opened', 'reopened', 'synchronize']`。支持的事件类型：
 
 - `opened`
 - `ready_for_review`
@@ -114,7 +114,7 @@ With the `types` list, you can trigger the workflow only on the specified pull r
 - `synchronize`
 - `labeled`
 
-With the `paths` list, you can trigger the workflow only when changes are made to files matching the specified paths. For example, if you use `paths: ['apps/mobile/**']`, only changes to files in the `apps/mobile` directory will trigger the workflow. Supports globs. By default, changes to any path will trigger the workflow.
+使用 `paths` 列表，你可以仅在文件变更匹配指定路径时触发工作流。例如，如果你使用 `paths: ['apps/mobile/**']`，只有 `apps/mobile` 目录中的文件发生变化时才会触发工作流。支持 glob。默认情况下，任何路径的变化都会触发工作流。
 
 ```yaml
 on:
@@ -124,27 +124,27 @@ on:
     branches:
       - main
       - feature/**
-      - !feature/test-** # other branch names and globs
+      - !feature/test-** # 其他分支名称和 glob
 
 
     types:
       - opened
-      # other event types
+      # 其他事件类型
 
     paths:
       - apps/mobile/**
       - packages/shared/**
-      - !**/*.md # ignore markdown files
+      - !**/*.md # 忽略 markdown 文件
 
 ```
 
 ### `on.pull_request_labeled`
 
-Runs your workflow when a pull request is labeled with a matching label.
+当拉取请求被赋予匹配的标签时运行你的工作流。
 
-With the `labels` list, you can specify which labels, when assigned to your pull request, will trigger the workflow. For example, if you use `labels: ['Test']`, only labeling a pull request with the `Test` label will trigger the workflow. Defaults to `[]` when not provided, which means no labels will trigger the workflow.
+使用 `labels` 列表，你可以指定当哪些标签被添加到拉取请求时会触发工作流。例如，如果你使用 `labels: ['Test']`，只有给拉取请求添加 `Test` 标签时才会触发工作流。未提供时默认为 `[]`，这意味着没有任何标签会触发工作流。
 
-You can also provide a list of matching labels directly to `on.pull_request_labeled` for simpler syntax.
+为了更简洁的语法，你也可以直接向 `on.pull_request_labeled` 提供一个匹配标签列表。
 
 ```yaml
 on:
@@ -154,10 +154,10 @@ on:
     labels:
       - Test
       - Preview
-      # other labels
+      # 其他标签
 ```
 
-Alternatively:
+或者：
 
 ```yaml
 on:
@@ -166,22 +166,22 @@ on:
     # @end #
     - Test
     - Preview
-    # other labels
+    # 其他标签
 ```
 
 ### `on.app_store_connect`
 
-Runs your workflow when one of the selected App Store Connect events occurs.
+当所选的 App Store Connect 事件之一发生时运行你的工作流。
 
-> **info** To use this trigger, configure your App Store Connect connection in the [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/settings). For setup steps, see the [App Store Connect trigger setup](/eas/workflows/get-started/#trigger-workflows-from-app-store-connect-events) section.
+> **info** 要使用此触发器，请在 [EAS 控制台](https://expo.dev/accounts/[account]/projects/[project]/settings) 中配置你的 App Store Connect 连接。设置步骤请参见 [App Store Connect 触发器设置](/eas/workflows/get-started/#trigger-workflows-from-app-store-connect-events) 部分。
 
-When `on.app_store_connect` is present, you must specify at least one event domain (`app_version`, `build_upload`, `external_beta`, or `beta_feedback`). Within a configured event domain, you can specify which states should trigger your workflow.
+当存在 `on.app_store_connect` 时，你必须至少指定一个事件域（`app_version`、`build_upload`、`external_beta` 或 `beta_feedback`）。在已配置的事件域中，你可以指定哪些状态应触发你的工作流。
 
 #### `on.app_store_connect.app_version.states`
 
-Filters app store app version state change events. Defaults to all supported app version states when not provided.
+过滤 App Store 应用版本状态变更事件。未提供时默认为所有支持的应用版本状态。
 
-Supported values:
+支持的值：
 
 - `accepted`
 - `developer_rejected`
@@ -201,9 +201,9 @@ Supported values:
 
 #### `on.app_store_connect.build_upload.states`
 
-Filters build upload events by state. Defaults to all supported build upload states when not provided.
+按状态过滤构建上传事件。未提供时默认为所有支持的构建上传状态。
 
-Supported values:
+支持的值：
 
 - `complete`
 - `failed`
@@ -212,9 +212,9 @@ Supported values:
 
 #### `on.app_store_connect.external_beta.states`
 
-Filters external beta events by state. Defaults to all supported external beta states when not provided.
+按状态过滤外部测试版事件。未提供时默认为所有支持的外部测试版状态。
 
-Supported values:
+支持的值：
 
 - `processing`
 - `processing_exception`
@@ -231,21 +231,21 @@ Supported values:
 
 #### `on.app_store_connect.beta_feedback.types`
 
-Filters beta feedback reported by testers by its type. Defaults to all supported beta feedback types when not provided.
+按类型过滤测试人员报告的测试版反馈。未提供时默认为所有支持的测试版反馈类型。
 
-Supported values:
+支持的值：
 
 - `crash`
 - `screenshot`
 
-All filter values must be lowercase and are case-sensitive.
+所有过滤值必须为小写且区分大小写。
 
 ```yaml
-# Triggers when:
-# - the app version enters review,
-# - a build upload completes or fails,
-# - an external beta build is ready for testing or approved,
-# - a tester reports a crash via TestFlight.
+# 在以下情况触发：
+# - 应用版本进入审核，
+# - 构建上传完成或失败，
+# - 外部测试版构建已可供测试或已获批准，
+# - 测试人员通过 TestFlight 报告崩溃。
 on:
   app_store_connect:
     app_version:
@@ -266,7 +266,7 @@ on:
 ```
 
 ```yaml
-# Triggers on any app version or build upload state change.
+# 在任何应用版本或构建上传状态变更时触发。
 on:
   app_store_connect:
     app_version: {}
@@ -275,22 +275,22 @@ on:
 
 ### `on.schedule.cron`
 
-Runs your workflow on a schedule using [unix-cron](https://www.ibm.com/docs/en/db2/11.5?topic=task-unix-cron-format) syntax. You can use [crontab guru](https://crontab.guru/) and their [examples](https://crontab.guru/examples.html) to generate cron strings.
+使用 [unix-cron](https://www.ibm.com/docs/en/db2/11.5?topic=task-unix-cron-format) 语法按计划运行你的工作流。你可以使用 [crontab guru](https://crontab.guru/) 及其 [示例](https://crontab.guru/examples.html) 来生成 cron 字符串。
 
-- Scheduled workflows will only run on the default branch of the repository. In many cases, this means crons inside workflow files on the `main` branch will be scheduled, while crons inside workflow files in feature branches will not be scheduled.
-- Scheduled workflows may be delayed during periods of high load. High load times include the start of every hour. In rare circumstances, jobs may be skipped or run multiple times. Make sure that your workflows are idempotent and do not have harmful side effects.
-- A workflow can have multiple `cron` schedules.
-- Scheduled workflows run in the GMT time zone.
+- 计划任务工作流只会在仓库的默认分支上运行。在许多情况下，这意味着位于 `main` 分支上的工作流文件中的 cron 会被调度，而特性分支中的工作流文件里的 cron 则不会被调度。
+- 在高负载期间，计划任务工作流可能会延迟。高负载时段包括每个整点的开始。在极少数情况下，作业可能会被跳过或运行多次。请确保你的工作流是幂等的，并且不会产生有害副作用。
+- 一个工作流可以有多个 `cron` 计划。
+- 计划任务工作流以 GMT 时区运行。
 
 ```yaml
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs at midnight GMT every day
+    - cron: '0 0 * * *' # 每天 GMT 午夜运行
 ```
 
 ### `on.workflow_dispatch.inputs`
 
-Defines inputs that can be provided when manually triggering a workflow using the `eas workflow:run` command. This allows you to create parameterized workflows that can accept different values each time they run.
+定义可在使用 `eas workflow:run` 命令手动触发工作流时提供的输入。这使你能够创建参数化工作流，让它们每次运行时都可以接受不同的值。
 
 ```yaml
 on:
@@ -300,7 +300,7 @@ on:
       name:
         type: string
         required: false
-        description: 'Name of the person to greet'
+        description: '要问候的人的姓名'
         default: 'World'
       choice_example:
         type: choice
@@ -311,19 +311,19 @@ on:
     # @end #
 ```
 
-| Property      | Type       | Required                 | Description                                                                 |
+| 属性           | 类型       | 必需                     | 描述                                                                 |
 | ------------- | ---------- | ------------------------ | --------------------------------------------------------------------------- |
-| `type`        | `string`   | Yes                      | The input type (`string`, `boolean`, `number`, `choice`, or `environment`). |
-| `description` | `string`   | No                       | Description for the input.                                                  |
-| `required`    | `boolean`  | No                       | Whether the input is required. Defaults to `false`.                         |
-| `default`     | varies     | No                       | Default value for the input. Must match the input type.                     |
-| `options`     | `string[]` | Yes (for `type: choice`) | Available options for choice inputs.                                        |
+| `type`        | `string`   | 是                      | 输入类型（`string`、`boolean`、`number`、`choice` 或 `environment`）。 |
+| `description` | `string`   | 否                       | 输入的说明。                                                  |
+| `required`    | `boolean`  | 否                       | 是否需要该输入。默认为 `false`。                         |
+| `default`     | varies     | 否                       | 输入的默认值。必须与输入类型匹配。                     |
+| `options`     | `string[]` | 是（针对 `type: choice`） | 可用于选择输入的选项。                                        |
 
-#### Providing inputs
+#### 提供输入
 
-When running a workflow with inputs, you can provide them in several ways:
+运行带有输入的工作流时，你可以通过以下几种方式提供它们：
 
-1. Command line flags:
+1. 命令行标志：
 
    <Terminal
      cmd={[
@@ -331,7 +331,7 @@ When running a workflow with inputs, you can provide them in several ways:
      ]}
    />
 
-2. JSON via stdin:
+2. 通过 stdin 传入 JSON：
 
    <Terminal
      cmd={[
@@ -339,14 +339,14 @@ When running a workflow with inputs, you can provide them in several ways:
      ]}
    />
 
-3. Interactive prompts:
-   If required inputs are missing and you're not using `--non-interactive`, the CLI will prompt you for them:
+3. 交互式提示：
+   如果缺少必需输入且你未使用 `--non-interactive`，CLI 会提示你输入：
 
    <Terminal cmd={['$ eas workflow:run .eas/workflows/deploy.yml']} />
 
-#### Usage
+#### 用法
 
-Input values are available in your workflow jobs through the `${{ inputs.<input_name> }}` syntax:
+输入值可在你的工作流作业中通过 `${{ inputs.<input_name> }}` 语法使用：
 
 ```yaml
 on:
@@ -355,7 +355,7 @@ on:
       name:
         type: string
         required: true
-        description: 'Name of the person to greet'
+        description: '要问候的人的姓名'
 
 jobs:
   deploy:
@@ -364,14 +364,14 @@ jobs:
         run: |
           echo "Hello, ${{ inputs.name }}!"
 
-          # Note: you can use `||` to provide a default value
-          #       for non-eas-workflow:run-run workflows.
+          # 注意：你可以使用 `||` 为
+          #       非 eas-workflow:run-run 工作流提供默认值。
           echo "Hello, ${{ inputs.name || 'World' }}!"
 ```
 
 ## `jobs`
 
-A workflow run is made up of one or more jobs.
+一个 workflow 运行由一个或多个 job 组成。
 
 ```yaml
 jobs:
@@ -385,7 +385,7 @@ jobs:
 
 ### `jobs.<job_id>`
 
-Each job must have an ID. The ID should be unique within the workflow and can contain alphanumeric characters and underscores. For example, `my_job` in the following YAML:
+每个 job 都必须有一个 ID。该 ID 在 workflow 内应唯一，并且可以包含字母数字字符和下划线。例如，下面 YAML 中的 `my_job`：
 
 ```yaml
 jobs:
@@ -397,7 +397,7 @@ jobs:
 
 ### `jobs.<job_id>.name`
 
-The human-friendly name of the job displayed on the workflow's detail page.
+在 workflow 详情页中显示的、对人类更友好的 job 名称。
 
 ```yaml
 jobs:
@@ -409,13 +409,13 @@ jobs:
 
 ### `jobs.<job_id>.environment`
 
-Sets the [EAS environment variable](/eas/environment-variables/) environment for the job. There are three possible values:
+为 job 设置 [EAS 环境变量](/eas/environment-variables/) 环境。有三种可能的值：
 
-- `production` (default)
+- `production`（默认）
 - `preview`
 - `development`
 
-The `environment` key is available on all jobs.
+`environment` 键可用于所有 job。
 
 ```yaml
 jobs:
@@ -427,7 +427,7 @@ jobs:
 
 ### `jobs.<job_id>.env`
 
-Sets environment variables for the job. The property is available on all jobs running a VM (all jobs except for the pre-packaged `require-approval`, `doc`, `get-build` and `slack` jobs).
+为 job 设置环境变量。该属性可用于所有在 VM 上运行的 job（除预打包的 `require-approval`、`doc`、`get-build` 和 `slack` job 外的所有 job）。
 
 ```yaml
 jobs:
@@ -442,7 +442,7 @@ jobs:
 
 ### `jobs.<job_id>.defaults.run.working_directory`
 
-Sets the directory to run commands in for all steps in the job.
+设置该 job 中所有步骤运行命令时所在的目录。
 
 ```yaml
 jobs:
@@ -453,38 +453,38 @@ jobs:
         working_directory: ./my-app
     # @end #
     steps:
-      - name: My first step
-        run: pwd # prints: /home/expo/workingdir/build/my-app
+      - name: 我的第一步
+        run: pwd # 打印：/home/expo/workingdir/build/my-app
 ```
 
 ## `defaults`
 
-Parameters to use as defaults for all jobs defined in the workflow configuration.
+用于作为 workflow 配置中所有 job 默认值的参数。
 
 ### `defaults.run.working_directory`
 
-Default working directory to run the scripts in. Relative paths like "./assets" or "assets" are resolved from the app's base directory.
+脚本运行的默认工作目录。像 "./assets" 或 "assets" 这样的相对路径会从应用的基础目录开始解析。
 
 ### `defaults.tools`
 
-Specific versions of tools that should be used for jobs defined in this workflow configuration. Follow each tool's documentation for available values.
+应为此 workflow 配置中定义的 job 使用的特定工具版本。有关可用值，请遵循各工具的文档。
 
-| Tool        | Description                                                                                                                                   |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `node`      | Version of Node.js installed via `nvm`.                                                                                                       |
-| `yarn`      | Version of Yarn installed via `npm -g`.                                                                                                       |
-| `corepack`  | If set to `true`, [corepack](https://github.com/nodejs/corepack#readme) will be enabled at the beginning of build process. Defaults to false. |
-| `pnpm`      | Version of pnpm installed via `npm -g`.                                                                                                       |
-| `bun`       | Version of Bun installed by passing `bun-v$VERSION` to Bun install script.                                                                    |
-| `ndk`       | Version of Android NDK installed through `sdkmanager`.                                                                                        |
-| `bundler`   | Version of Bundler that will be passed to `gem install -v`.                                                                                   |
-| `fastlane`  | Version of fastlane that will be passed to `gem install -v`.                                                                                  |
-| `cocoapods` | Version of CocoaPods that will be passed to `gem install -v`.                                                                                 |
+| 工具        | 描述                                                                                                                                   |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node`      | 通过 `nvm` 安装的 Node.js 版本。                                                                                                       |
+| `yarn`      | 通过 `npm -g` 安装的 Yarn 版本。                                                                                                       |
+| `corepack`  | 如果设为 `true`，[corepack](https://github.com/nodejs/corepack#readme) 将在构建过程开始时启用。默认为 false。 |
+| `pnpm`      | 通过 `npm -g` 安装的 pnpm 版本。                                                                                                       |
+| `bun`       | 通过向 Bun 安装脚本传入 `bun-v$VERSION` 安装的 Bun 版本。                                                                    |
+| `ndk`       | 通过 `sdkmanager` 安装的 Android NDK 版本。                                                                                        |
+| `bundler`   | 将传递给 `gem install -v` 的 Bundler 版本。                                                                                   |
+| `fastlane`  | 将传递给 `gem install -v` 的 fastlane 版本。                                                                                  |
+| `cocoapods` | 将传递给 `gem install -v` 的 CocoaPods 版本。                                                                                 |
 
-Example of workflow using `defaults.tools`:
+使用 `defaults.tools` 的 workflow 示例：
 
 ```yaml .eas/workflows/publish-update.yml
-name: Set up custom versions
+name: 设置自定义版本
 defaults:
   tools:
     node: latest
@@ -502,15 +502,15 @@ on:
 jobs:
   setup:
     steps:
-      - name: Check Node version
-        run: node --version # should print a concrete version, like 23.9.0
-      - name: Check Yarn version
-        run: yarn --version # should print a concrete version, like 2.4.3
+      - name: 检查 Node 版本
+        run: node --version # 应输出一个具体版本，例如 23.9.0
+      - name: 检查 Yarn 版本
+        run: yarn --version # 应输出一个具体版本，例如 2.4.3
 ```
 
 ## `concurrency`
 
-Configuration for concurrency control. Currently only allows setting `cancel_in_progress` for same-branch workflows.
+并发控制配置。目前只允许为同分支 workflow 设置 `cancel_in_progress`。
 
 ```yaml
 # @info #
@@ -520,18 +520,18 @@ concurrency:
 # @end #
 ```
 
-| Property             | Type      | Description                                                                                                                                             |
+| 属性                 | 类型      | 描述                                                                                                                                             |
 | -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cancel_in_progress` | `boolean` | If true, new workflow runs started from GitHub will cancel current in-progress runs for the same branch.                                                |
-| `group`              | `string`  | We do not support custom concurrency groups yet. Set this placeholder value so that when we do support custom groups, your workflow remains compatible. |
+| `cancel_in_progress` | `boolean` | 如果为 true，GitHub 新启动的 workflow 运行将取消当前同一分支上正在进行的运行。                                                |
+| `group`              | `string`  | 我们暂不支持自定义并发组。请设置这个占位值，以便将来支持自定义组时，你的 workflow 仍然兼容。 |
 
-## Control flow
+## 控制流
 
-You can control when a job runs with the `needs` and `after` keywords. In addition, you can use the `if` keyword to control whether a job should run based on a condition.
+你可以通过 `needs` 和 `after` 关键字控制某个 job 何时运行。另外，你还可以使用 `if` 关键字基于条件控制 job 是否应运行。
 
 ### `jobs.<job_id>.needs`
 
-A list of job IDs whose jobs must complete successfully before this job will run.
+在此 job 运行之前必须成功完成的 job ID 列表。
 
 ```yaml
 jobs:
@@ -544,7 +544,7 @@ jobs:
         run: yarn tsc
   build:
     # @info #
-    needs: [test] # This job will only run if the 'test' job succeeds
+    needs: [test] # 只有当 'test' job 成功时，此 job 才会运行
     # @end #
     type: build
     params:
@@ -553,7 +553,7 @@ jobs:
 
 ### `jobs.<job_id>.after`
 
-A list of job IDs that must complete (successfully or not) before this job will run.
+在此 job 运行之前必须完成（成功或失败均可）的 job ID 列表。
 
 ```yaml
 jobs:
@@ -563,13 +563,13 @@ jobs:
       platform: ios
   notify:
     # @info #
-    after: [build] # This job will run after build completes (whether build succeeds or fails)
+    after: [build] # 此 job 将在 build 完成后运行（无论 build 成功还是失败）
     # @end #
 ```
 
 ### `jobs.<job_id>.if`
 
-The `if` conditional determines if a job should run. When an `if` condition is met, the job will run. When the condition is not met, the job will be skipped. A skipped job won't have completed successfully and any downstream jobs will not run that have this job in their `needs` list.
+`if` 条件用于决定 job 是否应运行。当 `if` 条件满足时，job 将运行；当条件不满足时，job 将被跳过。被跳过的 job 不会算作成功完成，并且任何后续 job 如果在其 `needs` 列表中包含该 job，也不会运行。
 
 ```yaml
 jobs:
@@ -579,30 +579,30 @@ jobs:
     # @end #
 ```
 
-## Interpolation
+## 插值
 
-You can customize the behavior of a workflow &mdash; commands to execute, control flow, environment variables, build profile, app version, and more &mdash; based on the workflow run's context.
+你可以根据 workflow 运行的上下文，自定义 workflow 的行为——包括要执行的命令、控制流、环境变量、构建配置、应用版本等。
 
-Use the `${{ expression }}` syntax to access context properties and functions. For example: `${{ github.ref_name }}` or `${{ needs.build_ios.outputs.build_id }}`.
+使用 `${{ expression }}` 语法来访问上下文属性和函数。例如：`${{ github.ref_name }}` 或 `${{ needs.build_ios.outputs.build_id }}`。
 
-### Context properties
+### 上下文属性
 
-The following properties are available in interpolation contexts:
+在插值上下文中可用的属性如下：
 
 #### `after`
 
-A record of all upstream jobs specified in the current job's `after` list. Each job provides:
+当前 job 的 `after` 列表中指定的所有上游 job 的记录。每个 job 提供：
 
 ```json
 {
   "status": "success" | "failure" | "skipped",
-  /* @info Every job produces a different set of outputs. See the specific job's documentation for details. */
+  /* @info 每个 job 会生成不同的一组输出。详情请参见特定 job 的文档。 */
   "outputs": {}
   /* @end */
 }
 ```
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -618,20 +618,20 @@ jobs:
 
 #### `needs`
 
-A record of all upstream jobs specified in the current job's `needs` list. Each job provides:
+当前 job 的 `needs` 列表中指定的所有上游 job 的记录。每个 job 提供：
 
 ```json
 {
   "status": "success" | "failure" | "skipped",
-  /* @info Every job produces a different set of outputs. See the specific job's documentation for details. */
+  /* @info 每个 job 会生成不同的一组输出。详情请参见特定 job 的文档。 */
   "outputs": {}
   /* @end */
 }
 ```
 
-Most pre-packaged jobs expose specific outputs. You can [set outputs in custom jobs using the `set-output` function](#jobsjob_idoutputs).
+大多数预打包 job 会暴露特定输出。你可以使用 [`set-output` 函数](#jobsjob_idoutputs) 在自定义 job 中设置输出。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -648,8 +648,8 @@ jobs:
     needs: [setup]
     type: build
     env:
-      # You might use process.env.VERSION_SUFFIX to customize
-      # app version in your dynamic app config.
+      # 你可以使用 process.env.VERSION_SUFFIX
+      # 在动态 app 配置中自定义应用版本。
       VERSION_SUFFIX: ${{ needs.setup.outputs.date }}
     params:
       platform: ios
@@ -658,11 +658,11 @@ jobs:
 
 #### `steps`
 
-A record of all steps in the current job. Each step provides its outputs set using the [`set-output`](#set-output) function.
+当前 job 中所有步骤的记录。每个步骤提供其通过 [`set-output`](#set-output) 函数设置的输出。
 
-> **Note:** The `steps` context is only available within a job's steps, not at the workflow level. To expose a step's output to other jobs, use the [`set-output`](#set-output) function and [`outputs` configuration of the job](#jobsjob_idoutputs).
+> **注意：** `steps` 上下文仅在 job 的 steps 内可用，而不在 workflow 级别可用。要将某个步骤的输出暴露给其他 job，请使用 [`set-output` 函数](#set-output) 和 job 的 [`outputs` 配置](#jobsjob_idoutputs)。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -682,9 +682,9 @@ jobs:
 
 #### `inputs`
 
-A record of inputs provided when manually triggering a workflow with [`workflow_dispatch`](#onworkflow_dispatchinputs). Available when the workflow is triggered via `eas workflow:run` command with input parameters.
+手动通过 [`workflow_dispatch`](#onworkflow_dispatchinputs) 触发 workflow 时提供的输入记录。在通过 `eas workflow:run` 命令并带有输入参数触发 workflow 时可用。
 
-Example:
+示例：
 
 ```yaml
 on:
@@ -702,17 +702,17 @@ jobs:
 
 #### `github`
 
-To ease the migration from GitHub Actions to EAS Workflows we expose some context fields you may find useful.
+为了便于从 GitHub Actions 迁移到 EAS Workflows，我们暴露了一些你可能会觉得有用的上下文字段。
 
 ```ts
 type GitHubContext = {
   triggering_actor?: string;
   event_name: 'pull_request' | 'push' | 'schedule' | 'workflow_dispatch';
   sha: string;
-  ref: string; // e.g. refs/heads/main
-  ref_name: string; // e.g. main
+  ref: string; // 例如 refs/heads/main
+  ref_name: string; // 例如 main
   ref_type: 'branch' | 'tag' | 'other';
-  commit_message?: string; // Only available for push and schedule events
+  commit_message?: string; // 仅对 push 和 schedule 事件可用
   label?: string;
   repository?: string;
   repository_owner?: string;
@@ -720,7 +720,7 @@ type GitHubContext = {
     label?: {
       name: string;
     };
-    // Only available for push and schedule events
+    // 仅对 push 和 schedule 事件可用
     head_commit?: {
       message: string;
       id: string;
@@ -732,7 +732,7 @@ type GitHubContext = {
       state: 'open' | 'closed';
       draft: boolean;
       merged: boolean | null;
-      // ... Other fields from the GitHub Pull Request webhook payload
+      // ... 来自 GitHub Pull Request webhook payload 的其他字段
     };
     number?: number;
     schedule?: string;
@@ -741,11 +741,11 @@ type GitHubContext = {
 };
 ```
 
-> **info** The `event` object contains the full [GitHub webhook payload](https://docs.github.com/en/webhooks/webhook-events-and-payloads). For `pull_request` events, `event.pull_request` includes all fields from GitHub's Pull Request webhook payload. The commonly used fields are shown above, but additional fields such as `user`, `labels`, `milestone`, and others are also available.
+> **信息** `event` 对象包含完整的 [GitHub webhook payload](https://docs.github.com/en/webhooks/webhook-events-and-payloads)。对于 `pull_request` 事件，`event.pull_request` 包含 GitHub Pull Request webhook payload 中的所有字段。上面展示的是常用字段，但 `user`、`labels`、`milestone` 等其他字段也同样可用。
 
-If a workflow run is started from `eas workflow:run`, its `event_name` will be `workflow_dispatch` and all the rest of the properties will be empty.
+如果 workflow 运行是通过 `eas workflow:run` 启动的，则其 `event_name` 为 `workflow_dispatch`，其余所有属性都将为空。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -760,15 +760,15 @@ jobs:
 ```
 
 <BoxLink
-  title="${{ github }} context"
-  description="View the ${{ github }} definition source code."
+  title="${{ github }} 上下文"
+  description="查看 ${{ github }} 定义的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/eas-build-job/src/common.ts"
 />
 
 #### `workflow`
 
-Information about the current workflow.
+当前 workflow 的信息。
 
 ```ts
 type WorkflowContext = {
@@ -779,7 +779,7 @@ type WorkflowContext = {
 };
 ```
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -788,13 +788,13 @@ jobs:
     type: slack
     params:
       message: |
-        Workflow run completed: ${{ workflow.name }}
-        View details: ${{ workflow.url }}
+        Workflow 运行已完成：${{ workflow.name }}
+        查看详情：${{ workflow.url }}
 ```
 
 #### `app_store_connect`
 
-Information about App Store Connect entities associated with the workflow run. This context is available only for workflows triggered by an App Store Connect event. See [`on.app_store_connect`](#onapp_store_connect).
+与 workflow 运行相关联的 App Store Connect 实体信息。此上下文仅适用于由 App Store Connect 事件触发的 workflow。参见 [`on.app_store_connect`](#onapp_store_connect)。
 
 ```ts
 type AppStoreConnectContext = {
@@ -808,9 +808,9 @@ type AppStoreConnectContext = {
 };
 ```
 
-The `app_store_connect.build_upload` object is present only when the workflow is triggered by a `build_upload` event domain.
+`app_store_connect.build_upload` 对象仅在 workflow 由 `build_upload` 事件域触发时存在。
 
-Example:
+示例：
 
 ```yaml
 on:
@@ -825,18 +825,18 @@ jobs:
     params:
       webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
       message: |
-        Upload complete for App Store Connect app: ${{ app_store_connect.app.id }}
-        Upload ID: ${{ app_store_connect.build_upload.id }}
-        Upload state: ${{ app_store_connect.build_upload.state }}
+        App Store Connect 应用上传完成：${{ app_store_connect.app.id }}
+        上传 ID：${{ app_store_connect.build_upload.id }}
+        上传状态：${{ app_store_connect.build_upload.state }}
 ```
 
 #### `env`
 
-A record of environment variables available in the current job context.
+当前 job 上下文中可用的环境变量记录。
 
-> **Note:** The `env` context is only available within a job's context, not at the workflow level.
+> **注意：** `env` 上下文仅在 job 的上下文中可用，而不在 workflow 级别可用。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -845,39 +845,39 @@ jobs:
       - run: echo "API URL: ${{ env.API_URL }}"
 ```
 
-### Context functions
+### 上下文函数
 
-The following functions are available in interpolation contexts:
+在插值上下文中可用的函数如下：
 
 #### `success()`
 
-Returns whether all previous jobs have succeeded.
+返回所有先前 job 是否都已成功。
 
 ```yaml
 jobs:
   notify:
     if: ${{ success() }}
     steps:
-      - run: echo "All jobs succeeded"
+      - run: echo "所有 job 都已成功"
 ```
 
 #### `failure()`
 
-Returns whether any previous job has failed.
+返回是否有任意先前 job 失败。
 
 ```yaml
 jobs:
   notify:
     if: ${{ failure() }}
     steps:
-      - run: echo "A job failed"
+      - run: echo "有一个 job 失败了"
 ```
 
 #### `fromJSON(value)`
 
-Parses a JSON string. Equivalent to `JSON.parse()`.
+解析 JSON 字符串。等同于 `JSON.parse()`。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -894,9 +894,9 @@ jobs:
 
 #### `toJSON(value)`
 
-Converts a value to a JSON string. Equivalent to `JSON.stringify()`.
+将值转换为 JSON 字符串。等同于 `JSON.stringify()`。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -907,9 +907,9 @@ jobs:
 
 #### `contains(value, substring)`
 
-Checks whether `value` contains `substring`.
+检查 `value` 是否包含 `substring`。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -921,9 +921,9 @@ jobs:
 
 #### `startsWith(value, prefix)`
 
-Checks whether `value` starts with `prefix`.
+检查 `value` 是否以 `prefix` 开头。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -935,9 +935,9 @@ jobs:
 
 #### `endsWith(value, suffix)`
 
-Checks whether `value` ends with `suffix`.
+检查 `value` 是否以 `suffix` 结尾。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -949,11 +949,11 @@ jobs:
 
 #### `hashFiles(...globs)`
 
-Returns a hash of files matching the provided glob patterns. Useful for cache keys.
+返回与提供的 glob 模式匹配的文件哈希。适用于缓存键。
 
-> **Note:** The `hashFiles` function is only available within a job's steps, not at the workflow level.
+> **注意：** `hashFiles` 函数仅在 job 的 steps 内可用，而不在 workflow 级别可用。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -964,9 +964,9 @@ jobs:
 
 #### `replaceAll(input, stringToReplace, replacementString)`
 
-Replaces all occurrences of `stringToReplace` in `input` with `replacementString`.
+将 `input` 中所有 `stringToReplace` 的出现替换为 `replacementString`。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -977,9 +977,9 @@ jobs:
 
 #### `substring(input, start, end)`
 
-Extracts a substring from `input` starting at `start` and ending at `end`. If `end` is not provided, the substring is extracted from `start` to the end of `input`. Uses [`String#substring`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substring) under the hood.
+从 `input` 中提取子字符串，起始位置为 `start`，结束位置为 `end`。如果未提供 `end`，则会从 `start` 一直提取到 `input` 的末尾。底层使用 [`String#substring`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substring) 实现。
 
-Example:
+示例：
 
 ```yaml
 jobs:
@@ -988,11 +988,11 @@ jobs:
       - run: echo "${{ substring(github.ref_name, 0, 50) }}"
 ```
 
-## Pre-packaged jobs
+## 预打包任务
 
 ### `jobs.<job_id>.type`
 
-Specifies the type of pre-packaged job to run. Pre-packaged jobs produce specialized UI according to the type of job on the workflow's detail page.
+指定要运行的预打包任务类型。预打包任务会根据工作流详情页中的任务类型生成专门的 UI。
 
 ```yaml
 jobs:
@@ -1002,11 +1002,11 @@ jobs:
     # @end #
 ```
 
-Learn about the different pre-packaged jobs below.
+下面了解不同的预打包任务。
 
 #### `build`
 
-Creates an Android or iOS build of your project using [EAS Build](/build/introduction/). See [Build job documentation](/eas/workflows/pre-packaged-jobs#build) for detailed information and examples.
+使用 [EAS Build](/build/introduction/) 为你的项目创建 Android 或 iOS 构建。有关详细信息和示例，请参阅 [构建任务文档](/eas/workflows/pre-packaged-jobs#build)。
 
 ```yaml
 jobs:
@@ -1020,7 +1020,7 @@ jobs:
       message: string # optional
 ```
 
-This job outputs the following properties:
+此任务输出以下属性：
 
 ```json
 {
@@ -1042,7 +1042,7 @@ This job outputs the following properties:
 
 #### `deploy`
 
-Deploys your application using [EAS Hosting](/eas/hosting/introduction/). See [Deploy job documentation](/eas/workflows/pre-packaged-jobs#deploy) for detailed information and examples.
+使用 [EAS Hosting](/eas/hosting/introduction/) 部署你的应用。有关详细信息和示例，请参阅 [部署任务文档](/eas/workflows/pre-packaged-jobs#deploy)。
 
 ```yaml
 jobs:
@@ -1055,22 +1055,22 @@ jobs:
       prod: boolean # optional
 ```
 
-This job outputs the following properties:
+此任务输出以下属性：
 
 ```json
 {
-  "deploy_json": string, // JSON object containing the deployment details (output of `npx eas-cli deploy --json`).
-  "deploy_url": string, // URL to the deployment. It uses production URL if this was a production deployment. Otherwise, it uses the first alias URL or the deployment URL.
-  "deploy_alias_url": string, // Alias URL to the deployment (for example, `https://account-project--alias.expo.app`).
-  "deploy_deployment_url": string, // Unique URL to the deployment (for example, `https://account-project--uniqueid.expo.app`).
-  "deploy_identifier": string, // Identifier of the deployment.
-  "deploy_dashboard_url": string, // URL to the deployment dashboard (for example, `https://expo.dev/projects/[project]/hosting/deployments`).
+  "deploy_json": string, // 包含部署详情的 JSON 对象（`npx eas-cli deploy --json` 的输出）。
+  "deploy_url": string, // 部署的 URL。如果这是生产部署，则使用生产 URL。否则，使用第一个别名 URL 或部署 URL。
+  "deploy_alias_url": string, // 部署的别名 URL（例如，`https://account-project--alias.expo.app`）。
+  "deploy_deployment_url": string, // 部署的唯一 URL（例如，`https://account-project--uniqueid.expo.app`）。
+  "deploy_identifier": string, // 部署的标识符。
+  "deploy_dashboard_url": string, // 部署仪表板的 URL（例如，`https://expo.dev/projects/[project]/hosting/deployments`）。
 }
 ```
 
 #### `fingerprint`
 
-Calculates a fingerprint of your project. See [Fingerprint job documentation](/eas/workflows/pre-packaged-jobs#fingerprint) for detailed information and examples.
+计算你的项目指纹。有关详细信息和示例，请参阅 [指纹任务文档](/eas/workflows/pre-packaged-jobs#fingerprint)。
 
 ```yaml
 jobs:
@@ -1078,10 +1078,10 @@ jobs:
     # @info #
     type: fingerprint
     # @end #
-    environment: production # Should match your build profile
+    environment: production # 应与你的构建配置文件匹配
 ```
 
-This job outputs the following properties:
+此任务输出以下属性：
 
 ```json
 {
@@ -1090,11 +1090,11 @@ This job outputs the following properties:
 }
 ```
 
-> **Note:** For accurate fingerprint matching, ensure the fingerprint job's `environment` matches your build profile. Consider using [EAS environment variables](/eas/environment-variables/) instead of `env` for better consistency across jobs.
+> **注意：** 为了准确匹配指纹，请确保 fingerprint 任务的 `environment` 与你的构建配置文件一致。为了让不同任务之间更一致，建议使用 [EAS 环境变量](/eas/environment-variables/) 而不是 `env`。
 
 #### `get-build`
 
-Retrieves an existing build from EAS that matches the provided parameters. See [Get Build job documentation](/eas/workflows/pre-packaged-jobs#get-build) for detailed information and examples.
+从 EAS 中检索与提供参数匹配的现有构建。有关详细信息和示例，请参阅 [获取构建任务文档](/eas/workflows/pre-packaged-jobs#get-build)。
 
 ```yaml
 jobs:
@@ -1118,7 +1118,7 @@ jobs:
       wait_for_in_progress: boolean # optional
 ```
 
-This job outputs the following properties:
+此任务输出以下属性：
 
 ```json
 {
@@ -1140,7 +1140,7 @@ This job outputs the following properties:
 
 #### `submit`
 
-Submits an Android or iOS build to the app store using [EAS Submit](/submit/introduction/). See [Submit job documentation](/eas/workflows/pre-packaged-jobs#submit) for detailed information and examples.
+使用 [EAS Submit](/submit/introduction/) 将 Android 或 iOS 构建提交到应用商店。有关详细信息和示例，请参阅 [提交任务文档](/eas/workflows/pre-packaged-jobs#submit)。
 
 ```yaml
 jobs:
@@ -1154,19 +1154,19 @@ jobs:
       groups: string[] # optional
 ```
 
-This job outputs the following properties:
+此任务输出以下属性：
 
 ```json
 {
   "apple_app_id": string | null, // Apple App ID. https://expo.fyi/asc-app-id
-  "ios_bundle_identifier": string | null, // iOS bundle identifier of the submitted build. https://expo.fyi/bundle-identifier
-  "android_package_id": string | null // Submitted Android package ID. https://expo.fyi/android-package
+  "ios_bundle_identifier": string | null, // 已提交构建的 iOS bundle identifier。https://expo.fyi/bundle-identifier
+  "android_package_id": string | null // 已提交的 Android package ID。https://expo.fyi/android-package
 }
 ```
 
 #### `testflight`
 
-Distributes iOS builds to TestFlight internal and external testing groups. See [TestFlight job documentation](/eas/workflows/pre-packaged-jobs#testflight) for detailed information and examples.
+将 iOS 构建分发到 TestFlight 内部和外部测试组。有关详细信息和示例，请参阅 [TestFlight 任务文档](/eas/workflows/pre-packaged-jobs#testflight)。
 
 ```yaml
 jobs:
@@ -1184,18 +1184,18 @@ jobs:
       wait_processing_timeout_seconds: number # optional, default: 1800 (30 minutes)
 ```
 
-This job outputs the following properties:
+此任务输出以下属性：
 
 ```json
 {
   "apple_app_id": string | null, // Apple App ID. https://expo.fyi/asc-app-id
-  "ios_bundle_identifier": string | null // iOS bundle identifier of the submitted build. https://expo.fyi/bundle-identifier
+  "ios_bundle_identifier": string | null // 已提交构建的 iOS bundle identifier。https://expo.fyi/bundle-identifier
 }
 ```
 
 #### `update`
 
-Publishes an update using [EAS Update](/eas-update/introduction/). See [Update job documentation](/eas/workflows/pre-packaged-jobs#update) for detailed information and examples.
+使用 [EAS Update](/eas-update/introduction/) 发布更新。有关详细信息和示例，请参阅 [更新任务文档](/eas/workflows/pre-packaged-jobs#update)。
 
 ```yaml
 jobs:
@@ -1212,20 +1212,20 @@ jobs:
       upload_sentry_sourcemaps: boolean # optional - defaults to "try uploading, but don't fail the job if it fails"
 ```
 
-This job outputs the following properties:
+此任务输出以下属性：
 
 ```json
 {
-  "first_update_group_id": string, // ID of the first update group. You can use it to e.g. construct the update URL for a development client deep link.
-  "updates_json": string // Stringified JSON array of update groups. Output of `eas update --json`.
+  "first_update_group_id": string, // 第一个更新组的 ID。你可以用它来例如为开发客户端深层链接构造更新 URL。
+  "updates_json": string // 更新组的字符串化 JSON 数组。`eas update --json` 的输出。
 }
 ```
 
 #### `maestro`
 
-Runs [Maestro](https://maestro.dev/) tests on a build. See [Maestro job documentation](/eas/workflows/pre-packaged-jobs#maestro) for detailed information and examples.
+在构建上运行 [Maestro](https://maestro.dev/) 测试。有关详细信息和示例，请参阅 [Maestro 任务文档](/eas/workflows/pre-packaged-jobs#maestro)。
 
-> **important** Maestro tests are in [alpha](/more/release-statuses/#alpha).
+> **重要** Maestro 测试处于 [alpha](/more/release-statuses/#alpha)。
 
 ```yaml
 jobs:
@@ -1251,9 +1251,9 @@ jobs:
 
 #### `maestro-cloud`
 
-Runs [Maestro](https://maestro.dev/) tests on a build in [Maestro Cloud](https://docs.maestro.dev/maestro-cloud/run-tests-on-maestro-cloud). See [Maestro Cloud job documentation](/eas/workflows/pre-packaged-jobs#maestro-cloud) for detailed information and examples.
+在 [Maestro Cloud](https://docs.maestro.dev/maestro-cloud/run-tests-on-maestro-cloud) 中的构建上运行 [Maestro](https://maestro.dev/) 测试。有关详细信息和示例，请参阅 [Maestro Cloud 任务文档](/eas/workflows/pre-packaged-jobs#maestro-cloud)。
 
-> **important** Running tests in Maestro Cloud requires a Maestro Cloud account and Cloud Plan subscription. Go to [Maestro docs](https://docs.maestro.dev/maestro-cloud/run-tests-on-maestro-cloud) to learn more.
+> **重要** 在 Maestro Cloud 中运行测试需要 Maestro Cloud 账户和 Cloud Plan 订阅。前往 [Maestro 文档](https://docs.maestro.dev/maestro-cloud/run-tests-on-maestro-cloud) 了解更多。
 
 ```yaml
 jobs:
@@ -1283,7 +1283,7 @@ jobs:
 
 #### `slack`
 
-Sends a message to a Slack channel using a webhook URL. See [Slack job documentation](/eas/workflows/pre-packaged-jobs#slack) for detailed information and examples.
+使用 webhook URL 向 Slack 频道发送消息。有关详细信息和示例，请参阅 [Slack 任务文档](/eas/workflows/pre-packaged-jobs#slack)。
 
 ```yaml
 jobs:
@@ -1299,7 +1299,7 @@ jobs:
 
 #### `github-comment`
 
-Automatically posts comprehensive reports of your workflow's completed builds, updates, and deployments to GitHub pull requests or content provided by you. See [GitHub Comment job documentation](/eas/workflows/pre-packaged-jobs#github-comment) for detailed information and examples.
+自动将你的工作流已完成的构建、更新和部署的综合报告发布到 GitHub 拉取请求或你提供的内容。有关详细信息和示例，请参阅 [GitHub Comment 任务文档](/eas/workflows/pre-packaged-jobs#github-comment)。
 
 ```yaml
 jobs:
@@ -1313,24 +1313,24 @@ jobs:
       update_group_ids: string[] # optional - specific update group IDs to include, defaults to all related to the workflow
       deployment_ids: string[] # optional - specific deployment IDs to include, defaults to all related to the workflow
 
-  # instead of using message and the builds, updates, and deployments table, you can also override the comment contents with `payload`
+  # 不使用 message 以及构建、更新和部署表时，你也可以使用 `payload` 覆盖评论内容
   custom_github_comment:
     type: github-comment
     params:
-      payload: string # optional - raw markdown/HTML content for fully custom comment
+      payload: string # optional - 用于完全自定义评论的原始 markdown/HTML 内容
 ```
 
-This job outputs the following properties:
+此任务输出以下属性：
 
 ```json
 {
-  "comment_url": string | undefined  // URL of the posted GitHub comment
+  "comment_url": string | undefined  // 已发布的 GitHub 评论 URL
 }
 ```
 
 #### `require-approval`
 
-Requires approval from a user before continuing with the workflow. A user can approve or reject which translates to success or failure of the job. See [Require Approval job documentation](/eas/workflows/pre-packaged-jobs#require-approval) for detailed information and examples.
+在继续工作流之前，需要用户批准。用户可以批准或拒绝，这分别对应任务成功或失败。有关详细信息和示例，请参阅 [Require Approval 任务文档](/eas/workflows/pre-packaged-jobs#require-approval)。
 
 ```yaml
 jobs:
@@ -1342,7 +1342,7 @@ jobs:
 
 #### `doc`
 
-Displays a Markdown section in the workflow logs. See [Doc job documentation](/eas/workflows/pre-packaged-jobs#doc) for detailed information and examples.
+在工作流日志中显示一个 Markdown 部分。有关详细信息和示例，请参阅 [Doc 任务文档](/eas/workflows/pre-packaged-jobs#doc)。
 
 ```yaml
 jobs:
@@ -1356,7 +1356,7 @@ jobs:
 
 #### `repack`
 
-Repackages an app from an existing build. This job repackages the app's metadata and JavaScript bundle without performing a full native rebuild, which is useful for creating a faster build compatible with a specific fingerprint. See [Repack job documentation](/eas/workflows/pre-packaged-jobs#repack) for detailed information and examples.
+基于现有构建重新打包应用。此任务会在不执行完整原生重建的情况下重新打包应用的元数据和 JavaScript bundle，这对于创建与特定指纹兼容的更快构建很有用。有关详细信息和示例，请参阅 [Repack 任务文档](/eas/workflows/pre-packaged-jobs#repack)。
 
 ```yaml
 jobs:
@@ -1372,9 +1372,9 @@ jobs:
     # @end #
 ```
 
-## Custom jobs
+## 自定义作业
 
-Runs custom code and can use built-in EAS functions. Does not require a `type` field.
+运行自定义代码，并且可以使用内置的 EAS 函数。不需要 `type` 字段。
 
 ```yaml
 jobs:
@@ -1385,30 +1385,30 @@ jobs:
 
 ### `jobs.<job_id>.steps`
 
-A job contains a sequence of tasks called `steps`. Steps can run commands. `steps` may only be provided in custom jobs and `build` jobs.
+一个作业包含一系列称为 `steps` 的任务。步骤可以运行命令。`steps` 只能在自定义作业和 `build` 作业中提供。
 
 ```yaml
 jobs:
   my_job:
     # @info #
     steps:
-      - name: My first step
+      - name: 我的第一步
         run: echo "Hello World"
     # @end #
 ```
 
 ### `jobs.<job_id>.outputs`
 
-A list of outputs defined by the job. These outputs are accessible to all downstream jobs that depend on this job. To set outputs, use the [`set-output`](#set-output) function within a job step.
+由作业定义的输出列表。这些输出对所有依赖于此作业的下游作业都可访问。要设置输出，请在作业步骤中使用 [`set-output`](#set-output) 函数。
 
-Downstream jobs can access these outputs using the following expressions within [interpolation contexts](#interpolation):
+下游作业可以在 [插值上下文](#interpolation) 中使用以下表达式访问这些输出：
 
 - `needs.<job_id>.outputs.<output_name>`
 - `after.<job_id>.outputs.<output_name>`
 
-Here, `<job_id>` refers to the identifier of the upstream job, and `<output_name>` refers to the specific output variable you want to access.
+这里，`<job_id>` 指的是上游作业的标识符，`<output_name>` 指的是你想要访问的具体输出变量。
 
-In the example below, the `set-output` function sets the output named `test` to the value `hello world` in `job_1`'s `step_1` step. Later in `job_2`, it's accessed in `step_2` using `needs.job_1.outputs.output_1`.
+在下面的示例中，`set-output` 函数在 `job_1` 的 `step_1` 步骤中将名为 `test` 的输出设置为值 `hello world`。之后，在 `job_2` 中，它会在 `step_2` 中通过 `needs.job_1.outputs.output_1` 进行访问。
 
 ```yaml
 jobs:
@@ -1433,19 +1433,19 @@ jobs:
 
 ### `jobs.<job_id>.image`
 
-Specifies the VM image to use for the job. See [Infrastructure](/build-reference/infrastructure/) for available images.
+指定要用于该作业的 VM 镜像。可用镜像请参见 [基础设施](/build-reference/infrastructure/)。
 
 ```yaml
 jobs:
   my_job:
     # @info #
-    image: auto | string # optional, defaults to 'auto'
+    image: auto | string # 可选，默认值为 'auto'
     # @end #
 ```
 
 ### `jobs.<job_id>.runs_on`
 
-Specifies the worker that will execute the job. Available only on custom jobs.
+指定将执行该作业的 worker。仅在自定义作业中可用。
 
 ```yaml
 jobs:
@@ -1454,37 +1454,37 @@ jobs:
     runs_on: linux-medium | linux-large |
       linux-medium-nested-virtualization |
       linux-large-nested-virtualization |
-      macos-medium | macos-large # optional, defaults to linux-medium
+      macos-medium | macos-large # 可选，默认值为 linux-medium
     # @end #
 ```
 
 {/* vale off */}
 
-| Worker                             | vCPU | Memory (GiB RAM) | SSD (GiB) | Notes                             |
+| Worker                             | vCPU | Memory (GiB RAM) | SSD (GiB) | 备注                             |
 | ---------------------------------- | ---- | ---------------- | --------- | --------------------------------- |
-| linux-medium                       | 4    | 16               | 14        | Default worker.                   |
+| linux-medium                       | 4    | 16               | 14        | 默认 worker。                   |
 | linux-large                        | 8    | 32               | 28        |                                   |
-| linux-medium-nested-virtualization | 4    | 16               | 14        | Allows running Android Emulators. |
-| linux-large-nested-virtualization  | 4    | 32               | 28        | Allows running Android Emulators. |
+| linux-medium-nested-virtualization | 4    | 16               | 14        | 允许运行 Android 模拟器。 |
+| linux-large-nested-virtualization  | 4    | 32               | 28        | 允许运行 Android 模拟器。 |
 
-| Worker       | Efficiency cores | Unified memory (GiB RAM) | SSD (GiB) | Notes                                |
+| Worker       | 效率核心 | 统一内存（GiB RAM） | SSD (GiB) | 备注                                |
 | ------------ | ---------------- | ------------------------ | --------- | ------------------------------------ |
-| macos-medium | 5                | 20                       | 125       | Runs iOS jobs, including simulators. |
-| macos-large  | 10               | 40                       | 125       | Runs iOS jobs, including simulators. |
+| macos-medium | 5                | 20                       | 125       | 运行 iOS 任务，包括模拟器。 |
+| macos-large  | 10               | 40                       | 125       | 运行 iOS 任务，包括模拟器。 |
 
 {/* vale on */}
 
-> **Note:** For Android Emulator jobs, you must use a `linux-*-nested-virtualization` worker. For iOS builds and iOS Simulator jobs, you must use a `macos-*` worker.
+> **注意：** 对于 Android Emulator 任务，必须使用 `linux-*-nested-virtualization` worker。对于 iOS 构建和 iOS Simulator 任务，必须使用 `macos-*` worker。
 
 ### `jobs.<job_id>.steps.<step>.id`
 
-The `id` property is used to reference the step in the job. Useful for using the step's output in a downstream job.
+`id` 属性用于在作业中引用该步骤。适用于在下游作业中使用该步骤的输出。
 
 ```yaml
 jobs:
   my_job:
     outputs:
-      test: ${{ steps.step_1.outputs.test }} # References the output from step_1
+      test: ${{ steps.step_1.outputs.test }} # 引用 step_1 的输出
     steps:
       # @info #
       - id: step_1
@@ -1494,21 +1494,21 @@ jobs:
 
 ### `jobs.<job_id>.steps.<step>.name`
 
-The human-friendly name of the step, which is displayed in the job's logs. When a step's name is not provided, the `run` command is used as the step name.
+步骤的人类可读名称，会显示在作业日志中。当步骤没有提供名称时，会使用 `run` 命令作为步骤名称。
 
 ```yaml
 jobs:
   my_job:
     steps:
       # @info #
-      - name: My first step
+      - name: 我的第一个步骤
         # @end #
         run: echo "Hello World"
 ```
 
 ### `jobs.<job_id>.steps.<step>.run`
 
-The shell command to run in the step.
+要在该步骤中运行的 shell 命令。
 
 ```yaml
 jobs:
@@ -1521,7 +1521,7 @@ jobs:
 
 ### `jobs.<job_id>.steps.<step>.shell`
 
-The shell to use for running the command. Defaults to `bash`.
+用于运行命令的 shell。默认为 `bash`。
 
 ```yaml
 jobs:
@@ -1535,14 +1535,14 @@ jobs:
 
 ### `jobs.<job_id>.steps.<step>.working_directory`
 
-The directory to run the command in. When defined at the step level, it overrides the `jobs.<job_id>.defaults.run.working_directory` setting on the job if it is also defined.
+运行命令的目录。当在步骤级别定义时，如果 `jobs.<job_id>.defaults.run.working_directory` 也有定义，它会覆盖作业中的该设置。
 
 ```yaml
 jobs:
   my_job:
     steps:
       - uses: eas/checkout
-      - run: pwd # prints: /home/expo/workingdir/build/my-app
+      - run: pwd # 打印：/home/expo/workingdir/build/my-app
         # @info #
         working_directory: ./my-app
         # @end #
@@ -1550,7 +1550,7 @@ jobs:
 
 ### `jobs.<job_id>.steps.<step>.uses`
 
-EAS provides a set of built-in reusable functions that you can use in workflow steps. The `uses` keyword is used to specify the function to use. All built-in functions start with the `eas/` prefix.
+EAS 提供了一组内置的可复用函数，你可以在工作流步骤中使用。`uses` 关键字用于指定要使用的函数。所有内置函数都以 `eas/` 前缀开头。
 
 ```yaml
 jobs:
@@ -1560,16 +1560,16 @@ jobs:
       - uses: eas/checkout
       - uses: eas/install_node_modules
       - uses: eas/prebuild
-      - name: List files
+      - name: 列出文件
         run: ls -la
       # @end #
 ```
 
-Below is a list of built-in functions you can use in your workflow steps.
+下面是你可以在工作流步骤中使用的内置函数列表。
 
 #### `eas/checkout`
 
-Checks out your project source files.
+检出你的项目源文件。
 
 ```yaml
 jobs:
@@ -1581,15 +1581,15 @@ jobs:
 ```
 
 <BoxLink
-  title="eas/checkout source code"
-  description="View the source code for the eas/checkout function on GitHub."
+  title="eas/checkout 源代码"
+  description="在 GitHub 上查看 eas/checkout 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/checkout.ts"
 />
 
 #### `eas/install_node_modules`
 
-Installs node_modules using the package manager (bun, npm, pnpm, or Yarn) detected based on your project. Works with monorepos.
+使用根据你的项目检测到的包管理器（bun、npm、pnpm 或 Yarn）安装 node_modules。适用于 monorepo。
 
 ```yaml example.yml
 jobs:
@@ -1602,15 +1602,15 @@ jobs:
 ```
 
 <BoxLink
-  title="eas/install_node_modules source code"
-  description="View the source code for the eas/install_node_modules function on GitHub."
+  title="eas/install_node_modules 源代码"
+  description="在 GitHub 上查看 eas/install_node_modules 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/installNodeModules.ts"
 />
 
 #### `eas/download_build`
 
-Downloads application archive of a given build. By default, the downloaded artifact can be an **.apk**, **.aab**, **.ipa**, or **.app** file, or a **.tar.gz** archive containing one or more of these files. If the artifact is a **.tar.gz** archive, it will be extracted and the first file matching the specified extensions will be returned. If the build produced no application archive, the step will fail.
+下载指定构建的应用归档。默认情况下，下载的制品可以是 **.apk**、**.aab**、**.ipa** 或 **.app** 文件，也可以是包含其中一个或多个文件的 **.tar.gz** 归档。如果制品是 **.tar.gz** 归档，它将被解压，并返回第一个匹配指定扩展名的文件。如果构建没有生成任何应用归档，该步骤将失败。
 
 ```yaml
 jobs:
@@ -1618,20 +1618,20 @@ jobs:
     steps:
       - uses: eas/download_build
         with:
-          build_id: string # Required. ID of the build to download.
-          extensions: [apk, aab, ipa, app] # Optional. List of file extensions to look for. Defaults to ["apk", "aab", "ipa", "app"].
+          build_id: string # 必填。要下载的构建的 ID。
+          extensions: [apk, aab, ipa, app] # 可选。要查找的文件扩展名列表。默认为 ["apk", "aab", "ipa", "app"]。
 ```
 
 | Property     | Type     | Required | Default                        | Description                                                                |
 | ------------ | -------- | -------- | ------------------------------ | -------------------------------------------------------------------------- |
-| `build_id`   | string   | Yes      | –                              | The ID of the build to download. Must be a valid UUID.                     |
-| `extensions` | string[] | No       | `["apk", "aab", "ipa", "app"]` | List of file extensions to look for in the downloaded artifact or archive. |
+| `build_id`   | string   | Yes      | –                              | 要下载的构建 ID。必须是有效的 UUID。                                        |
+| `extensions` | string[] | No       | `["apk", "aab", "ipa", "app"]` | 在下载的制品或归档中要查找的文件扩展名列表。                                  |
 
-**Outputs:**
+**输出：**
 
-- `artifact_path`: The absolute path to the matching application archive. This output can be used as input into other steps in your workflow. For example, to upload or process the artifact further.
+- `artifact_path`：匹配的应用归档的绝对路径。该输出可作为工作流中其他步骤的输入。例如，用于进一步上传或处理该制品。
 
-Example usage:
+示例用法：
 
 ```yaml
 jobs:
@@ -1648,21 +1648,21 @@ jobs:
         id: download_build
         with:
           build_id: ${{ needs.build_ios.outputs.build_id }}
-      - name: Print artifact path
+      - name: 打印制品路径
         run: |
           echo "Artifact path: ${{ steps.download_build.outputs.artifact_path }}"
 ```
 
 <BoxLink
-  title="eas/download_build source code"
-  description="View the source code for the eas/download_build function on GitHub."
+  title="eas/download_build 源代码"
+  description="在 GitHub 上查看 eas/download_build 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/downloadBuild.ts"
 />
 
 #### `eas/prebuild`
 
-Runs the `expo prebuild` command using the package manager (bun, npm, pnpm, or Yarn) detected based on your project with the command best suited for your build type and build environment.
+使用根据你的项目检测到的包管理器（bun、npm、pnpm 或 Yarn），并采用最适合你的构建类型和构建环境的命令运行 `expo prebuild` 命令。
 
 ```yaml
 jobs:
@@ -1693,19 +1693,19 @@ jobs:
 
 | Property        | Type      | Description                                                                                                                                 |
 | --------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `clean`         | `boolean` | Optional property defining whether the function should use `--clean` flag when running the command. Defaults to false.                      |
-| `apple_team_id` | `string`  | Optional property defining Apple team ID which should be used when doing prebuild. It should be specified for iOS builds using credentials. |
+| `clean`         | `boolean` | 可选属性，定义在运行命令时该函数是否应使用 `--clean` 标志。默认为 false。                                                                      |
+| `apple_team_id` | `string`  | 可选属性，定义在执行 prebuild 时应使用的 Apple 团队 ID。对于使用凭据的 iOS 构建，应指定该值。                                                     |
 
 <BoxLink
-  title="eas/prebuild source code"
-  description="View the source code for the eas/prebuild function on GitHub."
+  title="eas/prebuild 源代码"
+  description="在 GitHub 上查看 eas/prebuild 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/prebuild.ts"
 />
 
 #### `eas/restore_cache`
 
-Restores a previously saved cache from a specified key. This is useful for speeding up builds by reusing cached artifacts like compiled dependencies, build tools, or other intermediate build outputs.
+从指定的 key 恢复之前保存的缓存。这对于通过复用已缓存的制品（如已编译的依赖项、构建工具或其他中间构建输出）来加速构建很有用。
 
 ```yaml
 jobs:
@@ -1738,22 +1738,22 @@ jobs:
       # @end #
 ```
 
-| Property       | Type     | Required | Description                                                                                                                                              |
-| -------------- | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key`          | `string` | Yes      | The cache key to restore. You can use expressions like `${{ hashFiles('package-lock.json') }}` to create dynamic keys based on file hashes.              |
-| `restore_keys` | `string` | No       | A fallback key or prefix to use if the exact key is not found. If provided, the cache system will look for any cache entry that starts with this prefix. |
-| `path`         | `string` | Yes      | The path where the cache should be restored. This should match the path used when saving the cache.                                                      |
+| Property       | Type        | Required | Description                                                                                                                                              |
+| -------------- | ----------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`          | `string`    | Yes      | 要恢复的缓存 key。你可以使用诸如 `${{ hashFiles('package-lock.json') }}` 这样的表达式，根据文件哈希创建动态 key。                                         |
+| `restore_keys` | `string`    | No       | 当找不到精确匹配的 key 时使用的备用 key 或前缀。如果提供，缓存系统将查找任何以该前缀开头的缓存项。                                                         |
+| `path`         | `string`    | Yes      | 应恢复缓存的路径。该路径应与保存缓存时使用的路径一致。                                                                                                   |
 
 <BoxLink
-  title="eas/restore_cache source code"
-  description="View the source code for the eas/restore_cache function on GitHub."
+  title="eas/restore_cache 源代码"
+  description="在 GitHub 上查看 eas/restore_cache 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/restoreCache.ts"
 />
 
 #### `eas/save_cache`
 
-Saves a cache to a specified key. This allows you to persist build artifacts, compiled dependencies, or other intermediate outputs that can be reused in subsequent builds to speed up the build process.
+将缓存保存到指定的 key 下。这使你可以持久化构建制品、已编译的依赖项或其他可在后续构建中复用的中间输出，以加快构建过程。
 
 ```yaml
 jobs:
@@ -1766,7 +1766,7 @@ jobs:
         with:
           key: cache-${{ hashFiles('package-lock.json') }}
           path: /path/to/cache
-      - name: Build Android app
+      - name: 构建 Android 应用
         run: cd android && ./gradlew assembleRelease
       # @info #
       - uses: eas/save_cache
@@ -1778,23 +1778,23 @@ jobs:
 
 | Property | Type     | Required | Description                                                                                                                                                                                                       |
 | -------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key`    | `string` | Yes      | The cache key to save the cache under. You can use expressions like `${{ hashFiles('package-lock.json') }}` to create dynamic keys based on file hashes. This should match the key used when restoring the cache. |
-| `path`   | `string` | Yes      | The path to the directory or files that should be cached. This should match the path used when restoring the cache.                                                                                               |
+| `key`    | `string` | Yes      | 将缓存保存到其下的缓存 key。你可以使用诸如 `${{ hashFiles('package-lock.json') }}` 这样的表达式，根据文件哈希创建动态 key。该值应与恢复缓存时使用的 key 一致。                                         |
+| `path`   | `string` | Yes      | 应缓存的目录或文件路径。该值应与恢复缓存时使用的路径一致。                                                                                                              |
 
 <BoxLink
-  title="eas/save_cache source code"
-  description="View the source code for the eas/save_cache function on GitHub."
+  title="eas/save_cache 源代码"
+  description="在 GitHub 上查看 eas/save_cache 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/saveCache.ts"
 />
 
 #### `eas/send_slack_message`
 
-Sends a specified message to a configured [Slack webhook URL](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks), which then posts it in the related Slack channel. The message can be specified as plaintext or as a [Slack Block Kit](https://docs.slack.dev/block-kit) message.
+向配置好的 [Slack webhook URL](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks) 发送指定消息，然后它会将消息发布到相关的 Slack 频道。消息可以指定为纯文本或 [Slack Block Kit](https://docs.slack.dev/block-kit) 消息。
 
-With both cases, you can reference build job properties and [use other steps outputs](#jobsjob_idoutputs) in the message for dynamic evaluation. For example, `Build URL: https://expo.dev/builds/${{ needs.build_ios.outputs.build_id }}`, `Build finished with status: ${{ after.build_android.status }}`.
+在这两种情况下，你都可以引用构建作业属性，并在消息中 [使用其他步骤的输出](#jobsjob_idoutputs) 进行动态求值。例如，`Build URL: https://expo.dev/builds/${{ needs.build_ios.outputs.build_id }}`、`Build finished with status: ${{ after.build_android.status }}`。
 
-Either `message` or `payload` has to be specified, but not both.
+必须指定 `message` 或 `payload` 之一，但不能同时指定两者。
 
 ```yaml
 jobs:
@@ -1810,46 +1810,46 @@ jobs:
 
 | Property         | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `message`        | `string` | The text of the message you want to send. For example, `'This is the content of the message'`.<br /> <br />**Note:** Either `message` or `payload` needs to be provided, but not both.                                                                                                                                                                                                                                                                                                                                                            |
-| `payload`        | `json`   | The contents of the message you want to send which are defined using [Slack Block Kit](https://docs.slack.dev/block-kit) layout.<br /> <br />**Note:** Either `message` or `payload` needs to be provided, but not both.                                                                                                                                                                                                                                                                                                                          |
-| `slack_hook_url` | `string` | The previously configured Slack webhook URL, which will post your message to the specified channel. You can provide the plain URL like `slack_hook_url: 'https://hooks.slack.com/services/[rest_of_hook_url]'`, use [EAS Environment Variables](/eas/environment-variables/#managing-environment-variables) like `slack_hook_url: ${{ env.ANOTHER_SLACK_HOOK_URL }}`, or set the `SLACK_HOOK_URL` Environment Variable, which will serve as a default webhook URL (in this last case, there is no need to provide the `slack_hook_url` property). |
+| `message`        | `string` | 你想发送的消息文本。例如，`'This is the content of the message'`。<br /> <br />**注意：** 必须提供 `message` 或 `payload` 之一，但不能同时提供两者。                                                                                                                                                                                                                                                                                                                                                            |
+| `payload`        | `json`   | 你想发送的消息内容，使用 [Slack Block Kit](https://docs.slack.dev/block-kit) 布局定义。<br /> <br />**注意：** 必须提供 `message` 或 `payload` 之一，但不能同时提供两者。                                                                                                                                                                                                                                                                                                                          |
+| `slack_hook_url` | `string` | 之前配置好的 Slack webhook URL，它会将你的消息发布到指定频道。你可以提供类似 `slack_hook_url: 'https://hooks.slack.com/services/[rest_of_hook_url]'` 这样的普通 URL，使用 [EAS 环境变量](/eas/environment-variables/#managing-environment-variables) 例如 `slack_hook_url: ${{ env.ANOTHER_SLACK_HOOK_URL }}`，或者设置 `SLACK_HOOK_URL` 环境变量，它将作为默认的 webhook URL（在后一种情况下，不需要提供 `slack_hook_url` 属性）。 |
 
 <BoxLink
-  title="eas/send_slack_message source code"
-  description="View the source code for the eas/send_slack_message function on GitHub."
+  title="eas/send_slack_message 源代码"
+  description="在 GitHub 上查看 eas/send_slack_message 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/sendSlackMessage.ts"
 />
 
 #### `eas/use_npm_token`
 
-Configures Node package managers (bun, npm, pnpm, or Yarn) for use with private packages, published either to npm or a private registry.
+为私有包配置 Node 包管理器（bun、npm、pnpm 或 Yarn），这些包可发布到 npm 或私有 registry。
 
-Set `NPM_TOKEN` in your project's secrets, and this function will configure the build environment by creating **.npmrc** with the token.
+在项目的 secrets 中设置 `NPM_TOKEN`，此函数将通过使用该 token 创建 **.npmrc** 来配置构建环境。
 
 ```yaml example.yml
 jobs:
   my_job:
-    name: Install private npm modules
+    name: 安装私有 npm 模块
     steps:
       - uses: eas/checkout
       # @info #
       - uses: eas/use_npm_token
       # @end #
-      - name: Install dependencies
-        run: npm install # <---- Can now install private packages
+      - name: 安装依赖
+        run: npm install # <---- 现在可以安装私有包了
 ```
 
 <BoxLink
-  title="eas/use_npm_token source code"
-  description="View the source code for the eas/use_npm_token function on GitHub."
+  title="eas/use_npm_token 源代码"
+  description="在 GitHub 上查看 eas/use_npm_token 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/useNpmToken.ts"
 />
 
 #### `eas/download_artifact`
 
-Downloads an artifact from EAS given an artifact's ID or name. Useful for sending artifacts from previous jobs to other services.
+根据制品的 ID 或名称从 EAS 下载一个制品。适用于将来自前面作业的制品发送到其他服务。
 
 ```yaml
 jobs:
@@ -1857,24 +1857,24 @@ jobs:
     steps:
       - uses: eas/download_artifact
         with:
-          name: string # Required if artifact_id is not provided. Name of the artifact to download.
-          artifact_id: string # Required if artifact_name is not provided. ID of the artifact to download.
+          name: string # 如果未提供 artifact_id，则为必填。要下载的制品名称。
+          artifact_id: string # 如果未提供 artifact_name，则为必填。要下载的制品 ID。
 ```
 
-##### Properties
+##### 属性
 
 | Property      | Type   | Required | Description                                                                      |
 | ------------- | ------ | -------- | -------------------------------------------------------------------------------- |
-| `name`        | string | No       | The name of the artifact to download. Required if `artifact_id` is not provided. |
-| `artifact_id` | string | No       | The ID of the artifact to download. Required if `name` is not provided.          |
+| `name`        | string | No       | 要下载的制品名称。如果未提供 `artifact_id`，则为必填。                            |
+| `artifact_id` | string | No       | 要下载的制品 ID。如果未提供 `name`，则为必填。                                   |
 
-##### Outputs
+##### 输出
 
 | Property        | Type   | Description                                                                                                                                            |
 | --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `artifact_path` | string | The path to the downloaded artifact. This output can be used as input into other steps in your workflow. For example, to send or process the artifact. |
+| `artifact_path` | string | 已下载制品的路径。该输出可作为工作流中其他步骤的输入。例如，用于发送或处理该制品。                                                                     |
 
-##### Example
+##### 示例
 
 ```yaml
 jobs:
@@ -1890,30 +1890,30 @@ jobs:
         id: download_artifact
         with:
           name: 'iOS Maestro Test Report (junit)'
-      - name: Print Maestro output
+      - name: 打印 Maestro 输出
         run: echo ${{ steps.download_artifact.outputs.artifact_path }}
 ```
 
 <BoxLink
-  title="eas/download_artifact source code"
-  description="View the source code for the eas/download_artifact function on GitHub."
+  title="eas/download_artifact 源代码"
+  description="在 GitHub 上查看 eas/download_artifact 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/downloadArtifact.ts"
 />
 
-## Built-in shell functions
+## 内置 shell 函数
 
-EAS Workflows provides the following shell function that you can use in your workflow steps to set variable outputs.
+EAS Workflows 提供了以下 shell 函数，你可以在工作流步骤中使用它来设置变量输出。
 
 ### `set-output`
 
-Sets an output variable that can be accessed by other steps or other jobs in the workflow.
+设置一个输出变量，可供工作流中的其他步骤或其他作业访问。
 
 ```bash
 set-output <name> <value>
 ```
 
-Example usage for sharing a variable with another step:
+示例用法：与另一个步骤共享变量：
 
 ```yaml
 jobs:
@@ -1921,13 +1921,13 @@ jobs:
     steps:
       - id: step_1
         # @info #
-        run: set-output variable_1 "Variable 1"
+        run: set-output variable_1 "变量 1"
         # @end #
       - id: step_2
-        run: echo ${{ steps.step_1.outputs.variable_1 }} # prints: Variable 1
+        run: echo ${{ steps.step_1.outputs.variable_1 }} # 打印：变量 1
 ```
 
-Example usage for sharing a variable with another job:
+示例用法：与另一个作业共享变量：
 
 ```yaml
 jobs:
@@ -1937,27 +1937,27 @@ jobs:
     steps:
       - id: step_1
         # @info #
-        run: set-output variable_1 "Variable 1"
+        run: set-output variable_1 "变量 1"
         # @end #
   job_2:
     needs: [job_1]
     steps:
-      - run: echo ${{ needs.job_1.outputs.variable_1 }} # prints: Variable 1
+      - run: echo ${{ needs.job_1.outputs.variable_1 }} # 打印：变量 1
 ```
 
 ### `set-env`
 
-Sets an environment variable that is available to subsequent steps within the same job. Environment variables exported using `export` in one step's command are not automatically exposed to other steps. To share an environment variable with other steps, use the `set-env` executable.
+设置一个环境变量，该变量可供同一作业中的后续步骤使用。在一个步骤的命令中使用 `export` 导出的环境变量不会自动暴露给其他步骤。要与其他步骤共享环境变量，请使用 `set-env` 可执行文件。
 
 ```bash
 set-env <name> <value>
 ```
 
-`set-env` expects to be called with two arguments: the environment variable's name and value. For example, `set-env NPM_TOKEN "abcdef"` will expose the `$NPM_TOKEN` variable with the value `abcdef` to subsequent steps.
+`set-env` 期望传入两个参数：环境变量的名称和值。例如，`set-env NPM_TOKEN "abcdef"` 会将 `$NPM_TOKEN` 变量的值 `abcdef` 暴露给后续步骤。
 
-> **Note:** Variables shared with `set-env` are not automatically exported locally. You need to call `export` yourself if you want to use the variable in the current step.
+> **注意：** 使用 `set-env` 共享的变量不会自动在本地导出。如果你想在当前步骤中使用该变量，需要自行调用 `export`。
 
-Example usage for sharing an environment variable with another step:
+示例用法：与另一个步骤共享环境变量：
 
 ```yaml
 jobs:
@@ -1965,46 +1965,46 @@ jobs:
     steps:
       - name: Set environment variables
         run: |
-          # Using export only makes it available in the current step
-          export LOCAL_VAR="only in this step"
+          # 仅使用 export 只会让它在当前步骤中可用
+          export LOCAL_VAR="仅在此步骤中"
 
-          # Using set-env makes it available in subsequent steps
+          # 使用 set-env 会让它在后续步骤中可用
           # @info #
-          set-env SHARED_VAR "available in next steps"
+          set-env SHARED_VAR "在后续步骤中可用"
           # @end #
 
-          # SHARED_VAR is not yet available in current step's environment
-          echo "LOCAL_VAR: $LOCAL_VAR"     # prints: only in this step
-          echo "SHARED_VAR: $SHARED_VAR"   # prints: (empty)
+          # SHARED_VAR 在当前步骤的环境中仍不可用
+          echo "LOCAL_VAR: $LOCAL_VAR"     # 打印：仅在此步骤中
+          echo "SHARED_VAR: $SHARED_VAR"   # 打印：（空）
       - name: Use shared variable
         run: |
-          # SHARED_VAR is now available
+          # SHARED_VAR 现在可用
           # @info #
-          echo "SHARED_VAR: $SHARED_VAR"   # prints: available in next steps
+          echo "SHARED_VAR: $SHARED_VAR"   # 打印：在后续步骤中可用
           # @end #
 ```
 
-#### Sharing environment variables between jobs
+#### 在作业之间共享环境变量
 
-The `set-env` function only shares environment variables with other steps **within the same job**. To share values between different jobs, use the job's [`outputs`](#jobsjob_idoutputs) with `set-output` and pass them via the [`env`](#jobsjob_idenv) property on the receiving job:
+`set-env` 函数只会在**同一作业内**与其他步骤共享环境变量。要在不同作业之间共享值，请使用作业的 [`outputs`](#jobsjob_idoutputs) 和 `set-output`，并通过接收作业上的 [`env`](#jobsjob_idenv) 属性传递它们：
 
 ```yaml
 jobs:
   job_1:
-    # @info Define outputs to expose values to other jobs #
+    # @info 定义输出，以向其他作业暴露值 #
     outputs:
       my_value: ${{ steps.step_1.outputs.my_value }}
     # @end #
     steps:
       - id: step_1
-        run: set-output my_value "value from job_1"
+        run: set-output my_value "来自 job_1 的值"
 
   job_2:
     needs: [job_1]
-    # @info Use env to set environment variables from upstream job outputs #
+    # @info 使用 env 从上游作业输出设置环境变量 #
     env:
       MY_VALUE: ${{ needs.job_1.outputs.my_value }}
     # @end #
     steps:
-      - run: echo "MY_VALUE: $MY_VALUE"  # prints: value from job_1
+      - run: echo "MY_VALUE: $MY_VALUE"  # 打印：来自 job_1 的值
 ```

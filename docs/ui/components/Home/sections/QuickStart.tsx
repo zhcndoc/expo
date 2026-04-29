@@ -12,15 +12,15 @@ export function QuickStart() {
   return (
     <>
       <H1 className="mt-1 border-0 pb-0 font-extrabold!">
-        Create amazing apps that run everywhere
+        打造可在任何地方运行的精彩应用
       </H1>
       <P className="text-secondary mb-2">
-        Build one JavaScript/TypeScript project that runs natively on all your users' devices.
+        构建一个 JavaScript/TypeScript 项目，让用户的所有设备都能原生运行。
       </P>
       <GridContainer>
         <GridCell
           className={mergeClasses(
-            'bg-element bg-cell-quickstart-pattern! min-h-[192px] bg-blend-multiply'
+            'bg-element bg-cell-quickstart-pattern! min-h-48 bg-blend-multiply'
           )}>
           <div
             className={mergeClasses(
@@ -30,7 +30,7 @@ export function QuickStart() {
           />
           <div className="relative z-10 flex flex-col gap-4">
             <h2 className="heading-xl font-bold">
-              <QuickStartIcon /> Quick Start
+              <QuickStartIcon /> 快速开始
             </h2>
             <div>
               <Terminal
@@ -38,15 +38,15 @@ export function QuickStart() {
                 className="asset-shadow rounded-md"
               />
               <CALLOUT theme="secondary">
-                Then continue{' '}
-                <A href="/get-started/set-up-your-environment">setting up your environment</A>.
+                然后继续{' '}
+                <A href="/get-started/set-up-your-environment">设置你的开发环境</A>。
               </CALLOUT>
             </div>
           </div>
         </GridCell>
         <GridCell
           className={mergeClasses(
-            'border-palette-blue6 bg-palette-blue4 bg-cell-tutorial-pattern! relative z-0 min-h-[192px] bg-blend-multiply',
+            'border-palette-blue6 bg-palette-blue4 bg-cell-tutorial-pattern! relative z-0 min-h-48 bg-blend-multiply',
             'dark:bg-palette-blue3 dark:bg-blend-color-burn'
           )}>
           <div
@@ -57,18 +57,18 @@ export function QuickStart() {
           />
           <DevicesImage />
           <h2 className="text-palette-blue12 heading-xl relative z-10 max-w-[24ch] font-bold">
-            Create a universal Android, iOS, and web app
+            创建一个适用于 Android、iOS 和 Web 的通用应用
           </h2>
           <HomeButton
             className="border-palette-blue11 bg-palette-blue11 text-palette-white hocus:bg-palette-blue10 dark:text-palette-blue2"
             href="/tutorial/introduction/"
             rightSlot={<ArrowRightIcon className="icon-md" />}>
-            Start Tutorial
+            开始教程
           </HomeButton>
         </GridCell>
         <GridCell
           className={mergeClasses(
-            'col-span-2 min-h-[192px] overflow-hidden bg-linear-to-br from-[#F3E5F5] via-[#E3F2FD] to-[#E3F2FD]',
+            'col-span-2 min-h-48 overflow-hidden bg-linear-to-br from-[#F3E5F5] via-[#E3F2FD] to-[#E3F2FD]',
             'border-palette-gray7 selection:bg-palette-blue8 border',
             'dark:border-[#2d3748] dark:from-[#0a0a0a] dark:via-[#1a1a2e] dark:to-[#16213e]',
             'max-xl-gutters:col-span-1',
@@ -95,19 +95,18 @@ export function QuickStart() {
               <div className="from-palette-blue9 to-palette-purple9 rounded-lg bg-linear-to-br p-2 shadow-lg">
                 <Rocket02Icon className="icon-lg text-palette-white" />
               </div>
-              Launch to app stores
+              发布到应用商店
             </h2>
             <div>
               <P className="text-palette-gray11! dark:text-palette-blue11! mb-4 max-w-[80ch] text-sm! leading-relaxed">
-                Ship apps with zero config or no prior experience. Launch easily guides you through
-                the technical stuff, directly from GitHub. No config or prior knowledge needed.
+                无需配置或预先经验。Launch 会直接从 GitHub 带你完成技术细节。
               </P>
               <HomeButton
                 className="border-palette-white bg-palette-white text-palette-black hocus:border-palette-gray1 hocus:bg-palette-gray1 hocus:text-palette-black dark:hocus:border-palette-gray11 dark:hocus:bg-palette-gray11 dark:hocus:text-palette-black relative! bottom-auto! border-2 font-semibold shadow-md"
                 href="https://launch.expo.dev/"
                 target="_blank"
                 rightSlot={<ArrowUpRightIcon className="icon-md text-palette-black" />}>
-                Try Launch
+                试用 Launch
               </HomeButton>
             </div>
           </div>

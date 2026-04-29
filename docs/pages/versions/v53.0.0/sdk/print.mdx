@@ -1,6 +1,6 @@
 ---
-title: Print
-description: A library that provides printing functionality for Android and iOS (AirPrint).
+title: 打印
+description: 一个为 Android 和 iOS（AirPrint）提供打印功能的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-53/packages/expo-print'
 packageName: 'expo-print'
 iconUrl: '/static/images/packages/expo-print.png'
@@ -11,13 +11,13 @@ import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
 import { SnackInline } from '~/ui/components/Snippet';
 
-`expo-print` provides an API for Android and iOS (AirPrint) printing functionality.
+`expo-print` 提供了 Android 和 iOS（AirPrint）打印功能的 API。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Usage
+## 使用
 
 <SnackInline label='Print usage' dependencies={['expo-print', 'expo-sharing']}>
 
@@ -34,7 +34,7 @@ const html = `
   </head>
   <body style="text-align: center;">
     <h1 style="font-size: 50px; font-family: Helvetica Neue; font-weight: normal;">
-      Hello Expo!
+      你好，Expo！
     </h1>
     <img
       src="https://docs.expo.dev/static/images/expo-logo.svg"
@@ -47,38 +47,38 @@ export default function App() {
   const [selectedPrinter, setSelectedPrinter] = useState();
 
   const print = async () => {
-    // On iOS/android prints the given html. On web prints the HTML from the current page.
+    // 在 iOS/android 上打印给定的 html。在 web 上打印当前页面的 HTML。
     /* @info */ await Print.printAsync({
       html,
-      printerUrl: selectedPrinter?.url, // iOS only
+      printerUrl: selectedPrinter?.url, // 仅限 iOS
     }); /* @end */
   };
 
   const printToFile = async () => {
-    // On iOS/android prints the given html. On web prints the HTML from the current page.
+    // 在 iOS/android 上打印给定的 html。在 web 上打印当前页面的 HTML。
     /* @info */ const { uri } = await Print.printToFileAsync({ html }); /* @end */
-    console.log('File has been saved to:', uri);
+    console.log('文件已保存到：', uri);
     await shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
   };
 
   const selectPrinter = async () => {
-    /* @info */ const printer = await Print.selectPrinterAsync(); // iOS only
+    /* @info */ const printer = await Print.selectPrinterAsync(); // 仅限 iOS
     /* @end */
     setSelectedPrinter(printer);
   };
 
   return (
     <View style={styles.container}>
-      <Button title="Print" onPress={print} />
+      <Button title="打印" onPress={print} />
       <View style={styles.spacer} />
-      <Button title="Print to PDF file" onPress={printToFile} />
+      <Button title="打印为 PDF 文件" onPress={printToFile} />
       {Platform.OS === 'ios' && (
         <>
           <View style={styles.spacer} />
-          <Button title="Select printer" onPress={selectPrinter} />
+          <Button title="选择打印机" onPress={selectPrinter} />
           <View style={styles.spacer} />
           {selectedPrinter ? (
-            <Text style={styles.printer}>{`Selected printer: ${selectedPrinter.name}`}</Text>
+            <Text style={styles.printer}>{`已选择的打印机：${selectedPrinter.name}`}</Text>
           ) : undefined}
         </>
       )}
@@ -113,9 +113,9 @@ import * as Print from 'expo-print';
 
 <APISection packageName="expo-print" apiName="Print" />
 
-## Local images
+## 本地图片
 
-On iOS, printing from HTML source doesn't support local asset URLs (due to `WKWebView` limitations). Instead, images need to be converted to base64 and inlined into the HTML.
+在 iOS 上，从 HTML 源打印不支持本地资源 URL（由于 `WKWebView` 的限制）。相反，图片需要先转换为 base64，并内联到 HTML 中。
 
 ```tsx Example
 import { Asset } from 'expo-asset';
@@ -145,24 +145,24 @@ export function ImageManipulatorExample() {
 
         await printAsync({ html });
       } catch (error) {
-        console.error('Error:', error);
+        console.error('错误：', error);
       }
     }
 
     generateAndPrint();
   }, [context]);
 
-  return <>{/* Render UI */}</>;
+  return <>{/* 渲染 UI */}</>;
 }
 ```
 
-## Page margins
+## 页面边距
 
-**On iOS** you can set the page margins using the `margins` option:
+**在 iOS 上**，你可以使用 `margins` 选项设置页面边距：
 
 ```js
 const { uri } = await Print.printToFileAsync({
-  html: 'This page is printed with margins',
+  html: '此页面将带有边距打印',
   margins: {
     left: 20,
     top: 50,
@@ -172,10 +172,10 @@ const { uri } = await Print.printToFileAsync({
 });
 ```
 
-If `useMarkupFormatter` is set to `true`, setting margins may cause a blank page to appear at the end of your printout. To prevent this, make sure your HTML string is a well-formed document, including `<!DOCTYPE html>` at the beginning of the string.
+如果 `useMarkupFormatter` 被设置为 `true`，设置边距可能会导致打印结果末尾出现空白页。为避免这种情况，请确保你的 HTML 字符串是一个格式正确的文档，并在字符串开头包含 `<!DOCTYPE html>`。
 
-**On Android**, if you're using `html` option in `printAsync` or `printToFileAsync`, the resulting print might contain page margins (it depends on the WebView engine).
-They are set by `@page` style block and you can override them in your HTML code:
+**在 Android 上**，如果你在 `printAsync` 或 `printToFileAsync` 中使用 `html` 选项，生成的打印结果可能会包含页面边距（这取决于 WebView 引擎）。
+这些边距由 `@page` 样式块设置，你可以在 HTML 代码中覆盖它们：
 
 ```html
 <style>
@@ -185,4 +185,4 @@ They are set by `@page` style block and you can override them in your HTML code:
 </style>
 ```
 
-See [`@page` documentation on MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/@page) for more details.
+有关更多详情，请参阅 MDN 上的 [`@page` 文档](https://developer.mozilla.org/en-US/docs/Web/CSS/@page)。

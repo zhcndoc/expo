@@ -1,7 +1,7 @@
 ---
-title: Environment variables in EAS
-sidebar_title: Overview
-description: An overview of how to use Expo Application Services (EAS) environment variables across builds, updates, and workflows.
+title: EAS 中的环境变量
+sidebar_title: 概述
+description: 关于如何在构建、更新和工作流中使用 Expo Application Services (EAS) 环境变量的概述。
 searchRank: 8
 ---
 
@@ -11,26 +11,26 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-This guide explains how to use Environment Variables in Expo Application Services (EAS): Build, Updates, Workflows, and Hosting. For general information on how environment variables work with the Expo framework, refer to [Environment variables in Expo](/guides/environment-variables).
+本指南说明了如何在 Expo Application Services（EAS）中使用环境变量：Build、Updates、Workflows 和 Hosting。有关环境变量在 Expo 框架中如何工作的通用信息，请参阅 [Expo 中的环境变量](/guides/environment-variables)。
 
-During local development, environment variables are loaded from your local **.env** or **.env.local** files. These files are generally excluded from the project's version control (that is, if they are listed in the **.gitignore** file or not committed) so they are not available for jobs that run on a remote server, for example, EAS Build and EAS Workflows. Additionally, most projects have multiple app variants and require multiple sets of environment variables (for instance Development and Production).
+在本地开发期间，环境变量会从本地 **.env** 或 **.env.local** 文件中加载。此类文件通常会被排除在项目的版本控制之外（也就是说，如果它们被列在 **.gitignore** 文件中，或者没有提交），因此对于在远程服务器上运行的任务不可用，例如 EAS Build 和 EAS Workflows。此外，大多数项目都有多个应用变体，并且需要多组环境变量（例如开发环境和生产环境）。
 
-## Why use EAS environment variables
+## 为什么使用 EAS 环境变量
 
-You might want to use EAS Environment variables if you need to:
+如果你需要以下功能，可能会想使用 EAS 环境变量：
 
-- Keep configuration in one place for cloud builds, updates, and workflows without committing **.env** files.
-- Separate values by environment (`development`, `preview`, `production`) while reusing names.
-- Control visibility (plain text, sensitive, secret) so only the right surfaces can read each value.
-- Apply the same set locally with [`eas env:pull`](/eas/environment-variables/manage/#pull-variables-for-local-development) or inside CI/CD.
+- 将云构建、更新和工作流的配置集中在一个地方，而无需提交 **.env** 文件。
+- 按环境（`development`、`preview`、`production`）分离值，同时复用名称。
+- 控制可见性（明文、敏感、密钥），以便只有正确的范围可以读取每个值。
+- 通过 [`eas env:pull`](/eas/environment-variables/manage/#pull-variables-for-local-development) 或在 CI/CD 中本地应用相同的一组变量。
 
-These are the problems that EAS Environment variables are built to solve. With EAS Environment variables, the variables are configured in EAS via the EAS CLI or directly on the [expo.dev](https://expo.dev) dashboard, and can be accessed by EAS Build and EAS Workflows as well as your local machine via the EAS CLI.
+这些正是 EAS 环境变量要解决的问题。使用 EAS 环境变量时，变量可通过 EAS CLI 或直接在 [expo.dev](https://expo.dev) 控制台中配置，并且 EAS Build 和 EAS Workflows 以及你的本地机器都可以通过 EAS CLI 访问这些变量。
 
-## Quick start
+## 快速开始
 
 <Step label="1">
 
-To create a new environment variable, use the EAS CLI and run the following command inside your project directory. The following command creates a new environment variable with the name `EXPO_PUBLIC_API_URL` and the value `https://api.example.com` for the `production` environment.
+要创建一个新的环境变量，请使用 EAS CLI，并在你的项目目录中运行以下命令。下面的命令会为 `production` 环境创建一个名为 `EXPO_PUBLIC_API_URL`、值为 `https://api.example.com` 的新环境变量。
 
 <Terminal
   cmd={[
@@ -42,13 +42,13 @@ To create a new environment variable, use the EAS CLI and run the following comm
 
 <Step label="2">
 
-Verify if the environment variable is created successfully by confirming it appears with the **production** badge in the [Environment variables](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) in your project settings. Environment variables can also be managed directly on [expo.dev](https://expo.dev).
+通过确认它在项目设置中的 [Environment variables](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 中显示 **production** 徽标，来验证环境变量是否已成功创建。环境变量也可以直接在 [expo.dev](https://expo.dev) 上管理。
 
 </Step>
 
 <Step label="3">
 
-To use the environment variable in EAS Build, add the `environment` field to the `production` build profile:
+要在 EAS Build 中使用该环境变量，请在 `production` 构建配置中添加 `environment` 字段：
 
 ```json eas.json
 {
@@ -60,23 +60,23 @@ To use the environment variable in EAS Build, add the `environment` field to the
 }
 ```
 
-Now, any environment variables created for the `production` build profile will be available during the build process.
+现在，为 `production` 构建配置创建的任何环境变量都将在构建过程中可用。
 
 </Step>
 
 <Step label="4">
 
-To use the environment variable with EAS Update, run the `eas update` command with the `--environment` flag specified:
+要在 EAS Update 中使用该环境变量，请运行带有指定 `--environment` 标志的 `eas update` 命令：
 
 <Terminal cmd={['$ eas update --environment production']} />
 
-The `--environment` flag is used to specify the environment to use for the update job. Only the environment variables from the specified environment will be used during the update process.
+`--environment` 标志用于指定更新任务所使用的环境。更新过程中只会使用所指定环境中的环境变量。
 
 </Step>
 
 <Step label="5">
 
-To use the environment variable with EAS Hosting, run the `eas deploy` command with the `--environment` flag specified. If you need both client and server side environment variables, run the commands below in the order they are listed (client-side variables must be plain text or sensitive, not secret) and see [client-side environment variables](/eas/environment-variables/usage/#client-side-environment-variables) for more information.
+要在 EAS Hosting 中使用该环境变量，请运行带有指定 `--environment` 标志的 `eas deploy` 命令。如果你同时需要客户端和服务端环境变量，请按以下顺序运行下面的命令（客户端变量必须是明文或敏感，不能是密钥），并查看 [客户端环境变量](/eas/environment-variables/usage/#client-side-environment-variables) 了解更多信息。
 
 <Terminal
   cmd={[
@@ -86,72 +86,72 @@ To use the environment variable with EAS Hosting, run the `eas deploy` command w
   ]}
 />
 
-The `--environment` flag is used to specify the environment to use for the deploy job. Only the environment variables from the specified environment will be used during the deploy process.
+`--environment` 标志用于指定部署任务所使用的环境。部署过程中只会使用所指定环境中的环境变量。
 
 </Step>
 
-## Key concepts
+## 关键概念
 
-### Available environments
+### 可用环境
 
-By default, EAS supports three environments for environment variables: `development`, `preview`, and `production` environments. Custom environment names are available on Enterprise and Production plans.
+默认情况下，EAS 为环境变量支持三个环境：`development`、`preview` 和 `production`。自定义环境名称适用于 Enterprise 和 Production 套餐。
 
-Each environment is an independent set of variables that can be used to customize your app in different contexts. For example, you can use different API keys for development and production, or use different bundle identifiers for app store releases.
+每个环境都是一组独立的变量，可用于在不同场景下自定义你的应用。例如，你可以为开发和生产使用不同的 API 密钥，或者为应用商店发布使用不同的 bundle 标识符。
 
-Every EAS Build and Workflows job runs using environment variables from one of the available environments. You can also use environments for updates, allowing you to use the same set of environment variables for your build jobs. When publishing an update, specify the environment with the required `--environment` flag.
+每个 EAS Build 和 Workflows 任务都会使用某个可用环境中的环境变量运行。你也可以将环境用于更新，从而允许你为构建任务使用同一组环境变量。在发布更新时，请使用所需的 `--environment` 标志指定环境。
 
-Environment variables can be assigned to multiple environments and have the same value across all of them, or be created for a single environment.
+环境变量可以分配到多个环境中，并在所有环境中保持相同的值，也可以只为单个环境创建。
 
-### Scope
+### 作用域
 
-- **Project-wide**: Specific to a single EAS project. You can create, view, and manage them by navigating to the [Environment variables](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) page in your project's dashboard. These environment variables are available in any jobs that run on EAS servers and updates for this project. They can also be pulled locally for development if their visibility setting allows it.
-- **Account-wide**: Available across all projects in your EAS account. You can create, view, and manage them by navigating to the [Environment variables](https://expo.dev/accounts/[account]/settings/environment-variables) page in your account's dashboard. These environment variables are available in jobs that run on EAS servers and updates, together with project-wide variables for a project. You can pull them locally or read outside of EAS servers if their [visibility setting](#visibility-settings-for-environment-variables) allows it.
+- **项目范围**：仅属于单个 EAS 项目。你可以在项目控制台中导航到 [Environment variables](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 页面来创建、查看和管理它们。这些环境变量可用于在 EAS 服务器上运行的任何任务，以及此项目的更新。如果其可见性设置允许，也可以将它们拉取到本地用于开发。
+- **账户范围**：在你的 EAS 账户中的所有项目中都可用。你可以在账户控制台中导航到 [Environment variables](https://expo.dev/accounts/[account]/settings/environment-variables) 页面来创建、查看和管理它们。这些环境变量可与某个项目的项目范围变量一起，供在 EAS 服务器上运行的任务和更新使用。如果其 [可见性设置](#visibility-settings-for-environment-variables) 允许，也可以将它们拉取到本地或在 EAS 服务器之外读取。
 
-### Variable types
+### 变量类型
 
-- **Strings**: Standard key/value pairs that can be used across builds, updates, workflows, and hosting.
-- **Files**: Values uploaded as files (for example, `google-services.json` or a certificate) that are made available to jobs as file paths on the build runner.
+- **字符串**：标准键值对，可用于构建、更新、工作流和托管。
+- **文件**：作为文件上传的值（例如 `google-services.json` 或证书），会在构建运行器上作为文件路径提供给任务使用。
 
-## Visibility settings for environment variables
+## 环境变量的可见性设置
 
-There are three different visibility settings available for each environment variable:
+每个环境变量都有三种不同的可见性设置可用：
 
-| Visibility      | Description                                                                                                                                  |
+| 可见性          | 描述                                                                                                                                         |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Plain&nbsp;text | Visible on the website, in EAS CLI, and in logs.                                                                                             |
-| Sensitive       | Obfuscated in EAS Build and Workflows job logs. You can use a toggle to make them visible on the website. They are also readable in EAS CLI. |
-| Secret          | Not readable outside of the EAS servers, including on the website and in EAS CLI. They are obfuscated in EAS Build and Workflows job logs.   |
+| 明文            | 在网站、EAS CLI 和日志中可见。                                                                                                               |
+| 敏感            | 在 EAS Build 和 Workflows 的任务日志中会被混淆。你可以通过切换开关让它们在网站上可见。它们也可以在 EAS CLI 中读取。                            |
+| 密钥            | 不能在 EAS 服务器之外读取，包括网站和 EAS CLI 中。它们在 EAS Build 和 Workflows 的任务日志中会被混淆。                                       |
 
-> **warning** Note that **anything that is included in your client-side code should be considered public and readable to any individual that can run your app**.
+> **warning** 请注意，**任何包含在客户端代码中的内容都应被视为公开内容，并且任何能够运行你应用的人都可以读取**。
 
-> **warning** **Secret type environment variables** are intended to provide values to an EAS Build or Workflows job so that they may be used to alter how a job runs. For example, setting an `NPM_TOKEN` to install private packages from npm, or a setting a Sentry API key to create a release and upload your source maps. Secrets do not provide any additional security for values that you end up embedding in your application itself.
+> **warning** **密钥类型的环境变量** 旨在为 EAS Build 或 Workflows 任务提供值，以便它们可用于改变任务的运行方式。例如，设置 `NPM_TOKEN` 用于从 npm 安装私有包，或者设置 Sentry API 密钥用于创建发布并上传源映射。对于最终嵌入到应用本身中的值，密钥并不会提供任何额外的安全性。
 
-## Where to go next
+## 接下来去哪里
 
 <BoxLink
-  title="Create and manage environment variables in EAS"
-  description="Learn how to create, scope, and consume environment variables with EAS dashboard and EAS CLI."
+  title="在 EAS 中创建和管理环境变量"
+  description="了解如何使用 EAS 控制台和 EAS CLI 创建、划分作用域并使用环境变量。"
   href="/eas/environment-variables/manage/"
   Icon={BookOpen02Icon}
 />
 
 <BoxLink
-  title="Using environment variables in EAS"
-  description="Learn how to use environment variables in EAS builds, updates, hosting, and workflow jobs."
+  title="在 EAS 中使用环境变量"
+  description="了解如何在 EAS 构建、更新、托管和工作流任务中使用环境变量。"
   href="/eas/environment-variables/usage/"
   Icon={BookOpen02Icon}
 />
 
 <BoxLink
-  title="Using environment variables without EAS"
-  description="Learn about non-EAS ways to manage environment variables in Expo and React Native projects."
+  title="不使用 EAS 时使用环境变量"
+  description="了解在 Expo 和 React Native 项目中管理环境变量的非 EAS 方式。"
   href="/eas/environment-variables/without-eas/"
   Icon={BookOpen02Icon}
 />
 
 <BoxLink
-  title="FAQ"
-  description="Frequently asked questions about environment variables in EAS."
+  title="常见问题"
+  description="有关 EAS 中环境变量的常见问题。"
   href="/eas/environment-variables/faq/"
   Icon={BookOpen02Icon}
 />

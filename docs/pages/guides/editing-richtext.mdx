@@ -1,32 +1,32 @@
 ---
-title: Edit rich text
-description: Learn about current approaches to preview and edit rich text in React Native.
+title: 编辑富文本
+description: 了解在 React Native 中预览和编辑富文本的当前方法。
 hasVideoLink: true
 ---
 
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-A lot of applications need to allow users to type in text. For example, if you want to build a messaging or social media app, you will probably rely heavily on text inputs. React Native has a built-in `<TextInput>` component to implement this without much effort for many simple cases.
+很多应用都需要允许用户输入文本。例如，如果你想构建一款消息或社交媒体应用，你很可能会大量依赖文本输入。React Native 内置了 `<TextInput>` 组件，在许多简单场景下可以轻松实现这一点。
 
-However, sometimes you need to be more flexible. Think of long social media posts, note apps, or document editors. Ideally, you need to allow different text styles, lists, headings, embedded images, and more. This is called a rich text editor, and it's a difficult problem to solve everywhere, including in React Native.
+不过，有时你需要更灵活一些。想想长篇社交媒体帖子、笔记应用或文档编辑器。理想情况下，你需要支持不同的文本样式、列表、标题、内嵌图片等等。这就叫做富文本编辑器，而这是一个很难在各处都解决好的问题，包括在 React Native 中。
 
-There is currently no default solution for that in the React Native ecosystem. However, this guide explores some options and promising approaches, each with its own tradeoffs.
+目前 React Native 生态中还没有默认解决方案。不过，本指南会探讨一些可选方案和有前景的方法，每种方法都有各自的权衡。
 
 <VideoBoxLink
   videoId="CxORa1tXMjw"
-  title="Watch: How to implement a Rich Text Editor using DOM components"
-  description="Build a rich text editor in React Native using Expo DOM components to render a web-based editor inside a native app."
+  title="观看：如何使用 DOM 组件实现富文本编辑器"
+  description="使用 Expo DOM 组件在原生应用中渲染基于 Web 的编辑器，从而在 React Native 中构建一个富文本编辑器。"
 />
 
-## Render rich text
+## 渲染富文本
 
-There are a lot of good options to display rich text:
+显示富文本有很多不错的选择：
 
-- For markdown content, you can use a markdown renderer such as [`react-native-enriched-markdown`](https://github.com/software-mansion-labs/react-native-enriched-markdown) or another.
+- 对于 markdown 内容，你可以使用 markdown 渲染器，例如 [`react-native-enriched-markdown`](https://github.com/software-mansion-labs/react-native-enriched-markdown) 或其他类似方案。
 
-- For HTML content, you can use [`@expo/html-elements`](https://www.npmjs.com/package/@expo/html-elements) or a webview ([`react-native-webview`](/versions/latest/sdk/webview/)).
+- 对于 HTML 内容，你可以使用 [`@expo/html-elements`](https://www.npmjs.com/package/@expo/html-elements) 或 WebView（[`react-native-webview`](/versions/latest/sdk/webview/)）。
 
-- To have a custom format and more control, you can take advantage of nesting `<Text>` components to render styles and layouts.
+- 如果想要自定义格式并获得更多控制权，你可以利用嵌套的 `<Text>` 组件来渲染样式和布局。
 
   ```jsx
   <TextInput>
@@ -36,72 +36,72 @@ There are a lot of good options to display rich text:
   </TextInput>
   ```
 
-- You can also use [Expo Modules API](/modules/overview/) to write a custom renderer component with native platform primitives using third-party libraries such as [Markwon](https://github.com/noties/Markwon) on Android and `AttributedString` on iOS.
+- 你也可以使用 [Expo Modules API](/modules/overview/) 结合第三方库，例如 Android 上的 [Markwon](https://github.com/noties/Markwon) 和 iOS 上的 `AttributedString`，编写一个使用原生平台基础组件的自定义渲染组件。
 
-## Approaches to edit rich text
+## 编辑富文本的方法
 
-There are a few approaches to get rich text rendering to work. However, all have different limitations.
+要让富文本渲染正常工作，有几种不同的方法。不过，它们都有各自的限制。
 
-### Webview-based editors
+### 基于 WebView 的编辑器
 
-While most React Native UI components wrap native platform primitives and are fast, performant, and **native feeling** as a result, the webview-based rich text editors use a different approach.
+大多数 React Native UI 组件封装的是原生平台基础组件，因此速度快、性能好，并且因此带有**原生体验**。而基于 WebView 的富文本编辑器采用的是不同的方法。
 
-They wrap an existing rich text editor built for web with JavaScript inside a [`react-native-webview`](/versions/latest/sdk/webview/). It works on all platforms (Android, iOS, Web) and can take advantage of popular rich text editors available for the Web platform, but it has a performance and UX penalty.
+它们会把一个原本为 Web 构建的现有富文本编辑器，通过 JavaScript 包装在 [`react-native-webview`](/versions/latest/sdk/webview/) 中。它可以在所有平台上运行（Android、iOS、Web），并且能利用 Web 平台上已有的流行富文本编辑器，但会带来性能和用户体验上的损耗。
 
-You will not be able to use native UI components inside the editor. Any implementation of features like mentions or image embedding will duplicate features and require significant effort to implement.
+你将无法在编辑器内部使用原生 UI 组件。诸如提及功能或图片嵌入之类特性的任何实现，都会重复造轮子，并且需要投入大量精力来实现。
 
-### Existing webview-based React Native libraries
+### 现有的基于 WebView 的 React Native 库
 
-There are a couple of existing React Native libraries to allow rich-text editing. These are the easiest options to get started if you need a basic rich text editor with limited configuration and don't have strict performance or UX requirements:
+目前已有一些 React Native 库可以支持富文本编辑。如果你只需要一个基础的富文本编辑器，配置较少，而且对性能或用户体验没有严格要求，那么这些是最容易上手的选择：
 
 - [`react-native-rich-editor`](https://github.com/wxik/react-native-rich-editor)
 - [`react-native-cn-quill`](https://github.com/imnapo/react-native-cn-quill)
 - [`@10play/tentap-editor`](https://github.com/10play/10Tap-Editor)
 
-### Custom webview-based editor
+### 自定义基于 WebView 的编辑器
 
-If you need more configurability, you can build a similar library with an existing web-only editor. However, you have to handle the message passing and web implementation yourself. This gives you all the options that the underlying editor offers and lets you implement more features.
+如果你需要更强的可配置性，可以基于现有的仅 Web 编辑器构建一个类似的库。不过，你需要自己处理消息传递和 Web 端实现。这会让你获得底层编辑器提供的所有能力，并允许你实现更多功能。
 
 - [Quill](https://quilljs.com/)
 - [lexical](https://github.com/facebook/lexical)
 - [slate](https://github.com/ianstormtaylor/slate)
 
-You will need to use message passing to pass text and `onChange` events to and from the webview. Since rich texts often end up long, it's better to model it as an uncontrolled component to prevent lag on each keystroke. Also, if you can avoid serializing and sending the entire state on each keystroke that also improves performance.
+你需要使用消息传递来在 WebView 与外部之间传递文本和 `onChange` 事件。由于富文本通常会变得很长，最好将其建模为非受控组件，以避免每次按键时都产生卡顿。另外，如果你能避免在每次按键时序列化并发送整个状态，也能提升性能。
 
-## Building on top of React Native TextInput
+## 基于 React Native TextInput 构建
 
-In this section, let's discuss if it is possible to have a feature complete rich text input for general purposes.
+在这一部分，我们来讨论是否有可能为通用场景提供一个功能完整的富文本输入框。
 
-React Native allows nested `<Text>` components and allows them to be used as children of `<TextInput>` to render and edit styled text. It is synchronous with the new React Native architecture (the `onChange` event fires immediately after a new character is typed into the text input field).
+React Native 允许嵌套 `<Text>` 组件，并且允许它们作为 `<TextInput>` 的子元素来渲染和编辑样式化文本。它与新的 React Native 架构是同步的（`onChange` 事件会在文本输入字段中输入新字符后立即触发）。
 
-Unfortunately, the `<TextInput>` component is built toward working with regular text, and it only returns a string in it's `onTextChange` callback. This is a significant limitation.
+不幸的是，`<TextInput>` 组件是围绕普通文本设计的，它在 `onTextChange` 回调中只返回一个字符串。这是一个很大的限制。
 
-Here is a quick example. Let's start by rendering a text input with the following bold text:
+下面是一个快速示例。先渲染一个包含如下粗体文本的文本输入：
 
 ```jsx
 <TextInput>
   <Text>
-    {/* The following will render a bold text in this format: **aa**aa */}
+    {/* 以下内容将以这种格式渲染粗体文本：**aa**aa */}
     <Text style={{ fontWeight: 900 }}>aa</Text>aa
   </Text>
 </TextInput>
 ```
 
-Then, let's append a fifth letter `a` to the text input. The position of your cursor should determine if the new letter is a part of the bold string or not. Unfortunately, the callback only returns `aaaaa`.
+然后，向文本输入中追加第五个字母 `a`。光标的位置应决定这个新字母是否属于粗体字符串的一部分。不幸的是，回调只会返回 `aaaaa`。
 
-There is an additional `onSelectionChange` prop that can be used to get that information. However, it makes the task significantly harder. Inserting additional characters (such as newlines for lists or bullet points) also desynchronizes the selection.
+还有一个额外的 `onSelectionChange` 属性可以用来获取这类信息。不过，这会让任务变得更加困难。插入额外字符（例如用于列表或项目符号的换行）也会使选区不同步。
 
-There are some attempts to build such an editor, such as [`markdown-editor`](https://github.com/shakogegia/markdown-editor) (not actively maintained) and [`rn-text-editor`](https://github.com/amjadbouhouch/rn-text-editor) (in beta), but no widely used packages exist.
+已经有一些尝试构建这种编辑器的项目，例如 [`markdown-editor`](https://github.com/shakogegia/markdown-editor)（未积极维护）和 [`rn-text-editor`](https://github.com/amjadbouhouch/rn-text-editor)（测试版），但目前没有广泛使用的包。
 
-## Markdown editors with visible styling markers
+## 带可见样式标记的 Markdown 编辑器
 
-If using a markdown to style text fulfills your requirement, you can render the markdown in a separate, non-editable view while editing. It is not complex to build on your own using any markdown renderer. You can also use a third-party library such as [`react-native-markdown-editor`](https://github.com/kunall17/react-native-markdown-editor).
+如果使用 markdown 来设置文本样式就能满足你的需求，那么你可以在编辑时将 markdown 渲染到一个单独的、不可编辑的视图中。使用任何 markdown 渲染器自己实现都不复杂。你也可以使用第三方库，例如 [`react-native-markdown-editor`](https://github.com/kunall17/react-native-markdown-editor)。
 
-This editing experience suits power users or programming/tech applications. You can also explore rendering rich text while showing markdown only in the selected chunk of text or other hybrid approaches.
+这种编辑体验适合高级用户或编程/技术类应用。你也可以探索在选中的文本块中渲染富文本，同时只显示 markdown，或者其他混合方案。
 
-## Native editors
+## 原生编辑器
 
-You can use a native Android or iOS rich text editor wrapped into a React Native module. There are a few options:
+你可以使用封装为 React Native 模块的 Android 或 iOS 原生富文本编辑器。可选项有：
 
 - [`react-native-aztec`](https://github.com/WordPress/gutenberg/tree/trunk/packages/react-native-aztec)
 - [`gutenberg-mobile`](https://github.com/wordpress-mobile/gutenberg-mobile)
@@ -109,14 +109,14 @@ You can use a native Android or iOS rich text editor wrapped into a React Native
 - [`react-native-enriched-markdown`](https://github.com/software-mansion-labs/react-native-enriched-markdown)
 - [`react-native-enriched`](https://github.com/software-mansion-labs/react-native-enriched)
 
-You can also wrap any native rich text editor using [Expo Modules API](/modules/overview/), but if you use different ones on each platform, you need to unify their APIs and input formats.
+你也可以使用 [Expo Modules API](/modules/overview/) 封装任何原生富文本编辑器，但如果你在不同平台上使用不同的编辑器，就需要统一它们的 API 和输入格式。
 
-> Rich text is usually represented using [abstract syntax trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree). For example, a bullet list can be a node of type `bulleted-list` with several children of type `list-item`. You can convert both HTML and markdown to a suitable AST format.
+> 富文本通常使用 [抽象语法树](https://en.wikipedia.org/wiki/Abstract_syntax_tree) 来表示。例如，一个项目符号列表可以是一个类型为 `bulleted-list` 的节点，并包含若干类型为 `list-item` 的子节点。你可以将 HTML 和 markdown 都转换为合适的 AST 格式。
 
-There is also an effort to port the lexical editor to Android and iOS and provide a React Native wrapper, [track it here](https://github.com/facebook/lexical/discussions/2410).
+目前也有人在努力将 lexical 编辑器移植到 Android 和 iOS，并提供 React Native 封装，[在此跟踪进展](https://github.com/facebook/lexical/discussions/2410)。
 
-## Summary
+## 总结
 
-While there are many great options for showing rich text, there is no one-size-fits-all solution for rich text editing in React Native. There's no popular solution that is sufficient in most use cases. Further contribution from the community is needed to improve existing solutions or add new ones.
+虽然展示富文本有很多很好的选择，但在 React Native 中进行富文本编辑并没有一种通用的完美方案。也没有一种在大多数使用场景下都足够好的流行方案。还需要社区进一步贡献，以改进现有解决方案或添加新的方案。
 
-For now, you need to carefully choose between a more complex, native editor that offers more features but may be harder to maintain, or an editor built on top of react-native primitives. This depends on how core the feature is to your app, how many features you need in your editor, and how much effort you are willing to spend on building it out.
+目前，你需要在更复杂但功能更多、可能更难维护的原生编辑器，与基于 react-native 原语构建的编辑器之间仔细做出选择。这取决于这个功能对你的应用有多核心、你在编辑器中需要多少功能，以及你愿意投入多少精力去把它做完整。

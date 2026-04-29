@@ -3,61 +3,61 @@ title: Expo Updates v0
 sidebar_title: Expo Updates v0
 ---
 
-Version 0
+版本 0
 
-Updated 2021-12-01
+更新于 2021-12-01
 
 ---
 
-## Introduction
+## 简介
 
-This is the specification for Expo Updates, a protocol for delivering updates to Expo apps running on multiple platforms.
+这是 Expo Updates 的规范，这是一种为运行在多个平台上的 Expo 应用交付更新的协议。
 
-### Conformance
+### 一致性
 
-Conforming servers and client libraries must fulfill all normative requirements. Conformance requirements are described in this document by both descriptive assertions and key words with clearly defined meanings.
+符合规范的服务器和客户端库必须满足所有规范性要求。本文档通过描述性断言和具有明确定义含义的关键词来描述一致性要求。
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in the normative portions of this document are to be interpreted as described in [IETF RFC 2119](https://tools.ietf.org/html/rfc2119). These key words may appear in lowercase and still retain their meaning unless explicitly declared as non-normative.
+在本文档的规范性部分中，关键词“MUST”、“MUST NOT”、“REQUIRED”、“SHALL”、“SHALL NOT”、“SHOULD”、“SHOULD NOT”、“RECOMMENDED”、“MAY”和“OPTIONAL”应按照 [IETF RFC 2119](https://tools.ietf.org/html/rfc2119) 中的描述进行解释。这些关键词也可能以小写形式出现，但除非明确声明为非规范性，否则其含义保持不变。
 
-A conforming implementation of this protocol may provide additional functionality, but must not where explicitly disallowed or would otherwise result in non-conformance.
+该协议的符合规范的实现可以提供额外功能，但在明确禁止的情况下不得如此，或不得因此导致不符合规范。
 
-### Overview
+### 概述
 
-Conforming servers and client libraries MUST follow the HTTP spec as described in [RFC 7231](https://tools.ietf.org/html/rfc7231) as well as the more precise guidance described in this spec.
+符合规范的服务器和客户端库 MUST 遵循 [RFC 7231](https://tools.ietf.org/html/rfc7231) 中描述的 HTTP 规范，以及本规范中更精确的指导。
 
-An _update_ is defined as a [_manifest_](#manifest-response) together with the assets referenced inside the manifest.
-Expo Updates is a protocol for assembling and delivering updates to apps running on multiple platforms.
+_update_ 定义为一个 [_manifest_](#manifest-response) 以及 manifest 中引用的资源。
+Expo Updates 是一种用于组装并向运行在多个平台上的应用交付更新的协议。
 
-An app running a conformant Expo Updates client library MUST load the most recent update saved in the client library's cache, possibly after filtering by the contents of the manifest's [_metadata_](#manifest-response-body).
+运行符合规范的 Expo Updates 客户端库的应用 MUST 加载保存在客户端库缓存中的最新更新，可能会在根据 manifest 的 [_metadata_](#manifest-response-body) 内容过滤之后再加载。
 
-The following describes how a conformant Expo Updates client library MUST retrieve a new update from a conformant server:
+下面描述符合规范的 Expo Updates 客户端库 MUST 如何从符合规范的服务器获取新更新：
 
-1. The client library will make a [request](#request) for the most recent manifest, with constraints specified in the headers.
-2. If a new manifest is downloaded, the client library will proceed to make additional requests to download and store any missing assets specified in the manifest.
-3. The client library will edit its local state to reflect that a new update has been added to the local cache. It will also update the local state with the new `expo-manifest-filters` and `expo-server-defined-headers` found in the response [headers](#manifest-response-headers).
+1. 客户端库将针对最新的 manifest 发起一个 [请求](#request)，并在请求头中指定约束。
+2. 如果下载到新的 manifest，客户端库将继续发起额外请求，下载并存储 manifest 中指定的任何缺失资源。
+3. 客户端库将修改其本地状态，以反映新的更新已被添加到本地缓存中。它还会使用响应 [headers](#manifest-response-headers) 中找到的新 `expo-manifest-filters` 和 `expo-server-defined-headers` 更新本地状态。
 
-The primary consumers of this spec are Expo Application Services and organizations that wish to manage their own update server to satisfy internal requirements.
+本规范的主要使用者是 Expo Application Services，以及希望管理自己的更新服务器以满足内部需求的组织。
 
-## Manifest request
+## Manifest 请求
 
-A conformant client library MUST make a GET request with the headers:
+符合规范的客户端库 MUST 使用以下 headers 发起 GET 请求：
 
-1. `expo-platform`, to specify the platform type the client is running on.
-   - iOS MUST be `expo-platform: ios`.
-   - Android MUST be `expo-platform: android`.
-   - If it is not one of these platforms, the server SHOULD return a 400 or a 404
-2. `expo-runtime-version` MUST be a runtime version compatible with the client. A runtime version stipulates the native code setup a client is running. It should be set when the client is built. For example, in an iOS client, the value may be set in a plist file.
-3. Any headers stipulated by a previous responses' [server defined headers](#manifest-response-headers).
+1. `expo-platform`，用于指定客户端运行的平台类型。
+   - iOS MUST 为 `expo-platform: ios`。
+   - Android MUST 为 `expo-platform: android`。
+   - 如果不是这些平台之一，服务器 SHOULD 返回 400 或 404
+2. `expo-runtime-version` MUST 是与客户端兼容的 runtime version。runtime version 规定了客户端所运行的原生代码配置。它应在客户端构建时设置。例如，在 iOS 客户端中，该值可以在 plist 文件中设置。
+3. 任何先前响应的 [server defined headers](#manifest-response-headers) 中所规定的 headers。
 
-A conformant client library MUST send at least one of `accept: application/expo+json`, `accept: application/json`, or `accept: multipart/mixed` based on the supported response structures though SHOULD send `accept: application/expo+json, application/json, multipart/mixed`. A conformant client library MAY express preference using "q" parameters as specified in [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.1), which default to `1`.
+符合规范的客户端库 MUST 至少根据支持的响应结构发送以下之一：`accept: application/expo+json`、`accept: application/json` 或 `accept: multipart/mixed`，但 SHOULD 发送 `accept: application/expo+json, application/json, multipart/mixed`。符合规范的客户端库 MAY 使用 [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.1) 中规定的 `"q"` 参数表达偏好，其默认值为 `1`。
 
-A conformant client library configured to perform [code signing](#code-signing) verification MUST send a `expo-expect-signature` header to indicate that it expects the conformant server to include the `expo-signature` header in the manifest response. `expo-expect-signature` is an [Expo SFV](/technical-specs/expo-sfv-0/) dictionary which MAY contain any of the following key value pairs:
+配置为执行 [代码签名](#code-signing) 验证的符合规范的客户端库 MUST 发送 `expo-expect-signature` header，以表明其期望符合规范的服务器在 manifest 响应中包含 `expo-signature` header。`expo-expect-signature` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，MAY 包含以下任意键值对：
 
-- `sig` SHOULD contain the boolean `true` to indicate that it requires a conformant server to respond with the signature in the `sig` key.
-- `keyid` SHOULD contain the keyId of the public key the client will use to verify the signature
-- `alg` SHOULD contain the algorithm the client will use to verify the signature
+- `sig` SHOULD 包含布尔值 `true`，以表明它要求符合规范的服务器在 `sig` 键中返回签名。
+- `keyid` SHOULD 包含客户端用于验证签名的公钥的 keyId
+- `alg` SHOULD 包含客户端用于验证签名的算法
 
-Example:
+示例：
 
 ```text
 accept: application/expo+json;q=0.9, application/json;q=0.8, multipart/mixed
@@ -66,16 +66,16 @@ expo-runtime-version: *
 expo-expect-signature: sig, keyid="root", alg="rsa-v1_5-sha256"
 ```
 
-## Manifest response
+## Manifest 响应
 
-A conformant server MUST return a response structured in at least one of two ways. A conformant server MAY support either or both response structures, and when an unsupported response structure is requested the server SHOULD respond with an HTTP `406` error status.
+符合规范的服务器 MUST 以至少两种方式中的一种返回结构化响应。符合规范的服务器 MAY 支持其中一种或两种响应结构，当请求了不受支持的响应结构时，服务器 SHOULD 返回 HTTP `406` 错误状态。
 
-- For a response with `content-type: application/json` or `content-type: application/expo+json`, the [manifest headers](#manifest-response-headers) MUST be sent in the response headers and the [manifest body](#manifest-response-body) MUST be sent in the response body.
-- For a response with `content-type: multipart/mixed`, the response MUST be structured as specified in the [multipart manifest response](#multipart-manifest-response) section.
+- 对于 `content-type: application/json` 或 `content-type: application/expo+json` 的响应，`[manifest headers](#manifest-response-headers)` MUST 在响应 headers 中发送，且 `[manifest body](#manifest-response-body)` MUST 在响应 body 中发送。
+- 对于 `content-type: multipart/mixed` 的响应，响应 MUST 按照 [multipart manifest response](#multipart-manifest-response) 部分所指定的方式进行结构化。
 
-The choice of manifest and headers are dependent on the values of the request headers. A conformant server MUST respond with a manifest for the most recent update, ordered by creation time, satisfying all parameters and constraints imposed by the [request headers](#manifest-request). The server MAY use any properties of the request like its headers and source IP address to choose among several updates that all satisfy the request's constraints.
+manifest 和 headers 的选择取决于请求 headers 的值。符合规范的服务器 MUST 返回最新更新的 manifest（按创建时间排序），并满足 [request headers](#manifest-request) 所施加的所有参数和约束。服务器 MAY 使用请求的任意属性，例如其 headers 和源 IP 地址，在多个都满足请求约束的更新之间进行选择。
 
-### Manifest response headers
+### Manifest 响应头
 
 ```text
 expo-protocol-version: 0
@@ -87,20 +87,20 @@ content-type: *
 expo-signature: *
 ```
 
-- `expo-protocol-version` describes the version of the protocol defined in this spec and MUST be `0`.
-- `expo-sfv-version` MUST be `0`.
-- `expo-manifest-filters` is an [Expo SFV](/technical-specs/expo-sfv-0/) dictionary. It is used to filter updates stored by the client library by the `metadata` attribute found in the [manifest](#manifest-response-body). If a field is mentioned in the filter, the corresponding field in the metadata must either be missing or equal for the update to be included. The client library MUST store the manifest filters until it is overwritten by a newer response.
-- `expo-server-defined-headers` is an [Expo SFV](/technical-specs/expo-sfv-0/) dictionary. It defines headers that a client library MUST store until overwritten by a newer dictionary, and they MUST be included in every subsequent [manifest request](#manifest-request).
-- `cache-control` MUST be set to an appropriately short period of time. A value of `cache-control: private, max-age=0` is recommended to ensure the newest manifest is returned. Setting longer cache ages could result in stale updates.
-- `content-type` MUST be determined by _proactive negotiation_ as defined in [RFC 7231](https://tools.ietf.org/html/rfc7231#section-3.4.1). Since the client library is [required](#manifest-request) to send an `accept` header with each manifest request, this will always be either `application/expo+json`, `application/json`; otherwise the request would return a `406` error.
-- `expo-signature` SHOULD contain the signature of the manifest to be used during the validation step of [code signing](#code-signing) if the request for the manifest contained the `expo-expect-signature` header. This is an [Expo SFV](/technical-specs/expo-sfv-0/) dictionary which MAY contain any of the following key value pairs:
-  - `sig` MUST contain the signature of the manifest. The name of this field matches that of `expo-expect-signature`.
-  - `keyid` MAY contain the keyId of the key the server used to sign the response. The client SHOULD use the certificate that matches this `keyid` to verify the signature.
-  - `alg` MAY contain the algorithm the server used to sign the response. The client SHOULD use this field only if it matches the algorithm defined for the certificate matching `keyid`.
+- `expo-protocol-version` 描述本规范中定义的协议版本，且 MUST 为 `0`。
+- `expo-sfv-version` MUST 为 `0`。
+- `expo-manifest-filters` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典。它用于根据客户端库存储的更新中，在 [manifest](#manifest-response-body) 里找到的 `metadata` 属性来过滤更新。如果过滤器中提到了某个字段，则要将对应字段包含在更新中，该字段在 metadata 中必须缺失或与其值相等。客户端库 MUST 保存 manifest filters，直到它被较新的响应覆盖。
+- `expo-server-defined-headers` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典。它定义了客户端库 MUST 保存的 headers，直到它们被较新的字典覆盖，并且它们 MUST 被包含在之后每一次 [manifest request](#manifest-request) 中。
+- `cache-control` MUST 设置为适当的较短时间。推荐使用 `cache-control: private, max-age=0`，以确保返回最新的 manifest。设置更长的缓存时间可能导致更新过期。
+- `content-type` MUST 由 [RFC 7231](https://tools.ietf.org/html/rfc7231#section-3.4.1) 中定义的 _主动协商_ 决定。由于客户端库 [要求](#manifest-request) 在每次 manifest 请求中发送 `accept` header，因此这将始终是 `application/expo+json` 或 `application/json`；否则请求将返回 `406` 错误。
+- 如果对 manifest 的请求包含了 `expo-expect-signature` header，则 `expo-signature` SHOULD 包含将在 [代码签名](#code-signing) 验证步骤中使用的 manifest 签名。这是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，MAY 包含以下任意键值对：
+  - `sig` MUST 包含 manifest 的签名。该字段名称与 `expo-expect-signature` 的名称一致。
+  - `keyid` MAY 包含服务器用于签署响应的密钥的 keyId。客户端 SHOULD 使用与此 `keyid` 匹配的证书来验证签名。
+  - `alg` MAY 包含服务器用于签署响应的算法。客户端 SHOULD 仅在该算法与 `keyid` 所匹配证书定义的算法一致时使用此字段。
 
-### Manifest response body
+### Manifest 响应体
 
-The body of the response MUST be a manifest, which is defined as JSON conforming to both the following `Manifest` definition expressed in [TypeScript](https://www.typescriptlang.org/) and the detailed descriptions for each field:
+响应 body MUST 是一个 manifest，它被定义为同时符合以下用 [TypeScript](https://www.typescriptlang.org/) 表达的 `Manifest` 定义以及每个字段的详细说明的 JSON：
 
 ```ts
 type Manifest = {
@@ -122,20 +122,20 @@ type Asset = {
 };
 ```
 
-- `id`: The ID MUST uniquely specify the manifest.
-- `createdAt`: The date and time at which the update was created is essential as the client library selects the most recent update (subject to any constraints supplied by the `expo-manifest-filters` header). The datetime should be formatted according to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).
-- `runtimeVersion`: Can be any string defined by the developer. It stipulates what native code setup is required to run the associated update.
-- `launchAsset`: A special asset that is the entry point of the application code. The `fileExtension` field will be ignored for this asset and SHOULD be omitted.
-- `assets`: An array of assets used by the update bundle, such as JavaScript, pictures, and fonts. All assets (including the `launchAsset`) should be downloaded to disk before executing the update, and a mapping of asset `key`s to locations on disk should be provided to application code.
-- Properties of each asset object:
-  - `hash`: Base64URL-encoded SHA-256 hash of the file to guarantee integrity. Base64URL encoding is defined by [IETF RFC 4648](https://datatracker.ietf.org/doc/html/rfc4648#section-5).
-  - `key`: Key used to reference this asset from the update's application code. This key, for example, may be generated by a separate build step that processes the application code, such as a bundler.
-  - `contentType`: The MIME type of the file as defined by [RFC 2045](https://tools.ietf.org/html/rfc2045). For example, `application/javascript`, `image/jpeg`.
-  - `fileExtension`: The suggested extension to use when a file is saved on a client. Some platforms, such as iOS, require certain file types to be saved with an extension. The extension MUST be prefixed with a `.`. For example, **.jpeg**. In some cases, such as the launchAsset, this field will be ignored in favor of a locally determined extension. If the field is omitted and there is no locally stipulated extension, the asset will be saved without an extension. For example, `./filename` with no `.` at the end.
-    A conforming client SHOULD prefix a file extension with a `.` if a file extension is not empty and missing the `.` prefix.
-  - `url`: Location at which the file may be fetched.
-- `metadata`: The metadata associated with an update. It is a string-valued dictionary. The server MUST send back an empty object at a minimum, but MAY send back anything it wishes within the object to be used for filtering the updates. The metadata MUST pass the filter defined in the accompanying `expo-manifest-filters` header.
-- `extra`: For specification of optional "extra" information such as third-party configuration. The server MUST send back an empty object at a minimum. Expo Updates does not specify or rely upon this field, but other libraries may. For example, if the update is hosted on Expo Application Services (EAS), the EAS project ID and app config (which is used by many Expo libraries through `expo-constants`) may be included:
+- `id`：ID MUST 唯一标识该 manifest。
+- `createdAt`：创建该更新的日期和时间至关重要，因为客户端库会选择最新的更新（受 `expo-manifest-filters` header 提供的任何约束影响）。datetime 应按照 [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) 格式化。
+- `runtimeVersion`：可以是开发者定义的任意字符串。它规定了运行关联更新所需的原生代码配置。
+- `launchAsset`：一个特殊资源，作为应用代码的入口点。该资源的 `fileExtension` 字段将被忽略，并 SHOULD 省略。
+- `assets`：更新 bundle 使用的资源数组，例如 JavaScript、图片和字体。在执行更新之前，所有资源（包括 `launchAsset`）都应下载到磁盘，并且应向应用代码提供从资源 `key` 到磁盘位置的映射。
+- 每个 asset 对象的属性：
+  - `hash`：文件的 Base64URL 编码 SHA-256 哈希，用于保证完整性。Base64URL 编码由 [IETF RFC 4648](https://datatracker.ietf.org/doc/html/rfc4648#section-5) 定义。
+  - `key`：用于在更新的应用代码中引用此资源的 key。例如，此 key 可由处理应用代码的单独构建步骤生成，例如 bundler。
+  - `contentType`：文件的 MIME 类型，如 [RFC 2045](https://tools.ietf.org/html/rfc2045) 所定义。例如，`application/javascript`、`image/jpeg`。
+  - `fileExtension`：在客户端保存文件时建议使用的扩展名。某些平台（如 iOS）要求某些文件类型保存时带有扩展名。扩展名前 MUST 带有 `.` 前缀。例如，**.jpeg**。在某些情况下，例如 `launchAsset`，该字段会被忽略，转而使用本地确定的扩展名。如果省略该字段且本地没有规定扩展名，则资源将不带扩展名保存。例如，`./filename` 末尾没有 `.`。
+    如果文件扩展名不为空但缺少 `.` 前缀，符合规范的客户端 SHOULD 为文件扩展名加上 `.` 前缀。
+  - `url`：可获取该文件的位置。
+- `metadata`：与更新关联的元数据。它是一个具有字符串值的字典。服务器 MUST 至少返回一个空对象，但 MAY 在对象中返回任何希望用于过滤更新的内容。metadata MUST 通过随附的 `expo-manifest-filters` header 定义的过滤器。
+- `extra`：用于指定可选的“额外”信息，例如第三方配置。服务器 MUST 至少返回一个空对象。Expo Updates 不定义也不依赖此字段，但其他库可能会。例如，如果更新托管在 Expo Application Services（EAS）上，可能会包含 EAS 项目 ID 和 app config（许多 Expo 库通过 `expo-constants` 使用它）：
 
 ```json
 "extra": {
@@ -151,30 +151,30 @@ type Asset = {
 }
 ```
 
-### Multipart manifest response
+### Multipart manifest 响应
 
-A manifest response of this format is defined by the `multipart/mixed` MIME type as defined by [RFC 2046](https://tools.ietf.org/html/rfc2046#section-5.1).
+这种格式的 manifest 响应由 [RFC 2046](https://tools.ietf.org/html/rfc2046#section-5.1) 中定义的 `multipart/mixed` MIME 类型所定义。
 
-Headers for this response format are the same as [manifest response headers](#manifest-response-headers), with the following exceptions:
+此响应格式的 headers 与 [manifest response headers](#manifest-response-headers) 相同，但有以下例外：
 
-- `content-type` should have a `multipart/mixed` value as defined by [RFC 2046](https://tools.ietf.org/html/rfc2046#section-5.1)
-- `expo-signature` should be included in the `manifest` part headers below if codesigning is being used.
+- `content-type` 应具有 [RFC 2046](https://tools.ietf.org/html/rfc2046#section-5.1) 定义的 `multipart/mixed` 值
+- 如果使用代码签名，则 `expo-signature` 应包含在下方 `manifest` part 的 headers 中
 
-Each part is defined as follows:
+每个 part 定义如下：
 
-1. REQUIRED `"manifest"` part:
-   - MUST have part header `content-disposition: inline; name="manifest"`.
-   - MUST have part header `content-type: application/json` or `application/expo+json`.
-   - SHOULD have part header `expo-signature` as defined in [manifest response headers](#manifest-response-headers) if code signing is being used.
-   - The [manifest body](#manifest-response-body) MUST be sent in the part body.
-2. OPTIONAL `"extensions"` part:
-   - MUST have part header `content-disposition: inline; name="extensions"`.
-   - MUST have part header `content-type: application/json`.
-   - The [manifest extensions](#manifest-extensions) MUST be sent in the part body.
+1. 必需的 `"manifest"` part：
+   - MUST 具有 part header `content-disposition: inline; name="manifest"`。
+   - MUST 具有 part header `content-type: application/json` 或 `application/expo+json`。
+   - 如果使用代码签名，SHOULD 具有 [manifest response headers](#manifest-response-headers) 中定义的 `expo-signature` part header。
+   - `[manifest body](#manifest-response-body)` MUST 在 part body 中发送。
+2. 可选的 `"extensions"` part：
+   - MUST 具有 part header `content-disposition: inline; name="extensions"`。
+   - MUST 具有 part header `content-type: application/json`。
+   - `[manifest extensions](#manifest-extensions)` MUST 在 part body 中发送。
 
-### Manifest extensions
+### Manifest 扩展
 
-Defined as JSON conforming to both the following `ManifestExtensions` definition expressed in [TypeScript](https://www.typescriptlang.org/) and the detailed descriptions for each field:
+定义为同时符合以下用 [TypeScript](https://www.typescriptlang.org/) 表达的 `ManifestExtensions` 定义以及每个字段的详细说明的 JSON：
 
 ```ts
 type ManifestExtensions = {
@@ -189,49 +189,49 @@ type ExpoAssetHeaderDictionary = {
 }
 ```
 
-- `assetRequestHeaders`: MAY contain a dictionary of header (key, value) pairs to include with asset requests. Key and value MUST both be strings.
+- `assetRequestHeaders`：MAY 包含一个 header（键、值）对字典，用于在资源请求中一并包含。键和值 MUST 都是字符串。
 
-## Asset request
+## 资源请求
 
-A conformant client library MUST make a GET request to the asset URLs specified by the manifest. The client library SHOULD include a header accepting the asset's content type as specified in the manifest. Additionally, the client library SHOULD specify the compression encoding the client library is capable of handling.
+符合规范的客户端库 MUST 对清单中指定的资源 URL 发起 GET 请求。客户端库 SHOULD 包含一个接受清单中所指定资源内容类型的头部。此外，客户端库 SHOULD 指定其能够处理的压缩编码。
 
-Example headers:
+示例头部：
 
 ```text
 accept: image/jpeg, */*
 accept-encoding: br, gzip
 ```
 
-A conformant client library MUST also include any header (key, value) pairs included in [`assetRequestHeaders`](#manifest-extensions) for this asset key.
+符合规范的客户端库 MUST 还包含该资源键在 [`assetRequestHeaders`](#manifest-extensions) 中列出的任何头部（键，值）对。
 
-## Asset response
+## 资源响应
 
-An asset located at a particular URL MUST NOT be changed or removed since client libraries may fetch assets for any update at any time. A conformant client MUST verify that the base64url-encoded SHA-256 hash of the asset matches the `hash` field for the asset from the manifest.
+位于特定 URL 的资源自客户端库可能在任何时候获取任意更新的资源以来 MUST NOT 被更改或移除。符合规范的客户端 MUST 验证该资源的 base64url 编码 SHA-256 哈希与清单中该资源的 `hash` 字段相匹配。
 
-### Asset response headers
+### 资源响应头
 
-The asset MUST be encoded using a compression format that the client supports according to the request's `accept-encoding` header. The server MAY serve uncompressed assets. The response MUST include a `content-type` header with the MIME type of the asset.
-For example:
+资源 MUST 使用客户端根据请求的 `accept-encoding` 头支持的压缩格式进行编码。服务器 MAY 提供未压缩的资源。响应 MUST 包含一个带有该资源 MIME 类型的 `content-type` 头。
+例如：
 
 ```text
 content-encoding: br
 content-type: application/javascript
 ```
 
-An asset is RECOMMENDED to be served with a `cache-control` header set to a long duration as an asset located at a given URL must not change. For example:
+由于位于给定 URL 的资源不得更改，RECOMMENDED 为资源提供一个 `cache-control` 头并将其设置为较长的持续时间。例如：
 
 ```text
 cache-control: public, max-age=31536000, immutable
 ```
 
-### Compression
+### 压缩
 
-Assets SHOULD be capable of being served with [Gzip](https://www.gnu.org/software/gzip/) and [Brotli](https://github.com/google/brotli) compression.
+资源 SHOULD 能够以 [Gzip](https://www.gnu.org/software/gzip/) 和 [Brotli](https://github.com/google/brotli) 压缩方式提供。
 
-## Code signing
+## 代码签名
 
-Expo Updates supports code signing the manifest. This also transitively signs the assets since their hashes are present in the manifest and verified by a conformant client. A conformant client MAY request the manifest be signed using a private key, and then MUST verify the signature of the manifest using the corresponding code signing certificate before it is used or any corresponding assets are downloaded. The client MUST verify that the signing certificate is either a self-signed, trusted root certificate or is in a certificate chain signed by a trusted root certificate. In either case, the root certificate MUST be embedded in the application or device's operating system.
+Expo Updates 支持对清单进行代码签名。这也会递归地对资源进行签名，因为它们的哈希值存在于清单中，并由符合规范的客户端进行验证。符合规范的客户端 MAY 请求使用私钥对清单签名，然后 MUST 在使用清单或下载任何对应资源之前，使用相应的代码签名证书验证清单的签名。客户端 MUST 验证签名证书要么是自签名的、受信任的根证书，要么位于由受信任根证书签名的证书链中。在任一情况下，根证书 MUST 嵌入在应用程序或设备的操作系统中。
 
-## Client library
+## 客户端库
 
-See the [reference client library](https://github.com/expo/expo/tree/main/packages/expo-updates).
+参见 [参考客户端库](https://github.com/expo/expo/tree/main/packages/expo-updates)。

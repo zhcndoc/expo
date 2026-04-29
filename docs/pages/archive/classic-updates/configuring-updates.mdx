@@ -1,30 +1,30 @@
 ---
-title: Configuring Updates
+title: 配置更新
 ---
 
-> This doc was archived in August 2022 and will not receive any further updates. Use EAS Update instead. [Learn more](/eas-update/introduction)
+> 本文档已于 2022 年 8 月归档，不会再收到任何更新。请改用 EAS Update。[了解更多](/eas-update/introduction)
 
-Expo provides various settings to configure how your app receives updates. Updates allow you to publish a new version of your app JavaScript and assets without building a new version of your app and re-submitting it to app stores. ([Read more about the limitations](/archive/classic-updates/publishing/)).
+Expo 提供了多种设置来配置应用接收更新的方式。更新允许你发布应用 JavaScript 和资源的新版本，而无需重新构建应用并再次提交到应用商店。（[阅读有关限制的更多内容](/archive/classic-updates/publishing/)）。
 
-To create an update of your app, run `expo publish`. If you're using release channels, specify one with `--release-channel <channel-name>` option. **Note** that if you wish to update the SDK version of your app, or make [any of these changes](/archive/classic-updates/publishing/#some-native-configuration-cant-be-updated-by-publishing), you'll need to rebuild your app with `eas build` and upload the binary file to the appropriate app store ([see the docs here](/build/setup)).
+要创建应用更新，请运行 `expo publish`。如果你使用发布通道，请使用 `--release-channel <channel-name>` 选项指定一个。**注意**，如果你希望更新应用的 SDK 版本，或者进行[这些更改中的任何一项](/archive/classic-updates/publishing/#some-native-configuration-cant-be-updated-by-publishing)，你需要使用 `eas build` 重新构建应用，并将二进制文件上传到相应的应用商店（[在此查看文档](/build/setup)）。
 
-Updates are controlled by the `updates` settings in app.json, which handle the initial app load, and the Updates SDK module, which allows you to fetch updates asynchronously from your JS.
+更新由 app.json 中的 `updates` 设置控制，它们处理应用的初始加载；同时还由 Updates SDK 模块控制，它允许你从 JS 中异步获取更新。
 
-## Automatic updates
+## 自动更新
 
-If your **app.json** does not contain an `updates.fallbackToCacheTimeout` field it will default to `0` and `expo-updates` will attempt to start your app immediately with a cached bundle while downloading a newer one in the background for future use. When using this configuration, users who download the app from a store and launch it for the first time will always see the version of the app that the binary was built against. `Updates.addListener` provides a hook to let you respond when the new bundle is finished downloading. You can use this to notify users that they should restart the app, and you can also restart it programmatically with `Updates.reloadAsync()`, for example, in response to a prompt to the user.
+如果你的 **app.json** 不包含 `updates.fallbackToCacheTimeout` 字段，它将默认值设为 `0`，并且 `expo-updates` 会尝试在后台下载更新版本以供将来使用的同时，立即使用缓存的 bundle 启动你的应用。使用此配置时，从商店下载应用并首次启动的用户将始终看到二进制文件构建时所对应的应用版本。`Updates.addListener` 提供了一个钩子，让你在新 bundle 下载完成时作出响应。你可以用它通知用户应该重启应用，也可以通过 `Updates.reloadAsync()` 以编程方式重启，例如在响应用户提示时。
 
-You can also set a nonzero timeout, in which case Expo will attempt to download a new update before launching the app. If there is no network connection available, or it has not finished downloading in the allotted time, Expo will fall back to loading a cached version of your app, and continue trying to fetch the update in the background (at which point it will be saved into the cache for the next app load). We strongly advise against blocking app loading on fetching an update because it can leave users with the perception that the app is not working if it takes a while to download the update, and every launch will be slower because a network request has to be made to check for an update before proceeding to the app.
+你也可以设置一个非零超时时间，在这种情况下，Expo 会在启动应用之前尝试下载新更新。如果没有可用的网络连接，或者在给定时间内尚未完成下载，Expo 会回退为加载应用的缓存版本，并继续在后台尝试获取更新（此时它会被保存到缓存中，供下次应用加载时使用）。我们强烈不建议通过获取更新来阻塞应用加载，因为如果下载更新耗时较长，用户可能会觉得应用无法正常工作；而且由于在继续进入应用之前必须发起一次网络请求来检查更新，每次启动都会更慢。
 
-In Expo Go, the latest published bundle of your app will always be launched (unless the request times out or the network connection is unavailable), regardless of the `updates` settings in your app config.
+在 Expo Go 中，无论应用配置中的 `updates` 设置如何，应用的最新已发布 bundle 都会始终被启动（除非请求超时或网络连接不可用）。
 
-## Manual updates
+## 手动更新
 
-In standalone apps, it is also possible to turn off automatic updates and to instead control updates entirely within your JS code. This is desirable if you want some custom logic around fetching updates (for example, only over Wi-Fi).
+在独立应用中，也可以关闭自动更新，而完全在你的 JS 代码中控制更新。如果你希望围绕获取更新实现一些自定义逻辑，这样做会更合适（例如，仅在 Wi-Fi 下获取）。
 
-Setting `updates.checkAutomatically` to `"ON_ERROR_RECOVERY"` in app.json will prevent Expo from automatically fetching the latest update every time your app is launched. Only the most recent cached version of your bundle will be loaded. It will only automatically fetch an update if the last run of the cached bundle produced a fatal JS error.
+在 app.json 中将 `updates.checkAutomatically` 设置为 `"ON_ERROR_RECOVERY"`，将阻止 Expo 在每次应用启动时自动获取最新更新。只会加载你 bundle 最近一次缓存的版本。只有当缓存 bundle 的上一次运行产生了致命 JS 错误时，才会自动获取更新。
 
-You can then use the `expo-updates` module to download new updates and, if appropriate, notify the user to reload their app.
+然后你可以使用 `expo-updates` 模块下载新更新，并在适当时通知用户重新加载他们的应用。
 
 ```js
 import * as Updates from 'expo-updates';
@@ -33,20 +33,20 @@ try {
   const update = await Updates.checkForUpdateAsync();
   if (update.isAvailable) {
     await Updates.fetchUpdateAsync();
-    // ... notify user of update ...
+    // ... 通知用户有更新 ...
     await Updates.reloadAsync();
   }
 } catch (e) {
-  // handle or log error
+  // 处理或记录错误
 }
 ```
 
-Checking for an update uses a device's bandwidth and battery life like any network call. Additionally, updates served by Expo may be rate limited. A good rule of thumb to check for updates judiciously is to use check when the user launches or foregrounds the app. Avoid polling for updates in a frequent loop.
+检查更新会像任何网络请求一样消耗设备的带宽和电量。此外，Expo 提供的更新可能会受到频率限制。一个好的经验法则是，在用户启动应用或将应用切换到前台时进行检查。避免在频繁循环中轮询更新。
 
-Note that `checkAutomatically: "ON_ERROR_RECOVERY"` will be ignored in Expo Go, although the imperative Updates methods will still function normally.
+请注意，`checkAutomatically: "ON_ERROR_RECOVERY"` 在 Expo Go 中会被忽略，不过命令式的 Updates 方法仍然会正常工作。
 
-## Disabling updates
+## 禁用更新
 
-It is possible to entirely disable updates in an app, by setting `updates.enabled` to `false` in **app.json**. This will ignore all code paths that fetch app bundles from Expo's servers. In this case, all updates to your app will need to be routed through the iOS App Store and/or Google Play Store.
+你可以通过在 **app.json** 中将 `updates.enabled` 设置为 `false`，来完全禁用应用中的更新。这将忽略所有从 Expo 服务器获取应用 bundle 的代码路径。在这种情况下，你的应用更新都需要通过 iOS App Store 和/或 Google Play Store 来分发。
 
-This setting is ignored in the Expo Go app.
+此设置在 Expo Go 应用中会被忽略。

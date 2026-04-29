@@ -1,19 +1,19 @@
 ---
-title: Hosting Updates on Your Servers
+title: 在您的服务器上托管更新
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 import { DiffBlock, Terminal } from '~/ui/components/Snippet';
 
-> This doc was archived in August 2022 and will not receive any further updates. Use EAS Update instead. [Learn more](/eas-update/introduction)
+> 这篇文档已于 2022 年 8 月归档，之后将不再更新。请改用 EAS Update。[了解更多](/eas-update/introduction)
 
-Normally, when updates are enabled, your app will fetch updates comprising JavaScript bundles and assets from Expo's CDN. However, there will be situations when you will want to host your JS bundles and assets on your own servers. For example, updates are slow or unusable in countries that have blocked Expo's CDN providers on AWS and Google Cloud. In these cases, you can host your updates on your own servers to better suit your use cases.
+通常情况下，当启用更新时，你的应用会从 Expo 的 CDN 获取包含 JavaScript bundle 和资源的更新。不过，在某些情况下，你可能希望将 JS bundle 和资源托管在你自己的服务器上。例如，在一些屏蔽了 AWS 和 Google Cloud 上 Expo CDN 提供商的国家/地区，更新会很慢或无法使用。在这些情况下，你可以把更新托管到你自己的服务器上，以更好地适配你的使用场景。
 
-For simplicity, the rest of this article will refer to hosting an update for the Android platform, but you could swap out Android for iOS at any point and everything would still be true.
+为了简单起见，本文其余部分将以为 Android 平台托管更新为例，不过你也可以在任何时候把 Android 替换为 iOS，所有内容依然适用。
 
-## Exporting the update
+## 导出更新
 
-First, you'll need to export all the static files of your update so they can be served from your CDN. To do this, run `expo export --public-url <server-endpoint>` in your project directory and it will output all your app's static files to a directory named **dist**. In this guide, we will use `https://expo.github.io/self-hosting-example` as our example server endpoint. Asset and bundle files are named by the MD5 hash of their content. Your output directory should look something like this now:
+首先，你需要导出更新的所有静态文件，以便它们可以从你的 CDN 提供服务。为此，请在项目目录中运行 `expo export --public-url <server-endpoint>`，它会将你应用的所有静态文件输出到名为 **dist** 的目录中。在本指南中，我们将使用 `https://expo.github.io/self-hosting-example` 作为示例服务器端点。资源文件和 bundle 文件会根据其内容的 MD5 哈希值命名。此时你的输出目录应该大致如下所示：
 
 <FileTree
   files={[
@@ -25,16 +25,16 @@ First, you'll need to export all the static files of your update so they can be 
   ]}
 />
 
-## Hosting your static files
+## 托管你的静态文件
 
-Once you have exported your update's static files, you can host the contents on your own server. For example, in your **dist** output directory, an easy way to host your own files is to push the contents to GitHub. You can enable [GitHub Pages](https://pages.github.com/) to make your app available at a base URL like https://username.github.io/project-name. To host your files on GitHub, you'd do something like this:
+当你导出更新的静态文件后，就可以把这些内容托管到你自己的服务器上。例如，在你的 **dist** 输出目录中，一种简单的托管方式是把内容推送到 GitHub。你可以启用 [GitHub Pages](https://pages.github.com/) 让你的应用可通过类似 https://username.github.io/project-name 这样的基础 URL 访问。如果要在 GitHub 上托管文件，你可以这样做：
 
 <Terminal
   cmd={[
-    '# run this from your project directory',
+    '# 从你的项目目录运行此命令',
     '$ expo export --public-url https://expo.github.io/self-hosting-example',
     '',
-    '# commit output directory contents to your repo',
+    '# 将输出目录中的内容提交到你的仓库',
     '$ cd dist',
     '$ git init && git remote add origin git@github.com:expo/self-hosting-example.git',
     '$ git add * && git commit -m "Update my app with this JS bundle"',
@@ -42,13 +42,13 @@ Once you have exported your update's static files, you can host the contents on 
   ]}
 />
 
-To setup a QR code to view your hosted update, or if you want to host your files locally, follow the instructions below in the 'Loading QR Code/URL in Development' section.
+要设置一个用于查看你托管更新的二维码，或者如果你想在本地托管文件，请按照下面“在开发中加载二维码/URL”部分中的说明操作。
 
 ### HTTP headers
 
-On some hosting services such as [AWS](https://aws.amazon.com/) and [Firebase](http://firebase.google.com/), you'll need to explicitly set the header `"Content-Type"` of JavaScript files as `"application/javascript"` so that [updates](./configuring-updates) work correctly. Otherwise [Updates.checkForUpdateAsync()](/versions/latest/sdk/updates/#updatescheckforupdateasync) will fail with the error _"Failed to fetch new update"_.
+在某些托管服务上，例如 [AWS](https://aws.amazon.com/) 和 [Firebase](http://firebase.google.com/)，你需要显式将 JavaScript 文件的 `"Content-Type"` 头设置为 `"application/javascript"`，这样 [更新](./configuring-updates) 才能正常工作。否则 [Updates.checkForUpdateAsync()](/versions/latest/sdk/updates/#updatescheckforupdateasync) 将失败并报错 _"Failed to fetch new update"_。
 
-Here's an example of **firebase.json** configuration, with a [deploy target](https://firebase.google.com/docs/cli/targets) named "native".
+下面是一个 **firebase.json** 配置示例，其中部署目标（[deploy target](https://firebase.google.com/docs/cli/targets)）名为 "native"。
 
 <DiffBlock
   raw={`diff --git a/firebase.json b/firebase.json
@@ -78,83 +78,83 @@ index 0000000..1111111 100644
 
 <Terminal
   cmd={[
-    '# export your app locally',
+    '# 本地导出你的应用',
     '$ expo export --public-url https://my-app-native.firebaseapp.com/',
     '',
-    '# deploy the app to firebase',
+    '# 将应用部署到 firebase',
     '$ firebase deploy --only hosting:native -m "Deploy my app"',
   ]}
 />
 
-## Building the standalone app
+## 构建独立应用
 
-To configure your standalone binary to pull updates from your server, you'll need to define the URL where you will host your **index.json** file. When using EAS Build, just set the [`updates.url` property in app.json](/versions/latest/config/app/#url) to point to that url.
+要配置你的独立二进制文件从你的服务器拉取更新，你需要定义一个 URL，用于托管你的 **index.json** 文件。使用 EAS Build 时，只需在 app.json 中设置 [`updates.url` 属性](/versions/latest/config/app/#url) 指向该 URL 即可。
 
-## Loading QR Code/URL in Development
+## 在开发中加载二维码/URL
 
-You can also load an update hosted on your own servers as a QR code/URL into the Expo mobile client for development purposes.
+你也可以将托管在自己服务器上的更新以二维码/URL 的形式加载到 Expo 移动客户端中，用于开发目的。
 
-### QR code:
+### 二维码：
 
-The URI you'll use to convert to QR code will be deeplinked using the `exps`/`exp` protocol. Both `exps` and `exp` deeplink into the mobile app and perform a request using HTTPS and HTTP respectively. You can create your own QR code using an online QR code generator from the input URI.
+你用于转换成二维码的 URI 将通过 `exps`/`exp` 协议进行深度链接。`exps` 和 `exp` 都会深度链接到移动应用，并分别通过 HTTPS 和 HTTP 发起请求。你可以使用在线二维码生成器，输入该 URI 来创建自己的二维码。
 
-#### Here's an example of how you'd do this with a remote server:
+#### 下面是一个使用远程服务器的示例：
 
 URI: `exps://expo.github.io/self-hosting-example/android-index.json`
 
-QR code: Generate the URI from a website like https://www.qr-code-generator.com/
+二维码：使用类似 https://www.qr-code-generator.com/ 的网站生成该 URI。
 
-#### Here's an example of how you'd do this from localhost:
+#### 下面是一个使用 localhost 的示例：
 
-Run `expo export` in dev mode and then start a simple HTTP server in your output directory:
+在开发模式下运行 `expo export`，然后在输出目录中启动一个简单的 HTTP 服务器：
 
 <Terminal
   cmd={[
-    '# Find your local IP address with `ipconfig getifaddr en0`',
-    '# export static app files',
+    '# 使用 `ipconfig getifaddr en0` 找到你的本地 IP 地址',
+    '# 导出静态应用文件',
     '$ expo export --public-url http://`ipconfig getifaddr en0`:8000 --dev',
     '',
-    '# cd into your output directory',
+    '# 进入你的输出目录',
     '$ cd dist',
     '',
-    '# run a simple http server from output directory',
+    '# 从输出目录运行一个简单的 http 服务器',
     '$ python -m SimpleHTTPServer 8000',
   ]}
 />
 
-URI: `exp://192.xxx.xxx.xxx:8000/android-index.json` (find your local IP with a command like `ipconfig getifaddr en0`)
+URI: `exp://192.xxx.xxx.xxx:8000/android-index.json`（使用类似 `ipconfig getifaddr en0` 的命令找到你的本地 IP）
 
-QR code: Generate a QR code using your URI from a website like https://www.qr-code-generator.com/
+二维码：使用类似 https://www.qr-code-generator.com/ 的网站根据你的 URI 生成二维码。
 
 ### URL
 
-If you are loading in your update into a development build by passing in a URL string, you will need to pass in an URL pointing to your JSON manifest file.
+如果你通过传入一个 URL 字符串将更新加载到开发构建中，你需要传入一个指向 JSON manifest 文件的 URL。
 
-Here is an example URL from a remote server: [https://expo.github.io/self-hosting-example/android-index.json](https://expo.github.io/self-hosting-example/android-index.json)
+下面是一个来自远程服务器的 URL 示例：[https://expo.github.io/self-hosting-example/android-index.json](https://expo.github.io/self-hosting-example/android-index.json)
 
-Here is an example URL from localhost: `http://localhost:8000/android-index.json`
+下面是一个来自 localhost 的 URL 示例：`http://localhost:8000/android-index.json`
 
-## Advanced topics
+## 高级主题
 
-### Debugging
+### 调试
 
-When Expo CLI bundles your update, minification is always enabled. To see the original source code of your update for debugging purposes, you can generate source maps. Here is an example workflow:
+当 Expo CLI 为你的更新打包时，始终会启用压缩。为了在调试时查看更新的原始源代码，你可以生成 source map。下面是一个示例流程：
 
-1. Run `expo export --dump-sourcemap --public-url <your-url>`. This will also export your bundle sourcemaps in the **bundles** directory.
-2. A **debug.html** file will also be created at the root of your output directory.
-3. In Chrome, open up **debug.html** and navigate to the `Source` tab. In the left tab there should be a resource explorer with a red directory containing the reconstructed source code from your bundle.
+1. 运行 `expo export --dump-sourcemap --public-url <your-url>`。这也会将你的 bundle sourcemap 导出到 **bundles** 目录中。
+2. 还会在输出目录的根目录创建一个 **debug.html** 文件。
+3. 在 Chrome 中，打开 **debug.html** 并切换到 `Source` 选项卡。左侧选项卡中应该会有一个资源浏览器，其中有一个红色目录，包含从你的 bundle 重建出的源代码。
 
-![Debugging Source Code](/static/images/host-your-app-debug.png)
+![调试源代码](/static/images/host-your-app-debug.png)
 
-### Asset hosting
+### 资源托管
 
-By default, all assets are hosted from an `assets` path resolving from your `public-url` (for example, https://expo.github.io/self-hosting-example/assets). You can override this behavior in the `assetUrlOverride` field of your `android-index.json`. All relative URL's will be resolved from the `public-url`.
+默认情况下，所有资源都从相对于你的 `public-url` 解析得到的 `assets` 路径托管（例如，https://expo.github.io/self-hosting-example/assets）。你可以在 `android-index.json` 的 `assetUrlOverride` 字段中覆盖此行为。所有相对 URL 都将从 `public-url` 解析。
 
-### Special fields
+### 特殊字段
 
-Most of the fields in the **index.json** files are the same as in **app.json**. Here are some fields that are notable in **index.json**:
+**index.json** 文件中的大多数字段都与 **app.json** 中的字段相同。下面是一些在 **index.json** 中比较重要的字段：
 
-- `revisionId`, `commitTime`, `publishedTime`: These fields are generated by `expo export` and used to determine whether or not an update should occur.
-- `bundleUrl`: This points to the path where the app's bundles are hosted. They are also used to determined whether or not an update should occur.
-- `slug`: This should not be changed. Your app is namespaced by `slug`, and changing this field will result in undefined behavior in the Expo SDK components such as `Filesystem`.
-- `assetUrlOverride`: The path which assets are hosted from. It is by default `./assets`, which is resolved relative to the base `public-url` value you initially passed in.
+- `revisionId`、`commitTime`、`publishedTime`：这些字段由 `expo export` 生成，用于判断是否应该发生更新。
+- `bundleUrl`：指向应用 bundle 托管路径的 URL。它们也用于判断是否应该发生更新。
+- `slug`：不应更改。你的应用由 `slug` 进行命名空间划分，修改此字段会导致 Expo SDK 组件（例如 `Filesystem`）出现未定义行为。
+- `assetUrlOverride`：资源托管的路径。默认值为 `./assets`，它会相对于你最初传入的基础 `public-url` 值进行解析。

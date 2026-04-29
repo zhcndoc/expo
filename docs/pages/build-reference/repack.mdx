@@ -1,39 +1,39 @@
 ---
 title: Repack app
-description: Repackage an existing APK, IPA, or .app with an updated JavaScript bundle without a full native rebuild.
+description: 使用更新后的 JavaScript bundle 重新打包现有的 APK、IPA 或 .app，而无需进行完整的原生重建。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-[`@expo/repack-app`](https://www.npmjs.com/package/@expo/repack-app) is a CLI tool that repackages an existing Android APK, iOS IPA, or iOS **.app** bundle without performing a full native build. It updates the existing artifact with a new JavaScript (JS) bundle, assets, and app metadata (such as, app name, version, and package name or bundle identifier). Since there is no native compilation involved, a repack is typically much faster than a full native build.
+[`@expo/repack-app`](https://www.npmjs.com/package/@expo/repack-app) 是一个 CLI 工具，可在不执行完整原生构建的情况下，重新打包现有的 Android APK、iOS IPA 或 iOS **.app** bundle。它会使用新的 JavaScript（JS）bundle、资源以及应用元数据（例如应用名称、版本以及包名或 bundle 标识符）来更新现有产物。由于不涉及原生编译，repack 通常比完整的原生构建快得多。
 
-To learn more about how fingerprint and repack work together to accelerate CI, see [Accelerating Continuous Integration with Fingerprint and Repack in EAS Workflows](https://expo.dev/blog/accelerating-continuous-integration-with-fingerprint-repack-in-eas-workflows) blog post.
+要了解 fingerprint 和 repack 如何协同工作以加速 CI，请参阅博客文章 [使用 Fingerprint 和 Repack 在 EAS Workflows 中加速持续集成](https://expo.dev/blog/accelerating-continuous-integration-with-fingerprint-repack-in-eas-workflows)。
 
-## Prerequisites
+## 前提条件
 
-- An existing build artifact produced from your Expo project: an APK for Android, or an IPA or **.app** bundle for iOS.
-- (Optional) Signing credentials if the repacked artifact needs to be installable on a device. For more information, see [Signing](#signing).
+- 一个由你的 Expo 项目生成的现有构建产物：Android 的 APK，或 iOS 的 IPA 或 **.app** bundle。
+- （可选）如果重新打包后的产物需要能够安装到设备上，则需要签名凭据。更多信息请参阅 [签名](#signing)。
 
-## When to use repack
+## 何时使用 repack
 
-Repack assumes the source binary's native side is unchanged since it was built. If you added a native dependency, changed a [config plugin](/config-plugins/introduction/), or upgraded the Expo SDK, a repacked artifact will have JS that expects native APIs that do not exist, and will likely crash at runtime. Use [fingerprint](/versions/latest/sdk/fingerprint/) to compare the source binary's native identity against your current project. If the fingerprints match, then repack is safe. If they differ, do a full native build instead.
+repack 假定源二进制的原生部分自构建后没有变化。如果你添加了原生依赖、修改了 [config plugin](/config-plugins/introduction/)，或者升级了 Expo SDK，那么重新打包后的产物中的 JS 会期望存在那些并不存在的原生 API，并且很可能在运行时崩溃。使用 [fingerprint](/versions/latest/sdk/fingerprint/) 将源二进制的原生身份与当前项目进行比较。如果指纹匹配，那么 repack 就是安全的。如果不同，则应改为进行完整的原生构建。
 
-Repack is not a replacement for [EAS Update](/eas-update/introduction/). EAS Update ships a new JS bundle to apps that are already installed, and users see it on the next launch. Repack produces a new installable artifact. A good rule of thumb is to use repack for internal testing (QA devices, testers, CI smoke tests) and use EAS Update to deliver JS changes to production users.
+repack 不是 [EAS Update](/eas-update/introduction/) 的替代品。EAS Update 会向已经安装的应用推送新的 JS bundle，用户会在下次启动时看到更新。repack 生成的是一个新的、可安装的产物。一个实用的经验法则是：将 repack 用于内部测试（QA 设备、测试人员、CI 冒烟测试），并使用 EAS Update 将 JS 变更交付给生产用户。
 
-## Use cases
+## 使用场景
 
-- **QA cycles**: Distribute one base build to testers, then repack with JS fixes for each iteration without waiting for a native rebuild.
-- **CI optimization**: Build native once per fingerprint, then repack the JS bundle on every subsequent PR to cut wait times from minutes to seconds.
-- **Branch testing**: Test multiple JS branches against the same native binary to isolate JavaScript-only changes.
+- **QA 周期**：向测试人员分发一个基础构建，然后在每次迭代中使用 JS 修复进行 repack，而无需等待原生重新构建。
+- **CI 优化**：每个 fingerprint 只构建一次原生产物，然后在后续每个 PR 上 repack JS bundle，将等待时间从几分钟缩短到几秒钟。
+- **分支测试**：将多个 JS 分支与同一个原生二进制进行测试，以隔离仅 JavaScript 的变更。
 
-## Usage
+## 用法
 
-### Standalone CLI
+### 独立 CLI
 
-You need to run the commands specified for Android and iOS platforms below from your project's root directory. At minimum, `--platform` and `--source-app` are required. The tool runs `npx expo export:embed` under the hood to produce a fresh JS bundle, swaps it into the source binary, and writes the output artifact.
+你需要从项目根目录运行下面针对 Android 和 iOS 平台指定的命令。至少需要提供 `--platform` 和 `--source-app`。该工具在内部运行 `npx expo export:embed` 来生成一个新的 JS bundle，将其替换进源二进制，并写出输出产物。
 
-The output format always matches the `--source-app` input. An APK input produces an APK, an IPA produces an IPA, and a **.app** bundle produces a **.app** bundle.
+输出格式始终与 `--source-app` 输入保持一致。输入 APK 会输出 APK，输入 IPA 会输出 IPA，而 **.app** bundle 会输出 **.app** bundle。
 
 <Tabs>
 
@@ -45,11 +45,11 @@ The output format always matches the `--source-app` input. An APK input produces
 
 <Tab label="iOS">
 
-Using an IPA:
+使用 IPA：
 
 <Terminal cmd={['$ npx @expo/repack-app --platform ios --source-app MyApp.ipa']} />
 
-Using a **.app** bundle (for simulator builds, the iOS device artifacts are always IPAs):
+使用 **.app** bundle（对于模拟器构建，iOS 设备产物始终是 IPA）：
 
 <Terminal cmd={['$ npx @expo/repack-app --platform ios --source-app MyApp.app']} />
 
@@ -59,13 +59,13 @@ Using a **.app** bundle (for simulator builds, the iOS device artifacts are alwa
 
 ### EAS Workflows
 
-EAS Workflows provides a pre-packaged `repack` job type that handles signing and build management automatically. See [EAS Workflows pre-packaged jobs](/eas/workflows/pre-packaged-jobs/#repack) for full syntax, parameters, and examples.
+EAS Workflows 提供了一个预打包的 `repack` 作业类型，可自动处理签名和构建管理。有关完整语法、参数和示例，请参阅 [EAS Workflows 预打包作业](/eas/workflows/pre-packaged-jobs/#repack)。
 
-## Signing
+## 签名
 
-To produce an artifact installable on a physical device, pass signing credentials alongside `--platform` and `--source-app`. Without them, the Android APK is output unsigned and the iOS IPA cannot be installed on a device. iOS **.app** bundles intended for the simulator do not need signing and can skip this step.
+要生成可安装到物理设备上的产物，请在 `--platform` 和 `--source-app` 之外再提供签名凭据。没有这些凭据时，Android APK 会以未签名形式输出，而 iOS IPA 无法安装到设备上。用于模拟器的 iOS **.app** bundle 不需要签名，可以跳过此步骤。
 
-If you do not already have signing credentials locally, see [App credentials](/app-signing/app-credentials/) for how to obtain a keystore (Android) or a signing identity and provisioning profile (iOS).
+如果你本地还没有签名凭据，请参阅 [应用凭据](/app-signing/app-credentials/)，了解如何获取 keystore（Android）或签名身份与 provisioning profile（iOS）。
 
 <Tabs>
 
@@ -77,15 +77,15 @@ If you do not already have signing credentials locally, see [App credentials](/a
   ]}
 />
 
-See the [Android-specific options](#android-specific-options) for keystore password flags and other settings.
+有关 keystore 密码标志和其他设置，请参阅 [Android 特定选项](#android-specific-options)。
 
 </Tab>
 
 <Tab label="iOS">
 
-Pass a signing identity and provisioning profile:
+传递签名身份和 provisioning profile：
 
-> **Note**: iOS repacking supports ad-hoc and development signing only.
+> **注意**：iOS repacking 仅支持 ad-hoc 和 development 签名。
 
 <Terminal
   cmd={[
@@ -93,63 +93,63 @@ Pass a signing identity and provisioning profile:
   ]}
 />
 
-See the [iOS-specific options](#ios-specific-options) for the full list of signing flags.
+有关完整的签名标志列表，请参阅 [iOS 特定选项](#ios-specific-options)。
 
 </Tab>
 
 </Tabs>
 
-## `--js-bundle-only` mode
+## `--js-bundle-only` 模式
 
-By default, repack updates the JS bundle, assets, and app metadata (app name, version, bundle identifier, and the expo-updates manifest). Pass `--js-bundle-only` when you intentionally want to update only the JS bundle and leave all native config untouched.
+默认情况下，repack 会更新 JS bundle、资源以及应用元数据（应用名称、版本、bundle 标识符和 expo-updates manifest）。当你有意只想更新 JS bundle，并保持所有原生配置不变时，请传入 `--js-bundle-only`。
 
 <Terminal
   cmd={['$ npx @expo/repack-app --platform android --source-app MyApp.apk --js-bundle-only']}
 />
 
-## Limitations
+## 限制
 
-Repack is not recommended for production Google Play Store or Apple App Store submissions. Production builds should go through the complete build pipeline for correct symbolication and signing.
+不建议将 repack 用于面向生产的 Google Play Store 或 Apple App Store 提交。生产构建应通过完整的构建流程，以获得正确的符号化和签名。
 
-## CLI reference
+## CLI 参考
 
 ```text
 Usage: @expo/repack-app [options] [project-root]
 ```
 
-### Arguments
+### 参数
 
-| Argument         | Description                                                          |
-| ---------------- | -------------------------------------------------------------------- |
-| `[project-root]` | Path to the project root. Defaults to the current working directory. |
+| 参数             | 描述                                           |
+| ---------------- | ---------------------------------------------- |
+| `[project-root]` | 项目根目录的路径。默认为当前工作目录。         |
 
-### Options
+### 选项
 
-| Option                                    | Description                                                                                                                                              |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-p, --platform <platform>`               | **Required.** Platform to repack the app for (`android` or `ios`).                                                                                       |
-| `--source-app <path>`                     | **Required.** Path to the source app (APK for Android, or IPA or **.app** for iOS). The output format matches the input.                                 |
-| `-o, --output <path>`                     | Path to the output artifact. Defaults to `repacked.apk`, `repacked.ipa`, or `repacked.app` in the project root, matching the source format.              |
-| `-w, --working-directory <path>`          | Path to the working directory for temporary files.                                                                                                       |
-| `--skip-working-dir-cleanup`              | Skip cleaning up the working directory after the repack completes. Useful for debugging.                                                                 |
-| `-v, --verbose`                           | Enable verbose logging.                                                                                                                                  |
-| `--js-bundle-only`                        | Only update the JS bundle and skip native config updates (such as app name, version, and other metadata).                                                |
-| `--embed-bundle-assets`                   | Force running `npx expo export:embed` to generate the JS bundle and assets, even for debug builds where the bundle is normally loaded from a dev server. |
-| `--bundle-assets-sourcemap-output <path>` | Generate a source map at the specified path. Requires `--embed-bundle-assets`.                                                                           |
+| 选项                                      | 描述                                                                                                                                              |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-p, --platform <platform>`               | **必需。** 要为其重新打包应用的平台（`android` 或 `ios`）。                                                                                     |
+| `--source-app <path>`                     | **必需。** 源应用的路径（Android 的 APK，或 iOS 的 IPA 或 **.app**）。输出格式与输入保持一致。                                                   |
+| `-o, --output <path>`                     | 输出产物的路径。默认为项目根目录中的 `repacked.apk`、`repacked.ipa` 或 `repacked.app`，并与源格式匹配。                                         |
+| `-w, --working-directory <path>`          | 临时文件的工作目录路径。                                                                                                                         |
+| `--skip-working-dir-cleanup`              | 在 repack 完成后跳过清理工作目录。适用于调试。                                                                                                   |
+| `-v, --verbose`                           | 启用详细日志。                                                                                                                                   |
+| `--js-bundle-only`                        | 仅更新 JS bundle，跳过原生配置更新（例如应用名称、版本和其他元数据）。                                                                           |
+| `--embed-bundle-assets`                   | 强制运行 `npx expo export:embed` 来生成 JS bundle 和资源，即使在通常从开发服务器加载 bundle 的调试构建中也是如此。                               |
+| `--bundle-assets-sourcemap-output <path>` | 在指定路径生成 source map。需要 `--embed-bundle-assets`。                                                                                         |
 
-### Android-specific options
+### Android 特定选项
 
-| Option                             | Description                                                                                                       |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `--ks <path>`                      | Path to the keystore file.                                                                                        |
-| `--ks-pass <password>`             | Keystore password. Defaults to `pass:android`. Supported formats: `pass:<password>`, `env:<name>`, `file:<file>`. |
-| `--ks-key-alias <alias>`           | Keystore key alias.                                                                                               |
-| `--ks-key-pass <password>`         | Keystore key password. Supported formats: `pass:<password>`, `env:<name>`, `file:<file>`.                         |
-| `--android-build-tools-dir <path>` | Path to the Android SDK build-tools directory.                                                                    |
+| 选项                               | 描述                                                                                                       |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `--ks <path>`                      | keystore 文件的路径。                                                                                      |
+| `--ks-pass <password>`             | keystore 密码。默认为 `pass:android`。支持的格式：`pass:<password>`、`env:<name>`、`file:<file>`。        |
+| `--ks-key-alias <alias>`           | keystore 密钥别名。                                                                                        |
+| `--ks-key-pass <password>`         | keystore 密钥密码。支持的格式：`pass:<password>`、`env:<name>`、`file:<file>`。                          |
+| `--android-build-tools-dir <path>` | Android SDK build-tools 目录的路径。                                                                       |
 
-### iOS-specific options
+### iOS 特定选项
 
-| Option                          | Description                                                                                                                            |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `--signing-identity <identity>` | Code signing identity.                                                                                                                 |
-| `--provisioning-profile <path>` | Path to a provisioning profile. Alternatively, a JSON-encoded value for multi-target apps (for example, when bundling app extensions). |
+| 选项                            | 描述                                                                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `--signing-identity <identity>` | 代码签名身份。                                                                                                                   |
+| `--provisioning-profile <path>` | provisioning profile 的路径。或者，也可以为多目标应用提供一个 JSON 编码的值（例如，在打包 app extension 时）。 |

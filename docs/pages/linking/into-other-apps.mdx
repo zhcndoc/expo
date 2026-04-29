@@ -1,22 +1,22 @@
 ---
-title: Linking into other apps
-sidebar_title: Into other apps
-description: Learn how to handle and open a URL from your app based on the URL scheme of another app.
+title: 链接到其他应用
+sidebar_title: 进入其他应用
+description: 了解如何根据另一个应用的 URL scheme 从你的应用中处理并打开一个 URL。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { SnackInline } from '~/ui/components/Snippet';
 
-Handling linking into other apps from your app is achieved by using the target app's URL. There are two methods you can use to open such URLs from your app:
+通过使用目标应用的 URL，可以实现从你的应用链接到其他应用。你可以使用以下两种方法从你的应用中打开此类 URL：
 
-- Using the [`expo-linking`](/versions/latest/sdk/linking) API
-- Using Expo Router's [`Link` component](/develop/app-navigation/)
+- 使用 [`expo-linking`](/versions/latest/sdk/linking) API
+- 使用 Expo Router 的 [`Link` 组件](/develop/app-navigation/)
 
-## Using expo-linking API
+## 使用 expo-linking API
 
-The [`expo-linking`](/versions/latest/sdk/linking) API provides a universal abstraction over native linking APIs (such as `window.history` on the web) and offers utilities for your app to interact with other installed apps.
+[`expo-linking`](/versions/latest/sdk/linking) API 在原生链接 API 之上提供了通用抽象（例如 Web 上的 `window.history`），并提供了让你的应用与其他已安装应用交互的实用工具。
 
-The example below opens at the [common URL scheme](#common-url-schemes) in the default browser of the operating system using [`Linking.openURL`](/versions/latest/sdk/linking/#linkingopenurlurl):
+下面的示例使用 [`Linking.openURL`](/versions/latest/sdk/linking/#linkingopenurlurl) 在操作系统的默认浏览器中打开一个 [常见 URL scheme](#common-url-schemes)：
 
 ```tsx index.tsx|collapseHeight=240
 import { Button, View, StyleSheet } from 'react-native';
@@ -25,7 +25,7 @@ import * as Linking from 'expo-linking';
 export default function Home() {
   return (
     <View style={styles.container}>
-      <Button title="Open a URL" onPress={() => Linking.openURL('https://expo.dev/')} />
+      <Button title="打开一个 URL" onPress={() => Linking.openURL('https://expo.dev/')} />
     </View>
   );
 }
@@ -39,11 +39,11 @@ const styles = StyleSheet.create({
 });
 ```
 
-## Using Expo Router's `Link` component
+## 使用 Expo Router 的 `Link` 组件
 
-If your project uses [Expo Router](/router/introduction/), use the `Link` component to open a URL. It wraps a `<Text>` component on native platforms and an `<a>` element on the web. It also uses the `expo-linking` API to handle URL schemes.
+如果你的项目使用 [Expo Router](/router/introduction/)，请使用 `Link` 组件来打开 URL。它在原生平台上会包装一个 `<Text>` 组件，在 Web 上会包装一个 `<a>` 元素。它也使用 `expo-linking` API 来处理 URL scheme。
 
-The example below opens a [common URL scheme](#common-url-schemes) (HTTPS) in the default browser of the operating system:
+下面的示例会在操作系统的默认浏览器中打开一个 [常见 URL scheme](#common-url-schemes)（HTTPS）：
 
 ```tsx index.tsx|collapseHeight=240
 import { Button, View, StyleSheet } from 'react-native';
@@ -52,7 +52,7 @@ import { Link } from 'expo-router';
 export default function Home() {
   return (
     <View style={styles.container}>
-      <Link href="https://expo.dev">Open a URL</Link>
+      <Link href="https://expo.dev">打开一个 URL</Link>
     </View>
   );
 }
@@ -66,22 +66,22 @@ const styles = StyleSheet.create({
 });
 ```
 
-## Common URL schemes
+## 常见 URL schemes
 
-There are built-in URL schemes that provide access to core functionality on all platforms. Here is a list of commonly-used schemes:
+内置的 URL scheme 可在所有平台上提供对核心功能的访问。以下是常用 scheme 列表：
 
-| Scheme           | Description           | Example                   |
-| ---------------- | --------------------- | ------------------------- |
-| `https` / `http` | Open web browser app. | `https://expo.dev`        |
-| `mailto`         | Open mail app.        | `mailto:support@expo.dev` |
-| `tel`            | Open phone app.       | `tel:+123456789`          |
-| `sms`            | Open SMS app.         | `sms:+123456789`          |
+| Scheme           | 描述                 | 示例                      |
+| ---------------- | -------------------- | ------------------------- |
+| `https` / `http` | 打开网页浏览器应用。   | `https://expo.dev`        |
+| `mailto`         | 打开邮件应用。         | `mailto:support@expo.dev` |
+| `tel`            | 打开电话应用。         | `tel:+123456789`          |
+| `sms`            | 打开短信应用。         | `sms:+123456789`          |
 
-<Collapsible summary="Specify Android intents to handle common URL schemes">
+<Collapsible summary="指定 Android intent 以处理常见 URL scheme">
 
-For Android 11 (API level 30) and above, you must specify the intents your app will handle in the **AndroidManifest.xml** file. You can accomplish this by [creating a config plugin](/config-plugins/plugins/#creating-a-config-plugin).
+对于 Android 11（API level 30）及以上，你必须在 **AndroidManifest.xml** 文件中指定应用将处理的 intent。你可以通过[创建一个 config plugin](/config-plugins/plugins/#creating-a-config-plugin)来实现这一点。
 
-The following config plugin example enables linking to email and phone apps by defining the intents:
+下面的 config plugin 示例通过定义 intent 来启用对邮件和电话应用的链接：
 
 ```ts my-plugin.ts|collapseHeight=300
 import { withAndroidManifest, ConfigPlugin } from 'expo/config-plugins';
@@ -109,7 +109,7 @@ const withAndroidQueries: ConfigPlugin = config => {
 module.exports = withAndroidQueries;
 ```
 
-After creating the config plugin, [import the custom config plugin](/config-plugins/plugins/#call-the-config-plugin-from-your-dynamic-app-config) under the `plugins` property:
+创建 config plugin 后，在 `plugins` 属性下[导入自定义 config plugin](/config-plugins/plugins/#call-the-config-plugin-from-your-dynamic-app-config)：
 
 ```json app.json
 {
@@ -122,25 +122,25 @@ After creating the config plugin, [import the custom config plugin](/config-plug
 }
 ```
 
-> **info** **Tip**: On Android, you can use `expo-intent-launcher` to open a **specific settings screen** on the device. See [`expo-intent-launcher` API reference](/versions/latest/sdk/intent-launcher/#enums) to view the list of available intents.
+> **info** **提示**：在 Android 上，你可以使用 `expo-intent-launcher` 打开设备上的**特定设置页面**。请参阅 [`expo-intent-launcher` API 参考](/versions/latest/sdk/intent-launcher/#enums)查看可用 intent 列表。
 
 </Collapsible>
 
-## Custom URL schemes
+## 自定义 URL scheme
 
-> If you know the custom scheme for the app you want to open, you can link to it using any of the methods: [Using `expo-linking` API](#using-expo-linking-api) or [Using `Link` from Expo Router](#using-expo-routers-link-component).
+> 如果你知道想要打开的应用的自定义 scheme，你可以使用以下任一方法链接到它：[使用 `expo-linking` API](#using-expo-linking-api) 或 [使用 Expo Router 的 `Link`](#using-expo-routers-link-component)。
 
-Some services provide documentation on how to use their app's custom URL schemes. For example, [Uber's deep linking documentation](https://developer.uber.com/docs/riders/ride-requests/tutorials/deep-links/introduction#standard-deep-links) describes how to link directly to a specific pickup location and destination:
+某些服务会提供如何使用其应用自定义 URL scheme 的文档。例如，[Uber 的深度链接文档](https://developer.uber.com/docs/riders/ride-requests/tutorials/deep-links/introduction#standard-deep-links)描述了如何直接链接到特定的上车地点和目的地：
 
 ```shell
-uber://?client_id=<CLIENT_ID>&action=setPickup&pickup[latitude]=37.775818&pickup[longitude]=-122.418028&pickup[nickname]=UberHQ&pickup[formatted_address]=1455%20Market%20St%2C%20San%20Francisco%2C%20CA%2094103&dropoff[latitude]=37.802374&dropoff[longitude]=-122.405818&dropoff[nickname]=Coit%20Tower&dropoff[formatted_address]=1%20Telegraph%20Hill%20Blvd%2C%20San%20Francisco%2C%20CA%2094133&product_id=a1111c8c-c720-46c3-8534-2fcdd730040d&link_text=View%20team%20roster&partner_deeplink=partner%3A%2F%2Fteam%2F9383
+uber://?client_id=<CLIENT_ID>&action=setPickup&pickup[latitude]=37.775818&pickup[longitude]=-122.418028&pickup[nickname]=UberHQ&pickup[formatted_address]=1455%20Market%20St%2C%20San%20Francisco%2C%20CA%2094103&dropoff[latitude]=37.802374&dropoff[longitude]=-122.405818&dropoff[nickname]=Coit%20Tower&dropoff[formatted_address]=1%20Telegraph%20Hill%20Blvd%2C%20San%20Francisco%2C%20CA%2094133&product_id=a1111c8c-c720-46c3-8534-2fcdd730040d&link_text=查看团队成员名单&partner_deeplink=partner%3A%2F%2Fteam%2F9383
 ```
 
-In the example above, if the user does not have the Uber app installed on their device, your app can direct them to the Google Play Store or Apple App Store to install it. We recommend using the [`react-native-app-link`](https://github.com/FiberJW/react-native-app-link) library to handle these scenarios.
+在上面的示例中，如果用户的设备上没有安装 Uber 应用，你的应用可以引导他们前往 Google Play 商店或 Apple App Store 进行安装。我们建议使用 [`react-native-app-link`](https://github.com/FiberJW/react-native-app-link) 库来处理这些场景。
 
-<Collapsible summary="Specify custom schemes for iOS">
+<Collapsible summary="为 iOS 指定自定义 scheme">
 
-On iOS, using [`Linking.canOpenURL`](/versions/latest/sdk/linking/#linkingcanopenurlurl) to query other apps's linking schemes requires additional configuration in **InfoPlist**. You can use the [`ios.infoPlist`](/versions/latest/config/app/#infoplist) property in your app config to specify a list of schemes your app is allowed to query. For example:
+在 iOS 上，使用 [`Linking.canOpenURL`](/versions/latest/sdk/linking/#linkingcanopenurlurl) 查询其他应用的链接 scheme 需要在 **InfoPlist** 中进行额外配置。你可以在应用配置中使用 [`ios.infoPlist`](/versions/latest/config/app/#infoplist) 属性来指定允许查询的 scheme 列表。例如：
 
 ```json app.json
 {
@@ -154,22 +154,22 @@ On iOS, using [`Linking.canOpenURL`](/versions/latest/sdk/linking/#linkingcanope
 }
 ```
 
-If your don't specify this list, `Linking.canOpenURL` may return `false` even if the device has the target app installed.
+如果你不指定此列表，即使设备已安装目标应用，`Linking.canOpenURL` 也可能返回 `false`。
 
-> **info** **Tip**: To test the configuration described above from an iOS device, [use a development build](/develop/development-builds/introduction/). It cannot be tested with Expo Go.
+> **info** **提示**：要在 iOS 设备上测试上述配置，请[使用开发构建](/develop/development-builds/introduction/)。它不能在 Expo Go 中测试。
 
 </Collapsible>
 
-## Create URLs
+## 创建 URL
 
-You can use [`Linking.createURL`](/versions/latest/sdk/linking/#linkingcreateurlurl) to create a URL that can be used to open or redirect back to your app. This method resolves to the following:
+你可以使用 [`Linking.createURL`](/versions/latest/sdk/linking/#linkingcreateurlurl) 创建可用于打开或重定向回你的应用的 URL。此方法会解析为以下内容：
 
-- **Production and development builds**: `myapp://`, where `myapp` is the [custom scheme](/linking/into-your-app/#add-a-scheme-in-app-config) defined in the app config
-- **Development in Expo Go**: `exp://127.0.0.1:8081`
+- **生产版和开发构建**：`myapp://`，其中 `myapp` 是在应用配置中定义的 [自定义 scheme](/linking/into-your-app/#add-a-scheme-in-app-config)
+- **在 Expo Go 中开发**：`exp://127.0.0.1:8081`
 
-Using `Linking.createURL` helps you avoid hardcoding URLs. You can modify the returned URL by passing optional parameters to this method.
+使用 `Linking.createURL` 有助于避免将 URL 硬编码。你可以通过向此方法传递可选参数来修改返回的 URL。
 
-To pass data to your app, you can append it as a path or query string to the URL. `Linking.createURL` will construct a working URL automatically. For example:
+要向你的应用传递数据，你可以将其作为路径或查询字符串附加到 URL 上。`Linking.createURL` 会自动构建一个可用的 URL。例如：
 
 ```tsx Example
 const redirectUrl = Linking.createURL('path/into/app', {
@@ -177,26 +177,26 @@ const redirectUrl = Linking.createURL('path/into/app', {
 });
 ```
 
-This will resolve into the following, depending on the environment:
+这将根据环境解析为以下内容：
 
-- **Production and development builds**: `myapp://path/into/app?hello=world`
-- **Development in Expo Go**: `exp://127.0.0.1:8081/--/path/into/app?hello=world`
+- **生产版和开发构建**：`myapp://path/into/app?hello=world`
+- **在 Expo Go 中开发**：`exp://127.0.0.1:8081/--/path/into/app?hello=world`
 
-<Collapsible summary="Using Expo Go for testing?">
+<Collapsible summary="使用 Expo Go 进行测试？">
 
-For apps that require a stable URL (for example, auth provider redirects), use a development build with a custom scheme instead of using Expo Go. For more details on how to create and test a custom scheme, see [Linking into your app](/linking/into-your-app/).
+对于需要稳定 URL 的应用（例如，身份验证提供方重定向），请使用带有自定义 scheme 的开发构建，而不是使用 Expo Go。有关如何创建和测试自定义 scheme 的更多详细信息，请参阅[将链接指向你的应用](/linking/into-your-app/)。
 
 </Collapsible>
 
-## In-app browsers
+## 应用内浏览器
 
-The `expo-linking` API allows you to open a URL using the operating system's default web browser app. You can use the [`expo-web-browser`](/versions/latest/sdk/webbrowser) library to open URLs in an in-app browser. For example, an in-app browser is useful for secure [authentication](/guides/authentication).
+`expo-linking` API 允许你使用操作系统的默认网页浏览器应用打开 URL。你可以使用 [`expo-web-browser`](/versions/latest/sdk/webbrowser) 库在应用内浏览器中打开 URL。例如，应用内浏览器对于安全的[身份验证](/guides/authentication)很有用。
 
-<Collapsible summary="Example of opening a URL in an in-app browser">
+<Collapsible summary="在应用内浏览器中打开 URL 的示例">
 
-The example below simulates the behavior of opening a URL in an in-app browser using `expo-web-browser` and the default or preferred web browser using `expo-linking`:
+下面的示例模拟了使用 `expo-web-browser` 在应用内浏览器中打开 URL，以及使用 `expo-linking` 在默认或首选网页浏览器中打开 URL 的行为：
 
-<SnackInline label="WebBrowser compared to Linking" dependencies={["expo-web-browser", "expo-linking"]}>
+<SnackInline label="WebBrowser 与 Linking 的对比" dependencies={["expo-web-browser", "expo-linking"]}>
 
 ```tsx
 import { Button, View, StyleSheet } from 'react-native';
@@ -207,12 +207,12 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <Button
-        title="Open URL with the system browser"
+        title="使用系统浏览器打开 URL"
         onPress={() => Linking.openURL('https://expo.dev')}
         style={styles.button}
       />
       <Button
-        title="Open URL with an in-app browser"
+        title="使用应用内浏览器打开 URL"
         onPress={() => WebBrowser.openBrowserAsync('https://expo.dev')}
         style={styles.button}
       />
@@ -236,26 +236,26 @@ const styles = StyleSheet.create({
 
 </Collapsible>
 
-## Additional link functionality on web
+## Web 上的额外链接功能
 
-To provide additional link functionality on the web, such as right-click to copy or hover to preview, you can use a `Link` component from the [`expo-router`](/router/introduction/) library.
+要在 Web 上提供额外的链接功能，例如右键复制或悬停预览，你可以使用 [`expo-router`](/router/introduction/) 库中的 `Link` 组件。
 
 ```tsx index.tsx
 import { Link } from 'expo-router';
 
 export default function Home() {
-  return <Link href="https://expo.dev">Go to Expo</Link>;
+  return <Link href="https://expo.dev">前往 Expo</Link>;
 }
 ```
 
-Alternatively, you can use the [`@expo/html-elements`](https://www.npmjs.com/package/@expo/html-elements) library to use a universal `<A>` element:
+或者，你可以使用 [`@expo/html-elements`](https://www.npmjs.com/package/@expo/html-elements) 库来使用通用的 `<A>` 元素：
 
 ```tsx index.tsx
 import { A } from '@expo/html-elements';
 
 export default function Home() {
-  return <A href="https://expo.dev">Go to Expo</A>;
+  return <A href="https://expo.dev">前往 Expo</A>;
 }
 ```
 
-The `<A>` component renders an `<a>` on the web and an interactive `<Text>`that uses the `expo-linking` API on native platforms.
+`<A>` 组件在 Web 上会渲染为 `<a>`，在原生平台上会渲染为一个使用 `expo-linking` API 的可交互 `<Text>`。

@@ -11,7 +11,7 @@ export const Logo = ({ subgroup }: Props) => (
   <div className="flex items-center gap-4">
     <LinkBase
       className="flex flex-row items-center gap-2 decoration-0 outline-offset-1 select-none"
-      href="https://expo.dev">
+      href="/">
       <WordMarkLogo
         className={mergeClasses('text-default mt-px h-5 w-[72px]', 'max-md-gutters:hidden')}
         title="Expo"

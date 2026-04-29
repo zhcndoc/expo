@@ -1,6 +1,6 @@
 ---
-title: Server headers
-description: Learn how to set custom HTTP headers for all server route responses in Expo Router.
+title: 服务器标头
+description: 了解如何为 Expo Router 中的所有服务器路由响应设置自定义 HTTP 标头。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -10,15 +10,15 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **important** Server headers are available in SDK 54 and later, and requires [`expo-server`](/versions/latest/sdk/server/) to serve your exported application.
+> **重要** 服务器头信息在 SDK 54 及更高版本中可用，并且需要 [`expo-server`](/versions/latest/sdk/server/) 来提供已导出的应用。
 
-Server headers in Expo Router allow you to set custom HTTP headers for security, caching, cookies, and custom metadata on route responses. Headers **only** apply to HTML and API route responses, and are not applicable to static assets such as images, fonts, or JavaScript bundles.
+Expo Router 中的服务器头信息允许你为路由响应设置自定义 HTTP 头，用于安全、缓存、Cookie 和自定义元数据。头信息**仅**适用于 HTML 和 API 路由响应，不适用于静态资源，例如图片、字体或 JavaScript 包。
 
-## Setup
+## 设置
 
 <Step label="1">
 
-Configure headers in the `expo-router` plugin in your [app config](/versions/latest/config/app/):
+在你的 [app config](/versions/latest/config/app/) 中的 `expo-router` 插件里配置头信息：
 
 ```json app.json
 {
@@ -41,19 +41,19 @@ Configure headers in the `expo-router` plugin in your [app config](/versions/lat
 
 <Step label="2">
 
-Start the development server or export for production:
+启动开发服务器或导出用于生产：
 
 <Terminal
-  cmd={['$ npx expo start', '', '# Or export for production', '$ npx expo export -p web']}
+  cmd={['$ npx expo start', '', '# 或导出用于生产', '$ npx expo export -p web']}
 />
 
-Headers are automatically applied to all HTML and API route responses.
+头信息会自动应用于所有 HTML 和 API 路由响应。
 
 </Step>
 
-## Configuration
+## 配置
 
-Headers are configured as an object where keys are header names and values are either strings or arrays of strings.
+头信息被配置为一个对象，其中键为头名称，值可以是字符串或字符串数组。
 
 ```json app.json
 {
@@ -74,11 +74,11 @@ Headers are configured as an object where keys are header names and values are e
 }
 ```
 
-## Examples
+## 示例
 
-<Collapsible summary="Security headers">
+<Collapsible summary="安全头信息">
 
-Add common security headers to protect your application:
+添加常见的安全头信息来保护你的应用：
 
 ```json app.json
 {
@@ -102,9 +102,9 @@ Add common security headers to protect your application:
 
 </Collapsible>
 
-<Collapsible summary="Cross-Origin headers for SharedArrayBuffer">
+<Collapsible summary="用于 SharedArrayBuffer 的跨域头信息">
 
-Some web APIs like [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) require specific Cross-Origin headers. This is required for features like [`expo-sqlite` on web](/versions/latest/sdk/sqlite/#web-setup).
+某些 Web API，例如 [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)，需要特定的跨域头信息。这对于像 [`expo-sqlite` on web](/versions/latest/sdk/sqlite/#web-setup) 这样的功能是必需的。
 
 ```json app.json
 {
@@ -126,9 +126,9 @@ Some web APIs like [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/doc
 
 </Collapsible>
 
-<Collapsible summary="Cache-Control headers">
+<Collapsible summary="Cache-Control 头信息">
 
-Set caching policies for your responses:
+为你的响应设置缓存策略：
 
 ```json app.json
 {
@@ -149,9 +149,9 @@ Set caching policies for your responses:
 
 </Collapsible>
 
-<Collapsible summary="Custom headers">
+<Collapsible summary="自定义头信息">
 
-Add custom headers with metadata about your app:
+添加包含你的应用元数据的自定义头信息：
 
 ```json app.json
 {
@@ -173,38 +173,38 @@ Add custom headers with metadata about your app:
 
 </Collapsible>
 
-## How it works
+## 工作原理
 
-### Output modes
+### 输出模式
 
-Server headers work with both output modes configured in your app config:
+服务器头信息适用于在你的 app config 中配置的两种输出模式：
 
-- **`static`**: Headers are applied when serving pre-rendered HTML files with [`expo-server`](/versions/latest/sdk/server/)
-- **`server`**: Headers are applied to dynamically rendered responses
+- **`static`**：在使用 [`expo-server`](/versions/latest/sdk/server/) 提供预渲染 HTML 文件时应用头信息
+- **`server`**：将头信息应用于动态渲染的响应
 
-### Header precedence
+### 头信息优先级
 
-Headers defined in the `expo-router` plugin are applied globally but do not override headers set by API routes. If an API route returns a response with a header that is also defined in the plugin configuration, the route-specific header takes precedence.
+在 `expo-router` 插件中定义的头信息会全局应用，但不会覆盖 API 路由设置的头信息。如果某个 API 路由返回的响应中包含一个同时也在插件配置中定义的头信息，则该路由特定的头信息优先。
 
-For example, if you configure `Cache-Control: public, max-age=3600` globally, but an API route that returns real-time data sets `Cache-Control: no-store`, the API route's header takes precedence.
+例如，如果你全局配置了 `Cache-Control: public, max-age=3600`，但某个返回实时数据的 API 路由设置了 `Cache-Control: no-store`，则该 API 路由的头信息优先。
 
-## Known limitations
+## 已知限制
 
-- **Redirects**: Headers do not apply to redirect responses
-- **Static assets**: Headers are only applied to HTML and API route responses, not to static assets like images, fonts, or JavaScript bundles
+- **重定向**：头信息不适用于重定向响应
+- **静态资源**：头信息仅应用于 HTML 和 API 路由响应，不适用于图片、字体或 JavaScript 包等静态资源
 
-## Related
+## 相关内容
 
 <BoxLink
   title="API Routes"
-  description="Learn how to create server endpoints with Expo Router."
+  description="了解如何使用 Expo Router 创建服务器端点。"
   href="/router/web/api-routes"
   Icon={BookOpen02Icon}
 />
 
 <BoxLink
   title="Server middleware"
-  description="Learn how to create middleware that runs for every request to the server."
+  description="了解如何创建在每次请求服务器时运行的中间件。"
   href="/router/web/middleware"
   Icon={BookOpen02Icon}
 />

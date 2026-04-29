@@ -1,8 +1,8 @@
 ---
-title: Metro bundler
-sidebar_title: Bundle with Metro
+title: Metro 打包器
+sidebar_title: 使用 Metro 打包
 maxHeadingDepth: 4
-description: Learn about different Metro bundler configurations that can be customized.
+description: 了解可以自定义的不同 Metro 打包器配置。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -10,17 +10,17 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 
-Expo CLI uses [Metro](https://metrobundler.dev/) during [`npx expo start`](/more/expo-cli/#develop) and [`npx expo export`](/more/expo-cli/#exporting) to bundle your JavaScript code and assets. Metro is built and optimized for React Native and used for large-scale applications such as Facebook and Instagram.
+Expo CLI 在 [`npx expo start`](/more/expo-cli/#develop) 和 [`npx expo export`](/more/expo-cli/#exporting) 期间使用 [Metro](https://metrobundler.dev/) 来打包你的 JavaScript 代码和资源。Metro 是为 React Native 构建并优化的，也被 Facebook 和 Instagram 等大型应用所使用。
 
-## Customizing
+## 自定义
 
-You can customize the Metro bundler by creating a **metro.config.js** file at the root of your project. This file should export a [Metro configuration](https://metrobundler.dev/docs/configuration/) that extends [`expo/metro-config`](https://github.com/expo/expo/tree/main/packages/@expo/metro-config). Import `expo/metro-config` instead of `@expo/metro-config` to ensure version consistency.
+你可以通过在项目根目录创建一个 **metro.config.js** 文件来自定义 Metro 打包器。此文件应导出一个扩展了 [`expo/metro-config`](https://github.com/expo/expo/tree/main/packages/@expo/metro-config) 的 [Metro 配置](https://metrobundler.dev/docs/configuration/)。请导入 `expo/metro-config` 而不是 `@expo/metro-config`，以确保版本一致性。
 
-Run the following command to generate the template file:
+运行以下命令以生成模板文件：
 
 <Terminal cmd={['$ npx expo customize metro.config.js']} />
 
-The **metro.config.js** file looks as below:
+**metro.config.js** 文件如下所示：
 
 ```js metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
@@ -30,20 +30,20 @@ const config = getDefaultConfig(__dirname);
 module.exports = config;
 ```
 
-See [**metro.config.js** documentation](https://metrobundler.dev/docs/configuration/) for more information.
+有关更多信息，请参阅 [**metro.config.js** 文档](https://metrobundler.dev/docs/configuration/)。
 
-## Assets
+## 资源
 
-Metro resolves files as either source code or assets. Source code is JavaScript, TypeScript, JSON, and other files used by your application. [Assets](/develop/user-interface/assets/) are images, fonts, and other files that should not be transformed by Metro. To accommodate large-scale codebases, Metro requires all extensions for both source code and assets to be explicitly defined before starting the bundler. This is done by adding the `resolver.sourceExts` and `resolver.assetExts` options to the Metro configuration. By default, the following extensions are included:
+Metro 会将文件解析为源代码或资源。源代码包括 JavaScript、TypeScript、JSON 以及应用程序使用的其他文件。[资源](/develop/user-interface/assets/) 是图片、字体和其他不应被 Metro 转换的文件。为了适应大规模代码库，Metro 要求在启动打包器之前，必须显式定义源代码和资源的所有扩展名。这可以通过在 Metro 配置中添加 `resolver.sourceExts` 和 `resolver.assetExts` 选项来实现。默认情况下，包含以下扩展名：
 
 - [`resolver.assetExts`](https://github.com/facebook/metro/blob/7028b7f51074f9ceef22258a8643d0f90de2388b/packages/metro-config/src/defaults/defaults.js#L15)
 - [`resolver.sourceExts`](https://github.com/facebook/metro/blob/7028b7f51074f9ceef22258a8643d0f90de2388b/packages/metro-config/src/defaults/defaults.js#L53)
 
-### Adding more file extensions to `assetExts`
+### 向 `assetExts` 添加更多文件扩展名
 
-The most common customization is to include extra asset extensions to Metro.
+最常见的自定义方式是向 Metro 添加额外的资源扩展名。
 
-In the **metro.config.js** file, add the file extension (without a leading `.`) to `resolver.assetExts` array:
+在 **metro.config.js** 文件中，将文件扩展名（不带前导 `.`）添加到 `resolver.assetExts` 数组中：
 
 ```js metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
@@ -51,18 +51,18 @@ const { getDefaultConfig } = require('expo/metro-config');
 const config = getDefaultConfig(__dirname);
 
 config.resolver.assetExts.push(
-  // Adds support for `.db` files for SQLite databases
+  // 为 SQLite 数据库添加对 `.db` 文件的支持
   'db'
 );
 
 module.exports = config;
 ```
 
-## Aliases
+## 别名
 
-Sometimes you want an import to be redirected to another module or file. This is called an alias. Due to the way Metro bundles for multiple platforms simultaneously, we recommend using a custom resolver to handle aliases.
+有时你希望某个导入被重定向到另一个模块或文件。这称为别名。由于 Metro 会同时为多个平台打包，我们建议使用自定义解析器来处理别名。
 
-In the following example, we'll add an alias for `old-module` to `new-module`:
+在以下示例中，我们将为 `old-module` 添加一个指向 `new-module` 的别名：
 
 ```js metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
@@ -75,10 +75,10 @@ const ALIASES = {
 };
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  // Ensure you call the default resolver.
+  // 确保你调用默认解析器。
   return context.resolveRequest(
     context,
-    // Use an alias if one exists.
+    // 如果存在别名则使用别名。
     ALIASES[moduleName] ?? moduleName,
     platform
   );
@@ -87,63 +87,63 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
 module.exports = config;
 ```
 
-If you want to only apply the alias on a certain platform, you can check the `platform` argument:
+如果你只想在某个平台上应用该别名，可以检查 `platform` 参数：
 
 ```js metro.config.js
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (platform === 'web') {
-    // The alias will only be used when bundling for the web.
+    // 该别名只会在打包 web 时使用。
     return context.resolveRequest(context, ALIASES[moduleName] ?? moduleName, platform);
   }
-  // Ensure you call the default resolver.
+  // 确保你调用默认解析器。
   return context.resolveRequest(context, moduleName, platform);
 };
 ```
 
-You will see the changes the next time you restart the dev server. Resolutions are never cached and do not need the `--clear` flag to update. If you use a transform-based system like `babel-plugin-module-resolver`, you will need to clear the cache to see changes applied.
+你将在下次重启开发服务器时看到这些更改。解析结果不会被缓存，因此无需使用 `--clear` 标志来更新。如果你使用像 `babel-plugin-module-resolver` 这样的基于转换的系统，则需要清除缓存才能看到应用的更改。
 
 <BoxLink
-  title="Customizing Metro resolution"
-  description="Learn more about advanced Metro resolving in your project."
+  title="自定义 Metro 解析"
+  description="了解项目中更高级的 Metro 解析方式。"
   href="/versions/latest/config/metro/#custom-resolving"
   Icon={BookOpen02Icon}
 />
 
-## Bundle splitting
+## 包拆分
 
-Expo CLI automatically splits bundles based on async imports (web-only).
+Expo CLI 会根据异步导入（仅限 web）自动拆分包。
 
-This technique can be used with Expo Router to automatically split the bundle based on route files in the **app** directory. It will only load the code required for the current route, and defer loading additional JavaScript until the user navigates to different pages. See [Async Routes](/router/web/async-routes) for more information.
+这种技术可与 Expo Router 一起使用，根据 **app** 目录中的路由文件自动拆分包。它只会加载当前路由所需的代码，并推迟加载额外的 JavaScript，直到用户导航到其他页面。有关更多信息，请参阅 [异步路由](/router/web/async-routes)。
 
 ## Tree shaking
 
 <BoxLink
   title="Tree shaking"
-  description="Learn about how Expo CLI optimizes production JavaScript bundles."
+  description="了解 Expo CLI 如何优化生产环境的 JavaScript 包。"
   href="/guides/tree-shaking/"
   Icon={BookOpen02Icon}
 />
 
-## Minification
+## 压缩
 
 <BoxLink
   title="Minifying JavaScript"
-  description="Learn about customizing the JavaScript minification process in Expo CLI with Metro bundler."
+  description="了解如何在 Expo CLI 中使用 Metro 打包器自定义 JavaScript 压缩过程。"
   href="/guides/minify/"
   Icon={BookOpen02Icon}
 />
 
-## Web support
+## Web 支持
 
-Expo CLI has support for bundling websites using Metro. This is the same bundler used for native apps, and it is designed to be universal across platforms. It is the recommended bundler for web projects.
+Expo CLI 支持使用 Metro 打包网站。这与原生应用使用的是同一个打包器，并且它被设计为跨平台通用。它是 web 项目的推荐打包器。
 
-### Expo webpack versus Expo Metro
+### Expo webpack 与 Expo Metro
 
-If you previously wrote your website using the deprecated `@expo/webpack-adapter`, see the [migration guide](/router/migrate/from-expo-webpack) and [comparison chart](/router/migrate/from-expo-webpack#expo-cli).
+如果你之前使用已弃用的 `@expo/webpack-adapter` 编写网站，请参阅 [迁移指南](/router/migrate/from-expo-webpack) 和 [对比图表](/router/migrate/from-expo-webpack#expo-cli)。
 
-### Adding Web support to Metro
+### 为 Metro 添加 Web 支持
 
-Modify your [app config](/workflow/configuration) to enable the feature using the `expo.web.bundler` field:
+修改你的 [应用配置](/workflow/configuration)，通过 `expo.web.bundler` 字段启用该功能：
 
 ```json app.json
 {
@@ -155,37 +155,37 @@ Modify your [app config](/workflow/configuration) to enable the feature using th
 }
 ```
 
-#### Development
+#### 开发
 
-To start the development server run the following command:
+要启动开发服务器，请运行以下命令：
 
 <Terminal cmd={['$ npx expo start --web']} />
 
-Alternatively, press <kbd>W</kbd> in the Expo CLI terminal UI.
+或者，在 Expo CLI 终端 UI 中按 <kbd>W</kbd>。
 
-#### Static files
+#### 静态文件
 
-Expo's Metro implementation supports hosting static files from the dev server by putting them in the root **public/** directory. It is similar to many other web frameworks.
+Expo 的 Metro 实现支持通过将静态文件放在根目录 **public/** 中，由开发服务器提供托管。这与许多其他 Web 框架类似。
 
-When exporting with `npx expo export`, the contents of the **public** directory are copied into the **dist/** directory. It means your app can expect to fetch these assets relative to the host URL. The most common example of this is the **public/favicon.ico** which is used by websites to render the tab icon.
+使用 `npx expo export` 导出时，**public** 目录中的内容会被复制到 **dist/** 目录中。这意味着你的应用可以按相对于主机 URL 的路径去获取这些资源。最常见的例子是 **public/favicon.ico**，网站会用它来渲染标签页图标。
 
-You can overwrite the default **index.html** in Metro web by creating a **public/index.html** file in your project.
+你可以通过在项目中创建 **public/index.html** 文件来覆盖 Metro web 中默认的 **index.html**。
 
-In the future, this will work universally across platforms with EAS Update hosting. Currently, the feature is web-only based on the static host used for the native app, for example, the legacy Expo service updates do not support this feature.
+未来，这将通过 EAS Update 托管在所有平台上通用。目前，此功能仅限 web，并且基于原生应用所使用的静态主机，例如，旧版 Expo 服务更新不支持此功能。
 
-> **warning** Some paths such as `/assets` are reserved by Metro. Avoid placing files in **public/assets/** or other reserved paths. See [Reserved paths](/router/reference/reserved-paths/) for the complete list.
+> **警告** 某些路径（如 `/assets`）被 Metro 保留。避免将文件放在 **public/assets/** 或其他保留路径中。有关完整列表，请参阅 [保留路径](/router/reference/reserved-paths/)。
 
 ## TypeScript
 
-Expo's Metro config supports the `compilerOptions.paths` and `compilerOptions.baseUrl` fields in the project's **tsconfig.json** (or **jsconfig.json**) file. This enables absolute imports and aliases in the project. See [TypeScript](/guides/typescript) guide for more information.
+Expo 的 Metro 配置支持项目 **tsconfig.json**（或 **jsconfig.json**）文件中的 `compilerOptions.paths` 和 `compilerOptions.baseUrl` 字段。这使项目支持绝对导入和别名。有关更多信息，请参阅 [TypeScript](/guides/typescript) 指南。
 
-This feature requires additional setup in bare projects. See the [Metro setup guide](/versions/latest/config/metro#bare-workflow-setup) for more information.
+此功能在裸项目中需要额外设置。有关更多信息，请参阅 [Metro 设置指南](/versions/latest/config/metro#bare-workflow-setup)。
 
 ## CSS
 
 <BoxLink
-  title="Metro web CSS guide"
-  description="Learn how to use CSS in websites that are bundled with Expo CLI and Metro bundler."
+  title="Metro web CSS 指南"
+  description="了解如何在由 Expo CLI 和 Metro 打包器打包的网站中使用 CSS。"
   href="/versions/latest/config/metro#css"
   Icon={BookOpen02Icon}
 />

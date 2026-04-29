@@ -1,13 +1,13 @@
 ---
-title: Shared routes
-description: Learn how to define shared routes or use arrays to use the same route multiple times with different layouts using Expo Router.
+title: 共享路由
+description: 了解如何定义共享路由，或使用数组以在不同布局中多次使用同一路由，使用 Expo Router。
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 
-To match the same URL with different layouts, use [**groups**](/router/basics/notation/#parentheses) with overlapping child routes. This pattern is very common in native apps. For example, in the X app, a profile can be viewed in every tab (such as home, search, and profile). However, there is only one URL that is required to access this route.
+为匹配相同的 URL 但使用不同的布局，请使用带有重叠子路由的 [**组**](/router/basics/notation/#parentheses)。这种模式在原生应用中非常常见。例如，在 X 应用中，个人资料可以在每个标签页中查看（例如主页、搜索和个人资料）。但是，访问此路由只需要一个 URL。
 
-In the example below, **src/app/\_layout.tsx** is the tab bar and each route has its own header. The **src/app/(profile)/[user].tsx** route is shared between each tab.
+在下面的示例中，**src/app/\_layout.tsx** 是标签栏，并且每个路由都有自己的页眉。**src/app/(profile)/[user].tsx** 路由会在每个标签页之间共享。
 
 <FileTree
   files={[
@@ -21,17 +21,17 @@ In the example below, **src/app/\_layout.tsx** is the tab bar and each route has
   ]}
 />
 
-> When reloading the page, the first alphabetical match is rendered.
+> 当页面重新加载时，会渲染第一个按字母顺序匹配的结果。
 
-Shared routes can be navigated directly by including the group name in the route. For example, `/(search)/baconbrix` navigates to `/baconbrix` in the "search" layout.
+可以通过在路由中包含组名来直接导航到共享路由。例如，`/(search)/baconbrix` 会在“search”布局中导航到 `/baconbrix`。
 
-## Arrays
+## 数组
 
-> Array syntax is an advanced concept that is unique to native app development.
+> 数组语法是一个仅在原生应用开发中才独有的高级概念。
 
-Instead of defining the same route multiple times with different layouts, use the array syntax `(,)` to duplicate the children of a group. For example, `src/app/(home,search)/[user].tsx` &mdash; creates `src/app/(home)/[user].tsx` and `src/app/(search)/[user].tsx` in memory.
+不要使用不同布局多次定义相同路由，而是使用数组语法 `(,)` 来复制一个组的子项。例如，`src/app/(home,search)/[user].tsx` &mdash; 会在内存中创建 `src/app/(home)/[user].tsx` 和 `src/app/(search)/[user].tsx`。
 
-To distinguish between the two routes use a layout's `segment` prop:
+要区分这两个路由，请使用布局的 `segment` 属性：
 
 ```tsx src/app/(home,search)/_layout.tsx
 export default function DynamicLayout({ segment }) {
@@ -43,7 +43,7 @@ export default function DynamicLayout({ segment }) {
 }
 ```
 
-To enable the **array syntax**, specify the [`initialRouteName`](/router/advanced/router-settings/#initialroutename) for each group using `unstable_settings` object in the dynamic layout:
+要启用 **数组语法**，请在动态布局中使用 `unstable_settings` 对象，为每个组指定 [`initialRouteName`](/router/advanced/router-settings/#initialroutename)：
 
 {/* prettier-ignore */}
 ```tsx src/app/(home,search)/_layout.tsx
@@ -59,10 +59,10 @@ export default function DynamicLayout({ segment }) {
 }
 ```
 
-In the above example, the `home` route is the default route for the `home` group and the app. The `search` route is the default route for the `search` group.
+在上面的示例中，`home` 路由是 `home` 组和应用的默认路由。`search` 路由是 `search` 组的默认路由。
 
-## Key points
+## 要点
 
-- You can only provide groups for the current navigator.
-- When using the array syntax, if there are two groups (for example, `(one)/(two)`), only the last group's segment is used for matching the route.
-- If there are at least two group `initialRouteNames`, but a default `initialRouteName` is not provided, the first group's `initialRouteName` is used.
+- 你只能为当前导航器提供分组。
+- 使用数组语法时，如果有两个组（例如，`(one)/(two)`），则只使用最后一个组的 segment 来匹配路由。
+- 如果至少有两个组的 `initialRouteName`，但没有提供默认的 `initialRouteName`，则使用第一个组的 `initialRouteName`。

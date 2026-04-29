@@ -1,129 +1,129 @@
 ---
-title: Manage branches and channels with EAS CLI
-sidebar_title: Manage branches and channels
-description: Learn how to link a branch to a channel and publish updates with EAS CLI.
+title: 使用 EAS CLI 管理分支和渠道
+sidebar_title: 管理分支和渠道
+description: 了解如何将分支链接到渠道，并使用 EAS CLI 发布更新。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-EAS Update works by linking _branches_ to _channels_. Channels are specified at build time and exist inside a build's native code. Branches are an ordered list of updates, similar to a Git branch, which is an ordered list of commits. With EAS Update, we can link any channel to any branch, allowing us to make different updates available to different builds.
+EAS Update 的工作方式是将 _分支_ 关联到 _渠道_。渠道在构建时指定，并存在于构建的原生代码中。分支是一个按顺序排列的更新列表，类似于 Git 分支，而 Git 分支是一个按顺序排列的提交列表。借助 EAS Update，我们可以将任意渠道链接到任意分支，从而让不同的构建获取不同的更新。
 
 <ContentSpotlight
-  alt='Channel "production" linked to branch "version-1.0"'
+  alt='渠道 "production" 链接到分支 "version-1.0"'
   src="/static/images/eas-update/channel-branch-link.png"
 />
 
-The diagram above visualizes this link. Here, we have the builds with the "production" channel linked to the branch named "version-1.0". When we're ready, we can adjust the channel–branch pointer. Imagine we have more fixes tested and ready on a branch named "version-2.0". We could update this link to make the "version-2.0" branch available to all builds with the "production" channel.
+上面的图示展示了这种链接关系。这里，我们有一个构建，其 "production" 渠道链接到了名为 "version-1.0" 的分支。准备好之后，我们可以调整渠道–分支指针。设想我们在名为 "version-2.0" 的分支上还有更多已测试并准备好的修复。我们可以更新这个链接，让 "version-2.0" 分支对所有使用 "production" 渠道的构建可用。
 
 <ContentSpotlight
-  alt='Channel "production" linked to branch "version-2.0"'
+  alt='渠道 "production" 链接到分支 "version-2.0"'
   src="/static/images/eas-update/channel-branch-link-2.png"
 />
 
-## Inspecting the state of your project's updates
+## 检查项目更新的状态
 
-### Inspect channels
+### 查看渠道
 
-View all channels:
+查看所有渠道：
 
 <Terminal cmd={['$ eas channel:list']} />
 
-View a specific channel:
+查看特定渠道：
 
 <Terminal
-  cmd={['$ eas channel:view [channel-name]', '', '# Example', '$ eas channel:view production']}
+  cmd={['$ eas channel:view [channel-name]', '', '# 示例', '$ eas channel:view production']}
   cmdCopy="eas channel:view [channel-name]"
 />
 
-Create a channel:
+创建渠道：
 
 <Terminal
-  cmd={['$ eas channel:create [channel-name]', '', '# Example', '$ eas channel:create production']}
+  cmd={['$ eas channel:create [channel-name]', '', '# 示例', '$ eas channel:create production']}
   cmdCopy="eas channel:create [channel-name]"
 />
 
-### Inspect branches
+### 查看分支
 
-See all branches:
+查看所有分支：
 
 <Terminal cmd={['$ eas branch:list']} />
 
-See a specific branch and a list of its updates:
+查看特定分支及其更新列表：
 
 <Terminal
-  cmd={['$ eas branch:view [branch-name]', '', '', '# Example', '$ eas branch:view version-1.0']}
+  cmd={['$ eas branch:view [branch-name]', '', '', '# 示例', '$ eas branch:view version-1.0']}
   cmdCopy="eas branch:view [branch-name]"
 />
 
-### Inspect updates
+### 查看更新
 
-View a specific update:
+查看特定更新：
 
 <Terminal
   cmd={[
     '$ eas update:view [update-group-id]',
     '',
-    '# Example',
+    '# 示例',
     '$ eas update:view dbfd479f-d981-44ce-8774-f2fbcc386aa',
   ]}
   cmdCopy="eas update:view [update-group-id]"
 />
 
-## Changing the state of your project's updates
+## 更改项目更新的状态
 
-### Create a new update and publish it
+### 创建并发布一个新更新
 
 <Terminal
   cmd={[
     '$ eas update --branch [branch-name] --message "..."',
     '',
-    '# Example',
+    '# 示例',
     '$ eas update --branch version-1.0 --message "Fixes typo"',
   ]}
   cmdCopy="eas update --branch [branch-name] --message"
 />
 
-If you're using Git, we can use the `--auto` flag to auto-fill the branch name and the message. This flag will use the current Git branch as the branch name and the latest Git commit message as the message.
+如果你正在使用 Git，我们可以使用 `--auto` 标志自动填充分支名称和消息。这个标志会使用当前 Git 分支作为分支名称，并使用最新的 Git 提交信息作为消息。
 
 <Terminal cmd={['$ eas update --auto']} />
 
-### Delete a branch
+### 删除分支
 
 <Terminal
-  cmd={['$ eas branch:delete [branch-name]', '', '# Example', '$ eas branch:delete version-1.0']}
+  cmd={['$ eas branch:delete [branch-name]', '', '# 示例', '$ eas branch:delete version-1.0']}
   cmdCopy="eas branch:delete [branch-name]"
 />
 
-### Rename a branch
+### 重命名分支
 
-Renaming branches do not disconnect any channel–branch links. If you had a channel named "production" linked to a branch named "version-1.0", and then you renamed the branch named "version-1.0" to "version-1.0-new", the "production" channel would be linked to the now-renamed branch "version-1.0-new".
+重命名分支不会断开任何渠道–分支链接。如果你有一个名为 "production" 的渠道链接到名为 "version-1.0" 的分支，然后你将名为 "version-1.0" 的分支重命名为 "version-1.0-new"，那么 "production" 渠道将会链接到现在已重命名的分支 "version-1.0-new"。
 
 <Terminal
   cmd={[
     '$ eas branch:rename --from [branch-name] --to [branch-name]',
     '',
-    '# Example',
+    '# 示例',
     '$ eas branch:rename --from version-1.0 --to version-1.0-new',
   ]}
   cmdCopy="eas branch:rename --from [branch-name] --to [branch-name]"
 />
 
-### Republish a previous update within a branch
+### 在分支内重新发布之前的更新
 
-We can make a previous update immediately available to all users. This command takes the previous update and publishes it again so that it becomes the most current update on the branch. As your users re-open their apps, the apps will see the newly re-published update and will download it.
+我们可以让之前的更新立即对所有用户可用。此命令会获取之前的更新并再次发布，使其成为该分支上的最新更新。当用户重新打开应用时，应用会看到重新发布后的更新并下载它。
 
-> Republish is similar to a Git reversion, where the correct commit is placed on top of the Git history.
+> 重新发布类似于 Git 反转，其中正确的提交会被放到 Git 历史记录的顶部。
 
 <Terminal
   cmd={[
     '$ eas update:republish --group [update-group-id]',
     '$ eas update:republish --branch [branch-name]',
     '',
-    '# Example',
+    '# 示例',
     '$ eas update:republish --group dbfd479f-d981-44ce-8774-f2fbcc386aa',
     '$ eas update:republish --branch version-1.0',
   ]}
 />
 
-> If you don't know the exact update group ID, you can use the `--branch` flag. This shows a list of the recent updates on the branch and allows you to select the update group to republish.
+> 如果你不知道确切的更新组 ID，可以使用 `--branch` 标志。这会显示该分支上最近更新的列表，并允许你选择要重新发布的更新组。

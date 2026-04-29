@@ -1,34 +1,34 @@
 ---
-title: React Compiler
-description: Learn how to enable and use the React Compiler in Expo apps.
+title: React 编译器
+description: 了解如何在 Expo 应用中启用和使用 React 编译器。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-The new [React Compiler](https://react.dev/learn/react-compiler) automatically memoizes components and hooks to enable fine-grained reactivity. This can lead to significant performance improvements in your app. You can enable it in your app by following the instructions below.
+新的 [React Compiler](https://react.dev/learn/react-compiler) 会自动对组件和 hooks 进行 memoize，从而实现细粒度响应。这可以显著提升你应用的性能。你可以按照下面的说明在你的应用中启用它。
 
-## Enabling React Compiler
+## 启用 React Compiler
 
 <Step label="1">
 
-[Check how compatible](https://react.dev/learn/react-compiler#checking-compatibility) your project is with the React Compiler.
+[检查兼容性](https://react.dev/learn/react-compiler#checking-compatibility) 以了解你的项目与 React Compiler 的兼容程度。
 
 <Terminal cmd={['$ npx react-compiler-healthcheck@latest']} />
 
-This will generally verify if your app is following the [**rules of React**](https://react.dev/reference/rules).
+这通常会验证你的应用是否遵循了 [**React 规则**](https://react.dev/reference/rules)。
 
 </Step>
 
 <Step label="2">
 
-Install `babel-plugin-react-compiler` and the React compiler runtime in your project:
+在你的项目中安装 `babel-plugin-react-compiler` 和 React compiler runtime：
 
 <Tabs tabs={['SDK 54 and later', 'SDK 53', 'SDK 52 and earlier']}>
   <Tab>
 
-    Babel is automatically configured in Expo SDK 54 and later.
+    Expo SDK 54 及更高版本会自动配置 Babel。
 
   </Tab>
   <Tab>
@@ -45,7 +45,7 @@ Install `babel-plugin-react-compiler` and the React compiler runtime in your pro
 
 <Step label="3">
 
-Toggle on the React Compiler experiment in your app config file:
+在你的应用配置文件中开启 React Compiler 实验特性：
 
 ```json app.json
 {
@@ -59,15 +59,15 @@ Toggle on the React Compiler experiment in your app config file:
 
 </Step>
 
-### Enabling the linter
+### 启用 linter
 
-> In the future, all of the following steps below will be automated by Expo CLI.
+> 未来，以下所有步骤都将由 Expo CLI 自动完成。
 
-Additionally, you should use the ESLint plugin to continuously enforce the rules of React in your project.
+此外，你应该使用 ESLint 插件持续在你的项目中强制执行 React 规则。
 
 <Step label="1">
 
-Run [`npx expo lint`](/guides/using-eslint/#eslint) to ensure ESLint is setup in your app, then install the ESLint plugin for React Compiler:
+运行 [`npx expo lint`](/guides/using-eslint/#eslint) 以确保你的应用已设置好 ESLint，然后安装 React Compiler 的 ESLint 插件：
 
 <Terminal cmd={['$ npx expo install eslint-plugin-react-compiler -- -D']} />
 
@@ -75,7 +75,7 @@ Run [`npx expo lint`](/guides/using-eslint/#eslint) to ensure ESLint is setup in
 
 <Step label="2">
 
-Update your [ESLint configuration](/guides/using-eslint/) to include the plugin:
+更新你的 [ESLint 配置](/guides/using-eslint/) 以包含该插件：
 
 ```js .eslintrc.js
 // https://docs.expo.dev/guides/using-eslint/
@@ -94,16 +94,16 @@ module.exports = defineConfig([
 
 </Step>
 
-## Incremental adoption
+## 渐进式采用
 
-You can incrementally adopt the React Compiler in your app using a few strategies:
+你可以使用以下几种策略在你的应用中逐步采用 React Compiler：
 
 <Step label="1">
 
-Configure the Babel plugin to only run on specific files or components. To do this:
+配置 Babel 插件仅在特定文件或组件上运行。为此：
 
-1. If your project doesn't have [**babel.config.js**](/versions/latest/config/babel/), create one by running `npx expo customize babel.config.js`.
-2. Add the following configuration to **babel.config.js**:
+1. 如果你的项目没有 [**babel.config.js**](/versions/latest/config/babel/)，请运行 `npx expo customize babel.config.js` 创建一个。
+2. 将以下配置添加到 **babel.config.js** 中：
 
 ```js babel.config.js
 module.exports = function (api) {
@@ -116,7 +116,7 @@ module.exports = function (api) {
         {
           'react-compiler': {
             sources: filename => {
-              // Match file names to include in the React Compiler.
+              // 匹配要包含到 React Compiler 中的文件名。
               return filename.includes('src/path/to/dir');
             },
           },
@@ -127,7 +127,7 @@ module.exports = function (api) {
 };
 ```
 
-Whenever you change your **babel.config.js** file, you need to restart the Metro bundler to apply the changes:
+每当你更改 **babel.config.js** 文件时，都需要重启 Metro bundler 以应用这些更改：
 
 <Terminal cmd={['$ npx expo start --clear']} />
 
@@ -135,7 +135,7 @@ Whenever you change your **babel.config.js** file, you need to restart the Metro
 
 <Step label="2">
 
-Use the `"use no memo"` directive to opt out of the React Compiler for specific components or files.
+使用 `"use no memo"` 指令，针对特定组件或文件让 React Compiler 不生效。
 
 ```jsx
 function MyComponent() {
@@ -147,17 +147,17 @@ function MyComponent() {
 
 </Step>
 
-## Usage
+## 使用
 
-> To better understand how React Compiler works, check out the [React Playground](https://playground.react.dev/).
+> 要更好地理解 React Compiler 的工作方式，请查看 [React Playground](https://playground.react.dev/)。
 
-Improvements are primarily automatic. You can remove instances of `useCallback`, `useMemo`, and `React.memo` in favor of the automatic memoization. Class components will not be optimized. Instead, migrate to function components.
+改进主要是自动完成的。你可以移除 `useCallback`、`useMemo` 和 `React.memo` 的使用，改为依赖自动 memoization。类组件不会被优化，应改为迁移到函数组件。
 
-Expo's implementation of the React Compiler will only run on application code (no node modules), and only when bundling for the client (disabled in server rendering).
+Expo 对 React Compiler 的实现只会在应用代码上运行（不包括 node modules），并且只在为客户端打包时运行（服务端渲染中禁用）。
 
-## Configuration
+## 配置
 
-You can pass additional settings to the React Compiler Babel plugin by using the `react-compiler` object in the Babel configuration:
+你可以通过在 Babel 配置中使用 `react-compiler` 对象，向 React Compiler Babel 插件传递额外设置：
 
 ```js babel.config.js
 module.exports = function (api) {
@@ -169,13 +169,13 @@ module.exports = function (api) {
         'babel-preset-expo',
         {
           'react-compiler': {
-            // Passed directly to the React Compiler Babel plugin.
+            // 直接传递给 React Compiler Babel 插件。
             compilationMode: 'all',
             panicThreshold: 'all_errors',
           },
           web: {
             'react-compiler': {
-              // Web-only settings...
+              // 仅限 Web 的设置...
             },
           },
         },

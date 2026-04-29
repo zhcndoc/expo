@@ -1,7 +1,7 @@
 ---
-title: How to add Expo to a native app using the integrated approach
-sidebar_title: Integrated approach
-description: A guide for adding Expo and React Native to existing native (brownfield) apps using the integrated approach.
+title: 如何使用集成方式将 Expo 添加到原生应用中
+sidebar_title: 集成方式
+description: 一份使用集成方式将 Expo 和 React Native 添加到现有原生（brownfield）应用中的指南。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
@@ -11,36 +11,33 @@ import { Step } from '~/ui/components/Step';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
 
-React Native and Expo are flexible and can be adopted incrementally, one screen (or even one view) at a time. You might even find that using Expo in this way is the best fit for your particular application, or you may end up slowly adopting it across more surfaces in your app. Either way, this flexibility allows enables developers to adopt modern, cross-platform tools in their native apps immediately instead of risking a complete rewrite.
+React Native 和 Expo 非常灵活，可以逐步采用，一次一个屏幕（甚至一次一个视图）。你甚至可能会发现，以这种方式使用 Expo 最适合你的特定应用；或者，你也可能会在应用的更多界面中逐渐采用它。无论哪种方式，这种灵活性都使开发者能够立即在原生应用中采用现代的跨平台工具，而不是冒着完全重写的风险。
 
-This guide will walk you through the steps to add a React Native view into an existing native app. The approach covered here is what we call the "integrated" approach, because React Native and Expo are integrated in the same way that you would any other library.
+本指南将带你了解如何将 React Native 视图添加到现有的原生应用中。这里介绍的方法是我们所说的“集成”方式，因为 React Native 和 Expo 会像集成其他任意库一样被集成进来。
 
-> **info** Another popular technique is what we call the "isolated" approach, where your Expo app is packaged as a library and treated as a black box by the main existing application. See the [isolated approach guide](/brownfield/isolated-approach/) for details.
+> **info** 另一种流行的技术是我们所说的“隔离”方式，在这种方式下，你的 Expo 应用会被打包成一个库，并被主应用当作黑盒处理。详情请参阅 [isolated approach guide](/brownfield/isolated-approach/)。
 
-## Prerequisites
+## 前置条件
 
-To integrate React Native into your existing application, you'll need to set up a JavaScript development environment. This includes installing Node.js to run Expo CLI and Yarn to manage the project's JavaScript dependencies.
+要将 React Native 集成到你现有的应用中，你需要先搭建一个 JavaScript 开发环境。这包括安装用于运行 Expo CLI 的 Node.js，以及用于管理项目 JavaScript 依赖的 Yarn。
 
-- [Node.js (LTS)](https://nodejs.org/en/): The runtime to execute JavaScript code and Expo CLI.
-- [Yarn](https://yarnpkg.com/): A package manager for installing and managing JavaScript dependencies.
-- <PlatformTag platform="ios" /> [CocoaPods](https://cocoapods.org/): one of the dependency
-  management system available for iOS. CocoaPods is a Ruby
-  [gem](https://en.wikipedia.org/wiki/RubyGems). You can install CocoaPods using the version of Ruby
-  that ships with the latest version of macOS.
+- [Node.js (LTS)](https://nodejs.org/en/): 用于执行 JavaScript 代码和 Expo CLI 的运行时。
+- [Yarn](https://yarnpkg.com/): 用于安装和管理 JavaScript 依赖的包管理器。
+- <PlatformTag platform="ios" /> [CocoaPods](https://cocoapods.org/): iOS 可用的依赖管理系统之一。CocoaPods 是一个 Ruby [gem](https://en.wikipedia.org/wiki/RubyGems)。你可以使用最新版 macOS 自带的 Ruby 来安装 CocoaPods。
 
-Learn more from the [Set up environment guide](/get-started/set-up-your-environment/).
+可从 [设置环境指南](/get-started/set-up-your-environment/) 了解更多。
 
-## Create an Expo project
+## 创建 Expo 项目
 
-First, create an Expo project inside your existing native project's root directory.
+首先，在现有原生项目的根目录内创建一个 Expo 项目。
 
 <Terminal cmd={['$ npx create-expo-app@latest my-project --template default@sdk-55']} />
 
-This command creates a new directory named **my-project** that contains your new Expo project. While you can name the project anything, this guide uses **my-project** for consistency. The new project includes an example TypeScript application to help you get started.
+此命令会创建一个名为 **my-project** 的新目录，其中包含你的新 Expo 项目。虽然你可以将项目命名为任何名称，但为了保持一致，本指南使用 **my-project**。新项目包含一个示例 TypeScript 应用，帮助你快速上手。
 
-## Set up your project structure
+## 设置项目结构
 
-A standard React Native project places native code in **android** and **ios** directories. The specifics of how to do this depend on your project, but it could be as simple as creating the directories and moving your projects there. For example:
+标准的 React Native 项目会将原生代码放在 **android** 和 **ios** 目录中。具体如何操作取决于你的项目，但最简单的情况可能只是创建这些目录并将你的项目移过去。例如：
 
 <Tabs>
 
@@ -58,13 +55,13 @@ A standard React Native project places native code in **android** and **ios** di
 </Tab>
 </Tabs>
 
-<Collapsible summary="Can't move your native projects to android and ios directories?">
+<Collapsible summary="无法将你的原生项目移动到 android 和 ios 目录？">
 
-### Set up a monorepo
+### 设置 monorepo
 
-Monorepos, or "monolithic repositories", are single repositories containing multiple apps or packages. [Learn more](/guides/monorepos/).
+Monorepo，或“单体仓库”，是包含多个应用或包的单一仓库。[了解更多](/guides/monorepos/)。
 
-Setting up a monorepo will ensure that Android and iOS scripts will be able to invoke commands from Node libraries even with a custom folder structure. To set up a Yarn monorepo, create a **package.json** file at the root of your project and add the following content:
+设置 monorepo 将确保即使在自定义文件夹结构下，Android 和 iOS 脚本也能够调用 Node 库中的命令。要设置 Yarn monorepo，请在项目根目录创建一个 **package.json** 文件，并添加以下内容：
 
 ```json package.json
 {
@@ -74,30 +71,30 @@ Setting up a monorepo will ensure that Android and iOS scripts will be able to i
 }
 ```
 
-Then run `yarn install` to install the dependencies. This will ensure **node_modules** are installed at the root of your project, and that native scripts can interact with React Native code. Make sure to change `["my-project"]` to the name of the Expo project you created in the previous step.
+然后运行 `yarn install` 来安装依赖。这将确保 **node_modules** 安装在项目根目录，并且原生脚本可以与 React Native 代码交互。请务必将 `["my-project"]` 改为你在上一步创建的 Expo 项目名称。
 
-> **info** Opting for a monorepo requires you to configure a custom project root, in Gradle/CocoaPods. This will be covered in the next sections.
+> **info** 采用 monorepo 方式需要你在 Gradle/CocoaPods 中配置自定义项目根目录。下一节会对此进行说明。
 
 </Collapsible>
 
-## Configuring your native project
+## 配置你的原生项目
 
-<Tabs tabs={["Configuring Android", "Configuring iOS"]}>
+<Tabs tabs={["配置 Android", "配置 iOS"]}>
 <Tab>
 
-To integrate React Native on Android, you need to configure the native project by modifying the following files:
+要在 Android 上集成 React Native，你需要通过修改以下文件来配置原生项目：
 
-- **Gradle files**: **settings.gradle**, top-level **build.gradle**, **app/build.gradle**, and **gradle.properties** to add the React Native Gradle Plugin (RNGP) and other properties.
-- **AndroidManifest.xml**: To add necessary permissions. ([Learn more](#configuring-your-manifest))
-- **MainActivity**: To load your React Native application.
+- **Gradle 文件**：**settings.gradle**、顶层 **build.gradle**、**app/build.gradle** 和 **gradle.properties**，用于添加 React Native Gradle Plugin（RNGP）及其他属性。
+- **AndroidManifest.xml**：用于添加必要权限。（[了解更多](#configuring-your-manifest)）
+- **MainActivity**：用于加载你的 React Native 应用。
 
-### Configuring Gradle
+### 配置 Gradle
 
 <Step label="1">
-Start by editing your **settings.gradle** file and add the following lines (Use the [bare minimum template](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/settings.gradle) as a reference):
+首先编辑你的 **settings.gradle** 文件，并添加以下行（可参考 [最小模板](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/settings.gradle)）：
 
 ```groovy settings.gradle
-// Configures the React Native Gradle Settings plugin used for autolinking
+// 为自动链接配置 React Native Gradle Settings 插件
 pluginManagement {
   def reactNativeGradlePlugin = new File(
     providers.exec {
@@ -132,13 +129,13 @@ expoAutolinking.useExpoModules()
 expoAutolinking.useExpoVersionCatalog()
 
 includeBuild(expoAutolinking.reactNativeGradlePlugin)
-// Include your existing Gradle modules here.
+// 在这里包含你现有的 Gradle 模块。
 // include(":app")
 ```
 
-<Collapsible summary="Using a custom folder structure?">
+<Collapsible summary="使用自定义文件夹结构？">
 
-If you're using a custom folder structure, you need to explicitly set your project root in **settings.gradle** for autolinking to work. Modify the following lines:
+如果你使用的是自定义文件夹结构，那么为了让自动链接正常工作，你需要在 **settings.gradle** 中显式设置项目根目录。请修改以下行：
 
 <DiffBlock source="/static/diffs/brownfield/android/settings-gradle-custom-root.diff" />
 
@@ -147,22 +144,22 @@ If you're using a custom folder structure, you need to explicitly set your proje
 </Step>
 
 <Step label="2">
-Then open your top-level **build.gradle** and include this line (as suggested from the [bare minimum template](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/build.gradle)):
+然后打开顶层 **build.gradle** 并包含这一行（如 [最小模板](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/build.gradle) 所示）：
 
 <DiffBlock source="/static/diffs/brownfield/android/build-gradle.diff" />
 
-This makes sure the React Native Gradle and the Expo plugins are available and applied inside your project.
+这可以确保 React Native Gradle 和 Expo 插件在你的项目中可用并被应用。
 
 </Step>
 
 <Step label="3">
-Add the following lines inside your app's **build.gradle** file (usually **app/build.gradle** &mdash; you can use the [bare minimum template file as reference](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/build.gradle)):
+在你应用的 **build.gradle** 文件中添加以下几行（通常是 **app/build.gradle** —— 你可以参考 [最小模板文件](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/build.gradle)）：
 
 <DiffBlock source="/static/diffs/brownfield/android/app-build-gradle.diff" />
 
-<Collapsible summary="Using a custom folder structure?">
+<Collapsible summary="使用自定义文件夹结构？">
 
-If you're using a custom folder structure, you need to adjust the `projectRoot` value to point to root of your Expo project in **app/build.gradle**. Modify the following lines:
+如果你使用的是自定义文件夹结构，那么你需要在 **app/build.gradle** 中调整 `projectRoot` 的值，使其指向你的 Expo 项目根目录。请修改以下行：
 
 <DiffBlock source="/static/diffs/brownfield/android/app-build-gradle-custom-root.diff" />
 
@@ -171,7 +168,7 @@ If you're using a custom folder structure, you need to adjust the `projectRoot` 
 </Step>
 
 <Step label="4">
-Finally, open your app's **gradle.properties** file and add the following lines (use the [bare minimum template file as reference](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/gradle.properties)):
+最后，打开你应用的 **gradle.properties** 文件，并添加以下几行（可参考 [最小模板文件](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/gradle.properties)）：
 
 ```properties gradle.properties
 reactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64
@@ -181,37 +178,37 @@ hermesEnabled=true
 
 </Step>
 
-### Configuring your manifest
+### 配置你的 manifest
 
 <Step label="1">
-First, make sure you have the `INTERNET` permission in your **AndroidManifest.xml**:
+首先，确保你的 **AndroidManifest.xml** 中包含 `INTERNET` 权限：
 
 <DiffBlock source="/static/diffs/brownfield/android/android-manifest-internet-permission.diff" />
 
 </Step>
 
 <Step label="2">
-Now in your **debug** **AndroidManifest.xml**, enable [cleartext traffic](https://developer.android.com/training/articles/security-config#CleartextTrafficPermitted):
+现在，在你的 **debug** **AndroidManifest.xml** 中启用 [明文流量](https://developer.android.com/training/articles/security-config#CleartextTrafficPermitted)：
 
 <DiffBlock source="/static/diffs/brownfield/android/android-manifest-cleartext-traffic.diff" />
 
-This is necessary for your app to communicate with your local [Metro bundler](https://metrobundler.dev/) via HTTP. You can use the **AndroidManifest.xml** files from the bare minimum template as a reference: [main](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/main/AndroidManifest.xml) and [debug](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/debug/AndroidManifest.xml)
+这是让你的应用通过 HTTP 与本地 [Metro bundler](https://metrobundler.dev/) 通信所必需的。你可以将最小模板中的 **AndroidManifest.xml** 文件作为参考：[main](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/main/AndroidManifest.xml) 和 [debug](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/debug/AndroidManifest.xml)
 
 </Step>
 
-### Integrating with your code
+### 将其与你的代码集成
 
-Now, you need to add some native code to start the React Native runtime and tell it to render your React components.
+现在，你需要添加一些原生代码来启动 React Native 运行时，并告诉它渲染你的 React 组件。
 
-#### Updating your `Application` class
+#### 更新你的 `Application` 类
 
-Start by updating your `Application` class to initialize React Native. You can use **MainApplication.kt** from the [bare minimum template](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/main/java/com/helloworld/MainApplication.kt) as a reference:
+先更新你的 **Application** 类以初始化 React Native。你可以参考 [最小模板](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/main/java/com/helloworld/MainApplication.kt) 中的 **MainApplication.kt**：
 
 <DiffBlock source="/static/diffs/brownfield/android/main-application.diff" />
 
-#### Creating a `ReactActivity`
+#### 创建一个 `ReactActivity`
 
-Create a new `Activity` that will extend `ReactActivity` and host the React Native code. This activity will be responsible for starting the React Native runtime and rendering the React component. You can use the [**MainActivity.kt** from bare minimum template file](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/main/java/com/helloworld/MainActivity.kt) as a reference:
+创建一个新的 `Activity`，让它继承 `ReactActivity` 并承载 React Native 代码。这个 activity 将负责启动 React Native 运行时并渲染 React 组件。你可以参考 [最小模板中的 **MainActivity.kt**](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/main/java/com/helloworld/MainActivity.kt)：
 
 ```kotlin MyReactActivity.kt
 // package <your-package-here>
@@ -228,14 +225,14 @@ import expo.modules.ReactActivityDelegateWrapper
 class MyReactActivity : ReactActivity() {
 
   /**
-   * Returns the name of the main component registered from JavaScript. This is used to schedule
-   * rendering of the component.
+   * 返回从 JavaScript 注册的主组件名称。该名称用于安排
+   * 组件的渲染。
    */
   override fun getMainComponentName(): String = "main"
 
   /**
-   * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
-   * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
+   * 返回 [ReactActivityDelegate] 的实例。我们使用 [DefaultReactActivityDelegate]
+   *，它允许你通过一个布尔标志 [fabricEnabled] 启用新架构
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate {
     return ReactActivityDelegateWrapper(
@@ -250,24 +247,24 @@ class MyReactActivity : ReactActivity() {
 }
 ```
 
-Add the new Activity to your **AndroidManifest.xml** file, make sure to set the theme of `MyReactActivity` to `Theme.AppCompat.Light.NoActionBar` (or to any non-ActionBar theme) to avoid your application rendering an `ActionBar` on top of the React Native screen:
+将这个新的 Activity 添加到你的 **AndroidManifest.xml** 文件中，并确保将 `MyReactActivity` 的主题设置为 `Theme.AppCompat.Light.NoActionBar`（或任何不带 ActionBar 的主题），以避免你的应用在 React Native 屏幕上方渲染一个 `ActionBar`：
 
 <DiffBlock source="/static/diffs/brownfield/android/android-manifest-add-activity.diff" />
 
-Now your activity is ready to run some JavaScript code.
+现在你的 activity 已准备好运行一些 JavaScript 代码。
 
 </Tab>
 <Tab>
 
-To integrate React Native on iOS, you need to configure the native iOS project by modifying the following files:
+要在 iOS 上集成 React Native，你需要通过修改以下文件来配置原生 iOS 项目：
 
-- **Podfile**: To add the React Native dependencies.
-- **Xcode project**: To add a build phase for bundling JavaScript code.
-- **Info.plist**: To configure app settings required by React Native.
+- **Podfile**：用于添加 React Native 依赖项。
+- **Xcode 项目**：用于添加打包 JavaScript 代码的构建阶段。
+- **Info.plist**：用于配置 React Native 所需的应用设置。
 
-### Configuring CocoaPods
+### 配置 CocoaPods
 
-If your project does not have a **Podfile**, you can create one using the [bare minimum template](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/ios/Podfile) as a reference:
+如果你的项目没有 **Podfile**，你可以参考 [最小模板](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/ios/Podfile) 创建一个：
 
 ```rb Podfile
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
@@ -299,7 +296,7 @@ target 'HelloWorld' do
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => true,
-    # An absolute path to your application root.
+    # 应用根目录的绝对路径。
     :app_path => "#{Pod::Config.instance.installation_root}/..",
     :privacy_file_aggregation_enabled => true,
   )
@@ -314,34 +311,30 @@ target 'HelloWorld' do
 end
 ```
 
-If your project already has a **Podfile**, you'll need to manually merge the React Native dependencies into your existing **Podfile**.
+如果你的项目已经有 **Podfile**，你需要手动将 React Native 依赖合并到现有的 **Podfile** 中。
 
-<Collapsible summary="Using a custom folder structure?">
+<Collapsible summary="使用自定义文件夹结构？">
 
-If you're using a custom folder structure, you need to explicitly set your project root in **Podfile** for autolinking to work. Modify the following lines in your **Podfile**:
+如果你使用的是自定义文件夹结构，那么为了让自动链接正常工作，你需要在 **Podfile** 中显式设置项目根目录。请修改 **Podfile** 中以下行：
 
 <DiffBlock source="/static/diffs/brownfield/ios/podfile-custom-root.diff" />
 
 </Collapsible>
 
-Now, run the following command:
+现在，运行以下命令：
 
 <Terminal cmd={['$ pod install']} />
 
-Running the `pod` command will integrate the React Native code into your app, allowing your iOS files to import the React Native headers.
+运行 `pod` 命令会将 React Native 代码集成到你的应用中，使你的 iOS 文件能够导入 React Native 头文件。
 
-### Configuring your Xcode project
+### 配置你的 Xcode 项目
 
 <Step label="1">
-After the `pod install` command, CocoaPods will create an Xcode workspace **\{Project\}.xcworkspace**, you will need to open the **xcworkspace** project than the traditional **xcodeproj** project. Alternatively, you can use the following command to open the project:
+在执行 `pod install` 命令后，CocoaPods 会创建一个 Xcode 工作区 **\{Project\}.xcworkspace**，你需要打开 **xcworkspace** 项目，而不是传统的 **xcodeproj** 项目。或者，你也可以使用以下命令打开项目：
 
 <Terminal cmd={['$ xed my-project/ios']} />
 
-In the Xcode project navigator, select your project and then select
-your app target under `TARGETS`. In **Build Settings**, using the search bar, search for
-`ENABLE_USER_SCRIPT_SANDBOXING`. If it is not already, set its value to `No`. This is needed to
-properly switch between the Debug and Release versions of the [Hermes
-engine](https://github.com/facebook/hermes/blob/main/README.md) that is shipped with React Native.
+在 Xcode 项目导航器中，选择你的项目，然后在 `TARGETS` 下选择你的应用 target。在 **Build Settings** 中，使用搜索栏查找 `ENABLE_USER_SCRIPT_SANDBOXING`。如果它尚未设置，则将其值设为 `No`。这对于在 React Native 随附的 [Hermes 引擎](https://github.com/facebook/hermes/blob/main/README.md) 的 Debug 和 Release 版本之间正确切换是必需的。
 
   <ContentSpotlight
     alt="Xcode Build Settings"
@@ -351,7 +344,7 @@ engine](https://github.com/facebook/hermes/blob/main/README.md) that is shipped 
 
 <Step label="2">
 
-Now switch to the **Build Phases** tab and add a new `Run Script Phase` before the `[CP] Embed Pods Frameworks` phase. This script will bundle your JavaScript code and assets into the iOS application.
+现在切换到 **Build Phases** 选项卡，并在 `[CP] Embed Pods Frameworks` 阶段之前添加一个新的 `Run Script Phase`。这个脚本将把你的 JavaScript 代码和资源打包到 iOS 应用中。
 
 <ContentSpotlight alt="Xcode Build Phases" src="/static/images/brownfield/run-script-phase.png" />
 
@@ -363,33 +356,33 @@ if [[ -f "$PODS_ROOT/../.xcode.env.local" ]]; then
   source "$PODS_ROOT/../.xcode.env.local"
 fi
 
-# The project root by default is one level up from the ios directory
+# 项目根目录默认是 ios 目录的上一级
 export PROJECT_ROOT="$PROJECT_DIR"/..
 
 if [[ "$CONFIGURATION" = *Debug* ]]; then
   export SKIP_BUNDLING=1
 fi
 if [[ -z "$ENTRY_FILE" ]]; then
-  # Set the entry JS file using the bundler's entry resolution.
+  # 使用 bundler 的入口解析来设置入口 JS 文件。
   export ENTRY_FILE="$("$NODE_BINARY" -e "require('expo/scripts/resolveAppEntry')" "$PROJECT_ROOT" ios absolute | tail -n 1)"
 fi
 
 if [[ -z "$CLI_PATH" ]]; then
-  # Use Expo CLI
+  # 使用 Expo CLI
   export CLI_PATH="$("$NODE_BINARY" --print "require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })")"
 fi
 if [[ -z "$BUNDLE_COMMAND" ]]; then
-  # Default Expo CLI command for bundling
+  # 打包时默认使用的 Expo CLI 命令
   export BUNDLE_COMMAND="export:embed"
 fi
 
-# Source .xcode.env.updates if it exists to allow
-# SKIP_BUNDLING to be unset if needed
+# 如果 .xcode.env.updates 存在则加载它，以便在需要时
+# 取消设置 SKIP_BUNDLING
 if [[ -f "$PODS_ROOT/../.xcode.env.updates" ]]; then
   source "$PODS_ROOT/../.xcode.env.updates"
 fi
-# Source local changes to allow overrides
-# if needed
+# 加载本地更改，以便在需要时
+# 覆盖默认值
 if [[ -f "$PODS_ROOT/../.xcode.env.local" ]]; then
   source "$PODS_ROOT/../.xcode.env.local"
 fi
@@ -397,24 +390,24 @@ fi
 `"$NODE_BINARY" --print "require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'"`
 ```
 
-Next time, when you build your app for Release, the React Native code will be bundled using Expo CLI and embedded into the app.
+下次当你为 Release 构建应用时，React Native 代码将使用 Expo CLI 进行打包，并嵌入到应用中。
 
 </Step>
 
 <Step label="3">
-Edit your **Info.plist** file and make sure to add the `UIViewControllerBasedStatusBarAppearance` key with a value of `NO`, this is needed to ensure that the status bar is properly managed by React Native.
+编辑你的 **Info.plist** 文件，并确保添加 `UIViewControllerBasedStatusBarAppearance` 键，其值为 `NO`，这对于确保状态栏由 React Native 正确管理是必需的。
 
 <DiffBlock source="/static/diffs/brownfield/ios/info-plist.diff" />
 
 </Step>
 
-### Integrating with your code
+### 将其与你的代码集成
 
-Now, you need to add some native code to start the React Native runtime and tell it to render your React components.
+现在，你需要添加一些原生代码来启动 React Native 运行时，并告诉它渲染你的 React 组件。
 
-#### Create the ReactViewController
+#### 创建 ReactViewController
 
-Create a new file called **ReactViewController.swift**, this will be the `ViewController` that loads a React Native view as its `view`.
+创建一个名为 **ReactViewController.swift** 的新文件，这将作为加载 React Native 视图并将其作为 `view` 的 `ViewController`。
 
 ```swift ReactViewController.swift
 import UIKit
@@ -452,9 +445,9 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
 }
 ```
 
-#### Presenting a React Native view in a rootViewController
+#### 在 rootViewController 中展示 React Native 视图
 
-Finally, you can present your React Native view. To do so, you need a new View Controller that can host a view in which we can load the JS content. You already have the initial `ViewController`, and you can make it present the `ReactViewController`. There are several ways to do so, depending on your app. For this example, let's assume that you have a button that presents React Native modally.
+最后，你可以展示你的 React Native 视图。为此，你需要一个新的 View Controller 来承载一个可加载 JS 内容的视图。你已经有了初始的 `ViewController`，并且可以让它展示 `ReactViewController`。实现方式有多种，取决于你的应用。这个例子中，我们假设你有一个按钮会以模态方式展示 React Native。
 
 ```swift ViewController.swift
 import UIKit
@@ -465,7 +458,7 @@ class ViewController: UIViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Do any additional setup after loading the view.
+    // 在加载视图后执行任何额外的设置。
     self.view.backgroundColor = .systemBackground
 
     let button = UIButton()
@@ -494,10 +487,10 @@ class ViewController: UIViewController {
 
 </Tab>
 </Tabs>
-## Test your integration
+## 测试你的集成
 
-You have completed all the basic steps to integrate React Native with your application. Now run the following command in the React Native directory to start the [Metro bundler](https://metrobundler.dev/)
+你已经完成了将 React Native 与你的应用集成所需的所有基本步骤。现在，在 React Native 目录中运行以下命令以启动 [Metro bundler](https://metrobundler.dev/)
 
 <Terminal cmd={['$ yarn start']} />
 
-Metro builds your TypeScript application code into a bundle, serves it through its HTTP server, and shares the bundle from `localhost` on your developer environment to a simulator or device, allowing for [hot reloading](https://reactnative.dev/blog/2016/03/24/introducing-hot-reloading). Now you can build and run your app as normal. Once you reach your React-powered Activity inside the app, it should load the JavaScript code from the development server.
+Metro 会将你的 TypeScript 应用代码构建成一个 bundle，通过其 HTTP 服务器提供该 bundle，并将开发环境中 `localhost` 上的 bundle 共享到模拟器或设备，从而支持 [热重载](https://reactnative.dev/blog/2016/03/24/introducing-hot-reloading)。现在你可以像往常一样构建并运行你的应用。一旦你在应用中进入由 React 驱动的 Activity，它就应该从开发服务器加载 JavaScript 代码。

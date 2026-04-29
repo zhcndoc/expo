@@ -1,7 +1,7 @@
 ---
-title: Configure EAS Build with eas.json
-sidebar_title: Configure with eas.json
-description: Learn how a project using EAS services is configured with eas.json.
+title: 使用 eas.json 配置 EAS Build
+sidebar_title: 使用 eas.json 配置
+description: 了解如何使用 eas.json 配置使用 EAS 服务的项目。
 ---
 
 import { BuildIcon } from '@expo/styleguide-icons/custom/BuildIcon';
@@ -10,9 +10,9 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-**eas.json** is the configuration file for EAS CLI and services. It is generated when the [`eas build:configure` command](/build/setup/#configure-the-project) runs for the first time in your project and is located next to **package.json** at the root of your project. Configuration for EAS Build all belongs under the `build` key.
+**eas.json** 是 EAS CLI 和服务的配置文件。它会在你的项目中首次运行 [`eas build:configure` 命令](/build/setup/#configure-the-project) 时生成，并位于项目根目录下，紧挨着 **package.json**。EAS Build 的所有配置都归属于 `build` 键。
 
-The default configuration for **eas.json** generated in a new project is shown below:
+新项目中生成的 **eas.json** 默认配置如下：
 
 ```json eas.json
 {
@@ -29,47 +29,47 @@ The default configuration for **eas.json** generated in a new project is shown b
 }
 ```
 
-## Build profiles
+## 构建配置档案
 
-A build profile is a named group of configurations that describes the necessary parameters to perform a certain type of build.
+构建配置档案是一个有名称的配置组，用于描述执行某种类型构建所需的参数。
 
-The JSON object under the `build` key can contain multiple build profiles, and you can have custom build profile names. In the default configuration, there are three build profiles: `development`, `preview`, and `production`. However, these could have been named `foo`, `bar`, and `baz`.
+`build` 键下的 JSON 对象可以包含多个构建配置档案，并且你可以使用自定义的构建配置档案名称。在默认配置中，有三个构建配置档案：`development`、`preview` 和 `production`。不过，它们也可以被命名为 `foo`、`bar` 和 `baz`。
 
-To run a build with a specific profile, use the command as shown below with a `<profile-name>`:
+要使用特定配置档案运行构建，请按如下所示使用带有 `<profile-name>` 的命令：
 
 <Terminal
   cmd={[
-    '# Replace the <profile-name> with a build profile from the eas.json',
+    '# 将 <profile-name> 替换为 eas.json 中的一个构建配置档案',
     '$ eas build --profile <profile-name>',
   ]}
   cmdCopy="eas build --profile"
 />
 
-If you omit the `--profile` flag, EAS CLI will default to using the profile with the name `production` (if it exists).
+如果你省略 `--profile` 标志，EAS CLI 默认会使用名为 `production` 的配置档案（如果它存在）。
 
-### Platform-specific and common options
+### 平台特定与通用选项
 
-Inside each build profile, you can specify [`android`](/eas/json/#android-specific-options) and [`ios`](/eas/json/#ios-specific-options) fields that contain platform-specific configuration for the build. [Options that are available to both platforms](/eas/json/#common-properties-for-native-platforms) can be provided on the platform-specific configuration object or the root of a profile.
+在每个构建配置档案中，你可以指定包含该构建平台特定配置的 [`android`](/eas/json/#android-specific-options) 和 [`ios`](/eas/json/#ios-specific-options) 字段。[适用于两个平台的选项](/eas/json/#common-properties-for-native-platforms) 可以提供在平台特定配置对象中，或者配置档案的根级别。
 
-### Sharing configuration between profiles
+### 在配置档案之间共享配置
 
-Build profiles can be extended to other build profile properties using the `extends` option.
+可以使用 `extends` 选项将构建配置档案扩展为其他构建配置档案属性。
 
-For example, in the `preview` profile you might have `"extends": "production"`. This will make the `preview` profile inherit the configuration of the `production` profile.
+例如，在 `preview` 配置档案中，你可能会设置 `"extends": "production"`。这会让 `preview` 配置档案继承 `production` 配置档案的配置。
 
-You can keep chaining profile extensions up to the depth of 5 as long as you avoid making circular dependencies.
+只要避免循环依赖，你可以继续链式扩展配置档案，最多深度为 5。
 
-## Common use cases
+## 常见用例
 
-Developers using Expo tools usually end up having three different types of builds: **development**, **preview**, and **production**.
+使用 Expo 工具的开发者通常最终会有三种不同类型的构建：**development**、**preview** 和 **production**。
 
-### Development builds
+### 开发构建
 
-By default, `eas build:configure` will create a `development` profile with `"developmentClient": true`. This indicates that this build depends on [`expo-dev-client`](/develop/development-builds/introduction/). These builds include developer tools, and they are never submitted to an app store.
+默认情况下，`eas build:configure` 会创建一个带有 `"developmentClient": true` 的 `development` 配置档案。这表示此构建依赖于 [`expo-dev-client`](/develop/development-builds/introduction/)。这些构建包含开发者工具，并且永远不会提交到应用商店。
 
-The `development` profile also defaults to [`"distribution": "internal"`](/build/internal-distribution). This will make it easy to distribute your app directly to physical Android and iOS devices.
+`development` 配置档案还默认设置为 [`"distribution": "internal"`](/build/internal-distribution)。这会让你更容易直接将应用分发到物理 Android 和 iOS 设备。
 
-You can also configure your development builds to run on the [iOS Simulator](/build-reference/simulators). To do this, use the following configuration for the `development` profile:
+你也可以将开发构建配置为在 [iOS 模拟器](/build-reference/simulators) 上运行。为此，请为 `development` 配置档案使用以下配置：
 
 ```json eas.json
 {
@@ -87,13 +87,13 @@ You can also configure your development builds to run on the [iOS Simulator](/bu
 }
 ```
 
-> **Note:** For iOS, to create a build for internal distribution and another for the iOS Simulator, you can create a separate development profile for that build. You can give the profile a custom name. For example, `development-simulator`, and use the [iOS Simulator specific configuration](/build-reference/simulators/#configuring-a-profile-to-build-for-simulators) on that profile instead of on `development`. No such configuration is required to run an [Android **.apk** on a device and an Android Emulator](/build-reference/apk) as the same **.apk** will run with both environments.
+> **注意：** 对于 iOS，如果你想创建一个用于内部分发的构建，以及另一个用于 iOS 模拟器的构建，你可以为该构建创建一个单独的开发配置档案。你可以为该配置档案指定自定义名称。例如，`development-simulator`，并在该配置档案上使用 [iOS 模拟器专用配置](/build-reference/simulators/#configuring-a-profile-to-build-for-simulators)，而不是使用 `development`。对于在设备和 Android 模拟器上运行 [Android **.apk**](/build-reference/apk)，则不需要任何此类配置，因为同一个 **.apk** 可以在两种环境中运行。
 
-### Preview builds
+### 预览构建
 
-These builds don't include developer tools. They are intended to be installed by your team and other stakeholders, to test out the app in production-like circumstances. In this way, they are similar to [production builds](#production-builds). However, they are different from production builds because they are either not signed for distribution on app stores (ad hoc or enterprise provisioning on iOS), or are packaged in a way that is not optimal for store deployment (Android **.apk** is recommended for preview, **.aab** is recommended for Google Play Store).
+这些构建不包含开发者工具。它们 предназнач于由你的团队和其他相关人员安装，用于在接近生产环境的条件下测试应用。在这一点上，它们类似于 [生产构建](#production-builds)。不过，它们与生产构建不同，因为它们要么没有用于应用商店分发的签名（iOS 上的 ad hoc 或 enterprise provisioning），要么以不适合商店部署的方式打包（Android **.apk** 推荐用于预览，**.aab** 推荐用于 Google Play Store）。
 
-A minimal `preview` profile example:
+一个最小的 `preview` 配置档案示例：
 
 ```json eas.json
 {
@@ -107,15 +107,15 @@ A minimal `preview` profile example:
 }
 ```
 
-Similar to [development builds](#development-builds), you can configure a preview build to run on the [iOS Simulator](/build-reference/simulators) or create a variant of your preview profile for that purpose. No such configuration is required to run an [Android **.apk** on a device and an Android Emulator](/build-reference/apk) as the same **.apk** will run with both environments.
+与 [开发构建](#development-builds) 类似，你可以将预览构建配置为在 [iOS 模拟器](/build-reference/simulators) 上运行，或者为此创建一个预览配置档案的变体。对于在设备和 Android 模拟器上运行 [Android **.apk**](/build-reference/apk)，则不需要任何此类配置，因为同一个 **.apk** 可以在两种环境中运行。
 
-### Production builds
+### 生产构建
 
-These builds are submitted to an app store, for release to the general public or as part of a store-facilitated testing process such as TestFlight.
+这些构建会提交到应用商店，用于向公众发布，或作为诸如 TestFlight 之类的商店辅助测试流程的一部分。
 
-Production builds must be installed through their respective app stores. They cannot be installed directly on your Android Emulator or device, or iOS Simulator or device. The only exception to this is if you explicitly set `"buildType": "apk"` for Android on your build profile. However, it is recommended to use **.aab** when submitting to stores, as this is the default configuration.
+生产构建必须通过各自的应用商店安装。它们不能直接安装到你的 Android 模拟器或设备，或 iOS 模拟器或设备上。唯一的例外是，如果你在构建配置档案中明确为 Android 设置了 `"buildType": "apk"`。不过，提交到商店时建议使用 **.aab**，因为这是默认配置。
 
-A minimal `production` profile example:
+一个最小的 `production` 配置档案示例：
 
 ```json eas.json
 {
@@ -127,17 +127,17 @@ A minimal `production` profile example:
 }
 ```
 
-### Installing multiple builds of the same app on a single device
+### 在单个设备上安装同一应用的多个构建
 
-It's common to have development and production builds installed simultaneously on the same device. See [Install app variants on the same device](/build-reference/variants/).
+在同一设备上同时安装开发构建和生产构建是很常见的。请参阅 [在同一设备上安装应用变体](/build-reference/variants/)。
 
-## Configuring build tools
+## 配置构建工具
 
-Every build depends either implicitly or explicitly on a specific set of versions of related tools that are needed to carry out the build process. These include but are not limited to: Node.js, npm, Yarn, Ruby, Bundler, CocoaPods, Fastlane, Xcode, and Android NDK.
+每个构建都隐式或显式地依赖于一组特定版本的相关工具，这些工具是执行构建过程所必需的。这些工具包括但不限于：Node.js、npm、Yarn、Ruby、Bundler、CocoaPods、Fastlane、Xcode 和 Android NDK。
 
-### Selecting build tool versions
+### 选择构建工具版本
 
-Versions for the most common build tools can be set on build profiles with fields corresponding to the names of the tools. For example [`node`](/eas/json/#node):
+最常见的构建工具版本可以在构建配置档案中通过与工具名称对应的字段来设置。例如 [`node`](/eas/json/#node)：
 
 ```json eas.json
 {
@@ -151,7 +151,7 @@ Versions for the most common build tools can be set on build profiles with field
 }
 ```
 
-It's common to share build tool configurations between profiles. Use `extends` for that:
+通常会在配置档案之间共享构建工具配置。可以使用 `extends` 来实现：
 
 ```json eas.json
 {
@@ -174,11 +174,11 @@ It's common to share build tool configurations between profiles. Use `extends` f
 }
 ```
 
-### Selecting resource class
+### 选择资源类
 
-A resource class is the virtual machine resources configuration (CPU cores, RAM size) EAS Build provides to your jobs. By default, the resource class is set to `medium`, which is usually sufficient for both small and bigger projects. However, if your project requires a more powerful CPU or bigger memory, or if you want your builds to finish faster, you can switch to `large` workers.
+资源类是 EAS Build 为你的任务提供的虚拟机资源配置（CPU 核数、RAM 大小）。默认情况下，资源类设置为 `medium`，这通常足以满足小型和大型项目的需求。不过，如果你的项目需要更强大的 CPU 或更大的内存，或者你希望构建更快完成，你可以切换到 `large` worker。
 
-For more details on resources provided to each class, see [`android.resourceClass`](/eas/json/#resourceclass-1) and [`ios.resourceClass`](/eas/json/#resourceclass-2) properties. To run your build on a worker of a specific resource class, configure this property in your build profile:
+有关每个类提供的资源的更多细节，请参阅 [`android.resourceClass`](/eas/json/#resourceclass-1) 和 [`ios.resourceClass`](/eas/json/#resourceclass-2) 属性。要在特定资源类的 worker 上运行你的构建，请在构建配置档案中配置此属性：
 
 {/* prettier-ignore */}
 ```json eas.json
@@ -198,48 +198,48 @@ For more details on resources provided to each class, see [`android.resourceClas
 }
 ```
 
-> **Note**: Running jobs on a `large` worker requires a [paid EAS plan](https://expo.dev/accounts/[account]/settings/billing).
+> **注意**：在 `large` worker 上运行作业需要 [付费 EAS 套餐](https://expo.dev/accounts/[account]/settings/billing)。
 
-### Selecting a base image
+### 选择基础镜像
 
-The base image for the build job controls the default versions for a variety of dependencies, such as Node.js, Yarn, and CocoaPods. You can override them using the specific named fields as described in the previous section using `resourceClass`. However, the image includes specific versions of tools that can't be explicitly set any other way, such as the operating system version and Xcode version.
+构建任务的基础镜像会控制多种依赖项的默认版本，例如 Node.js、Yarn 和 CocoaPods。你可以按照上一节所述，使用特定的命名字段并通过 `resourceClass` 来覆盖它们。然而，该镜像还包含一些无法通过其他方式显式设置的工具特定版本，例如操作系统版本和 Xcode 版本。
 
-If you are building an app with Expo, EAS Build will pick the appropriate image to use with a reasonable set of dependencies for the SDK version that you are building for. Otherwise, it is recommended to see the list of available images on [Build server infrastructure](/build-reference/infrastructure).
+如果你正在使用 Expo 构建应用，EAS Build 会根据你要构建的 SDK 版本，自动选择一个合适的镜像及一组合理的依赖项。否则，建议查看 [构建服务器基础设施](/build-reference/infrastructure) 中可用镜像的列表。
 
-### Examples
+### 示例
 
-#### Schema
+#### 模式
 
 {/* prettier-ignore */}
 ```json eas.json
 {
   "cli": {
-    "version": /* @info Required EAS CLI version range. */"SEMVER_RANGE"/* @end */,
-    "requireCommit": /* @info If true, ensures that all changes are committed before a build. Defaults to false. */boolean/* @end */,
-    "appVersionSource": /* @info If set to remote, values stored on EAS servers will take precedence over local values. Defaults to local. */string/* @end */,
-    "promptToConfigurePushNotifications": /* @info If set to false, skips Push Notifications credentials setup for EAS Build. Defaults to true. */boolean/* @end */,
+    "version": /* @info 所需的 EAS CLI 版本范围。 */"SEMVER_RANGE"/* @end */,
+    "requireCommit": /* @info 如果为 true，可确保在构建前所有更改都已提交。默认值为 false。 */boolean/* @end */,
+    "appVersionSource": /* @info 如果设置为 remote，则存储在 EAS 服务器上的值将优先于本地值。默认值为 local。 */string/* @end */,
+    "promptToConfigurePushNotifications": /* @info 如果设置为 false，则跳过 EAS Build 的推送通知凭据设置。默认值为 true。 */boolean/* @end */,
   },
   "build": {
-    /* @info Any arbitrary name - used as an identifier */"BUILD_PROFILE_NAME_1"/* @end */: {
-      /* @info Options common to both platforms*/...COMMON_OPTIONS/* @end */,
+    /* @info 任意名称 - 用作标识符 */"BUILD_PROFILE_NAME_1"/* @end */: {
+      /* @info 两个平台通用的选项*/...COMMON_OPTIONS/* @end */,
       "android": {
-        /* @info Options common to both platforms*/...COMMON_OPTIONS/* @end */,
-        /* @info Options specific for Android and common to both platforms*/...ANDROID_OPTIONS/* @end */
+        /* @info 两个平台通用的选项*/...COMMON_OPTIONS/* @end */,
+        /* @info Android 特有且两平台通用的选项*/...ANDROID_OPTIONS/* @end */
       },
       "ios": {
-        /* @info Options common to both platforms*/...COMMON_OPTIONS/* @end */,
-        /* @info Options specific for iOS and common to both platforms*/...IOS_OPTIONS/* @end */
+        /* @info 两个平台通用的选项*/...COMMON_OPTIONS/* @end */,
+        /* @info iOS 特有且两平台通用的选项*/...IOS_OPTIONS/* @end */
       }
     },
-    /* @info Any arbitrary name - used as an identifier */"BUILD_PROFILE_NAME_2"/* @end */: {},
+    /* @info 任意名称 - 用作标识符 */"BUILD_PROFILE_NAME_2"/* @end */: {},
 	/* @hide ... */ /* @end */
   }
 }
 ```
 
-> You can specify [common properties](/eas/json/##common-properties-for-native-platforms) both in the platform-specific configuration object or at the profile's root. The platform-specific options take precedence over globally-defined ones.
+> 你可以在平台特定的配置对象中或在配置文件根部同时指定 [通用属性](/eas/json/##common-properties-for-native-platforms)。平台特定的选项优先于全局定义的选项。
 
-<Collapsible summary="A managed project with several profiles">
+<Collapsible summary="具有多个配置文件的托管项目">
 
 ```json eas.json
 {
@@ -299,7 +299,7 @@ If you are building an app with Expo, EAS Build will pick the appropriate image 
 
 </Collapsible>
 
-<Collapsible summary="A bare project with several profiles">
+<Collapsible summary="具有多个配置文件的裸项目">
 
 ```json eas.json
 {
@@ -355,9 +355,9 @@ If you are building an app with Expo, EAS Build will pick the appropriate image 
 
 </Collapsible>
 
-## Environment variables
+## 环境变量
 
-You can configure environment variables on your build profiles using the `"env"` field. These environment variables will be used to evaluate **app.config.js** locally when you run `eas build`, and they will also be set on the EAS Build builder.
+你可以在构建配置文件中使用 `"env"` 字段来配置环境变量。运行 `eas build` 时，这些环境变量将用于在本地评估 **app.config.js**，并且它们也会被设置到 EAS Build 构建器上。
 
 ```json eas.json
 {
@@ -381,13 +381,13 @@ You can configure environment variables on your build profiles using the `"env"`
 }
 ```
 
-The [Environment variables and secrets](/eas/environment-variables) reference explains this topic in greater detail, and the [Use EAS Update](/build/updates) guide provides considerations when using this feature alongside `expo-updates`.
+[环境变量和密钥](/eas/environment-variables) 参考文档更详细地解释了这一主题，而 [使用 EAS Update](/build/updates) 指南提供了在将此功能与 `expo-updates` 一起使用时需要考虑的事项。
 
-## More
+## 更多
 
 <BoxLink
   title="EAS Build schema reference"
-  description="See complete reference of available properties for EAS Build."
+  description="查看 EAS Build 可用属性的完整参考。"
   href="/eas/json/#eas-build"
   Icon={BuildIcon}
 />

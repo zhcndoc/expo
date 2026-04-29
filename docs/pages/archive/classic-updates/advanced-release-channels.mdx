@@ -1,136 +1,136 @@
 ---
-title: Advanced release channels
+title: 高级发布通道
 ---
 
-> This doc was archived in August 2022 and will not receive any further updates. To learn more about why release channels were deprecated, [see our blog post on EAS Update](https://blog.expo.dev/eas-update-preview-progress-f504a30066fc#:~:text=Traditionally%2C%20Expo%20developers,need%20more%20control). Instead, we recommend using [EAS Update](/eas-update/introduction).
+> 本文档已于 2022 年 8 月归档，且不会再接收任何更新。要了解更多关于为何发布通道被弃用的原因，[请参阅我们关于 EAS Update 的博文](https://blog.expo.dev/eas-update-preview-progress-f504a30066fc#:~:text=Traditionally%2C%20Expo%20developers,need%20more%20control)。我们建议改用 [EAS Update](/eas-update/introduction)。
 
-## Introduction
+## 简介
 
-For a quick introduction to release channels, [read this](/archive/classic-updates/release-channels/).
+要快速了解发布通道，[请阅读此文](/archive/classic-updates/release-channels/)。
 
-When you publish your app by running `expo publish --release-channel staging`, it creates:
+当你运行 `expo publish --release-channel staging` 发布应用时，它会创建：
 
-- a release, identified by a `publicationId` for Android and iOS platforms. A release refers to your bundled source code and assets at the time of publication.
-- a link to the release in the `staging` release channel, identified by a `channelId`. This is like a commit on a git branch.
+- 一个发布版本，由 Android 和 iOS 平台上的 `publicationId` 标识。发布版本指的是发布时你的打包源代码和资源。
+- 一个指向 `staging` 发布通道中该发布版本的链接，由 `channelId` 标识。这就像 git 分支上的一次提交。
 
-For simplicity, the rest of this article will refer to just the `ios` releases, but you could swap out ios for android at any point and everything would still be true.
+为简化起见，本文其余部分只会提到 `ios` 发布版本，但你也可以在任何时候把 ios 替换为 android，所有内容依然成立。
 
-## See past publishes
+## 查看过去的发布
 
-You can see everything that you've published with `expo publish:history`.
+你可以使用 `expo publish:history` 查看你发布过的所有内容。
 
-#### Example command and output
+#### 示例命令和输出
 
 `expo publish:history --platform ios`
 
 | publishedTime            | appVersion | sdkVersion | platform | channel | publicationId                        |
-| ------------------------ | ---------- | ---------- | -------- | ------- | ------------------------------------ |
+| ------------------------ | ---------- | -------- | ------- | ------------------------------------ |
 | 2018-01-05T23:55:04.603Z | 1.0.0      | 24.0.0     | ios      | staging | 80b1ffd7-4e05-4851-95f9-697e122033c3 |
 
-To see more details about this particular release, you can run `expo publish:details`
+要查看有关此特定发布的更多详细信息，可以运行 `expo publish:details`
 
-#### Example command and output
+#### 示例命令和输出
 
 `expo publish:details --publish-id 80b1ffd7-4e05-4851-95f9-697e122033c3`
 
-![Publish Details](/static/images/release-channels-pub-details-1.png)
+![发布详情](/static/images/release-channels-pub-details-1.png)
 
-## What version of the app will my users get?
+## 我的用户会获得应用的哪个版本？
 
-Your users will get the most recent compatible release that was pushed to a release channel. Factors that affect compatibility:
+你的用户会获得推送到某个发布通道上的、最近且兼容的发布版本。影响兼容性的因素包括：
 
-- sdkVersion (standalone apps are built to support only a single SDK version)
+- sdkVersion（独立应用只构建为支持单个 SDK 版本）
 - platform
 - releaseChannel
 
-The following flowchart shows how we determine which release to return to a user:
+下图流程图展示了我们如何确定要向用户返回哪个发布版本：
 
-![Serving Flowchart](/static/images/release-channels-flowchart.png)
+![提供流程图](/static/images/release-channels-flowchart.png)
 
-## Promoting a release to a new release channel
+## 将发布版本提升到新的发布通道
 
-Example use case: you previously published a release to `staging` and everything went well in your testing. Now you want this release to be active in another release channel (ie) production
+示例用例：你之前已经将某个发布版本发布到 `staging`，并且在测试中一切顺利。现在你希望这个发布版本在另一个发布通道中生效（即）production
 
-We run `expo publish:set` to push our release to the `production` release channel.
+我们运行 `expo publish:set` 将发布版本推送到 `production` 发布通道。
 `expo publish:set --publish-id 80b1ffd7-4e05-4851-95f9-697e122033c3 --release-channel production`
 
-Continuing from the previous section, we can see that our release is available in both the `staging` and the `production` release channels.
+继续上一节的内容，我们可以看到该发布版本同时存在于 `staging` 和 `production` 发布通道中。
 
 `expo publish:history --platform ios`
 
 | publishedTime            | appVersion | sdkVersion | platform | channel    | publicationId                        |
-| ------------------------ | ---------- | ---------- | -------- | ---------- | ------------------------------------ |
+| ------------------------ | ---------- | -------- | ------- | ---------- | ------------------------------------ |
 | 2018-01-05T23:55:04.603Z | 1.0.0      | 36.0.0     | ios      | staging    | 80b1ffd7-4e05-4851-95f9-697e122033c3 |
 | 2018-01-05T23:55:04.603Z | 1.0.0      | 36.0.0     | ios      | production | 80b1ffd7-4e05-4851-95f9-697e122033c3 |
 | 2018-01-04T22:43:19.302Z | 1.0.0      | 36.0.0     | ios      | production | d6b61741-a8dc-11e9-852a-3b0715b88238 |
 
-## Rollback a release channel entry
+## 回滚发布通道条目
 
-Example use case: you published a release to your `production` release channel, only to realize that it includes a major regression for some of your users, so you want to revert to the previous version.
+示例用例：你将一个发布版本发布到了 `production` 发布通道，但后来发现它给你的一些用户带来了严重回归，因此你想回退到上一个版本。
 
-Continuing from the previous section, we roll back our `production` release channel entry for just the iOS platform with `expo publish:set`
+继续上一节的内容，我们使用 `expo publish:set` 只回滚 `production` 发布通道中 iOS 平台的条目
 
 `expo publish:set --release-channel production --publish-id d6b61741-a8dc-11e9-852a-3b0715b88238`
 
-Or, we could roll back the `production` release channel entry for both Android and iOS with:
+或者，我们也可以使用以下命令回滚 `production` 发布通道中 Android 和 iOS 的条目：
 `expo publish:rollback --release-channel production --sdk-version 36.0.0`
 
-Now we can see that our releases are available on the production release channel.
+现在我们可以看到我们的发布版本已在 production 发布通道上可用。
 
 `expo publish:history --platform ios`
 
 | publishedTime            | appVersion | sdkVersion | platform | channel    | publicationId                        |
-| ------------------------ | ---------- | ---------- | -------- | ---------- | ------------------------------------ |
+| ------------------------ | ---------- | -------- | ------- | ---------- | ------------------------------------ |
 | 2018-01-04T22:43:19.302Z | 1.0.0      | 36.0.0     | ios      | production | d6b61741-a8dc-11e9-852a-3b0715b88238 |
 
-## Release channels CLI tools
+## 发布通道 CLI 工具
 
-### Publish history
+### 发布历史
 
 ```text
-  Usage: expo publish:history [--release-channel <channel-name>] [--count <number-of-logs>]
+  用法: expo publish:history [--release-channel <channel-name>] [--count <number-of-logs>]
 
-  View a log of your published releases.
+  查看你已发布版本的日志。
 
-  Options:
-    -c, --release-channel <channel-name>  Filter by release channel. If this flag is not included, the most recent publications will be shown.
-    -count, --count <number-of-logs>      Number of logs to view, maximum 100, default 5.
-    -r, --raw                             Produce some raw output.
-    -p, --platform <ios|android>          Filter by platform, android or ios.
+  选项:
+    -c, --release-channel <channel-name>  按发布通道筛选。如果不包含此标志，将显示最近的发布。
+    -count, --count <number-of-logs>      要查看的日志数量，最大 100，默认 5。
+    -r, --raw                             生成一些原始输出。
+    -p, --platform <ios|android>          按平台筛选，android 或 ios。
 ```
 
-### Publish details
+### 发布详情
 
 ```text
-  Usage: expo publish:details --publish-id <publish-id>
-  View the details of a published release.
+  用法: expo publish:details --publish-id <publish-id>
+  查看已发布版本的详细信息。
 
-  Options:
-    --publish-id <publish-id>  Publication id. (Required)
-    -r, --raw                             Produce some raw output.
+  选项:
+    --publish-id <publish-id>  发布 ID。（必填）
+    -r, --raw                             生成一些原始输出。
 ```
 
-### Publish rollback
+### 发布回滚
 
 ```text
-Usage: expo publish:rollback
+用法: expo publish:rollback
 
-  Rollback an update to a release channel. Equivalent to running `expo publish:set` with publish-id set to the most recent release to the specified sdk version
+  将更新回滚到某个发布通道。等同于运行 `expo publish:set`，并将 publish-id 设置为指定 sdk 版本中的最近一次发布
 
-  Options:
-    -c, --release-channel <channel-name>  The name of the release channel to roll back (Required)
-    -s, --sdk-version <version>           The SDK version to roll back (e.g. 37.0.0) (Required)
-    -p, --platform <ios|android>          The platform to roll back (roll back both unless specified)
+  选项:
+    -c, --release-channel <channel-name>  要回滚的发布通道名称（必填）
+    -s, --sdk-version <version>           要回滚的 SDK 版本（例如 37.0.0）（必填）
+    -p, --platform <ios|android>          要回滚的平台（除非指定，否则同时回滚两者）
 ```
 
-### Publish set
+### 发布设置
 
 ```text
- Usage: expo publish:set --release-channel <channel-name> --publish-id <publish-id>
+ 用法: expo publish:set --release-channel <channel-name> --publish-id <publish-id>
 
-  Set a published release to be served from a specified channel.
+  将已发布的版本设置为从指定通道提供。
 
-  Options:
-    -c, --release-channel <channel-name>  The channel to set the published release. (Required)
-    -p, --publish-id <publish-id>         The id of the published release to serve from the channel. (Required)
+  选项:
+    -c, --release-channel <channel-name>  要设置已发布版本的通道。（必填）
+    -p, --publish-id <publish-id>         要从该通道提供的已发布版本 ID。（必填）
 ```

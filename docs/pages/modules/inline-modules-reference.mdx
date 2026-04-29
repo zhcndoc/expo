@@ -1,19 +1,18 @@
 ---
-title: Inline modules reference
-description: A reference of Expo inline modules.
+title: 内联模块参考
+description: Expo 内联模块的参考文档。
 ---
 
 import { PaddedAPIBox } from '~/components/plugins/PaddedAPIBox';
 
-> **warning** Inline modules are [experimental](/more/release-statuses/#experimental). The API is subject to breaking changes.
+> **warning** 内联模块是[实验性](/more/release-statuses/#experimental)功能。该 API 可能会发生破坏性变更。
 
-Inline modules let you write native module code (Kotlin and Swift) directly in your Expo project directory,
-without creating a separate Expo module package. Expo discovers these files automatically and includes them in the build.
+内联模块允许你直接在 Expo 项目目录中编写原生模块代码（Kotlin 和 Swift），而无需创建单独的 Expo 模块包。Expo 会自动发现这些文件，并将它们包含到构建中。
 
-## Configuration
+## 配置
 
 <PaddedAPIBox header="expo.experiments.inlineModules">
-When defined, enables inline modules functionality in Expo CLI and Expo Modules Autolinking.
+定义后，会在 Expo CLI 和 Expo Modules Autolinking 中启用内联模块功能。
 
 ```json app.json
 {
@@ -28,7 +27,7 @@ When defined, enables inline modules functionality in Expo CLI and Expo Modules 
 </PaddedAPIBox>
 
 <PaddedAPIBox header="expo.experiments.inlineModules.watchedDirectories">
-Configures in which directories the inline modules can be created.
+配置可以创建内联模块的目录。
  
 ```json app.json
 {
@@ -42,32 +41,32 @@ Configures in which directories the inline modules can be created.
 }
 ```
 
-Files inside nested directories will also be used.
-For example, if `watchedDirectories = ["app"]` is defined in the app config,
-and a module file such as **app/nested/directory/SomeModule.kt** exists in a nested path, then `SomeModule` can be used in your app.
+嵌套目录中的文件也会被使用。
+例如，如果在 app 配置中定义了 `watchedDirectories = ["app"]`，
+并且存在一个位于嵌套路径中的模块文件，例如 **app/nested/directory/SomeModule.kt**，那么 `SomeModule` 就可以在你的应用中使用。
 
-A directory in `watchedDirectories`:
+`watchedDirectories` 中的目录：
 
-- Needs to be inside a TypeScript/JavaScript project. This means it needs to have an ancestor in the directory tree that has **package.json**. For example, `"watchedDirectories": ["app", "src/some/directory", pathToOtherProject]` should work and `"watchedDirectories": ["/", pathToFolderNotInNodeProject]` won't.
-- Cannot be the whole project directory, for example,`"./"`, nor an ancestor of it (for example `../`).
-- Cannot be a subdirectory of the other directory in `watchedDirectories`. For example, `watchedDirectories` cannot be `["app", "app/nested/directory"]`, you can just set `watchedDirectories` to `["app"]`.
-- Cannot contain special characters like `" ", "(", ")", "$"`. This means you cannot have `"app/(tabs)"` in the `watchedDirectories`, but you can have `"app"` and it should still use native files from `"app/(tabs)"` directory.
+- 需要位于 TypeScript/JavaScript 项目中。这意味着它的目录树中必须有一个祖先目录包含 **package.json**。例如，`"watchedDirectories": ["app", "src/some/directory", pathToOtherProject]` 应该可以工作，而 `"watchedDirectories": ["/", pathToFolderNotInNodeProject]` 则不行。
+- 不能是整个项目目录，例如 `./`，也不能是它的祖先目录（例如 `../`）。
+- 不能是 `watchedDirectories` 中另一个目录的子目录。例如，`watchedDirectories` 不能是 `["app", "app/nested/directory"]`，你只需将 `watchedDirectories` 设置为 `["app"]`。
+- 不能包含诸如 `" ", "(", ")", "$"` 之类的特殊字符。这意味着你不能在 `watchedDirectories` 中使用 `"app/(tabs)"`，但你可以使用 `"app"`，并且它仍然会使用来自 `"app/(tabs)"` 目录的原生文件。
 
 </PaddedAPIBox>
 
-> **Warning** You need to run `npx expo prebuild` after changing the [app config](/workflow/configuration/), for it to take effect.
+> **Warning** 你需要在更改 [app 配置](/workflow/configuration/) 后运行 `npx expo prebuild`，它才会生效。
 
-## Naming convention
+## 命名约定
 
-The inline module file name has to match the native module name (which needs to be unique in your whole app).
-If you have a **SimpleModule.kt**, then the inline module inside it has that file name. For example:
+内联模块文件名必须与原生模块名称匹配（该名称在整个应用中必须唯一）。
+如果你有一个 **SimpleModule.kt**，那么其中的内联模块就会使用该文件名。例如：
 
 ```kotlin
 // SimpleModule.kt
 // ...
-class SimpleModule: Module() { // Note that the class name has to match the filename.
+class SimpleModule: Module() { // 请注意，类名必须与文件名匹配。
     public func definition() -> ModuleDefinition {
-        // Name("SimpleModule") // Note that `Name` also has to match the filename. So you can just omit it.
+        // Name("SimpleModule") // 请注意，`Name` 也必须与文件名匹配。因此你可以直接省略它。
     }
 }
 ```

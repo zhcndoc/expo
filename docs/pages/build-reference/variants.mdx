@@ -1,23 +1,23 @@
 ---
-title: Install app variants on the same device
+title: 在同一设备上安装应用变体
 maxHeadingDepth: 4
-description: Learn how to install multiple variants of an app on the same device.
+description: 了解如何在同一设备上安装应用的多个变体。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-When creating [development, preview, and production builds](/build/eas-json/#common-use-cases), installing these build variants simultaneously on the same device is common. This allows working in development, previewing the next version of the app, and running the production version on a device without needing to uninstall and reinstall the app.
+在创建[开发、预览和生产构建](/build/eas-json/#common-use-cases)时，通常会在同一设备上同时安装这些构建变体。这使你能够进行开发、预览应用的下一个版本，并在设备上运行生产版本，而无需卸载并重新安装应用。
 
-This guide provides the steps required to configure multiple (development and production) variants to install and use them on the same device.
+本指南提供了在同一设备上安装和使用多个（开发和生产）变体所需的步骤。
 
-## Prerequisites
+## 前提条件
 
-To have multiple variants of an app installed on your device, each variant must have a unique [Application ID (Android)](/versions/latest/config/app/#package) or [Bundle Identifier (iOS)](/versions/latest/config/app/#bundleidentifier).
+要在设备上安装应用的多个变体，每个变体都必须具有唯一的 [Application ID（Android）](/versions/latest/config/app/#package) 或 [Bundle Identifier（iOS）](/versions/latest/config/app/#bundleidentifier)。
 
-## Configure development and production variants
+## 配置开发和生产变体
 
-You have created a project using Expo tooling, and now you want to create a development and a production build. Your project's **app.json** may have the following configuration:
+你已经使用 Expo 工具创建了一个项目，现在你想创建一个开发构建和一个生产构建。你项目的 **app.json** 可能具有如下配置：
 
 ```json app.json
 {
@@ -34,7 +34,7 @@ You have created a project using Expo tooling, and now you want to create a deve
 }
 ```
 
-If your project has EAS Build configured, the **eas.json** also has a similar configuration as shown below:
+如果你的项目已配置 EAS Build，**eas.json** 中也会有如下所示的类似配置：
 
 ```json eas.json
 {
@@ -47,9 +47,9 @@ If your project has EAS Build configured, the **eas.json** also has a similar co
 }
 ```
 
-### Convert app.json to app.config.js
+### 将 app.json 转换为 app.config.js
 
-To have multiple variants of the app installed on the same device, rename the **app.json** to **app.config.js** and export the configuration as shown below:
+要在同一设备上安装应用的多个变体，请将 **app.json** 重命名为 **app.config.js**，并按如下所示导出配置：
 
 ```js app.config.js
 export default {
@@ -64,15 +64,15 @@ export default {
 };
 ```
 
-In **app.config.js**, add an environment variable called `IS_DEV` to switch the `android.package` and `ios.bundleIdentifier` for each variant based on the variable:
+在 **app.config.js** 中，添加一个名为 `IS_DEV` 的环境变量，以便根据该变量切换每个变体的 `android.package` 和 `ios.bundleIdentifier`：
 
 {/* prettier-ignore */}
 ```js app.config.js
 const IS_DEV = process.env.APP_VARIANT === 'development';
 
 export default {
-  /* @info You can also switch out the app icon and other properties to further differentiate the app on your device. */
-  name: IS_DEV ? 'MyApp (Dev)' : 'MyApp',
+  /* @info 你也可以更换应用图标和其他属性，以便在设备上进一步区分该应用。 */
+  name: IS_DEV ? 'MyApp (开发版)' : 'MyApp',
   /* @end */
   slug: 'my-app',
   ios: {
@@ -84,16 +84,16 @@ export default {
 };
 ```
 
-In the above example, the environment variable `IS_DEV` is used to differentiate between the development and production environment. Based on its value, the different Application IDs or Bundle Identifiers are set for each variant.
+在上面的示例中，环境变量 `IS_DEV` 用于区分开发环境和生产环境。根据它的值，会为每个变体设置不同的 Application ID 或 Bundle Identifier。
 
-<Collapsible summary="Additional app variant customizations">
+<Collapsible summary="其他应用变体自定义">
 
-You can customize other aspects of your app on a per-variant basis. You can swap any configuration that you used previously in **app.json** using the same approach as above.
+你可以按变体自定义应用的其他方面。你可以使用与上面相同的方法，替换你之前在 **app.json** 中使用的任何配置。
 
-**Examples:**
+**示例：**
 
-- If you are using a library that requires you to register your application identifier with an external service to use its SDK, such as Google Maps or Firebase Cloud Messaging (FCM), you'll need to have a separate configuration for that API for the `android.package` and `ios.bundleIdentifier`.
-- If you're using [development builds](/develop/development-builds/introduction/), you can configure the `expo-dev-client` plugin to disable the app scheme used by Expo CLI and EAS Update QR codes in non-development builds. This ensures that those URLs will always launch the development build, regardless of your device's defaults:
+- 如果你使用的库要求你向外部服务注册应用标识符才能使用其 SDK，例如 Google Maps 或 Firebase Cloud Messaging（FCM），那么你需要为 `android.package` 和 `ios.bundleIdentifier` 分别配置独立的 API 设置。
+- 如果你在使用 [开发构建](/develop/development-builds/introduction/)，你可以配置 `expo-dev-client` 插件，在非开发构建中禁用 Expo CLI 和 EAS Update 二维码使用的应用 scheme。这样可以确保这些 URL 无论设备默认设置如何，都会始终启动开发构建：
 
 ```js app.config.js
 plugins: [
@@ -108,9 +108,9 @@ plugins: [
 
 </Collapsible>
 
-### Configuration for EAS Build
+### EAS Build 的配置
 
-In **eas.json**, set the `APP_VARIANT` environment variable to run builds with the **development** profile by using the `env` property:
+在 **eas.json** 中，使用 `env` 属性设置 `APP_VARIANT` 环境变量，以便使用 **development** 配置运行构建：
 
 ```json eas.json
 {
@@ -126,13 +126,13 @@ In **eas.json**, set the `APP_VARIANT` environment variable to run builds with t
 }
 ```
 
-Now, when you run `eas build --profile development`, the environment variable `APP_VARIANT` is set to `development` when evaluating **app.config.js** both locally and on the EAS Build builder.
+现在，当你运行 `eas build --profile development` 时，在本地以及 EAS Build 构建器上评估 **app.config.js** 时，环境变量 `APP_VARIANT` 都会被设置为 `development`。
 
-### Using the development server
+### 使用开发服务器
 
-When you start your development server, you'll need to run `APP_VARIANT=development npx expo start` (or the platform equivalent if you use Windows).
+当你启动开发服务器时，需要运行 `APP_VARIANT=development npx expo start`（如果你使用 Windows，则使用对应的平台命令）。
 
-A shortcut for this is to add the following script to your **package.json**:
+为此，你可以在 **package.json** 中添加以下脚本：
 
 ```json package.json
 {
@@ -142,19 +142,19 @@ A shortcut for this is to add the following script to your **package.json**:
 }
 ```
 
-### Using production variant
+### 使用生产变体
 
-When you run `eas build --profile production` the `APP_VARIANT` variable environment is not set, and the build runs as the production variant.
+当你运行 `eas build --profile production` 时，环境变量 `APP_VARIANT` 不会被设置，构建会作为生产变体运行。
 
-> **Note**: If you use EAS Update to publish JavaScript updates of your app, you should be cautious to set the correct environment variables for the app variant that you are publishing for when you run the `eas update` command. See the EAS Build [Environment variables and secrets](/build/updates) for more information.
+> **注意**：如果你使用 EAS Update 发布应用的 JavaScript 更新，在运行 `eas update` 命令时，应谨慎为你发布的应用变体设置正确的环境变量。更多信息请参阅 EAS Build 的 [环境变量和密钥](/build/updates)。
 
-### In an existing (bare) React Native project
+### 在现有（裸）React Native 项目中
 
-> **info** If you want to use your [app config file](/workflow/configuration/) as the source of truth for your app configuration (including bundle identifiers and package names for variants), you need to migrate to [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) and add **android** and **ios** directories to your **.gitignore** file. This is especially important if you started with a React Native CLI project and added custom native code. This ensures that the native project configuration doesn't take precedence over your app config, especially when using bundle ID lookup behavior. Without this, you may experience issues where the wrong app variant runs or development builds aren't detected properly. Alternatively, you can explicitly opt for the Android flavors and iOS schemes as described below.
+> **info** 如果你希望将你的 [应用配置文件](/workflow/configuration/) 作为应用配置的唯一可信来源（包括变体的 bundle identifier 和 package name），你需要迁移到 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 并将 **android** 和 **ios** 目录添加到 **.gitignore** 文件中。如果你最初是从 React Native CLI 项目开始，并添加了自定义原生代码，这一点尤其重要。这可以确保原生项目配置不会优先于你的应用配置，尤其是在使用 bundle ID 查找行为时。否则，你可能会遇到运行了错误的应用变体或开发构建未被正确检测的问题。或者，你也可以按下文所述显式使用 Android flavors 和 iOS schemes。
 
 #### Android
 
-In **android/app/build.gradle**, create a separate flavor for every build profile from **eas.json** that you want to build.
+在 **android/app/build.gradle** 中，为你想要构建的 **eas.json** 中的每个构建配置创建一个单独的 flavor。
 
 ```groovy android/app/build.gradle
 android {
@@ -174,9 +174,9 @@ android {
 }
 ```
 
-> **Note**: Currently, EAS CLI supports only the `applicationId` field. If you use `applicationIdSuffix` inside `productFlavors` or `buildTypes` sections then this value will not be detected correctly.
+> **注意**：目前，EAS CLI 仅支持 `applicationId` 字段。如果你在 `productFlavors` 或 `buildTypes` 部分中使用 `applicationIdSuffix`，那么该值将无法被正确检测。
 
-Assign Android flavors to EAS Build profiles by specifying a `gradleCommand` in the **eas.json**:
+通过在 **eas.json** 中指定 `gradleCommand`，将 Android flavors 分配给 EAS Build 配置：
 
 ```json eas.json
 {
@@ -195,7 +195,7 @@ Assign Android flavors to EAS Build profiles by specifying a `gradleCommand` in 
 }
 ```
 
-By default, every flavor can be built in either debug or release mode. If you want to restrict some flavor to a specific mode, see the snippet below, and modify **build.gradle**.
+默认情况下，每个 flavor 都可以以 debug 或 release 模式构建。如果你想将某些 flavor 限制为特定模式，请查看下面的片段，并修改 **build.gradle**。
 
 ```groovy android/app/build.gradle
 android {
@@ -217,21 +217,21 @@ android {
 }
 ```
 
-The rest of the configuration at this point is not specific to EAS, it's the same as it would be for any Android project with flavors. There are a few common configurations that you might want to apply to your project:
+到这里为止，其余配置并非 EAS 特有，它与任何使用 flavors 的 Android 项目相同。你可能希望应用到项目中的一些常见配置如下：
 
-- To change the name of the app built with the development profile, create a **android/app/src/development/res/value/strings.xml** file:
+- 要更改使用 development 配置构建的应用名称，请创建 **android/app/src/development/res/value/strings.xml** 文件：
   ```xml android/app/src/development/res/value/strings.xml
   <resources>
-      <string name="app_name">MyApp - Dev</string>
+      <string name="app_name">MyApp - 开发版</string>
   </resources>
   ```
-- To change the icon of the app built with the development profile, create **android/app/src/development/res/mipmap-\*** directories with appropriate assets (you can copy them from **android/app/src/main/res** and replace the icon files).
-- To specify **google-services.json** for a specific flavor, put it in the **android/app/src/&lbrace;flavor&rbrace;/google-services.json** file.
-- To configure sentry, add `project.ext.sentryCli = [ flavorAware: true ]` to **android/app/build.gradle** and name your properties file **android/sentry-\{flavor\}-\{buildType\}.properties** (for example, **android/sentry-production-release.properties**)
+- 要更改使用 development 配置构建的应用图标，请创建 **android/app/src/development/res/mipmap-\*** 目录，并放入相应资源（你可以从 **android/app/src/main/res** 复制它们并替换图标文件）。
+- 要为特定 flavor 指定 **google-services.json**，请将其放在 **android/app/src/&lbrace;flavor&rbrace;/google-services.json** 文件中。
+- 要配置 sentry，请在 **android/app/build.gradle** 中添加 `project.ext.sentryCli = [ flavorAware: true ]`，并将你的属性文件命名为 **android/sentry-\{flavor\}-\{buildType\}.properties**（例如，**android/sentry-production-release.properties**）
 
 #### iOS
 
-Assign a different `scheme` to every build profile in **eas.json**:
+在 **eas.json** 中为每个构建配置分配不同的 `scheme`：
 
 ```json eas.json
 {
@@ -252,7 +252,7 @@ Assign a different `scheme` to every build profile in **eas.json**:
 }
 ```
 
-**Podfile** should have a target defined like this:
+**Podfile** 应该有如下所示的 target 定义：
 
 ```ruby Podfile
 target 'myapp' do
@@ -261,11 +261,11 @@ target 'myapp' do
 end
 ```
 
-Replace it with an abstract target, where the common configuration can be copied from the old target:
+将其替换为一个抽象 target，把通用配置从旧 target 中复制过来：
 
 ```ruby Podfile
 abstract_target 'common' do
-  # put common target configuration here
+  # 在这里放置通用的 target 配置
 
   target 'myapp' do
   end
@@ -275,7 +275,7 @@ abstract_target 'common' do
 end
 ```
 
-Open project in Xcode, click on the project name in the navigation panel, right click on the existing target, and click "Duplicate":
+在 Xcode 中打开项目，点击导航面板中的项目名称，右键点击现有 target，然后点击“Duplicate”：
 
 <ContentSpotlight
   alt="Duplicate Xcode target"
@@ -283,14 +283,14 @@ Open project in Xcode, click on the project name in the navigation panel, right 
   className="max-w-[720px]"
 />
 
-Rename the target to something more meaningful, for example, `myapp copy` -> `myapp-dev`.
+将 target 重命名为更有意义的名称，例如，将 `myapp copy` -> `myapp-dev`。
 
-Configure a scheme for the new target:
+为新 target 配置一个 scheme：
 
-- Go to `Product` -> `Scheme` -> `Manage schemes`.
-- Find scheme `myapp copy` on the list.
-- Change scheme name `myapp copy` -> `myapp-dev`.
-- By default, the new scheme should be marked as shared, but Xcode does not create `.xcscheme` files. To fix that, uncheck the "Shared" checkbox and check it again, after that new `.xcscheme` file should show up in the **ios/myapp.xcodeproj/xcshareddata/xcschemes** directory.
+- 前往 `Product` -> `Scheme` -> `Manage schemes`。
+- 在列表中找到 scheme `myapp copy`。
+- 将 scheme 名称 `myapp copy` -> `myapp-dev`。
+- 默认情况下，新 scheme 应该会被标记为共享，但 Xcode 不会创建 `.xcscheme` 文件。为了解决这个问题，取消勾选“Shared”复选框，然后再重新勾选；之后新的 `.xcscheme` 文件应该会出现在 **ios/myapp.xcodeproj/xcshareddata/xcschemes** 目录中。
 
 <ContentSpotlight
   alt="Xcode scheme list"
@@ -298,14 +298,14 @@ Configure a scheme for the new target:
   className="max-w-[720px]"
 />
 
-By default, the newly created target has separate **Info.plist** file (in the above example, it's **ios/myapp copy-Info.plist**). To simplify your project we recommend using the same file for all targets:
+默认情况下，新创建的 target 有单独的 **Info.plist** 文件（在上面的示例中，它是 **ios/myapp copy-Info.plist**）。为了简化项目，我们建议所有 target 使用同一个文件：
 
-- Delete **./ios/myapp copy-Info.plist**.
-- Click on the new target.
-- Go to `Build Settings` tab.
-- Find `Packaging` section.
-- Change **Info.plist** value - **myapp copy-Info.plist** -> **myapp/Info.plist**.
-- Change `Product Bundle Identifier`.
+- 删除 **./ios/myapp copy-Info.plist**。
+- 点击新 target。
+- 进入 `Build Settings` 选项卡。
+- 找到 `Packaging` 部分。
+- 更改 **Info.plist** 的值 - **myapp copy-Info.plist** -> **myapp/Info.plist**。
+- 更改 `Product Bundle Identifier`。
 
 <ContentSpotlight
   alt="Xcode build settings"
@@ -313,15 +313,15 @@ By default, the newly created target has separate **Info.plist** file (in the ab
   className="max-w-[720px]"
 />
 
-To change the display name:
+要更改显示名称：
 
-- Open **Info.plist** and add key `Bundle display name` with value `$(DISPLAY_NAME)`.
-- Open `Build Settings` for both targets and find `User-Defined` section.
-- Add key `DISPLAY_NAME` with the name you want to use for that target.
+- 打开 **Info.plist** 并添加键 `Bundle display name`，其值为 `$(DISPLAY_NAME)`。
+- 打开两个 target 的 `Build Settings`，找到 `User-Defined` 部分。
+- 添加键 `DISPLAY_NAME`，值为你希望该 target 使用的名称。
 
-To change the app icon:
+要更改应用图标：
 
-- Create a new image set (you can create it from the existing image set for the current icon, it's usually named `AppIcon`)
-- Open `Build Settings` for the target that you want to change icon.
-- Find `Asset Catalog Compiler - Options` section.
-- Change `Primary App Icon Set Name` to the name of the new image set.
+- 创建一个新的图像集（你可以基于当前图标的现有图像集创建，通常名为 `AppIcon`）
+- 打开你想要更改图标的 target 的 `Build Settings`。
+- 找到 `Asset Catalog Compiler - Options` 部分。
+- 将 `Primary App Icon Set Name` 更改为新的图像集名称。

@@ -1,25 +1,25 @@
 ---
 title: Apple Handoff
-description: Learn how to seamlessly continue app navigation across Apple devices with Expo Router and Apple Handoff.
+description: 了解如何使用 Expo Router 和 Apple Handoff 在 Apple 设备之间无缝继续应用导航。
 platforms: ['ios*', 'web']
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-Apple Handoff is a feature that enables users to continue browsing your app or website on another device. Expo Router automates all of the runtime routing for this feature. However, the one-time configuration must be set up manually.
+Apple Handoff 是一项功能，它使用户能够在另一台设备上继续浏览您的应用或网站。Expo Router 为此功能自动处理所有运行时路由。不过，一次性配置必须手动设置。
 
-In Expo Router, the underlying iOS API (`NSUserActivity`) requires a `webpageUrl` which the OS recommends as the current URL for switching to your app. The `expo-router/head` component has an optional native module that can automatically set the `webpageUrl` to the currently focused route in Expo Router.
+在 Expo Router 中，底层的 iOS API（`NSUserActivity`）需要一个 `webpageUrl`，操作系统建议将其作为切换到您的应用时的当前 URL。`expo-router/head` 组件有一个可选的原生模块，可以自动将 `webpageUrl` 设置为 Expo Router 中当前聚焦的路由。
 
-## Setup
+## 设置
 
-The following restrictions and considerations are important:
+以下限制和注意事项很重要：
 
-- Handoff is Apple-only.
-- Handoff can not be used in the Expo Go app as it requires build-time configuration.
-- Handoff requires [universal links](/linking/into-your-app/) to be configured, at least on iOS, and contain the `activitycontinuation` object.
-- Handoff requires the `expo-router/head` component to be used on each page that you want to support, or in the root layout if you want all pages to be continuous.
+- Handoff 仅适用于 Apple。
+- Handoff 不能在 Expo Go 应用中使用，因为它需要构建时配置。
+- Handoff 需要配置 [universal links](/linking/into-your-app/)，至少在 iOS 上，并且包含 `activitycontinuation` 对象。
+- Handoff 需要在您希望支持的每个页面上使用 `expo-router/head` 组件；如果您希望所有页面都可连续接续，则可以在根布局中使用。
 
-To ensure that the **public/.well-known/apple-app-site-association** file is configured correctly, it must include the `activitycontinuation` key with an `apps` array that contains your app's bundle ID and Team ID formatted as `<APPLE_TEAM_ID>.<IOS_BUNDLE_ID>`. For example, `QQ57RJ5UTD.app.expo.acme` where `QQ57RJ5UTD` is the Team ID and `app.expo.acme` is the bundle identifier.
+为确保 **public/.well-known/apple-app-site-association** 文件配置正确，它必须包含 `activitycontinuation` 键，并带有一个 `apps` 数组，其中包含您的应用的 bundle ID 和 Team ID，格式为 `<APPLE_TEAM_ID>.<IOS_BUNDLE_ID>`。例如，`QQ57RJ5UTD.app.expo.acme`，其中 `QQ57RJ5UTD` 是 Team ID，`app.expo.acme` 是 bundle 标识符。
 
 ```json public/.well-known/apple-app-site-association
 {
@@ -30,7 +30,7 @@ To ensure that the **public/.well-known/apple-app-site-association** file is con
         "components": [
           {
             "/": "*",
-            "comment": "Matches all routes"
+            "comment": "匹配所有路由"
           }
         ]
       }
@@ -45,20 +45,20 @@ To ensure that the **public/.well-known/apple-app-site-association** file is con
 }
 ```
 
-> The `webcredentials` object is optional but recommended.
+> `webcredentials` 对象是可选的，但建议添加。
 
-You can use the following command to generate the **apple-app-site-association** file based on your [app config](/versions/latest/config/app/):
+您可以使用以下命令，根据您的 [app config](/versions/latest/config/app/) 生成 **apple-app-site-association** 文件：
 
 <Terminal cmd={['$ npx setup-safari']} />
 
-See [Test the deep link](/linking/into-your-app/#test-the-deep-link) guide to test handoff in development.
+请参阅 [测试深度链接](/linking/into-your-app/#test-the-deep-link) 指南，以在开发环境中测试 handoff。
 
-### Expo Head setup
+### Expo Head 设置
 
-Ensure you set the Handoff origin in your `app.config.tsx` file using the `expo-router` config plugin. This is the URL that will be used for the `webpageUrl` when the user switches to your app.
+请确保在 `app.config.tsx` 文件中使用 `expo-router` 配置插件设置 Handoff origin。此 URL 将在用户切换到您的应用时用作 `webpageUrl`。
 
 ```tsx app.config.tsx
-// Be sure to change this to be unique to your project.
+// 请务必将其更改为对您的项目唯一的值。
 process.env.EXPO_TUNNEL_SUBDOMAIN = 'bacon-router-sandbox';
 
 const ngrokUrl = `${process.env.EXPO_TUNNEL_SUBDOMAIN}.ngrok.io`;
@@ -71,7 +71,7 @@ module.exports = {
       `applinks:${ngrokUrl}`,
       `activitycontinuation:${ngrokUrl}`,
       `webcredentials:${ngrokUrl}`,
-      // Add additional production-URLs here.
+      // 在此处添加额外的生产 URL。
       // `applinks:example.com`,
       // `activitycontinuation:example.com`,
       // `webcredentials:example.com`,
@@ -82,7 +82,7 @@ module.exports = {
     [
       'expo-router',
       {
-        // Note: The URL must start with "https://" in "headOrigin"
+        // 注意：在 "headOrigin" 中，URL 必须以 "https://" 开头
         headOrigin:
           process.env.NODE_ENV === 'development'
             ? `https://${ngrokUrl}`
@@ -93,17 +93,17 @@ module.exports = {
 };
 ```
 
-> Do not use the development-only `?mode=developer` suffix when testing handoff to native.
+> 在测试 handoff 到原生端时，不要使用仅限开发环境的 `?mode=developer` 后缀。
 
-After configuring the app config, regenerate your native project with the following command:
+配置完应用配置后，请使用以下命令重新生成您的原生项目：
 
 <Terminal cmd={['$ npx expo prebuild -p ios']} />
 
-In development, you must start the website **before installing the app on your device**. This is because when you install the app, the OS will trigger Apple's servers to ping your website for the **.well-known/apple-app-site-association** file. If the website is not running, the OS will not be able to find the file and handoff will not work. If this happens, rebuild the native app with `npx expo run:ios -d`.
+在开发过程中，您必须在将应用安装到设备之前先启动网站。这是因为当您安装应用时，操作系统会触发 Apple 的服务器去 ping 您的网站，以获取 **.well-known/apple-app-site-association** 文件。如果网站未运行，操作系统将无法找到该文件，handoff 也将无法工作。如果发生这种情况，请使用 `npx expo run:ios -d` 重新构建原生应用。
 
-## Usage
+## 用法
 
-In any route that you want to support handoff, use the `Head` component from `expo-router/head`:
+在任何您想支持 handoff 的路由中，使用来自 `expo-router/head` 的 `Head` 组件：
 
 ```tsx src/app/index.tsx
 import Head from 'expo-router/head';
@@ -115,24 +115,24 @@ export default function App() {
       <Head>
         <meta property="expo:handoff" content="true" />
       </Head>
-      <Text>Hello World</Text>
+      <Text>你好，世界</Text>
     </>
   );
 }
 ```
 
-### Meta tags
+### Meta 标签
 
-The `expo-router/head` component supports the following meta tags:
+`expo-router/head` 组件支持以下 meta 标签：
 
-| Meta tags                | Description                                                                                                                                                                                                                                           |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `expo:handoff`           | Set to `true` to enable handoff for the current route. Defaults to `false`. (iOS only)                                                                                                                                                                |
-| `og:title` and `<title>` | Set the title for the `NSUserActivity` this is unused with handoff.                                                                                                                                                                                   |
-| `og:description`         | Set the description for the `NSUserActivity` this is unused with handoff.                                                                                                                                                                             |
-| `og:url`                 | Set the URL that should be opened when the user switches to your app. Defaults to the current URL in-app with `headOrigin` prop in the `expo-router` config plugin, as the baseURL. Passing a relative path will append the `headOrigin` to the path. |
+| Meta 标签                | 描述                                                                                                                                                                                                                                               |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `expo:handoff`           | 设置为 `true` 以为当前路由启用 handoff。默认值为 `false`。（仅 iOS）                                                                                                                                                                                |
+| `og:title` 和 `<title>` | 为 `NSUserActivity` 设置标题；在 handoff 中不使用此项。                                                                                                                                                                                             |
+| `og:description`         | 为 `NSUserActivity` 设置描述；在 handoff 中不使用此项。                                                                                                                                                                                           |
+| `og:url`                 | 设置用户切换到您的应用时应打开的 URL。默认使用应用内当前 URL，并以 `expo-router` 配置插件中的 `headOrigin` 属性作为 baseURL。传入相对路径时，会将 `headOrigin` 追加到该路径前。 |
 
-You may want to switch the values between platforms, for that you can use **Platform.select**:
+如果您想在不同平台之间切换这些值，可以使用 **Platform.select**：
 
 {/* prettier-ignore */}
 ```tsx src/app/index.tsx
@@ -150,22 +150,22 @@ export default function App() {
 }
 ```
 
-## Debugging
+## 调试
 
-Ensure your Apple devices have [Handoff enabled](https://support.apple.com/en-us/HT209455). You can test this by following the steps below but substituting your app with Safari.
+确保你的 Apple 设备已[启用接力](https://support.apple.com/en-us/HT209455)。你可以按照下面的步骤进行测试，但将你的应用替换为 Safari。
 
-1. Open your native application on your device.
-2. Navigate to a route in the app that supports handoff which is rendering the `<Head />` element from Expo Router.
-3. To switch to your Mac and click the app's Handoff icon in the Dock.
-4. To switch to your iPhone or iPad, open the App Switcher, and tap the app banner at the bottom of the screen.
+1. 在你的设备上打开原生应用。
+2. 导航到应用中支持接力的路由，该路由正在渲染 Expo Router 的 `<Head />` 元素。
+3. 切换到你的 Mac，并点击 Dock 中该应用的接力图标。
+4. 切换到你的 iPhone 或 iPad，打开 App 切换器，然后点击屏幕底部的应用横幅。
 
-If you only see the Safari icon in your iPhone's App Switcher, then handoff is not working.
+如果你在 iPhone 的 App 切换器中只看到了 Safari 图标，那么说明接力未正常工作。
 
-## Troubleshooting
+## 故障排查
 
-You can test the Apple App Site Association file (**public/.well-known/apple-app-site-association**) by using a validator such as, [AASA Validator](https://branch.io/resources/aasa-validator/).
+你可以使用验证器（例如 [AASA Validator](https://branch.io/resources/aasa-validator/)）来测试 Apple App Site Association 文件（**public/.well-known/apple-app-site-association**）。
 
-If you're having issues, the best thing you can do is enable the most aggressive handoff settings in your app. This ensures that any possible route is linkable. You can do this by making sure that **public/.well-known/apple-app-site-association** file matches all routes:
+如果你遇到问题，最好的做法是在应用中启用最激进的接力设置。这可以确保任何可能的路由都可链接。你可以通过确保 **public/.well-known/apple-app-site-association** 文件匹配所有路由来实现：
 
 ```json public/.well-known/apple-app-site-association
 {
@@ -176,7 +176,7 @@ If you're having issues, the best thing you can do is enable the most aggressive
         "components": [
           {
             "/": "*",
-            "comment": "Matches all routes"
+            "comment": "匹配所有路由"
           }
         ]
       }
@@ -185,35 +185,35 @@ If you're having issues, the best thing you can do is enable the most aggressive
 }
 ```
 
-In the application, ensure you are not rendering the `<Head />` element conditionally (for example, in an `if/else` block), it must be rendered on every page that you want to support handoff. We recommend adding it to the [Root Layout](/router/basics/navigation-layouts/#root-layout) component to ensure every route is linkable while debugging.
+在应用中，确保你没有条件性地渲染 `<Head />` 元素（例如在 `if/else` 块中），它必须在你想要支持接力的每个页面上都被渲染。我们建议将其添加到 [根布局](/router/basics/navigation-layouts/#root-layout) 组件中，以确保在调试时每条路由都可链接。
 
-Ensure you can access the Ngrok URL (for example, via the browser), before installing the app on your device. If you can't access the URL, the OS will not be able to find the file and handoff will not work.
+在设备上安装应用之前，确保你可以访问 Ngrok URL（例如通过浏览器访问）。如果你无法访问该 URL，操作系统将无法找到文件，接力也将无法工作。
 
-`npx expo run:ios` and Xcode will both codesign your app when associated domains is set up, this is required for handoff and universal links to work.
+当配置了关联域时，`npx expo run:ios` 和 Xcode 都会对你的应用进行代码签名，这是接力和通用链接正常工作的必要条件。
 
-Handoff between your Mac and iPhone/iPad is not supported in the Expo Go app. You must build and install your app on your device.
+Expo Go 应用不支持 Mac 与 iPhone/iPad 之间的接力。你必须在设备上构建并安装你的应用。
 
-**If you see the Safari icon in the App Switcher on your iPhone**, then it means handoff is not working.
+**如果你在 iPhone 的 App 切换器中看到了 Safari 图标**，那么这意味着接力未正常工作。
 
-- Ensure you are not using the `?mode=developer` suffix when testing handoff to native.
-- Also be sure you're not using the local development server URL. For example, `http://localhost:8081` as this cannot be used as a valid app site association link, open the running Ngrok URL in your browser to test.
-- Ensure your **public/.well-known/apple-app-site-association** file contains the `activitycontinuation` field.
-- We've observed that in iOS 16.3.1 and macOS 13.0 (Ventura), bundle identifiers starting with `app.` and `io.` will sometimes not trigger the native app to show up in the iOS task switcher. Use `com.` as the first part of your bundle identifier.
+- 测试到原生端的接力时，确保你没有使用 `?mode=developer` 后缀。
+- 另外，确保你没有使用本地开发服务器 URL。例如，`http://localhost:8081` 不能作为有效的 app site association 链接使用；请在浏览器中打开正在运行的 Ngrok URL 进行测试。
+- 确保你的 **public/.well-known/apple-app-site-association** 文件包含 `activitycontinuation` 字段。
+- 我们观察到，在 iOS 16.3.1 和 macOS 13.0（Ventura）中，以 `app.` 和 `io.` 开头的 bundle identifier 有时不会触发原生应用在 iOS 任务切换器中显示。请使用 `com.` 作为 bundle identifier 的第一部分。
 
-Your **public/.well-known/apple-app-site-association** must be served from a secure URL (HTTPS). If you are using a development tunnel, you must use the `EXPO_TUNNEL_SUBDOMAIN` environment variable to configure the subdomain for your development tunnel. The tunnel is required for testing in development because you need SSL to use universal links, Expo CLI provides built-in support for this by running `npx expo start --tunnel`.
+你的 **public/.well-known/apple-app-site-association** 必须通过安全 URL（HTTPS）提供。如果你使用开发隧道，你必须使用 `EXPO_TUNNEL_SUBDOMAIN` 环境变量来配置开发隧道的子域名。开发环境下测试需要使用隧道，因为你需要 SSL 才能使用通用链接；Expo CLI 通过运行 `npx expo start --tunnel` 提供了内置支持。
 
-Check your **ios&#x2f;project&#x2f;project.entitlements** file, under the `com.apple.developer.associated-domains` key. This should contain the same domains as your web server/website. The URL cannot contain a protocol (`https://`) or additional pathname, query parameters, or fragments.
+检查你的 **ios&#x2f;project&#x2f;project.entitlements** 文件中 `com.apple.developer.associated-domains` 键下的内容。这应当包含与你的网站服务器/网站相同的域名。URL 不能包含协议（`https://`）或额外的路径名、查询参数或片段。
 
-### Still stuck
+### 仍然卡住
 
-> This is an important but very difficult feature to set up. Expo Router automates many of the moving parts, Expo CLI automates much of the configuration and hosting. However, hardware settings can still be misconfigured.
+> 这是一个很重要但也非常难配置的功能。Expo Router 自动化了许多相关环节，Expo CLI 自动化了大部分配置和托管。不过，硬件设置仍然可能被配置错误。
 
-If all else fails, you can try to debug the issue by following the steps in the [Apple Docs](https://developer.apple.com/documentation/foundation/task_management/implementing_handoff_in_your_app). Note that:
+如果一切都失败了，你可以尝试按照 [Apple 文档](https://developer.apple.com/documentation/foundation/task_management/implementing_handoff_in_your_app) 中的步骤来调试该问题。请注意：
 
-- "Representing user activities as instances of `NSUserActivity`." is performed by the Expo Head native module.
-- "Updating the activity instances as the user performs actions in your app." is performed by mounting/rendering the `<Head />` component with the meta tag `<meta property="expo:handoff" content="true" />` inside.
-- "Receiving activities from Handoff in your app on other devices." is performed by an [App Delegate Subscriber](/modules/appdelegate-subscribers) in the Expo Head native module. It is used to redirect you to the correct route when you handoff to your native app.
+- “将用户活动表示为 `NSUserActivity` 的实例。” 由 Expo Head 原生模块执行。
+- “当用户在应用中执行操作时更新活动实例。” 由挂载/渲染内部包含元标签 `<meta property="expo:handoff" content="true" />` 的 `<Head />` 组件来执行。
+- “在你的应用中的其他设备上接收来自接力的活动。” 由 Expo Head 原生模块中的 [App Delegate 订阅者](/modules/appdelegate-subscribers) 执行。它用于在你接力到原生应用时将你重定向到正确的路由。
 
-## Known issues
+## 已知问题
 
-Handoff from web to native does not support client-side routing. This means the URL presented in the App Switcher will be the URL of the page you were on when you clicked the link, or reloaded the page. It is a limitation of the web platform and not something that can be fixed by Expo Router.
+从网页到原生的接力不支持客户端路由。这意味着 App 切换器中显示的 URL 将是你点击链接或重新加载页面时所在页面的 URL。这是 Web 平台的限制，Expo Router 无法修复。

@@ -1,18 +1,18 @@
 ---
-title: Using private npm packages
-sidebar_label: Private npm packages
-description: Learn how to configure EAS Build to use private npm packages.
+title: 使用私有 npm 包
+sidebar_label: 私有 npm 包
+description: 了解如何配置 EAS Build 以使用私有 npm 包。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-EAS Build has full support for using private npm packages in your project. These can either be published to npm (if you have [the Pro/Teams plan](https://www.npmjs.com/products)) or to a private registry (for example, using self-hosted [Verdaccio](https://verdaccio.org/)).
+EAS Build 对在你的项目中使用私有 npm 包提供完整支持。这些包可以发布到 npm（如果你有 [Pro/Teams 方案](https://www.npmjs.com/products)），也可以发布到私有 registry（例如，使用自托管的 [Verdaccio](https://verdaccio.org/)）。
 
-Before starting the build, you will need to configure your project to provide EAS Build with your npm token.
+在开始构建之前，你需要先配置你的项目，以便向 EAS Build 提供你的 npm token。
 
-## Default npm configuration
+## 默认的 npm 配置
 
-By default, EAS Build uses a self-hosted npm cache that speeds up installing dependencies for all builds. Every EAS Build builder is configured with a **.npmrc** file for each platform:
+默认情况下，EAS Build 使用自托管的 npm 缓存，以加快所有构建的依赖安装速度。每个 EAS Build builder 都为每个平台配置了一个 **.npmrc** 文件：
 
 ### Android
 
@@ -26,57 +26,57 @@ registry=http://npm-cache-service.worker-infra-production.svc.cluster.local:4873
 registry=http://10.254.24.8:4873
 ```
 
-## Private packages published to npm
+## 发布到 npm 的私有包
 
-If your project is using private packages published to npm, you need to provide EAS Build with [a read-only npm token](https://docs.npmjs.com/about-access-tokens) so that it can install your dependencies successfully.
+如果你的项目使用的是发布到 npm 的私有包，你需要向 EAS Build 提供一个 [只读 npm token](https://docs.npmjs.com/about-access-tokens)，以便它能够成功安装你的依赖。
 
-The recommended way is to add the `NPM_TOKEN` secret to your account or project's secrets:
+推荐的做法是将 `NPM_TOKEN` secret 添加到你的账户或项目的 secrets 中：
 
 <ContentSpotlight
-  alt="Secret creation UI filled."
+  alt="已填充的 secret 创建界面。"
   src="/static/images/eas-build/environment-secrets/secrets-create-filled.png"
 />
 
-For more information on how to do that, see [secret environment variables](/eas/environment-variables/manage/#create-variables-in-the-dashboard).
+有关如何执行此操作的更多信息，请参阅 [secret environment variables](/eas/environment-variables/manage/#create-variables-in-the-dashboard)。
 
-When EAS detects that the `NPM_TOKEN` environment variable is available during a build, it automatically creates the following **.npmrc**:
+当 EAS 检测到在构建期间可用 `NPM_TOKEN` 环境变量时，它会自动创建如下 **.npmrc**：
 
 ```ini .npmrc
 //registry.npmjs.org/:_authToken=${NPM_TOKEN}
 registry=https://registry.npmjs.org/
 ```
 
-However, this only happens when **.npmrc** is not in your project's root directory. If you already have this file, you need to update it manually.
+不过，这仅在项目根目录中不存在 **.npmrc** 时才会发生。如果你已经有这个文件，则需要手动更新它。
 
-You can verify if it worked by viewing build logs and looking for the **Prepare project** build phase:
+你可以通过查看构建日志并查找 **Prepare project** 构建阶段来验证是否生效：
 
 <ContentSpotlight
-  alt=".npmrc created and shown in the build logs."
+  alt="已创建并显示在构建日志中的 .npmrc。"
   src="/static/images/eas-build/npmrc.png"
 />
 
-## Packages published to a private registry
+## 发布到私有 registry 的包
 
-If you're using a private npm registry such as self-hosted [Verdaccio](https://verdaccio.org/), you will need to configure the **.npmrc** manually.
+如果你使用的是私有 npm registry，例如自托管的 [Verdaccio](https://verdaccio.org/)，你需要手动配置 **.npmrc**。
 
-Create a **.npmrc** file in your project's root directory with the following contents:
+在项目根目录中创建一个 **.npmrc** 文件，并写入以下内容：
 
 ```ini .npmrc
 registry=__REPLACE_WITH_REGISTRY_URL__
 ```
 
-If your registry requires authentication, you will need to provide the token. For example, if your registry URL is `https://registry.johndoe.com/`, then update the file with:
+如果你的 registry 需要认证，你还需要提供 token。例如，如果你的 registry URL 是 `https://registry.johndoe.com/`，则将文件更新为：
 
 ```ini .npmrc
 //registry.johndoe.com/:_authToken=${NPM_TOKEN}
 registry=https://registry.johndoe.com/
 ```
 
-## Both private npm packages and private registry
+## 私有 npm 包和私有 registry 都使用
 
-> This is an advanced example.
+> 这是一个高级示例。
 
-Private npm packages are always [scoped](https://docs.npmjs.com/about-scopes#scopes-and-package-visibility). For example, if your npm username is `johndoe`, the private self-hosted registry URL is `https://registry.johndoe.com/`. If you want to install dependencies from both sources, create a **.npmrc** in your project's root directory with the following:
+私有 npm 包始终是 [作用域包](https://docs.npmjs.com/about-scopes#scopes-and-package-visibility)。例如，如果你的 npm 用户名是 `johndoe`，那么私有自托管 registry URL 就是 `https://registry.johndoe.com/`。如果你想从这两个来源安装依赖，请在项目根目录中创建一个 **.npmrc**，内容如下：
 
 ```ini .npmrc
 //registry.npmjs.org/:_authToken=${NPM_TOKEN}
@@ -84,6 +84,6 @@ Private npm packages are always [scoped](https://docs.npmjs.com/about-scopes#sco
 registry=https://registry.johndoe.com/
 ```
 
-## Submodules in private repositories
+## 私有仓库中的子模块
 
-If you have a submodule in a private repository, you will need to initialize it by setting up an SSH key. For more information, see [submodules initialization](/build-reference/git-submodules/#submodules-initialization).
+如果你在私有仓库中有一个子模块，你需要通过配置 SSH 密钥来初始化它。更多信息请参阅 [子模块初始化](/build-reference/git-submodules/#submodules-initialization)。

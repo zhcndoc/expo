@@ -1,16 +1,16 @@
 ---
-title: Asset Caching
+title: 资源缓存
 ---
 
 import { SnackInline } from '~/ui/components/Snippet';
 
-This section covers all things related to loading assets in your apps, from bundling with an app binary, to caching, pre-loading and publishing.
+本节涵盖与在应用中加载资源相关的所有内容，从将资源与应用二进制文件打包，到缓存、预加载和发布。
 
-### Bundling assets
+### 将资源打包
 
-Bundling assets into your binary will provide the best user experience as your assets will be available immediately. Instead of having to make a network request to the CDN to fetch your published assets, your app will fetch them from the local disk resulting in a faster, more efficient loading experience. Bundling assets also allows offline functionality.
+将资源打包进你的二进制文件将提供最佳的用户体验，因为你的资源会立即可用。应用无需向 CDN 发起网络请求来获取已发布的资源，而是会从本地磁盘读取，从而带来更快、更高效的加载体验。资源打包还支持离线功能。
 
-To bundle assets in your binary, use the [assetBundlePatterns](/workflow/configuration/) key in **app.json** to provide a list of paths in your project directory:
+要将资源打包进你的二进制文件，请在 **app.json** 中使用 [assetBundlePatterns](/workflow/configuration/) 键，提供项目目录中的路径列表：
 
 ```text
 "assetBundlePatterns": [
@@ -18,20 +18,20 @@ To bundle assets in your binary, use the [assetBundlePatterns](/workflow/configu
 ],
 ```
 
-Images with paths matching the given patterns will be bundled into your native binaries next time you run `eas build`.
+路径与给定模式匹配的图片将在你下次运行 `eas build` 时被打包进你的原生二进制文件。
 
-> **Note**: If your app contains an abnormal amount of assets or assets that are abnormally large in size, asset bundling may not be the best solution as it will cause your application size to bloat. If this is the case, be selective and bundle those assets that are essential and store the rest on the CDN.
+> **注意**：如果你的应用包含异常数量的资源，或者资源大小异常大，资源打包可能不是最佳方案，因为它会导致应用体积膨胀。在这种情况下，请有选择地打包那些必要的资源，并将其余资源存储在 CDN 上。
 
-### Pre-loading and caching assets
+### 预加载和缓存资源
 
-Assets are cached differently depending on where they are stored and how they are used. This section offers best practices to ensure you only download assets when needed. To keep the loading screen visible while caching assets, it's a good idea to render a [SplashScreen](/versions/latest/sdk/splash-screen/) until everything is ready.
+资源的缓存方式会因其存储位置和使用方式而异。本节提供最佳实践，以确保你只在需要时下载资源。为了在缓存资源时保持加载界面可见，建议在一切就绪之前渲染 [SplashScreen](/versions/latest/sdk/splash-screen/)。
 
-To download and cache the images saved to the local filesystem, use [`Asset.fromModule(image).downloadAsync()`](/versions/latest/sdk/asset). For images with remote URLs, use `Image.prefetch(image)`.
+要下载并缓存保存在本地文件系统中的图片，请使用 [`Asset.fromModule(image).downloadAsync()`](/versions/latest/sdk/asset)。对于带有远程 URL 的图片，请使用 `Image.prefetch(image)`。
 
-Fonts are pre-loaded using `Font.loadAsync(font)`. The `font` argument in this method is an object such as: `{OpenSans: require('./assets/fonts/OpenSans.ttf')}`. `@expo/vector-icons` provides a helpful shortcut for this object as `FontAwesome.font` in the following example:
+字体通过 `Font.loadAsync(font)` 进行预加载。此方法中的 `font` 参数是一个对象，例如：`{OpenSans: require('./assets/fonts/OpenSans.ttf')}`。`@expo/vector-icons` 为此对象提供了一个便捷的快捷方式，如下例中的 `FontAwesome.font`：
 
 <SnackInline
-label="Pre-loading and Caching Assets"
+label="预加载和缓存资源"
 dependencies={['expo-font', 'expo-asset', 'expo-splash-screen', '@expo/vector-icons', '@expo/vector-icons/FontAwesome']}
 files={{'assets/images/circle.jpg': 'https://snack-code-uploads.s3.us-west-1.amazonaws.com/~asset/42f59672cb9eb70368b00921c0cc60b7'}}>
 
@@ -60,7 +60,7 @@ function cacheFonts(fonts) {
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
 
-  // Load any resources or data that you need before rendering the app
+  // 在渲染应用之前加载任何你需要的资源或数据
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
@@ -75,7 +75,7 @@ export default function App() {
 
         await Promise.all([...imageAssets, ...fontAssets]);
       } catch (e) {
-        // You might want to provide this error information to an error reporting service
+        // 你可能希望将这些错误信息提供给错误报告服务
         console.warn(e);
       } finally {
         setAppIsReady(true);
@@ -92,7 +92,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text>Hello world, this is my app.</Text>
+      <Text>你好，世界，这是我的应用。</Text>
     </View>
   );
 }
@@ -109,10 +109,10 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
-To use the local image asset, you can continue referencing the source of the image normally in your project, for example:
+要使用本地图片资源，你可以像平常一样在项目中继续引用该图片的源文件，例如：
 
 ```jsx
 <Image source={require('path/to/image.png')} />
 ```
 
-See the complete working example in [Expo's tabs template project](https://github.com/expo/expo/tree/main/templates/expo-template-tabs). You can also run `npx create-expo-app --template tabs` to set up a local project with the same template.
+完整可运行示例请参见 [Expo 的 tabs 模板项目](https://github.com/expo/expo/tree/main/templates/expo-template-tabs)。你也可以运行 `npx create-expo-app --template tabs` 来使用相同模板创建本地项目。

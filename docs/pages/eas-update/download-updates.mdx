@@ -1,54 +1,54 @@
 ---
-title: Downloading updates
-description: Learn strategies for downloading and launching updates.
+title: 下载更新
+description: 了解下载和启动更新的策略。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 
-> **info** All of the following information on this page applies only to release builds and debug builds [with `EX_UPDATES_NATIVE_DEBUG` enabled](/eas-update/debug/#runtime-issues).
+> **info** 本页中的所有以下信息仅适用于发布构建，以及启用了 [\`EX_UPDATES_NATIVE_DEBUG\`](/eas-update/debug/#runtime-issues) 的调试构建。
 
-In this section, we'll cover the different strategies for downloading and launching updates. The goal is to ensure that the end user adopts the latest version of the app as soon as possible after it is published, without sacrificing the user experience by introducing slow loading screens or other issues. The strategies are not mutually exclusive, and you can mix and match them as needed for the requirements of your app.
+在本节中，我们将介绍下载和启动更新的不同策略。目标是在不牺牲用户体验、避免引入缓慢的加载界面或其他问题的前提下，确保最终用户在更新发布后尽快采用应用的最新版本。这些策略并不互斥，你可以根据应用的需求按需组合使用。
 
-## Updates are loaded asynchronously on startup by default
+## 默认情况下，更新会在启动时异步加载
 
-The default behavior is to check for an update when the app is cold booted (launched from a killed state) and download the update if it's available. This process does not block loading the app, so when using this strategy the end user will only load the update when they cold boot the app after an update has been published, and then at some point kill and restart the app (for example, if they close it from the recent apps list on the OS or if they turn the device off and on).
+默认行为是在应用冷启动时（从被终止的状态启动）检查更新，并在有可用更新时下载它。这个过程不会阻塞应用加载，因此使用这种策略时，最终用户只有在更新发布后冷启动应用时才会加载更新，然后在某个时候终止并重启应用（例如，他们从操作系统的最近使用应用列表中关闭它，或者关闭并重新打开设备）。
 
-This behavior is safe because it doesn't interfere with app startup to wait for a network request to complete (which would be a bad user experience in common real-world cases where a user finds themself with a slow connection and they are stuck on a loading screen for several seconds). The downside is that it takes much longer for users to adopt the latest version of the app. If the ideal is for an update to be adopted immediately by all users as soon as it is published, then this strategy falls very short of that.
+这种行为是安全的，因为它不会为了等待网络请求完成而干扰应用启动（在常见的真实场景中，如果用户遇到慢速连接并被困在加载屏幕上数秒，这会带来很差的用户体验）。缺点是用户采用应用最新版本所需的时间会长得多。如果理想目标是让所有用户在更新一发布后就立即采用，那么这种策略与目标相差甚远。
 
-<Collapsible summary="What if I want to always block app startup until the latest update is downloaded?">
+<Collapsible summary="如果我想始终阻塞应用启动，直到最新更新下载完成，该怎么办？">
 
-We recommend against this strategy because the resulting user experience is extremely poor. Typically when a user is stuck waiting on a splash screen when booting an app, they will close the app and try again (and so downloading the update won't complete), or give up and use another app. When the users' device is connected to a slow network, even when there is no update, they may have to wait several seconds or more to load the app. If ensuring that your users always have the latest version of your app is critical, you may want to explore one of the other strategies explained here.
-
-</Collapsible>
-
-<Collapsible summary="How can I disable the default behavior?">
-
-You can disable the default behavior by setting the [`checkAutomatically`](/versions/latest/sdk/updates/#updatescheckautomaticallyvalue) option to `NEVER` in the `updates` configuration. This will prevent the app from checking for updates and downloading them automatically.
+我们不建议采用这种策略，因为由此带来的用户体验极差。通常，当用户在启动应用时被困在启动画面上等待，他们会关闭应用并再次尝试（因此更新下载不会完成），或者直接放弃并使用其他应用。如果用户的设备连接的是慢速网络，即使没有更新，他们也可能需要等待数秒甚至更久才能加载应用。如果确保用户始终拥有你应用的最新版本至关重要，你可能需要考虑这里介绍的其他策略之一。
 
 </Collapsible>
 
-## Checking for updates while the app is running
+<Collapsible summary="如何禁用默认行为？">
 
-You can use `Updates.checkForUpdateAsync()` to check for updates while the app is running. This will return a promise that resolves to a [`UpdateCheckResult` object](/versions/latest/sdk/updates/#updatecheckresult), with `isAvailable` set to `true` if an update is available, and information about the update in the [`manifest`](/versions/latest/sdk/manifests/#expoupdatesmanifest) property.
-
-If an update is available, you can use the `Updates.fetchUpdateAsync()` method to download the update. This will return a promise that resolves when the download is complete. Finally, you can use the `Updates.reloadAsync()` method to reload the app with the new version. The `useUpdates()` hook can also be used to monitor the state of the `expo-updates` library from a React component.
-
-<Collapsible summary="What are common patterns for checking for updates while the app is running?">
-
-- You can check for updates at various points in your app's lifecycle, such as [when it is foregrounded](https://reactnative.dev/docs/appstate) or at some interval. When an update is found, you may want to show a dialog to the user to prompt the user to update.
-- You can check for updates at launch and display your own custom loading screen, if it is very important for your use case to ensure that users always get the latest version at launch.
+你可以在 `updates` 配置中将 [`checkAutomatically`](/versions/latest/sdk/updates/#updatescheckautomaticallyvalue) 选项设置为 `NEVER`，从而禁用默认行为。这样应用就不会自动检查更新并下载它们。
 
 </Collapsible>
 
-## Checking for updates while the app is backgrounded
+## 在应用运行时检查更新
 
-You can use [`expo-background-task`](/versions/latest/sdk/background-task/) to check for updates while the app is backgrounded. To do this, use the same `Updates.checkForUpdateAsync()` and `Updates.fetchUpdateAsync()` methods as you would in the foreground, but execute them inside of a background task. This is a great way to ensure that the user always has the latest version of the app, even if they have not opened the app in a while.
+你可以使用 `Updates.checkForUpdateAsync()` 在应用运行时检查更新。这将返回一个 promise，解析为一个 [`UpdateCheckResult` 对象](/versions/latest/sdk/updates/#updatecheckresult)，如果有可用更新，则其 `isAvailable` 会被设为 `true`，并且更新信息会出现在 [`manifest`](/versions/latest/sdk/manifests/#expoupdatesmanifest) 属性中。
 
-It's worth considering whether you want to reload the app after an update is downloaded in the background, or wait for the user to close and reopen it. If you choose to only download it in the background and not apply it, this should still be useful to ensure that the next boot will immediately have the latest version, and it will lead to a faster adoption rate for updates compared to the default behavior.
+如果有可用更新，你可以使用 `Updates.fetchUpdateAsync()` 方法下载更新。这将返回一个 promise，并在下载完成时解析。最后，你可以使用 `Updates.reloadAsync()` 方法用新版本重新加载应用。`useUpdates()` hook 也可用于在 React 组件中监视 `expo-updates` 库的状态。
 
-<Collapsible summary="An example of how to check for updates in the background">
+<Collapsible summary="检查应用运行时更新的常见模式有哪些？">
 
-To ensure the background task is registered when the application starts, import and invoke the `setupBackgroundUpdates` function within the top-level component.
+- 你可以在应用生命周期中的不同时间点检查更新，例如在 [应用进入前台时](https://reactnative.dev/docs/appstate) 或按固定时间间隔检查。当发现更新时，你可能希望向用户显示一个对话框，提示用户更新。
+- 如果你的用例非常重要，必须确保用户在启动时总能获得最新版本，那么你可以在启动时检查更新并显示你自己的自定义加载界面。
+
+</Collapsible>
+
+## 在应用处于后台时检查更新
+
+你可以使用 [`expo-background-task`](/versions/latest/sdk/background-task/) 在应用处于后台时检查更新。为此，请像在前台一样使用相同的 `Updates.checkForUpdateAsync()` 和 `Updates.fetchUpdateAsync()` 方法，但要在后台任务中执行它们。这是确保用户始终拥有应用最新版本的绝佳方式，即使他们已经有一段时间没有打开应用了。
+
+值得考虑的是，你是希望在后台下载更新后立即重新加载应用，还是等用户关闭并重新打开它。如果你选择仅在后台下载而不应用更新，这仍然有助于确保下一次启动时立即使用最新版本，并且与默认行为相比，这会带来更快的更新采用率。
+
+<Collapsible summary="在后台检查更新的示例">
+
+为确保应用启动时注册后台任务，请在顶层组件中导入并调用 `setupBackgroundUpdates` 函数。
 
 ```ts
 import * as TaskManager from 'expo-task-manager';
@@ -77,26 +77,26 @@ setupBackgroundUpdates();
 
 </Collapsible>
 
-<Collapsible summary="Should I also apply the update with Updates.reloadAsync() when the app is backgrounded?">
+<Collapsible summary="当应用处于后台时，我也应该使用 Updates.reloadAsync() 应用更新吗？">
 
-**Support for calling `Updates.reloadAsync()` while the app is backgrounded is experimental**. This is a new feature and it is not widely used, be sure to monitor for crashes when you first enable it. Downloading an update in the background is safe.
+**在应用处于后台时调用 `Updates.reloadAsync()` 的支持是实验性的**。这是一个新功能，且尚未被广泛使用，首次启用时务必监控是否发生崩溃。在后台下载更新是安全的。
 
-Reloading an update while the app is backgrounded can be a great way to ensure that the user has the latest version of the app when they open it again. However, it is important to note that, unless you persist the state that the app was in at the time it was backgrounded and restore that state, the user will experience a cold boot when they open the app again. One way to mitigate this is to only do a reload in the background if the app has been inactive for a certain period of time, after which a user is unlikely to expect the app to restore its previous state.
+当应用处于后台时重新加载更新，可以很好地确保用户下次打开应用时使用的就是最新版本。不过需要注意的是，除非你持久化应用处于后台时的状态并在之后恢复该状态，否则用户下次打开应用时会经历一次冷启动。缓解这一问题的一种方法是：只有当应用已经处于非活跃状态达到某个时间段后，才在后台执行重新加载；在这之后，用户通常不会期望应用恢复到之前的状态。
 
 </Collapsible>
 
-## Critical/mandatory updates
+## 关键/强制更新
 
-There is no first-class support for critical/mandatory updates in the `expo-updates` library. However, you can implement your own logic to check for critical updates and apply them manually. The [`expo/UpdatesAPIDemo` repository](https://github.com/expo/UpdatesAPIDemo) contains an example of one way to approach this. You can combine that approach with the strategies above to check for updates.
+`expo-updates` 库并不原生支持关键/强制更新。不过，你可以实现自己的逻辑来检查关键更新并手动应用它们。[`expo/UpdatesAPIDemo` 仓库](https://github.com/expo/UpdatesAPIDemo) 包含了一个实现思路示例。你可以将该方法与上面的策略结合起来检查更新。
 
-## Controlling which update to load from the client side
+## 从客户端控制要加载哪个更新
 
-The typical way to use EAS Update is to have a single update URL and a set of request headers (such as update channel name) embedded in a build of your app. To control which update is loaded, you make changes on the server through the `eas update` command or the EAS dashboard. For example, you publish a new update to a channel that your build is pointing to, then the build fetches that update on the next launch. Updates published to a channel different from the one your build is pointing to will not be downloaded with this approach.
+使用 EAS Update 的典型方式，是在你应用的构建中嵌入单一的更新 URL 和一组请求头（例如更新通道名称）。要控制加载哪个更新，你需要通过 `eas update` 命令或 EAS 控制台在服务器端进行更改。例如，你向构建所指向的通道发布一个新更新，然后该构建会在下一次启动时获取该更新。按照这种方式，发布到与构建所指向的不同通道的更新将不会被下载。
 
-You can override the update URL and request headers at runtime using the `Updates.setUpdateURLAndRequestHeadersOverride()` method. This can be useful if you want to load a specific update or change the update channel while the app is running. [Learn more](/eas-update/override/).
+你可以在运行时使用 `Updates.setUpdateURLAndRequestHeadersOverride()` 方法覆盖更新 URL 和请求头。如果你希望在应用运行时加载特定更新或更改更新通道，这会很有用。[了解更多](/eas-update/override/)。
 
-## Monitoring adoption of updates
+## 监控更新的采用情况
 
-The details page for an update (for example: `https://expo.dev/accounts/[account]/projects/[project]/updates/[id]`) shows metrics for the number of users who have run the update, in addition to the number of failed installs (users who download and attempted to run the update, but it crashed).
+更新的详情页面（例如：`https://expo.dev/accounts/[account]/projects/[project]/updates/[id]`）会显示运行该更新的用户数量，以及安装失败的数量（即已下载并尝试运行该更新，但应用崩溃的用户）。
 
-The deployments page (for example: `https://expo.dev/accounts/[account]/projects/[project]/deployments/production/[runtime-version]`) includes a table and chart that shows the number of users who have run each update related to a particular update channel and runtime version combination, over a given time period.
+部署页面（例如：`https://expo.dev/accounts/[account]/projects/[project]/deployments/production/[runtime-version]`）包含一个表格和图表，显示在给定时间段内，针对某个特定更新通道与运行时版本组合，每个相关更新被运行的用户数量。

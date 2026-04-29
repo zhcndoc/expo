@@ -1,89 +1,89 @@
 ---
-sidebar_title: Worker runtime
-title: EAS Hosting worker runtime
-description: Learn about EAS Hosting worker runtime and Node.js compatibility.
+sidebar_title: Worker 运行时
+title: EAS Hosting worker 运行时
+description: 了解 EAS Hosting worker 运行时和 Node.js 兼容性。
 ---
 
 import { YesIcon, NoIcon, AlertIcon } from '~/ui/components/DocIcons';
 
-EAS Hosting is built on [Cloudflare Workers](https://developers.cloudflare.com/workers/), a modern and powerful platform for serverless APIs that's been built for seamless scalability, high reliability, and exceptional performance globally.
+EAS Hosting 构建于 [Cloudflare Workers](https://developers.cloudflare.com/workers/)，这是一个现代且强大的无服务器 API 平台，专为全球范围内的无缝扩展性、高可靠性和卓越性能而打造。
 
-The Cloudflare Workers runtime runs on the V8 JavaScript engine, the same powering JavaScript in Node.js and Chromium. However, its runtime has a few key differences from what you might be used to in traditional serverless Node.js deployments.
+Cloudflare Workers 运行时基于 V8 JavaScript 引擎运行，该引擎同样为 Node.js 和 Chromium 中的 JavaScript 提供支持。不过，它的运行时与您在传统无服务器 Node.js 部署中习惯的环境有一些关键差异。
 
-Instead of each request running in a full JavaScript process, Workers are designed to run them in small V8 isolates, a feature of the V8 runtime. Think of them as micro-containers in a single JavaScript process.
+与其让每个请求在完整的 JavaScript 进程中运行，Workers 设计为在小型 V8 isolates 中运行它们，这是 V8 运行时的一项特性。可以把它们想象成单个 JavaScript 进程中的微型容器。
 
-For more information on how Workers work, see [Cloudflare Workers](https://developers.cloudflare.com/workers/reference/how-workers-works/) documentation.
+有关 Workers 工作原理的更多信息，请参阅 [Cloudflare Workers](https://developers.cloudflare.com/workers/reference/how-workers-works/) 文档。
 
-## Node.js compatibility
+## Node.js 兼容性
 
-Cloudflare is part of [Winter TC](https://wintertc.org/), is more similar to the JavaScript environments in browsers and service workers rather than in Node.js. Restrictions like these provide a leaner runtime than Node.js, which is still familiar. This common runtime is a minimal standard supported by many JavaScript runtime these days.
+Cloudflare 是 [Winter TC](https://wintertc.org/) 的一部分，它更类似于浏览器和 service workers 中的 JavaScript 环境，而不是 Node.js。像这样的限制提供了比 Node.js 更轻量的运行时，同时仍然保持熟悉感。这个通用运行时是一个最小标准，如今已被许多 JavaScript 运行时支持。
 
-This means, many Node.js APIs that you might be used to or some dependencies you utilize, aren't directly available in the EAS Hosting runtime. To ease this transition, as not all dependencies will have first-class support for Web APIs yet, Node.js compatibility modules exist and can be used in your API routes.
+这意味着，许多您可能习惯使用的 Node.js API，或您依赖的一些依赖项，并不能直接在 EAS Hosting 运行时中使用。为了简化这一过渡，由于并非所有依赖项都已获得对 Web API 的一等支持，因此存在 Node.js 兼容模块，您可以在 API 路由中使用它们。
 
-| Node.js built-in module    | Supported     | Implementation notes                                                               |
+| Node.js 内置模块           | 支持情况      | 实现说明                                                                           |
 | -------------------------- | ------------- | ---------------------------------------------------------------------------------- |
 | `node:assert`              | <YesIcon />   |                                                                                    |
 | `node:async_hooks`         | <YesIcon />   |                                                                                    |
 | `node:buffer`              | <YesIcon />   |                                                                                    |
-| `node:crypto`              | <YesIcon />   | Select deprecated algorithms are not available                                     |
-| `node:console`             | <AlertIcon /> | Provided as partially functional JS shims                                          |
+| `node:crypto`              | <YesIcon />   | 某些已弃用的算法不可用                                                                |
+| `node:console`             | <AlertIcon /> | 以部分可用的 JS shim 形式提供                                                        |
 | `node:constants`           | <YesIcon />   |                                                                                    |
-| `node:diagnostics_channel` | <YesIcon />   | Select deprecated algorithms are not implemented                                   |
-| `node:dns`                 | <YesIcon />   | `Resolver` is unimplemented, all DNS requests are sent to Cloudflare               |
+| `node:diagnostics_channel` | <YesIcon />   | 某些已弃用的算法未实现                                                                |
+| `node:dns`                 | <YesIcon />   | `Resolver` 未实现，所有 DNS 请求都会发送到 Cloudflare                                |
 | `node:events`              | <YesIcon />   |                                                                                    |
-| `node:fs`                  | <YesIcon />   | Supported, with in-memory filesystem                                               |
-| `node:http`                | <YesIcon />   | Supported, except for server functionality                                         |
-| `node:http2`               | <AlertIcon /> | Partially supported. Server functionality unsupported                              |
-| `node:https`               | <YesIcon />   | Supported, except for server functionality                                         |
-| `node:module`              | <AlertIcon /> | `SourceMap` is unimplemented, partially supported otherwise                        |
-| `node:net`                 | <AlertIcon /> | `Server` and `BlockList` are unimplemented, client sockets are partially supported |
-| `node:os`                  | <YesIcon />   | Provided as JS stubs that provide mock values matching Node.js on Linux            |
+| `node:fs`                  | <YesIcon />   | 支持，但使用内存文件系统                                                             |
+| `node:http`                | <YesIcon />   | 支持，但不包括服务器功能                                                             |
+| `node:http2`               | <AlertIcon /> | 部分支持。不支持服务器功能                                                            |
+| `node:https`               | <YesIcon />   | 支持，但不包括服务器功能                                                             |
+| `node:module`              | <AlertIcon /> | `SourceMap` 未实现，其他方面部分支持                                                  |
+| `node:net`                 | <AlertIcon /> | `Server` 和 `BlockList` 未实现，客户端套接字部分支持                                   |
+| `node:os`                  | <YesIcon />   | 作为 JS stub 提供，返回与 Linux 上 Node.js 匹配的模拟值                                |
 | `node:path`                | <YesIcon />   |                                                                                    |
 | `node:path/posix`          | <YesIcon />   |                                                                                    |
 | `node:path/win32`          | <YesIcon />   |                                                                                    |
-| `node:process`             | <YesIcon />   | Provided as JS stubs                                                               |
+| `node:process`             | <YesIcon />   | 作为 JS stub 提供                                                                     |
 | `node:punycode`            | <NoIcon />    |                                                                                    |
 | `node:querystring`         | <YesIcon />   |                                                                                    |
-| `node:readline`            | <NoIcon />    | Provided as non-functional JS stubs, since workers have no `stdin`                 |
+| `node:readline`            | <NoIcon />    | 作为不可用的 JS stub 提供，因为 workers 没有 `stdin`                                  |
 | `node:stream`              | <YesIcon />   |                                                                                    |
 | `node:stream/consumers`    | <YesIcon />   |                                                                                    |
 | `node:stream/web`          | <YesIcon />   |                                                                                    |
 | `node:string_decoder`      | <YesIcon />   |                                                                                    |
 | `node:test`                | <YesIcon />   |                                                                                    |
 | `node:timers`              | <YesIcon />   |                                                                                    |
-| `node:tls`                 | <YesIcon />   | Supported, except for server functionality                                         |
-| `node:trace_events`        | <AlertIcon /> | Provided as non-functional JS stubs                                                |
-| `node:tty`                 | <YesIcon />   | Provided as JS shims redirecting output to the Console API                         |
-| `node:url`                 | <YesIcon />   |                                                                                    |
+| `node:tls`                 | <YesIcon />   | 支持，但不包括服务器功能                                                             |
+| `node:trace_events`        | <AlertIcon /> | 作为不可用的 JS stub 提供                                                            |
+| `node:tty`                 | <YesIcon />   | 作为 JS shim 提供，将输出重定向到 Console API                                        |
+| `node:url`                | <YesIcon />   |                                                                                    |
 | `node:util`                | <YesIcon />   |                                                                                    |
 | `node:util/types`          | <YesIcon />   |                                                                                    |
-| `node:worker_threads`      | <NoIcon />    | Provided as non-functional JS stubs, since workers don't support threading         |
+| `node:worker_threads`      | <NoIcon />    | 作为不可用的 JS stub 提供，因为 workers 不支持线程                                   |
 | `node:zlib`                | <YesIcon />   |                                                                                    |
 
-These modules generally provide a lower-accuracy polyfill or approximation of their Node.js counterparts.
-For example, the `fs`, `http`, and `https` modules have additional restrictions in place and are Node.js compatibility layers, which aren't equivalent to running them in a Node.js process.
+这些模块通常提供的是 Node.js 对应模块的低精度 polyfill 或近似实现。
+例如，`fs`、`http` 和 `https` 模块有额外的限制，并且属于 Node.js 兼容层，这与在 Node.js 进程中运行它们并不相同。
 
-Any of the above listed Node.js modules can be used in API routes or dependencies of your API routes as usual and will use appropriate compatibility modules. However, some of these modules may not provide any practical functionality and only exist to shim APIs to prevent runtime crashes.
+上述列出的任何 Node.js 模块都可以像往常一样在 API 路由或其依赖项中使用，并将使用相应的兼容模块。然而，其中一些模块可能不会提供任何实际功能，只是为了对 API 进行 shim 以防止运行时崩溃而存在。
 
-Any modules that aren't mentioned here are unavailable or unsupported, and your code and none of your dependencies should rely on them being provided.
+未在此处提及的任何模块都不可用或不受支持，您的代码以及任何依赖项都不应依赖它们已被提供。
 
-> More Node.js compatibility shims may be added in the future, but all Node.js APIs that are not documented in this non-exhaustive list are not expected to work.
+> 未来可能会添加更多 Node.js 兼容 shim，但本文档中未穷举列出的所有 Node.js API 都不应被期望可正常工作。
 
-## Globals
+## 全局变量
 
-| JavaScript runtime globals | Supported     | Implementation notes                                                                                                          |
-| -------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `origin`                   | <YesIcon />   | Will always be the same as the incoming request's `Origin` header                                                             |
-| `process`                  | <YesIcon />   |                                                                                                                               |
-| `process.env`              | <YesIcon />   | Populated with EAS Hosting environment variables                                                                              |
-| `process.stdout`           | <YesIcon />   | Will redirect output to the Console API (`console.log`) for logging                                                           |
-| `process.stderr`           | <YesIcon />   | Will redirect output to the Console API (`console.error`) for logging                                                         |
-| `setImmediate`             | <YesIcon />   |                                                                                                                               |
-| `clearImmediate`           | <YesIcon />   |                                                                                                                               |
-| `Buffer`                   | <YesIcon />   | Set to `Buffer` from `node:buffer`                                                                                            |
-| `EventEmitter`             | <YesIcon />   | Set to `EventEmitter` from `node:events`                                                                                      |
-| `global`                   | <YesIcon />   | Set to `globalThis`                                                                                                           |
-| `WeakRef`                  | <YesIcon />   |                                                                                                                               |
-| `FinalizationRegistry`     | <YesIcon />   |                                                                                                                               |
-| `require`                  | <AlertIcon /> | External requires are supported but limited to deployed JS files and built-in modules. Node module resolution is unsupported. |
-| `require.cache`            | <NoIcon />    |                                                                                                                               |
+| JavaScript 运行时全局变量 | 支持情况      | 实现说明                                                                                                                     |
+| ------------------------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `origin`                 | <YesIcon />   | 始终与传入请求的 `Origin` 标头相同                                                                                             |
+| `process`                | <YesIcon />   |                                                                                                                              |
+| `process.env`            | <YesIcon />   | 填充为 EAS Hosting 环境变量                                                                                                    |
+| `process.stdout`         | <YesIcon />   | 将输出重定向到 Console API（`console.log`）用于日志记录                                                                        |
+| `process.stderr`         | <YesIcon />   | 将输出重定向到 Console API（`console.error`）用于日志记录                                                                      |
+| `setImmediate`           | <YesIcon />   |                                                                                                                              |
+| `clearImmediate`         | <YesIcon />   |                                                                                                                              |
+| `Buffer`                 | <YesIcon />   | 设置为来自 `node:buffer` 的 `Buffer`                                                                                           |
+| `EventEmitter`           | <YesIcon />   | 设置为来自 `node:events` 的 `EventEmitter`                                                                                     |
+| `global`                 | <YesIcon />   | 设置为 `globalThis`                                                                                                           |
+| `WeakRef`                | <YesIcon />   |                                                                                                                              |
+| `FinalizationRegistry`   | <YesIcon />   |                                                                                                                              |
+| `require`                | <AlertIcon /> | 支持外部 require，但仅限于已部署的 JS 文件和内置模块。不支持 Node 模块解析。                                                    |
+| `require.cache`          | <NoIcon />    |

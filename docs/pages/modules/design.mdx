@@ -1,42 +1,42 @@
 ---
-title: 'Expo Modules API: Design considerations'
-sidebar_title: Design considerations
-description: An overview of the design considerations behind the Expo Modules API.
+title: 'Expo Modules API: 设计考量'
+sidebar_title: 设计考量
+description: Expo Modules API 背后设计考量的概述。
 ---
 
-The Expo team maintains a large set of libraries, and maintaining native modules over time and in a constantly changing environment can be challenging. With the Expo Modules API, we set out to build powerful tooling that would make building and maintaining these libraries easier.
+Expo 团队维护着大量的库，而随着时间推移并在不断变化的环境中维护原生模块可能会很有挑战性。借助 Expo Modules API，我们致力于构建强大的工具，使构建和维护这些库变得更容易。
 
-### Take advantage of modern language features
+### 充分利用现代语言特性
 
-After several years of maintaining over 50 native modules in the Expo SDK, we have discovered that many issues were caused by unhandled null values or incorrect types. Modern language features can help developers avoid these bugs; for example, the lack of optional types combined with the dynamism of Objective-C made it tough to catch certain classes of bugs that would have been caught by the compiler in Swift.
+在 Expo SDK 中维护了 50 多个原生模块数年之后，我们发现许多问题都是由未处理的空值或错误的类型引起的。现代语言特性可以帮助开发者避免这些 bug；例如，缺少可选类型，再加上 Objective-C 的动态特性，使得很难捕获某些本可以在 Swift 中由编译器捕获的 bug。
 
-Another difficulty of writing React Native modules is context switching between the vastly different languages and paradigms for writing native modules on each platform. Due to the differences between these platforms, it cannot be avoided completely. We feel the need to have just one common API and documentation to simplify the development as much as possible and make it easier for a single developer to maintain a library on multiple platforms.
+编写 React Native 模块的另一个困难之处在于，在为每个平台编写原生模块时，需要在截然不同的语言和范式之间来回切换。由于这些平台之间的差异，这一点无法完全避免。我们认为有必要提供一个统一的通用 API 和文档，以尽可能简化开发，并让单个开发者更容易在多个平台上维护一个库。
 
-This is one of the reasons why the Expo Modules ecosystem was designed from the ground up to be used with modern native languages: Swift and Kotlin.
+这也是 Expo Modules 生态系统从一开始就被设计为与现代原生语言一起使用的原因：Swift 和 Kotlin。
 
-### Make it easy to pass data between runtimes
+### 让跨运行时传递数据变得更容易
 
-The Expo Modules API has full knowledge of the argument types the native function expects. It can pre-validate and convert the arguments for you, and dictionaries can be represented as native structs that we call [Records](/modules/module-api/#records).
+Expo Modules API 完整了解原生函数所期望的参数类型。它可以为你预先验证并转换参数，而字典可以表示为我们称之为 [Records](/modules/module-api/#records) 的原生结构体。
 
-One big pain point we aimed to solve with the API is the validation of arguments passed from JavaScript to native functions. This is especially error-prone, time-consuming, and difficult to maintain when it comes to `NSDictionary` or `ReadableMap`, where the type of values is unknown in runtime, and each property needs to be validated separately by the developer.
+我们希望通过该 API 解决的一个主要痛点，是从 JavaScript 传递到原生函数的参数校验。对于 `NSDictionary` 或 `ReadableMap` 尤其如此，这类场景容易出错、耗时且难以维护，因为其中值的类型在运行时是未知的，并且每个属性都需要由开发者单独校验。
 
-Knowing the argument types, it is also possible to [automatically convert arguments](/modules/module-api/#convertibles) to some platform-specific types (for example, `{ x: number, y: number }` or `[number, number]` can be translated to CoreGraphics's `CGPoint` for your convenience).
+由于知道了参数类型，也可以将参数 [自动转换](/modules/module-api/#convertibles) 为某些平台特定类型（例如，`{ x: number, y: number }` 或 `[number, number]` 可以为你方便地转换为 CoreGraphics 的 `CGPoint`）。
 
-In summary, Expo Modules has powerful built-in and extensible type conversion and type safety. It supports automatic of primitive values (for example, `Bool`/`Int`/`UInt`/`Float32`/`Double`/`Pair`/`String`), complex built-in types (for example, `URL`, `CGPoint`, `UIColor`, `Data`, `java.net.URL`, `android.graphics.Color`, `kotlin.ByteArray`), records (user defined types, like a `struct`/`Object`), and enums.
+总而言之，Expo Modules 具有强大的内置且可扩展的类型转换和类型安全能力。它支持自动转换原始值（例如，`Bool`/`Int`/`UInt`/`Float32`/`Double`/`Pair`/`String`）、复杂的内置类型（例如，`URL`、`CGPoint`、`UIColor`、`Data`、`java.net.URL`、`android.graphics.Color`、`kotlin.ByteArray`）、记录（用户定义的类型，如 `struct`/`Object`）以及枚举。
 
-### Support expressive object-oriented APIs
+### 支持富有表现力的面向对象 API
 
-Keep the source of truth for the state of your native module in one place, rather than spreading it across JavaScript and native and doing the associated book-keeping yourself. We call this feature **Shared Objects**. For example, [`expo-sqlite` database instances are backed by Shared Objects](https://github.com/expo/expo/blob/718a9ac107231475ca4b2e6427317ade9d1e70fa/packages/expo-sqlite/src/SQLiteDatabase.ts#L421). Detailed documentation for Shared Objects is coming soon.
+将原生模块状态的单一事实来源保留在一个地方，而不是分散在 JavaScript 和原生端并由你自己处理相关的记录工作。我们把这个特性称为 **Shared Objects**。例如，[`expo-sqlite` 数据库实例由 Shared Objects 支持](https://github.com/expo/expo/blob/718a9ac107231475ca4b2e6427317ade9d1e70fa/packages/expo-sqlite/src/SQLiteDatabase.ts#L421)。关于 Shared Objects 的详细文档即将推出。
 
-### Provide a safe and composable mechanism to hook into app lifecycle events
+### 提供一种安全且可组合的机制来接入应用生命周期事件
 
-[Android lifecycle listeners](/modules/android-lifecycle-listeners/) and [iOS AppDelegate subscribers](/modules/appdelegate-subscribers/) are a powerful feature that allows you to hook into the lifecycle of your app, without needing to spread the code out for your module across your `MainActivity` and `AppDelegate` classes or require that users of your library do the same. This is particularly useful for smooth integration with [Continuous Native Generation](/workflow/continuous-native-generation/) because it provides libraries with a mechanism to hook into app lifecycle events in a composable way &mdash; without having to be concerned about what other libraries might be doing.
+[Android 生命周期监听器](/modules/android-lifecycle-listeners/) 和 [iOS AppDelegate 订阅者](/modules/appdelegate-subscribers/) 是一项强大的特性，它允许你接入应用的生命周期，而无需将模块相关代码分散到 `MainActivity` 和 `AppDelegate` 类中，或要求你的库使用者也这样做。这对于与 [Continuous Native Generation](/workflow/continuous-native-generation/) 的顺畅集成尤其有用，因为它为库提供了一种以可组合方式接入应用生命周期事件的机制——而无需担心其他库可能正在做什么。
 
-### Support the New Architecture while remaining backwards compatible
+### 在保持向后兼容的同时支持新架构
 
-React Native version 0.68 introduced the [New Architecture](https://reactnative.dev/docs/the-new-architecture/landing-page), which offers developers new capabilities for building mobile apps. It consists of the new native modules system called [Turbo Modules](https://reactnative.dev/docs/the-new-architecture/pillars-turbomodules) and the new rendering system called [Fabric](https://reactnative.dev/architecture/fabric-renderer).
-Native libraries need to be adapted to take advantage of these new systems. For Fabric, it needs even more work as it doesn't provide any compatibility layer, which means that view managers written in the old way don't work with Fabric and the other way around — Fabric native components don't work with the old renderer. It basically implies that existing libraries have to provide support for both architectures for a while, increasing the technical debt.
+React Native 0.68 版本引入了 [新架构](https://reactnative.dev/docs/the-new-architecture/landing-page)，它为开发者提供了构建移动应用的新能力。它由新的原生模块系统 [Turbo Modules](https://reactnative.dev/docs/the-new-architecture/pillars-turbomodules) 和新的渲染系统 [Fabric](https://reactnative.dev/architecture/fabric-renderer) 组成。
+原生库需要进行适配以利用这些新系统。对于 Fabric，这需要更多工作，因为它不提供任何兼容层，这意味着以旧方式编写的视图管理器不能与 Fabric 一起工作，反过来也一样——Fabric 原生组件不能与旧渲染器一起工作。实际上，这意味着现有库在一段时间内必须同时支持两种架构，从而增加技术债务。
 
-The new architecture is mostly written in C++, so you may end up writing some C++ code for your library as well. As we all React Native developers, use high-level JavaScript on a daily basis, we are rather reluctant to write C++, which is on the opposite side of the spectrum. Moreover, including C++ code in the library has a negative impact on build times, especially on Android, and can be more difficult to debug.
+新架构大多是用 C++ 编写的，因此你最终也可能需要为你的库编写一些 C++ 代码。作为 React Native 开发者，我们日常使用的是高级 JavaScript，因此我们对编写位于语言谱系另一端的 C++ 相当抗拒。此外，在库中包含 C++ 代码会对构建时间产生负面影响，尤其是在 Android 上，并且调试起来可能更困难。
 
-We took these into account when designing the Expo Modules API with the goal in mind to make it renderer-agnostic, so that the module doesn't need to know whether the app is run on the new architecture or not, significantly reducing the cost for library developers.
+在设计 Expo Modules API 时，我们考虑到了这些因素，目标是让它与渲染器无关，因此模块无需知道应用是否运行在新架构上，这大大降低了库开发者的成本。

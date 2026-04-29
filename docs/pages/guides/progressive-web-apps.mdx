@@ -1,6 +1,6 @@
 ---
-title: Progressive web apps
-description: Learn how to add progressive web app support to Expo websites.
+title: 渐进式 Web 应用
+description: 了解如何为 Expo 网站添加渐进式 Web 应用支持。
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
@@ -10,11 +10,11 @@ import { Tab, Tabs, TabsGroup } from '~/ui/components/Tabs';
 
 <TabsGroup>
 
-A progressive web app (or PWA for short) is a website that can be installed on the user's device and used offline. We recommend building native apps whenever possible as they have the best offline support, but PWAs are a great option for desktop users.
+渐进式 Web 应用（简称 PWA）是可以安装到用户设备上并可离线使用的网站。我们建议尽可能构建原生应用，因为它们具有最佳的离线支持，但对于桌面用户来说，PWA 也是一个很好的选择。
 
-## Favicons
+## 图标
 
-Expo CLI automatically generates the **favicon.ico** file based on the `web.favicon` field in the **app.json**.
+Expo CLI 会根据 **app.json** 中的 `web.favicon` 字段自动生成 **favicon.ico** 文件。
 
 ```json
 {
@@ -24,15 +24,15 @@ Expo CLI automatically generates the **favicon.ico** file based on the `web.favi
 }
 ```
 
-Alternatively, you can create a **favicon.ico** file in the **public** directory to manually specify the icon.
+另外，你也可以在 **public** 目录中创建一个 **favicon.ico** 文件来手动指定图标。
 
-## Manifest file
+## 清单文件
 
-PWAs can be [configured with a manifest file](https://developer.mozilla.org/en-US/docs/Web/Manifest) that describes the app's name, icon, and other metadata.
+PWA 可以通过 [manifest 文件进行配置](https://developer.mozilla.org/en-US/docs/Web/Manifest)，该文件描述应用的名称、图标和其他元数据。
 
 <Step label="1">
 
-Create a PWA manifest in **public/manifest.json**:
+在 **public/manifest.json** 中创建一个 PWA manifest：
 
 ```json
 {
@@ -66,13 +66,13 @@ Create a PWA manifest in **public/manifest.json**:
 
 <Step label="2">
 
-The files **logo192.png** and **logo512.png** are the icons that will be used when the app is installed on the user's device. These should be added to the **public** directory too.
+**logo192.png** 和 **logo512.png** 文件是在应用安装到用户设备上时会使用的图标。它们也应该添加到 **public** 目录中。
 
 <FileTree
   files={[
-    ['public/manifest.json', 'PWA Manifest'],
-    ['public/logo192.png', '192x192 icon'],
-    ['public/logo512.png', '512x512 icon'],
+    ['public/manifest.json', 'PWA 清单'],
+    ['public/logo192.png', '192x192 图标'],
+    ['public/logo512.png', '512x512 图标'],
   ]}
 />
 
@@ -80,20 +80,20 @@ The files **logo192.png** and **logo512.png** are the icons that will be used wh
 
 <Step label="3">
 
-Now link the manifest in your HTML file. The method here depends on the output mode of your website (indicated in `web.output` in the **app.json**––defaults to `single`).
+现在在你的 HTML 文件中链接 manifest。这里的方法取决于你网站的输出模式（在 **app.json** 中由 `web.output` 指示——默认值为 `single`）。
 
 <Tabs>
 
 <Tab label="single">
 
-If you're using a single-page app, you can link the manifest in your HTML file by first creating a template HTML in **public/index.html**:
+如果你使用的是单页应用，可以先在 **public/index.html** 中创建一个模板 HTML，然后在你的 HTML 文件中链接 manifest：
 
 <Terminal
   cmd={['$ npx expo customize public/index.html']}
   cmdCopy="npx expo customize public/index.html"
 />
 
-Then add the manifest to the `<head>` tag:
+然后在 `<head>` 标签中添加 manifest：
 
 ```html
 <link rel="manifest" href="/manifest.json" />
@@ -103,16 +103,16 @@ Then add the manifest to the `<head>` tag:
 
 <Tab label="static & server">
 
-If you're using static or server rendering, the HTML entry can be dynamically created in **src/app/+html.tsx**. Here we'll link the manifest by adding a `<link>` tag to the `<head>` component:
+如果你使用静态渲染或服务端渲染，HTML 入口可以在 **src/app/+html.tsx** 中动态创建。这里我们通过向 `<head>` 组件添加一个 `<link>` 标签来链接 manifest：
 
 ```tsx src/app/+html.tsx
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
-// This file is web-only and used to configure the root HTML for every
-// web page during static rendering.
-// The contents of this function only run in Node.js environments and
-// do not have access to the DOM or browser APIs.
+// 此文件仅用于 Web，并用于在静态渲染期间为每个
+// Web 页面配置根 HTML。
+// 此函数中的内容仅在 Node.js 环境中运行，
+// 无法访问 DOM 或浏览器 API。
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -121,16 +121,16 @@ export default function Root({ children }: PropsWithChildren) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-        {/* Link the PWA manifest file. */}
+        {/* 链接 PWA manifest 文件。 */}
         <link rel="manifest" href="/manifest.json" />
 
         {/*
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
-          However, body scrolling is often nice to have for mobile web. If you want to enable it, remove this line.
+          禁用 Web 上的 body 滚动。这会让 ScrollView 组件的行为更接近原生端。
+          不过，在移动端 Web 上，保留 body 滚动通常也很有用。如果你想启用它，请删除这一行。
         */}
         <ScrollViewStyleReset />
 
-        {/* Add any additional <head> elements that you want globally available on web... */}
+        {/* 添加任何你希望在 Web 上全局可用的额外 <head> 元素... */}
       </head>
       <body>{children}</body>
     </html>
@@ -146,15 +146,15 @@ export default function Root({ children }: PropsWithChildren) {
 
 ## Service workers
 
-Service workers are primarily used to add offline support to websites. Google's Workbox is the best way to add service workers to a website. Follow the guide for [using Workbox CLI](https://developer.chrome.com/docs/workbox/modules/workbox-cli/), and wherever it refers to a "build script" use `npx expo export -p web` instead.
+Service worker 主要用于为网站添加离线支持。Google 的 Workbox 是为网站添加 service worker 的最佳方式。请参考 [使用 Workbox CLI](https://developer.chrome.com/docs/workbox/modules/workbox-cli/) 的指南，并且其中凡是提到 “build script（构建脚本）” 的地方，都改为使用 `npx expo export -p web`。
 
-> **warning** Be careful adding service workers as they are known to cause unexpected behavior on web. If you accidentally ship a service worker that aggressively caches your website, users cannot request updates easily. For the best offline mobile experience, create a native app with Expo. Unlike websites with service workers, native apps can be updated through the app store to clear the cached experience. This would be similar to resetting the user's native browser (which they may have to do if the service worker is aggressive enough). See [why service workers are suboptimal](https://github.com/facebook/create-react-app/issues/2398) for more information.
+> **warning** 添加 service worker 时请务必小心，因为它们已知会在 Web 上引发意外行为。如果你不小心发布了一个激进缓存你网站的 service worker，用户将无法轻松请求更新。若想获得最佳的移动端离线体验，请使用 Expo 创建原生应用。与带有 service worker 的网站不同，原生应用可以通过应用商店更新来清除缓存体验。这类似于重置用户的原生浏览器（如果 service worker 足够激进，他们可能不得不这样做）。更多信息请参见 [为什么 service worker 不是最佳选择](https://github.com/facebook/create-react-app/issues/2398)。
 
-For example, here's a possible flow for setting up Workbox:
+例如，下面是一个设置 Workbox 的可能流程：
 
 <Step label="1">
 
-Create a new project with the following command:
+使用以下命令创建一个新项目：
 
 <Terminal
   cmd={['$ npm create expo -t tabs my-app', '', '$ cd my-app']}
@@ -165,22 +165,22 @@ Create a new project with the following command:
 
 <Step label="2">
 
-Now register the service worker in the HTML file. The method here depends on the output mode of your website (indicated in `web.output` in the **app.json**––defaults to `single`).
+现在在 HTML 文件中注册 service worker。这里的方法取决于你网站的输出模式（在 **app.json** 中由 `web.output` 指示——默认值为 `single`）。
 
 <Tabs>
 
 <Tab label="single">
 
-Next add a service worker registration script to the root **index.html**.
+接下来在根 **index.html** 中添加一个 service worker 注册脚本。
 
-First create a template HTML in **public/index.html** if one does not already exist:
+如果尚不存在，先在 **public/index.html** 中创建一个模板 HTML：
 
 <Terminal
   cmd={['$ npx expo customize public/index.html']}
   cmdCopy="npx expo customize public/index.html"
 />
 
-Then create the service worker registration script in the `<head>` tag:
+然后在 `<head>` 标签中创建 service worker 注册脚本：
 
 ```html
 <script>
@@ -203,16 +203,16 @@ Then create the service worker registration script in the `<head>` tag:
 
 <Tab label="static & server">
 
-Next, create a root HTML file for the app and add the service worker registration script:
+接下来，为应用创建一个根 HTML 文件并添加 service worker 注册脚本：
 
 ```tsx src/app/+html.tsx
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
-// This file is web-only and used to configure the root HTML for every
-// web page during static rendering.
-// The contents of this function only run in Node.js environments and
-// do not have access to the DOM or browser APIs.
+// 此文件仅用于 Web，并用于在静态渲染期间为每个
+// Web 页面配置根 HTML。
+// 此函数中的内容仅在 Node.js 环境中运行，
+// 无法访问 DOM 或浏览器 API。
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -221,16 +221,16 @@ export default function Root({ children }: PropsWithChildren) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-        {/* Bootstrap the service worker. */}
+        {/* 初始化 service worker。 */}
         <script dangerouslySetInnerHTML={{ __html: sw }} />
 
         {/*
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
-          However, body scrolling is often nice to have for mobile web. If you want to enable it, remove this line.
+          禁用 Web 上的 body 滚动。这会让 ScrollView 组件的行为更接近原生端。
+          不过，在移动端 Web 上，保留 body 滚动通常也很有用。如果你想启用它，请删除这一行。
         */}
         <ScrollViewStyleReset />
 
-        {/* Add any additional <head> elements that you want globally available on web... */}
+        {/* 添加任何你希望在 Web 上全局可用的额外 <head> 元素... */}
       </head>
       <body>{children}</body>
     </html>
@@ -258,7 +258,7 @@ if ('serviceWorker' in navigator) {
 
 <Step label="3">
 
-Now build the website before running the wizard:
+现在在运行向导之前先构建网站：
 
 <Terminal cmd={['$ npx expo export -p web']} />
 
@@ -266,7 +266,7 @@ Now build the website before running the wizard:
 
 <Step label="4">
 
-Run the wizard command, select `dist` as the root of the app, and the defaults for everything else:
+运行向导命令，将 `dist` 设为应用的根目录，并对其他所有选项使用默认值：
 
 <Terminal
   cmd={[
@@ -284,9 +284,9 @@ Run the wizard command, select `dist` as the root of the app, and the defaults f
 
 <Step label="5">
 
-Finally, run `npx workbox-cli generateSW workbox-config.js` to generate the service worker config.
+最后，运行 `npx workbox-cli generateSW workbox-config.js` 以生成 service worker 配置。
 
-Going forward, you can add a build script in **package.json** to run both scripts in the correct order:
+从现在开始，你可以在 **package.json** 中添加一个构建脚本，以正确顺序运行这两个脚本：
 
 ```json package.json
 {
@@ -300,7 +300,7 @@ Going forward, you can add a build script in **package.json** to run both script
 
 <Step label="6">
 
-If you host your website and visit with Chrome, you can inspect the service worker by going to **Application > Service Workers** in the Chrome DevTools.
+如果你托管了你的网站并使用 Chrome 访问，可以在 Chrome DevTools 中通过进入 **Application > Service Workers** 来检查 service worker。
 
 </Step>
 

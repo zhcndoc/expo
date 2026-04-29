@@ -1,6 +1,6 @@
 ---
-title: Keyboard handling
-description: A guide for handling common keyboard interactions on an Android or iOS device.
+title: 键盘处理
+description: 在 Android 或 iOS 设备上处理常见键盘交互的指南。
 hasVideoLink: true
 ---
 
@@ -12,25 +12,25 @@ import { Terminal } from '~/ui/components/Snippet';
 import { CODE } from '~/ui/components/Text';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-Keyboard handling is crucial for creating an excellent user experience in your Expo app. React Native provides [`Keyboard`](https://reactnative.dev/docs/keyboard) and [`KeyboardAvoidingView`](https://reactnative.dev/docs/keyboardavoidingview), which are commonly used to handle keyboard events. For more complex or custom keyboard interactions, you can consider using [`react-native-keyboard-controller`](https://kirillzyusko.github.io/react-native-keyboard-controller), which is a library that offers advanced keyboard handling capabilities.
+键盘处理对于在你的 Expo 应用中创建出色的用户体验至关重要。React Native 提供了 [`Keyboard`](https://reactnative.dev/docs/keyboard) 和 [`KeyboardAvoidingView`](https://reactnative.dev/docs/keyboardavoidingview)，它们通常用于处理键盘事件。对于更复杂或自定义的键盘交互，你可以考虑使用 [`react-native-keyboard-controller`](https://kirillzyusko.github.io/react-native-keyboard-controller)，这是一个提供高级键盘处理能力的库。
 
-This guide covers common keyboard interactions and how to manage them effectively.
+本指南介绍了常见的键盘交互以及如何有效地管理它们。
 
 <VideoBoxLink
   videoId="Y51mDfAhd4E"
-  title="Keyboard Handling tutorial for React Native apps"
-  description="In this keyboard handling tutorial for React Native apps, you'll learn how to solve the problem of the keyboard covering your input when you try to type on your app."
+  title="React Native 应用的键盘处理教程"
+  description="在这个 React Native 应用的键盘处理教程中，你将学习如何解决这样一个问题：当你尝试在应用中输入时，键盘遮挡了你的输入框。"
 />
 
-## Keyboard handling basics
+## 键盘处理基础
 
-The following sections explain how to handle keyboard interactions with common APIs.
+以下各节将解释如何使用常见 API 处理键盘交互。
 
-### Keyboard avoiding view
+### 键盘避让视图
 
-The `KeyboardAvoidingView` is a component that automatically adjusts a view's height, position, or bottom padding based on the keyboard height to remain visible while it is displayed.
+`KeyboardAvoidingView` 是一个组件，它会根据键盘高度自动调整视图的高度、位置或底部内边距，以便在键盘显示时保持可见。
 
-Android and iOS interact with the `behavior` property differently. On iOS, `padding` is usually what works best, and for Android, just having the `KeyboardAvoidingView` prevents covering the input. This is why the following example uses `undefined` for Android. Playing around with the `behavior` is a good practice since a different option could work best for your app.
+Android 和 iOS 对 `behavior` 属性的交互方式不同。在 iOS 上，`padding` 通常效果最好；而在 Android 上，仅使用 `KeyboardAvoidingView` 就能防止输入框被遮挡。这就是下面示例中 Android 使用 `undefined` 的原因。尝试不同的 `behavior` 是个好习惯，因为不同的选项可能更适合你的应用。
 
 ```tsx home-screen.tsx
 import { KeyboardAvoidingView, TextInput } from 'react-native';
@@ -38,15 +38,15 @@ import { KeyboardAvoidingView, TextInput } from 'react-native';
 export default function HomeScreen() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-      <TextInput placeholder="Type here..." />
+      <TextInput placeholder="在这里输入..." />
     </KeyboardAvoidingView>;
   );
 }
 ```
 
-In the above example, the height of the `KeyboardAvoidingView` automatically adjusts based on the device's keyboard height, which ensures that the input is always visible.
+在上面的示例中，`KeyboardAvoidingView` 的高度会根据设备键盘的高度自动调整，从而确保输入框始终可见。
 
-When using a Bottom Tab navigator on Android, you might notice that focusing on an input field causes the bottom tabs to be pushed above the keyboard. To address this issue, add the `softwareKeyboardLayoutMode` property to your Android configuration in [app config](/workflow/configuration/) and set it to `pan`.
+在 Android 上使用底部标签栏导航器时，你可能会注意到，当聚焦输入框时，底部标签会被推到键盘上方。要解决这个问题，请在 [app 配置](/workflow/configuration/) 中为你的 Android 配置添加 `softwareKeyboardLayoutMode` 属性，并将其设置为 `pan`。
 
 ```json app.json
 "expo" {
@@ -56,9 +56,9 @@ When using a Bottom Tab navigator on Android, you might notice that focusing on 
 }
 ```
 
-After adding this property, restart the development server and reload your app to apply the changes.
+添加此属性后，重启开发服务器并重新加载应用以应用更改。
 
-It's also possible to hide the bottom tab when the keyboard opens using [`tabBarHideOnKeyboard`](https://reactnavigation.org/docs/bottom-tab-navigator/#tabbarhideonkeyboard). It is an option with the Bottom Tab Navigator. If set to `true`, it will hide the bar when the keyboard opens.
+也可以使用 [`tabBarHideOnKeyboard`](https://reactnavigation.org/docs/bottom-tab-navigator/#tabbarhideonkeyboard) 在键盘打开时隐藏底部标签栏。这是底部标签栏导航器的一个选项。如果设置为 `true`，它会在键盘打开时隐藏该栏。
 
 ```tsx src/app/_layout.tsx
 import { Tabs } from 'expo-router';
@@ -75,13 +75,13 @@ export default function TabLayout() {
 }
 ```
 
-### Keyboard events
+### 键盘事件
 
-The `Keyboard` module from React Native allows you to listen for native events, react to them, and make changes to the keyboard, such as dismissing it.
+React Native 中的 `Keyboard` 模块允许你监听原生事件、对其做出响应，并对键盘进行操作，例如将其收起。
 
-To listen for keyboard events, use the `Keyboard.addListener` method. This method accepts an event name and a callback function as arguments. When the keyboard is shown or hidden, the callback function is called with the event data.
+要监听键盘事件，请使用 `Keyboard.addListener` 方法。该方法接受一个事件名称和一个回调函数作为参数。当键盘显示或隐藏时，会使用事件数据调用回调函数。
 
-The following example illustrates a use case for adding a keyboard listener. The state variable `isKeyboardVisible` is toggled each time the keyboard shows or hides. Based on this variable, a button allows the user to dismiss the keyboard only if the keyboard is active. Also, notice that the button uses the `Keyboard.dismiss` method.
+下面的示例展示了添加键盘监听器的一个用例。状态变量 `isKeyboardVisible` 会在键盘显示或隐藏时切换。基于这个变量，一个按钮只会在键盘处于活动状态时允许用户收起键盘。另请注意，该按钮使用了 `Keyboard.dismiss` 方法。
 
 ```tsx home-screen.tsx
 import { useEffect, useState } from 'react';
@@ -110,32 +110,32 @@ export default function HomeScreen() {
 
   return (
     <View>
-      {isKeyboardVisible && <Button title="Dismiss keyboard" onPress={Keyboard.dismiss} />}
-      <TextInput placeholder="Type here..." />
+      {isKeyboardVisible && <Button title="收起键盘" onPress={Keyboard.dismiss} />}
+      <TextInput placeholder="在这里输入..." />
     </View>
   );
 }
 ```
 
-## Advanced keyboard handling with Keyboard Controller
+## 使用 Keyboard Controller 进行高级键盘处理
 
-For more complex keyboard interactions, such as larger scrollable entry forms with several text input fields, consider using the [`react-native-keyboard-controller` (Keyboard Controller)](https://kirillzyusko.github.io/react-native-keyboard-controller) library. It offers additional functionality beyond the built-in React Native keyboard APIs, providing consistency across Android and iOS with minimal configuration and offering the native feel users expect.
+对于更复杂的键盘交互，例如带有多个文本输入框的大型可滚动表单，可以考虑使用 [`react-native-keyboard-controller`（Keyboard Controller）](https://kirillzyusko.github.io/react-native-keyboard-controller) 库。它提供了内置 React Native 键盘 API 之外的额外功能，以最少的配置在 Android 和 iOS 之间提供一致性，并带来用户所期待的原生体验。
 
-### Prerequisites
+### 前提条件
 
-The following steps are described using a [development build](/develop/development-builds/introduction/) since the Keyboard Controller library is not included in Expo Go. See [Create a development build](/develop/development-builds/create-a-build/) for more information.
+以下步骤使用的是 [开发构建](/develop/development-builds/introduction/)，因为 Keyboard Controller 库不包含在 Expo Go 中。更多信息请参见 [创建开发构建](/develop/development-builds/create-a-build/)。
 
-[Keyboard Controller](https://kirillzyusko.github.io/react-native-keyboard-controller) also requires `react-native-reanimated` to work correctly. To install it, follow these [installation instructions](/versions/latest/sdk/reanimated/#installation).
+[Keyboard Controller](https://kirillzyusko.github.io/react-native-keyboard-controller) 还需要 `react-native-reanimated` 才能正常工作。要安装它，请按照这些 [安装说明](/versions/latest/sdk/reanimated/#installation) 操作。
 
-### Install
+### 安装
 
-Start by installing the Keyboard Controller library in your Expo project:
+先在你的 Expo 项目中安装 Keyboard Controller 库：
 
 <Terminal cmd={['$ npx expo install react-native-keyboard-controller']} />
 
-### Set up provider
+### 设置提供者
 
-To finalize the setup, add the `KeyboardProvider` to your app.
+为了完成设置，将 `KeyboardProvider` 添加到你的应用中。
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -153,13 +153,13 @@ export default function RootLayout() {
 }
 ```
 
-### Handling multiple inputs
+### 处理多个输入框
 
-The [`KeyboardAvoidingView`](#keyboard-avoiding-view) component is excellent for prototyping, but it requires platform-specific configuration and is not very customizable.
+[`KeyboardAvoidingView`](#keyboard-avoiding-view) 组件非常适合原型开发，但它需要针对平台的配置，而且可定制性不强。
 
-As a more powerful alternative, you can use the [`KeyboardAwareScrollView`](https://kirillzyusko.github.io/react-native-keyboard-controller/docs/api/components/keyboard-aware-scroll-view) component. It automatically scrolls to a focused `TextInput` and provides native-like performance. For simple screens with only a few elements, using `KeyboardAwareScrollView` is a great approach.
+作为一个更强大的替代方案，你可以使用 [`KeyboardAwareScrollView`](https://kirillzyusko.github.io/react-native-keyboard-controller/docs/api/components/keyboard-aware-scroll-view) 组件。它会自动滚动到当前聚焦的 `TextInput`，并提供类似原生的性能。对于只有少量元素的简单页面，使用 `KeyboardAwareScrollView` 是一个很好的方案。
 
-For screens with multiple inputs, the Keyboard Controller library also provides a `KeyboardToolbar` component to use alongside `KeyboardAwareScrollView`. Together, these components handle input navigation and prevent the keyboard from covering the screen without custom configuration:
+对于包含多个输入框的页面，Keyboard Controller 库还提供了 `KeyboardToolbar` 组件，可与 `KeyboardAwareScrollView` 一起使用。结合起来，这些组件可以处理输入导航，并且无需自定义配置即可防止键盘遮挡屏幕：
 
 ```tsx form-screen.tsx
 import { TextInput, View, StyleSheet } from 'react-native';
@@ -170,16 +170,16 @@ export default function FormScreen() {
     <>
       <KeyboardAwareScrollView bottomOffset={62} contentContainerStyle={styles.container}>
         <View>
-          <TextInput placeholder="Type a message..." style={styles.textInput} />
-          <TextInput placeholder="Type a message..." style={styles.textInput} />
+          <TextInput placeholder="输入一条消息..." style={styles.textInput} />
+          <TextInput placeholder="输入一条消息..." style={styles.textInput} />
         </View>
-        <TextInput placeholder="Type a message..." style={styles.textInput} />
+        <TextInput placeholder="输入一条消息..." style={styles.textInput} />
         <View>
-          <TextInput placeholder="Type a message..." style={styles.textInput} />
-          <TextInput placeholder="Type a message..." style={styles.textInput} />
-          <TextInput placeholder="Type a message..." style={styles.textInput} />
+          <TextInput placeholder="输入一条消息..." style={styles.textInput} />
+          <TextInput placeholder="输入一条消息..." style={styles.textInput} />
+          <TextInput placeholder="输入一条消息..." style={styles.textInput} />
         </View>
-        <TextInput placeholder="Type a message..." style={styles.textInput} />
+        <TextInput placeholder="输入一条消息..." style={styles.textInput} />
       </KeyboardAwareScrollView>
       <KeyboardToolbar />
     </>
@@ -210,13 +210,13 @@ const styles = StyleSheet.create({
 });
 ```
 
-The above example wraps the inputs with `KeyboardAwareScrollView` to prevent the keyboard from covering them. The `KeyboardToolbar` component displays navigation controls and a dismiss button. While it works without configuration, you can customize the toolbar content if needed.
+上面的示例使用 `KeyboardAwareScrollView` 包裹输入框，以防止键盘遮挡它们。`KeyboardToolbar` 组件会显示导航控件和一个收起按钮。虽然它无需配置即可工作，但如果需要，你也可以自定义工具栏内容。
 
-### Animating views in sync with keyboard height
+### 让视图动画与键盘高度同步
 
-For a more advanced and customizable approach, you can use [`useKeyboardHandler`](https://kirillzyusko.github.io/react-native-keyboard-controller/docs/api/hooks/keyboard/use-keyboard-handler). It provides access to keyboard lifecycle events. It allows us to determine when the keyboard starts animating and its position in every frame of the animation.
+对于更高级且可定制的方式，你可以使用 [`useKeyboardHandler`](https://kirillzyusko.github.io/react-native-keyboard-controller/docs/api/hooks/keyboard/use-keyboard-handler)。它提供对键盘生命周期事件的访问。它允许我们确定键盘何时开始动画，以及在动画的每一帧中它所在的位置。
 
-Using the `useKeyboardHandler` hook, you can create a custom hook to access the height of the keyboard at each frame. It uses `useSharedValue` from reanimated to return the height, as shown below.
+使用 `useKeyboardHandler` 钩子，你可以创建一个自定义钩子，在每一帧访问键盘的高度。它使用 reanimated 中的 `useSharedValue` 返回该高度，如下所示。
 
 ```tsx chat-screen.tsx
 import { useKeyboardHandler } from 'react-native-keyboard-controller';
@@ -238,9 +238,9 @@ const useGradualAnimation = () => {
 };
 ```
 
-You can use the `useGradualAnimation` hook to animate a view and give it a smooth animation when the keyboard is active or dismissed, for example, in a chat screen component (shown in the example below). This component gets the keyboard height from the hook. It then creates an animated style called `fakeView` using the `useAnimatedStyle` hook from reanimated. This style only contains one property: `height`, which is set to the keyboard's height.
+你可以使用 `useGradualAnimation` 钩子来为视图添加动画，并在键盘处于活动状态或被收起时给予平滑的动画效果，例如在聊天页面组件中（如下例所示）。这个组件从钩子中获取键盘高度。然后，它使用 reanimated 的 `useAnimatedStyle` 钩子创建一个名为 `fakeView` 的动画样式。这个样式只包含一个属性：`height`，其值设置为键盘的高度。
 
-The `fakeView` animated style is used in an animated view after the `TextInput`. This view's height will animate based on the keyboard's height at each frame, which effectively pushes the content above the keyboard with a smooth animation. It also decreases its height to zero when the keyboard is dismissed.
+`fakeView` 动画样式被用于 `TextInput` 后面的一个动画视图中。这个视图的高度会随着键盘在每一帧的高度变化而动画，从而有效地将内容平滑地推到键盘上方。当键盘被收起时，它的高度也会减小到零。
 
 ```tsx chat-screen.tsx
 import { StyleSheet, Platform, FlatList, View, StatusBar, TextInput } from 'react-native';
@@ -251,7 +251,7 @@ import MessageItem from '@/components/MessageItem';
 import { messages } from '@/messages';
 
 const useGradualAnimation = () => {
-  /* @hide // Code remains same from previous example */
+  /* @hide // 代码与前一个示例相同 */
   /* @end */
 };
 
@@ -272,7 +272,7 @@ export default function ChatScreen() {
         keyExtractor={item => item.createdAt.toString()}
         contentContainerStyle={styles.listStyle}
       />
-      <TextInput placeholder="Type a message..." style={styles.textInput} />
+      <TextInput placeholder="输入一条消息..." style={styles.textInput} />
       <Animated.View style={fakeView} />
     </View>
   );
@@ -301,18 +301,18 @@ const styles = StyleSheet.create({
 });
 ```
 
-## Additional resources
+## 其他资源
 
 <BoxLink
-  title="Example"
-  description="See the source code for the example project on GitHub."
+  title="示例"
+  description="在 GitHub 上查看示例项目的源代码。"
   Icon={GithubIcon}
   href="https://github.com/betomoedano/keyboard-guide"
 />
 
 <BoxLink
   title={<CODE>react-native-keyboard-controller</CODE>}
-  description="For more details on the Keyboard Controller library, see the documentation."
+  description="有关 Keyboard Controller 库的更多详情，请参阅文档。"
   Icon={BookOpen02Icon}
   href="https://kirillzyusko.github.io/react-native-keyboard-controller"
 />

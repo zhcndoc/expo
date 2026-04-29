@@ -1,52 +1,52 @@
 ---
-title: Frequently asked questions about environment variables in EAS
-sidebar_title: FAQ
-description: Frequently asked questions about environment variables in EAS.
+title: EAS 中关于环境变量的常见问题
+sidebar_title: 常见问题
+description: 关于 EAS 中环境变量的常见问题。
 ---
 
-This page covers frequently asked questions about environment variables in EAS.
+本页面介绍了 EAS 中关于环境变量的常见问题。
 
-## What is the recommended workflow for using environment variables in my EAS project?
+## 在我的 EAS 项目中使用环境变量，推荐的工作流程是什么？
 
-One possible way to efficiently work with environment variables in your EAS projects is to:
+在你的 EAS 项目中高效使用环境变量的一种可能方式是：
 
-### Use correct visibility settings
+### 使用正确的可见性设置
 
-Make sure to set the visibility of your environment variables to the appropriate level. Avoid setting excessive secret visibility to `EXPO_PUBLIC_` variables that are used in your app's JavaScript code or are used to resolve your app's configuration. Be aware that environment variables with secret visibility are not readable outside of EAS servers, and can't be pulled locally for development or to bundle your app's JavaScript code for updates.
+确保将环境变量的可见性设置为合适的级别。避免将过度的 secret 可见性设置给在应用 JavaScript 代码中使用，或用于解析应用配置的 `EXPO_PUBLIC_` 变量。请注意，具有 secret 可见性的环境变量无法在 EAS 服务器之外读取，也无法为了开发而拉取到本地，或在更新时用于打包应用的 JavaScript 代码。
 
-### Add .env files to .gitignore
+### 将 .env 文件添加到 .gitignore
 
-To avoid confusing overrides during cloud jobs and leaking sensitive information, add **.env** files to your **.gitignore** file.
+为了避免在云端任务中出现令人困惑的覆盖，并泄露敏感信息，请将 **.env** 文件添加到你的 **.gitignore** 文件中。
 
-### Use the `--environment` flag with `eas update`
+### 在 `eas update` 中使用 `--environment` 标志
 
-When publishing updates, the `--environment` flag is required with the `eas update` command. This ensures the same environment variables are used for your updates as your build jobs.
+在发布更新时，`eas update` 命令需要使用 `--environment` 标志。这可确保你的更新与构建任务使用相同的环境变量。
 
-When the `--environment` flag is provided, `eas update` will use the environment variables on EAS servers for the update job and ignore the **.env** files present in your project often used for local development.
+当提供 `--environment` 标志时，`eas update` 将使用 EAS 服务器上的环境变量来执行更新任务，并忽略项目中通常用于本地开发的 **.env** 文件。
 
-### Sync the environment variables for local development using `eas env:pull`
+### 使用 `eas env:pull` 同步用于本地开发的环境变量
 
-You can use the `eas env:pull` command to pull environment variables from EAS servers to your local **.env** file for development. The ideal environment that can be used for this purpose is the `development` environment, as it's the default environment used for development builds.
+你可以使用 `eas env:pull` 命令将 EAS 服务器上的环境变量拉取到本地 **.env** 文件中用于开发。最适合用于此目的的环境是 `development` 环境，因为它是开发构建默认使用的环境。
 
-### Explicitly specify the environment for your builds
+### 为构建显式指定环境
 
-Explicitly set the [`environment`](/eas/json#environment) value in **eas.json** for your build profiles to ensure that the correct environment variables are always used for your build jobs and you have full control over this process.
+在 **eas.json** 中为你的构建配置文件显式设置 [`environment`](/eas/json#environment) 值，以确保始终为你的构建任务使用正确的环境变量，并且你对这一过程拥有完全控制权。
 
-## Can I set my environment variables on a CI provider when triggering the build using the `eas build` command?
+## 在使用 `eas build` 命令触发构建时，我可以在 CI 提供商上设置环境变量吗？
 
-Environment variables must be defined on EAS servers to be made available to EAS Build builders. If you are triggering builds from CI, the same rule applies, and you should be careful to not confuse setting environment variables on GitHub Actions (or the provider of your choice) with setting environment variables and secrets on EAS servers.
+环境变量必须定义在 EAS 服务器上，才能提供给 EAS Build 构建器使用。如果你是从 CI 触发构建，那么同样的规则也适用，你应当注意不要将 GitHub Actions（或你选择的其他提供商）上的环境变量设置，与 EAS 服务器上的环境变量和密钥设置混淆。
 
-## How do environment variables work for my development builds?
+## 环境变量在我的开发构建中是如何工作的？
 
-Environment variables set in your build profile that impact **app.config.js** will be used for configuring the development build.
+在你的构建配置文件中设置、并影响 **app.config.js** 的环境变量，将用于配置开发构建。
 
-When you run `npx expo start` to load your app inside of your development build, only environment variables that are available on your development machine will be used.
+当你运行 `npx expo start` 在开发构建中加载应用时，只有开发机器上可用的环境变量会被使用。
 
-## Can I use file environment variables in my EAS project?
+## 我可以在我的 EAS 项目中使用文件型环境变量吗？
 
-In addition to setting strings as values, you can also upload files as the value of an environment variable.
+除了将字符串设置为值之外，你还可以上传文件作为环境变量的值。
 
-One common use case of using a file environment variable is passing a git ignored **google-services.json** configuration file to a build job. During the job run, the file will be created in a location outside of the project directory and the path to the file will be assigned to the environment variable (`GOOGLE_SERVICES_JSON=/path/to/google-services.json`). For example, you can then set `android.googleServicesFile` in your app config to the value of the `GOOGLE_SERVICES_JSON` environment variable to use this file when executing the build or workflow job.
+使用文件型环境变量的一个常见场景，是将一个被 git 忽略的 **google-services.json** 配置文件传递给构建任务。在任务运行期间，该文件会在项目目录之外的位置创建，而文件路径会被赋值给环境变量（`GOOGLE_SERVICES_JSON=/path/to/google-services.json`）。例如，你随后可以在应用配置中将 `android.googleServicesFile` 设置为 `GOOGLE_SERVICES_JSON` 环境变量的值，以便在执行构建或工作流任务时使用该文件。
 
 ```js app.config.js
 export default {
@@ -58,20 +58,20 @@ export default {
 };
 ```
 
-## Differences between handling environment variables in EAS CLI and Expo CLI
+## EAS CLI 和 Expo CLI 中处理环境变量有何不同
 
-One of the differences between using environment variables with the Expo framework and EAS is that EAS CLI itself does not support loading **.env** files to set environment variables when resolving the app config. Instead, it's recommended to use the EAS environment variables management system with EAS CLI commands to set environment variables for your build jobs and updates to avoid confusion, and ensure that exactly the same environment variables are used both for:
+Expo 框架和 EAS 在使用环境变量方面的一个差异是，EAS CLI 本身不支持在解析应用配置时加载 **.env** 文件来设置环境变量。相反，建议使用 EAS 的环境变量管理系统，并结合 EAS CLI 命令来为你的构建任务和更新设置环境变量，以避免混淆，并确保在以下两种情况下使用完全相同的环境变量：
 
-- Local app config resolution, done by EAS CLI when preparing the app config
-- Remote jobs happening on EAS servers, which often don't have access to your local **.env** files that are git ignored
+- 由 EAS CLI 在准备应用配置时执行的本地应用配置解析
+- 发生在 EAS 服务器上的远程任务，这些任务通常无法访问你本地被 git 忽略的 **.env** 文件
 
-In **SDK 54 and earlier**, `eas update` was an exception to this rule. By default, it used **.env** files present in your project directory to set environment variables for the update job, the same way [Expo CLI](/guides/environment-variables) does (it executes the `npx expo export` command under the hood). In **SDK 55 or later**, the `--environment` flag is required, and `eas update` uses only the environment variables set on EAS servers.
+在 **SDK 54 及更早版本**中，`eas update` 是这条规则的一个例外。默认情况下，它会像 [Expo CLI](/guides/environment-variables) 一样使用项目目录中存在的 **.env** 文件来为更新任务设置环境变量（它在底层执行 `npx expo export` 命令）。在 **SDK 55 或更高版本**中，`--environment` 标志是必需的，而 `eas update` 只使用设置在 EAS 服务器上的环境变量。
 
-For projects on SDK 54 or earlier, you can use the `--environment` flag with the `eas update` command to opt into this behavior.
+对于 SDK 54 或更早版本的项目，你可以在 `eas update` 命令中使用 `--environment` 标志来启用这种行为。
 
-## Are there any limitations to using environment variables in EAS?
+## 在 EAS 中使用环境变量有什么限制吗？
 
-- Environment variable value size is limited to 32 KiB for environment variables with secret visibility and 4 KiB for other visibility types.
-- You can create up to 150 account-wide environment variables for each Expo account and 200 project-specific environment variables for each app.
-- [Custom environments](/eas/environment-variables/manage/#custom-environments) are limited to 10 per project.
-- When creating a custom environment, an environment name can contain letters, digits, underscores and hyphens, and be between 3-100 characters.
+- 带有 secret 可见性的环境变量，其环境变量值大小限制为 32 KiB；其他可见性类型则限制为 4 KiB。
+- 每个 Expo 账户最多可以创建 150 个账户级环境变量，每个应用最多可以创建 200 个项目专属环境变量。
+- [自定义环境](/eas/environment-variables/manage/#custom-environments) 每个项目最多限制为 10 个。
+- 创建自定义环境时，环境名称可以包含字母、数字、下划线和连字符，长度为 3-100 个字符。

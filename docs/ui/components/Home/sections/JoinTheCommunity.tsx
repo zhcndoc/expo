@@ -17,8 +17,8 @@ export function JoinTheCommunity() {
   return (
     <>
       <Header
-        title="Join the community"
-        description="See the source code, connect with others, and get connected."
+        title="加入社区"
+        description="查看源代码、连接他人，并与社区保持联系。"
       />
       <div
         className={mergeClasses(
@@ -29,8 +29,8 @@ export function JoinTheCommunity() {
           'max-md-gutters:grid-cols-1'
         )}>
         <CommunityGridCell
-          title="Discord and Forums"
-          description="Join our Discord to chat, ask questions or attend events."
+          title="Discord 和论坛"
+          description="加入我们的 Discord 聊天、提问或参加活动。"
           link="https://chat.expo.dev"
           icon={<DiscordIcon className="icon-xl text-palette-white" />}
           iconClassName="bg-[#3131E8]"
@@ -38,49 +38,49 @@ export function JoinTheCommunity() {
         />
         <CommunityGridCell
           title="GitHub"
-          description="View SDK and docs code, submit a PR, or report an issue."
+          description="查看 SDK 和文档代码、提交 PR 或报告问题。"
           link="https://github.com/expo/expo"
           iconClassName="bg-palette-gray11 dark:bg-palette-gray7"
           icon={<GithubIcon className="icon-xl text-palette-white" />}
         />
         <CommunityGridCell
           title="YouTube"
-          description="Follow our channel to explore tutorials and other content."
+          description="关注我们的频道，浏览教程和其他内容。"
           link="https://www.youtube.com/channel/UCx_YiR733cfqVPRsQ1n8Fag"
           iconClassName="bg-[#FF0033]"
           icon={<YoutubeIcon className="icon-xl text-palette-white" />}
         />
         <CommunityGridCell
           title="LinkedIn"
-          description="Follow Expo on LinkedIn for news and updates."
+          description="在 LinkedIn 上关注 Expo 获取新闻和更新。"
           link="https://www.linkedin.com/company/expo-dev/"
           iconClassName="bg-[#0B66C2]"
           icon={<LinkedinIcon className="icon-xl text-palette-white" />}
         />
         <CommunityGridCell
           title="Bluesky"
-          description="Follow Expo on Bluesky for news and updates."
+          description="在 Bluesky 上关注 Expo 获取新闻和更新。"
           link="https://bsky.app/profile/expo.dev"
           icon={<BlueskyIcon className="icon-xl text-palette-white" />}
           iconClassName="bg-[#1083fe]"
         />
         <CommunityGridCell
           title="X"
-          description="Follow Expo on X for news and updates."
+          description="在 X 上关注 Expo 获取新闻和更新。"
           link="https://x.com/expo"
           icon={<XLogoIcon className="text-palette-white size-7!" />}
           iconClassName="bg-[#000000]"
         />
         <CommunityGridCell
           title="Reddit"
-          description="Get the latest on r/expo."
+          description="在 r/expo 获取最新动态。"
           link="https://www.reddit.com/r/expo"
           icon={<RedditIcon className="icon-xl text-palette-white" />}
           iconClassName="bg-[#FC471E]"
         />
         <CommunityGridCell
           title="Canny"
-          description="Give us a feedback or request a feature."
+          description="提交反馈或功能请求。"
           link="https://expo.canny.io/"
           icon={<Lightbulb02Icon className="icon-xl text-palette-white" />}
           iconClassName="bg-[#525df9]"

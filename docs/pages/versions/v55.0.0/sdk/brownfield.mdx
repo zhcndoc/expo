@@ -1,6 +1,6 @@
 ---
 title: Brownfield
-description: Toolkit and APIs for integrating Expo into existing native applications.
+description: 用于将 Expo 集成到现有原生应用中的工具包和 API。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-brownfield'
 packageName: 'expo-brownfield'
 platforms: ['android', 'ios']
@@ -13,23 +13,23 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
 import { Terminal } from '~/ui/components/Snippet';
 import { Tab, Tabs } from '~/ui/components/Tabs';
 
-`expo-brownfield` is a toolkit for adding React Native views to existing native Android and iOS applications. It provides:
+`expo-brownfield` 是一个用于将 React Native 视图添加到现有原生 Android 和 iOS 应用中的工具包。它提供：
 
-- **Built-in APIs** for bi-directional communication and navigation between native and React Native apps
-- **Config plugin** for automatic setup of brownfield targets in your Expo project
-- **CLI** for building and publishing artifacts to Maven repositories (Android) and XCFrameworks (iOS)
+- **内置 API**，用于原生应用和 React Native 应用之间的双向通信与导航
+- **配置插件**，用于在你的 Expo 项目中自动设置 brownfield 目标
+- **CLI**，用于构建并发布到 Maven 仓库（Android）和 XCFrameworks（iOS）的制品
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Usage
+## 用法
 
-### Communication API
+### 通信 API
 
-The Communication API enables bi-directional, message-based communication between the native (host) app and React Native.
+通信 API 支持原生（宿主）应用与 React Native 之间基于消息的双向通信。
 
-#### Sending messages from React Native to native
+#### 从 React Native 向原生发送消息
 
 ```typescript
 import * as Brownfield from 'expo-brownfield';
@@ -44,7 +44,7 @@ Brownfield.sendMessage({
 });
 ```
 
-#### Receiving messages from native in React Native
+#### 在 React Native 中接收来自原生的消息
 
 ```typescript
 import * as Brownfield, { type MessageEvent } from 'expo-brownfield';
@@ -53,7 +53,7 @@ import { useEffect } from 'react';
 function MyComponent() {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      console.log('Received message:', event);
+      console.log('收到消息：', event);
     };
 
     Brownfield.addMessageListener(handleMessage);
@@ -67,7 +67,7 @@ function MyComponent() {
 }
 ```
 
-#### Sending messages from native to React Native
+#### 从原生向 React Native 发送消息
 
 <Tabs>
 <Tab label="Android">
@@ -102,7 +102,7 @@ BrownfieldMessaging.sendMessage([
 </Tab>
 </Tabs>
 
-#### Receiving messages from React Native in native
+#### 在原生中接收来自 React Native 的消息
 
 <Tabs>
 <Tab label="Android">
@@ -111,10 +111,10 @@ BrownfieldMessaging.sendMessage([
 import expo.modules.brownfield.BrownfieldMessaging
 
 val listenerId = BrownfieldMessaging.addListener { event ->
-    println("Message from React Native: $event")
+    println("来自 React Native 的消息：$event")
 }
 
-// Later, to remove the listener:
+// 之后，移除监听器：
 BrownfieldMessaging.removeListener(listenerId)
 ```
 
@@ -125,19 +125,19 @@ BrownfieldMessaging.removeListener(listenerId)
 import ExpoBrownfield
 
 let listenerId = BrownfieldMessaging.addListener { message in
-    print("Message from React Native: \(message)")
+    print("来自 React Native 的消息：\(message)")
 }
 
-// Later, to remove the listener:
+// 之后，移除监听器：
 BrownfieldMessaging.removeListener(id: listenerId)
 ```
 
 </Tab>
 </Tabs>
 
-## Configuration in app config
+## app config 中的配置
 
-The `expo-brownfield` package provides a [config plugin](/config-plugins/introduction/) that can be used to configure the brownfield integration when using [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/). This plugin allows you to customize how your Expo project is packaged and integrated into your existing native app.
+`expo-brownfield` 包提供了一个 [config plugin](/config-plugins/introduction/)，可在使用 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 时用于配置 brownfield 集成。此插件允许你自定义 Expo 项目的打包方式以及如何将其集成到现有原生应用中。
 
 <ConfigPluginExample>
 
@@ -173,54 +173,54 @@ The `expo-brownfield` package provides a [config plugin](/config-plugins/introdu
       name: 'ios.targetName',
       platform: 'ios',
       description:
-        'Name of the Xcode target for the brownfield integration. This is used to create a separate target in your Xcode project for the React Native code.',
+        'brownfield 集成的 Xcode 目标名称。这用于在你的 Xcode 项目中为 React Native 代码创建一个独立目标。',
       default: '"<scheme>brownfield" or "<slug>brownfield"',
     },
     {
       name: 'ios.bundleIdentifier',
       platform: 'ios',
       description:
-        'Bundle identifier for the brownfield target. This should be unique and different from your main app bundle identifier.',
+        'brownfield 目标的 bundle 标识符。它应当是唯一的，并且与主应用的 bundle 标识符不同。',
       default: '"<ios.bundleIdentifier base>.<targetName>" or "com.example.<targetName>"',
     },
     {
       name: 'ios.buildReactNativeFromSource',
       platform: 'ios',
       description:
-        'Build React Native from source instead of using prebuilt frameworks. Turning this on significantly increases the build times.',
+        '从源代码构建 React Native，而不是使用预构建框架。开启此项会显著增加构建时间。',
       default: 'true',
     },
     {
       name: 'android.group',
       platform: 'android',
       description:
-        'Maven group ID for the generated Android library. This is used when publishing the library to a Maven repository.',
+        '生成的 Android 库的 Maven group ID。发布库到 Maven 仓库时会使用此项。',
       default: '"<package without last segment>"',
     },
     {
       name: 'android.libraryName',
       platform: 'android',
-      description: 'Name of the generated Android library module.',
+      description: '生成的 Android 库模块名称。',
       default: '"brownfield"',
     },
     {
       name: 'android.package',
       platform: 'android',
-      description: 'Java/Kotlin package name for the generated Android library code.',
+      description: '生成的 Android 库代码的 Java/Kotlin 包名。',
       default: '"<android.package>.brownfield" or "com.example.brownfield"',
     },
     {
       name: 'android.version',
       platform: 'android',
       description:
-        'Version string for the generated Android library. This is used when publishing to a Maven repository.',
+        '生成的 Android 库的版本字符串。发布到 Maven 仓库时会使用此项。',
       default: '"1.0.0"',
     },
     {
       name: 'android.publishing',
       platform: 'android',
       description:
-        'Publishing configuration for the generated Android library. Supports `localMaven`, `localDirectory`, `remotePublic`, and `remotePrivate` publication types. Each type has different configuration options for specifying where and how the library is published.',
+        '生成的 Android 库的发布配置。支持 `localMaven`、`localDirectory`、`remotePublic` 和 `remotePrivate` 发布类型。每种类型都有不同的配置选项，用于指定库发布的位置和方式。',
       default: '[{ type: "localMaven" }]',
     },
   ]}
@@ -228,47 +228,47 @@ The `expo-brownfield` package provides a [config plugin](/config-plugins/introdu
 
 ## CLI
 
-The `expo-brownfield` library includes a CLI for building and publishing to Maven repositories (Android) and XCFrameworks (iOS).
+`expo-brownfield` 库包含一个 CLI，用于构建并发布到 Maven 仓库（Android）和 XCFrameworks（iOS）。
 
 <Terminal cmd={['$ npx expo-brownfield [command] [options]']} />
 
-### Commands
+### 命令
 
 #### `build:android`
 
-Builds and publishes the brownfield library and its dependencies to Maven repositories.
+构建并将 brownfield 库及其依赖发布到 Maven 仓库。
 
 <Terminal cmd={['$ npx expo-brownfield build:android [options]']} />
 
-| Option                 | Description                                    |
-| ---------------------- | ---------------------------------------------- |
-| `-d, --debug`          | Build in debug mode                            |
-| `-r, --release`        | Build in release mode                          |
-| `-a, --all`            | Build in both debug and release mode (default) |
-| `-l, --library`        | Specify brownfield library name                |
-| `--repo, --repository` | Specify Maven repositories to publish to       |
-| `-t, --task`           | Specify Gradle publish tasks to run            |
-| `--verbose`            | Include all logs from subprocesses             |
+| 选项                   | 描述                                         |
+| ---------------------- | -------------------------------------------- |
+| `-d, --debug`          | 以调试模式构建                               |
+| `-r, --release`        | 以发布模式构建                               |
+| `-a, --all`            | 同时以调试和发布模式构建（默认）             |
+| `-l, --library`        | 指定 brownfield 库名称                       |
+| `--repo, --repository` | 指定要发布到的 Maven 仓库                    |
+| `-t, --task`           | 指定要运行的 Gradle 发布任务                 |
+| `--verbose`            | 包含子进程的所有日志                         |
 
 #### `build:ios`
 
-Builds the brownfield XCFramework and copies the Hermes XCFramework to the artifacts directory.
+构建 brownfield XCFramework，并将 Hermes XCFramework 复制到制品目录。
 
 <Terminal cmd={['$ npx expo-brownfield build:ios [options]']} />
 
-| Option              | Description                                              |
-| ------------------- | -------------------------------------------------------- |
-| `-d, --debug`       | Build in debug mode                                      |
-| `-r, --release`     | Build in release mode (default)                          |
-| `-a, --artifacts`   | Path to the artifacts directory (default: `./artifacts`) |
-| `-s, --scheme`      | Xcode scheme to build                                    |
-| `-x, --xcworkspace` | Xcode workspace path                                     |
-| `-p, --package`     | Ship artifacts as Swift Package (accepts optional name)  |
-| `--verbose`         | Include all logs from subprocesses                       |
+| 选项               | 描述                                                   |
+| ------------------ | ------------------------------------------------------ |
+| `-d, --debug`     | 以调试模式构建                                         |
+| `-r, --release`    | 以发布模式构建（默认）                                 |
+| `-a, --artifacts`  | 制品目录路径（默认：`./artifacts`）                    |
+| `-s, --scheme`     | 要构建的 Xcode scheme                                   |
+| `-x, --xcworkspace` | Xcode workspace 路径                                    |
+| `-p, --package`    | 将制品作为 Swift Package 交付（接受可选名称）           |
+| `--verbose`        | 包含子进程的所有日志                                   |
 
 #### `tasks:android`
 
-Lists all available publish tasks and Maven repositories.
+列出所有可用的发布任务和 Maven 仓库。
 
 <Terminal cmd={['$ npx expo-brownfield tasks:android']} />
 

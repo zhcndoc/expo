@@ -185,7 +185,7 @@ const nextConfig: NextConfig = {
 
     const sitemapEntries = createSitemap({
       pathMap,
-      domain: `https://docs.expo.dev`,
+      domain: `https://expo.zhcndoc.com`,
       output: join(outDir, `sitemap.xml`),
       // Some of the search engines only track the first N items from the sitemap,
       // this makes sure our starting and general guides are first, and API index last (in order from new to old)

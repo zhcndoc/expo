@@ -1,41 +1,41 @@
 ---
-title: Using Environment variables in EAS
-sidebar_title: Usage
-description: Learn how to use environment variables in EAS builds, updates, hosting, and workflow jobs.
+title: 在 EAS 中使用环境变量
+sidebar_title: 用法
+description: 了解如何在 EAS 构建、更新、托管和工作流作业中使用环境变量。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-The following sections cover how to use environment variables in EAS builds, updates, and workflow jobs.
+以下章节介绍如何在 EAS builds、updates 和 workflow jobs 中使用环境变量。
 
-## Using environment variables with EAS Build
+## 在 EAS Build 中使用环境变量
 
-To have full control over the environments used for your builds, you can specify the [`environment`](/eas/json#environment) field in the build profiles settings in the **eas.json** file.
+为了完全控制构建所使用的环境，你可以在 **eas.json** 文件中的 build profiles 设置里指定 [`environment`](/eas/json#environment) 字段。
 
 ```json eas.json
 {
   "build": {
     "development": {
-      /* @info Using <CODE>development</CODE> environment */
+      /* @info 使用 <CODE>development</CODE> 环境 */
       "environment": "development"
       /* @end */
       /* @hide ... */ /* @end */
     },
     "preview": {
-      /* @info Using <CODE>preview</CODE> environment */
+      /* @info 使用 <CODE>preview</CODE> 环境 */
       "environment": "preview"
       /* @end */
       /* @hide ... */ /* @end */
     },
     "production": {
-      /* @info Using <CODE>production</CODE> environment */
+      /* @info 使用 <CODE>production</CODE> 环境 */
       "environment": "production"
       /* @end */
       /* @hide ... */ /* @end */
     },
     "my-profile": {
-      /* @info Using <CODE>production</CODE> environment */
+      /* @info 使用 <CODE>production</CODE> 环境 */
       "environment": "production"
       /* @end */
       /* @hide ... */ /* @end */
@@ -44,108 +44,108 @@ To have full control over the environments used for your builds, you can specify
 }
 ```
 
-All of the environment variables from the selected environment will be used during the build process. Plain text and sensitive variables will be available when resolving build configuration based on the dynamic app config in EAS CLI as well.
+所选环境中的所有环境变量都会在构建过程中使用。基于 EAS CLI 中动态 app config 的构建配置解析时，也可以使用纯文本和敏感变量。
 
-If you don't set the `environment` option, we will set the environment automatically based on your build's configuration:
+如果你没有设置 `environment` 选项，我们会根据你的构建配置自动设置环境：
 
-- `production` when `distribution` is set to `store`
-- `development` when `developmentClient` is `true`
-- `preview` for everything else
+- 当 `distribution` 设置为 `store` 时，使用 `production`
+- 当 `developmentClient` 为 `true` 时，使用 `development`
+- 其他情况使用 `preview`
 
-<Collapsible summary="Built-in environment variables">
+<Collapsible summary="内置环境变量">
 
-The following environment variables are additional system environment variables exposed to each job and can be used within any build step. They are not a part of any project environment and are not available when evaluating **app.config.js** locally:
+以下环境变量是暴露给每个 job 的额外系统环境变量，可在任意构建步骤中使用。它们不属于任何项目环境，并且在本地评估 **app.config.js** 时不可用：
 
-- `CI=1`: Indicates this is a CI environment
-- `EAS_BUILD=true`: Indicates this is an EAS Build environment
-- `EAS_BUILD_PLATFORM`: Either `android` or `ios`
-- `EAS_BUILD_RUNNER`: Either `eas-build` for EAS Build cloud builds or `local-build-plugin` for [local builds](/build-reference/local-builds/)
-- `EAS_BUILD_ID`: The build ID, for example, `f51831f0-ea30-406a-8c5f-f8e1cc57d39c`
-- `EAS_BUILD_PROFILE`: The name of the build profile from **eas.json**, for example, `production`
-- `EAS_BUILD_PROJECT_ID`: the EAS project ID, for example, `bd2f7e21-1ee7-47f2-8357-d7c4b50622fb`
-- `EAS_BUILD_GIT_COMMIT_HASH`: The hash of the Git commit, for example, `88f28ab5ea39108ade978de2d0d1adeedf0ece76`
-- `EAS_BUILD_NPM_CACHE_URL`: The URL of npm cache ([learn more](/build-reference/private-npm-packages))
-- `EAS_BUILD_MAVEN_CACHE_URL`: The URL of Maven cache ([learn more](/build-reference/caching/#android-dependencies))
-- `EAS_BUILD_COCOAPODS_CACHE_URL`: The URL of CocoaPods cache ([learn more](/build-reference/caching/#ios-dependencies))
-- `EAS_BUILD_USERNAME`: The username of the user initiating the build (it's undefined for bot users)
-- `EAS_BUILD_WORKINGDIR`: The remote directory path with your project
-- `EAS_BUILD_DISABLE_BUNDLE_JAVASCRIPT_STEP`: Set to `1` to skip the early JavaScript bundling check. By default, EAS Build runs the JavaScript bundler before the native build to surface JS errors earlier. Disabling this step means JavaScript errors won't be caught until the native build step.
+- `CI=1`：表示这是一个 CI 环境
+- `EAS_BUILD=true`：表示这是一个 EAS Build 环境
+- `EAS_BUILD_PLATFORM`：`android` 或 `ios`
+- `EAS_BUILD_RUNNER`：EAS Build 云构建为 `eas-build`，[本地构建](/build-reference/local-builds/)为 `local-build-plugin`
+- `EAS_BUILD_ID`：构建 ID，例如 `f51831f0-ea30-406a-8c5f-f8e1cc57d39c`
+- `EAS_BUILD_PROFILE`：来自 **eas.json** 的构建配置名称，例如 `production`
+- `EAS_BUILD_PROJECT_ID`：EAS 项目 ID，例如 `bd2f7e21-1ee7-47f2-8357-d7c4b50622fb`
+- `EAS_BUILD_GIT_COMMIT_HASH`：Git 提交的哈希值，例如 `88f28ab5ea39108ade978de2d0d1adeedf0ece76`
+- `EAS_BUILD_NPM_CACHE_URL`：npm 缓存的 URL（[了解更多](/build-reference/private-npm-packages)）
+- `EAS_BUILD_MAVEN_CACHE_URL`：Maven 缓存的 URL（[了解更多](/build-reference/caching/#android-dependencies)）
+- `EAS_BUILD_COCOAPODS_CACHE_URL`：CocoaPods 缓存的 URL（[了解更多](/build-reference/caching/#ios-dependencies)）
+- `EAS_BUILD_USERNAME`：发起构建的用户用户名（bot 用户时未定义）
+- `EAS_BUILD_WORKINGDIR`：包含你项目的远程目录路径
+- `EAS_BUILD_DISABLE_BUNDLE_JAVASCRIPT_STEP`：设为 `1` 可跳过较早的 JavaScript 打包检查。默认情况下，EAS Build 会在原生构建之前先运行 JavaScript 打包器，以便更早暴露 JS 错误。禁用此步骤意味着 JavaScript 错误要到原生构建步骤才会被捕获。
 
 </Collapsible>
 
-> **info** The environment variables of secret type are not available during build configuration resolution in EAS CLI as they are not readable outside of the EAS servers.
+> **info** 秘密类型的环境变量在 EAS CLI 中进行构建配置解析时不可用，因为它们无法在 EAS 服务器之外读取。
 
-## Using environment variables with EAS Update
+## 在 EAS Update 中使用环境变量
 
-In **SDK 55 or later**, the `--environment` flag is required when running `eas update`. The environment variables from the specified EAS environment will be used during the update process. For projects using SDK 54 or earlier, `eas update` falls back to local **.env** files when the `--environment` flag is omitted.
+在 **SDK 55 或更高版本** 中，运行 `eas update` 时必须使用 `--environment` 标志。指定的 EAS 环境中的环境变量会在更新过程中使用。对于使用 SDK 54 或更早版本的项目，如果省略 `--environment` 标志，`eas update` 会回退到本地的 **.env** 文件。
 
-To use EAS environment variables with EAS Update, run the `eas update` command with the `--environment` flag:
+要在 EAS Update 中使用 EAS 环境变量，请使用 `--environment` 标志运行 `eas update` 命令：
 
 <Terminal cmd={['$ eas update --environment production']} />
 
-When the `--environment` flag is used, **only the environment variables from the specified EAS environment will be used during the update process** and won't use the **.env** files present in your project. This ensures the same environment variables are used for both your updates and builds.
+当使用 `--environment` 标志时，**更新过程中只会使用指定 EAS 环境中的环境变量**，不会使用项目中存在的 **.env** 文件。这样可以确保你的更新和构建使用相同的环境变量。
 
-Expo CLI will substitute prefixed variables in your code (for example, `process.env.EXPO_PUBLIC_VARNAME`) with the corresponding plain text and sensitive environment variable values set on EAS servers for the environment specified with the `--environment` flag. Any `EXPO_PUBLIC_` variables in your application code will be replaced inline with the corresponding values from your EAS environment whether that is your local machine or your CI/CD server.
+Expo CLI 会将代码中的带前缀变量（例如 `process.env.EXPO_PUBLIC_VARNAME`）替换为由 `--environment` 标志指定环境下 EAS 服务器上设置的相应纯文本和敏感环境变量值。无论在本地机器还是在 CI/CD 服务器上，你应用代码中的任何 `EXPO_PUBLIC_` 变量都会被内联替换为对应的 EAS 环境值。
 
-The `--environment` flag ensures the same environment variables are used for both your update and build jobs.
+`--environment` 标志确保更新和构建 job 使用相同的环境变量。
 
-> **info** The secret variables will not be available during the update process as they are not readable outside of EAS servers.
+> **info** 秘密变量在更新过程中不可用，因为它们无法在 EAS 服务器之外读取。
 
-## Using environment variables with EAS Hosting
+## 在 EAS Hosting 中使用环境变量
 
-An Expo Router web project can include environment variables that are used on both the client and the server. Client-side values are inlined in the JavaScript bundle when you run `npx expo export`, while server-side values are stored on the server and are deployed with your API routes when you run `eas deploy`.
+Expo Router Web 项目可以包含同时用于客户端和服务端的环境变量。客户端值会在运行 `npx expo export` 时内联到 JavaScript bundle 中，而服务端值会保存在服务器上，并在运行 `eas deploy` 时与 API 路由一起部署。
 
-> **warning** With EAS Hosting, only **plain text** and **sensitive** [environment variables](/eas/environment-variables/#visibility-settings-for-environment-variables) can be used. Secrets cannot be deployed with EAS Hosting.
+> **warning** 使用 EAS Hosting 时，只能使用**纯文本**和**敏感**[环境变量](/eas/environment-variables/#visibility-settings-for-environment-variables)。秘密变量不能通过 EAS Hosting 部署。
 
-<Collapsible summary="Client-side environment variables">
+<Collapsible summary="客户端环境变量">
 
-All code that runs in the browser is client-side. In an Expo Router project, this includes all code that is not an API Route or server function. The environment variables in your client-side code are inlined at build time. You should never put any sensitive information in your client-side code, which is why all client-side environment variables must be prefixed with [`EXPO_PUBLIC_`](/guides/environment-variables/).
+所有在浏览器中运行的代码都属于客户端。在 Expo Router 项目中，这包括所有不是 API Route 或 server function 的代码。客户端代码中的环境变量会在构建时内联。你绝不应该在客户端代码中放置任何敏感信息，这就是为什么所有客户端环境变量都必须以 [`EXPO_PUBLIC_`](/guides/environment-variables/) 为前缀。
 
-When you run `npx expo export`, all instances of `process.env.EXPO_PUBLIC_*` environment variables will be replaced with values from the environment.
-
-</Collapsible>
-
-<Collapsible summary="Server-side environment variables">
-
-All the code in your [API routes](/router/web/api-routes/) (files ending with **+api.ts**) runs on the server. Since the code running on the server is never visible to the app user, you can safely use sensitive environment variables such as API keys and tokens.
-
-Server-side environment variables are not inlined in the code, they are uploaded with the deployment when you run the `eas deploy` command.
+当你运行 `npx expo export` 时，所有 `process.env.EXPO_PUBLIC_*` 环境变量实例都会被替换为环境中的值。
 
 </Collapsible>
 
-### Storing environment variables
+<Collapsible summary="服务端环境变量">
 
-When deploying a project with EAS environment variables, note that the environment variables for the client-side and server-side code are included at different steps:
+你所有 [API routes](/router/web/api-routes/) 中的代码（以 **+api.ts** 结尾的文件）都会在服务器上运行。由于在服务器上运行的代码对应用用户不可见，你可以安全地使用诸如 API key 和 token 之类的敏感环境变量。
 
-- Running `npx expo export --platform web` will inline the `EXPO_PUBLIC_` variables in the frontend code. So ensure that your **.env.local** file includes the correct environment variables before running the `npx expo export` command.
-- `eas deploy --environment production` will include all variables for the given environment (in this case, `production`) in the API routes. EAS Environment variables loaded with the `--environment` flag will take precedence over ones defined in **.env** and **.env.local** files.
+服务端环境变量不会被内联到代码中，而是在你运行 `eas deploy` 命令时随着部署一起上传。
 
-> **warning** **Environment variables are per deployment, and deployments are immutable**. This means that after changing an environment variable, you will need to re-export your project, and re-deploy in order for them to be updated.
+</Collapsible>
 
-### For local development
+### 存储环境变量
 
-For local development, both client- and server-side environment variables are loaded from [local **.env** files](/guides/environment-variables/), which should be gitignored. If you are using EAS environment variables, use [`eas env:pull`](/eas/environment-variables/manage/#pull-variables-for-local-development) to retrieve the environment variables for `development`, `preview`, or `production`.
+当使用 EAS 环境变量部署项目时，请注意客户端和服务端代码的环境变量会在不同步骤中包含：
 
-## Using environment variables for other commands
+- 运行 `npx expo export --platform web` 会将前端代码中的 `EXPO_PUBLIC_` 变量内联。因此，在运行 `npx expo export` 命令之前，请确保你的 **.env.local** 文件包含正确的环境变量。
+- `eas deploy --environment production` 会将给定环境（此处为 `production`）的所有变量包含到 API routes 中。使用 `--environment` 标志加载的 EAS 环境变量会优先于 **.env** 和 **.env.local** 文件中定义的变量。
 
-One way to supply non-secret EAS environment variables to other EAS commands is to use the `eas env:exec` command.
+> **warning** **环境变量是按部署生效的，且部署是不可变的**。这意味着在更改环境变量之后，你需要重新导出项目并重新部署，才能让这些更改生效。
+
+### 本地开发
+
+对于本地开发，客户端和服务端环境变量都从[本地 **.env** 文件](/guides/environment-variables/)中加载，这些文件应被加入 gitignore。如果你正在使用 EAS 环境变量，请使用 [`eas env:pull`](/eas/environment-variables/manage/#pull-variables-for-local-development) 来获取 `development`、`preview` 或 `production` 的环境变量。
+
+## 在其他命令中使用环境变量
+
+向其他 EAS 命令提供非秘密 EAS 环境变量的一种方式是使用 `eas env:exec` 命令。
 
 <Terminal cmd={["$ eas env:exec --environment production 'echo $APP_VARIANT'"]} />
 
-For example, it can be useful when uploading source maps to Sentry using a [`SENTRY_AUTH_TOKEN`](/guides/using-sentry) variable after an update bundle is created.
+例如，在更新 bundle 创建后，使用 [`SENTRY_AUTH_TOKEN`](/guides/using-sentry) 变量上传 source map 到 Sentry 时，这会很有用。
 
 <Terminal
   cmd={["$ eas env:exec --environment production 'npx sentry-expo-upload-sourcemaps dist'"]}
 />
 
-## Using environment variables in EAS Workflows
+## 在 EAS Workflows 中使用环境变量
 
-### Setting EAS environment for workflow jobs
+### 为 workflow jobs 设置 EAS 环境
 
-- **Build jobs**: The environment comes from the build profile in **eas.json** (`build.<profile>.environment`). If that field is missing, the automatic defaults described above apply. [Using environment variables with EAS Build](#using-environment-variables-with-eas-build).
-- **Other jobs** (for example, update, submit, fingerprint, Maestro, and custom jobs): Set [`jobs.<job_id>.environment`](/eas/workflows/syntax/#jobsjob_idenvironment). If you omit it, `production` is used. Setting it explicitly helps keep the job in sync with the build profile you used earlier in the workflow.
+- **Build jobs**：环境来自 **eas.json** 中的 build profile（`build.<profile>.environment`）。如果该字段缺失，则适用上面描述的自动默认值。[在 EAS Build 中使用环境变量](#using-environment-variables-with-eas-build)。
+- **其他 jobs**（例如 update、submit、fingerprint、Maestro 和自定义 jobs）：设置 [`jobs.<job_id>.environment`](/eas/workflows/syntax/#jobsjob_idenvironment)。如果省略它，则使用 `production`。显式设置它有助于让 job 与你在 workflow 中前面使用的 build profile 保持一致。
 
-In the following example, a build job is configured to use the `preview` profile, then an update job is configured to use the same EAS environment.
+在下面的示例中，build job 配置为使用 `preview` profile，然后 update job 配置为使用相同的 EAS 环境。
 
 ```yaml .eas/workflows/publish-preview.yml
 name: Publish preview build and update
@@ -155,17 +155,17 @@ jobs:
     type: build
     params:
       platform: ios
-      profile: preview # uses environment from eas.json's build.preview.environment
+      profile: preview # 使用来自 eas.json 的 build.preview.environment 的环境
 
   publish_preview_update:
     needs: [build_preview]
     type: update
-    environment: preview # pulls variables from the preview environment
+    environment: preview # 从 preview 环境中拉取变量
     params:
       branch: preview
 ```
 
-In the following example, a fingerprint job is configured to use the `production` environment, then a build job is configured to use the same EAS environment.
+在下面的示例中，fingerprint job 配置为使用 `production` 环境，然后 build job 配置为使用相同的 EAS 环境。
 
 ```yaml .eas/workflows/fingerprint-and-build.yml
 name: Fingerprint and build
@@ -173,26 +173,26 @@ name: Fingerprint and build
 jobs:
   fingerprint:
     type: fingerprint
-    environment: production # defaults to production, but set explicitly to match the build
+    environment: production # 默认为 production，但显式设置以与 build 匹配
   build_ios:
     needs: [fingerprint]
     type: build
     params:
       platform: ios
-      profile: production # uses environment from eas.json's build.production.environment
+      profile: production # 使用来自 eas.json 的 build.production.environment 的环境
 ```
 
-Keep the job environment value in sync with the build profile to avoid mismatched secrets. For example, fingerprint/update jobs should usually match the build's profile environment.
+请将 job 的环境值与 build profile 保持一致，以避免 secret 不匹配。例如，fingerprint/update jobs 通常应与 build 的 profile 环境保持一致。
 
-### Dynamically setting environment variables during the job execution
+### 在 job 执行期间动态设置环境变量
 
-You can also set environment variables dynamically during the job execution using the `set-env` command.
-The `set-env` executable is available in the `PATH` on EAS Build workers, and can be used to set environment variables that will be visible in the next build phases.
+你还可以在 job 执行期间使用 `set-env` 命令动态设置环境变量。
+`set-env` 可执行文件在 EAS Build workers 的 `PATH` 中可用，可用于设置在后续构建阶段可见的环境变量。
 
-For example, you can add the following in one of the [EAS Build hooks](/build-reference/npm-hooks/) and the environment variable `EXAMPLE_ENV` will be available until the end of the build job.
+例如，你可以在某个 [EAS Build hooks](/build-reference/npm-hooks/) 中添加以下内容，环境变量 `EXAMPLE_ENV` 将一直可用到构建 job 结束。
 
 <Terminal cmd={['$ set-env EXAMPLE_ENV "example value"']} />
 
-### Accessing environment variables
+### 访问环境变量
 
-After creating an environment variable, you can read it on subsequent EAS Build jobs with `process.env.VARIABLE_NAME` from Node.js or in shell scripts as `$VARIABLE_NAME`.
+创建环境变量后，你可以在后续的 EAS Build jobs 中通过 Node.js 中的 `process.env.VARIABLE_NAME` 或 shell 脚本中的 `$VARIABLE_NAME` 来读取它。

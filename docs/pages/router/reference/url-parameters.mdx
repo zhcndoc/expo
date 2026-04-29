@@ -1,39 +1,39 @@
 ---
-title: Using URL parameters
-description: Learn how to access and modify route and search parameters in your app.
-sidebar_title: URL parameters
+title: 使用 URL 参数
+description: 了解如何在你的应用中访问和修改路由参数和搜索参数。
+sidebar_title: URL 参数
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-URL parameters include both **route parameters** and **search parameters**. Expo Router provides hooks for accessing and modifying these parameters.
+URL 参数包括 **路由参数** 和 **搜索参数**。Expo Router 提供了用于访问和修改这些参数的 hooks。
 
-## Difference between route and search parameters
+## 路由参数和搜索参数的区别
 
-Route parameters are dynamic segments defined in a URL path, such as `/profile/[user]`, where `user` is a route parameter. They are used to match a route.
+路由参数是 URL 路径中定义的动态段，例如 `/profile/[user]`，其中 `user` 是一个路由参数。它们用于匹配路由。
 
-Search parameters (also known as query params) are serializable fields that can be appended to a URL, such as `/profile?extra=info`, where `extra` is a search parameter. They are commonly used to pass data between pages.
+搜索参数（也称为 query params）是可序列化的字段，可以附加到 URL 上，例如 `/profile?extra=info`，其中 `extra` 是一个搜索参数。它们通常用于在页面之间传递数据。
 
-## Local versus global URL parameters
+## 本地与全局 URL 参数
 
-In apps with nested navigators, you'll often have **multiple pages mounted** at the same time. For example, a stack has the previous page and current page in memory when a new route is pushed. Because of this, Expo Router provides two different hooks for accessing URL parameters:
+在具有嵌套导航器的应用中，你通常会发现同一时间有 **多个页面被挂载**。例如，当一个新路由被压入栈时，栈会将上一页和当前页保留在内存中。正因为如此，Expo Router 提供了两个不同的 hooks 来访问 URL 参数：
 
-- **useLocalSearchParams**: Returns the URL parameters for the current component. It only updates when the global URL conforms to the route.
-- **useGlobalSearchParams**: Returns the global URL regardless of the component. It updates on every URL param change and might cause components to update extraneously in the background.
+- **useLocalSearchParams**：返回当前组件的 URL 参数。它只会在全局 URL 与路由一致时更新。
+- **useGlobalSearchParams**：无论组件如何，都会返回全局 URL。它会在每次 URL 参数变化时更新，并且可能导致组件在后台发生额外更新。
 
-The hooks `useGlobalSearchParams` and `useLocalSearchParams` allow you to access these parameters within your components, enabling you to retrieve and utilize both types of URL parameters.
+`useGlobalSearchParams` 和 `useLocalSearchParams` 这两个 hooks 允许你在组件中访问这些参数，从而获取并使用这两类 URL 参数。
 
-Both hooks are typed and accessed the same way. However, the only difference is how frequently they update.
+这两个 hooks 的类型定义和使用方式相同。唯一的区别在于它们的更新频率。
 
-The example below demonstrates the difference between `useLocalSearchParams` and `useGlobalSearchParams`. It uses the following **app** directory structure:
+下面的示例演示了 `useLocalSearchParams` 和 `useGlobalSearchParams` 的区别。它使用如下 **app** 目录结构：
 
 <FileTree files={['src/app/_layout.tsx', 'src/app/index.tsx', 'src/app/[user].tsx']} />
 
 <Step label="1">
 
-    The Root Layout is a stack navigator:
+    Root Layout 是一个栈导航器：
 
     ```tsx src/app/_layout.tsx
     import { Stack } from 'expo-router';
@@ -47,7 +47,7 @@ The example below demonstrates the difference between `useLocalSearchParams` and
 
 <Step label="2">
 
-    The initial route redirects to the dynamic route **src/app/[user].tsx**, with **user=evanbacon**:
+    初始路由会重定向到动态路由 **src/app/[user].tsx**，并带有 **user=evanbacon**：
 
     ```tsx src/app/index.tsx
     import { Redirect } from 'expo-router';
@@ -61,7 +61,7 @@ The example below demonstrates the difference between `useLocalSearchParams` and
 
 <Step label="3">
 
-    The dynamic route **src/app/[user]** prints out the global and local URL parameters (route parameters, in this case). It also allows for pushing new instances of the same route with different **route parameters**:
+    动态路由 **src/app/[user]** 会打印全局和本地 URL 参数（在这里指路由参数）。它还允许通过不同的 **路由参数** 来推入同一路由的新实例：
 
     ```tsx src/app/[user].tsx
     import { Text, View } from 'react-native';
@@ -80,7 +80,7 @@ The example below demonstrates the difference between `useLocalSearchParams` and
           <Text>User: {local.user}</Text>
           {friends.map(friend => (
             <Link key={friend} href={`/${friend}`}>
-              Visit {friend}
+              访问 {friend}
             </Link>
           ))}
         </View>
@@ -92,45 +92,45 @@ The example below demonstrates the difference between `useLocalSearchParams` and
 
 <Step label="4">
 
-When the app starts, the following log is printed:
+应用启动时，会打印以下日志：
 
 <Terminal cmd={['Local: evanbacon Global: evanbacon']} />
 
-Pressing "Visit charlie" pushes a new instance of `/[user]` with **user=charlie**, and logs the following:
+按下 "Visit charlie" 会将 `/[user]` 的一个新实例压入栈中，且 **user=charlie**，并记录以下日志：
 
 <Terminal
   cmd={[
-    '# This log came from the new screen',
+    '# 这条日志来自新屏幕',
     'Local: charlie Global: charlie',
-    '# This log came from the first screen',
+    '# 这条日志来自第一个屏幕',
     'Local: evanbacon Global: charlie',
   ]}
 />
 
-Pressing "Visit james" has a similar effect:
+按下 "Visit james" 也会产生类似效果：
 
 <Terminal
   cmd={[
-    '# This log came from the new, "/james" screen',
+    '# 这条日志来自新的 "/james" 屏幕',
     'Local: james Global: james',
-    '# This log came from the "/evanbacon" screen',
+    '# 这条日志来自 "/evanbacon" 屏幕',
     'Local: evanbacon Global: james',
-    '# This log came from the "/charlie" screen',
+    '# 这条日志来自 "/charlie" 屏幕',
     'Local: charlie Global: james',
   ]}
 />
 
-    **Results:**
+    **结果：**
 
-    - `useGlobalSearchParams` made the background screens re-render when the URL **route parameters** changed. It can cause performance issues if overused.
-    - Global re-renders are executed in order of the stack, so the first screen is re-rendered first, then the **user=charlie** screen is re-rendered after.
-    - `useLocalSearchParams` remained the same, even when the global URL **route parameters** changed. You can leverage this behavior for data fetching to ensure the previous screen's data is still available when you navigate back.
+    - 当 URL **路由参数** 变化时，`useGlobalSearchParams` 会让后台屏幕重新渲染。如果过度使用，可能会导致性能问题。
+    - 全局重新渲染会按栈顺序执行，因此第一个屏幕会先重新渲染，然后才是 **user=charlie** 屏幕重新渲染。
+    - 即使全局 URL **路由参数** 变化了，`useLocalSearchParams` 仍保持不变。你可以利用这一行为进行数据获取，以确保当你返回时，上一屏的数据仍然可用。
 
 </Step>
 
-## Statically-typed URL parameters
+## 静态类型化的 URL 参数
 
-Both the `useLocalSearchParams` and `useGlobalSearchParams` can be statically typed using a generic. The following is an example for the `user` route parameter:
+`useLocalSearchParams` 和 `useGlobalSearchParams` 都可以通过泛型进行静态类型化。下面是 `user` 路由参数的示例：
 
 ```tsx src/app/[user].tsx
 import { Text } from 'react-native';
@@ -142,20 +142,20 @@ export default function Route() {
   return <Text>User: {user}</Text>;
 }
 
-// Given the URL: `/evanbacon`
-// The following is returned: { user: "evanbacon" }
+// 给定 URL：`/evanbacon`
+// 返回值如下：{ user: "evanbacon" }
 ```
 
-Any search parameters (for example, `?query=...`) can be typed optionally:
+任何搜索参数（例如 `?query=...`）都可以选择性地添加类型：
 
 ```tsx src/app/[user].tsx
 const { user, query } = useLocalSearchParams<{ user: string; query?: string }>();
 
-// Given the URL: `/evanbacon?query=hello`
-// The following is returned: { user: "evanbacon", query: "hello" }
+// 给定 URL：`/evanbacon?query=hello`
+// 返回值如下：{ user: "evanbacon", query: "hello" }
 ```
 
-When used with the rest syntax (`...`), route parameters are returned as a string array:
+当与 rest 语法（`...`）一起使用时，路由参数会以字符串数组返回：
 
 ```tsx src/app/[...everything].tsx
 import { Text } from 'react-native';
@@ -163,7 +163,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 export default function Route() {
   const { everything } = useLocalSearchParams<{
-    /* @info <b>everything</b> will be an array of path segments, even if there's only one */
+    /* @info <b>everything</b> 将是路径段数组，即使只有一个也一样 */
     everything: string[];
     /* @end */
   }>();
@@ -172,11 +172,11 @@ export default function Route() {
   return <Text>User: {user}</Text>;
 }
 
-// Given the URL: `/evanbacon/123`
-// The following is returned: { everything: ["evanbacon", "123"] }
+// 给定 URL：`/evanbacon/123`
+// 返回值如下：{ everything: ["evanbacon", "123"] }
 ```
 
-Any search parameters will continue to be returned as individual strings:
+任何搜索参数将继续作为单独的字符串返回：
 
 {/* prettier-ignore */}
 ```tsx src/app/[...everything].tsx
@@ -185,28 +185,28 @@ import { useLocalSearchParams } from 'expo-router';
 
 export default function Route() {
   const { everything } = useLocalSearchParams<{
-    /* @info <b>everything</b> will be an array of path segments, even if there's only one */
+    /* @info <b>everything</b> 将是路径段组成的数组，即使只有一个也是如此 */
     everything: string[];
-    /* @info <b>query</b> is an optional search parameter */
+    /* @info <b>query</b> 是一个可选的搜索参数 */
     query?: string;
-    /* @info <b>query2</b> is an optional search parameter */
+    /* @info <b>query2</b> 是一个可选的搜索参数 */
     query2?: string;
     /* @end */
   }>();
   const user = everything[0];
 
-  return <Text>User: {user}</Text>;
+  return <Text>用户：{user}</Text>;
 }
 
-// Given the URL: `/evanbacon/123?query=hello&query2=world`
-// The following is returned: { everything: ["evanbacon", "123"], query: "hello", query2: "world" }
+// 给定 URL：`/evanbacon/123?query=hello&query2=world`
+// 返回结果如下：{ everything: ["evanbacon", "123"], query: "hello", query2: "world" }
 ```
 
-## Updating URL parameters
+## 更新 URL 参数
 
-URL parameters can be updated using the **router.setParams** function from the imperative API. Updating a URL parameter will not push anything new to the history stack.
+可以使用命令式 API 中的 **router.setParams** 函数来更新 URL 参数。更新 URL 参数不会向历史栈中新增任何内容。
 
-The following example uses a `<TextInput>` to update the search parameter **q**:
+下面的示例使用 `<TextInput>` 来更新搜索参数 **q**：
 
 ```tsx src/app/search.tsx
 import { useLocalSearchParams, router } from 'expo-router';
@@ -222,12 +222,12 @@ export default function Page() {
       value={search}
       onChangeText={search => {
         setSearch(search);
-        /* @info Set the search parameter <b>query</b> to the text input <b>search</b> */
+        /* @info 将搜索参数 <b>query</b> 设置为文本输入框 <b>search</b> 的内容 */
         router.setParams({ query: search });
         /* @end */
       }}
       placeholderTextColor="#A0A0A0"
-      placeholder="Search"
+      placeholder="搜索"
       style={{
         borderRadius: 12,
         backgroundColor: '#fff',
@@ -241,7 +241,7 @@ export default function Page() {
 }
 ```
 
-Here is an example using an `onPress` event to update the route parameter **user**:
+下面是一个使用 `onPress` 事件来更新路由参数 **user** 的示例：
 
 ```tsx src/app/[user].tsx
 import { useLocalSearchParams, router } from 'expo-router';
@@ -253,15 +253,15 @@ export default function User() {
   return (
     <>
       <Text>User: {params.user}</Text>
-      <Text onPress={() => router.setParams({ user: 'evan' })}>Go to Evan</Text>
+      <Text onPress={() => router.setParams({ user: 'evan' })}>前往 Evan</Text>
     </>
   );
 }
 ```
 
-## Route parameters versus search parameters
+## 路由参数与搜索参数的区别
 
-Route parameters are used to match a route, while search parameters are used to pass data between routes. Consider the following structure, where a route parameter is used to match the _user_ route:
+路由参数用于匹配路由，而搜索参数用于在路由之间传递数据。请看下面的结构，其中路由参数用于匹配 _user_ 路由：
 
 <FileTree
   files={[
@@ -269,48 +269,48 @@ Route parameters are used to match a route, while search parameters are used to 
     [
       'src/app/[user].tsx',
       <>
-        <code>user</code> is a <b>route parameter</b>
+        <code>user</code> 是一个 <b>路由参数</b>
       </>,
     ],
   ]}
 />
 
-When the `src/app/[user]` route is matched, the `user` parameter is passed to the component and never a nullish value. Both search and route parameters can be used together and are accessible with the `useLocalSearchParams` and `useGlobalSearchParams` hooks:
+当 `src/app/[user]` 路由被匹配时，`user` 参数会传递给组件，并且绝不会是空值。搜索参数和路由参数可以一起使用，并且可以通过 `useLocalSearchParams` 和 `useGlobalSearchParams` hooks 访问：
 
 ```tsx src/app/[user].tsx
 import { useLocalSearchParams } from 'expo-router';
 
 export default function User() {
   const {
-    // The route parameter
+    // 路由参数
     user,
-    // An optional search parameter.
+    // 一个可选的搜索参数。
     tab,
   } = useLocalSearchParams<{ user: string; tab?: string }>();
 
   console.log({ user, tab });
 
-  // Given the URL: `/bacon?tab=projects`, the following is printed:
+  // 给定 URL：`/bacon?tab=projects`，会打印以下内容：
   // { user: 'bacon', tab: 'projects' }
 
-  // Given the URL: `/expo`, the following is printed:
+  // 给定 URL：`/expo`，会打印以下内容：
   // { user: 'expo', tab: undefined }
 }
 ```
 
-Whenever a route parameter is changed, the component will re-mount.
+每当路由参数发生变化时，组件都会重新挂载。
 
 ```tsx src/app/[user].tsx
 import { Text } from 'react-native';
 import { router, useLocalSearchParams, Link } from 'expo-router';
 
 export default function User() {
-  // All three of these will change the route parameter `user`, and add a new user page.
+  // 这三种方式都会更改路由参数 `user`，并新增一个用户页面。
   return (
     <>
-      <Text onPress={() => router.setParams({ user: 'evan' })}>Go to Evan</Text>
-      <Text onPress={() => router.push('/mark')}>Go to Mark</Text>
-      <Link href="/charlie">Go to Charlie</Link>
+      <Text onPress={() => router.setParams({ user: 'evan' })}>前往 Evan</Text>
+      <Text onPress={() => router.push('/mark')}>前往 Mark</Text>
+      <Link href="/charlie">前往 Charlie</Link>
     </>
   );
 }
@@ -336,9 +336,9 @@ export default function Route() {
 
 \*/}
 
-## Hash support
+## 哈希支持
 
-The URL [hash](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash) is a string that follows the `#` symbol in a URL. It is commonly used on websites to link to a specific section of a page, but it can also be used to store data. Expo Router treats the hash as a special search parameter using the name `#`. It can be accessed and modified using the same hooks and APIs from [search parameters](#local-versus-global-search-parameters).
+URL [哈希](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash) 是 URL 中跟在 `#` 符号后面的字符串。它通常用于网站中链接到页面的特定部分，但也可以用于存储数据。Expo Router 将哈希视为一个名为 `#` 的特殊搜索参数。它可以使用与 [搜索参数](#local-versus-global-search-parameters) 相同的 hooks 和 API 进行访问和修改。
 
 {/* prettier-ignore */}
 ```tsx src/app/hash.tsx
@@ -346,22 +346,22 @@ import { Text } from 'react-native';
 import { router, useLocalSearchParams, Link } from 'expo-router';
 
 export default function User() {
-  // Access the hash
+  // 访问哈希
   const { '#': hash } = useLocalSearchParams<{ '#': string }>();
 
   return (
     <>
-      <Text onPress={() => router.setParams({ '#': 'my-hash' })}>Set a new hash</Text>
-      <Text onPress={() => router.push('/#my-hash')}>Push with a new hash</Text>
-      <Link href="/#my-hash">Link with a hash</Link>
+      <Text onPress={() => router.setParams({ '#': 'my-hash' })}>设置一个新的哈希</Text>
+      <Text onPress={() => router.push('/#my-hash')}>使用新的哈希进行推送</Text>
+      <Link href="/#my-hash">带哈希的链接</Link>
     </>
   );
 }
 ```
 
-## Reserved parameters
+## 保留参数
 
-Certain URL parameters are reserved for internal use by Expo Router and React Navigation. Avoid using the following names for your own parameters to prevent conflicts:
+某些 URL 参数会被 Expo Router 和 React Navigation 保留用于内部使用。请避免将以下名称用于你自己的参数，以免发生冲突：
 
 - `screen`
 - `params`

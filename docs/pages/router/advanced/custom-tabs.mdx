@@ -1,7 +1,7 @@
 ---
-title: Custom tab layouts
-description: Learn how to use headless tab components to create custom tab layouts in Expo Router.
-sidebar_title: Custom tabs
+title: 自定义标签页布局
+description: 了解如何使用无头标签页组件在 Expo Router 中创建自定义标签页布局。
+sidebar_title: 自定义标签页
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -12,54 +12,54 @@ import { FAQ } from '~/ui/components/FAQ';
 import { FileTree } from '~/ui/components/FileTree';
 import { DiffBlock } from '~/ui/components/Snippet';
 
-> **important** This is an [experimental](/more/release-statuses/#experimental) feature.
+> **重要** 这是一个[实验性](/more/release-statuses/#experimental)功能。
 
-Expo Router offers a set of components to create custom tab layouts via the submodule [`expo-router/ui`](/versions/latest/sdk/router/ui/). Unlike the React Navigation styled `Tabs`, these components are unstyled and flexible. They are designed to allow you build complex UI patterns from scratch in your project.
+Expo Router 提供了一组组件，可通过子模块 [`expo-router/ui`](/versions/latest/sdk/router/ui/) 创建自定义标签页布局。与 React Navigation 风格化的 `Tabs` 不同，这些组件没有样式且非常灵活。它们旨在让你在项目中从零开始构建复杂的 UI 模式。
 
-For other tab layouts see:
+有关其他标签页布局，请参见：
 
 <BoxLink
-  title="Native tabs"
+  title="原生标签页"
   href="/router/advanced/native-tabs/"
-  description="See native tabs if you want to achieve a native look and feel for your tab bar."
+  description="如果你想让标签栏具有原生的外观和体验，请查看原生标签页。"
   Icon={BookOpen02Icon}
 />
 
 <BoxLink
-  title="JavaScript tabs"
+  title="JavaScript 标签页"
   href="/router/advanced/tabs/"
-  description="See JavaScript tabs if you already use React Navigation's tabs."
+  description="如果你已经在使用 React Navigation 的标签页，请查看 JavaScript 标签页。"
   Icon={BookOpen02Icon}
 />
 
-## Anatomy of custom Tabs components
+## 自定义 Tabs 组件的结构
 
-There are four components offered by `expo-router/ui` to create custom tab layouts:
+`expo-router/ui` 提供了四个组件来创建自定义标签页布局：
 
-| Component    | Description                                                                                                                     |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| `Tabs`       | Wrapper component which contains the `<View>` for the tabs.                                                                     |
-| `TabList`    | The containing `<View>` for the list of `TabTrigger` components.                                                                |
-| `TabTrigger` | A trigger component to switch to the specified tab. It is used to define the route using `href` prop and a `name` for each tab. |
-| `TabSlot`    | A slot to render the currently selected tab.                                                                                    |
+| 组件          | 描述                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `Tabs`        | 包装组件，包含标签页的 `<View>`。                                                         |
+| `TabList`     | 包含 `TabTrigger` 组件列表的 `<View>`。                                                   |
+| `TabTrigger`  | 用于切换到指定标签页的触发组件。它通过 `href` 属性定义路由，并为每个标签页提供一个 `name`。 |
+| `TabSlot`     | 用于渲染当前选中标签页的插槽。                                                           |
 
-A bare minimum structure of a custom tab layout would consist of a `TabList` (containing `TabTrigger` components for each tab) and a`TabSlot`, all within the `Tabs` component, as shown here:
+一个最基本的自定义标签页布局结构应由 `TabList`（包含每个标签页的 `TabTrigger` 组件）和 `TabSlot` 组成，且都位于 `Tabs` 组件内，如下所示：
 
 ```tsx src/app/(tabs)/_layout.tsx|collapseHeight=440
 import { Tabs, TabList, TabTrigger, TabSlot } from 'expo-router/ui';
 import { Text } from 'react-native';
 
-// Defining the layout of the custom tab navigator
+// 定义自定义标签导航器的布局
 export default function Layout() {
   return (
     <Tabs>
       <TabSlot />
       <TabList>
         <TabTrigger name="home" href="/">
-          <Text>Home</Text>
+          <Text>主页</Text>
         </TabTrigger>
         <TabTrigger name="article" href="/article">
-          <Text>Article</Text>
+          <Text>文章</Text>
         </TabTrigger>
       </TabList>
     </Tabs>
@@ -67,54 +67,54 @@ export default function Layout() {
 }
 ```
 
-## Creating routes
+## 创建路由
 
-The `TabList` contains all the routes available within the tab navigator. It must be an immediate child of `Tabs`. Each route is defined by a `TabTrigger` within the `TabList`. A `TabTrigger` within a `TabList` must include a `name` and a `href` prop.
+`TabList` 包含标签导航器中可用的所有路由。它必须是 `Tabs` 的直接子组件。每条路由都由 `TabList` 内的一个 `TabTrigger` 定义。`TabList` 中的 `TabTrigger` 必须包含 `name` 和 `href` 属性。
 
-Typically, the `TabList` defines both the available tab routes and the appearance of the tabs, with the children of each `TabTrigger` defining the appearance of each tab button.
+通常，`TabList` 同时定义可用的标签页路由和标签页的外观，而每个 `TabTrigger` 的子组件则定义每个标签按钮的外观。
 
-> **Note:** A `name` can be any `string`. This is a user-defined name for the Tab.
+> **注意：** `name` 可以是任意 `string`。这是为 Tab 自定义定义的名称。
 
-### Dynamic routes
+### 动态路由
 
-Dynamic routes are allowed and can be provided with values via the `href`.
+允许使用动态路由，并且可以通过 `href` 提供值。
 
 <FileTree files={['_layout.tsx', ['[slug].tsx']]} />
 
-The trigger `<TabTrigger name="dynamic page" href="/hello-world" />` will create a tab for **[slug].tsx** with the params `{ slug: 'hello-world' }`. This setup can be useful for displaying an arbitrary number of tabs in the tab bar, based on end-user data, such as showing a separate tab for each user profile in an app.
+触发器 `<TabTrigger name="dynamic page" href="/hello-world" />` 将为 **[slug].tsx** 创建一个标签页，参数为 `{ slug: 'hello-world' }`。这种设置对于根据最终用户数据在标签栏中显示任意数量的标签页很有用，例如为应用中的每个用户资料显示一个单独的标签页。
 
-### Ambiguous routes
+### 歧义路由
 
 <FileTree files={['_layout.tsx', ['(one,two)/route.tsx', 'A route within a shared group']]} />
 
-The `href` values provided to `TabTrigger` must always point to a single route. In the above example of a shared route, href `/route` is not allowed, as it could refer to either `/(one)/route` or `/(two)/route`. However, specifying the route group within the href would work (for example,`href="/(one)/route"`).
+传递给 `TabTrigger` 的 `href` 值必须始终指向单一路由。在上面的共享路由示例中，不允许使用 `href="/route"`，因为它可能指向 `/(one)/route` 或 `/(two)/route`。不过，在 `href` 中指定路由组是可以的（例如，`href="/(one)/route"`）。
 
-### Nested routes
+### 嵌套路由
 
 <FileTree
   files={[
     ['_layout.tsx'],
-    ['(stack-one)/_layout.tsx', 'A <Stack> layout'],
-    ['(stack-one)/(stack-two)/_layout.tsx', 'Nested <Stack> layout'],
+    ['(stack-one)/_layout.tsx', '一个 <Stack> 布局'],
+    ['(stack-one)/(stack-two)/_layout.tsx', '嵌套的 <Stack> 布局'],
     '(stack-one)/(stack-two)/route.tsx',
   ]}
 />
 
-A `TabTrigger` can link to a deeply nested route. `<TabTrigger name="route" href="/route" />` will show the **(stack-one)/(stack-two)/route.tsx** route. This tab will be controlled by that route's parent navigator (that is, the navigator within **stack-two_layout.tsx**). This navigation is similar to a deep link.
+`TabTrigger` 可以链接到深层嵌套路由。`<TabTrigger name="route" href="/route" />` 将显示 **(stack-one)/(stack-two)/route.tsx** 路由。此标签页将由该路由的父导航器控制（也就是 **stack-two_layout.tsx** 中的导航器）。这种导航类似于深层链接。
 
-## Rendering routes
+## 渲染路由
 
-The `TabSlot` component renders the current route. `TabSlot` can be nested inside other components within `Tabs` but cannot be within the `TabList`.
+`TabSlot` 组件会渲染当前路由。`TabSlot` 可以嵌套在 `Tabs` 内的其他组件中，但不能位于 `TabList` 中。
 
 ```tsx src/app/_layout.tsx
 <Tabs>
   <TabList>
     <TabTrigger name="home" href="/">
-      <Text>Home</Text>
+      <Text>主页</Text>
     </TabTrigger>
   </TabList>
-  {/* Customize how `<TabSlot />` is rendered. */}
-  /* @info <CODE>TabSlot</CODE> can be nested inside custom components. */
+  {/* 自定义 `<TabSlot />` 的渲染方式。 */}
+  /* @info <CODE>TabSlot</CODE> 可以嵌套在自定义组件中。 */
   <View>
     <View>
       <TabSlot />
@@ -124,41 +124,41 @@ The `TabSlot` component renders the current route. `TabSlot` can be nested insid
 </Tabs>
 ```
 
-## Switching tabs
+## 切换标签页
 
-Tabs can be switched via a `Link` or using the imperative APIs. However, these APIs will always perform a navigation action (they will switch tabs and might change the URL). To switch tabs without performing any navigation, you should use a `TabTrigger`. A `TabTrigger` is an unstyled `<View>` that will switch tabs when pressed, much like how text and components can be wrapped in `Link` to make them pressable navigation elements.
+可以通过 `Link` 或使用命令式 API 来切换标签页。不过，这些 API 始终会执行导航操作（它们会切换标签页，并且可能更改 URL）。如果你想在不执行任何导航的情况下切换标签页，应使用 `TabTrigger`。`TabTrigger` 是一个无样式的 `<View>`，在按下时会切换标签页，类似于将文本和组件包裹在 `Link` 中以使其成为可点击的导航元素。
 
-### Resetting navigation
+### 重置导航
 
-The `reset` prop from `TabTrigger` can be used to control when a tab resets its navigation state. The options are `always`, `onLongPress` and `never`. This is particularly useful for a stack navigator nested inside a tab. For example, `<TabTrigger name="home" reset="always" />` will return the user to the index route inside a tab's nested stack navigator.
+`TabTrigger` 的 `reset` 属性可用于控制标签页何时重置其导航状态。可选值为 `always`、`onLongPress` 和 `never`。这对于嵌套在标签页内的堆栈导航器尤其有用。例如，`<TabTrigger name="home" reset="always" />` 会将用户返回到标签页内嵌套堆栈导航器中的索引路由。
 
 ## TabTrigger
 
-The `TabTrigger` is used to switch tabs, but also has a dual role of defining what routes are available as a tab.
+`TabTrigger` 用于切换标签页，同时也承担着定义哪些路由可作为标签页使用的双重角色。
 
-### Within TabList
+### 在 TabList 内
 
-When a `TabTrigger` is used as a child of `TabList`, that defines what routes are available within the tab navigator. These `TabTrigger` need to include both the `name` and `href` props, as they define the URL for that tab and a custom name that can be used to refer to the tab. If the `TabTrigger` components also contain text or other components as children, then those will also render as the tab buttons. However, you can define the `TabTrigger`'s within the `TabList` without any UI, and they can then be invoked by `TabTrigger`'s outside of the `TabList`.
+当 `TabTrigger` 作为 `TabList` 的子组件时，它定义了标签导航器中可用的路由。这些 `TabTrigger` 需要同时包含 `name` 和 `href` 属性，因为它们定义了该标签页的 URL，以及可用于引用该标签页的自定义名称。如果 `TabTrigger` 组件还包含文本或其他组件作为子元素，那么这些内容也会作为标签按钮渲染出来。不过，你也可以在 `TabList` 内定义没有任何 UI 的 `TabTrigger`，然后再由 `TabList` 外部的 `TabTrigger` 来触发它们。
 
-### Outside TabList
+### 在 TabList 外
 
-An additional `TabTrigger` can be defined outside of a `TabList`, allowing you to perform the same action as the `TabTrigger` that is defined in the `TabList`. In this case, the `TabTrigger` will not have an `href` prop. Rather, it will perform the same action as the primary `TabTrigger` with the same `name` prop. This allows you to create components that can switch tabs and be agnostic to your current navigation state. Note that all `TabTrigger`'s need to at least be descendants of the `Tabs` component, or else they will be considered to be outside the tab navigator and unable to invoke it.
+可以在 `TabList` 外部定义一个额外的 `TabTrigger`，从而执行与 `TabList` 中定义的 `TabTrigger` 相同的操作。在这种情况下，`TabTrigger` 不会有 `href` 属性。相反，它会执行与具有相同 `name` 属性的主 `TabTrigger` 相同的操作。这样你就可以创建能够切换标签页、且不依赖当前导航状态的组件。请注意，所有 `TabTrigger` 至少需要是 `Tabs` 组件的后代，否则它们会被视为在标签导航器之外，无法触发它。
 
-## Customizing appearance
+## 自定义外观
 
-All components are rendered unstyled as a `<View>`, except `TabTrigger` which renders as a `<Pressable>`. This allows you to provide a custom `style` prop to customize their appearance. Styling `TabList` is similar to customizing the tab bar in React Navigation, while styling `TabTrigger` affects the appearance of tab buttons.
+除 `TabTrigger` 会渲染为 `<Pressable>` 外，所有组件都会以无样式的 `<View>` 形式渲染。这使你可以通过自定义 `style` 属性来定制它们的外观。为 `TabList` 设置样式与在 React Navigation 中自定义标签栏类似，而为 `TabTrigger` 设置样式则会影响标签按钮的外观。
 
-If you need to change the structure of a component, you can override its underlying component by using the `asChild` props. The component then acts as a slot, and will forward its props to its immediate child.
+如果你需要更改某个组件的结构，可以通过使用 `asChild` 属性来覆盖其底层组件。此时该组件会充当一个插槽，并将其属性转发给紧邻的子组件。
 
 ```tsx Custom TabList
 <Tabs>
   <TabSlot />
-  /* @info Change the appearance of the <CODE>TabList</CODE>. */
+  /* @info 更改 <CODE>TabList</CODE> 的外观。 */
   <TabList asChild>
-    {/* Render a custom TabList */}
+    {/* 渲染一个自定义的 TabList */}
     <CustomTabList>
       <TabTrigger name="home" href="/">
-        <Text>Home</Text>
+        <Text>主页</Text>
       </TabTrigger>
     </CustomTabList>
   </TabList>
@@ -170,11 +170,11 @@ If you need to change the structure of a component, you can override its underly
 <Tabs>
   <TabSlot />
   <TabList asChild>
-    /* @info Change the appearance of the <CODE>TabTrigger</CODE>. */
+    /* @info 更改 <CODE>TabTrigger</CODE> 的外观。 */
     <TabTrigger name="home" href="/" asChild>
-      {/* Render a custom button */}
+      {/* 渲染一个自定义按钮 */}
       <CustomButton>
-        <Text>Home</Text>
+        <Text>主页</Text>
       </CustomButton>
     </TabTrigger>
     /* @end */
@@ -182,41 +182,41 @@ If you need to change the structure of a component, you can override its underly
 </Tabs>
 ```
 
-### Multiple tab bars
+### 多个标签栏
 
-The `TabList` is both the configuration and default appearance of the `Tabs`, but it is not the only way to render a tab bar. By hiding the `TabList`, you can construct custom tab bars using `TabTrigger`.
+`TabList` 既是 `Tabs` 的配置，也是其默认外观，但它并不是渲染标签栏的唯一方式。通过隐藏 `TabList`，你可以使用 `TabTrigger` 构建自定义标签栏。
 
 {/* prettier-ignore */}
-```tsx Multiple tab bars example
+```tsx 多个标签栏示例
 <Tabs>
   <TabSlot />
-  {/* A custom tab bar */}
+  {/* 自定义标签栏 */}
   <View>
-    /* @info A custom tab bar. <CODE>TabTrigger</CODE>'s outside of TabList do not need the <CODE>href</CODE> prop. */
+    /* @info 自定义标签栏。<CODE>TabList</CODE> 外部的 <CODE>TabTrigger</CODE> 不需要 <CODE>href</CODE> 属性。 */
     <View>
       <TabTrigger name="home">
-        <Text>Home</Text>
+        <Text>主页</Text>
       </TabTrigger>
       <TabTrigger name="article">
-        <Text>article</Text>
+        <Text>文章</Text>
       </TabTrigger>
     </View>
     /* @end */
   </View>
-  /* @info <CODE>TabList</CODE> needs to be rendered, but not necessary displayed. */
+  /* @info 需要渲染 <CODE>TabList</CODE>，但不一定需要显示。 */
   <TabList style={{ display: 'none' }}>
     /* @end */
     <TabTrigger name="home" href="/">
-      <Text>Home</Text>
+      <Text>主页</Text>
     </TabTrigger>
     <TabTrigger name="article" href="/article">
-      <Text>article</Text>
+      <Text>文章</Text>
     </TabTrigger>
   </TabList>
 </Tabs>
 ```
 
-`TabTrigger` will forward an `isFocused` prop, so you can create a separate tab button component that reacts to focused status.
+`TabTrigger` 会传递一个 `isFocused` 属性，因此你可以创建一个单独的标签按钮组件来响应聚焦状态。
 
 ```tsx tab-button.tsx
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -253,9 +253,9 @@ export function TabButton({ icon, children, isFocused, ...props }: TabButtonProp
 }
 ```
 
-<Collapsible summary="Expo SDK 52 / React 18 and earlier">
+<Collapsible summary="Expo SDK 52 / React 18 及更早版本">
 
-In Expo SDK 52 and earlier (React 18), use the legacy `forwardRef` function to access the `ref` handle.
+在 Expo SDK 52 及更早版本（React 18）中，请使用旧版的 `forwardRef` 函数来访问 `ref` 句柄。
 
 <DiffBlock source="/static/diffs/router/custom-tabs/forward-ref-tab-button.diff" />
 
@@ -263,56 +263,56 @@ In Expo SDK 52 and earlier (React 18), use the legacy `forwardRef` function to a
 
 ### Hooks
 
-All components also have a hook version giving you control over the render tree. See the [Router UI Reference](/versions/latest/sdk/router/ui/) for a full list of the hooks available.
+所有组件也都有对应的 hook 版本，让你可以控制渲染树。有关可用 hooks 的完整列表，请参阅 [Router UI Reference](/versions/latest/sdk/router/ui/)。
 
-Using hooks is considered advanced usage of this library. For most use-cases, using the components with `asChild` should give you enough control over the render tree.
+使用 hooks 被认为是该库的高级用法。对于大多数使用场景，使用带有 `asChild` 的组件应该已经足够让你控制渲染树。
 
-If you are developing a custom `<TabTrigger />`, you may also need to develop a custom `<TabList />` as `<TabList />` uses the [`useTabsWithChildren()`](/versions/latest/sdk/router/ui/#usetabswithchildrenoptions) which requires using the exported `<TabTrigger />` component.
+如果你正在开发自定义的 `<TabTrigger />`，你可能还需要开发自定义的 `<TabList />`，因为 `<TabList />` 使用了 [`useTabsWithChildren()`](/versions/latest/sdk/router/ui/#usetabswithchildrenoptions)，而这要求使用导出的 `<TabTrigger />` 组件。
 
-### Customizing how tab screens are rendered
+### 自定义标签页屏幕的渲染方式
 
-The `TabSlot` accepts a `renderFn` property. This function can be used to override how your screen is rendered, allowing you to implement advanced functionality such as animations or persisting/unmounting screens. See the [Router UI Reference](/versions/latest/sdk/router/ui/) for more information.
+`TabSlot` 接受一个 `renderFn` 属性。该函数可用于覆盖屏幕的渲染方式，使你能够实现动画或屏幕持久化/卸载等高级功能。有关更多信息，请参阅 [Router UI Reference](/versions/latest/sdk/router/ui/)。
 
-## Common questions
+## 常见问题
 
 <FAQ>
 
-<Collapsible summary="How do I create multiple tabs for the same route?">
+<Collapsible summary="如何为同一路由创建多个标签页？">
 
 <FileTree
   files={[
-    ['_layout.tsx', 'Tabs layout'],
+    ['_layout.tsx', 'Tabs 布局'],
     ['(movie,tv)/[id].tsx', ''],
   ]}
 />
 
-You should add the route to a shared group and create a separate `TabTrigger` for each group `group`.
+你应该将该路由添加到一个共享组中，并为每个组 `group` 创建一个单独的 `TabTrigger`。
 
 </Collapsible>
 
-<Collapsible summary="How do I hide a tab?">
+<Collapsible summary="如何隐藏一个标签页？">
 
-Not rendering the `TabTrigger` will remove that tab (and its navigation state) from your app.
-
-</Collapsible>
-
-<Collapsible summary="How do I create animated tabs?">
-
-You can provide a custom renderer to `TabSlot` to customize how it renders a screen. You can use this to detect when screen is focused an animate appropriately.
+不渲染 `TabTrigger` 会从你的应用中移除该标签页（以及它的导航状态）。
 
 </Collapsible>
 
-<Collapsible summary="Can I use relative hrefs?">
+<Collapsible summary="如何创建带动画的标签页？">
+
+你可以为 `TabSlot` 提供一个自定义渲染器来定制其渲染屏幕的方式。你可以利用这一点来检测屏幕何时获得焦点，并相应地播放动画。
+
+</Collapsible>
+
+<Collapsible summary="我可以使用相对 href 吗？">
 
 <FileTree
   files={[
-    ['directory/_layout.tsx', 'The local pathname is /directory'],
-    ['directory/page.tsx', 'The pathname is /directory/page'],
-    ['directory/profile.tsx', 'The pathname is /directory/profile'],
+    ['directory/_layout.tsx', '本地路径名是 /directory'],
+    ['directory/page.tsx', '路径名是 /directory/page'],
+    ['directory/profile.tsx', '路径名是 /directory/profile'],
   ]}
 />
 
-A `TabTrigger` with a relative href is relative to the local path name `Tabs` was rendered on. This is different from normal relative hrefs which are relative to the current displayed route. For example, the `<TabTrigger href="./profile" />` will resolve to `/directory/profile`, even when the `/directory/page` route is showing. Expo recommends against using relative hrefs.
+带有相对 href 的 `TabTrigger` 是相对于渲染 `Tabs` 时所在的本地路径名的。这与普通的相对 href 不同，后者是相对于当前显示的路由。例如，`<TabTrigger href="./profile" />` 会解析为 `/directory/profile`，即使当前显示的是 `/directory/page` 路由。Expo 不建议使用相对 href。
 
 </Collapsible>
 

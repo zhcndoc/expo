@@ -1,39 +1,39 @@
 ---
-title: '"React Native version mismatch" errors'
-description: Learn about what React Native version mismatch means and how to resolve it in an Expo or React Native app.
+title: '"React Native 版本不匹配" 错误'
+description: 了解 React Native 版本不匹配的含义，以及如何在 Expo 或 React Native 应用中解决它。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-When developing an Expo or React Native app, it's common to run into an error that looks like:
+在开发 Expo 或 React Native 应用时，常常会遇到如下错误：
 
 <Terminal
   cmd={[
-    'React Native version mismatch.',
+    'React Native 版本不匹配。',
     '',
-    'JavaScript version: X.XX.X',
-    'Native version: X.XX.X',
+    'JavaScript 版本：X.XX.X',
+    'Native 版本：X.XX.X',
     '',
-    'Make sure you have rebuilt the native code...',
+    '请确保你已经重新构建了原生代码...',
   ]}
 />
 
-## What this error means
+## 这个错误意味着什么
 
-The bundler that you're running in your terminal (using `npx expo start`) is using a different JavaScript version of `react-native` than the native app on your device or emulator. This can happen after upgrading your React Native or Expo SDK version, _or_ when connecting to the wrong local development server.
+你在终端中运行的打包器（使用 `npx expo start`）所使用的 `react-native` JavaScript 版本，与设备或模拟器上的原生应用版本不同。这种情况可能发生在你升级了 React Native 或 Expo SDK 版本之后，_或者_ 连接到了错误的本地开发服务器。
 
-## How to fix it
+## 如何修复
 
-- Close out any development servers that you have running (you can list all terminal processes with the `ps` command, and search for Expo CLI or React Native community CLI processes with `ps -A | grep "expo\|react-native"`).
+- 关闭所有正在运行的开发服务器（你可以使用 `ps` 命令列出所有终端进程，并使用 `ps -A | grep "expo\|react-native"` 搜索 Expo CLI 或 React Native Community CLI 进程）。
 
-- If this is a Expo project, either remove the `sdkVersion` field from your **app.json** file, or make sure it matches the value of the `expo` dependency in your **package.json** file.
+- 如果这是一个 Expo 项目，请从你的 **app.json** 文件中移除 `sdkVersion` 字段，或者确保它与 **package.json** 文件中的 `expo` 依赖版本一致。
 
-- If this is a Expo project, you should make sure your `react-native` version is correct. Run `npx expo-doctor` will show a warning where the `react-native` version you should install. If you did upgrade to a newer SDK, make sure to run `npx expo install --fix` and follow the prompts. Expo CLI will make sure that your dependency versions for packages like `expo` and `react-native` are aligned.
+- 如果这是一个 Expo 项目，你应该确保你的 `react-native` 版本正确。运行 `npx expo-doctor` 会显示你应该安装的 `react-native` 版本警告。如果你确实升级到了更新的 SDK，请确保运行 `npx expo install --fix` 并按照提示操作。Expo CLI 会确保 `expo` 和 `react-native` 等包的依赖版本保持一致。
 
-- If this is a bare React Native project, and this error is occurring right after upgrading your React Native version, you should double-check that you have performed each of the upgrade steps correctly.
+- 如果这是一个裸 React Native 项目，并且这个错误是在你升级 React Native 版本后立即出现的，你应该仔细检查是否正确完成了每一个升级步骤。
 
-- Finally:
-  - Clear your bundler caches by running `rm -rf node_modules && npm cache clean --force && npm install && watchman watch-del-all && rm -rf $TMPDIR/haste-map-* && rm -rf $TMPDIR/metro-cache && npx expo start --clear`
-    - Commands if you are using npm can be found [here.](clear-cache-macos-linux)
-    - Commands if you are using Windows can be found [here.](clear-cache-windows)
-  - If this is a bare React Native project, run `npx pod-install`, then rebuild your native projects (run `yarn android` to rebuild for Android, and `yarn ios` to rebuild iOS)
+- 最后：
+  - 通过运行 `rm -rf node_modules && npm cache clean --force && npm install && watchman watch-del-all && rm -rf $TMPDIR/haste-map-* && rm -rf $TMPDIR/metro-cache && npx expo start --clear` 来清除打包器缓存
+    - 如果你使用的是 npm，可以在[这里](clear-cache-macos-linux)找到相应命令。
+    - 如果你使用的是 Windows，可以在[这里](clear-cache-windows)找到相应命令。
+  - 如果这是一个裸 React Native 项目，运行 `npx pod-install`，然后重新构建你的原生项目（运行 `yarn android` 重新构建 Android，运行 `yarn ios` 重新构建 iOS）

@@ -1,6 +1,6 @@
 ---
 title: AuthSession
-description: A universal library that provides an API to handle browser-based authentication.
+description: 一个通用库，提供用于处理基于浏览器的身份验证的 API。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-53/packages/expo-auth-session'
 packageName: 'expo-auth-session'
 platforms: ['android', 'ios', 'web']
@@ -11,46 +11,46 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 import { ConfigReactNative } from '~/ui/components/ConfigSection';
 import { Terminal } from '~/ui/components/Snippet';
 
-`AuthSession` enables web browser-based authentication (for example, browser-based OAuth flows) in your app by utilizing [WebBrowser](webbrowser.mdx) and [Crypto](crypto.mdx). For implementation details, refer to this reference, and for usage, see the [Authentication](/guides/authentication/) guide.
+`AuthSession` 通过利用 [WebBrowser](webbrowser.mdx) 和 [Crypto](crypto.mdx)，为你的应用启用基于网页浏览器的身份验证（例如，基于浏览器的 OAuth 流程）。有关实现细节，请参考此文档；有关使用方法，请参阅 [Authentication](/guides/authentication/) 指南。
 
-> **Note:** `AuthSession` enables general-purpose OAuth and OpenID Connect browser-based auth workflows. Where available, we recommend using a library supplied by your identity provider, as it will handle implementation details specific to that provider. For example, use [`@react-native-google-signin/google-signin`](/guides/google-authentication/) for Google authentication and [`react-native-fbsdk-next`](/guides/facebook-authentication/) for Facebook. For more information, see [Authentication](/develop/authentication/) overview.
+> **注意：** `AuthSession` 支持通用的基于浏览器的 OAuth 和 OpenID Connect 身份验证工作流。若有可用的方案，我们建议使用身份提供方提供的库，因为它会处理该提供方特有的实现细节。例如，Google 身份验证请使用 [`@react-native-google-signin/google-signin`](/guides/google-authentication/)，Facebook 身份验证请使用 [`react-native-fbsdk-next`](/guides/facebook-authentication/)。更多信息请参阅 [Authentication](/develop/authentication/) 概览。
 
-## Installation
+## 安装
 
-> `expo-crypto` is a peer dependency and must be installed alongside `expo-auth-session`.
+> `expo-crypto` 是一个 peer dependency，必须与 `expo-auth-session` 一起安装。
 
 <APIInstallSection packageName="expo-auth-session expo-crypto" />
 
-## Configuration
+## 配置
 
 <ConfigReactNative>
 
-To use this library, you need to set up deep linking in your app by setting up a `scheme`. Use the [`uri-scheme` CLI][n-uri-scheme] utility to easily add, remove, list, and open your URIs.
+要使用此库，你需要通过设置 `scheme` 来为应用配置深度链接。使用 [`uri-scheme` CLI][n-uri-scheme] 工具可以轻松添加、移除、列出并打开你的 URI。
 
-For example, to make your native app handle `mycoolredirect://`, run:
+例如，要让你的原生应用处理 `mycoolredirect://`，运行：
 
 <Terminal cmd={['$ npx uri-scheme add mycoolredirect']} />
 
-You should now be able to see a list of all your project's schemes by running:
+现在你应该可以通过运行以下命令看到项目中所有 scheme 的列表：
 
 <Terminal cmd={['$ npx uri-scheme list']} />
 
-You can test it to ensure it works like this:
+你可以像这样测试它是否正常工作：
 
 <Terminal
   cmd={[
-    '# Rebuild the native apps, be sure to use an emulator',
+    '# 重新构建原生应用，请务必使用模拟器',
     '$ yarn android',
     '$ yarn ios',
     '',
-    '# Open a URI scheme',
+    '# 打开一个 URI scheme',
     '$ npx uri-scheme open mycoolredirect://some/redirect',
   ]}
 />
 
 </ConfigReactNative>
 
-### Usage in standalone apps
+### 在独立应用中的使用
 
 ```json app.json
 {
@@ -60,24 +60,24 @@ You can test it to ensure it works like this:
 }
 ```
 
-To be able to deep link back into your app, you will need to set a `scheme` in your project's app config, and then build your standalone app (it can't be updated with an update). If you do not include a scheme, the authentication flow will complete, but it will be unable to pass the information back into your application and the user will have to manually exit the authentication modal (resulting in a canceled event).
+为了能够通过深度链接回到你的应用，你需要在项目的 app 配置中设置一个 `scheme`，然后构建你的独立应用（它不能通过更新来修改）。如果你不包含 scheme，身份验证流程会完成，但它无法将信息返回到你的应用中，用户将不得不手动退出身份验证弹窗（从而产生一个取消事件）。
 
-## Guides
+## 指南
 
-> The guides have moved: [Authentication Guide](/guides/authentication/).
+> 指南已迁移：[Authentication Guide](/guides/authentication/)。
 
-## How web browser based authentication flows work
+## 基于网页浏览器的身份验证流程如何工作
 
-The typical flow for browser-based authentication in mobile apps is as follows:
+移动应用中基于浏览器的身份验证通常流程如下：
 
-- **Initiation**: the user presses a sign in button
-- **Open web browser**: the app opens up a web browser to the authentication provider sign in page. The url that is opened for the sign in page usually includes information to identify the app, and a URL to redirect to on success. _Note: the web browser should share cookies with your system web browser so that users do not need to sign in again if they are already authenticated on the system browser -- Expo's [WebBrowser](webbrowser.mdx) API takes care of this._
-- **Authentication provider redirects**: upon successful authentication, the authentication provider should redirect back to the application by redirecting to URL provided by the app in the query parameters on the sign in page ([read more about how linking works in mobile apps](/linking/overview/)), _provided that the URL is in the allowlist of allowed redirect URLs_. Allowlisting redirect URLs is important to prevent malicious actors from pretending to be your application. The redirect includes data in the URL (such as user id and token), either in the location hash, query parameters, or both.
-- **App handles redirect**: the redirect is handled by the app and data is parsed from the redirect URL.
+- **开始**：用户点击登录按钮
+- **打开网页浏览器**：应用打开网页浏览器并跳转到身份提供方的登录页面。打开的登录页 URL 通常包含用于识别应用的信息，以及在成功后重定向的 URL。_注意：网页浏览器应与系统网页浏览器共享 cookie，这样如果用户已经在系统浏览器中完成登录，就无需再次登录——Expo 的 [WebBrowser](webbrowser.mdx) API 会负责处理这一点。_
+- **身份提供方重定向**：身份验证成功后，身份提供方应通过重定向到应用在登录页面查询参数中提供的 URL，将用户带回应用（[了解更多移动应用中的链接工作原理](/linking/overview/)），_前提是该 URL 位于允许的重定向 URL 白名单中_。对重定向 URL 进行白名单控制很重要，可以防止恶意行为者冒充你的应用。重定向会在 URL 中包含数据（例如用户 id 和 token），这些数据可能位于 location hash、查询参数中，或两者都有。
+- **应用处理重定向**：由应用处理该重定向，并从重定向 URL 中解析数据。
 
-## Security considerations
+## 安全注意事项
 
-- **Never put any secret keys inside your application code, there is no secure way to do this!** Instead, you should store your secret key(s) on a server and expose an endpoint that makes API calls for your client and passes the data back.
+- **切勿将任何密钥放入你的应用代码中，这样做没有安全的方法！**相反，你应该将密钥存储在服务器上，并提供一个端点，为客户端发起 API 调用并将数据返回。
 
 ## API
 
@@ -87,14 +87,14 @@ import * as AuthSession from 'expo-auth-session';
 
 <APISection packageName="expo-auth-session" apiName="AuthSession" />
 
-## Advanced usage
+## 高级用法
 
-### Filtering out AuthSession events in Linking handlers
+### 在 Linking 处理器中过滤 AuthSession 事件
 
-There are many reasons why you might want to handle inbound links into your app, such as push notifications or just regular deep linking (you can read more about this in the [Linking](/linking/overview/)); authentication redirects are only one type of deep link, and `AuthSession` handles these particular links for you. In your own `Linking.addEventListener` handlers, you can filter out deep links that are handled by `AuthSession` by checking if the URL includes the `+expo-auth-session` string -- if it does, you can ignore it. This works because `AuthSession` adds `+expo-auth-session` to the default `returnUrl`; however, if you provide your own `returnUrl`, you may want to consider adding a similar identifier to enable you to filter out `AuthSession` events from other handlers.
+你可能希望处理进入应用的链接，有很多原因，例如推送通知或普通的深度链接（你可以在 [Linking](/linking/overview/) 中了解更多）；身份验证重定向只是深度链接的一种，而 `AuthSession` 会为你处理这些特定链接。在你自己的 `Linking.addEventListener` 处理器中，可以通过检查 URL 是否包含 `+expo-auth-session` 字符串来过滤掉由 `AuthSession` 处理的深度链接——如果包含，就可以忽略它。之所以这样可行，是因为 `AuthSession` 会在默认的 `returnUrl` 中添加 `+expo-auth-session`；不过，如果你提供了自己的 `returnUrl`，你可能需要考虑添加一个类似的标识符，以便从其他处理器中过滤掉 `AuthSession` 事件。
 
-### With React Navigation
+### 与 React Navigation 一起使用
 
-If you are using deep linking with React Navigation, filtering through `Linking.addEventListener` will not be sufficient because deep linking is [handled differently](https://reactnavigation.org/docs/configuring-links/#advanced-cases). Instead, to filter these events, add a custom `getStateFromPath` function to your linking configuration, and then filter by URL in the same way as described above.
+如果你正在使用 React Navigation 进行深度链接，那么通过 `Linking.addEventListener` 进行过滤并不够，因为深度链接的处理方式不同（[详情](https://reactnavigation.org/docs/configuring-links/#advanced-cases)）。相反，为了过滤这些事件，请在你的 linking 配置中添加一个自定义的 `getStateFromPath` 函数，然后像上面所述那样按 URL 进行过滤。
 
 [n-uri-scheme]: https://www.npmjs.com/package/uri-scheme

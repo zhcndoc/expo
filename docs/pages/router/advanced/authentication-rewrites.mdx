@@ -1,11 +1,11 @@
 ---
-title: Authentication in Expo Router using redirects
-sidebar_title: Authentication (redirects)
-description: How to implement authentication and protect routes with Expo Router.
+title: 使用重定向在 Expo Router 中进行身份验证
+sidebar_title: 身份验证（重定向）
+description: 如何使用 Expo Router 实现身份验证并保护路由。
 hasVideoLink: true
 ---
 
-> **info** SDK 53 introduced [Protected routes](/router/advanced/protected/), a more powerful method of handling authentication. Please follow this guide if you are using SDK 52 and earlier.
+> **info** SDK 53 引入了[受保护路由](/router/advanced/protected/)，这是一种更强大的身份验证处理方式。如果您使用的是 SDK 52 或更早版本，请遵循本指南。
 
 import { Lock01Icon } from '@expo/styleguide-icons/outline/Lock01Icon';
 import { LockUnlocked01Icon } from '@expo/styleguide-icons/outline/LockUnlocked01Icon';
@@ -17,16 +17,16 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 <VideoBoxLink
   videoId="yNaOaR2kIa0"
-  title="Building an Auth Flow with Expo Router"
-  description="Learn how to implement an auth flow in your Expo Router project."
+  title="使用 Expo Router 构建认证流程"
+  description="了解如何在你的 Expo Router 项目中实现认证流程。"
   className="mb-6"
 />
 
-With Expo Router, all routes are always defined and accessible. You can use runtime logic to redirect users away from specific screens depending on whether they are authenticated. There are two different techniques for authenticating users within routes. This guide provides an example that demonstrates the functionality of standard native apps.
+使用 Expo Router 时，所有路由都会始终被定义并可访问。你可以使用运行时逻辑，根据用户是否已认证将其重定向离开特定屏幕。路由内用户认证有两种不同的技术。本指南提供了一个示例，展示标准原生应用的功能。
 
-## Using React Context and Route Groups
+## 使用 React Context 和路由组
 
-It's common to restrict specific routes to users who are not authenticated. This is achievable in an organized way by using React Context and Route Groups. Consider the following project structure that has a `/sign-in` route that is always accessible and a `(app)` group that requires authentication:
+通常会限制特定路由，仅允许未认证用户访问。通过使用 React Context 和路由组，可以以一种有组织的方式实现这一点。请考虑下面的项目结构，其中有一个始终可访问的 `/sign-in` 路由，以及一个需要认证的 `(app)` 组：
 
 <FileTree
   files={[
@@ -34,14 +34,14 @@ It's common to restrict specific routes to users who are not authenticated. This
     [
       'app/sign-in.tsx',
       <span>
-        Always accessible <LockUnlocked01Icon className="mb-1 inline" />
+        始终可访问 <LockUnlocked01Icon className="mb-1 inline" />
       </span>,
     ],
-    ['app/(app)/_layout.tsx', <span>Protects child routes</span>],
+    ['app/(app)/_layout.tsx', <span>保护子路由</span>],
     [
       'app/(app)/index.tsx',
       <span>
-        Requires authorization <Lock01Icon className="mb-1 inline" />
+        需要授权 <Lock01Icon className="mb-1 inline" />
       </span>,
     ],
   ]}
@@ -49,11 +49,11 @@ It's common to restrict specific routes to users who are not authenticated. This
 
 <Step label="1">
 
-To follow the above example, set up a [React Context provider](https://react.dev/reference/react/createContext) that can expose an authentication session to the entire app. You can implement your custom authentication session provider or use the one from the **Example authentication context** below.
+要实现上述示例，请设置一个 [React Context 提供者](https://react.dev/reference/react/createContext)，以便向整个应用暴露认证会话。你可以实现你自己的自定义认证会话提供者，或者使用下面 **示例认证上下文** 中的实现。
 
-<Collapsible summary="Example authentication context">
+<Collapsible summary="示例认证上下文">
 
-This provider uses a mock implementation. You can replace it with your own [authentication provider](/guides/authentication/).
+这个提供者使用的是一个模拟实现。你可以将其替换为你自己的 [认证提供者](/guides/authentication/)。
 
 ```tsx ctx.tsx
 import { useContext, createContext, type PropsWithChildren } from 'react';
@@ -71,7 +71,7 @@ const AuthContext = createContext<{
   isLoading: false,
 });
 
-// This hook can be used to access the user info.
+// 这个 hook 可用于访问用户信息。
 export function useSession() {
   const value = useContext(AuthContext);
   if (!value) {
@@ -88,7 +88,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     <AuthContext.Provider
       value={{
         signIn: () => {
-          // Perform sign-in logic here
+          // 在这里执行登录逻辑
           setSession('xxx');
         },
         signOut: () => {
@@ -103,7 +103,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 }
 ```
 
-The following code snippet is a basic hook that persists tokens securely on native with [`expo-secure-store`](/versions/latest/sdk/securestore) and in local storage on web.
+下面的代码片段是一个基础 hook，它会在原生端使用 [`expo-secure-store`](/versions/latest/sdk/securestore) 安全地持久化令牌，并在 Web 端使用本地存储。
 
 {/* prettier-ignore */}
 ```tsx useStorageState.ts
@@ -139,10 +139,10 @@ export async function setStorageItemAsync(key: string, value: string | null) {
 }
 
 export function useStorageState(key: string): UseStateHook<string> {
-  // Public
+  // 公共
   const [state, setState] = useAsyncState<string>();
 
-  // Get
+  // 获取
   useEffect(() => {
     if (Platform.OS === 'web') {
       try {
@@ -150,7 +150,7 @@ export function useStorageState(key: string): UseStateHook<string> {
           setState(localStorage.getItem(key));
         }
       } catch (e) {
-        console.error('Local storage is unavailable:', e);
+        console.error('本地存储不可用：', e);
       }
     } else {
       SecureStore.getItemAsync(key).then((value: string | null) => {
@@ -159,7 +159,7 @@ export function useStorageState(key: string): UseStateHook<string> {
     }
   }, [key]);
 
-  // Set
+  // 设置
   const setValue = useCallback(
     (value: string | null) => {
       setState(value);
@@ -178,14 +178,14 @@ export function useStorageState(key: string): UseStateHook<string> {
 
 <Step label="2">
 
-Use the `SessionProvider` in the root layout to provide the authentication context to the entire app. It's imperative that the `<Slot />` is mounted before any navigation events are triggered. Otherwise, a runtime error will be thrown.
+在根布局中使用 `SessionProvider`，将认证上下文提供给整个应用。至关重要的是，在触发任何导航事件之前，必须先挂载 `<Slot />`。否则会抛出运行时错误。
 
 ```tsx app/_layout.tsx
 import { Slot } from 'expo-router';
 import { SessionProvider } from '../ctx';
 
 export default function Root() {
-  // Set up the auth context and render our layout inside of it.
+  // 设置认证上下文，并在其中渲染我们的布局。
   return (
     <SessionProvider>
       <Slot />
@@ -198,7 +198,7 @@ export default function Root() {
 
 <Step label="3">
 
-Create a nested [layout route](/router/basics/navigation-layouts/) that checks whether users are authenticated before rendering the child route components. This layout route redirects users to the sign-in screen if they are not authenticated.
+创建一个嵌套的 [布局路由](/router/basics/navigation-layouts/)，在渲染子路由组件之前检查用户是否已认证。若用户未认证，此布局路由会将其重定向到登录屏幕。
 
 ```tsx app/(app)/_layout.tsx|collapseHeight=400
 import { Text } from 'react-native';
@@ -209,20 +209,18 @@ import { useSession } from '../../ctx';
 export default function AppLayout() {
   const { session, isLoading } = useSession();
 
-  // You can keep the splash screen open, or render a loading screen like we do here.
+  // 你可以保持启动页打开，或者像这里一样渲染一个加载界面。
   if (isLoading) {
     return <Text>Loading...</Text>;
   }
 
-  // Only require authentication within the (app) group's layout as users
-  // need to be able to access the (auth) group and sign in again.
+  // 只在 (app) 组的布局内要求认证，因为用户需要能够访问 (auth) 组并再次登录。
   if (!session) {
-    // On web, static rendering will stop here as the user is not authenticated
-    // in the headless Node process that the pages are rendered in.
+    // 在 Web 上，由于用户在渲染这些页面的无头 Node 进程中未通过认证，静态渲染会在这里停止。
     return <Redirect href="/sign-in" />;
   }
 
-  // This layout can be deferred because it's not the root layout.
+  // 这个布局可以延迟，因为它不是根布局。
   return <Stack />;
 }
 ```
@@ -231,7 +229,7 @@ export default function AppLayout() {
 
 <Step label="4">
 
-Create the `/sign-in` screen. It can toggle the authentication using `signIn()`. Since this screen is outside the `(app)` group, the group's layout and authentication check do not run when rendering this screen. This lets logged-out users see this screen.
+创建 `/sign-in` 屏幕。它可以使用 `signIn()` 切换认证状态。由于该屏幕位于 `(app)` 组之外，在渲染此屏幕时，该组的布局和认证检查都不会运行。这样未登录用户就能看到这个屏幕。
 
 ```tsx app/sign-in.tsx|collapseHeight=480
 import { router } from 'expo-router';
@@ -246,11 +244,11 @@ export default function SignIn() {
       <Text
         onPress={() => {
           signIn();
-          // Navigate after signing in. You may want to tweak this to ensure sign-in is
-          // successful before navigating.
+          // 登录后再导航。你可能需要调整这里，以确保在导航前登录已经
+          // 成功。
           router.replace('/');
         }}>
-        Sign In
+        登录
       </Text>
     </View>
   );
@@ -261,7 +259,7 @@ export default function SignIn() {
 
 <Step label="5">
 
-Implement an authenticated screen that lets users sign out.
+实现一个已认证屏幕，让用户可以登出。
 
 ```tsx app/(app)/index.tsx|collapseHeight=480
 import { Text, View } from 'react-native';
@@ -274,10 +272,10 @@ export default function Index() {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text
         onPress={() => {
-          // The `app/(app)/_layout.tsx` will redirect to the sign-in screen.
+          // `app/(app)/_layout.tsx` 会重定向到登录屏幕。
           signOut();
         }}>
-        Sign Out
+        登出
       </Text>
     </View>
   );
@@ -286,26 +284,26 @@ export default function Index() {
 
 </Step>
 
-You now have an app that can present a loading state while it checks the initial authentication state and redirects to the sign-in screen if the user is not authenticated. If a user visits a deep link to any routes with the authentication check, they'll be redirected to the sign-in screen.
+现在你已经拥有一个应用，它可以在检查初始认证状态时显示加载状态，并在用户未认证时重定向到登录屏幕。如果用户访问任何包含认证检查的路由深链接，他们会被重定向到登录屏幕。
 
-## Alternative loading states
+## 其他加载状态
 
-With Expo Router, something must be rendered to the screen while loading the initial auth state. In the example above, the app layout renders a loading message. Alternatively, you can make the `index` route a loading state and move the initial route to something such as `/home`, which is similar to how X works.
+在 Expo Router 中，加载初始认证状态时，必须有内容被渲染到屏幕上。在上面的示例中，应用布局渲染了一个加载提示。或者，你也可以把 `index` 路由设为加载状态，并将初始路由移动到例如 `/home` 之类的路径，这与 X 的做法类似。
 
-## Modals and per-route authentication
+## 模态框与按路由认证
 
-Another common pattern is to render a sign-in modal over the top of the app. This enables you to dismiss and partially preserve deep links when the authentication is complete. However, this pattern requires routes to be rendered in the background as these routes require handling data loading without authentication.
+另一种常见模式是在应用顶部渲染一个登录模态框。这使你在认证完成后可以关闭模态框，并部分保留深链接。不过，这种模式要求路由在后台也能被渲染，因为这些路由需要在未认证的情况下处理数据加载。
 
 <FileTree
   files={[
-    ['app/_layout.tsx', 'Declares global session context'],
+    ['app/_layout.tsx', '声明全局会话上下文'],
     'app/(app)/_layout.tsx',
-    ['app/(app)/sign-in.tsx', <span>Modal presented over the root</span>],
-    ['app/(app)/(root)/_layout.tsx', <span>Protects child routes</span>],
+    ['app/(app)/sign-in.tsx', <span>在根布局之上展示的模态框</span>],
+    ['app/(app)/(root)/_layout.tsx', <span>保护子路由</span>],
     [
       'app/(app)/(root)/index.tsx',
       <span>
-        Requires authorization <Lock01Icon className="mb-1 inline" />
+        需要授权 <Lock01Icon className="mb-1 inline" />
       </span>,
     ],
   ]}
@@ -333,29 +331,29 @@ export default function AppLayout() {
 }
 ```
 
-## Navigating without navigation
+## 无导航时的导航
 
-You may encounter the following error when the app attempts to perform navigation without a navigator mounted in the [root layout](/router/basics/navigation-layouts/#root-layout).
+当应用尝试在 [根布局](/router/basics/navigation-layouts/#root-layout) 中未挂载导航器的情况下执行导航时，你可能会遇到以下错误。
 
 ```text
 Error: Attempted to navigate before mounting the Root Layout component. Ensure the Root Layout component is rendering a Slot, or other navigator on the first render.
 ```
 
-To fix this, add a group and move conditional logic down a level.
+要修复此问题，请添加一个组，并将条件逻辑下移一层。
 
-### Before
+### 之前
 
 <FileTree files={['app/_layout.tsx', 'app/about.tsx']} />
 
 ```tsx app/_layout.tsx
 export default function RootLayout() {
   React.useEffect(() => {
-    // This navigation event will trigger the error above.
+    // 这个导航事件会触发上面的错误。
     router.push('/about');
   }, []);
 
-  // This conditional statement creates a problem since the root layout's
-  // content (the Slot) must be mounted before any navigation events occur.
+  // 这个条件语句会产生问题，因为根布局的内容（Slot）必须在任何导航事件发生之前
+  // 先被挂载。
   if (isLoading) {
     return <Text>Loading...</Text>;
   }
@@ -364,12 +362,12 @@ export default function RootLayout() {
 }
 ```
 
-### After
+### 之后
 
 <FileTree
   files={[
     ['app/_layout.tsx', ''],
-    ['app/(app)/_layout.tsx', 'Move conditional logic down a level'],
+    ['app/(app)/_layout.tsx', '将条件逻辑下移一层'],
     'app/(app)/about.tsx',
   ]}
 />
@@ -386,10 +384,8 @@ export default function RootLayout() {
     router.push('/about');
   }, []);
 
-  // It is OK to defer rendering this nested layout's content. We couldn't
-  // defer rendering the root layout's content since a navigation event (the
-  // redirect) would have been triggered before the root layout's content had
-  // been mounted.
+  // 延迟渲染这个嵌套布局的内容是可以的。我们不能延迟渲染根布局的内容，因为导航事件
+  //（重定向）会在根布局内容挂载之前就被触发。
   if (isLoading) {
     return <Text>Loading...</Text>;
   }
@@ -398,6 +394,6 @@ export default function RootLayout() {
 }
 ```
 
-## Middleware
+## 中间件
 
-Traditionally, websites may leverage some form of server-side redirection to protect routes. Expo Router on the web currently only supports build-time static generation and has no support for custom middleware or serving. This can be added in the future to provide a more optimal web experience. In the meantime, authentication can be implemented by using client-side redirects and a loading state.
+传统上，网站可能会利用某种形式的服务端重定向来保护路由。Expo Router 在 Web 上目前仅支持构建时静态生成，并且不支持自定义中间件或服务端提供内容。未来可以添加这些功能，以提供更优化的 Web 体验。与此同时，可以通过使用客户端重定向和加载状态来实现身份验证。

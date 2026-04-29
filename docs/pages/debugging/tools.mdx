@@ -1,240 +1,241 @@
 ---
-title: Debugging and profiling tools
-description: Learn about different tools available to inspect your Expo project at runtime.
-sidebar_title: Tools
+title: 调试与性能分析工具
+description: 了解可用于在运行时检查你的 Expo 项目的不同工具。
+sidebar_title: 工具
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-React Native consists of both JavaScript and native code. Making this distinction is very important when it comes to debugging. If an error is thrown from the JavaScript code, you might not find it using debugging tools for native code. This page lists a few tools to help you debug your Expo project.
+React Native 由 JavaScript 代码和原生代码两部分组成。在调试时，这一区分非常重要。如果错误是由 JavaScript 代码抛出的，你可能无法使用原生代码的调试工具找到它。本页列出了一些可帮助你调试 Expo 项目的工具。
 
-## Developer menu
+## 开发者菜单
 
-The **Developer menu** provides access to useful debugging functions. It is built into dev clients and Expo Go. If you are using an emulator, simulator, or have a device connected via USB, you can open this menu by pressing <kbd>m</kbd> in the terminal where Expo CLI has started the development server.
+**开发者菜单** 提供了访问实用调试功能的入口。它内置于开发客户端和 Expo Go 中。如果你正在使用模拟器、仿真器，或者设备已通过 USB 连接，你可以在 Expo CLI 启动开发服务器的终端中按 <kbd>m</kbd> 打开此菜单。
 
-<Collapsible summary="Alternative options to open the Developer menu">
+<Collapsible summary="打开开发者菜单的其他选项">
 
-- Android device (without USB): Shake the device vertically.
-- Android Emulator or device (with USB):
-  - Press <kbd>Cmd ⌘</kbd> + <kbd>m</kbd> or <kbd>Ctrl</kbd> + <kbd>m</kbd>.
-  - Run the following command in the terminal to simulate pressing the menu button:
+- Android 设备（未连接 USB）：
+  - 垂直摇晃设备。
+- Android 模拟器或设备（已连接 USB）：
+  - 按 <kbd>Cmd ⌘</kbd> + <kbd>m</kbd> 或 <kbd>Ctrl</kbd> + <kbd>m</kbd>。
+  - 在终端中运行以下命令，以模拟按下菜单按钮：
     <Terminal cmd={['$ adb shell input keyevent 82']} />
 
-- iOS device (without USB):
-  - Shake the device.
-  - Touch three fingers to the screen.
-- iOS Simulator or device (with USB):
-  - Press <kbd>Ctrl</kbd> + <kbd>Cmd ⌘</kbd> + <kbd>z</kbd> or <kbd>Cmd ⌘</kbd> + <kbd>d</kbd>
+- iOS 设备（未连接 USB）：
+  - 摇晃设备。
+  - 用三根手指触摸屏幕。
+- iOS 模拟器或设备（已连接 USB）：
+  - 按 <kbd>Ctrl</kbd> + <kbd>Cmd ⌘</kbd> + <kbd>z</kbd> 或 <kbd>Cmd ⌘</kbd> + <kbd>d</kbd>
 
 </Collapsible>
 
-Once the Developer menu is open, it will appear as below:
+打开开发者菜单后，会如下所示：
 
 <ContentSpotlight
-  alt="The Expo Go Developer Menu, showing the menu options available."
+  alt="The Expo Go 开发者菜单，显示可用的菜单选项。"
   src="/static/images/debugging/developer-menu.png"
   className="max-w-[480px]"
 />
 
-The Developer menu provides the following options:
+开发者菜单提供以下选项：
 
-- **Copy link**: To copy the dev server address in dev client or [`exp://`](/linking/into-your-app/#test-a-link-using-expo-go) link in Expo of your app.
-- **Reload**: To reload you app. Usually, not necessary since Fast Refresh is enabled by default.
-- **Go Home**: To leave your app and navigate back to the dev client's or Expo Go app's Home screen.
-- **Toggle performance monitor**: To view the performance information about your app.
-- **Toggle element inspector**: To enable or disable the element inspector overlay.
-- **Open DevTools** (formerly **Open JS debugger**): To open React Native DevTools which provides access to Console, Sources, Network (**Expo only**), Memory, Components, and Profiler, tabs for apps using Hermes. For more information, see the [Debugging with React Native DevTools](#debugging-with-react-native-devtools) section.
-- **Fast Refresh**: To toggle automatic refreshing of the JS bundle whenever you make changes to files in your project using a text editor.
+- **Copy link**：用于复制 dev client 中的开发服务器地址，或你应用在 Expo 中的 [`exp://`](/linking/into-your-app/#test-a-link-using-expo-go) 链接。
+- **Reload**：重新加载你的应用。通常不需要，因为默认已启用 Fast Refresh。
+- **Go Home**：离开你的应用并返回 dev client 或 Expo Go 应用的主页。
+- **Toggle performance monitor**：查看有关你应用的性能信息。
+- **Toggle element inspector**：启用或禁用元素检查器覆盖层。
+- **Open DevTools**（原名 **Open JS debugger**）：打开 React Native DevTools，它为使用 Hermes 的应用提供 Console、Sources、Network（**仅限 Expo**）、Memory、Components 和 Profiler 选项卡。更多信息请参见 [使用 React Native DevTools 调试](#debugging-with-react-native-devtools) 部分。
+- **Fast Refresh**：切换在你使用文本编辑器修改项目文件时是否自动刷新 JS bundle。
 
-Now, let's explore some of these options in details.
+现在，让我们更详细地了解其中一些选项。
 
-### Toggle performance monitor
+### 切换性能监视器
 
-Opens up a small overlay that provides the following performance information about your app:
+会打开一个小型覆盖层，提供以下有关你应用的性能信息：
 
-- RAM usage of a project.
-- JavaScript heap (this is an easy way to know of any memory leaks in your application).
-- Two Views. The top indicates the number of views for the screen and the bottom indicates the number of views in the component.
-- Frames Per Second for the UI and JS threads. The UI thread is used for native Android or iOS UI rendering. The JS thread is where most of your logic runs, including API calls, touch events, and so on.
+- 项目的 RAM 使用量。
+- JavaScript 堆（这是了解应用中是否存在内存泄漏的一种简便方式）。
+- 两个视图。顶部表示屏幕的视图数量，底部表示组件中的视图数量。
+- UI 线程和 JS 线程的每秒帧数。UI 线程用于原生 Android 或 iOS UI 渲染。JS 线程是大多数逻辑运行的地方，包括 API 调用、触摸事件等。
 
-### Toggle element inspector
+### 切换元素检查器
 
-Opens up the element inspector overlay:
+会打开元素检查器覆盖层：
 
 <ContentSpotlight
-  alt="The element inspector overlay which shows details about an element after inspecting it."
+  alt="元素检查器覆盖层，在检查某个元素后显示其详细信息。"
   src="/static/images/debugging/element-inspector.png"
   className="max-w-[280px]"
 />
 
-This overlay has capabilities to:
+此覆盖层具备以下功能：
 
-- Inspect: Inspect elements
-- Perf: Show Performance overlay
-- Network: Show network details
-- Touchables: Highlight touchable elements
+- Inspect：检查元素
+- Perf：显示性能覆盖层
+- Network：显示网络详情
+- Touchables：高亮可触摸元素
 
-## Debugging with React Native DevTools
+## 使用 React Native DevTools 调试
 
-> **info** **Starting from React Native 0.76**, React Native DevTools has replaced Chrome DevTools.
+> **info** **从 React Native 0.76 开始**，React Native DevTools 已取代 Chrome DevTools。
 
-**React Native DevTools** is a modern debugging tool for Expo and React Native apps. It allows you to gain insights into the JavaScript code of your app by accessing the [Console](#interacting-with-the-console), [Sources](#pausing-on-breakpoints), [Network](#inspecting-network-requests-expo-only) (**Expo only**), and [Memory](#inspecting-memory) tabs. It also has **built-in support for React DevTools** such as [Components](#inspecting-components) and [Profiler](#profiling-javascript-performance) tabs. All of these inspectors can be accessed using [dev clients](/more/glossary-of-terms/#dev-clients) or Expo Go.
+**React Native DevTools** 是适用于 Expo 和 React Native 应用的现代调试工具。它允许你通过访问 [Console](#interacting-with-the-console)、[Sources](#pausing-on-breakpoints)、[Network](#inspecting-network-requests-expo-only)（**仅限 Expo**）和 [Memory](#inspecting-memory) 选项卡，深入了解应用的 JavaScript 代码。它还**内置支持 React DevTools**，例如 [Components](#inspecting-components) 和 [Profiler](#profiling-javascript-performance) 选项卡。所有这些检查器都可通过 [dev clients](/more/glossary-of-terms/#dev-clients) 或 Expo Go 访问。
 
-You can use the React Native DevTools on any app using [Hermes](/guides/using-hermes/). **To open it, start your app and press <kbd>j</kbd> in the terminal where Expo was started**. Once you have opened the React Native DevTools, it will appear as below:
+你可以在任何使用 [Hermes](/guides/using-hermes/) 的应用上使用 React Native DevTools。**要打开它，请启动你的应用，然后在 Expo 启动所在的终端中按 <kbd>j</kbd>**。打开 React Native DevTools 后，会如下所示：
 
 <ContentSpotlight
-  alt="The React Native DevTools showing one of the files under the Sources tab."
+  alt="React Native DevTools 显示 Sources 选项卡下的一个文件。"
   src="/static/images/debugging/inspector-sources-tab.png"
 />
 
-### Pausing on breakpoints
+### 在断点处暂停
 
-You can pause your app on specific parts of your code. To do this, set the breakpoint under the Sources tab by clicking the line number or add the `debugger` statement in your code.
+你可以让应用在代码的特定位置暂停。为此，请在 Sources 选项卡中通过单击行号设置断点，或者在代码中添加 `debugger` 语句。
 
-Once your app is executing code that has a breakpoint, it will entirely pause your app. This allows you to inspect all variables and functions in that scope. You can also execute code in the [Console](#interacting-with-the-console) tab as part of your app.
+一旦应用执行到带有断点的代码，它就会完全暂停。这使你能够检查该作用域中的所有变量和函数。你也可以在 [Console](#interacting-with-the-console) 选项卡中执行代码，作为应用的一部分。
 
 <ContentSpotlight
-  alt="The React Native DevTools showing one of the files under the Sources tab."
+  alt="React Native DevTools 显示 Sources 选项卡下的一个文件。"
   src="/static/images/debugging/inspector-breakpoint.png"
 />
 
-### Pausing on exceptions
+### 在异常处暂停
 
-If your app throws unexpected errors, it can be hard to find the source of the error. You can use React Native DevTools to pause your app and inspect the stack trace and variables the moment it throws an error.
+如果你的应用抛出意外错误，可能很难找到错误来源。你可以使用 React Native DevTools 在应用抛出错误的瞬间暂停并检查调用栈和变量。
 
 <ContentSpotlight
-  alt="Enable Pause on exceptions in the right panel of the Sources tab."
+  alt="在 Sources 选项卡右侧面板中启用异常暂停。"
   src="/static/images/debugging/inspector-pause-exception.png"
   className="max-w-[360px]"
 />
 
-> **info** Some errors might be caught by other components in your app, such as Expo Router. In these cases, you can turn on **Pause on caught exceptions**. It will enable you to inspect any thrown error, even when handled properly.
+> **info** 某些错误可能会被应用中的其他组件捕获，例如 Expo Router。在这些情况下，你可以开启 **Pause on caught exceptions**。这样即使错误已被妥善处理，你也能检查任何被抛出的错误。
 
-### Interacting with the console
+### 与控制台交互
 
-The **Console** tab gives you access to an interactive terminal, connected directly to your app. You can write any JavaScript inside this terminal to execute snippets of code as if it were part of your app. The code is executed in the global scope by default. But, when using breakpoints from the [Sources](#pausing-on-breakpoints) tab, it executes in the scope of the reached breakpoint. This allows you to invoke methods and access variables throughout your app.
+**Console** 选项卡为你提供一个交互式终端，可直接连接到你的应用。你可以在该终端中编写任意 JavaScript，将其作为应用的一部分执行代码片段。默认情况下，代码会在全局作用域中执行。但当使用 [Sources](#pausing-on-breakpoints) 选项卡中的断点时，它会在到达的断点作用域中执行。这使你能够调用方法并访问整个应用中的变量。
 
 <ContentSpotlight
-  alt="Use the console with breakpoints to inspect variables and invoke code through your app."
+  alt="使用带断点的控制台检查变量，并通过应用调用代码。"
   src="/static/images/debugging/inspector-breakpoint-console.png"
 />
 
-### Inspecting network requests (Expo only)
+### 检查网络请求（仅限 Expo）
 
-> **info** The Network tab in React Native DevTools is only available when you have `expo` installed in your project.
+> **info** React Native DevTools 中的 Network 选项卡仅在你的项目安装了 `expo` 时可用。
 
-The **Network** tab gives you insights into the network requests made by your app. You can inspect each request and response by clicking on them. This includes `fetch` requests, external loaded media, and in some cases, even requests made by native modules.
+**Network** 选项卡可帮助你了解应用发出的网络请求。你可以通过单击每个请求和响应来检查它们。这包括 `fetch` 请求、外部加载的媒体，以及在某些情况下，甚至包括由原生模块发出的请求。
 
 <ContentSpotlight
-  alt="Gain insights in the network requests from your app."
+  alt="深入了解你应用中的网络请求。"
   src="/static/images/debugging/inspector-network-post.png"
   className="max-w-[720px]"
 />
 
-> **info** See the [Inspecting network traffic](#inspecting-network-traffic) for alternative ways to inspect network requests.
+> **info** 有关检查网络请求的其他方式，请参见 [检查网络流量](#inspecting-network-traffic)。
 
-### Inspecting memory
+### 检查内存
 
-The **Memory** tab allows you to inspect the memory usage and take a heap snapshot of your app's JavaScript code.
+**Memory** 选项卡允许你检查内存使用情况，并为应用的 JavaScript 代码拍摄堆快照。
 
 <ContentSpotlight
-  alt="Inspect memory usage of your app's JavaScript code."
+  alt="检查应用 JavaScript 代码的内存使用情况。"
   src="/static/images/debugging/inspector-memory.png"
   className="max-w-[720px]"
 />
 
-### Inspecting components
+### 检查组件
 
-The **Components** tab allows you to inspect the React components in your app. You can view the props, and styles of each component by hovering that component in React Native DevTools. This is a great way to debug your app's UI and understand how your components are structured.
+**Components** 选项卡允许你检查应用中的 React 组件。你可以通过在 React Native DevTools 中悬停在某个组件上，查看该组件的 props 和样式。这是调试应用 UI 以及理解组件结构的绝佳方式。
 
 <ContentSpotlight
-  alt="Inspect a component in React Native DevTools."
+  alt="在 React Native DevTools 中检查组件。"
   src="/static/images/debugging/inspector-components.png"
   className="max-w-[720px]"
 />
 
-### Profiling JavaScript performance
+### 分析 JavaScript 性能
 
-> **warning** Profiles are not yet symbolicated with sourcemaps, and [can only be used in debug builds](https://github.com/facebook/hermes/issues/760). These limitations will be addressed in upcoming releases.
+> **warning** 性能分析结果尚未使用 sourcemaps 进行符号化，而且[只能在调试构建中使用](https://github.com/facebook/hermes/issues/760)。这些限制将在后续版本中得到解决。
 
-The **Profiler** tab allows you to record and analyze the performance of your app's JavaScript. You can start recording, interact with your app, and stop recording to analyze the profile.
+**Profiler** 选项卡允许你记录并分析应用 JavaScript 的性能。你可以开始录制、与应用交互，然后停止录制以分析配置文件。
 
 <ContentSpotlight
-  alt="React Native DevTools Profiler tab open to show insights on app's JavaScript performance."
+  alt="打开 React Native DevTools 的 Profiler 选项卡，以显示应用 JavaScript 性能的洞察。"
   src="/static/images/debugging/inspector-profiler.png"
   className="max-w-[720px]"
 />
 
-> **info** To profile the native runtime, use the tools included in Android Studio or Xcode.
+> **info** 如需分析原生运行时，请使用 Android Studio 或 Xcode 中包含的工具。
 
-## Debugging with VS Code
+## 使用 VS Code 调试
 
-> **warning** VS Code debugger integration is in [alpha](/more/release-statuses/#alpha). For the most stable debugging experience, [use the React Native DevTools](#debugging-with-react-native-devtools).
+> **warning** VS Code 调试器集成处于 [alpha](/more/release-statuses/#alpha) 阶段。若想获得最稳定的调试体验，请[使用 React Native DevTools](#debugging-with-react-native-devtools)。
 
-VS Code is a popular code editor, which has a built-in debugger. This debugger uses the same system as the React Native DevTools &mdash; the inspector protocol.
+VS Code 是一款很受欢迎的代码编辑器，内置调试器。这个调试器使用与 React Native DevTools 相同的系统——检查器协议。
 
-You can use this debugger with the [Expo Tools](https://github.com/expo/vscode-expo#readme) VS Code extension. This debugger allows you to set breakpoints, inspect variables, and execute code through the debug console.
+你可以通过 [Expo Tools](https://github.com/expo/vscode-expo#readme) VS Code 扩展来使用此调试器。该调试器允许你设置断点、检查变量，以及通过调试控制台执行代码。
 
 <ContentSpotlight
-  alt="Debug your code while you write it."
+  alt="在编写代码时调试你的代码。"
   src="/static/images/debugging/vscode-expo.png"
 />
 
-To start debugging:
+开始调试：
 
-- Connect your app
-- Open VS Code command palette (based on your computer, it's either <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>p</kbd> or <kbd>Cmd ⌘</kbd> + <kbd>Shift</kbd> + <kbd>p</kbd>)
-- Run the **Expo: Debug ...** VS Code command.
+- 连接你的应用
+- 打开 VS Code 命令面板（根据你的电脑，可能是 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>p</kbd> 或 <kbd>Cmd ⌘</kbd> + <kbd>Shift</kbd> + <kbd>p</kbd>）
+- 运行 **Expo: Debug ...** VS Code 命令。
 
-This will attach VS Code to your running app.
+这将把 VS Code 附加到你正在运行的应用上。
 
-Alternatively, if you want a fully-featured IDE setup in VS Code, you might want to check out the [Radon IDE](https://ide.swmansion.com/) extension (paid with a 30-day free trial). It turns your editor into a powerful environment designed specifically for React Native and Expo projects, with advanced debugging, a network inspector, router integration, and other built-in tools.
+另外，如果你想在 VS Code 中获得功能齐全的 IDE 体验，可以看看 [Radon IDE](https://ide.swmansion.com/) 扩展（付费，提供 30 天免费试用）。它会将你的编辑器变成一个专为 React Native 和 Expo 项目设计的强大环境，内置高级调试、网络检查器、路由器集成以及其他工具。
 
 <ContentSpotlight
-  alt="Debugging code using Radon IDE."
+  alt="使用 Radon IDE 调试代码。"
   src="/static/images/debugging/radon-ide.png"
 />
 
-## React Native Debugger
+## React Native 调试器
 
-> **warning** The React Native Debugger requires Remote JS debugging, which has been deprecated since [React Native 0.73](https://reactnative.dev/docs/other-debugging-methods#remote-javascript-debugging-deprecated).
+> **warning** React Native 调试器需要远程 JS 调试，而这项功能自 [React Native 0.73](https://reactnative.dev/docs/other-debugging-methods#remote-javascript-debugging-deprecated) 起已被弃用。
 
-The React Native Debugger is a standalone app that wraps the React DevTools, Redux DevTools, and React Native DevTools. Unfortunately, it requires the [deprecated Remote JS debugging workflow](https://github.com/jhen0409/react-native-debugger/discussions/774) and is incompatible with Hermes.
+React Native 调试器是一个独立应用，封装了 React DevTools、Redux DevTools 和 React Native DevTools。不幸的是，它需要使用[已弃用的远程 JS 调试工作流](https://github.com/jhen0409/react-native-debugger/discussions/774)，并且与 Hermes 不兼容。
 
-If you are using Expo **SDK 50** or **above**, you can use the [Expo dev tools plugins](/debugging/devtools-plugins) equivalents to the React Native Debugger:
+如果你使用的是 Expo **SDK 50** 或更高版本，你可以使用与 React Native 调试器等效的 [Expo 开发工具插件](/debugging/devtools-plugins)：
 
 - [React Native DevTools](#debugging-with-react-native-devtools)
 - [Redux DevTools](/debugging/devtools-plugins/#redux)
 
-If you are using Expo SDK 49 and earlier, you can use the React Native Debugger. This section provides quick get started instructions. For in-depth information, check its [documentation](https://github.com/jhen0409/react-native-debugger#documentation).
+如果你使用的是 Expo SDK 49 及更早版本，你可以使用 React Native 调试器。本节提供快速入门说明。有关更深入的信息，请查看其[文档](https://github.com/jhen0409/react-native-debugger#documentation)。
 
-You can install it via the [release page](https://github.com/jhen0409/react-native-debugger/releases), or if you're on macOS you can run:
+你可以通过[发布页](https://github.com/jhen0409/react-native-debugger/releases)安装它，或者如果你使用的是 macOS，可以运行：
 
 <Terminal cmd={['$ brew install react-native-debugger']} />
 
-### Startup
+### 启动
 
-After firing up React Native Debugger, you'll need to specify the port (shortcuts: <kbd>Cmd ⌘</kbd> + <kbd>t</kbd> on macOS, <kbd>Ctrl</kbd> + <kbd>t</kbd> on Linux/Windows) to `8081`. After that, run your project with `npx expo start`, and select `Debug remote JS` from the Developer Menu. The debugger should automatically connect.
+启动 React Native 调试器后，你需要将端口（快捷键：macOS 上为 <kbd>Cmd ⌘</kbd> + <kbd>t</kbd>，Linux/Windows 上为 <kbd>Ctrl</kbd> + <kbd>t</kbd>）指定为 `8081`。之后，使用 `npx expo start` 运行你的项目，并在开发者菜单中选择 `Debug remote JS`。调试器应该会自动连接。
 
-In the debugger console, you can see the Element tree, as well as the props, state, and children of whatever element you select. You also have the Chrome console on the right, and if you type `$r` in the console, you will see the breakdown of your selected element.
+在调试器控制台中，你可以查看元素树，以及你所选元素的 props、state 和 children。右侧还有 Chrome 控制台，如果你在控制台中输入 `$r`，你会看到所选元素的详细信息。
 
-If you right-click anywhere in the React Native Debugger, you'll get some handy shortcuts to reload your JS, enable/disable the element inspector, network inspector, and to log and clear your `AsyncStorage` content.
+如果你在 React Native 调试器中的任何位置右键单击，你将获得一些便捷的快捷方式，用于重新加载你的 JS、启用/禁用元素检查器、网络检查器，以及记录和清除你的 `AsyncStorage` 内容。
 
 <ContentSpotlight file="debugging/react-native-debugger.mp4" />
 
-### Inspecting network traffic
+### 检查网络流量
 
-It's easy to use the React Native Debugger to debug your network request: right-click anywhere in the React Native Debugger and select `Enable Network Inspect`. This will enable the Network tab and allow you to inspect requests of `fetch` and `XMLHttpRequest`.
+使用 React Native 调试器调试网络请求非常容易：在 React Native 调试器中的任意位置右键单击并选择 `Enable Network Inspect`。这将启用 Network 选项卡，并允许你检查 `fetch` 和 `XMLHttpRequest` 的请求。
 
-There are however [some limitations](https://github.com/jhen0409/react-native-debugger/blob/master/docs/network-inspect-of-chrome-devtools.md#limitations), so there are a few other alternatives, all of which require using a proxy:
+不过，这里存在[一些限制](https://github.com/jhen0409/react-native-debugger/blob/master/docs/network-inspect-of-chrome-devtools.md#limitations)，因此还有一些其他替代方案，但它们都需要使用代理：
 
-- [Charles Proxy](https://www.charlesproxy.com/documentation/configuration/browser-and-system-configuration/) (~$50 USD, our preferred tool)
-- [Proxyman](https://proxyman.io) (Free version available or $49 to $59 USD)
+- [Charles Proxy](https://www.charlesproxy.com/documentation/configuration/browser-and-system-configuration/)（约 50 美元，我们首选的工具）
+- [Proxyman](https://proxyman.io)（有免费版本，或 49 到 59 美元）
 - [mitmproxy](https://medium.com/@rotxed/how-to-debug-http-s-traffic-on-android-7fbe5d2a34#.hnhanhyoz)
 - [Fiddler](http://www.telerik.com/fiddler)
 
-## Debugging production apps
+## 调试生产应用
 
-In reality, apps often ship with bugs. Implementing a crash and bug reporting system can help you get real-time insights of your production apps. See [Using error reporting services](/debugging/runtime-issues/#using-error-reporting-services) for more details.
+实际上，应用经常会带着 bug 发布。实现崩溃和 bug 报告系统可以帮助你实时了解生产应用的情况。有关更多详情，请参阅[使用错误报告服务](/debugging/runtime-issues/#using-error-reporting-services)。

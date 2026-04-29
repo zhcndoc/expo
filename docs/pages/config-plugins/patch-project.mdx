@@ -1,29 +1,29 @@
 ---
-title: Using patch-project
-sidebar_title: Patch project
-description: Learn about how to use patch-project to create generate, apply, and preserve native changes in your Expo project.
+title: 使用 patch-project
+sidebar_title: 补丁项目
+description: 了解如何使用 patch-project 在你的 Expo 项目中创建、应用并保留原生更改。
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 
-> **important** **Note**: `patch-project` is an [alpha](/more/release-statuses/#alpha) feature.
+> **重要** **注意**：`patch-project` 是一个 [alpha](/more/release-statuses/#alpha) 功能。
 
-`patch-project` is an Expo config plugin and command-line interface (CLI) tool that generates and applies patches to preserve native changes after running `npx expo prebuild`. This tool is useful for native app developers who want to preserve customizations without needing to know how to write a config plugin, effectively generating an automatic solution that works with [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/).
+`patch-project` 是一个 Expo 配置插件和命令行接口（CLI）工具，它会生成并应用补丁，以便在运行 `npx expo prebuild` 后保留原生更改。对于希望保留自定义修改、但又不需要了解如何编写配置插件的原生应用开发者来说，这个工具非常有用；它实际上会生成一个可与 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 配合工作的自动化解决方案。
 
-This guide explains how to use `patch-project`, when to use it, and its limitations.
+本指南说明了如何使用 `patch-project`、何时使用它，以及它的局限性。
 
-## How patch-project works
+## patch-project 的工作原理
 
-`patch-project` uses an approach to generate and automatically apply patches, which is inspired by Git. Using this command line tool requires the following steps in your project:
+`patch-project` 采用一种受 Git 启发的方法来生成并自动应用补丁。要在项目中使用这个命令行工具，需要执行以下步骤：
 
-### Installation
+### 安装
 
-To get started, you need to install the tool in your project:
+要开始使用，你需要在项目中安装该工具：
 
 <Terminal cmd={['$ npx expo install patch-project']} />
 
-This command will automatically add the `patch-project` config plugin to your [app config](/workflow/configuration/):
+此命令会自动将 `patch-project` 配置插件添加到你的 [应用配置](/workflow/configuration/) 中：
 
 ```json app.json
 {
@@ -36,51 +36,51 @@ This command will automatically add the `patch-project` config plugin to your [a
 }
 ```
 
-### Generate patches from existing customizations
+### 从现有自定义内容生成补丁
 
-Let's assume you manually modified native directories (**android** and **ios**) in your project. To generate patches for these native directories, you can run the following command:
+假设你已经手动修改了项目中的原生目录（**android** 和 **ios**）。要为这些原生目录生成补丁，可以运行以下命令：
 
 <Terminal cmd={['$ npx patch-project']} />
 
-> **info** **Note**: In scenarios where you want to generate patches for a specific platform, you can use the `--platform` option and run `npx patch-project --platform android` or `npx patch-project --platform ios`.
+> **信息** **注意**：在你希望为特定平台生成补丁的场景中，可以使用 `--platform` 选项并运行 `npx patch-project --platform android` 或 `npx patch-project --platform ios`。
 
-These patches, when generated, are saved in the **cng-patches** directory.
+这些补丁在生成后会被保存到 **cng-patches** 目录中。
 
 <FileTree
   files={[
     ['./app.json', 'with patch-project plugin'],
-    ['./cng-patches/android+eee880ad7b07965271d2323f7057a2b4.patch', 'patch for android directory'],
-    ['./cng-patches/ios+eee880ad7b07965271d2323f7057a2b4.patch', 'patch for ios directory'],
+    ['./cng-patches/android+eee880ad7b07965271d2323f7057a2b4.patch', 'android 目录的补丁'],
+    ['./cng-patches/ios+eee880ad7b07965271d2323f7057a2b4.patch', 'ios 目录的补丁'],
     './package.json',
-    ['./...', 'other project files'],
+    ['./...', '其他项目文件'],
   ]}
 />
 
-Each file will be prefixed with a platform's name followed by a checksum value. For example:
+每个文件都会以平台名称作为前缀，后跟一个校验和。例如：
 
 ```bash
 ios+eee880ad7b07965271d2323f7057a2b4.patch
 ```
 
-### Apply patches during prebuild
+### 在 prebuild 期间应用补丁
 
-Once you have generated patches, they are automatically applied when subsequently running the `npx expo prebuild` command. The `patch-project` config plugin detects the existing patches and applies them to restore your customizations.
+一旦生成了补丁，在随后运行 `npx expo prebuild` 命令时，它们会自动应用。`patch-project` 配置插件会检测现有补丁，并将其应用以恢复你的自定义内容。
 
-## When to use patch-project
+## 何时使用 patch-project
 
-You can use `patch-project` in the following scenarios:
+你可以在以下场景中使用 `patch-project`：
 
-- **Migrating existing React Native apps** that are complex because they contain extensive native customizations and re-creating these native customizations as config plugins would be time-consuming.
-- **Preserving manual changes** made to **android** and/or **ios** directories while transitioning to adopt Continuous Native Generation (CNG) in your Expo project.
-- **Quick prototyping** when you need to test native changes before writing config plugins.
-- **Patches are applied automatically** when running the `npx expo prebuild` command subsequently. This is an advantage over tools like `patch-package` (commonly used for generating patches for npm libraries), which do not preserve and automatically apply patches during the prebuild process.
+- **迁移现有的 React Native 应用**：这类应用往往很复杂，因为它们包含大量原生自定义内容，而将这些原生自定义重新创建为配置插件会非常耗时。
+- **保留手动更改**：在 Expo 项目中迁移以采用 Continuous Native Generation（CNG）时，保留对 **android** 和/或 **ios** 目录所做的手动更改。
+- **快速原型开发**：当你需要在编写配置插件之前测试原生更改时。
+- **补丁会在随后运行 `npx expo prebuild` 命令时自动应用**。这比 `patch-package` 等工具更有优势（`patch-package` 常用于为 npm 库生成补丁），因为它们不会在 prebuild 过程中保留并自动应用补丁。
 
-## Limitations and considerations
+## 局限性与注意事项
 
-Patches may become invalid during Expo SDK version upgrades because:
+在 Expo SDK 版本升级期间，补丁可能会失效，原因如下：
 
-- **Template and/or file structure changes**: The prebuild template evolves between SDK versions with new changes and file updates in native directories. This will affect the already generated diff in the **cng-patches** directory, which may no longer apply.
-- **Plugin conflicts**: CNG patches can be dangerous and may break when other plugins modify the same files. For example, if you add a new plugin that updates **MainApplication.kt** and conflicts with your existing patches, the patches may no longer apply correctly. In such cases, you may need to regenerate patches.
-- **iOS .pbxproj changes**: In iOS projects, applying patches to **.pbxproj** files can be fragile since this file contains UUIDs and running a command like `npx expo prebuild --clean` can change these IDs. For example, if you're adding a widget extension or making other project configuration changes, patch-based approaches may not work reliably. You can review the generated **cng-patches/ios-\*** and keep only the necessary patch. Having the patch as minimal as possible would reduce the risk of failures when applying patches.
+- **模板和/或文件结构发生变化**：prebuild 模板会在不同 SDK 版本之间演进，原生目录中会有新的更改和文件更新。这会影响 **cng-patches** 目录中已经生成的 diff，导致它们可能不再适用。
+- **插件冲突**：CNG 补丁可能存在风险，如果其他插件修改了相同的文件，可能会导致失败。例如，如果你添加了一个会更新 **MainApplication.kt** 的新插件，并且它与你现有的补丁冲突，那么这些补丁可能不再能正确应用。在这种情况下，你可能需要重新生成补丁。
+- **iOS .pbxproj 更改**：在 iOS 项目中，将补丁应用到 **.pbxproj** 文件可能比较脆弱，因为该文件包含 UUID，而运行类似 `npx expo prebuild --clean` 的命令可能会更改这些 ID。例如，如果你正在添加 widget 扩展或进行其他项目配置更改，基于补丁的方法可能无法可靠工作。你可以查看生成的 **cng-patches/ios-***，并仅保留必要的补丁。尽可能让补丁保持最小化，可以降低应用补丁时失败的风险。
 
-It is recommended to regenerate patches after each SDK upgrade.
+建议在每次 SDK 升级后重新生成补丁。

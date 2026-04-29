@@ -1,7 +1,7 @@
 ---
-title: Run E2E tests on EAS Build
-sidebar_title: Run E2E tests
-description: Learn how to set up and run E2E tests on EAS Build with Maestro.
+title: 在 EAS Build 上运行 E2E 测试
+sidebar_title: 运行 E2E 测试
+description: 了解如何使用 Maestro 在 EAS Build 上设置并运行 E2E 测试。
 hasVideoLink: true
 ---
 
@@ -10,31 +10,31 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-> **warning** **Deprecated:** This is an old and archived version of our EAS Build E2E tests guide. [See the latest version of the guide here](/eas/workflows/examples/e2e-tests/).
+> **warning** **已弃用：** 这是我们 EAS Build E2E 测试指南的旧归档版本。[在此查看最新版本的指南](/eas/workflows/examples/e2e-tests/)。
 
-In this guide, you will learn how to create and run E2E tests on EAS Build using [Maestro](https://maestro.dev/), which is one of the most popular tools for running E2E tests in mobile apps.
+在本指南中，你将学习如何使用 [Maestro](https://maestro.dev/) 在 EAS Build 上创建并运行 E2E 测试，Maestro 是用于在移动应用中运行 E2E 测试的最受欢迎的工具之一。
 
-The example demonstrates how to configure your EAS Build Maestro E2E tests workflow using the [default Expo template](/more/create-expo/#--template). For your own app, you will need to adjust the flows to match your app's UI.
+此示例演示了如何使用 [默认 Expo 模板](/more/create-expo/#--template) 配置你的 EAS Build Maestro E2E 测试工作流。对于你自己的应用，你需要调整这些流程以匹配应用的 UI。
 
 <VideoBoxLink
   videoId="-o-bfIRrg9U"
-  title="Watch: How to run E2E tests on EAS Build"
-  description="Set up and run end-to-end tests on EAS Build using Maestro to automate UI testing for your app."
+  title="观看：如何在 EAS Build 上运行 E2E 测试"
+  description="使用 Maestro 在 EAS Build 上设置并运行端到端测试，为你的应用自动化 UI 测试。"
 />
 
 <Step label="1">
-## Initialize a new project
+## 初始化一个新项目
 
-You can skip this step if you already have an existing Expo project.
+如果你已经有现有的 Expo 项目，可以跳过此步骤。
 
-Create a new project using the following commands:
+使用以下命令创建一个新项目：
 
 <Terminal
   cmd={[
-    '# Initialize a new project',
+    '# 初始化一个新项目',
     '$ npx create-expo-app@latest eas-tests-example',
     '',
-    '# Move into the project directory',
+    '# 进入项目目录',
     '$ cd eas-tests-example',
   ]}
   cmdCopy="npx create-expo-app eas-tests-example && cd eas-tests-example"
@@ -42,11 +42,11 @@ Create a new project using the following commands:
 </Step>
 
 <Step label="2">
-## Configure EAS Build
+## 配置 EAS Build
 
-You can skip this step if you already have EAS Build configured for your project.
+如果你的项目已经配置好 EAS Build，可以跳过此步骤。
 
-The following command creates a new project on Expo servers for your app and creates [**eas.json**](/build/eas-json/) in the project's root directory:
+以下命令会在 Expo 服务器上为你的应用创建一个新项目，并在项目根目录中创建 [**eas.json**](/build/eas-json/)：
 
 <Terminal
   cmd={[
@@ -60,39 +60,39 @@ The following command creates a new project on Expo servers for your app and cre
 
 <Step label="3">
 
-## Disable New Android Builds Infrastructure
+## 禁用新的 Android 构建基础设施
 
-Go to [**Project settings**](https://expo.dev/accounts/[account]/projects/[project]/settings) and disable **New Android Builds Infrastructure**.
+前往 [**项目设置**](https://expo.dev/accounts/[account]/projects/[project]/settings) 并禁用 **新的 Android 构建基础设施**。
 
-Unfortunately, the new build infrastructure is incompatible with E2E tests due to the lack of virtualization support required to start Android Emulator. We are working on better solutions for running various tests on EAS.
+遗憾的是，由于缺少启动 Android 模拟器所需的虚拟化支持，新的构建基础设施与 E2E 测试不兼容。我们正在为在 EAS 上运行各种测试探索更好的解决方案。
 
 </Step>
 
 <Step label="4">
-## Add example Maestro test cases
+## 添加示例 Maestro 测试用例
 
-This is what the UI of the app created from the default Expo template looks like:
+以下是使用默认 Expo 模板创建的应用的 UI 外观：
 
 <div style={{ display: 'flex', justifyContent: 'center' }}>
   <ContentSpotlight src="/static/images/eas-build/tests/01-home.png" className="max-w-[360px]" />
   <ContentSpotlight src="/static/images/eas-build/tests/02-explore.png" className="max-w-[360px]" />
 </div>
 
-Let's create two simple Maestro flows for the example app. Start by creating a directory called **maestro** in the root of your project directory. This directory will contain the flows that you will configure and should be at the same level as **eas.json**.
+让我们为示例应用创建两个简单的 Maestro 流程。首先在项目目录根目录下创建一个名为 **maestro** 的目录。该目录将包含你要配置的流程，并且应与 **eas.json** 处于同一级别。
 
-Inside, create a new file called **home.yml**. This flow will launch the app and assert that the text "Welcome!" is visible on the home screen.
+在其中创建一个名为 **home.yml** 的新文件。此流程将启动应用，并断言主屏幕上可见文本 “Welcome!”。
 
 ```yaml maestro/home.yml
-appId: dev.expo.eastestsexample # This is an example app id. Replace it with your app id.
+appId: dev.expo.eastestsexample # 这是一个示例 app id。请将其替换为你的 app id。
 ---
 - launchApp
 - assertVisible: 'Welcome!'
 ```
 
-Next, create a new flow called **expand_test.yml**. This flow will open the "Explore" screen in the example app, click on the "File-based routing" collapsible, and assert that the text "This app has two screens" is visible on the screen.
+接下来，创建一个名为 **expand_test.yml** 的新流程。此流程将打开示例应用中的 “Explore” 屏幕，点击可折叠项 “File-based routing”，并断言屏幕上可见文本 “This app has two screens”。
 
 ```yaml maestro/expand_test.yml
-appId: dev.expo.eastestsexample # This is an example app id. Replace it with your app id.
+appId: dev.expo.eastestsexample # 这是一个示例 app id。请将其替换为你的 app id。
 ---
 - launchApp
 - tapOn: 'Explore.*'
@@ -103,28 +103,28 @@ appId: dev.expo.eastestsexample # This is an example app id. Replace it with you
 </Step>
 
 <Step label="5">
-## Run Maestro tests locally
+## 在本地运行 Maestro 测试
 
-To run Maestro tests locally, install the Maestro CLI by following the instructions in [Installing Maestro](https://docs.maestro.dev/getting-started/installing-maestro).
+要在本地运行 Maestro 测试，请按照 [安装 Maestro](https://docs.maestro.dev/getting-started/installing-maestro) 中的说明安装 Maestro CLI。
 
-[Install your app on a local Android Emulator or iOS Simulator](/more/expo-cli/#compiling). Open a terminal, navigate to the Maestro directory, and run the following commands to start the tests with the Maestro CLI:
+[将你的应用安装到本地 Android 模拟器或 iOS 模拟器中](/more/expo-cli/#compiling)。打开终端，进入 Maestro 目录，并运行以下命令以使用 Maestro CLI 启动测试：
 
 <Terminal cmd={['$ maestro test maestro/expand_test.yml', '', '$ maestro test maestro/home.yml']} />
 
-The video below shows a successful run of the **maestro/expand_test.yml** flow:
+下面的视频展示了 **maestro/expand_test.yml** 流程的成功运行：
 
 <ContentSpotlight file="guides/local-e2e.mp4" />
 
 </Step>
 
 <Step label="6">
-## Create a custom build workflow for running Maestro E2E tests
+## 创建用于运行 Maestro E2E 测试的自定义构建工作流
 
-The easiest way to run Maestro E2E tests on EAS Build is to create a [custom build workflow](/custom-builds/get-started/). This workflow will build your app and run the Maestro tests on it.
+在 EAS Build 上运行 Maestro E2E 测试的最简单方法是创建一个 [自定义构建工作流](/custom-builds/get-started/)。此工作流将构建你的应用并在其上运行 Maestro 测试。
 
-Start by adding a custom build config file to your project. Create a directory **.eas/build** at the same level as **eas.json** in the project. The path and the name of both directories are important for EAS Build to identify that a project contains a custom build config.
+首先，向项目中添加一个自定义构建配置文件。在项目中、与 **eas.json** 同级的位置创建一个目录 **.eas/build**。这两个目录的路径和名称对于 EAS Build 识别项目是否包含自定义构建配置都很重要。
 
-Inside, create a new config file called **build-and-maestro-test.yml**. This file defines the custom build workflow config that you want to run. Workflow contains steps that are executed during the custom build process. This custom build config will execute the [`eas/build`](/custom-builds/schema/#easbuild) custom function group to create a build and then the [`eas/maestro_test`](/custom-builds/schema/#easmaestro_test) which is an all-in-one custom function group that installs Maestro, prepares a testing environment (Android Emulator or iOS Simulator) and tests the app using flows specified by the `flow_path` input.
+在其中创建一个名为 **build-and-maestro-test.yml** 的新配置文件。该文件定义了你想要运行的自定义构建工作流配置。工作流包含在自定义构建过程中执行的步骤。此自定义构建配置将执行 [`eas/build`](/custom-builds/schema/#easbuild) 自定义函数组来创建构建，然后执行 [`eas/maestro_test`](/custom-builds/schema/#easmaestro_test)，这是一个一体化的自定义函数组，它会安装 Maestro、准备测试环境（Android 模拟器或 iOS 模拟器），并使用由 `flow_path` 输入指定的流程测试应用。
 
 ```yaml .eas/build/build-and-maestro-test.yml
 build:
@@ -138,9 +138,9 @@ build:
             maestro/expand_test.yml
 ```
 
-Now modify the **eas.json** by adding a new [build profile](/build/eas-json/#build-profiles) called `build-and-maestro-test`. It will be used to run the custom build config from the **build-and-maestro-test.yml** file. This configuration will build the emulator/simulator version of your app and run the Maestro tests on it.
+现在通过添加一个名为 `build-and-maestro-test` 的新 [构建配置](/build/eas-json/#build-profiles) 来修改 **eas.json**。它将用于运行来自 **build-and-maestro-test.yml** 文件的自定义构建配置。此配置将构建你的应用的模拟器/仿真器版本，并在其上运行 Maestro 测试。
 
-> **Warning** We have observed that Maestro tests often time out if run on images with Xcode 15.0 or 15.2. Use the [`latest` image](/build-reference/infrastructure/#configuring-build-environment) to avoid any issues.
+> **警告** 我们观察到，如果在带有 Xcode 15.0 或 15.2 的镜像上运行，Maestro 测试经常会超时。请使用 [`latest` 镜像](/build-reference/infrastructure/#configuring-build-environment) 以避免任何问题。
 
 ```json eas.json
 {
@@ -166,39 +166,39 @@ Now modify the **eas.json** by adding a new [build profile](/build/eas-json/#bui
 </Step>
 
 <Step label="7">
-## Build your app and run E2E tests on EAS Build
+## 构建你的应用并在 EAS Build 上运行 E2E 测试
 
-To execute a custom build using the `build-and-maestro-test` profile that will build your app and run the Maestro E2E tests afterward, run the following command:
+要使用 `build-and-maestro-test` 配置执行自定义构建，在构建你的应用后运行 Maestro E2E 测试，请运行以下命令：
 
 <Terminal cmd={['$ eas build --profile build-and-maestro-test']} />
 
 <ContentSpotlight
-  alt="Logs of successful Maestro tests"
+  alt="成功的 Maestro 测试日志"
   src="/static/images/eas-build/tests/03-logs.png"
   className="max-w-[600px]"
 />
 
-When the flow fails, any Maestro artifacts are automatically uploaded as build artifacts. This includes screenshots saved at `~/.maestro/tests` (the default destination). You can download them from the build page.
+当流程失败时，任何 Maestro 产物都会自动作为构建产物上传。这包括保存在 `~/.maestro/tests`（默认位置）的截图。你可以从构建页面下载它们。
 
 <ContentSpotlight
-  alt="Failed Maestro tests artifacts"
+  alt="失败的 Maestro 测试产物"
   src="/static/images/eas-build/tests/04-artifacts.png"
   className="max-w-[600px]"
 />
 </Step>
 
-## More
+## 更多内容
 
-If you want to build more advanced custom builds workflows, see the [custom build schema reference](/custom-builds/schema/) for more information.
+如果你想构建更高级的自定义构建工作流，请参阅 [自定义构建 schema 参考](/custom-builds/schema/) 以了解更多信息。
 
-To learn more about Maestro flows and how to write them, see the [Maestro documentation](https://docs.maestro.dev/).
+要进一步了解 Maestro 流程以及如何编写它们，请参阅 [Maestro 文档](https://docs.maestro.dev/)。
 
-## Troubleshooting
+## 故障排查
 
-If you encounter the following error message when starting an Android Emulator for E2E tests on EAS Build:
+如果你在 EAS Build 上为 E2E 测试启动 Android 模拟器时遇到以下错误信息：
 
 ```text
 Failed to configure emulator: emulator with required ID not found.
 ```
 
-This is likely because the New Build Infrastructure is enabled for your project. Go to [**Project Settings**](https://expo.dev/accounts/[account]/projects/[project]/settings) and disable **New Android Builds Infrastructure**.
+这很可能是因为你的项目启用了新的构建基础设施。前往 [**项目设置**](https://expo.dev/accounts/[account]/projects/[project]/settings) 并禁用 **新的 Android 构建基础设施**。

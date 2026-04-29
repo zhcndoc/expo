@@ -1,24 +1,24 @@
 ---
-sidebar_title: Responses and headers
-title: Default responses and headers
-description: Defaults that are added automatically on requests when using EAS Hosting.
+sidebar_title: 响应和头部
+title: 默认响应和头部
+description: 使用 EAS Hosting 时，系统会自动添加到请求中的默认值。
 ---
 
-**EAS Hosting** applies several defaults to your deployment that are supposed to help you and reduce the amount of code you have to add yourself for simple API routes.
+**EAS Hosting** 会将一些默认值应用到你的部署中，这些默认值旨在帮助你，并减少在简单 API 路由中需要自己添加的代码量。
 
-## Asset responses
+## 资源响应
 
-An asset response contains additional metadata headers for browsers, mostly for caching.
+资源响应包含额外的元数据头，供浏览器使用，主要用于缓存。
 
-A default `ETag` header is added to all asset responses to allow browsers to re-validate their caches using `if-none-match` request headers.
+默认会向所有资源响应添加 `ETag` 头，以允许浏览器使用 `if-none-match` 请求头重新验证其缓存。
 
-## CORS responses
+## CORS 响应
 
-By default, if an API route does not handle `OPTIONS` requests, EAS Hosting will automatically respond with a default CORS response.
+默认情况下，如果某个 API 路由未处理 `OPTIONS` 请求，EAS Hosting 会自动返回一个默认的 CORS 响应。
 
-This default is very permissible and generally allows all browsers to make requests to the API route. **If you don't want this**, handle `OPTIONS` requests in API routes yourself.
+这个默认值非常宽松，通常允许所有浏览器向该 API 路由发起请求。**如果你不想这样**，请在 API 路由中自行处理 `OPTIONS` 请求。
 
-The following headers will be sent by default:
+默认会发送以下头部：
 
 ```sh
 Access-Control-Allow-Origin: <origin || '*'>
@@ -30,60 +30,60 @@ Access-Control-Max-Age: 3600
 Vary: Origin, Access-Control-Request-Headers
 ```
 
-These headers will allow any client to make a request from any origin, with any headers, with credentials, and cache the `OPTIONS` response for 3600 seconds.
+这些头部将允许任何客户端从任何来源发起请求，携带任意头部和凭据，并将 `OPTIONS` 响应缓存 3600 秒。
 
-More information on [preflight `OPTIONS` requests can be found in the MDN documentation](https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request).
+关于预检 `OPTIONS` 请求的更多信息，可参阅 [MDN 文档](https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request)。
 
-## Strict-Transport-Security header
+## Strict-Transport-Security 头部
 
-This header tells browsers to only access a URL with the HTTPS protocol in the future. EAS Hosting automatically adds this header if it's missing.
+此头部告诉浏览器未来只能使用 HTTPS 协议访问某个 URL。如果缺失，EAS Hosting 会自动添加该头部。
 
-Its default value is set to `max-age=31536000; includeSubDomains; preload`.
+其默认值设置为 `max-age=31536000; includeSubDomains; preload`。
 
-For more information on why this header is a good default, improves security, and performance, [read this article on `web.dev`](https://web.dev/blog/bbc-hsts) and read more about [Strict-Transport-Security](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security) header in the MDN documentation.
+关于为什么这是一个良好的默认设置、以及如何提升安全性和性能的更多信息，请[阅读这篇 web.dev 文章](https://web.dev/blog/bbc-hsts)，并在 MDN 文档中进一步了解 [Strict-Transport-Security](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security) 头部。
 
-## Common headers
+## 常见头部
 
-By default, EAS Hosting will remove and not forward any `X-Powered-By` and `X-Aspnet-Version` headers. With API routes, this header does not serve much of a purpose and we don't recommend you add alternative headers like `X-Powered-By` to your API routes as it unnecessarily exposes internal information on the code you're running.
+默认情况下，EAS Hosting 会移除并且不会转发任何 `X-Powered-By` 和 `X-Aspnet-Version` 头部。对于 API 路由来说，这类头部并没有太大作用，我们也不建议你在 API 路由中添加替代性的头部，比如 `X-Powered-By`，因为这会不必要地暴露你所运行代码的内部信息。
 
-If your API routes respond with custom `X-Frame-Options` headers, these headers will automatically be converted to `Content-Security-Policy` directives in your response.
+如果你的 API 路由响应中包含自定义的 `X-Frame-Options` 头部，这些头部会自动转换为响应中的 `Content-Security-Policy` 指令。
 
-## Crash pages
+## 崩溃页面
 
-If your API route throws an unhandled JavaScript error, this is treated as a "crash" since your API route was unable to deliver an error.
+如果你的 API 路由抛出了未处理的 JavaScript 错误，则会被视为“崩溃”，因为你的 API 路由无法返回错误响应。
 
-EAS Hosting will respond with an error page in these cases. The error page will be rendered as an HTML response, if the `Accept: text/html` request header was sent. Otherwise, it will only respond with a plaintext response.
+在这些情况下，EAS Hosting 会返回一个错误页面。如果发送了 `Accept: text/html` 请求头，则该错误页面会以 HTML 响应形式渲染。否则，它只会返回纯文本响应。
 
-## Request headers
+## 请求头
 
-**EAS Hosting** will add the following headers to every request, before they're forwarded to your API routes. These headers generally add more information about who made the request.
+**EAS Hosting** 会在转发到你的 API 路由之前，为每个请求添加以下头部。这些头部通常会提供更多关于请求发起者的信息。
 
-| Request header      | Description                                                                                                                                                                                                                                |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Forwarded`         | Comma-separated list of semicolon-separated `for`, `host`, and `proto` parameters.<br /> See MDN documentation on [the HTTP `Forwarded` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Forwarded) for more information. |
-| `X-Forwarded-For`   | Comma-separated list of forwarder IPs for a given request                                                                                                                                                                                  |
-| `X-Forwarded-Proto` | Protocol used to make the request. Typically, `https`                                                                                                                                                                                      |
-| `X-Forwarded-Host`  | Hostname from the incoming request                                                                                                                                                                                                         |
-| `X-Real-IP`         | IP address from the incoming request                                                                                                                                                                                                       |
-| `Origin`            | URL Origin from the incoming request                                                                                                                                                                                                       |
-| `Host`              | Hostname of the forwarded request (matching `request.url`'s hostname)                                                                                                                                                                      |
-| `eas-colo`          | Code of the Cloudflare data center that handled the request. For example, `lhr`                                                                                                                                                            |
-| `eas-ip-continent`  | Two letter continent code of the client.<br /> One of: `AF`, `AN`, `AS`, `EU`, `NA`, `OC`, or `SA`                                                                                                                                         |
-| `eas-ip-country`    | Three letter country code of the client in ISO-3166 Alpha 2 format.<br />For example, `US` or `JP`                                                                                                                                         |
-| `eas-ip-region`     | Region code of the client in ISO-3166-2 format, which has a maximum length of three characters                                                                                                                                             |
-| `eas-ip-city`       | Human-readable city name of the client (optional). For example, `London` or `Chicago`                                                                                                                                                      |
-| `eas-ip-latitude`   | Best guess of the client's latitude (optional)                                                                                                                                                                                             |
-| `eas-ip-longitude`  | Best guess of the client's longitude (optional)                                                                                                                                                                                            |
-| `eas-ip-timezone`   | Timezone of the client. For example, `Europe/London`                                                                                                                                                                                       |
-| `eas-ip-eu`         | Set to `1` when the request likely originated in the jurisdictional area of the European Union                                                                                                                                             |
+| 请求头              | 描述                                                                                                                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Forwarded`         | 由分号分隔的 `for`、`host` 和 `proto` 参数组成的逗号分隔列表。<br /> 更多信息请参阅 MDN 文档中关于 [HTTP `Forwarded` 头部](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Forwarded) 的说明。 |
+| `X-Forwarded-For`   | 某次请求的转发者 IP 地址逗号分隔列表                                                                                                                                                                                                 |
+| `X-Forwarded-Proto` | 用于发起请求的协议。通常为 `https`                                                                                                                                                                                                   |
+| `X-Forwarded-Host`  | 来自传入请求的主机名                                                                                                                                                                                                                |
+| `X-Real-IP`         | 来自传入请求的 IP 地址                                                                                                                                                                                                               |
+| `Origin`            | 来自传入请求的 URL Origin                                                                                                                                                                                                            |
+| `Host`              | 转发请求的主机名（与 `request.url` 的 hostname 匹配）                                                                                                                                                                               |
+| `eas-colo`          | 处理该请求的 Cloudflare 数据中心代码。例如，`lhr`                                                                                                                                                                                   |
+| `eas-ip-continent`  | 客户端所在大洲的两字母代码。<br /> 其中之一：`AF`、`AN`、`AS`、`EU`、`NA`、`OC` 或 `SA`                                                                                                                                          |
+| `eas-ip-country`    | 客户端的三字母国家代码，采用 ISO-3166 Alpha 2 格式。<br />例如，`US` 或 `JP`                                                                                                                                                       |
+| `eas-ip-region`     | 客户端的地区代码，采用 ISO-3166-2 格式，最大长度为三个字符                                                                                                                                                                         |
+| `eas-ip-city`       | 客户端的可读城市名称（可选）。例如，`London` 或 `Chicago`                                                                                                                                                                           |
+| `eas-ip-latitude`   | 对客户端纬度的最佳估计（可选）                                                                                                                                                                                                       |
+| `eas-ip-longitude`  | 对客户端经度的最佳估计（可选）                                                                                                                                                                                                       |
+| `eas-ip-timezone`   | 客户端的时区。例如，`Europe/London`                                                                                                                                                                                                 |
+| `eas-ip-eu`         | 当请求很可能源自欧盟司法辖区时，设为 `1`                                                                                                                                                                                             |
 
-### Request URL and origin
+### 请求 URL 和来源
 
-EAS Hosting routes requests from several hostnames to your deployments. [Aliases](/eas/hosting/deployments-and-aliases) and [Custom domains](/eas/hosting/custom-domain) mean that there may be a difference between the **incoming** URL that clients have used to make a request, and the **target** URL that your API routes receive.
+EAS Hosting 会将来自多个主机名的请求路由到你的部署。[别名](/eas/hosting/deployments-and-aliases) 和 [自定义域名](/eas/hosting/custom-domain) 意味着，客户端用于发起请求的 **传入** URL 与你的 API 路由接收到的 **目标** URL 之间可能存在差异。
 
-For example, while a client may make a request to an alias URL such as `https://my-app--staging.expo.app/`, the worker deployment that will receive the request will have a URL containing its deployment ID, such as `https://my-app--or1170q9ix.expo.app/`.
+例如，客户端可能会请求像 `https://my-app--staging.expo.app/` 这样的别名 URL，而接收该请求的 worker 部署将拥有一个包含其部署 ID 的 URL，例如 `https://my-app--or1170q9ix.expo.app/`。
 
-This difference is also present in the `Request`'s URL and headers that you receive in your API routes. While the `request.url` will be your worker deployment's URL, the `Origin` and `X-Forwarded-Host` header will be set to the incoming URL that the client used to make the request.
+这种差异同样体现在你在 API 路由中收到的 `Request` 的 URL 和头部中。虽然 `request.url` 会是你的 worker 部署 URL，但 `Origin` 和 `X-Forwarded-Host` 头部将被设置为客户端用于发起请求的传入 URL。
 
 ```js
 export async function GET(request) {
@@ -94,15 +94,15 @@ export async function GET(request) {
 }
 ```
 
-### IP headers
+### IP 头部
 
-The request contains several headers to identify the IP address of the user's device that made the request:
+请求包含多个用于识别发起请求的用户设备 IP 地址的头部：
 
-- `Forwarded` contains a comma-separated list of semicolon-separated parameters. Each entry in the list represents a proxy that forwarded the request. Therefore, the first entry's `for` parameter is likely the original client's IP address.
-- `X-Forwarded-For` only contains a comma-separated list of IP addresses. Each entry in the list represents a proxy that forwarded the request as well.
-- `X-Real-IP` contains only the original request's IP address
+- `Forwarded` 包含一个由逗号分隔、且各项内部由分号分隔的参数列表。列表中的每一项都代表一个转发该请求的代理。因此，第一项中的 `for` 参数很可能是原始客户端的 IP 地址。
+- `X-Forwarded-For` 只包含一个 IP 地址的逗号分隔列表。列表中的每一项同样代表一个转发该请求的代理。
+- `X-Real-IP` 只包含原始请求的 IP 地址
 
-For example, to retrieve the IP address of the user's browser that is calling your API route, read the `X-Real-IP` header from the request:
+例如，要获取调用你的 API 路由的用户浏览器的 IP 地址，请从请求中读取 `X-Real-IP` 头部：
 
 ```js
 export async function GET(request) {
@@ -110,22 +110,22 @@ export async function GET(request) {
 }
 ```
 
-### Geo headers
+### 地理位置头部
 
-The request also contains several headers containing geographical information about where the request came from:
+请求还包含多个带有请求来源地理信息的头部：
 
-- `eas-colo` contains the Cloudflare code for the data center that handled your request. For example, `lhr`.
-- `eas-ip-continent` contains the continent code of the current request:
-  - `AF` for Africa
-  - `AN` for Antarctica
-  - `AS` for Asia
-  - `EU` for Europe
-  - `NA` for North America
-  - `OC` for Oceania
-  - `SA` for South America.
-- `eas-ip-country` contains the ISO-3166 Alpha 2 country code. This is at most two letters long. For example, `US` or `JP`.
-- `eas-ip-region` contains the ISO-3166-2 region code for the request. This value is a maximum of three characters long. However, it can vary based on how region codes in a specific country work for the requested origin.. It could comprise one to three digits, one to three letters, or any other combination.
-- `eas-ip-city` may contain a human-readable name of a city. For example `London` or `Chicago`.
-- `eas-ip-latitude` and `eas-ip-longitude` contain an approximate latitude and longitude for the request.
-- `eas-ip-timezone` contains a best guess of the timezone the request originated in. For example, `Europe/London`
-- `eas-ip-eu` is set to `1` when the request likely originated in the jurisdictional area of the European Union.
+- `eas-colo` 包含处理你请求的数据中心的 Cloudflare 代码。例如，`lhr`。
+- `eas-ip-continent` 包含当前请求所在大洲的代码：
+  - `AF` 代表非洲
+  - `AN` 代表南极洲
+  - `AS` 代表亚洲
+  - `EU` 代表欧洲
+  - `NA` 代表北美洲
+  - `OC` 代表大洋洲
+  - `SA` 代表南美洲。
+- `eas-ip-country` 包含 ISO-3166 Alpha 2 国家代码。该值最多为两个字母。例如，`US` 或 `JP`。
+- `eas-ip-region` 包含该请求的 ISO-3166-2 地区代码。此值最长为三个字符。不过，它会根据特定国家/地区针对所请求来源的地区代码规则而有所不同。它可能由一到三个数字、一到三个字母或其他任意组合构成。
+- `eas-ip-city` 可能包含城市的可读名称。例如 `London` 或 `Chicago`。
+- `eas-ip-latitude` 和 `eas-ip-longitude` 包含该请求的大致纬度和经度。
+- `eas-ip-timezone` 包含该请求来源时区的最佳估计。例如，`Europe/London`
+- `eas-ip-eu` 在请求很可能源自欧盟司法辖区时，设为 `1`。

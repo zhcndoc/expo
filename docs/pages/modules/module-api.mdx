@@ -1,7 +1,7 @@
 ---
-title: Module API Reference
-description: An API reference of Expo modules API.
-sidebar_title: Module API
+title: 模块 API 参考
+description: Expo 模块 API 的 API 参考。
+sidebar_title: 模块 API
 maxHeadingDepth: 2
 ---
 
@@ -13,25 +13,25 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 import { StatusTag } from '~/ui/components/Tag/StatusTag';
 import { A, CALLOUT } from '~/ui/components/Text';
 
-The native modules API is an abstraction layer on top of [JSI](https://reactnative.dev/architecture/glossary#javascript-interfaces-jsi) and other low-level primitives that React Native is built upon. It is built with modern languages (Swift and Kotlin) and provides an easy-to-use and convenient API that is consistent across platforms where possible.
+本机模块 API 是建立在 [JSI](https://reactnative.dev/architecture/glossary#javascript-interfaces-jsi) 和 React Native 所依赖的其他底层原语之上的抽象层。它采用现代语言（Swift 和 Kotlin）构建，并提供易于使用且便捷的 API，在可能的情况下在各个平台上保持一致。
 
-## Definition components
+## 定义组件
 
-As you might have noticed in the snippets on the [Get Started](/modules/get-started) page, each module class must implement the `definition` function.
-The module definition consists of the DSL components that describe the module's functionality and behavior.
+正如你可能在 [Get Started](/modules/get-started) 页面上的代码片段中注意到的，每个模块类都必须实现 `definition` 函数。
+模块定义由描述模块功能和行为的 DSL 组件组成。
 
-<PaddedAPIBox header="Name">
+<PaddedAPIBox header="名称">
 
-Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument. This can be inferred from the module's class name, but it's recommended to set it explicitly for clarity.
+设置 JavaScript 代码将用于引用该模块的模块名称。接受一个字符串作为参数。该名称可以从模块的类名推断出来，但为清晰起见，建议显式设置。
 
 ```swift Swift / Kotlin
 Name("MyModuleName")
 ```
 
 </PaddedAPIBox>
-<PaddedAPIBox header="Constant">
+<PaddedAPIBox header="常量">
 
-Defines a constant property on the JavaScript object. The property is computed only once when it's first accessed, and subsequent accesses return the cached value.
+定义 JavaScript 对象上的一个常量属性。该属性仅在首次访问时计算一次，之后的访问会返回缓存值。
 
 <CodeBlocksTable>
 
@@ -49,21 +49,21 @@ Constant("PI") {
 
 </CodeBlocksTable>
 </PaddedAPIBox>
-<PaddedAPIBox header="Constants">
+<PaddedAPIBox header="常量集合">
 
-> **warning** **[Deprecated](/more/release-statuses/#deprecated):** Use [`Constant`](#constant) instead.
+> **warning** **[已弃用](/more/release-statuses/#deprecated):** 请改用 [`Constant`](#constant)。
 
-Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
+为模块设置常量属性。可以接受一个字典或一个返回字典的闭包。
 
 <CodeBlocksTable>
 
 ```swift
-// Created from the dictionary
+// 从字典创建
 Constants([
   "PI": Double.pi
 ])
 
-// or returned by the closure
+// 或由闭包返回
 Constants {
   return [
     "PI": Double.pi
@@ -72,12 +72,12 @@ Constants {
 ```
 
 ```kotlin
-// Passed as arguments
+// 作为参数传入
 Constants(
   "PI" to kotlin.math.PI
 )
 
-// or returned by the closure
+// 或由闭包返回
 Constants {
   return@Constants mapOf(
     "PI" to kotlin.math.PI
@@ -87,18 +87,18 @@ Constants {
 
 </CodeBlocksTable>
 </PaddedAPIBox>
-<PaddedAPIBox header="Function">
+<PaddedAPIBox header="函数">
 
-Defines a native synchronous function that will be exported to JavaScript. Synchronous means that when the function is executed in JavaScript, its native code is run on the same thread and blocks further execution of the script until the native function returns.
+定义一个会导出给 JavaScript 的本地同步函数。同步表示当该函数在 JavaScript 中执行时，其本地代码会在同一线程上运行，并阻塞脚本的后续执行，直到本地函数返回。
 
-#### Arguments
+#### 参数
 
-- **name**: `String` — Name of the function that you'll call from JavaScript.
-- **body**: `(args...) -> ReturnType` — The closure to run when the function is called.
+- **name**: `String` — 你将在 JavaScript 中调用的函数名称。
+- **body**: `(args...) -> ReturnType` — 函数被调用时运行的闭包。
 
-The function can receive up to 8 arguments. This is due to the limitations of generics in both Swift and Kotlin because this component must be implemented separately for each arity.
+该函数最多可接收 8 个参数。这是由于 Swift 和 Kotlin 中泛型的限制，因为该组件必须针对每种参数个数分别实现。
 
-See the [Argument types](#argument-types) section for more details on what types can be used in the function body.
+有关函数体中可使用哪些类型的更多详情，请参阅 [参数类型](#argument-types) 部分。
 
 <CodeBlocksTable>
 
@@ -119,7 +119,7 @@ Function("mySyncFunction") { message: String ->
 ```js JavaScript
 import { requireNativeModule } from 'expo-modules-core';
 
-// Assume that we have named the module "MyModule"
+// 假设我们将模块命名为 "MyModule"
 const MyModule = requireNativeModule('MyModule');
 
 function getMessage() {
@@ -128,25 +128,25 @@ function getMessage() {
 ```
 
 </PaddedAPIBox>
-<PaddedAPIBox header="AsyncFunction">
+<PaddedAPIBox header="异步函数">
 
-Defines a JavaScript function that always returns a `Promise` and whose native code is by default dispatched on a different thread than the JavaScript runtime runs on.
+定义一个始终返回 `Promise` 的 JavaScript 函数，其本地代码默认会在与 JavaScript 运行时不同的线程上派发执行。
 
-#### Arguments
+#### 参数
 
-- **name**: `String` — Name of the function that you'll call from JavaScript.
-- **body**: `(args...) -> ReturnType` — The closure to run when the function is called.
+- **name**: `String` — 你将在 JavaScript 中调用的函数名称。
+- **body**: `(args...) -> ReturnType` — 函数被调用时运行的闭包。
 
-If the type of the last argument is `Promise`, the function will wait for the promise to be resolved or rejected before the response is passed back to JavaScript. Otherwise, the function is immediately resolved with the returned value or rejected if it throws an exception.
-The function can receive up to 8 arguments (including the promise).
+如果最后一个参数的类型是 `Promise`，则函数会等待该 promise 被 resolve 或 reject 后再将响应传回 JavaScript。否则，该函数会立即以返回值 resolve，或者在抛出异常时 reject。
+该函数最多可接收 8 个参数（包括 promise）。
 
-See the [Argument types](#argument-types) section for more details on what types can be used in the function body.
+有关函数体中可使用哪些类型的更多详情，请参阅 [参数类型](#argument-types) 部分。
 
-It is recommended to use `AsyncFunction` over `Function` when it:
+建议在以下场景中使用 `AsyncFunction` 而不是 `Function`：
 
-- does I/O bound tasks such as sending network requests or interacting with the file system
-- needs to be run on a different thread, for example, the main UI thread for UI-related tasks
-- is an extensive or long-lasting operation that would block the JavaScript thread which in turn would reduce the responsiveness of the application
+- 执行 I/O 密集型任务，例如发送网络请求或与文件系统交互
+- 需要在不同线程上运行，例如用于 UI 相关任务的主 UI 线程
+- 属于较大或耗时较长的操作，否则会阻塞 JavaScript 线程，从而降低应用响应速度
 
 <CodeBlocksTable>
 
@@ -170,7 +170,7 @@ AsyncFunction("myAsyncFunction") { message: String ->
 
 // or
 
-// Make sure to import `Promise` class from `expo.modules.kotlin` instead of `expo.modules.core`.
+// 确保从 `expo.modules.kotlin` 导入 `Promise` 类，而不是 `expo.modules.core`。
 AsyncFunction("myAsyncFunction") { message: String, promise: Promise ->
   promise.resolve(message)
 }
@@ -182,7 +182,7 @@ AsyncFunction("myAsyncFunction") { message: String, promise: Promise ->
 ```js JavaScript
 import { requireNativeModule } from 'expo-modules-core';
 
-// Assume that we have named the module "MyModule"
+// 假设我们将模块命名为 "MyModule"
 const MyModule = requireNativeModule('MyModule');
 
 async function getMessageAsync() {
@@ -190,7 +190,7 @@ async function getMessageAsync() {
 }
 ```
 
-It is possible to change the native queue of `AsyncFunction` by calling the `.runOnQueue` function on the result of that component.
+可以通过在该组件的返回结果上调用 `.runOnQueue` 函数来更改 `AsyncFunction` 的本地队列。
 
 <CodeBlocksTable>
 
@@ -210,34 +210,34 @@ AsyncFunction("myAsyncFunction") { message: String ->
 
 ---
 
-#### Kotlin coroutines <PlatformTags prefix="" platforms={['android']} />
+#### Kotlin 协程 <PlatformTags prefix="" platforms={['android']} />
 
-`AsyncFunction` can receive a suspendable body on Android. However, it has to be passed in the infix notation after the `Coroutine` block. You can read more about suspendable functions and coroutines on [coroutine overview](https://kotlinlang.org/docs/coroutines-overview.html).
+`AsyncFunction` 在 Android 上可以接收可挂起的主体。不过，它必须在 `Coroutine` 块之后以中缀表示法传入。你可以在 [协程概览](https://kotlinlang.org/docs/coroutines-overview.html) 中了解更多关于可挂起函数和协程的信息。
 
-`AsyncFunction` with a suspendable body can't receive `Promise` as an argument. It uses a suspension mechanism to execute asynchronous calls.
-The function is immediately resolved with the returned value of the provided suspendable block or rejected if it throws an exception. The function can receive up to 8 arguments.
+带有可挂起主体的 `AsyncFunction` 不能将 `Promise` 作为参数接收。它使用挂起机制来执行异步调用。
+该函数会立即以所提供的可挂起块的返回值 resolve，或者在抛出异常时 reject。该函数最多可接收 8 个参数。
 
-By default, suspend functions are dispatched on the module's coroutine scope. Moreover, every other suspendable function called from the body block is run within the same scope.
-This scope's lifecycle is bound to the module's lifecycle - all unfinished suspend functions will be canceled when the module is deallocated.
+默认情况下，挂起函数会在模块的协程作用域中派发。此外，从主体块中调用的其他任何可挂起函数也会在同一作用域内运行。
+该作用域的生命周期绑定到模块的生命周期——所有未完成的挂起函数都会在模块被释放时被取消。
 
 ```kotlin Kotlin
 AsyncFunction("suspendFunction") Coroutine { message: String ->
-  // You can execute other suspendable functions here.
-  // For example, you can use `kotlinx.coroutines.delay` to delay resolving the underlying promise.
+  // 你可以在这里执行其他可挂起函数。
+  // 例如，你可以使用 `kotlinx.coroutines.delay` 来延迟底层 promise 的解析。
   delay(5000)
   return@Coroutine message
 }
 ```
 
 </PaddedAPIBox>
-<PaddedAPIBox header="Property">
+<PaddedAPIBox header="属性">
 
-Defines a new property directly on the JavaScript object that represents a native module. It is the same as calling [`Object.defineProperty`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty) on the module object.
+直接在表示本机模块的 JavaScript 对象上定义一个新属性。它与在模块对象上调用 [`Object.defineProperty`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty) 相同。
 
-To declare a read-only property, you can use a shorthanded syntax that requires two arguments:
+要声明一个只读属性，你可以使用一种简写语法，需要两个参数：
 
-- **name**: `String` — Name of the property that you'll use from JavaScript.
-- **getter**: `() -> PropertyType` — The closure to run when the getter for a property was called.
+- **name**: `String` — 你将在 JavaScript 中使用的属性名称。
+- **getter**: `() -> PropertyType` — 属性 getter 被调用时运行的闭包。
 
 <CodeBlocksTable>
 
@@ -255,11 +255,11 @@ Property("foo") {
 
 </CodeBlocksTable>
 
-In the case of the mutable property, both the getter and the setter closure are needed (using the syntax below is also possible to declare a property with only a setter):
+对于可变属性，需要同时提供 getter 和 setter 闭包（使用下面的语法也可以声明只有 setter 的属性）：
 
-- **name**: `String` — Name of the property that you'll use from JavaScript.
-- **getter**: `() -> PropertyType` — The closure to run when the getter for a property was called.
-- **setter**: `(newValue: PropertyType) -> void` — The closure to run when the setter for a property was called.
+- **name**: `String` — 你将在 JavaScript 中使用的属性名称。
+- **getter**: `() -> PropertyType` — 属性 getter 被调用时运行的闭包。
+- **setter**: `(newValue: PropertyType) -> void` — 属性 setter 被调用时运行的闭包。
 
 <CodeBlocksTable>
 
@@ -267,7 +267,7 @@ In the case of the mutable property, both the getter and the setter closure are 
 Property("foo")
   .get { return "bar" }
   .set { (newValue: String) in
-    // do something with new value
+    // 使用新值做一些事情
   }
 ```
 
@@ -275,7 +275,7 @@ Property("foo")
 Property("foo")
   .get { return@get "bar" }
   .set { newValue: String ->
-    // do something with new value
+    // 使用新值做一些事情
   }
 ```
 
@@ -284,28 +284,28 @@ Property("foo")
 ```js JavaScript
 import { requireNativeModule } from 'expo-modules-core';
 
-// Assume that we have named the module "MyModule"
+// 假设我们将模块命名为 "MyModule"
 const MyModule = requireNativeModule('MyModule');
 
-// Obtain the property value
+// 获取属性值
 MyModule.foo;
 
-// Set a new value
+// 设置新值
 MyModule.foo = 'foobar';
 ```
 
 </PaddedAPIBox>
-<PaddedAPIBox header="View">
+<PaddedAPIBox header="视图">
 
-Enables the module to be used as a native view. Definition components that are accepted as part of the view definition: [`Prop`](#prop), [`Events`](#events), [`GroupView`](#groupview) and [`AsyncFunction`](#asyncfunction).
+允许将模块用作本机视图。作为视图定义一部分接受的定义组件有：[`Prop`](#prop)、[`Events`](#events)、[`GroupView`](#groupview) 和 [`AsyncFunction`](#asyncfunction)。
 
-[`AsyncFunction`](#asyncfunction) in the view definition is added to the React ref of the React component representing the native view.
-Such async functions automatically receive an instance of the native view as the first argument and run on the UI thread by default.
+视图定义中的 [`AsyncFunction`](#asyncfunction) 会添加到表示本机视图的 React 组件的 React ref 上。
+这样的异步函数会自动将本机视图的实例作为第一个参数接收，并默认在 UI 线程上运行。
 
-#### Arguments
+#### 参数
 
-- **viewType** — The class of the native view that will be rendered. Note: On Android, the provided class must inherit from the [`ExpoView`](#expoview), on iOS it's optional. See [`Extending ExpoView`](#extending--expoview).
-- **definition**: `() -> ViewDefinition` — A builder of the view definition.
+- **viewType** — 将被渲染的本机视图类。注意：在 Android 上，提供的类必须继承自 [`ExpoView`](#expoview)；在 iOS 上则是可选的。参见 [`Extending ExpoView`](#extending--expoview)。
+- **definition**: `() -> ViewDefinition` — 视图定义的构建器。
 
 <CodeBlocksTable>
 
@@ -331,17 +331,17 @@ View(TextView::class) {
 
 </CodeBlocksTable>
 
-> **Info** Support for rendering SwiftUI views is planned. For now, you can use [`UIHostingController`](https://developer.apple.com/documentation/swiftui/uihostingcontroller) and add its content view to your UIKit view.
+> **Info** 支持渲染 SwiftUI 视图的功能正在计划中。现在，你可以使用 [`UIHostingController`](https://developer.apple.com/documentation/swiftui/uihostingcontroller) 并将其内容视图添加到你的 UIKit 视图中。
 
 </PaddedAPIBox>
 
-### Event observing
+### 事件监听
 
-<PaddedAPIBox header="Events" headerNestingLevel={4}>
+<PaddedAPIBox header="事件" headerNestingLevel={4}>
 
-Defines event names that the module can send to JavaScript.
+定义模块可以发送给 JavaScript 的事件名称。
 
-> **Note:** This component can be used inside of the [`View`](#view) block to define callback names. See [`View callbacks`](#view-callbacks)
+> **Note:** 该组件可在 [`View`](#view) 块内使用，以定义回调名称。参见 [`View callbacks`](#view-callbacks)
 
 <CodeBlocksTable>
 
@@ -355,26 +355,26 @@ Events("onCameraReady", "onPictureSaved", "onBarCodeScanned")
 
 </CodeBlocksTable>
 
-See [Sending events](#sending-events) to learn how to send events from the native code to JavaScript/TypeScript.
+请参阅 [发送事件](#sending-events) 了解如何从本地代码向 JavaScript/TypeScript 发送事件。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnStartObserving" headerNestingLevel={4}>
 
-Defines the function that is invoked when the first event listener is added.
+定义在添加第一个事件监听器时调用的函数。
 
-You need to pass an event name to scope the listener to a specific event. This is useful when you need to set up or tear down resources per-event rather than globally.
+你需要传入一个事件名称，以将监听器限定到特定事件。这在你需要按事件而不是全局地设置或清理资源时很有用。
 
 <CodeBlocksTable>
 
 ```swift
-// Called when a listener for "onURLReceived" is added
+// 在添加 "onURLReceived" 的监听器时调用
 OnStartObserving("onURLReceived") {
   /* @hide ... */ /* @end */
 }
 ```
 
 ```kotlin
-// Called when a listener for "onURLReceived" is added
+// 在添加 "onURLReceived" 的监听器时调用
 OnStartObserving("onURLReceived") {
   /* @hide ... */ /* @end */
 }
@@ -384,21 +384,21 @@ OnStartObserving("onURLReceived") {
 </PaddedAPIBox>
 <PaddedAPIBox header="OnStopObserving" headerNestingLevel={4}>
 
-Defines the function that is invoked when all event listeners for a given event are removed.
+定义在移除某个给定事件的所有事件监听器时调用的函数。
 
-Like `OnStartObserving`, you need to pass an event name to scope the listener to a specific event.
+与 `OnStartObserving` 类似，你需要传入一个事件名称，以将监听器限定到特定事件。
 
 <CodeBlocksTable>
 
 ```swift
-// Called when listeners for "onURLReceived" are removed
+// 在移除 "onURLReceived" 的监听器时调用
 OnStopObserving("onURLReceived") {
   /* @hide ... */ /* @end */
 }
 ```
 
 ```kotlin
-// Called when listeners for "onURLReceived" are removed
+// 在移除 "onURLReceived" 的监听器时调用
 OnStopObserving("onURLReceived") {
   /* @hide ... */ /* @end */
 }
@@ -408,77 +408,77 @@ OnStopObserving("onURLReceived") {
 
 </PaddedAPIBox>
 
-### Lifecycle listeners
+### 生命周期监听器
 
 <PaddedAPIBox header="OnCreate" headerNestingLevel={4}>
 
-Defines module's lifecycle listener that is called right after module initialization. If you need to set up something when the module gets initialized, use this instead of module's class initializer.
+定义在模块初始化后立即调用的模块生命周期监听器。如果你需要在模块初始化时设置某些内容，请使用它，而不是模块的类初始化器。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnDestroy" headerNestingLevel={4}>
 
-Defines module's lifecycle listener that is called when the module is about to be deallocated. Use it instead of module's class destructor.
+定义在模块即将被释放时调用的模块生命周期监听器。请使用它，而不是模块的类析构函数。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnAppContextDestroys" headerNestingLevel={4}>
 
-Defines module's lifecycle listener that is called when the app context owning the module is about to be deallocated.
+定义在拥有该模块的应用上下文即将被释放时调用的模块生命周期监听器。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnAppEntersForeground" platforms={["ios"]} headerNestingLevel={4}>
 
-Defines the listener that is called when the app is about to enter the foreground mode.
+定义在应用即将进入前台模式时调用的监听器。
 
-> **Note:** This function is not available on Android — you may want to use [`OnActivityEntersForeground`](#onactivityentersforeground) instead.
+> **Note:** 该函数在 Android 上不可用——你可能需要改用 [`OnActivityEntersForeground`](#onactivityentersforeground)。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnAppEntersBackground" platforms={["ios"]} headerNestingLevel={4}>
 
-Defines the listener that is called when the app enters the background mode.
+定义在应用进入后台模式时调用的监听器。
 
-> **Note:** This function is not available on Android — you may want to use [`OnActivityEntersBackground`](#onactivityentersbackground) instead.
+> **Note:** 该函数在 Android 上不可用——你可能需要改用 [`OnActivityEntersBackground`](#onactivityentersbackground)。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnAppBecomesActive" platforms={["ios"]} headerNestingLevel={4}>
 
-Defines the listener that is called when the app becomes active again (after `OnAppEntersForeground`).
+定义在应用再次变为活动状态时调用的监听器（在 `OnAppEntersForeground` 之后）。
 
-> **Note:** This function is not available on Android — you may want to use [`OnActivityEntersForeground`](#onactivityentersforeground) instead.
+> **Note:** 该函数在 Android 上不可用——你可能需要改用 [`OnActivityEntersForeground`](#onactivityentersforeground)。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnActivityEntersForeground" platforms={["android"]} headerNestingLevel={4}>
 
-Defines the activity lifecycle listener that is called right after the activity is resumed.
+定义在 activity 恢复后立即调用的 activity 生命周期监听器。
 
-> **Note:** This function is not available on iOS — you may want to use [`OnAppEntersForeground`](#onappentersforeground) instead.
+> **Note:** 该函数在 iOS 上不可用——你可能需要改用 [`OnAppEntersForeground`](#onappentersforeground)。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnActivityEntersBackground" platforms={["android"]} headerNestingLevel={4}>
 
-Defines the activity lifecycle listener that is called right after the activity is paused.
+定义在 activity 暂停后立即调用的 activity 生命周期监听器。
 
-> **Note:** This function is not available on iOS — you may want to use [`OnAppEntersBackground`](#onappentersbackground) instead.
+> **Note:** 该函数在 iOS 上不可用——你可能需要改用 [`OnAppEntersBackground`](#onappentersbackground)。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnActivityDestroys" platforms={["android"]} headerNestingLevel={4}>
 
-Defines the activity lifecycle listener that is called when the activity owning the JavaScript context is about to be destroyed.
+定义在拥有 JavaScript 上下文的 activity 即将被销毁时调用的 activity 生命周期监听器。
 
-> **Note:** This function is not available on iOS — you may want to use [`OnAppEntersBackground`](#onappentersbackground) instead.
+> **Note:** 该函数在 iOS 上不可用——你可能需要改用 [`OnAppEntersBackground`](#onappentersbackground)。
 
 </PaddedAPIBox>
 
 <PaddedAPIBox header="OnActivityResult" platforms={["android"]} headerNestingLevel={4}>
 
-Defines the activity lifecycle listener that is called when the activity launched with `startActivityForResult` returns a result.
+定义在使用 `startActivityForResult` 启动的 activity 返回结果时调用的 activity 生命周期监听器。
 
-#### Arguments
+#### 参数
 
-- **activity** — The Android activity that received the result.
-- **payload** — An object containing data about the activity result.
-  - **requestCode**: `Int` — The request code originally supplied to `startActivityForResult`, used to identify the source of the result.
-  - **resultCode**: `Int` — The result code returned by the child activity (for example, `Activity.RESULT_OK` or `Activity.RESULT_CANCELED`).
-  - **data** — An optional intent that carries the result data returned from the launched activity. Can be `null`.
+- **activity** — 接收到结果的 Android activity。
+- **payload** — 包含 activity 结果数据的对象。
+  - **requestCode**: `Int` — 最初传递给 `startActivityForResult` 的请求代码，用于标识结果来源。
+  - **resultCode**: `Int` — 子 activity 返回的结果代码（例如 `Activity.RESULT_OK` 或 `Activity.RESULT_CANCELED`）。
+  - **data** — 一个可选的 intent，携带从所启动 activity 返回的结果数据。可以为 `null`。
 
 ```kotlin Kotlin
 AsyncFunction('someFunc') {
@@ -494,36 +494,36 @@ OnActivityResult { activity, payload ->
 </PaddedAPIBox>
 <PaddedAPIBox header="OnNewIntent" platforms={["android"]} headerNestingLevel={4}>
 
-Defines the activity lifecycle listener that is called when the activity receives a new intent (for example, from a deep link).
+定义在 activity 收到新 intent 时调用的 activity 生命周期监听器（例如来自深度链接）。
 
-#### Arguments
+#### 参数
 
-- **intent**: `Intent` — The new intent was delivered to the activity. For more information about the `Intent` type, visit: [https://developer.android.com/reference/android/content/Intent](https://developer.android.com/reference/android/content/Intent).
+- **intent**: `Intent` — 新 intent 已交付给该 activity。有关 `Intent` 类型的更多信息，请访问：[https://developer.android.com/reference/android/content/Intent](https://developer.android.com/reference/android/content/Intent)。
 
 ```kotlin Kotlin
 OnNewIntent { intent ->
   val data = intent.data
-  // Handle the incoming intent
+  // 处理传入的 intent
 }
 ```
 
 </PaddedAPIBox>
 <PaddedAPIBox header="OnUserLeavesActivity" platforms={["android"]} headerNestingLevel={4}>
 
-Defines the activity lifecycle listener called during the activity lifecycle when an activity is about to go into the background because of user choice. For example, when the user presses the Home key, `OnUserLeavesActivity` will be called, but when an incoming phone call causes the in-call Activity to be automatically brought to the foreground, `OnUserLeavesActivity` will not be called on the activity being interrupted.
+定义在 activity 生命周期中，当 activity 因用户选择而即将进入后台时调用的 activity 生命周期监听器。例如，当用户按下 Home 键时，会调用 `OnUserLeavesActivity`；但当来电导致通话中的 Activity 自动进入前台时，不会在被中断的 activity 上调用 `OnUserLeavesActivity`。
 
 ```kotlin Kotlin
 OnUserLeavesActivity {
-  // Your implementation
+  // 你的实现
 }
 ```
 
 </PaddedAPIBox>
 <PaddedAPIBox header="RegisterActivityContracts" platforms={["android"]} headerNestingLevel={4}>
 
-Registers Android [activity result contracts](https://developer.android.com/training/basics/intents/result) that let you launch activities and handle their results in a type-safe way. This is the modern replacement for `startActivityForResult`.
+注册 Android [activity result contracts](https://developer.android.com/training/basics/intents/result)，使你能够启动 activity 并以类型安全的方式处理其结果。这是 `startActivityForResult` 的现代替代方案。
 
-Inside the `RegisterActivityContracts` block, use `registerForActivityResult` to register each contract. The registered launchers can then be used in async functions to launch activities.
+在 `RegisterActivityContracts` 块中，使用 `registerForActivityResult` 注册每个 contract。注册后的 launcher 可以在异步函数中用于启动 activity。
 
 ```kotlin Kotlin
 class ImagePickerModule : Module() {
@@ -556,13 +556,13 @@ class ImagePickerModule : Module() {
 
 </PaddedAPIBox>
 
-## View definition components
+## View 定义组件
 
-The view definition consists of the DSL components that describe the view's functionality and behavior. Those components can only be used within a [`View`](#view) closure.
+视图定义由描述视图功能和行为的 DSL 组件组成。这些组件只能在 [`View`](#view) 闭包中使用。
 
-<PaddedAPIBox header="Name">
+<PaddedAPIBox header="名称">
 
-Sets the name of the view that JavaScript code will use to refer to the view. Takes a string as an argument. This can be inferred from the view's class name, but it's recommended to set it explicitly for clarity.
+设置 JavaScript 代码用于引用该视图的名称。接受一个字符串作为参数。该名称可以从视图的类名推断出来，但建议显式设置以提高清晰度。
 
 ```swift Swift / Kotlin
 Name("MyViewName")
@@ -571,15 +571,15 @@ Name("MyViewName")
 </PaddedAPIBox>
 <PaddedAPIBox header="Prop">
 
-Defines a setter for the view prop of given name.
+定义一个用于指定名称的视图属性的 setter。
 
-#### Arguments
+#### 参数
 
-- **name**: `String` — Name of view prop that you want to define a setter.
-- **defaultValue**: `ValueType` — Optional default value used when the setter is called with `null`.
-- **setter**: `(view: ViewType, value: ValueType) -> ()` — Closure that is invoked when the view rerenders.
+- **name**: `String` — 你想要定义 setter 的视图属性名称。
+- **defaultValue**: `ValueType` — 可选的默认值，当 setter 被 `null` 调用时使用。
+- **setter**: `(view: ViewType, value: ValueType) -> ()` — 当视图重新渲染时调用的闭包。
 
-This property can only be used within a [`View`](#view) closure.
+此属性只能在 [`View`](#view) 闭包中使用。
 
 <CodeBlocksTable>
 
@@ -597,7 +597,7 @@ Prop("background") { view: View, @ColorInt color: Int ->
 
 </CodeBlocksTable>
 
-Prop definition with default value.
+带默认值的 Prop 定义。
 
 <CodeBlocksTable>
 
@@ -615,20 +615,20 @@ Prop("background", Color.BLACK) { view: View, @ColorInt color: Int ->
 
 </CodeBlocksTable>
 
-> **Note:** Props of function type (callbacks) are not supported yet.
+> **注意：** 函数类型的 Props（回调）目前尚不支持。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="PropGroup" platforms={["android"]}>
 
-Batch-registers multiple props that share a common setter pattern. Instead of defining each prop individually, you can register them all at once with a single handler.
+批量注册多个共享相同 setter 模式的 props。你无需逐个定义每个 prop，只需使用一个处理器即可一次性注册它们。
 
-Two overloads are available:
+提供两种重载：
 
-- **Pair-based**: Each prop is a `Pair<String, CustomValueType>`. The handler receives the view, the mapped custom value, and the prop value.
-- **String-based**: Each prop is a name string. The handler receives the view, the positional index, and the prop value.
+- **基于 Pair**：每个 prop 都是一个 `Pair<String, CustomValueType>`。处理器接收视图、映射后的自定义值以及 prop 值。
+- **基于 String**：每个 prop 都是一个名称字符串。处理器接收视图、位置索引以及 prop 值。
 
 ```kotlin Kotlin
-// Pair-based: map each prop name to a custom value
+// 基于 Pair：将每个 prop 名称映射到一个自定义值
 PropGroup(
   "borderTopColor" to LogicalEdge.TOP,
   "borderBottomColor" to LogicalEdge.BOTTOM,
@@ -638,7 +638,7 @@ PropGroup(
   BackgroundStyleApplicator.setBorderColor(view, edge, color)
 }
 
-// String-based: use positional index
+// 基于 String：使用位置索引
 PropGroup(
   "borderWidth", "borderLeftWidth", "borderRightWidth",
   "borderTopWidth", "borderBottomWidth"
@@ -648,15 +648,15 @@ PropGroup(
 }
 ```
 
-> **Note:** `PropGroup` is used internally by the CSS prop decorators. Most modules should use individual `Prop` definitions unless they have many props with a shared setter pattern.
+> **注意：** `PropGroup` 在内部由 CSS prop 装饰器使用。大多数模块应使用单独的 `Prop` 定义，除非它们有许多共享 setter 模式的 props。
 
 </PaddedAPIBox>
 
-### Lifecycle
+### 生命周期
 
 <PaddedAPIBox header="OnViewDidUpdateProps" headerNestingLevel={4}>
 
-Defines the view lifecycle method that is called when the view finished updating all props.
+定义一个视图生命周期方法，当视图完成所有 props 更新后被调用。
 
 ```swift
 OnViewDidUpdateProps { view: MyView in
@@ -674,7 +674,7 @@ OnViewDidUpdateProps { view: MyView ->
 
 <PaddedAPIBox header="OnViewDestroys" platforms={["android"]} headerNestingLevel={4}>
 
-Creates a view's lifecycle listener that is called right after the view is no longer used by React Native.
+创建一个视图生命周期监听器，在该视图不再被 React Native 使用后立即调用。
 
 ```kotlin
 View(MyView::class) {
@@ -684,14 +684,14 @@ View(MyView::class) {
 }
 ```
 
-> **Note:** This function is not available on iOS. You may want to use the destructor of the native view to achieve similar results.
+> **注意：** 此函数在 iOS 上不可用。你可能需要使用原生视图的析构函数来实现类似效果。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="AsyncFunction">
 
-Similarly to the [`AsyncFunction`](#asyncfunction) inside the module definition, you can define functions attached to the view ref to allow direct modification of the native view.
+与模块定义中的 [`AsyncFunction`](#asyncfunction) 类似，你可以定义附加到视图 ref 的函数，以允许直接修改原生视图。
 
-View async functions will always be dispatched on the main queue and can receive the view instance as the first argument.
+视图异步函数始终会在主队列上分发，并且可以将视图实例作为第一个参数接收。
 
 <CodeBlocksTable>
 
@@ -729,18 +729,18 @@ function MyComponent() {
 
 </PaddedAPIBox>
 
-### View groups
+### 视图组
 
 <PaddedAPIBox header="GroupView" platforms={["android"]} headerNestingLevel={4}>
 
-Enables the view to be used as a view group. Definition components that are accepted as part of the group view definition: [`AddChildView`](#addchildview), [`GetChildCount`](#getchildcount), [`GetChildViewAt`](#getchildviewat), [`RemoveChildView`](#removechildview), [`RemoveChildViewAt`](#removechildviewat).
+使视图可作为视图组使用。被视图组定义接受的组件有：[`AddChildView`](#addchildview)、[`GetChildCount`](#getchildcount)、[`GetChildViewAt`](#getchildviewat)、[`RemoveChildView`](#removechildview)、[`RemoveChildViewAt`](#removechildviewat)。
 
-#### Arguments
+#### 参数
 
-- **viewType** — The class of the native view. Note that the provided class must inherit from the Android `ViewGroup`.
-- **definition**: `() -> ViewGroupDefinition` — A builder of the view group definition.
+- **viewType** — 原生视图的类。请注意，提供的类必须继承自 Android 的 `ViewGroup`。
+- **definition**: `() -> ViewGroupDefinition` — 视图组定义的构建器。
 
-This property can only be used within a [`View`](#view) closure.
+此属性只能在 [`View`](#view) 闭包中使用。
 
 ```kotlin Kotlin
 GroupView<ViewGroup> {
@@ -752,13 +752,13 @@ GroupView<ViewGroup> {
 
 <PaddedAPIBox header="AddChildView" platforms={["android"]} headerNestingLevel={4}>
 
-Defines action that adds a child view to the view group.
+定义将子视图添加到视图组的操作。
 
-#### Arguments
+#### 参数
 
-- **action**: `(parent: ParentType, child: ChildType, index: Int) -> ()` — An action that adds a child view to the view group.
+- **action**: `(parent: ParentType, child: ChildType, index: Int) -> ()` — 一个将子视图添加到视图组的操作。
 
-This property can only be used within a [`GroupView`](#groupview) closure.
+此属性只能在 [`GroupView`](#groupview) 闭包中使用。
 
 ```kotlin Kotlin
 AddChildView { parent, child: View, index ->
@@ -770,13 +770,13 @@ AddChildView { parent, child: View, index ->
 
 <PaddedAPIBox header="GetChildCount" platforms={["android"]} headerNestingLevel={4}>
 
-Defines action the retrieves the number of child views in the view group.
+定义获取视图组中子视图数量的操作。
 
-#### Arguments
+#### 参数
 
-- **action**: `(parent: ParentType) -> Int` — A function that returns number of child views.
+- **action**: `(parent: ParentType) -> Int` — 一个返回子视图数量的函数。
 
-This property can only be used within a [`GroupView`](#groupview) closure.
+此属性只能在 [`GroupView`](#groupview) 闭包中使用。
 
 ```kotlin Kotlin
 GetChildCount { parent ->
@@ -788,13 +788,13 @@ GetChildCount { parent ->
 
 <PaddedAPIBox header="GetChildViewAt" platforms={["android"]} headerNestingLevel={4}>
 
-Defines action that retrieves a child view at a specific index from the view group.
+定义从视图组中获取指定索引处子视图的操作。
 
-#### Arguments
+#### 参数
 
-- **action**: `(parent: ParentType, index: Int) -> ChildType` — A function that retrieves a child view at a specific index from the view group.
+- **action**: `(parent: ParentType, index: Int) -> ChildType` — 一个从视图组中获取指定索引处子视图的函数。
 
-This property can only be used within a [`GroupView`](#groupview) closure.
+此属性只能在 [`GroupView`](#groupview) 闭包中使用。
 
 ```kotlin Kotlin
 GetChildViewAt { parent, index ->
@@ -806,13 +806,13 @@ GetChildViewAt { parent, index ->
 
 <PaddedAPIBox header="RemoveChildView" platforms={["android"]} headerNestingLevel={4}>
 
-Defines action that removes a specific child view from the view group.
+定义从视图组中移除指定子视图的操作。
 
-#### Arguments
+#### 参数
 
-- **action**: `(parent: ParentType, child: ChildType) -> ()` — A function that remove a specific child view from the view group.
+- **action**: `(parent: ParentType, child: ChildType) -> ()` — 一个从视图组中移除指定子视图的函数。
 
-This property can only be used within a [`GroupView`](#groupview) closure.
+此属性只能在 [`GroupView`](#groupview) 闭包中使用。
 
 ```kotlin Kotlin
 RemoveChildView { parent, child: View ->
@@ -824,13 +824,13 @@ RemoveChildView { parent, child: View ->
 
 <PaddedAPIBox header="RemoveChildViewAt" platforms={["android"]} headerNestingLevel={4}>
 
-Defines action that removes a child view at a specific index from the view group.
+定义从视图组中移除指定索引处子视图的操作。
 
-#### Arguments
+#### 参数
 
-- **action**: `(parent: ParentType, child: ChildType) -> ()` — A function that removes a child view at a specific index from the view group.
+- **action**: `(parent: ParentType, child: ChildType) -> ()` — 一个从视图组中移除指定索引处子视图的函数。
 
-This property can only be used within a [`GroupView`](#groupview) closure.
+此属性只能在 [`GroupView`](#groupview) 闭包中使用。
 
 ```kotlin Kotlin
 RemoveChildViewAt { parent, index ->
@@ -840,52 +840,52 @@ RemoveChildViewAt { parent, index ->
 
 </PaddedAPIBox>
 
-## Argument types
+## 参数类型
 
-Fundamentally, only primitive and serializable data can be passed back and forth between the runtimes. However, usually native modules need to receive custom data structures — more sophisticated than just the dictionary/map where the values are of unknown (`Any`) type and so each value has to be validated and cast on its own. The Expo Modules API provides protocols to make it more convenient to work with data objects, to provide automatic validation, and finally, to ensure native type-safety on each object member.
+从根本上说，只有原始类型和可序列化数据才能在运行时之间来回传递。然而，原生模块通常需要接收自定义数据结构——比仅仅是值类型未知（`Any`）的字典/映射更复杂，因此每个值都必须单独验证和转换。Expo Modules API 提供了协议，使处理数据对象更方便，提供自动验证，并最终确保每个对象成员都具有原生类型安全。
 
-<PaddedAPIBox header="Primitives">
+<PaddedAPIBox header="基本类型">
 
-All functions and view prop setters accept all common primitive types in Swift and Kotlin as the arguments. This includes arrays, dictionaries/maps and optionals of these primitive types.
+所有函数和视图 prop setter 都接受 Swift 和 Kotlin 中所有常见的基本类型作为参数。这包括这些基本类型的数组、字典/映射以及可选类型。
 
-| Language | Supported primitive types                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Swift    | `Bool`, `Int`, `Int8`, `Int16`, `Int32`, `Int64`, `UInt`, `UInt8`, `UInt16`, `UInt32`, `UInt64`, `Float32`, `Double`, `String` |
-| Kotlin   | `Boolean`, `Int`, `Long`, `Float`, `Double`, `String`, `Pair`                                                                  |
+| 语言 | 支持的基本类型                                                                                                                |
+| ---- | --------------------------------------------------------------------------------------------------------------------------- |
+| Swift | `Bool`, `Int`, `Int8`, `Int16`, `Int32`, `Int64`, `UInt`, `UInt8`, `UInt16`, `UInt32`, `UInt64`, `Float32`, `Double`, `String` |
+| Kotlin | `Boolean`, `Int`, `Long`, `Float`, `Double`, `String`, `Pair`                                                                  |
 
 </PaddedAPIBox>
-<PaddedAPIBox header="Convertibles">
+<PaddedAPIBox header="可转换类型">
 
-_Convertibles_ are native types that can be initialized from certain specific kinds of data received from JavaScript. Such types are allowed to be used as an argument type in `Function`'s body. For example, when the `CGPoint` type is used as a function argument type, its instance can be created from an array of two numbers `(x, y)` or a JavaScript object with numeric `x` and `y` properties.
+_可转换类型_ 是指可以通过从 JavaScript 接收到的某些特定数据初始化的原生类型。这类类型可以作为 `Function` 函数体中的参数类型使用。例如，当 `CGPoint` 类型被用作函数参数类型时，它的实例可以由包含两个数字 `(x, y)` 的数组，或带有数值 `x` 和 `y` 属性的 JavaScript 对象创建。
 
-The built-in Convertibles are documented [further below](#built-in-convertibles).
+内置的可转换类型在[下文](#built-in-convertibles)中有文档说明。
 
-You can define additional Convertibles by making native Swift types conform to the `Convertible` protocol:
+你可以通过让原生 Swift 类型遵循 `Convertible` 协议来定义额外的可转换类型：
 
 <PaddedAPIBox header="Convertible" platforms={["ios"]} headerNestingLevel={4}>
 
-`Convertible` is a Swift protocol with one static method:
+`Convertible` 是一个 Swift 协议，只有一个静态方法：
 
 <APIMethod
   name="convert"
-  comment="A static method that converts a dynamically typed value from JavaScript to an instance of the Swift type conforming to `Convertible`. Implementers should throw an exception when the given value is invalid or of an unsupported type."
+  comment="一个静态方法，用于将来自 JavaScript 的动态类型值转换为遵循 `Convertible` 的 Swift 类型实例。如果给定值无效或类型不受支持，实作者应抛出异常。"
   returnTypeName="Self"
   exposeInSidebar={false}
   parameters={[
     {
       name: 'value',
-      comment: 'A value from JavaScript to convert',
+      comment: '要从 JavaScript 转换的值',
       typeName: 'Any?',
     },
     {
       name: 'appContext',
-      comment: 'The context object for the currently running Expo app instance',
+      comment: '当前运行的 Expo 应用实例的上下文对象',
       typeName: 'AppContext',
     },
   ]}
 />
 
-#### Example
+#### 示例
 
 ```swift Swift
 import ExpoModulesCore
@@ -902,11 +902,11 @@ extension CMTime: @retroactive Convertible {
 
 </PaddedAPIBox>
 
-In Kotlin, extending an existing type with a protocol isn't possible. To extend available types, you can use the `ModuleConverters` builder:
+在 Kotlin 中，无法通过协议扩展现有类型。要扩展可用类型，可以使用 `ModuleConverters` 构建器：
 
 <PaddedAPIBox header="ModuleConverters" platforms={["android"]} headerNestingLevel={4}>
 
-On Android, modules can define custom type converters that allow non-standard types to be used as function arguments. Override the `converters()` method in your `Module` class and use the `ModuleConverters` builder to register converters with `.from<SourceType> { }` chains.
+在 Android 上，模块可以定义自定义类型转换器，使非标准类型可作为函数参数使用。在你的 `Module` 类中重写 `converters()` 方法，并使用 `ModuleConverters` 构建器通过 `.from<SourceType> { }` 链注册转换器。
 
 ```kotlin Kotlin
 class MyModule : Module() {
@@ -923,7 +923,7 @@ class MyModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("MyModule")
 
-    // CustomType can now be used as an argument type
+    // 现在 CustomType 可以用作参数类型
     Function("process") { value: CustomType ->
       value.doSomething()
     }
@@ -931,51 +931,51 @@ class MyModule : Module() {
 }
 ```
 
-Each `.from<T> { }` call registers a converter from type `T` to your custom type. At runtime, the framework tries each registered converter until one matches the incoming JavaScript value.
+每次 `.from<T> { }` 调用都会注册一个从类型 `T` 到你的自定义类型的转换器。运行时，框架会尝试每个已注册的转换器，直到有一个匹配传入的 JavaScript 值。
 
-> **Note:** On iOS, use the `Convertible` protocol instead (documented above).
-
-</PaddedAPIBox>
+> **注意：** 在 iOS 上，请改用上面文档中介绍的 `Convertible` 协议。
 
 </PaddedAPIBox>
 
-### Built-in Convertibles
+</PaddedAPIBox>
 
-Some common iOS types from the `CoreGraphics` and `UIKit` system frameworks are already made convertible.
+### 内置可转换类型
 
-| Native iOS Type         | TypeScript                                                                                                                                                                        |
+一些来自 `CoreGraphics` 和 `UIKit` 系统框架的常见 iOS 类型已经可以转换。
+
+| 原生 iOS 类型           | TypeScript                                                                                                                                                                        |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `URL`                   | `string` with a URL. When a scheme is not provided, it's assumed to be a file URL.                                                                                                |
+| `URL`                   | 带 URL 的 `string`。如果未提供 scheme，则默认为文件 URL。                                                                                                |
 | `CGFloat`               | `number`                                                                                                                                                                          |
-| `CGPoint`               | `{ x: number, y: number }` or `number[]` with _x_ and _y_ coords                                                                                                                  |
-| `CGSize`                | `{ width: number, height: number }` or `number[]` with _width_ and _height_                                                                                                       |
-| `CGVector`              | `{ dx: number, dy: number }` or `number[]` with _dx_ and _dy_ vector differentials                                                                                                |
-| `CGRect`                | `{ x: number, y: number, width: number, height: number }` or `number[]` with _x_, _y_, _width_ and _height_ values                                                                |
-| `CGColor`<br/>`UIColor` | Color hex strings (`#RRGGBB`, `#RRGGBBAA`, `#RGB`, `#RGBA`), named colors following the [CSS3/SVG specification](https://www.w3.org/TR/css-color-3/#svg-color) or `"transparent"` |
+| `CGPoint`               | `{ x: number, y: number }` 或包含 _x_ 和 _y_ 坐标的 `number[]`                                                                                                                  |
+| `CGSize`                | `{ width: number, height: number }` 或包含 _width_ 和 _height_ 的 `number[]`                                                                                                       |
+| `CGVector`              | `{ dx: number, dy: number }` 或包含 _dx_ 和 _dy_ 向量差值的 `number[]`                                                                                                |
+| `CGRect`                | `{ x: number, y: number, width: number, height: number }` 或包含 _x_、_y_、_width_ 和 _height_ 值的 `number[]`                                                                |
+| `CGColor`<br/>`UIColor` | 颜色十六进制字符串（`#RRGGBB`、`#RRGGBBAA`、`#RGB`、`#RGBA`）、遵循 [CSS3/SVG 规范](https://www.w3.org/TR/css-color-3/#svg-color) 的命名颜色，或 `"transparent"` |
 | `Data`                  | `Uint8Array` <StatusTag note="SDK 50+" />                                                                                                                                         |
 
 ---
 
-Similarly, some common Android types from packages like `java.io`, `java.net`, or `android.graphics` are also made convertible.
+同样，一些来自 `java.io`、`java.net` 或 `android.graphics` 等包的常见 Android 类型也可以转换。
 
-> **Note:** On Android, primitive arrays should be used whenever possible.
+> **注意：** 在 Android 上，应尽可能使用原始数组。
 
-| Native Android Type                                                                       | TypeScript                                                                                                                                                                        |
-| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `java.net.URL`                                                                            | `string` with a URL. Note that the scheme has to be provided (URL should not contain any unencoded `%` character)                                                                 |
-| `android.net.Uri`<br/>`java.net.URI`                                                      | `string` with a URI. Note that the scheme has to be provided (URI should not contain any unencoded `%` character)                                                                 |
-| `java.io.File`<br/>`java.nio.file.Path` (is only available on Android API 26)             | `string` with a path to the file                                                                                                                                                  |
-| `android.graphics.Color`                                                                  | Color hex strings (`#RRGGBB`, `#RRGGBBAA`, `#RGB`, `#RGBA`), named colors following the [CSS3/SVG specification](https://www.w3.org/TR/css-color-3/#svg-color) or `"transparent"` |
-| `kotlin.Pair<A, B>`                                                                       | Array with two values, where the first one is of type _A_ and the second is of type _B_                                                                                           |
-| `kotlin.ByteArray`                                                                        | `Uint8Array` <StatusTag note="SDK 50+" />                                                                                                                                         |
-| `kotlin.BooleanArray`                                                                     | `boolean[]`                                                                                                                                                                       |
+| 原生 Android 类型                                                                      | TypeScript                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `java.net.URL`                                                                         | 带 URL 的 `string`。注意，必须提供 scheme（URL 不应包含任何未编码的 `%` 字符）                                                                                                 |
+| `android.net.Uri`<br/>`java.net.URI`                                                   | 带 URI 的 `string`。注意，必须提供 scheme（URI 不应包含任何未编码的 `%` 字符）                                                                                                 |
+| `java.io.File`<br/>`java.nio.file.Path` (is only available on Android API 26)          | 指向文件路径的 `string`                                                                                                                                                  |
+| `android.graphics.Color`                                                               | 颜色十六进制字符串（`#RRGGBB`、`#RRGGBBAA`、`#RGB`、`#RGBA`）、遵循 [CSS3/SVG 规范](https://www.w3.org/TR/css-color-3/#svg-color) 的命名颜色，或 `"transparent"` |
+| `kotlin.Pair<A, B>`                                                                    | 包含两个值的数组，第一个值的类型为 _A_，第二个值的类型为 _B_                                                                                           |
+| `kotlin.ByteArray`                                                                     | `Uint8Array` <StatusTag note="SDK 50+" />                                                                                                                                         |
+| `kotlin.BooleanArray`                                                                  | `boolean[]`                                                                                                                                                                       |
 | `kotlin.IntArray`<br/>`kotlin.FloatArray`<br/>`kotlin.LongArray`<br/>`kotlin.DoubleArray` | `number[]`                                                                                                                                                                        |
-| `kotlin.time.Duration`                                                                    | `number` represents a duration in seconds <StatusTag note="SDK 52+" />                                                                                                            |
+| `kotlin.time.Duration`                                                                 | 表示秒数的 `number` <StatusTag note="SDK 52+" />                                                                                                            |
 
-<PaddedAPIBox header="Records">
+<PaddedAPIBox header="Record">
 
-_Record_ is a convertible type and an equivalent of the dictionary (Swift) or map (Kotlin), but represented as a struct where each field can have its type and provide a default value.
-It is a better way to represent a JavaScript object with the native type safety.
+_Record_ 是一种可转换类型，是字典（Swift）或 map（Kotlin）的等价形式，但以结构体表示，其中每个字段都可以有自己的类型并提供默认值。
+它是以原生类型安全方式表示 JavaScript 对象的更好方法。
 
 <CodeBlocksTable>
 
@@ -991,9 +991,9 @@ struct FileReadOptions: Record {
   var length: Int?
 }
 
-// Now this record can be used as an argument of the functions or the view prop setters.
+// 现在这个 record 可以作为函数或视图 prop setter 的参数使用。
 Function("readFile") { (path: String, options: FileReadOptions) -> String in
-  // Read the file using given `options`
+  // 使用给定的 `options` 读取文件
 }
 ```
 
@@ -1009,9 +1009,9 @@ class FileReadOptions : Record {
   val length: Int? = null
 }
 
-// Now this record can be used as an argument of the functions or the view prop setters.
+// 现在这个 record 可以作为函数或视图 prop setter 的参数使用。
 Function("readFile") { path: String, options: FileReadOptions ->
-  // Read the file using given `options`
+  // 使用给定的 `options` 读取文件
 }
 ```
 
@@ -1020,16 +1020,16 @@ Function("readFile") { path: String, options: FileReadOptions ->
 
 <PaddedAPIBox header="Formatter">
 
-> **important** **This feature is [experimental](/more/release-statuses/#experimental).**
+> **重要** **此功能为 [实验性](/more/release-statuses/#experimental)。**
 
-The Formatter API allows you to customize how a Record is serialized when returned from a native function. This is useful when you need to transform property values before sending them to JavaScript, or conditionally exclude certain properties from the output.
+Formatter API 允许你自定义 Record 从原生函数返回时的序列化方式。当你需要在发送到 JavaScript 之前转换属性值，或有条件地从输出中排除某些属性时，这会很有用。
 
-#### Operations
+#### 操作
 
-- **map**: Transform a property's value before serialization.
-- **skip**: Exclude a property from the output entirely.
+- **map**：在序列化前转换属性值。
+- **skip**：完全从输出中排除某个属性。
 
-#### Basic usage
+#### 基本用法
 
 <CodeBlocksTable>
 
@@ -1043,7 +1043,7 @@ struct UserInfo: Record {
 Function("getUser") {
   let user = UserInfo(id: 1, email: "user@example.com", password: "secret123")
 
-  // Return user without exposing the password
+  // 返回不暴露密码的用户
   return user.format { formatter in
     formatter.property("password", keyPath: \.password).skip()
   }
@@ -1060,7 +1060,7 @@ class UserInfo(
 Function("getUser") {
   val user = UserInfo(id = 1, email = "user@example.com", password = "secret123")
 
-  // Return user without exposing the password
+  // 返回不暴露密码的用户
   formatter {
     property(UserInfo::password).skip()
   }.format(user)
@@ -1072,13 +1072,13 @@ Function("getUser") {
 ```js JavaScript
 const user = MyModule.getUser();
 console.log(user);
-// Output: { id: 1, email: "user@example.com" }
-// Note: password is not present in the object
+// 输出：{ id: 1, email: "user@example.com" }
+// 注意：对象中不包含 password
 ```
 
-#### Transforming values with `map`
+#### 使用 `map` 转换值
 
-Use `map` to transform property values before they are sent to JavaScript:
+使用 `map` 在属性发送到 JavaScript 之前转换它们的值：
 
 <CodeBlocksTable>
 
@@ -1092,7 +1092,7 @@ Function("getProduct") {
   let product = Product(name: "Widget", price: 19.99)
 
   return product.format { formatter in
-    // Transform price to include currency symbol
+    // 将价格转换为带货币符号的字符串
     formatter.property("price", keyPath: \.price).map { value in
       "$\(String(format: "%.2f", value))"
     }
@@ -1110,7 +1110,7 @@ Function("getProduct") {
   val product = Product(name = "Widget", price = 19.99)
 
   formatter {
-    // Transform price to include currency symbol
+    // 将价格转换为带货币符号的字符串
     property(Product::price).map { value ->
       "${"$"}${String.format("%.2f", value)}"
     }
@@ -1120,9 +1120,9 @@ Function("getProduct") {
 
 </CodeBlocksTable>
 
-#### Conditional skipping
+#### 条件性跳过
 
-You can conditionally skip properties based on their values or the record's state:
+你可以根据属性值或 record 的状态有条件地跳过属性：
 
 <CodeBlocksTable>
 
@@ -1137,7 +1137,7 @@ Function("getSettings") {
   let settings = Settings(theme: "dark", debugMode: true, apiKey: "secret")
 
   return settings.format { formatter in
-    // Skip apiKey if nil
+    // 如果 apiKey 为 nil 则跳过
     formatter.property("apiKey", keyPath: \.apiKey).skip { value in
       value == nil
     }
@@ -1156,7 +1156,7 @@ Function("getSettings") {
   val settings = Settings(theme = "dark", debugMode = true, apiKey = "secret")
 
   formatter {
-    // Skip apiKey if null
+    // 如果 apiKey 为 null 则跳过
     property(Settings::apiKey).skip { value ->
       value == null
     }
@@ -1166,9 +1166,9 @@ Function("getSettings") {
 
 </CodeBlocksTable>
 
-#### Chaining operations
+#### 链式操作
 
-You can chain multiple operations on the same property:
+你可以在同一个属性上链式执行多个操作：
 
 <CodeBlocksTable>
 
@@ -1182,8 +1182,8 @@ Function("getData") {
 
   return data.format { formatter in
     formatter.property("value", keyPath: \.value)
-      .map { $0 ?? 0 }  // Default to 0 if nil
-      .map { $0 * 2 }   // Double the value
+      .map { $0 ?? 0 }  // 如果为 nil，则默认为 0
+      .map { $0 * 2 }   // 将值翻倍
   }
 }
 ```
@@ -1198,8 +1198,8 @@ Function("getData") {
 
   formatter {
     property(Data::value)
-      .map { it ?: 0 }  // Default to 0 if null
-      .map { it * 2 }   // Double the value
+      .map { it ?: 0 }  // 如果为 null，则默认为 0
+      .map { it * 2 }   // 将值翻倍
   }.format(data)
 }
 ```
@@ -1207,9 +1207,9 @@ Function("getData") {
 </CodeBlocksTable>
 </PaddedAPIBox>
 
-<PaddedAPIBox header="Enums">
+<PaddedAPIBox header="枚举">
 
-With enums, we can go even further with the above example (with `FileReadOptions` record) and limit supported encodings to `"utf8"` and `"base64"`. To use an enum as an argument or record field, it must represent a primitive value (for example, `String`, `Int`) and conform to `Enumerable`.
+使用枚举时，我们可以在上面的示例（使用 `FileReadOptions` record）基础上更进一步，将支持的编码限制为 `"utf8"` 和 `"base64"`。要将枚举用作参数或 record 字段，它必须表示一个基本值（例如 `String`、`Int`），并且符合 `Enumerable`。
 
 <CodeBlocksTable>
 
@@ -1227,7 +1227,7 @@ struct FileReadOptions: Record {
 ```
 
 ```kotlin
-// Note: the constructor must have an argument called value.
+// 注意：构造函数必须有一个名为 value 的参数。
 enum class FileEncoding(val value: String) : Enumerable {
   utf8("utf8"),
   base64("base64")
@@ -1242,20 +1242,20 @@ class FileReadOptions : Record {
 
 </CodeBlocksTable>
 </PaddedAPIBox>
-<PaddedAPIBox header="Eithers">
+<PaddedAPIBox header="Either 类型">
 
-There are some use cases where you want to pass various types for a single function argument. This is where Either types might come in handy.
-They act as a container for a value of one of a couple of types.
+有些使用场景需要为同一个函数参数传递多种类型。这时 Either 类型就派上用场了。
+它们充当一个容器，用于存放若干类型之一的值。
 
 <CodeBlocksTable>
 
 ```swift
 Function("foo") { (bar: Either<String, Int>) in
   if let bar: String = bar.get() {
-    // `bar` is a String
+    // `bar` 是一个 String
   }
   if let bar: Int = bar.get() {
-    // `bar` is an Int
+    // `bar` 是一个 Int
   }
 }
 ```
@@ -1263,44 +1263,44 @@ Function("foo") { (bar: Either<String, Int>) in
 ```kotlin
 Function("foo") { bar: Either<String, Int> ->
   bar.get(String::class).let {
-    // `it` is a String
+    // `it` 是一个 String
   }
   bar.get(Int::class).let {
-    // `it` is an Int
+    // `it` 是一个 Int
   }
 }
 ```
 
 </CodeBlocksTable>
 
-The implementation for three Either types is currently provided out of the box, allowing you to use up to four different subtypes.
+目前已内置三种 Either 类型的实现，因此你最多可以使用四种不同的子类型。
 
-- `Either<FirstType, SecondType>` — A container for one of two types.
-- `EitherOfThree<FirstType, SecondType, ThirdType>` — A container for one of three types.
-- `EitherOfFour<FirstType, SecondType, ThirdType, FourthType>` — A container for one of four types.
+- `Either<FirstType, SecondType>` — 一个容纳两种类型之一的容器。
+- `EitherOfThree<FirstType, SecondType, ThirdType>` — 一个容纳三种类型之一的容器。
+- `EitherOfFour<FirstType, SecondType, ThirdType, FourthType>` — 一个容纳四种类型之一的容器。
 
 </PaddedAPIBox>
 
 <PaddedAPIBox header="ValueOrUndefined">
 
-> **important** **This feature is [experimental](/more/release-statuses/#experimental).**
+> **重要** **此功能为 [实验性](/more/release-statuses/#experimental)。**
 
-`ValueOrUndefined` is a wrapper type that allows you to distinguish between a JavaScript `undefined` value and an actual value.
+`ValueOrUndefined` 是一种包装类型，允许你区分 JavaScript 的 `undefined` 值和实际值。
 
-With regular optional types, both `undefined` and `null` from JavaScript are converted to `null` on the native side, making it impossible to tell them apart. `ValueOrUndefined` solves this by preserving the distinction.
+对于普通可选类型，JavaScript 中的 `undefined` 和 `null` 在原生端都会被转换为 `null`，因此无法区分它们。`ValueOrUndefined` 通过保留这种区别来解决这个问题。
 
-#### Properties
+#### 属性
 
 <APIMethod
   name="isUndefined"
-  comment="Returns `true` if the JavaScript value was `undefined`, `false` otherwise."
+  comment="如果 JavaScript 值是 `undefined`，则返回 `true`，否则返回 `false`。"
   returnTypeName="Bool"
   isProperty
 />
 
 <APIMethod
   name="optional"
-  comment="Returns the unwrapped value if present, or `null` if the value was `undefined`."
+  comment="如果存在则返回解包后的值；如果值是 `undefined`，则返回 `null`。"
   returnTypeName="InnerType?"
   isProperty
 />
@@ -1310,9 +1310,9 @@ With regular optional types, both `undefined` and `null` from JavaScript are con
 ```swift
 Function("configure") { (timeout: ValueOrUndefined<Int>) in
   if timeout.isUndefined {
-    // Argument was not provided, use default behavior
+    // 参数未提供，使用默认行为
   } else if let value = timeout.optional {
-    // Argument was provided with a value
+    // 参数已提供且带有值
   }
 }
 ```
@@ -1320,10 +1320,10 @@ Function("configure") { (timeout: ValueOrUndefined<Int>) in
 ```kotlin
 Function("configure") { timeout: ValueOrUndefined<Int> ->
   if (timeout.isUndefined) {
-    // Argument was not provided, use default behavior
+    // 参数未提供，使用默认行为
   } else {
     timeout.optional?.let { value ->
-      // Argument was provided with a value
+      // 参数已提供且带有值
     }
   }
 }
@@ -1331,9 +1331,9 @@ Function("configure") { timeout: ValueOrUndefined<Int> ->
 
 </CodeBlocksTable>
 
-#### Distinguishing `undefined` from `null`
+#### 区分 `undefined` 与 `null`
 
-When using `ValueOrUndefined` with an optional inner type, you can distinguish between three states:
+当 `ValueOrUndefined` 与可选内部类型一起使用时，你可以区分三种状态：
 
 <CodeBlocksTable>
 
@@ -1341,13 +1341,13 @@ When using `ValueOrUndefined` with an optional inner type, you can distinguish b
 Function("setName") { (name: ValueOrUndefined<String?>) in
   switch name {
   case .undefined:
-    // name argument was not provided
+    // name 参数未提供
     break
   case .value(let unwrapped) where unwrapped == nil:
-    // name was explicitly set to null
+    // name 被显式设置为 null
     break
   case .value(let unwrapped):
-    // name was set to a string value
+    // name 被设置为字符串值
     print("Name: \(unwrapped!)")
   }
 }
@@ -1357,13 +1357,13 @@ Function("setName") { (name: ValueOrUndefined<String?>) in
 Function("setName") { name: ValueOrUndefined<String?> ->
   when {
     name.isUndefined -> {
-      // name argument was not provided
+      // name 参数未提供
     }
     name.optional == null -> {
-      // name was explicitly set to null
+      // name 被显式设置为 null
     }
     else -> {
-      // name was set to a string value
+      // name 被设置为字符串值
       println("Name: ${name.optional}")
     }
   }
@@ -1377,20 +1377,20 @@ import { requireNativeModule } from 'expo-modules-core';
 
 const MyModule = requireNativeModule('MyModule');
 
-MyModule.setName('Alice'); // name is a value
-MyModule.setName(null); // name is null (but not undefined)
-MyModule.setName(undefined); // name is undefined
+MyModule.setName('Alice'); // name 是一个值
+MyModule.setName(null); // name 是 null（但不是 undefined）
+MyModule.setName(undefined); // name 是 undefined
 ```
 
 </PaddedAPIBox>
-<PaddedAPIBox header="JavaScript values">
+<PaddedAPIBox header="JavaScript 值">
 
-It's also possible to use a `JavaScriptValue` type which is a holder for any value that can be represented in JavaScript.
-This type is useful when you want to mutate the given argument or when you want to omit type validations and conversions.
-Note that using JavaScript-specific types is restricted to synchronous functions as all reads and writes in the JavaScript runtime must happen on the JavaScript thread.
-Any access to these values from different threads will result in a crash.
+也可以使用 `JavaScriptValue` 类型，它是任何可以在 JavaScript 中表示的值的持有器。
+当你想要修改给定参数，或者想要省略类型验证和转换时，这种类型很有用。
+请注意，使用 JavaScript 专有类型仅限于同步函数，因为 JavaScript 运行时中的所有读写都必须发生在 JavaScript 线程上。
+从不同线程访问这些值会导致崩溃。
 
-In addition to the raw value, the `JavaScriptObject` type can be used to allow only object types and `JavaScriptFunction<ReturnType>` for callbacks.
+除了原始值之外，还可以使用 `JavaScriptObject` 类型来仅允许对象类型，以及 `JavaScriptFunction<ReturnType>` 用于回调。
 
 <CodeBlocksTable>
 
@@ -1428,17 +1428,17 @@ Function("mutateMe") { jsObject: JavaScriptObject ->
 
 </PaddedAPIBox>
 
-## Native classes
+## 原生类
 
 <PaddedAPIBox header="Module">
 
-A base class for a native module.
+原生模块的基类。
 
-#### Properties
+#### 属性
 
 <APIMethod
   name="appContext"
-  comment="Provides access to the [`AppContext`](#appcontext)."
+  comment="提供对 [`AppContext`](#appcontext) 的访问。"
   returnTypeName="AppContext"
   exposeInSidebar
   baseNestingLevel={4}
@@ -1446,23 +1446,23 @@ A base class for a native module.
   isReturnTypeReference
 />
 
-#### Methods
+#### 方法
 
 <APIMethod
   name="sendEvent"
-  comment="Sends an event with a given name and a payload to JavaScript. See [`Sending events`](#sending-events)"
+  comment="向 JavaScript 发送一个具有给定名称和负载的事件。参见 [`发送事件`](#sending-events)"
   returnTypeName="void"
   exposeInSidebar
   baseNestingLevel={4}
   parameters={[
     {
       name: 'eventName',
-      comment: 'The name of the JavaScript event',
+      comment: 'JavaScript 事件的名称',
       typeName: 'string',
     },
     {
       name: 'payload',
-      comment: 'The event payload',
+      comment: '事件负载',
       typeName: 'Android: Map<String, Any?> | Bundle\niOS: [String: Any?]',
     },
   ]}
@@ -1472,13 +1472,13 @@ A base class for a native module.
 
 <PaddedAPIBox header="AppContext">
 
-The app context is an interface to a single Expo app.
+应用上下文是一个面向单个 Expo 应用的接口。
 
-#### Properties
+#### 属性
 
 <APIMethod
   name="constants"
-  comment="Provides access to app's constants from legacy module registry."
+  comment="提供对旧版模块注册表中应用常量的访问。"
   returnTypeName="Android: ConstantsInterface? iOS: EXConstantsInterface?"
   exposeInSidebar
   baseNestingLevel={4}
@@ -1487,7 +1487,7 @@ The app context is an interface to a single Expo app.
 
 <APIMethod
   name="permissions"
-  comment="Provides access to the permissions manager from legacy module registry."
+  comment="提供对旧版模块注册表中权限管理器的访问。"
   returnTypeName="Android: Permissions? iOS: EXPermissionsInterface?"
   exposeInSidebar
   baseNestingLevel={4}
@@ -1496,7 +1496,7 @@ The app context is an interface to a single Expo app.
 
 <APIMethod
   name="activityProvider"
-  comment="Provides access to the activity provider from the legacy module registry."
+  comment="提供对旧版模块注册表中 activity provider 的访问。"
   returnTypeName="ActivityProvider?"
   exposeInSidebar
   baseNestingLevel={4}
@@ -1506,7 +1506,7 @@ The app context is an interface to a single Expo app.
 
 <APIMethod
   name="reactContext"
-  comment="Provides access to the react application context."
+  comment="提供对 react 应用上下文的访问。"
   returnTypeName="Context?"
   exposeInSidebar
   baseNestingLevel={4}
@@ -1516,7 +1516,7 @@ The app context is an interface to a single Expo app.
 
 <APIMethod
   name="hasActiveReactInstance"
-  comment="Checks if there is an not-null, alive react native instance."
+  comment="检查是否存在一个非空且存活的 react native 实例。"
   returnTypeName="Boolean"
   exposeInSidebar
   baseNestingLevel={4}
@@ -1526,7 +1526,7 @@ The app context is an interface to a single Expo app.
 
 <APIMethod
   name="utilities"
-  comment="Provides access to the utilities from legacy module registry."
+  comment="提供对旧版模块注册表中工具集的访问。"
   returnTypeName="EXUtilitiesInterface?"
   exposeInSidebar
   baseNestingLevel={4}
@@ -1538,23 +1538,23 @@ The app context is an interface to a single Expo app.
 
 <PaddedAPIBox header="ExpoView">
 
-A base class that should be used by all exported views.
+所有导出的视图都应使用的基类。
 
-On iOS, `ExpoView` extends the `RCTView` which handles some styles (for example, borders) and accessibility.
+在 iOS 上，`ExpoView` 继承自 `RCTView`，它处理了一些样式（例如边框）和可访问性。
 
-#### Properties
+#### 属性
 
 <APIMethod
   name="appContext"
-  comment="Provides access to the [`AppContext`](#appcontext)."
+  comment="提供对 [`AppContext`](#appcontext) 的访问。"
   returnTypeName="AppContext"
   isProperty
   isReturnTypeReference
 />
 
-#### Extending `ExpoView`
+#### 扩展 `ExpoView`
 
-To export your view using the [`View`](#view) component, your custom class must inherit from the `ExpoView`. By doing that you will get access to the [`AppContext`](#appcontext) object. It's the only way of communicating with other modules and the JavaScript runtime. Also, you can't change constructor parameters, because provided view will be initialized by `expo-modules-core`.
+要使用 [`View`](#view) 组件导出你的视图，自定义类必须继承 `ExpoView`。这样你就能访问 [`AppContext`](#appcontext) 对象。它是与其他模块和 JavaScript 运行时通信的唯一方式。另外，你不能更改构造函数参数，因为提供的视图将由 `expo-modules-core` 初始化。
 
 <CodeBlocksTable>
 
@@ -1589,14 +1589,14 @@ class LinearGradientModule : Module() {
 
 </PaddedAPIBox>
 
-## Guides
+## 指南
 
 <PaddedAPIBox>
-### Sending events
+### 发送事件
 
-While JavaScript/TypeScript to Native communication is mostly covered by native functions, you might also want to let the JavaScript/TypeScript code know about certain system events, for example, when the clipboard content changes.
+虽然 JavaScript/TypeScript 到原生的通信大多由原生函数涵盖，但你可能也希望让 JavaScript/TypeScript 代码了解某些系统事件，例如剪贴板内容发生变化时。
 
-To do this, in the module definition, you need to provide the event names that the module can send using the [Events](#events) definition component. After that, you can use the `sendEvent(eventName, payload)` function on the module instance to send the actual event with some payload. For example, a minimal clipboard implementation that sends native events may look like this:
+为此，在模块定义中，你需要使用 [Events](#events) 定义组件提供模块可以发送的事件名称。之后，你可以在模块实例上使用 `sendEvent(eventName, payload)` 函数发送带有某些负载的实际事件。例如，一个发送原生事件的最小剪贴板实现可能如下所示：
 
 <CodeBlocksTable>
 
@@ -1668,8 +1668,8 @@ class ClipboardModule : Module() {
 
 </CodeBlocksTable>
 
-To subscribe to these events in JavaScript/TypeScript, use [`addListener`](/versions/latest/sdk/expo/#addlistenereventname-listener) on the module object returned by `requireNativeModule`. Modules are extending the built-in [`EventEmitter`](/versions/latest/sdk/expo/#eventemitter) class.
-Alternatively, you can use [`useEvent`](/versions/latest/sdk/expo/#useeventeventemitter-eventname-initialvalue) or [`useEventListener`](/versions/latest/sdk/expo/#useeventlistenereventemitter-eventname-listener) hooks.
+要在 JavaScript/TypeScript 中订阅这些事件，请在 `requireNativeModule` 返回的模块对象上使用 [`addListener`](/versions/latest/sdk/expo/#addlistenereventname-listener)。模块继承了内置的 [`EventEmitter`](/versions/latest/sdk/expo/#eventemitter) 类。
+或者，你也可以使用 [`useEvent`](/versions/latest/sdk/expo/#useeventeventemitter-eventname-initialvalue) 或 [`useEventListener`](/versions/latest/sdk/expo/#useeventlistenereventemitter-eventname-listener) hooks。
 
 ```ts TypeScript
 import { requireNativeModule, NativeModule } from 'expo';
@@ -1687,20 +1687,20 @@ declare class ClipboardModule extends NativeModule<ClipboardModuleEvents> {}
 const Clipboard = requireNativeModule<ClipboardModule>('Clipboard');
 
 Clipboard.addListener('onClipboardChanged', (event: ClipboardChangeEvent) => {
-  alert('Clipboard has changed');
+  alert('剪贴板已更改');
 });
 ```
 
 </PaddedAPIBox>
 
 <PaddedAPIBox>
-### View callbacks
+### 视图回调
 
-Some events are connected to a certain view. For example, the touch event should be sent only to the underlying JavaScript view which was pressed. In that case, you can't use `sendEvent` described in [`Sending events`](#sending-events). The `expo-modules-core` introduces a view callbacks mechanism to handle view-bound events.
+某些事件与特定视图相关联。例如，触摸事件应仅发送到被按下的底层 JavaScript 视图。在这种情况下，你不能使用在 [`发送事件`](#sending-events) 中描述的 `sendEvent`。`expo-modules-core` 引入了一种视图回调机制来处理绑定到视图的事件。
 
-To use it, in the view definition, you need to provide the event names that the view can send using the [Events](#events) definition component. After that, you need to declare a property of type `EventDispatcher` in your view class. The name of the declared property has to be the same as the name exported in the `Events` component. Later, you can call it as a function and pass a payload of type `[String: Any?]` on iOS and `Map<String, Any?>` on Android.
+要使用它，在视图定义中，你需要使用 [Events](#events) 定义组件提供视图可以发送的事件名称。之后，你需要在视图类中声明一个 `EventDispatcher` 类型的属性。所声明属性的名称必须与 `Events` 组件中导出的名称相同。之后，你可以把它当作函数调用，并在 iOS 上传入类型为 `[String: Any?]` 的负载，在 Android 上传入类型为 `Map<String, Any?>` 的负载。
 
-> **Note:**: On Android, it's possible to specify the payload type. In case of types that don't convert into objects, the payload will be encapsulated and stored under the `payload` key: `{payload: <provided value>}`.
+> **注意：**: 在 Android 上，可以指定负载类型。对于无法转换为对象的类型，负载将被封装并存储在 `payload` 键下：`{payload: <provided value>}`。
 
 <CodeBlocksTable>
 
@@ -1755,7 +1755,7 @@ class CameraView(
 
 </CodeBlocksTable>
 
-To subscribe to these events in JavaScript/TypeScript, you need to pass a function to the native view as shown:
+要在 JavaScript/TypeScript 中订阅这些事件，你需要像下面这样向原生视图传递一个函数：
 
 ```tsx TypeScript
 import { requireNativeViewManager } from 'expo-modules-core';
@@ -1771,11 +1771,11 @@ export default function MainView() {
 }
 ```
 
-Provided payload is available under the `nativeEvent` key.
+提供的负载可通过 `nativeEvent` 键获取。
 
 </PaddedAPIBox>
 
-## Examples
+## 示例
 
 <CodeBlocksTable>
 
@@ -1805,7 +1805,7 @@ class MyModule : Module() {
 
 </CodeBlocksTable>
 
-For more examples from real modules, you can refer to Expo modules that already use this API on GitHub:
+如需查看更多真实模块的示例，你可以参考 GitHub 上已经使用此 API 的 Expo 模块：
 
 <FileTree
   files={[

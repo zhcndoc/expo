@@ -21,7 +21,7 @@ export const SidebarFooter = ({ isMobileMenuVisible }: SideBarFooterProps) => {
       <SidebarSingleEntry
         secondary
         href="/archive"
-        title="Archive"
+        title="存档"
         Icon={ArchiveIcon}
         isActive={isArchive}
       />
@@ -35,7 +35,7 @@ export const SidebarFooter = ({ isMobileMenuVisible }: SideBarFooterProps) => {
       <SidebarSingleEntry
         secondary
         href="https://chat.expo.dev"
-        title="Discord and Forums"
+        title="Discord 和论坛"
         Icon={DiscordIcon}
         isExternal
         shouldLeakReferrer
@@ -43,7 +43,7 @@ export const SidebarFooter = ({ isMobileMenuVisible }: SideBarFooterProps) => {
       <SidebarSingleEntry
         secondary
         href="https://expo.dev/mailing-list/signup"
-        title="Newsletter"
+        title="新闻邮件"
         Icon={Mail01Icon}
         isExternal
       />
@@ -51,7 +51,7 @@ export const SidebarFooter = ({ isMobileMenuVisible }: SideBarFooterProps) => {
         <SidebarSingleEntry
           secondary
           href="https://expo.dev/changelog"
-          title="Changelog"
+          title="更新日志"
           Icon={ChangelogIcon}
           isExternal
         />

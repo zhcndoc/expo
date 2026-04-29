@@ -1,7 +1,7 @@
 ---
-title: Tree shaking and code removal
+title: Tree shaking 和代码移除
 sidebar_title: Tree shaking
-description: Learn about how Expo CLI optimizes production JavaScript bundles.
+description: 了解 Expo CLI 如何优化生产环境的 JavaScript bundle。
 platforms: ['android', 'ios', 'web', 'tvos']
 ---
 
@@ -10,15 +10,15 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { Tab, Tabs } from '~/ui/components/Tabs';
 
-Tree shaking (also referred to as _dead code removal_) is a technique to remove unused code from the production bundle. Expo CLI employs different techniques, including [minification](/guides/minify), to improve startup time by removing unused code.
+Tree shaking（也称为 _死代码移除_）是一种从生产包中移除未使用代码的技术。Expo CLI 采用多种技术，包括 [压缩](/guides/minify)，通过移除未使用的代码来提升启动速度。
 
-## Platform shaking
+## 平台摇树
 
-Expo CLI employs a process known as **platform shaking** for app bundling, where it creates separate bundles for each platform (Android, iOS, web). It ensures that the code is only used on one platform and is removed from other platforms.
+Expo CLI 在应用打包时采用一种称为 **平台摇树** 的流程，它会为每个平台（Android、iOS、web）创建独立的包。它会确保某段代码只在一个平台上使用，并从其他平台中移除。
 
-Any code that is used conditionally based on the `Platform` module from `react-native` is removed from the other platforms. However, this exclusion specifically applies to instances where `Platform.select` and `Platform.OS` are directly imported from react-native in each file. If these are re-exported through a different module, they will not be removed during the bundling process for different platforms.
+任何基于 `react-native` 中的 `Platform` 模块进行条件判断的代码，都会从其他平台中移除。不过，这种排除仅适用于在每个文件中直接从 react-native 导入 `Platform.select` 和 `Platform.OS` 的情况。如果它们通过其他模块重新导出，则在不同平台的打包过程中不会被移除。
 
-For example, consider the following transformation input:
+例如，考虑以下转换输入：
 
 ```js Input
 import { Platform } from 'react-native';
@@ -28,27 +28,27 @@ if (Platform.OS === 'ios') {
 }
 ```
 
-The production bundle will remove the conditional based on the platform:
+生产包会移除基于平台的条件判断：
 
 ```js Output (Android)
-/* @hide Empty on Android */
+/* @hide 在 Android 上为空 */
 ```
 
 ```js Output (iOS)
 console.log('Hello on iOS');
 ```
 
-This optimization is production only and runs on a per-file basis. If you re-export `Platform.OS` from a different module, it will not be removed from the production bundle.
+这种优化仅在生产环境中生效，并且按文件级别运行。如果你通过其他模块重新导出 `Platform.OS`，它就不会从生产包中移除。
 
-The `process.env.EXPO_OS` can be used to detect the platform that the JavaScript was bundled for (cannot change at runtime). This value does not support platform shaking imports due to how Metro minifies code after dependency resolution.
+可以使用 `process.env.EXPO_OS` 来检测 JavaScript 被打包到哪个平台（运行时无法更改）。由于 Metro 在依赖解析之后会对代码进行压缩，这个值不支持平台摇树式导入。
 
-## Remove development-only code
+## 移除仅开发环境代码
 
-In your project, there might be code designed to help with the development process. It should be excluded from the production bundle. To handle these scenarios, use the `process.env.NODE_ENV `environment variable or the non-standard `__DEV__` global boolean.
+在你的项目中，可能会有一些用于辅助开发流程的代码。它应该从生产包中排除。要处理这些场景，请使用 `process.env.NODE_ENV `环境变量或非标准的 `__DEV__` 全局布尔值。
 
 <Step label="1">
 
-For example, the following code snippet will be removed from the production bundle:
+例如，以下代码片段会从生产包中移除：
 
 ```js Input
 if (process.env.NODE_ENV === 'development') {
@@ -64,7 +64,7 @@ if (__DEV__) {
 
 <Step label="2">
 
-After _constants folding_ takes place, the conditions can be evaluated statically:
+在 _常量折叠_ 之后，这些条件可以被静态求值：
 
 ```js Post constants folding
 if ('production' === 'development') {
@@ -80,19 +80,19 @@ if (false) {
 
 <Step label="3">
 
-The unreachable conditions are removed during [minification](/guides/minify):
+这些不可达条件会在 [压缩](/guides/minify) 过程中被移除：
 
 ```js Output (production)
-/* @hide Empty file */
+/* @hide 空文件 */
 ```
 
 </Step>
 
-To improve speed, Expo CLI only performs code elimination in production builds. Conditionals from the above code snippet are kept in development builds.
+为了提升速度，Expo CLI 只会在生产构建中执行代码消除。上面代码片段中的条件判断在开发构建中会被保留。
 
-## Custom code removal
+## 自定义代码移除
 
-`EXPO_PUBLIC_` environment variables are inlined before the minification process. This means they can be used to remove code from the production bundle. For example:
+`EXPO_PUBLIC_` 环境变量会在压缩过程之前被内联。这意味着它们可以用来从生产包中移除代码。例如：
 
 <Step label="1">
 
@@ -111,7 +111,7 @@ if (!process.env.EXPO_PUBLIC_DISABLE_FEATURE) {
 
 <Step label="2">
 
-The above input code snippet is transformed to the following after `babel-preset-expo`:
+经过 `babel-preset-expo` 之后，上面的输入代码片段会被转换为以下内容：
 
 ```js Post babel-preset-expo
 if (!'true') {
@@ -122,25 +122,25 @@ if (!'true') {
 </Step>
 
 <Step label="3">
-The above code snippet is then minified, which removes the unused conditional:
+然后，上面的代码片段会被压缩，从而移除未使用的条件判断：
 
 ```js Post minifier
-// Empty file
+// 空文件
 ```
 
 </Step>
 
-- This system does not apply to server code as environment variables are not inlined in server bundles.
-- Library authors should not use `EXPO_PUBLIC_` environment variables as they only run in application code for security reasons.
+- 该系统不适用于服务器代码，因为环境变量不会在服务器包中内联。
+- 库作者不应使用 `EXPO_PUBLIC_` 环境变量，因为出于安全原因，它们仅在应用代码中运行。
 
-## Removing server code
+## 移除服务器代码
 
-It's common to use `typeof window === 'undefined'` to conditionally enable or disable code for server and client environments.
+通常会使用 `typeof window === 'undefined'` 来有条件地为服务端和客户端环境启用或禁用代码。
 
-`babel-preset-expo` will transform `typeof window === 'undefined'` to `true` when bundling for server environments. By default, this check remains unchanged when bundling for web client environments. This transform runs in both development and production but only removes conditional requires in production.
+`babel-preset-expo` 在为服务器环境打包时，会将 `typeof window === 'undefined'` 转换为 `true`。默认情况下，在为 web 客户端环境打包时，这个检查保持不变。这个转换在开发和生产环境中都会运行，但只会在生产环境中移除条件 `require`。
 
-You can configure `babel-preset-expo` to enable this transform by passing `{ minifyTypeofWindow: true }`.
-By default, this transform remains disabled even for web environments since web workers won't have a `window` global.
+你可以通过传入 `{ minifyTypeofWindow: true }` 来配置 `babel-preset-expo` 以启用此转换。
+默认情况下，即使在 web 环境中，此转换也保持禁用，因为 web worker 没有 `window` 全局对象。
 
 <Step label="1">
 
@@ -154,7 +154,7 @@ if (typeof window === 'undefined') {
 
 <Step label="2">
 
-The input code from the previous step is transformed to the following code snippet after `babel-preset-expo` when bundling for server environments (API routes, server rendering):
+上一节中的输入代码在为服务器环境打包时，会在 `babel-preset-expo` 之后转换为以下代码片段（API 路由、服务端渲染）：
 
 ```js Post babel-preset-expo (bundling for server)
 if (true) {
@@ -162,7 +162,7 @@ if (true) {
 }
 ```
 
-Bundling client code for web or native apps will not replace `typeof window` unless `minifyTypeOfWindow: true` is set:
+为 web 或原生应用打包客户端代码时，不会替换 `typeof window`，除非设置了 `minifyTypeOfWindow: true`：
 
 ```js Post babel-preset-expo
 if (typeof window === 'undefined') {
@@ -174,7 +174,7 @@ if (typeof window === 'undefined') {
 
 <Step label="3">
 
-For server environments, the above code snippet is then minified which removes the unused conditional:
+对于服务器环境，上面的代码片段随后会被压缩，从而移除未使用的条件判断：
 
 ```js Post minifier (server)
 console.log('Hello on the server!');
@@ -184,19 +184,19 @@ console.log('Hello on the server!');
 if (typeof window === 'undefined') {
   console.log('Hello on the server!');
 }
-// Empty file
+// 空文件
 ```
 
 </Step>
 
-## React Native web imports
+## React Native web 导入
 
-`babel-preset-expo` provides a built-in optimization for the `react-native-web` barrel file. If you import `react-native` directly using ESM, then the barrel file will be removed from the production bundle.
+`babel-preset-expo` 为 `react-native-web` 的 barrel 文件提供了内置优化。如果你直接使用 ESM 导入 `react-native`，那么该 barrel 文件会从生产包中移除。
 
 <Tabs>
 <Tab label="ESM">
 
-If you import `react-native` using the static `import` syntax, the barrel file will be removed.
+如果你使用静态 `import` 语法导入 `react-native`，barrel 文件会被移除。
 
 ```js Input
 import { View, Image } from 'react-native';
@@ -211,7 +211,7 @@ import Image from 'react-native-web/dist/exports/Image';
 
 <Tab label="CJS">
 
-If you import `react-native` using `require()`, the barrel file will be left as-is in the production bundle.
+如果你使用 `require()` 导入 `react-native`，barrel 文件会原样保留在生产包中。
 
 ```js Input
 const { View, Image } = require('react-native');
@@ -225,13 +225,13 @@ const { View, Image } = require('react-native-web');
 
 </Tabs>
 
-## Remove unused imports and exports
+## 移除未使用的导入和导出
 
-> [Experimentally](/more/release-statuses/#experimental) available in SDK 52 and later.
+> [实验性](/more/release-statuses/#experimental) 功能，适用于 SDK 52 及更高版本。
 
-You can experimentally enable support for automatically removing unused imports and exports across modules. This is useful for speeding up native OTA downloads and optimizing web performance where JavaScript must be parsed and executed using a standard JavaScript engine.
+你可以以实验方式启用支持，自动移除模块之间未使用的导入和导出。这对于加快原生 OTA 下载以及优化 web 性能很有用，因为 JavaScript 必须使用标准 JavaScript 引擎进行解析和执行。
 
-Consider the following example code:
+考虑下面的示例代码：
 
 ```js index.js
 import { ArrowUp } from './icons';
@@ -259,7 +259,7 @@ export function ArrowLeft() {
 }
 ```
 
-Since only `ArrowUp` is used in `index.js`, the production bundle will remove all other components from `icons.js`.
+由于在 `index.js` 中只使用了 `ArrowUp`，生产包会移除 `icons.js` 中所有其他组件。
 
 ```js icons.js (Output)
 export function ArrowUp() {
@@ -267,25 +267,25 @@ export function ArrowUp() {
 }
 ```
 
-This system scales up to automatically optimize all `import` and `export` syntax in your app, across all platforms. While this results in smaller bundles, processing JS still requires time and computer memory so avoid importing millions of modules.
+该系统可扩展到自动优化应用中所有平台上的 `import` 和 `export` 语法。虽然这会生成更小的包，但处理 JS 仍然需要时间和内存，因此请避免导入数百万个模块。
 
-- Tree-shaking only runs in production bundles and can only run on modules that use `import` and `export` syntax. Files that use `module.exports` and `require` will not be tree-shaken.
-- Avoid adding Babel plugins such as `@babel/plugin-transform-modules-commonjs` which convert `import`/`export` syntax to CJS. This will break tree-shaking across your project.
-- Modules that are marked as side-effects will not be removed from the graph.
-- `export * from "..."` will be expanded and optimized unless the export uses `module.exports` or `exports`.
-- All modules in the Expo SDK are shipped as ESM and can be exhaustively tree-shaken.
+- Tree-shaking 只在生产包中运行，并且只能作用于使用 `import` 和 `export` 语法的模块。使用 `module.exports` 和 `require` 的文件不会被 tree-shaking。
+- 避免添加诸如 `@babel/plugin-transform-modules-commonjs` 之类的 Babel 插件，因为它们会将 `import`/`export` 语法转换为 CJS。这会破坏你项目中的 tree-shaking。
+- 被标记为有副作用的模块不会从依赖图中移除。
+- `export * from "..."` 会被展开并优化，除非导出使用了 `module.exports` 或 `exports`。
+- Expo SDK 中的所有模块都以 ESM 形式发布，并且可以被彻底 tree-shaken。
 
-## Enabling tree shaking
+## 启用 tree shaking
 
-> [Experimentally](/more/release-statuses/#experimental) available in SDK 52 and later.
+> [实验性](/more/release-statuses/#experimental) 功能，适用于 SDK 52 及更高版本。
 
 <Step label="1">
 
-Ensure `experimentalImportSupport` and ensure your app builds and runs as expected.
+确保启用 `experimentalImportSupport`，并确保你的应用构建和运行符合预期。
 
-> **info** **Note**: Enabled by default in SDK 54 and later.
+> **info** **注意**：从 SDK 54 及更高版本开始默认启用。
 
-<Collapsible summary="How to enable import support in older SDK versions?">
+<Collapsible summary="如何在较旧的 SDK 版本中启用 import 支持？">
 
 ```js metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
@@ -301,7 +301,7 @@ config.transformer.getTransformOptions = async () => ({
 module.exports = config;
 ```
 
-Experimental import support uses a custom version of the `@babel/plugin-transform-modules-commonjs` plugin. This drastically reduces the number of resolutions and simplifies your output bundle. This feature can be used with `inlineRequires` to further optimize your bundle experimentally.
+实验性 import 支持使用了 `@babel/plugin-transform-modules-commonjs` 插件的自定义版本。这会大幅减少解析数量并简化输出包。此功能可以与 `inlineRequires` 一起使用，以实验性地进一步优化你的包。
 
 </Collapsible>
 
@@ -309,82 +309,82 @@ Experimental import support uses a custom version of the `@babel/plugin-transfor
 
 <Step label="2">
 
-Toggle on the environment variable `EXPO_UNSTABLE_METRO_OPTIMIZE_GRAPH=1` to keep modules around until the entire graph is created. Ensure your app builds and runs as expected in production with this feature enabled before continuing.
+打开环境变量 `EXPO_UNSTABLE_METRO_OPTIMIZE_GRAPH=1`，以便在整个图创建完成之前保留模块。在继续之前，请确保在启用此功能的生产环境中，你的应用构建和运行符合预期。
 
 ```sh .env
 EXPO_UNSTABLE_METRO_OPTIMIZE_GRAPH=1
 ```
 
-This will only be used in production mode.
+这只会在生产模式下使用。
 
 </Step>
 
 <Step label="3">
 
-Toggle on the environment variable `EXPO_UNSTABLE_TREE_SHAKING=1` to enable the feature.
+打开环境变量 `EXPO_UNSTABLE_TREE_SHAKING=1` 来启用该功能。
 
 ```sh .env
 EXPO_UNSTABLE_TREE_SHAKING=1
 ```
 
-This will only be used in production mode.
+这只会在生产模式下使用。
 
 </Step>
 
 <Step label="4">
 
-Bundle your app in production mode to see the effects of tree shaking.
+以生产模式打包你的应用，以查看 tree shaking 的效果。
 
 <Terminal cmd={['$ npx expo export']} />
 
 </Step>
 
-This feature is very experimental because it changes the fundamental structure of how Metro bundles code. By default, Metro bundles everything on-demand and lazily to ensure the fastest possible development times. In contrast, tree shaking requires some transformation to be delayed until after the entire bundle has been created. This means less code can be cached, which is generally fine because tree shaking is a production-only feature and production bundles often don't use transform caches.
+此功能仍然非常实验性，因为它改变了 Metro 打包代码的基础结构。默认情况下，Metro 会按需并以惰性方式打包所有内容，以确保尽可能快的开发速度。相比之下，tree shaking 需要将某些转换延迟到整个包创建完成之后。这意味着可缓存的代码会更少，不过这通常没问题，因为 tree shaking 只是生产环境功能，而且生产包通常不会使用转换缓存。
 
-## Barrel files
+## 条带文件
 
-> [Experimentally](/more/release-statuses/#experimental) available in SDK 52 and later.
+> [实验性地](/more/release-statuses/#experimental) 在 SDK 52 及更高版本中可用。
 
-With Expo tree shaking, star exports will automatically be expanded and shaken based on usage. For example, consider the following code snippet:
+借助 Expo 树摇，星号导出会根据使用情况自动展开并进行摇树优化。例如，考虑以下代码片段：
 
 ```js Input
 export * from './icons';
 ```
 
-The optimization pass will crawl `./icons` and add the exports to the current module. If the exports are unused, they will be removed from the production bundle.
+优化过程会遍历 `./icons` 并将导出添加到当前模块中。如果这些导出未被使用，它们将从生产包中移除。
 
 ```js Expanded
 export { ArrowRight, ArrowLeft } from './icons';
 ```
 
-This will be shaken according to standard tree shaking rules. If you only import `ArrowRight`, then `ArrowLeft` will be removed from the production bundle.
+这将按照标准的树摇规则进行优化。如果你只导入 `ArrowRight`，那么 `ArrowLeft` 将从生产包中移除。
 
-If the star export pulls in ambiguous exports such as `module.exports.ArrowUp` or `exports.ArrowDown`, then the optimization pass will not expand the star export and no exports will be removed from the barrel file. You can use [Expo Atlas](/guides/analyzing-bundles/#analyzing-bundle-size-with-atlas) to inspect the expanded exports.
+如果星号导出引入了歧义导出，例如 `module.exports.ArrowUp` 或 `exports.ArrowDown`，那么优化过程不会展开该星号导出，并且条带文件中的任何导出都不会被移除。你可以使用 [Expo Atlas](/guides/analyzing-bundles/#analyzing-bundle-size-with-atlas) 来检查展开后的导出。
 
-You can use this strategy with libraries like `lucide-react` to remove all icons that are not used in your app.
+你可以将此策略用于像 `lucide-react` 这样的库，以移除应用中未使用的所有图标。
 
-## Recursive optimizations
+## 递归优化
 
-> [Experimentally](/more/release-statuses/#experimental) available in SDK 52 and later.
+> [实验性地](/more/release-statuses/#experimental) 在 SDK 52 及更高版本中可用。
 
-Expo optimizes a module by recursing through the graph exhaustively to find unused imports. Consider the following code snippet:
+Expo 会通过对图进行穷尽式递归来优化模块，以查找未使用的导入。考虑以下代码片段：
 
 ```js Input
 export function foo() {
-  // Because bar is used here, it cannot be removed.
+  // 因为这里使用了 bar，所以它不能被移除。
   bar();
 }
 
 export function bar() {}
 ```
 
-In this case, `bar` is used in `foo`, so it cannot be removed. However, if `foo` is not used anywhere in the app, then `foo` will be removed and the module will be scanned again to see if `bar` can be removed. This process recurses 5 times for a given module before bailing out due to performance reasons.
+在这种情况下，`bar` 在 `foo` 中被使用，因此它不能被移除。然而，如果 `foo` 在应用中的任何地方都没有被使用，那么 `foo` 将被移除，模块会再次被扫描，以查看 `bar` 是否也能被移除。对于给定模块，这个过程会递归 5 次，然后由于性能原因停止。
 
-## Side-effects
+## 副作用
 
-Expo CLI respects module side-effects according to the [Webpack system](https://webpack.js.org/guides/tree-shaking/#mark-the-file-as-side-effect-free). Side-effects are generally used for defining global variables (`console.log`) or modifying prototypes (avoid doing this).
+Expo CLI 会根据 [Webpack 系统](https://webpack.js.org/guides/tree-shaking/#mark-the-file-as-side-effect-free) 尊重模块副作用。副作用通常用于定义全局变量（`console.log`）或修改原型（避免这样做）。
 
-You can mark if your module has side-effects in the **package.json**:
+你可以在 **package.json** 中标记模块是否具有副作用：
 
 ```json package.json
 {
@@ -393,9 +393,9 @@ You can mark if your module has side-effects in the **package.json**:
 }
 ```
 
-Side-effects will prevent the removal of unused modules and disable module inlining to ensure JS code runs in the expected order. Side-effects will be removed if they're empty or contain only comments and directives (`"use strict"`, `"use client"`, and so on).
+副作用会阻止未使用模块的移除，并禁用模块内联，以确保 JS 代码按预期顺序运行。如果副作用为空，或仅包含注释和指令（`"use strict"`、`"use client"` 等），它们将被移除。
 
-When Expo tree shaking is enabled, you can safely enable `inlineRequires` in your **metro.config.js** for production bundles. This will lazily load modules when they're evaluated, leading to faster startup time. Avoid using this feature without Expo tree shaking as it will move modules around in ways that can change the execution order of side-effects.
+当启用 Expo 树摇时，你可以安全地在生产包中为 **metro.config.js** 启用 `inlineRequires`。这会在模块被求值时延迟加载它们，从而加快启动时间。如果不使用 Expo 树摇，请避免使用此功能，因为它会以可能改变副作用执行顺序的方式重新排列模块。
 
 ```js metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
@@ -412,9 +412,9 @@ config.transformer.getTransformOptions = async () => ({
 module.exports = config;
 ```
 
-## Optimizing for tree shaking
+## 为树摇进行优化
 
-Before Expo tree shaking, React Native libraries would remove imports by wrapping them in conditional blocks such as:
+在 Expo 树摇出现之前，React Native 库通常会通过将导入包装在条件块中来移除它们，例如：
 
 ```js
 if (process.env.NODE_ENV === 'development') {
@@ -422,7 +422,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 ```
 
-This is problematic because you don't have accurate TypeScript support and it makes the graph ambiguous since you cannot statically analyze the code. With Expo tree shaking enabled, you can restructure this code to use ESM imports:
+这有问题，因为你无法获得准确的 TypeScript 支持，而且由于你无法静态分析代码，图会变得模糊。启用 Expo 树摇后，你可以重构这段代码以使用 ESM 导入：
 
 ```js Input
 import { doSomething } from './dev-only';
@@ -432,4 +432,4 @@ if (process.env.NODE_ENV === 'development') {
 }
 ```
 
-In both cases, the entire module will be empty in production bundles.
+在这两种情况下，整个模块在生产包中都将为空。

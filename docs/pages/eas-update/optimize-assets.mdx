@@ -1,52 +1,52 @@
 ---
-title: Optimize assets for EAS Update
-sidebar_title: Optimize assets
-description: Learn how EAS Update downloads assets and how to optimize them for download size.
+title: 优化 EAS Update 的资源
+sidebar_title: 优化资源
+description: 了解 EAS Update 如何下载资源，以及如何针对下载大小进行优化。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-> **info** The new [asset selection feature](/eas-update/asset-selection) can greatly reduce the total number and size of downloaded assets.
+> **info** 新的[资源选择功能](/eas-update/asset-selection)可以大幅减少已下载资源的总数量和总大小。
 
-When an app finds a new update, it downloads a manifest and then downloads any new or updated assets so that it can run the update. The process is as follows:
+当应用发现新的更新时，它会下载一个清单，然后下载任何新的或已更新的资源，以便运行该更新。流程如下：
 
-<ContentSpotlight alt="Update download timeline" src="/static/images/eas-update/process.png" />
+<ContentSpotlight alt="更新下载时间线" src="/static/images/eas-update/process.png" />
 
-Many users running Android and iOS apps are using mobile connections that are not as consistent or fast as when they are using Wi-Fi, so it's important that the assets shipped as a part of an update are as small as possible.
+许多运行 Android 和 iOS 应用的用户使用的是移动网络，这些网络的稳定性和速度都不如 Wi-Fi，因此，确保作为更新一部分分发的资源尽可能小非常重要。
 
-## Code assets
+## 代码资源
 
-When publishing an update, EAS CLI runs Expo CLI to bundle the project into an update. The update will appear in our project's **dist** directory.
+发布更新时，EAS CLI 会运行 Expo CLI，将项目打包为一个更新。该更新会出现在项目的 **dist** 目录中。
 
-In **dist/bundles**, we can see the size of the **index.android.js** and **index.ios.js** files that will be part of the Android and iOS updates, respectively. Note that these are uncompressed file sizes; EAS Update uses Brotli and gzip compression, which can significantly reduce download sizes. Nevertheless, these files will be downloaded to a user's device when getting the new update if the device has not downloaded them before. Making these file sizes as small as possible helps end-users download updates quickly.
+在 **dist/bundles** 中，我们可以看到将分别作为 Android 和 iOS 更新一部分的 **index.android.js** 和 **index.ios.js** 文件的大小。请注意，这些是未压缩的文件大小；EAS Update 使用 Brotli 和 gzip 压缩，可以显著减小下载大小。不过，如果设备之前没有下载过这些文件，那么在获取新更新时，仍会将这些文件下载到用户设备上。尽可能减小这些文件的大小有助于终端用户快速下载更新。
 
-## Image assets
+## 图片资源
 
-App users will have to download any new images or other assets when they detect a new update if those assets are not already a part of their build. You can view all the assets uploaded to EAS servers in **dist/assets**. The assets there are hashed with their extensions removed, so it is difficult to know what assets are there. To see a pretty-printed list of assets, we can run:
+如果应用用户检测到新的更新，而这些资源又不在其构建中，他们就必须下载任何新的图片或其他资源。你可以在 **dist/assets** 中查看上传到 EAS 服务器的所有资源。那里的资源名称都经过了哈希处理，并移除了扩展名，因此很难看出里面有哪些资源。要查看格式化后的资源列表，我们可以运行：
 
 <Terminal cmd={['$ npx expo export']} />
 
-### Optimizing image assets
+### 优化图片资源
 
-To manually optimize image assets in your project, you can use the `npx expo-optimize` command. It uses [sharp](https://sharp.pixelplumbing.com/) library to compress images.
+要手动优化项目中的图片资源，你可以使用 `npx expo-optimize` 命令。它使用 [sharp](https://sharp.pixelplumbing.com/) 库来压缩图片。
 
 <Terminal cmd={['$ npx expo-optimize']} />
 
-After running the command, all image assets are compressed except the ones that are already optimized. You can adjust the compression quality by including the `--quality [number]` option with the command. For example, to compress to 90%, run:
+运行该命令后，所有图片资源都会被压缩，已经优化过的除外。你可以通过在命令中添加 `--quality [number]` 选项来调整压缩质量。例如，要压缩到 90%，请运行：
 
 <Terminal cmd={['$ npx expo-optimize --quality 90']} />
 
-### Other manual optimization methods
+### 其他手动优化方法
 
-To optimize images and videos manually, see [Assets](/develop/user-interface/assets/#manual-optimization-methods) for more information.
+要手动优化图片和视频，请参阅 [资源](/develop/user-interface/assets/#manual-optimization-methods) 了解更多信息。
 
-## Ensuring assets are included in updates
+## 确保资源包含在更新中
 
-When you publish an update, EAS will upload your assets to the CDN so that they may be fetched when users run your app. However, for assets to be uploaded to the CDN, they must be explicitly required somewhere in your application's code. Conditionally requiring assets will result in the bundler being unable to detect them, and they will not be uploaded when you publish your project.
+当你发布更新时，EAS 会将你的资源上传到 CDN，以便用户运行应用时可以获取这些资源。不过，资源要上传到 CDN，必须在应用代码中的某处被显式引用。如果有条件地引用资源，打包器将无法检测到它们，而你发布项目时它们也不会被上传。
 
-## Further considerations
+## 进一步考虑
 
-It's important to note that a user's app will only download new or updated assets. It will not re-download unchanged assets that already exist inside the app.
+需要注意的是，用户的应用只会下载新的或已更新的资源。它不会重新下载应用中已存在的未更改资源。
 
-One way to make sure that updates stay as slim as possible is to build and submit the app frequently to the app stores so that users can download a new app binary that includes more up-to-date assets. Generally, it's a good practice to build and submit an app when adding large or multiple assets, and it's good to use updates to fix small bugs and make minor changes between app store releases.
+确保更新尽可能轻量的一种方法，是频繁地构建并提交应用到应用商店，这样用户就可以下载一个包含更多最新资源的新应用二进制文件。通常来说，在添加较大的资源或多个资源时构建并提交应用是个好习惯，而在两次应用商店发布之间使用更新来修复小 bug 和进行小幅修改也是很好的做法。

@@ -1,6 +1,6 @@
 ---
-title: Server rendering
-description: Learn how to render Expo Router routes dynamically at request time using server-side rendering (SSR).
+title: 服务器渲染
+description: 了解如何使用服务器端渲染（SSR）在请求时动态渲染 Expo Router 路由。
 isAlpha: true
 ---
 
@@ -10,17 +10,17 @@ import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **important** Server rendering is in [alpha](/more/release-statuses/#alpha) and is available in SDK 55 and later. It requires a [deployed server](/router/web/api-routes/#deployment) for production use.
+> **重要** 服务器渲染处于 [alpha](/more/release-statuses/#alpha) 阶段，并可在 SDK 55 及更高版本中使用。生产环境使用需要一个[已部署的服务器](/router/web/api-routes/#deployment)。
 
-Server-side rendering (SSR) generates HTML dynamically on each request, as opposed to [static rendering](/router/web/static-rendering), which pre-renders HTML at build time. This guide walks you through enabling server rendering for your Expo Router app.
+服务端渲染（SSR）会在每次请求时动态生成 HTML，而 [静态渲染](/router/web/static-rendering) 则是在构建时预渲染 HTML。本指南将引导你为 Expo Router 应用启用服务器渲染。
 
-> **info** With server-side rendering, [data loaders](/router/web/data-loaders) are executed on the server for each request and the result is embedded in the HTML response.
+> **信息** 使用服务端渲染时，[数据加载器](/router/web/data-loaders) 会在服务器上针对每次请求执行，其结果会嵌入到 HTML 响应中。
 
-## Setup
+## 设置
 
 <Step label="1">
 
-Enable server rendering in your project's [app config](/versions/latest/config/app/):
+在项目的[应用配置](/versions/latest/config/app/)中启用服务器渲染：
 
 ```json app.json
 {
@@ -34,7 +34,7 @@ Enable server rendering in your project's [app config](/versions/latest/config/a
       [
         "expo-router",
         {
-          /* @info Enable server-side rendering */
+          /* @info 启用服务端渲染 */
           "unstable_useServerRendering": true
           /* @end */
         }
@@ -48,19 +48,19 @@ Enable server rendering in your project's [app config](/versions/latest/config/a
 
 <Step label="2">
 
-Start the development server:
+启动开发服务器：
 
 <Terminal cmd={['$ npx expo start']} />
 
 </Step>
 
-## Production
+## 生产环境
 
-To export your app for production, run the export command:
+要为生产环境导出你的应用，请运行导出命令：
 
 <Terminal cmd={['$ npx expo export --platform web']} />
 
-This creates a **dist** directory with your server-rendered application. Unlike static rendering, no HTML files are pre-generated. Instead, the output includes a similar directory structure as shown below:
+这会创建一个包含服务器渲染应用的 **dist** 目录。与静态渲染不同，不会预先生成 HTML 文件。相反，输出会包含如下所示的类似目录结构：
 
 <FileTree
   files={[
@@ -71,20 +71,20 @@ This creates a **dist** directory with your server-rendered application. Unlike 
   ]}
 />
 
-In output above includes the following directories inside **dist** directory:
+上面的输出在 **dist** 目录中包含以下目录：
 
-- **client** directory: Contains JavaScript and CSS bundles for client-side hydration
-- **server** directory: Contains the routes manifest and server rendering module
+- **client** 目录：包含用于客户端 hydration 的 JavaScript 和 CSS bundles
+- **server** 目录：包含路由清单和服务器渲染模块
 
-You can test the production build locally by running the following command and opening the linked URL in your browser:
+你可以通过运行以下命令并在浏览器中打开链接的 URL 来本地测试生产构建：
 
 <Terminal cmd={['$ npx expo serve']} />
 
-The above command starts a local server that renders pages on each request, simulating a production environment.
+上述命令会启动一个本地服务器，在每次请求时渲染页面，模拟生产环境。
 
-## Dynamic routes
+## 动态路由
 
-With server rendering, dynamic routes are rendered on the fly, and the [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) export is not needed and should be removed. If your route file exports `generateStaticParams`, those routes will be handled dynamically instead. The route is rendered at request time with the actual parameters from the URL.
+使用服务器渲染时，动态路由会即时渲染，因此不需要 [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) 导出，并且应当移除。如果你的路由文件导出了 `generateStaticParams`，这些路由将改为动态处理。路由会在请求时使用 URL 中的实际参数进行渲染。
 
 ```tsx src/app/blog/[id].tsx
 import { Text } from 'react-native';
@@ -93,26 +93,26 @@ import { useLocalSearchParams } from 'expo-router';
 export default function Page() {
   const { id } = useLocalSearchParams();
 
-  /* @info The id parameter is available immediately from the URL */
-  return <Text>Post {id}</Text>;
+  /* @info id 参数会立即从 URL 中可用 */
+  return <Text>帖子 {id}</Text>;
   /* @end */
 }
 ```
 
-In the above example, when the app user visits `/blog/my-post`, the page is rendered on the server with `id` set to `"my-post"`.
+在上面的示例中，当应用用户访问 `/blog/my-post` 时，该页面会在服务器上渲染，且 `id` 被设置为 `"my-post"`。
 
-## Root HTML
+## 根 HTML
 
-You can customize the root HTML document by creating a **src/app/+html.tsx** file. This component wraps all routes and runs only on the server.
+你可以通过创建 **src/app/+html.tsx** 文件来自定义根 HTML 文档。此组件会包裹所有路由，并且只在服务器上运行。
 
 ```tsx src/app/+html.tsx
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { type PropsWithChildren } from 'react';
 
-// This file is web-only and used to configure the root HTML for every
-// web page during server rendering.
-// The contents of this function only run in Node.js environments and
-// do not have access to the DOM or browser APIs.
+// 这个文件仅适用于 web，用于在服务器渲染期间为每个
+// web 页面配置根 HTML。
+// 此函数中的内容只会在 Node.js 环境中运行，并且
+// 无法访问 DOM 或浏览器 API。
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -122,12 +122,12 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
         {/*
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native platforms.
-          However, body scrolling is often nice to have for mobile web. If you want to enable it, remove this line.
+          禁用 web 上的 body 滚动。这会让 ScrollView 组件的行为更接近它们在原生平台上的表现。
+          不过，对于移动端 web 来说，body 滚动通常也很有用。如果你想启用它，请移除这一行。
         */}
         <ScrollViewStyleReset />
 
-        {/* Add any additional <head> elements that you want globally available on web... */}
+        {/* 添加任何你希望在 web 上全局可用的额外 <head> 元素... */}
       </head>
       <body>{children}</body>
     </html>
@@ -135,18 +135,18 @@ export default function Root({ children }: PropsWithChildren) {
 }
 ```
 
-The **+html.tsx** file is only used by the server renderer and never by client code. This means:
+**+html.tsx** 文件仅由服务器渲染器使用，客户端代码永远不会使用它。这意味着：
 
-- It will be run by `expo-server` during server rendering
-- It is not rehydrated on the client, and hence shouldn't use React hooks
-- You may not import global CSS in `+html.tsx` (use the [Root Layout](/router/basics/navigation-layouts/#root-layout) for styles)
-- You may not call browser APIs like `window` or `document` in your `+html.tsx`
+- 它会在服务器渲染期间由 `expo-server` 运行
+- 它不会在客户端重新 hydration，因此不应使用 React hooks
+- 你不能在 `+html.tsx` 中导入全局 CSS（请使用[根布局](/router/basics/navigation-layouts/#root-layout)来设置样式）
+- 你不能在 `+html.tsx` 中调用 `window` 或 `document` 之类的浏览器 API
 
-All `+html.tsx` components are expected to render the `children` prop they receive in their JSX content.
+所有 `+html.tsx` 组件都应在其 JSX 内容中渲染它们接收到的 `children` 属性。
 
-## Meta tags
+## 元标签
 
-Add meta tags to your pages using the `<Head />` component from `expo-router`:
+使用 `expo-router` 的 `<Head />` 组件为你的页面添加 meta 标签：
 
 ```tsx src/app/about.tsx
 import Head from 'expo-router/head';
@@ -156,35 +156,35 @@ export default function Page() {
   return (
     <>
       <Head>
-        <title>About Us</title>
-        <meta name="description" content="Learn more about our company." />
+        <title>关于我们</title>
+        <meta name="description" content="了解更多关于我们公司的信息。" />
       </Head>
-      <Text>About page content</Text>
+      <Text>关于页面内容</Text>
     </>
   );
 }
 ```
 
-During server-side rendering, `<Head>` elements are extracted and included in the initial HTML response, modifying the `<head>` element sent to the client, and improving search engine optimization (SEO).
+在服务器端渲染期间，`<Head>` 元素会被提取并包含在初始 HTML 响应中，从而修改发送给客户端的 `<head>` 元素，并提升搜索引擎优化（SEO）。
 
-## Deployment
+## 部署
 
-Server-side rendering requires a runtime server to render pages on each request. Server-side rendered Expo apps **cannot** be deployed to static hosting services like GitHub Pages.
+服务器端渲染要求有一个运行时服务器来在每次请求时渲染页面。使用服务器端渲染的 Expo 应用**不能**部署到 GitHub Pages 之类的静态托管服务上。
 
-### Supported platforms
+### 支持的平台
 
-| Platform                                  | Adapter                       |
-| ----------------------------------------- | ----------------------------- |
-| [EAS Hosting](/eas/hosting/introduction/) | Built-in                      |
-| Node.js/Express                           | `expo-server/adapter/express` |
-| Cloudflare Workers                        | `expo-server/adapter/workerd` |
-| Vercel Edge Functions                     | `expo-server/adapter/vercel`  |
-| Netlify Edge Functions                    | `expo-server/adapter/netlify` |
-| Bun                                       | `expo-server/adapter/bun`     |
+| 平台                                  | 适配器                        |
+| ------------------------------------- | ----------------------------- |
+| [EAS Hosting](/eas/hosting/introduction/) | 内置                         |
+| Node.js/Express                       | `expo-server/adapter/express` |
+| Cloudflare Workers                    | `expo-server/adapter/workerd` |
+| Vercel Edge Functions                 | `expo-server/adapter/vercel`  |
+| Netlify Edge Functions                 | `expo-server/adapter/netlify`  |
+| Bun                                   | `expo-server/adapter/bun`     |
 
-<Collapsible summary="Example: Deployment with EAS Hosting">
+<Collapsible summary="示例：使用 EAS Hosting 部署">
 
-EAS Hosting supports server rendering out of the box. Export your app and deploy with:
+EAS Hosting 开箱即支持服务器渲染。导出你的应用并使用以下命令部署：
 
 <Terminal
   cmd={['$ npx expo export --platform web', '', '$ npx eas-cli@latest hosting:deploy dist']}
@@ -192,42 +192,42 @@ EAS Hosting supports server rendering out of the box. Export your app and deploy
 
 </Collapsible>
 
-## Comparison with static rendering
+## 与静态渲染的比较
 
-| Feature            |     | Static Rendering                                                                      | Server Rendering              |
-| ------------------ | :-- | ------------------------------------------------------------------------------------- | ----------------------------- |
-| HTML generation    |     | Build time                                                                            | Request time                  |
-| Configuration      |     | `web.output: 'static'`                                                                | `web.output: 'server'`        |
-| Dynamic routes     |     | Requires [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) | Works automatically           |
-| Server required    |     | No                                                                                    | Yes                           |
-| Time to First Byte |     | Fastest (cached)                                                                      | Slower (rendered per request) |
-| Hosting            |     | Any static host                                                                       | Server runtime required       |
+| 功能               |     | 静态渲染                                                                           | 服务器渲染                  |
+| ------------------ | :-- | ---------------------------------------------------------------------------------- | --------------------------- |
+| HTML 生成          |     | 构建时                                                                            | 请求时                      |
+| 配置               |     | `web.output: 'static'`                                                             | `web.output: 'server'`      |
+| 动态路由           |     | 需要 [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) | 自动工作                    |
+| 需要服务器         |     | 否                                                                                | 是                          |
+| 首字节时间         |     | 最快（缓存）                                                                      | 更慢（每次请求渲染）        |
+| 托管               |     | 任何静态主机                                                                      | 需要服务器运行时            |
 
-## Common questions
+## 常见问题
 
 <FAQ>
 
-<Collapsible summary="Can I use data loaders with server rendering?">
+<Collapsible summary="我可以在服务器渲染中使用数据加载器吗？">
 
-Yes. Server rendering works with [data loaders](/router/web/data-loaders) to fetch data on the server before rendering.
-
-</Collapsible>
-
-<Collapsible summary="Can I mix server and static rendering?">
-
-Currently, Expo Router does not support mixing server and static rendering in the same project. Choose a single output mode based on your requirements.
+可以。服务器渲染可与[数据加载器](/router/web/data-loaders)配合使用，在渲染之前先在服务器上获取数据。
 
 </Collapsible>
 
-<Collapsible summary="How do I cache server-rendered responses?">
+<Collapsible summary="我可以混合使用服务器渲染和静态渲染吗？">
 
-Caching is handled at the server or CDN level. Configure your deployment platform to cache responses based on URL patterns or cache headers.
+目前，Expo Router 不支持在同一个项目中混合使用服务器渲染和静态渲染。请根据你的需求选择一种输出模式。
 
 </Collapsible>
 
-<Collapsible summary="Does server rendering work with API routes?">
+<Collapsible summary="如何缓存服务器渲染的响应？">
 
-Yes. [API routes](/router/web/api-routes/) work independently of the rendering mode. They are always executed on the server.
+缓存由服务器或 CDN 层处理。请根据 URL 模式或缓存头配置你的部署平台以缓存响应。
+
+</Collapsible>
+
+<Collapsible summary="服务器渲染支持 API 路由吗？">
+
+可以。[API 路由](/router/web/api-routes/) 与渲染模式相互独立。它们始终在服务器上执行。
 
 </Collapsible>
 

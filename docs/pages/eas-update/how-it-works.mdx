@@ -1,119 +1,119 @@
 ---
-title: How EAS Update works
-sidebar_title: How it works
-description: A conceptual overview of how EAS Update works.
+title: EAS Update 的工作原理
+sidebar_title: 它是如何工作的
+description: EAS Update 工作原理的概念性概览。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-EAS Update is a service that allows you to deliver small bug fixes and updates to your users immediately as you work on your next app store release. Making an update available to builds involves creating a link between a build and an update.
+EAS Update 是一项服务，允许你在准备下一次应用商店发布时，立即向用户推送小型 bug 修复和更新。要让更新可供某些构建使用，需要在构建和更新之间建立链接。
 
-To create a link between a build and an update, we have to make sure the update can run on the build. We also want to make sure we can create a deployment process so that we can expose certain updates to certain builds when we're ready.
+为了创建构建和更新之间的链接，我们必须确保该更新可以在该构建上运行。我们还希望确保能够创建一个部署流程，以便在准备就绪时将某些更新暴露给某些构建。
 
-To illustrate how builds and updates interact, take a look at the following diagram:
+为了说明构建和更新如何交互，请看下面的图：
 
 <ContentSpotlight
-  alt="Native and update layers diagram"
+  alt="原生层和更新层示意图"
   src="/static/images/eas-update/layers.png"
 />
 
-Builds can be thought of as two layers: a native layer that's built into the app's binary, and an update layer, that is swappable with other compatible updates. This separation allows us to ship bug fixes to builds as long as the update with the bug fix can run on the native layer inside the build.
+构建可以被看作由两层组成：一层是内置到应用二进制文件中的原生层，另一层是可与其他兼容更新互换的更新层。这种分离使我们能够向构建发布 bug 修复，只要包含该 bug 修复的更新可以在构建内的原生层上运行即可。
 
-To make sure the update can run on the build, we have to set a variety of properties so that we can be sure our builds can run our updates. This starts when we create a build of our project.
+为了确保更新可以在构建上运行，我们必须设置各种属性，以便确保我们的构建能够运行我们的更新。这从我们创建项目的构建时开始。
 
-## Conceptual overview
+## 概念概览
 
-### Distributing builds
+### 分发构建
 
-When we're ready to create a build of our Expo project, we can run `eas build` to create a build. During the build, the process will include some properties inside the build that are important for updates. They are:
+当我们准备创建 Expo 项目的构建时，可以运行 `eas build` 来创建构建。在构建过程中，系统会在构建中包含一些对更新很重要的属性。它们是：
 
-- **Channel:** The channel is a name we can give to multiple builds to identify them easily. It is defined in `eas.json`. For instance, we may have an Android and an iOS build with a channel named "production", while we have another pair of builds with a channel named "staging". Then, we can distribute the builds with the "production" channel to the public app stores, while keeping the "staging" builds on the Play Store Internal Track and TestFlight.
-  Later when we publish an update, we can make it available to the builds with the "staging" channel first; then once we test our changes, we can make the update available to the builds with the "production" channel.
-- **Runtime version:** The runtime version describes the JS-native interface defined by the native code layer that runs our app's update layer. It is defined in a project's [app config](/workflow/configuration/). Whenever we make changes to our native code that change our app's JS-native interface, we'll need to update the runtime version. [Learn more.](/eas-update/runtime-versions)
-- **Platform:** Every build has a platform, such as "Android" or "iOS".
+- **Channel:** 渠道是我们可以赋予多个构建的一个名称，用于轻松识别它们。它在 `eas.json` 中定义。例如，我们可能有一个 Android 构建和一个 iOS 构建都使用名为 "production" 的渠道，同时还有另一对构建使用名为 "staging" 的渠道。然后，我们可以将使用 "production" 渠道的构建分发到公开应用商店，而将 "staging" 构建保留在 Play Store Internal Track 和 TestFlight 上。
+  之后，当我们发布更新时，可以先让 "staging" 渠道的构建获得该更新；等我们测试完更改后，再让 "production" 渠道的构建获得该更新。
+- **Runtime version:** 运行时版本描述的是由原生代码层定义的 JS-native 接口，该原生代码层负责运行我们应用的更新层。它在项目的 [app config](/workflow/configuration/) 中定义。每当我们对原生代码做出会改变应用 JS-native 接口的更改时，就需要更新运行时版本。[了解更多。](/eas-update/runtime-versions)
+- **Platform:** 每个构建都有一个平台，例如 "Android" 或 "iOS"。
 
-If we made two sets of builds with the channels named "staging" and "production", we could distribute builds to four different places:
+如果我们使用名为 "staging" 和 "production" 的渠道创建两组构建，那么我们可以把构建分发到四个不同的位置：
 
-<ContentSpotlight alt="Build types diagram" src="/static/images/eas-update/builds.png" />
+<ContentSpotlight alt="构建类型示意图" src="/static/images/eas-update/builds.png" />
 
-This diagram is just an example of how you could create builds and name their channels, and where you could put those builds. Ultimately it's up to you which channel names you set and where you put those builds.
+这个图只是一个示例，展示你可以如何创建构建并命名它们的渠道，以及可以把这些构建放到哪里。最终，渠道名称如何设置、这些构建放到哪里，取决于你自己。
 
-### Publishing an update
+### 发布更新
 
-Once we've created builds, we can change the update layer of our project by publishing an update. For example, we could change some text inside **App.js**, then we could publish that change as an update.
+一旦我们创建了构建，就可以通过发布更新来更改项目的更新层。比如，我们可以修改 **App.js** 中的一些文本，然后把这个更改作为更新发布出去。
 
-To publish an update, we can run `eas update --auto`. This command will create a local update bundle inside the **dist** directory in our project. Once it's created an update bundle, it will upload that bundle to EAS servers, in a database object named a _branch_. A branch has a name and contains a list of updates, where the most recent update is the active update on the branch. We can think of EAS branches just like Git branches. Just as Git branches contain a list of commits, EAS branches contain a list of updates.
+要发布更新，我们可以运行 `eas update --auto`。这个命令会在项目的 **dist** 目录中创建一个本地更新包。一旦更新包创建完成，它就会把这个包上传到 EAS 服务器，并存入一个名为 _branch_ 的数据库对象中。一个 branch 有一个名称，并包含一个更新列表，其中最新的更新是该 branch 上的活动更新。我们可以把 EAS branch 想象成 Git branch。就像 Git branch 包含一组提交一样，EAS branch 包含一组更新。
 
 <ContentSpotlight
-  alt="Branches with its most recent update pointed out as the active one"
+  alt="标出了其最新更新作为活动更新的分支"
   src="/static/images/eas-update/branch.png"
 />
 
-### Matching updates and builds
+### 匹配更新和构建
 
-Like builds, every update on a branch includes a target runtime version and target platform. With these fields, we can make sure that an update will run on a build with something called an _update policy_. EAS' update policy is as follows:
+和构建一样，branch 上的每个更新都包含目标运行时版本和目标平台。借助这些字段，我们可以通过一种称为 _update policy_ 的机制，确保某个更新能够在构建上运行。EAS 的更新策略如下：
 
-- The platform of the build and the target platform of an update must match exactly.
-- The runtime version of the build and the target runtime version of an update must match exactly.
-- A channel can be linked to any branch. By default, a channel is linked to a branch of the same name.
+- 构建的平台和更新的目标平台必须完全匹配。
+- 构建的运行时版本和更新的目标运行时版本必须完全匹配。
+- 一个渠道可以链接到任意 branch。默认情况下，渠道会链接到同名的 branch。
 
-Let's focus on that last point. Every build has a channel, and we, as developers, can link that channel to any branch, which will make its most recent compatible update available on the branch to the linked channel.
-To simplify this linking, by default we auto-link channels to branches of the same name. For instance, if we created builds with the channel named "production", we could publish updates to a branch named "production" and our builds would get the updates from the branch named "production", even though we did not manually link anything.
+重点看最后一点。每个构建都有一个渠道，而我们作为开发者，可以把这个渠道链接到任意 branch，这样该 branch 上最新且兼容的更新就会对该链接渠道可用。
+为了简化这种链接，默认情况下我们会自动将渠道链接到同名的 branch。例如，如果我们创建了渠道名为 "production" 的构建，我们可以把更新发布到名为 "production" 的 branch，而我们的构建就会从名为 "production" 的 branch 获取更新，尽管我们并没有手动链接任何内容。
 
 <ContentSpotlight
-  alt={`Channel "production" linked to branch "production" by default`}
+  alt={`渠道 "production" 默认链接到 branch "production"`}
   src="/static/images/eas-update/default-link.png"
 />
 
-This default linking works great if you have a deployment process where you have multiple consistent Git and EAS branches.
-For instance, we could have a "production" branch and a "staging" branch, both on Git and on EAS. Paired with a [GitHub Action](/eas-update/github-actions), we could make it so that every time a commit is pushed to the "staging" Git branch, we publish to the "staging" EAS Update branch, which would make that update apply to all our builds with the "staging" channel.
-Once we tested changes on the staging builds, then we could merge the "staging" Git branch into the "production" Git branch, which would publish an update on the "production" EAS Update branch. Finally, the latest update on the "production" EAS Update branch would apply to builds with the "production" channel.
+如果你有一个部署流程，其中存在多个一致的 Git 和 EAS branch，那么这种默认链接方式就非常适用。
+例如，我们可以同时在 Git 和 EAS 上都有一个 "production" branch 和一个 "staging" branch。结合 [GitHub Action](/eas-update/github-actions)，我们可以做到每当有 commit 推送到 "staging" Git branch 时，就将其发布到 "staging" EAS Update branch，这样该更新就会应用到所有使用 "staging" 渠道的构建上。
+当我们在 staging 构建上测试完更改后，就可以把 "staging" Git branch 合并到 "production" Git branch，这会在 "production" EAS Update branch 上发布一个更新。最终，"production" EAS Update branch 上的最新更新就会应用到使用 "production" 渠道的构建上。
 
-This flow makes it so that we can push to GitHub, then see our builds update without any other interventions.
+这个流程使我们可以先推送到 GitHub，然后在没有其他干预的情况下看到我们的构建自动更新。
 
-While this flow works for many developers, there's another flow we can accomplish since we have the ability to change the link between channels and branches. Imagine we name our branches like "version-1.0", "version-2.0", and "version-3.0". We could link the "version-1.0" EAS Update branch to the "production" channel, to make it available to our "production" builds.
-We could also link the "version-2.0" EAS Update branch to the "staging" channel to make it available to testers. Finally, we could make a "version-3.0" EAS Update branch that is not linked to any builds yet, that only developers are testing with a development build.
+虽然这个流程对许多开发者都有效，但由于我们可以更改渠道和 branch 之间的链接，因此还能实现另一种流程。假设我们将 branch 命名为 "version-1.0"、"version-2.0" 和 "version-3.0"。我们可以将 "version-1.0" EAS Update branch 链接到 "production" 渠道，使其对我们的 "production" 构建可用。
+我们还可以将 "version-2.0" EAS Update branch 链接到 "staging" 渠道，使其对测试人员可用。最后，我们可以创建一个 "version-3.0" EAS Update branch，它目前还没有链接到任何构建，只有开发者正在使用一个开发构建进行测试。
 
 <ContentSpotlight
-  alt={`Channel "production" linked to branch "version-1.0", channel "staging" linked to branch "version-2.0"`}
+  alt={`渠道 "production" 链接到 branch "version-1.0"，渠道 "staging" 链接到 branch "version-2.0"`}
   src="/static/images/eas-update/custom-link-1.png"
 />
 
-Once testers verify that the update on the "version-2.0" EAS Update branch is ready for production, we can update the "production" channel so that it's linked to the "version-2.0" branch. To accomplish this, we could run:
+一旦测试人员确认 "version-2.0" EAS Update branch 上的更新已准备好投入生产，我们就可以更新 "production" 渠道，使其链接到 "version-2.0" branch。为此，我们可以运行：
 
 <Terminal cmd={['$ eas channel:edit production --branch version-2.0']} />
 
 <ContentSpotlight
-  alt={`Channel "production" linked to branch "version-2.0", channel "staging" linked to branch "version-2.0"`}
+  alt={`渠道 "production" 链接到 branch "version-2.0"，渠道 "staging" 链接到 branch "version-2.0"`}
   src="/static/images/eas-update/custom-link-2.png"
 />
 
-After this state, we'd be ready to start testing the "version-3.0" EAS Update branch. Similarly to the last step, we could link the "staging" channel to the "version-3.0" EAS Update branch with this command:
+在这种状态下，我们就可以开始测试 "version-3.0" EAS Update branch 了。与上一步类似，我们可以使用以下命令将 "staging" 渠道链接到 "version-3.0" EAS Update branch：
 
 <Terminal cmd={['$ eas channel:edit staging --branch version-3.0']} />
 
 <ContentSpotlight
-  alt={`Channel "production" linked to branch "version-2.0", channel "staging" linked to branch "version-3.0"`}
+  alt={`渠道 "production" 链接到 branch "version-2.0"，渠道 "staging" 链接到 branch "version-3.0"`}
   src="/static/images/eas-update/custom-link-3.png"
 />
 
-## Practical overview
+## 实践概览
 
-Now that we're familiar with the core concepts of EAS Update, let's talk about how this process occurs.
+现在我们已经熟悉了 EAS Update 的核心概念，下面来讲讲这个过程是如何发生的。
 
-When an Expo project that includes `expo-updates` is built the included native Android and iOS code is responsible for managing, fetching, parsing, and validating updates.
+当一个包含 `expo-updates` 的 Expo 项目被构建时，所包含的原生 Android 和 iOS 代码负责管理、获取、解析和验证更新。
 
-When the library checks for updates and when it downloads them, they are [configurable](/versions/latest/config/app/#updates). By default, the library will check for an update when it is opened. If an update newer than the currently running update is found, it will download and run the newer update. If the library does not find a newer update, it will instead run the newest downloaded update, falling back to the update that was embedded inside the app at build time if none have been downloaded.
+库在检查更新以及下载更新时，这些行为都是[可配置的](/versions/latest/config/app/#updates)。默认情况下，库会在打开时检查更新。如果发现比当前正在运行的更新更高版本的更新，它会下载并运行较新的更新。如果库没有找到更新版本，则会运行已下载的最新更新；如果没有任何已下载更新，则回退到构建时嵌入到应用中的更新。
 
-`expo-updates` downloads updates in two phases. First, it downloads the most recent update _manifest_, which contains information about the update including a list of assets (images, JavaScript bundles, font files, and so on) that are required to run the update.
-Second, the library downloads the assets specified in the manifest that it has not yet downloaded from prior updates. For instance, if an update contains a new image, the library will download the new image asset before running the update. To help end-users get updates quickly and reliably, updates should be kept as small as possible.
+`expo-updates` 会分两个阶段下载更新。首先，它会下载最新的更新 _manifest_，其中包含更新的信息，包括运行该更新所需的资源列表（图片、JavaScript bundle、字体文件等）。
+其次，库会下载 manifest 中指定的、此前从未下载过的资源。例如，如果某个更新包含一张新图片，那么库会先下载这张新图片资源，然后再运行该更新。为了帮助最终用户快速且可靠地获得更新，更新应尽可能保持小体积。
 
-If the library is able to download the manifest (phase 1) and all the required assets (phase 2) before the `fallbackToCacheTimeout` setting, then the new update will run immediately upon launch. If the library is not able to fetch the manifest and assets within `fallbackToCacheTimeout`, it will continue to download the new update in the background and will run it upon the next launch.
+如果库能够在 `fallbackToCacheTimeout` 设置之前下载完 manifest（第 1 阶段）和所有必需资源（第 2 阶段），那么新更新会在启动时立即运行。如果库无法在 `fallbackToCacheTimeout` 时间内获取 manifest 和资源，它会继续在后台下载新更新，并在下次启动时运行它。
 
-<ContentSpotlight alt="Update download timeline" src="/static/images/eas-update/process.png" />
+<ContentSpotlight alt="更新下载时间线" src="/static/images/eas-update/process.png" />
 
-## Wrap up
+## 总结
 
-With EAS Update, we can quickly deliver small, critical bug fixes to our users and give users the best experience possible. This is set up with a build's runtime version, platform, and channel. With these three constraints, we can make an update available to a specific group of builds. This allows us to test our changes before going to production within a deployment process.
-Depending on how we set up our deployment process, we can optimize for speed. We can also optimize our deployments to be as safe and bug-free as possible. The deployment possibilities are vast and can match nearly any release process you prefer.
+借助 EAS Update，我们可以快速向用户推送小型、关键的 bug 修复，并为用户提供尽可能好的体验。这通过构建的运行时版本、平台和渠道来实现。借助这三个约束，我们可以让更新对特定的一组构建可用。这使我们能够在进入生产环境之前，在部署流程中先测试更改。
+根据我们如何设置部署流程，我们可以优化速度，也可以将部署优化得尽可能安全、尽可能没有 bug。部署方式非常多样，几乎可以匹配你偏好的任何发布流程。

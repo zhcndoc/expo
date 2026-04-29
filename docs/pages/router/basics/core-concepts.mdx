@@ -1,53 +1,53 @@
 ---
-title: Core concepts of file-based routing in Expo Router
-description: Learn the ground rules of Expo Router and how it relates to the rest of your code.
-sidebar_title: Core concepts
+title: Expo Router 中基于文件路由的核心概念
+description: 了解 Expo Router 的基本规则，以及它与其余代码的关系。
+sidebar_title: 核心概念
 searchRank: 10
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 
-Before diving into how to construct your app's navigation tree with Expo Router, let's first understand the core concepts that make up the foundation of file-based routing in Expo Router, and how an Expo Router project might differ in structure from other React Native projects.
+在深入了解如何使用 Expo Router 构建应用的导航树之前，我们先来理解构成 Expo Router 中基于文件路由基础的核心概念，以及 Expo Router 项目的结构可能与其他 React Native 项目有何不同。
 
-## The rules of Expo Router
+## Expo Router 的规则
 
-### 1. All screens/pages are files inside the src/app directory
+### 1. 所有屏幕/页面都是 src/app 目录中的文件
 
-All navigation routes in your app are defined by the files and sub-directories inside the [**src/app**](/router/reference/src-directory/) directory. Every file inside the **src/app** directory has a default export that defines a distinct page in your app (except for the special **\_layout** files).
+你应用中的所有导航路由都由 [**src/app**](/router/reference/src-directory/) 目录中的文件和子目录定义。**src/app** 目录中的每个文件都有一个默认导出，用于定义你应用中的一个独立页面（特殊的 **\_layout** 文件除外）。
 
-Accordingly, directories inside **src/app** define groups of related screens together.
+因此，**src/app** 中的目录会将相关的屏幕分组在一起。
 
-### 2. All pages have a URL
+### 2. 所有页面都有一个 URL
 
-All pages have a URL path that matches the file's location in the **src/app** directory, which can be used to navigate to that page in the address bar on the web, or as an app-specific deep link in a native mobile app. This is what is meant by Expo Router supporting [universal deep-linking](/linking/overview/). All pages in your app can be navigated to with a URL, regardless of the platform.
+所有页面都有一个与 **src/app** 目录中该文件位置相匹配的 URL 路径，你可以在网页浏览器的地址栏中使用它来导航到该页面，或者在原生移动应用中将其作为应用专属的深度链接。这就是 Expo Router 支持 [通用深度链接](/linking/overview/) 的含义。你应用中的所有页面都可以通过 URL 进行导航，而不受平台限制。
 
-### 3. First index.tsx is the initial route
+### 3. 第一个 index.tsx 是初始路由
 
-With Expo Router, you do not define an initial route or first screen in code. Rather, when you open your app, Expo Router will look for the first **index.tsx** file matching the `/` URL. In the [default template](/router/installation/#quick-start), this is **src/app/index.tsx**. If the app user should start by default in a deeper part of your navigation tree, you can use a [route group](/router/basics/notation/#parentheses) (a directory where the name is surrounded in parentheses), and that will not count as part of the URL. If you want your first screen to be a group of tabs, you might put all of the tab pages inside the **src/app/(tabs)** directory and define the default tab as **index.tsx**. With this arrangement, the `/` URL will take the user directly to **src/app/(tabs)/index.tsx** file.
+使用 Expo Router 时，你不会在代码中定义初始路由或第一个屏幕。相反，当你打开应用时，Expo Router 会寻找匹配 `/` URL 的第一个 **index.tsx** 文件。在 [默认模板](/router/installation/#quick-start) 中，这个文件是 **src/app/index.tsx**。如果应用用户默认应该从导航树更深处开始，你可以使用一个 [路由组](/router/basics/notation/#parentheses)（目录名被圆括号包围的目录），而它不会被计入 URL 的一部分。如果你希望第一个屏幕是一个标签页组，你可以把所有标签页页面都放在 **src/app/(tabs)** 目录中，并将默认标签页定义为 **index.tsx**。这样，`/` URL 会直接将用户带到 **src/app/(tabs)/index.tsx** 文件。
 
-### 4. Root \_layout.tsx replaces App.jsx/tsx
+### 4. 根目录 \_layout.tsx 取代 App.jsx/tsx
 
-Every project should have a **\_layout.tsx** file directly inside the **src/app** directory. This file is rendered before any other route in your app and is where you would put the initialization code that may have previously gone inside an **App.jsx** file, such as loading fonts, setting up theme providers, or interacting with the splash screen. For example, the default template wraps the app with a `ThemeProvider` for dark and light mode support and renders the `AppTabs` component from this file.
+每个项目都应该在 **src/app** 目录下直接包含一个 **\_layout.tsx** 文件。这个文件会在应用中的任何其他路由之前渲染，你可以把以前可能放在 **App.jsx** 文件中的初始化代码放在这里，例如加载字体、设置主题提供者，或者与启动画面交互。例如，默认模板会用 `ThemeProvider` 包裹应用，以支持深色和浅色模式，并在这个文件中渲染 `AppTabs` 组件。
 
-### 5. Default template uses platform-specific tabs
+### 5. 默认模板使用平台特定的标签页
 
-The default template uses two different tab implementations depending on the platform. On Android and iOS, tabs are rendered using [native tabs](/router/advanced/native-tabs/), which use the platform's built-in tab bar for a native look and feel. On web, tabs are rendered using [custom tabs](/router/advanced/custom-tabs/) from `expo-router/ui`, which are unstyled and flexible components that allow full control over the tab bar's appearance.
+默认模板会根据平台使用两种不同的标签页实现。在 Android 和 iOS 上，标签页使用 [原生标签页](/router/advanced/native-tabs/) 渲染，它使用平台内置的标签栏，具有原生的外观和交互体验。在 web 上，标签页使用来自 `expo-router/ui` 的 [自定义标签页](/router/advanced/custom-tabs/) 渲染，这些是无样式且灵活的组件，允许完全控制标签栏的外观。
 
-This is achieved through [platform-specific file extensions](/router/advanced/platform-specific-modules/). The tab component is defined in two files: **src/components/app-tabs.native.tsx** for Android and iOS, and **src/components/app-tabs.tsx** for web. Expo's module resolution automatically picks the correct file based on the platform. This pattern is used because native platforms have a system tab bar that provides expected behaviors like scroll-to-top on tap and native animations, while web requires a custom-styled tab bar that fits typical website navigation patterns.
+这通过 [平台特定文件扩展名](/router/advanced/platform-specific-modules/) 来实现。标签页组件定义在两个文件中：用于 Android 和 iOS 的 **src/components/app-tabs.native.tsx**，以及用于 web 的 **src/components/app-tabs.tsx**。Expo 的模块解析会根据平台自动选择正确的文件。采用这种模式是因为原生平台拥有系统标签栏，能够提供诸如点击回到顶部和原生动画等预期行为，而 web 需要一个符合典型网站导航模式的自定义样式标签栏。
 
-### 6. Non-navigation components live outside the src/app directory
+### 6. 非导航组件放在 src/app 目录之外
 
-In Expo Router, the **src/app** directory is exclusively for defining your app's routes. Other parts of your app, like components, hooks, utilities, and so on, should be placed in other directories such as **src/components**, **src/hooks**, and **src/constants**. If you put a non-route inside the **src/app** directory, Expo Router will attempt to treat it like a route.
+在 Expo Router 中，**src/app** 目录专门用于定义应用的路由。应用的其他部分，比如组件、hooks、工具函数等等，应该放在其他目录中，例如 **src/components**、**src/hooks** 和 **src/constants**。如果你把一个非路由文件放在 **src/app** 目录中，Expo Router 会尝试把它当作路由来处理。
 
-### 7. It's still React Navigation under the hood
+### 7. 底层仍然是 React Navigation
 
-While this may sound quite a bit different from React Navigation, Expo Router is actually built on top of React Navigation. You can think of Expo Router as an Expo CLI optimization that translates your file structure into React Navigation components that you previously defined in your own code.
+虽然这听起来和 React Navigation 有很大不同，但 Expo Router 实际上是建立在 React Navigation 之上的。你可以把 Expo Router 看作是 Expo CLI 的一种优化，它将你的文件结构转换为你过去在自己的代码中定义的 React Navigation 组件。
 
-This also means that you can often refer to React Navigation documentation for how to style or configure navigation, as the default stack and tab navigators use the exact same options.
+这也意味着，你通常可以参考 React Navigation 文档来了解如何设置导航样式或配置导航，因为默认的栈导航器和标签导航器使用的是完全相同的选项。
 
-## The rules of Expo Router applied
+## 将 Expo Router 的规则应用起来
 
-Let's apply these foundational rules of Expo Router to quickly identify key elements of the following project file structure:
+让我们把这些 Expo Router 的基础规则应用到以下项目文件结构中，快速识别关键元素：
 
 <FileTree
   files={[
@@ -62,9 +62,9 @@ Let's apply these foundational rules of Expo Router to quickly identify key elem
   ]}
 />
 
-- **src/app/index.tsx** is the initial route, and will appear first when you open the app or navigate to your web app's root URL.
-- **src/app/home.tsx** is a page with the route `/home`, so you can navigate to it with a URL like `yourapp.com/home` in the browser, or `yourapp://home` in a native app.
-- **src/app/\_layout.tsx** is the root layout. Any initialization code you may have previously put in **App.jsx** should go here.
-- **src/app/profile/friends.tsx** is a page with the route `/profile/friends`.
-- **src/components/app-tabs.native.tsx** and **src/components/app-tabs.tsx** are [platform-specific](/router/advanced/platform-specific-modules/) tab components. The **.native.tsx** file is used on Android and iOS, while the **.tsx** file is used on web. The root layout imports these to render the tab navigator.
-- **src/components/text-field.tsx** and **src/components/toolbar.tsx** are not in the **src/app** directory, so they will not be considered pages. They will not have a URL, and they cannot be the target of a navigation action. However, they can be used as components in the pages inside the **src/app** directory.
+- **src/app/index.tsx** 是初始路由，当你打开应用或访问网页应用的根 URL 时，它会首先显示。
+- **src/app/home.tsx** 是一个路由为 `/home` 的页面，因此你可以在浏览器中使用类似 `yourapp.com/home` 的 URL，或者在原生应用中使用 `yourapp://home` 来导航到它。
+- **src/app/\_layout.tsx** 是根布局。你以前可能放在 **App.jsx** 中的任何初始化代码都应该放在这里。
+- **src/app/profile/friends.tsx** 是一个路由为 `/profile/friends` 的页面。
+- **src/components/app-tabs.native.tsx** 和 **src/components/app-tabs.tsx** 是 [平台特定](/router/advanced/platform-specific-modules/) 的标签页组件。**.native.tsx** 文件用于 Android 和 iOS，而 **.tsx** 文件用于 web。根布局会导入这些组件来渲染标签导航器。
+- **src/components/text-field.tsx** 和 **src/components/toolbar.tsx** 不在 **src/app** 目录中，因此它们不会被视为页面。它们没有 URL，也不能作为导航操作的目标。不过，它们可以作为组件在 **src/app** 目录中的页面里使用。

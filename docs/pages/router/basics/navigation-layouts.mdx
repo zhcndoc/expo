@@ -1,7 +1,7 @@
 ---
-title: Navigation layouts in Expo Router
-description: Learn how to construct different relationships between pages by using directories and layout files.
-sidebar_title: Layout
+title: Expo Router 中的导航布局
+description: 了解如何通过使用目录和布局文件来构建页面之间的不同关系。
+sidebar_title: 布局
 hasVideoLink: true
 searchRank: 8
 ---
@@ -11,20 +11,20 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 <VideoBoxLink
   videoId="Yh6Qlg2CYwQ"
-  title="Introduction to Expo Router Layout Files"
-  description="What are layout files, how to navigate between screens, and block access using redirects."
+  title="Expo Router 布局文件介绍"
+  description="什么是布局文件、如何在屏幕之间导航，以及如何使用重定向阻止访问。"
   className="mb-6"
 />
 
-Each directory within the **src/app** directory (including **src/app** itself) can define a layout in the form of a **\_layout.tsx** file inside that directory. This file defines how all the pages within that directory are arranged. This is where you would define a stack navigator, tab navigator, drawer navigator, or any other layout that you want to use for the pages in that directory. The layout file exports a default component that is rendered before whatever page you are navigating to within that directory.
+**src/app** 目录中的每个目录（包括 **src/app** 本身）都可以通过该目录内的 **_layout.tsx** 文件定义一个布局。这个文件定义了该目录下所有页面的排列方式。你可以在这里定义栈导航器、标签导航器、抽屉导航器，或任何你希望用于该目录页面的其他布局。布局文件会导出一个默认组件，它会在你导航到该目录中的任意页面之前先被渲染。
 
-Let's look at a few common layout scenarios.
+让我们来看几个常见的布局场景。
 
-## Root layout
+## 根布局
 
-Virtually every app will have a **\_layout.tsx** file directly inside the **src/app** directory. This is the root layout and represents the entry point for your navigation. In addition to describing the top-level navigator for your app, this file is where you would put initialization code that may have previously gone inside an **App.jsx** file, such as loading fonts, interacting with the splash screen, or adding context providers.
+几乎每个应用都会在 **src/app** 目录中直接放置一个 **_layout.tsx** 文件。这就是根布局，代表你导航的入口点。除了描述应用的顶层导航器之外，这个文件也是你放置之前可能写在 **App.jsx** 文件中的初始化代码的地方，例如加载字体、与启动画面交互，或添加上下文提供器。
 
-Here's an example root layout:
+下面是一个根布局示例：
 
 ```tsx src/app/_layout.tsx
 import { useFonts } from 'expo-font';
@@ -53,11 +53,11 @@ export default function RootLayout() {
 }
 ```
 
-The above example shows the splash screen initially and then renders a stack navigator once the fonts are loaded, which will cause your app to proceed to the initial route.
+上面的示例会先显示启动画面，然后在字体加载完成后渲染一个栈导航器，这将使你的应用继续进入初始路由。
 
-## Stacks
+## 栈
 
-You can implement a stack navigator in your root layout, as shown above, or in any other layout file inside a directory. Let's suppose you have a file structure with a stack inside of a directory:
+你可以像上面那样在根布局中实现栈导航器，也可以在目录中的任何其他布局文件中实现。假设你有如下所示、在某个目录内包含栈的文件结构：
 
 <FileTree
   files={[
@@ -68,7 +68,7 @@ You can implement a stack navigator in your root layout, as shown above, or in a
   ]}
 />
 
-If you want everything inside the **src/app/products** directory to be arranged in a stack relationship, inside the **\_layout.tsx** file, return a `Stack` component:
+如果你希望 **src/app/products** 目录中的所有内容都以栈关系排列，那么在 **_layout.tsx** 文件中返回一个 `Stack` 组件：
 
 ```tsx src/app/products/_layout.tsx
 import { Stack } from 'expo-router';
@@ -78,9 +78,9 @@ export default function StackLayout() {
 }
 ```
 
-When you navigate to `/products`, it will first go to the default route, which is **products/index.tsx**. If you navigate to `/products/123`, then that page will be pushed onto the stack. By default, the stack will render a back button in the header that will pop the current page off the stack, returning the user to the previous page. Even when a page isn't visible, if it is still pushed onto the stack, it is still being rendered.
+当你导航到 `/products` 时，它会先进入默认路由，也就是 **products/index.tsx**。如果你导航到 `/products/123`，那么该页面会被压入栈中。默认情况下，栈会在标题栏中渲染一个返回按钮，用于将当前页面从栈中弹出，从而返回到上一页。即使某个页面不可见，只要它仍然被压入栈中，它就仍然在被渲染。
 
-The `Stack` component implements [React Navigation's native stack](https://reactnavigation.org/docs/native-stack-navigator/) and can use the same screen options. However, you do not have to define the pages specifically inside the navigator. The files inside the directory will be automatically treated as eligible routes in the stack. However, if you want to define screen options, you can add a `Stack.Screen` component inside the `Stack` component. The `name` prop should match the route name, but you do not need to supply a `component` prop; Expo Router will map this automatically:
+`Stack` 组件实现了 [React Navigation 的原生栈](https://reactnavigation.org/docs/native-stack-navigator/)，并且可以使用相同的屏幕选项。不过，你不必在导航器中显式定义页面。目录中的文件会自动被视为栈中的可用路由。但是，如果你想定义屏幕选项，可以在 `Stack` 组件内部添加一个 `Stack.Screen` 组件。`name` 属性应与路由名称匹配，但你不需要提供 `component` 属性；Expo Router 会自动映射：
 
 ```tsx src/app/products/_layout.tsx
 import { Stack } from 'expo-router';
@@ -94,15 +94,15 @@ export default function StackLayout() {
 }
 ```
 
-While it is possible to nest navigators, be sure to only do so when it is truly needed. In the above example, if you want to push **products/accessories/index.tsx** onto the stack, it's not necessary to have an additional **\_layout.tsx** in the **accessories** directory with a `Stack` navigator. That would define another stack inside the first one. It is fine to add directories that only affect the URL, otherwise, use the same navigator as the parent directory.
+虽然可以嵌套导航器，但只有在真正需要时才应这样做。在上面的示例中，如果你想将 **products/accessories/index.tsx** 压入栈中，那么就没有必要在 **accessories** 目录下额外创建一个带有 `Stack` 导航器的 **_layout.tsx**。那样会在第一个栈中再定义另一个栈。添加仅影响 URL 的目录是可以的，否则就使用与父目录相同的导航器。
 
-## Tabs
+## 标签页
 
-Expo Router provides multiple ways to implement tab navigation depending on your needs.
+Expo Router 提供了多种实现标签导航的方式，具体取决于你的需求。
 
-### JavaScript tabs
+### JavaScript 标签页
 
-You can implement a JavaScript-based tab navigator in a layout file using the `Tabs` component. All the routes directly inside that directory will be treated as tabs. Consider the following file structure:
+你可以在布局文件中使用 `Tabs` 组件实现基于 JavaScript 的标签导航器。该目录下直接包含的所有路由都会被视为标签页。请看下面的文件结构：
 
 <FileTree
   files={[
@@ -113,7 +113,7 @@ You can implement a JavaScript-based tab navigator in a layout file using the `T
   ]}
 />
 
-In the **\_layout.tsx** file, return a `Tabs` component:
+在 **_layout.tsx** 文件中，返回一个 `Tabs` 组件：
 
 ```tsx src/app/(tabs)/_layout.tsx|collapseHeight=480
 import { Tabs } from 'expo-router';
@@ -125,26 +125,26 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: '首页',
           tabBarIcon: ({ color }) => <MaterialIcons size={28} name="house.fill" color={color} />,
         }}
       />
-      <Tabs.Screen name="feed" options={{ title: 'Feed' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+      <Tabs.Screen name="feed" options={{ title: '动态' }} />
+      <Tabs.Screen name="profile" options={{ title: '个人资料' }} />
     </Tabs>
   );
 }
 ```
 
-This will cause the **index.tsx**, **feed.tsx**, and **profile.tsx** files to appear together in the same bottom tabs navigator. This `Tabs` component uses [React Navigation's native bottom tabs](https://reactnavigation.org/docs/bottom-tab-navigator/) and supports the same options.
+这会使 **index.tsx**、**feed.tsx** 和 **profile.tsx** 文件一起出现在同一个底部标签导航器中。这个 `Tabs` 组件使用了 [React Navigation 的原生底部标签](https://reactnavigation.org/docs/bottom-tab-navigator/)，并支持相同的选项。
 
-In the case of `Tabs`, you will likely want to define the tabs in the navigator, as this influences the order in which tabs appear, the title, and the icon inside the tab. The index route will be the default selected tab.
+对于 `Tabs`，你通常会希望在导航器中定义这些标签，因为这会影响标签的显示顺序、标题以及标签内的图标。index 路由将是默认选中的标签页。
 
-### Native tabs
+### 原生标签页
 
-On Android and iOS, you can use [native tabs](/router/advanced/native-tabs/) to render the platform's built-in tab bar. Native tabs provide expected platform behaviors like scroll-to-top on tap, native animations, and a native look and feel.
+在 Android 和 iOS 上，你可以使用 [原生标签页](/router/advanced/native-tabs/) 来渲染平台内置的标签栏。原生标签页提供了符合预期的平台行为，例如点击时滚动到顶部、原生动画，以及原生的外观和体验。
 
-Like JavaScript tabs, native tabs can be used in a layout file inside a route group directory:
+与 JavaScript 标签页一样，原生标签页也可以在路由组目录中的布局文件里使用：
 
 <FileTree
   files={[
@@ -162,15 +162,15 @@ export default function TabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>首页</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon src={require('@/assets/images/tabIcons/home.png')} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="feed">
-        <NativeTabs.Trigger.Label>Feed</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>动态</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon src={require('@/assets/images/tabIcons/feed.png')} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>个人资料</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon src={require('@/assets/images/tabIcons/profile.png')} />
       </NativeTabs.Trigger>
     </NativeTabs>
@@ -178,21 +178,21 @@ export default function TabLayout() {
 }
 ```
 
-### Platform-specific tabs
+### 平台特定标签页
 
-Since native tabs are only available on Android and iOS, a common pattern is to use [platform-specific file extensions](/router/advanced/platform-specific-modules/) to provide different tab implementations for native and web. The root layout renders a tab component, and Expo's module resolution automatically picks the correct file based on the platform.
+由于原生标签页仅适用于 Android 和 iOS，一个常见模式是使用 [平台特定的文件扩展名](/router/advanced/platform-specific-modules/) 为原生端和 web 提供不同的标签实现。根布局渲染一个标签组件，而 Expo 的模块解析会根据平台自动选择正确的文件。
 
 <FileTree
   files={[
     ['src/app/\_layout.tsx'],
     ['src/app/index.tsx'],
     ['src/app/explore.tsx'],
-    ['src/components/app-tabs.native.tsx', 'Native tabs (Android and iOS)'],
-    ['src/components/app-tabs.tsx', 'Custom tabs (web)'],
+    ['src/components/app-tabs.native.tsx', '原生标签页（Android 和 iOS）'],
+    ['src/components/app-tabs.tsx', '自定义标签页（web）'],
   ]}
 />
 
-The root layout imports and renders the `AppTabs` component. **app-tabs.native.tsx** is used on Android and iOS, and **app-tabs.tsx** on web:
+根布局会导入并渲染 `AppTabs` 组件。**app-tabs.native.tsx** 用于 Android 和 iOS，**app-tabs.tsx** 用于 web：
 
 ```tsx src/app/_layout.tsx
 import AppTabs from '@/components/app-tabs';
@@ -202,7 +202,7 @@ export default function RootLayout() {
 }
 ```
 
-On Android and iOS, **app-tabs.native.tsx** uses [native tabs](/router/advanced/native-tabs/):
+在 Android 和 iOS 上，**app-tabs.native.tsx** 使用 [原生标签页](/router/advanced/native-tabs/)：
 
 ```tsx src/components/app-tabs.native.tsx
 import { NativeTabs } from 'expo-router/native-tabs';
@@ -211,11 +211,11 @@ export default function AppTabs() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>首页</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon src={require('@/assets/images/tabIcons/home.png')} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>探索</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon src={require('@/assets/images/tabIcons/explore.png')} />
       </NativeTabs.Trigger>
     </NativeTabs>
@@ -223,7 +223,7 @@ export default function AppTabs() {
 }
 ```
 
-On web, **app-tabs.tsx** uses [custom tabs](/router/advanced/custom-tabs/) from `expo-router/ui`, which are unstyled and flexible components:
+在 web 上，**app-tabs.tsx** 使用来自 `expo-router/ui` 的 [自定义标签页](/router/advanced/custom-tabs/)，它们是不带样式且灵活的组件：
 
 ```tsx src/components/app-tabs.tsx
 import { Tabs, TabList, TabTrigger, TabSlot } from 'expo-router/ui';
@@ -234,10 +234,10 @@ export default function AppTabs() {
       <TabSlot />
       <TabList>
         <TabTrigger name="index" href="/">
-          Home
+          首页
         </TabTrigger>
         <TabTrigger name="explore" href="/explore">
-          Explore
+          探索
         </TabTrigger>
       </TabList>
     </Tabs>
@@ -245,11 +245,11 @@ export default function AppTabs() {
 }
 ```
 
-## Slot
+## 插槽
 
-In some cases, you may want a layout without a navigator. This is helpful for adding a header or footer around the current route, or for displaying a modal over any route inside a directory. In this case, you can use the `Slot` component, which serves as a placeholder for the current child route.
+在某些情况下，你可能希望使用不带导航器的布局。这对于在当前路由外包裹一个头部或底部，或者在某个目录内的任意路由上方显示一个模态框都很有帮助。在这种情况下，你可以使用 `Slot` 组件，它充当当前子路由的占位符。
 
-Consider the following file structure:
+请看下面的文件结构：
 
 <FileTree
   files={[
@@ -260,7 +260,7 @@ Consider the following file structure:
   ]}
 />
 
-For example, you may want to wrap any route inside the **social** directory with a header and footer, but you want navigating between the pages to simply replace the current page rather than pushing new pages onto a stack, which can then later be popped off with a "back" navigation action. In the **\_layout.tsx** file, return a `Slot` component surrounded by your header and footer:
+例如，你可能希望用头部和底部将 **social** 目录中的任意路由包裹起来，但你又希望页面之间的导航只是简单地替换当前页面，而不是将新页面压入栈中，然后再通过“返回”导航操作将其弹出。在 **_layout.tsx** 文件中，返回一个由头部和底部包裹的 `Slot` 组件：
 
 ```tsx src/app/social/_layout.tsx
 import { Slot } from 'expo-router';
@@ -276,12 +276,12 @@ export default function Layout() {
 }
 ```
 
-## Other layouts
+## 其他布局
 
-These are just a few examples of common layouts to give you an idea of how it works. There's much more you can do with layout:
+这些只是一些常见布局的示例，帮助你了解其工作方式。你还可以通过布局实现更多功能：
 
-- Implement a [Drawer navigator](/router/advanced/drawer)
-- Use [native tabs](/router/advanced/native-tabs) for a platform-native tab bar on Android and iOS
-- Replace the default tabs with [fully customized tabs](/router/advanced/custom-tabs)
-- Use a [modal](/router/advanced/modals) to display a page with transparency, such that the parent navigator is still visible underneath
-- [Adapt any navigator that is compatible with React Navigation](/versions/latest/sdk/router/#withlayoutcontextnav-processor), including top tabs, bottom sheets, and more
+- 实现一个 [Drawer 导航器](/router/advanced/drawer)
+- 在 Android 和 iOS 上使用 [原生标签页](/router/advanced/native-tabs) 来实现平台原生的标签栏
+- 用 [完全自定义的标签页](/router/advanced/custom-tabs) 替换默认标签页
+- 使用 [模态框](/router/advanced/modals) 来显示一个带透明效果的页面，使其下方仍能看到父级导航器
+- [适配任何与 React Navigation 兼容的导航器](/versions/latest/sdk/router/#withlayoutcontextnav-processor)，包括顶部标签页、底部抽屉等

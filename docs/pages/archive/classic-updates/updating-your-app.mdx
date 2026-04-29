@@ -3,179 +3,179 @@ title: Updating your App
 sidebar_title: Updating your App
 ---
 
-> This doc was archived in August 2022 and will not receive any further updates. Use EAS Update instead. [Learn more](/eas-update/introduction)
+> 本文档已于 2022 年 8 月归档，不会再收到任何进一步更新。请改用 EAS Update。[了解更多](/eas-update/introduction)
 
-The `expo-updates` module provides a client-side implementation for loading updates in React Native apps. Updates allow you to deploy new JavaScript and assets to existing builds of your app without building a new binary.
+`expo-updates` 模块为在 React Native 应用中加载更新提供了客户端实现。更新允许你在不构建新的二进制文件的情况下，将新的 JavaScript 和资源部署到应用的现有构建版本中。
 
-In this guide, an **update** refers to a single, atomic update, which may consist of a JavaScript bundle, other assets (such as images or fonts), and metadata about the update.
+在本指南中，**update** 指的是一个单独的、原子性的更新，它可以由一个 JavaScript bundle、其他资源（例如图片或字体）以及关于该更新的元数据组成。
 
 ## Setup
 
-If possible, we highly recommend starting with a boilerplate project that has the `expo-updates` library already installed, for example, by running: `npx create-expo-app -t bare-minimum`.
+如果可以，我们强烈建议从一个已经安装了 `expo-updates` 库的样板项目开始，例如运行：`npx create-expo-app -t bare-minimum`。
 
-To install the `expo-updates` module in an existing bare workflow app, follow the [installation instructions](/versions/latest/sdk/updates/#installation).
+要在现有的 bare workflow 应用中安装 `expo-updates` 模块，请按照[安装说明](/versions/latest/sdk/updates/#installation)进行操作。
 
-Additionally, you'll need to host your updates and their respective assets (JavaScript bundles, images, fonts, and so on) on a server somewhere that deployed client apps can access. `expo-cli` provides a couple of easy options for this: (1) `expo export` creates prebuilt update packages that you can upload to any static hosting site (for example, GitHub Pages), and (2) `expo publish` packages and deploys your updates to Expo's updates service, which is part of the services we offer.
+此外，你还需要在某个服务器上托管你的更新及其对应的资源（JavaScript bundle、图片、字体等），以便已部署的客户端应用可以访问。`expo-cli` 提供了几个简单的选项：(1) `expo export` 会创建预构建的更新包，你可以将其上传到任意静态托管站点（例如 GitHub Pages）；(2) `expo publish` 会将你的更新打包并部署到 Expo 的更新服务，这是我们提供的服务之一。
 
-You can also run your own server to host your updates, provided it conforms to the protocol `expo-updates` expects. You can read more about these requirements below.
+你也可以运行自己的服务器来托管更新，只要它符合 `expo-updates` 所期望的协议即可。你可以在下面阅读更多关于这些要求的内容。
 
 ## Served update requirements
 
-> If you're using `expo export` or `expo publish`, you're welcome to skip this section as it will be taken care of for you!
+> 如果你使用的是 `expo export` 或 `expo publish`，可以跳过这一节，因为这些都会由系统为你处理！
 
-The `expo-updates` implementation requires a single URL (provided at build-time) to which it will make requests for new updates. These requests may happen when users launch your app in production (depending on your app's configuration settings) and when your app calls `Updates.fetchUpdateAsync()`. Requests will be sent with the following headers:
+`expo-updates` 的实现需要一个在构建时提供的单一 URL，它会向该 URL 发起新更新请求。这些请求可能会在用户在生产环境中启动应用时发生（取决于你的应用配置设置），也可能在应用调用 `Updates.fetchUpdateAsync()` 时发生。请求将带有以下 header：
 
 ```
 'Accept': 'application/expo+json,application/json',
-'Expo-Platform': // either 'ios' or 'android',
-'Expo-Release-Channel': // Release Channel value, if configured,
-'Expo-Runtime-Version': // Runtime Version value, if configured,
-'Expo-SDK-Version': // SDK Version value, if configured,
+'Expo-Platform': // 为 'ios' 或 'android',
+'Expo-Release-Channel': // Release Channel 的值，如果已配置，
+'Expo-Runtime-Version': // Runtime Version 的值，如果已配置，
+'Expo-SDK-Version': // SDK Version 的值，如果已配置，
 ```
 
-The response to these requests should be a manifest JSON object with metadata about the latest update that's compatible with the requesting app binary. (More on compatibility below.) The manifest should have at least the following fields:
+这些请求的响应应该是一个 manifest JSON 对象，其中包含与请求的应用二进制文件兼容的最新更新的元数据。（关于兼容性的更多内容见下文。）该 manifest 至少应包含以下字段：
 
 | Key                | Type   | Description                                                                                                                                                                                   |
 | ------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `releaseId`        | string | A UUID uniquely identifying this update.                                                                                                                                                      |
-| `commitTime`       | string | A JavaScript Date string representing the time this update was committed/published. This is used to compare two updates to determine which is newest.                                         |
-| `runtimeVersion`   | object | An object with keys `ios` and `android` whose corresponding values are the [Runtime Version](#runtime-version) this update is compatible with. Required only if `sdkVersion` is not provided. |
-| `sdkVersion`       | string | The Expo SDK version this update uses. Required only if `runtimeVersion` is not provided.                                                                                                     |
-| `bundleUrl`        | string | A URL pointing to the JavaScript bundle this metadata represents.                                                                                                                             |
-| `bundledAssets`    | array  | An array of asset filenames to download as part of this update.                                                                                                                               |
-| `assetUrlOverride` | string | Base URL from which to resolve all of the filenames listed in `bundledAssets`.                                                                                                                |
+| `releaseId`        | string | 一个唯一标识此更新的 UUID。                                                                                                                                                                   |
+| `commitTime`       | string | 一个 JavaScript Date 字符串，表示此更新被提交/发布的时间。此字段用于比较两个更新，以确定哪个是最新的。                                                                                       |
+| `runtimeVersion`   | object | 一个包含 `ios` 和 `android` 键的对象，其对应值为此更新兼容的 [Runtime Version](#runtime-version)。仅当未提供 `sdkVersion` 时必填。                                                       |
+| `sdkVersion`       | string | 此更新所使用的 Expo SDK 版本。仅当未提供 `runtimeVersion` 时必填。                                                                                                                         |
+| `bundleUrl`        | string | 指向该元数据所代表的 JavaScript bundle 的 URL。                                                                                                                                              |
+| `bundledAssets`    | array  | 作为此更新一部分需要下载的资源文件名数组。                                                                                                                                                   |
+| `assetUrlOverride` | string | 用于解析 `bundledAssets` 中列出的所有文件名的基础 URL。                                                                                                                                       |
 
-`expo-updates` assumes that URLs for assets and JavaScript bundles are immutable; that is, if it has already downloaded an asset or bundle at a given URL, it will not attempt to re-download. Therefore, if you change any assets in your updates, you **must** host them at a different URL.
+`expo-updates` 假定资源和 JavaScript bundle 的 URL 是不可变的；也就是说，如果它已经从某个 URL 下载过某个资源或 bundle，就不会尝试重新下载。因此，如果你在更新中更改了任何资源，**必须**将它们托管在不同的 URL 下。
 
-If you use `expo export` to create a prebuilt package of your update, the manifests in `ios-index.json` and `android-index.json` satisfy these requirements. Expo's update service, which you publish to if you use `expo publish`, dynamically creates these manifest objects upon each update request.
+如果你使用 `expo export` 来创建更新的预构建包，那么 `ios-index.json` 和 `android-index.json` 中的 manifest 满足这些要求。Expo 的更新服务（如果你使用 `expo publish`，则会发布到该服务）会在每次更新请求时动态创建这些 manifest 对象。
 
 ## Update compatibility
 
-A critical consideration with updates is compatibility between the JavaScript bundle and the native runtime (the native modules present in a given binary and the methods they export). To illustrate, consider the following example:
+更新的一个关键考量是 JavaScript bundle 与原生运行时之间的兼容性（即某个二进制文件中存在的原生模块及其导出的方法）。为了说明这一点，请看下面的例子：
 
-Say you have an existing build, build A, of your app running in production. Build A runs JavaScript bundle version 1 and everything works smoothly. In the next version of your app, you need some new functionality, so in development you install a new native module like `expo-media-library`, and use some of its functions. You create build B of your app which includes the `MediaLibrary` native module. Build B runs JavaScript bundle version 2 which calls `MediaLibrary.getAlbumsAsync()`, and this works.
+假设你有一个现有的构建版本，即在生产环境中运行的 build A。build A 运行 JavaScript bundle 版本 1，并且一切正常。到了应用的下一个版本，你需要一些新功能，所以在开发中你安装了一个新的原生模块，比如 `expo-media-library`，并使用了它的一些函数。你创建了应用的 build B，其中包含 `MediaLibrary` 原生模块。build B 运行 JavaScript bundle 版本 2，并调用 `MediaLibrary.getAlbumsAsync()`，这会正常工作。
 
-However, if build A of your app fetches JavaScript version 2 as an update and tries to run it, it will error on the `MediaLibrary.getAlbumsAsync()` method call because the `MediaLibrary` native module is not present in build A. If your JavaScript doesn't catch this error, it will propagate and your app will crash, rendering JavaScript version 2 unusable on build A of your app.
+然而，如果你应用的 build A 获取到了作为更新的 JavaScript 版本 2 并尝试运行它，那么在调用 `MediaLibrary.getAlbumsAsync()` 方法时会报错，因为 build A 中不存在 `MediaLibrary` 原生模块。如果你的 JavaScript 没有捕获这个错误，它就会继续向上传播，导致你的应用崩溃，从而使 JavaScript 版本 2 无法在你应用的 build A 上使用。
 
-We need some way of preventing JavaScript version 2 from being deployed to build A - or, in general, controlling which updates are deployed to specific builds of your app. `expo-updates` provides two ways to control this: Runtime Version and Release Channels.
+我们需要一种方法来防止将 JavaScript 版本 2 部署到 build A，或者更一般地，控制哪些更新会部署到应用的特定构建版本。`expo-updates` 提供了两种控制方式：Runtime Version 和 Release Channels。
 
 ### Runtime version
 
-Updates hosted on your own server can make use of a concept called Runtime Version. Runtime Version represents a versioning scheme for the native-JavaScript interface, or the native modules and the methods they export. In other words, anytime you make a change to your native module layer, such as adding, removing, or updating a native module, you would increment the Runtime Version number.
+托管在你自己服务器上的更新可以使用一个称为 Runtime Version 的概念。Runtime Version 表示用于原生-JavaScript 接口的版本方案，或者说原生模块及其导出方法的版本方案。换句话说，每当你对原生模块层做出更改时，例如添加、删除或更新一个原生模块，你都应该递增 Runtime Version 编号。
 
-The Runtime Version of a particular binary should be configured at build time (see [Configuration Options](#configuration-options) below). The configured Runtime Version will be included in the header of every update request sent from that binary. The server should use this header to select an appropriate update to serve in response.
+某个二进制文件的 Runtime Version 应该在构建时进行配置（见下文的[配置选项](#configuration-options)）。配置好的 Runtime Version 将包含在该二进制文件发送的每个更新请求的 header 中。服务器应使用这个 header 来选择一个合适的更新进行响应。
 
-The Runtime Version expected by a given update must also be provided as a field (`runtimeVersion`) in the manifest returned to `expo-updates`. `expo-updates` keeps track of the Runtime Version of all updates it has downloaded; this way, if a user updates their app binary through the App Store, it will not attempt to run a previously downloaded and newly incompatible update.
+某个更新所期望的 Runtime Version 也必须作为一个字段（`runtimeVersion`）提供在返回给 `expo-updates` 的 manifest 中。`expo-updates` 会跟踪它已下载的所有更新的 Runtime Version；这样一来，如果用户通过 App Store 更新了应用二进制文件，它就不会尝试运行一个之前已下载但现在已不兼容的更新。
 
 ### Release channels
 
-Because the current implementation of the Expo updates service relies heavily on SDK version (a managed-workflow concept), if you're using `expo publish` you cannot yet use Runtime Version to manage compatibility of your updates and binaries. Instead, you can use [release channels](./release-channels). A typical workflow would be to create a new release channel for each new binary you build (or at least every new binary with an incompatible change in the native-JavaScript interface) by publishing to that new release channel with `expo publish --release-channel <channel-name>`. After creating a build with this release channel name configured, you can continue to publish future updates to this same release channel as long as they remain compatible with that build. Only builds that were configured to use that release channel will receive those updates.
+由于当前 Expo 更新服务的实现高度依赖 SDK 版本（一个 managed-workflow 概念），如果你使用的是 `expo publish`，你还不能使用 Runtime Version 来管理更新与二进制文件的兼容性。相反，你可以使用[release channels](./release-channels)。一个典型的工作流是：为你构建的每一个新二进制文件创建一个新的 release channel（或者至少为每一个在原生-JavaScript 接口上存在不兼容变更的新二进制文件创建一个新的 release channel），方法是使用 `expo publish --release-channel <channel-name>` 发布到该新的 release channel。创建完一个配置了此 release channel 名称的构建版本后，只要未来的更新与该构建版本保持兼容，你就可以继续将这些更新发布到同一个 release channel。只有配置为使用该 release channel 的构建版本才会收到这些更新。
 
 ### Statically hosted updates
 
-Since headers sent in requests by `expo-updates` do not affect statically hosted updates (such as update packages created by `expo export`), you must host incompatible updates at different static URLs to control compatibility.
+由于 `expo-updates` 在请求中发送的 header 不会影响静态托管的更新（例如由 `expo export` 创建的更新包），因此你必须将不兼容的更新托管在不同的静态 URL 上，以控制兼容性。
 
 ## Embedding assets
 
-In addition to loading updates from remote servers, apps with `expo-updates` installed also include the necessary capability to load updates embedded in the app binary. This is critical to ensure that your app can launch offline for all users immediately upon installation, without needing an internet connection.
+除了从远程服务器加载更新之外，安装了 `expo-updates` 的应用还包含将更新嵌入应用二进制文件中的必要能力。这一点至关重要，它能确保你的应用在安装后立即就能让所有用户离线启动，而无需互联网连接。
 
-When you make a release build of your app, the build process will bundle your JavaScript source code into a minified bundle and embed this in the binary, along with any other assets your app imports (with `require` or `import` or used in **app.json**). `expo-updates` includes an extra script on each platform to embed some additional metadata about the embedded assets -- namely, a minimal manifest JSON object for the update.
+当你为应用创建发布构建时，构建过程会将你的 JavaScript 源代码打包成一个压缩后的 bundle，并将其嵌入二进制文件中，同时还会包含你的应用通过 `require`、`import` 或在 **app.json** 中使用的任何其他资源。`expo-updates` 会在每个平台上额外包含一个脚本，用于嵌入一些关于这些嵌入式资源的附加元数据——也就是该更新的一个最小化 manifest JSON 对象。
 
 ## Including assets in updates
 
-Assets that you import in your JavaScript source can also be atomically downloaded as part of a published update. `expo-updates` will not consider an update "ready" and will not launch the update unless it has downloaded all required assets.
+你在 JavaScript 源码中导入的资源，也可以作为已发布更新的一部分被原子性下载。`expo-updates` 不会认为某个更新已经“准备好”，也不会启动该更新，除非它已经下载了所有必需的资源。
 
-If you use `expo-asset` in your project (included by default if you have the `expo` package installed), you can control which imported assets will be included as part of this atomic update by using the `assetBundlePatterns` key in **app.json** to provide a list of paths in your project directory:
+如果你在项目中使用了 `expo-asset`（如果你安装了 `expo` 包，默认会包含），你可以通过在 **app.json** 中使用 `assetBundlePatterns` 键来提供项目目录中的路径列表，从而控制哪些导入的资源会作为这个原子更新的一部分被包含进去：
 
 ```text
 "assetBundlePatterns": [
-  "**/*" // or "assets/images/*", etc.
+  "**/*" // 或 "assets/images/*" 等。
 ],
 ```
 
-Assets with paths matching the given patterns will be pre-downloaded by clients before the update that uses them will launch. If you have an asset that should be lazily downloaded at runtime rather than before your JavaScript is evaluated, you can use `assetBundlePatterns` to exclude it while still importing it in your JavaScript source.
+路径与给定模式匹配的资源会在使用它们的更新启动之前，由客户端预先下载。如果你有某个资源希望在运行时延迟下载，而不是在 JavaScript 被求值之前下载，你可以使用 `assetBundlePatterns` 将其排除，同时仍然在 JavaScript 源码中导入它。
 
-Note that to use `expo-asset` successfully, you must use the `--assetPlugins` option to provide the Metro bundler with the `node_modules/expo-asset/tools/hashAssetFiles` plugin when you create your JavaScript bundle. If you use `expo export` or `expo publish` to create your update, this will be done automatically for you.
+请注意，要成功使用 `expo-asset`，在创建 JavaScript bundle 时，你必须使用 `--assetPlugins` 选项，向 Metro bundler 提供 `node_modules/expo-asset/tools/hashAssetFiles` 插件。如果你使用 `expo export` 或 `expo publish` 来创建更新，这一步会自动为你完成。
 
-## Configuration options
+## 配置选项
 
-Some build-time configuration options are available to control various behaviors of the `expo-updates` library. You can set the URL where your app is hosted, set compatibility/version information, and choose whether your app should update automatically on launch.
+有一些构建时配置选项可用于控制 `expo-updates` 库的各种行为。你可以设置应用托管的 URL、设置兼容性/版本信息，并选择应用是否应在启动时自动更新。
 
-On iOS, these properties are set as keys in **Expo.plist** and on Android as `meta-data` tags in **AndroidManifest.xml**, adjacent to the tags added during installation.
+在 iOS 上，这些属性作为键设置在 **Expo.plist** 中；在 Android 上，则作为 `meta-data` 标签设置在 **AndroidManifest.xml** 中，位置紧邻安装期间添加的标签。
 
-On Android, you may also define these properties at runtime by passing a `Map` as the second parameter of `UpdatesController.initialize()`. If provided, the values in this Map will override any values specified in **AndroidManifest.xml**. On iOS, you may set these properties at runtime by calling `[UpdatesController.sharedInstance setConfiguration:]` at any point _before_ calling `start` or `startAndShowLaunchScreen`, and the values in this dictionary will override Expo.plist.
+在 Android 上，你也可以通过将一个 `Map` 作为 `UpdatesController.initialize()` 的第二个参数来在运行时定义这些属性。如果提供了该参数，此 Map 中的值将覆盖 **AndroidManifest.xml** 中指定的任何值。在 iOS 上，你可以在调用 `start` 或 `startAndShowLaunchScreen` 之前的任何时刻，通过调用 `[UpdatesController.sharedInstance setConfiguration:]` 在运行时设置这些属性，而该字典中的值将覆盖 Expo.plist。
 
 | iOS plist/dictionary key | Android Map key | Android meta-data name         | Default | Required? |
 | ------------------------ | --------------- | ------------------------------ | ------- | --------- |
 | `EXUpdatesEnabled`       | `enabled`       | `expo.modules.updates.ENABLED` | `true`  | ❌        |
 
-Whether updates are enabled. Setting this to `false` disables all update functionality, all module methods, and forces the app to load with the manifest and assets bundled into the app binary.
+是否启用更新。将其设置为 `false` 会禁用所有更新功能、所有模块方法，并强制应用使用打包进应用二进制文件中的 manifest 和资源来加载。
 
 | iOS plist/dictionary key | Android Map key | Android meta-data name                 | Default | Required? |
 | ------------------------ | --------------- | -------------------------------------- | ------- | --------- |
 | `EXUpdatesURL`           | `updateUrl`     | `expo.modules.updates.EXPO_UPDATE_URL` | (none)  | ✅        |
 
-The URL to the remote server where the app should check for updates. A request to this URL should return a valid manifest object for the latest available update that tells expo-updates how to fetch the JS bundle and other assets that comprise an update. (Example: for apps published with `expo publish`, this URL would be `https://exp.host/@username/slug`.)
+应用应从中检查更新的远程服务器 URL。向此 URL 发出的请求应返回一个有效的 manifest 对象，描述最新可用更新，以告诉 expo-updates 如何获取构成更新的 JS bundle 和其他资源。（示例：对于使用 `expo publish` 发布的应用，此 URL 将是 `https://exp.host/@username/slug`。）
 
 | iOS plist/dictionary key | Android Map key | Android meta-data name                  | Default | Required?                                                     |
 | ------------------------ | --------------- | --------------------------------------- | ------- | ------------------------------------------------------------- |
 | `EXUpdatesSDKVersion`    | `sdkVersion`    | `expo.modules.updates.EXPO_SDK_VERSION` | (none)  | (exactly one of `sdkVersion` or `runtimeVersion` is required) |
 
-The SDK version string to send under the `Expo-SDK-Version` header in the manifest request. Required for apps hosted on Expo's server.
+在 manifest 请求中作为 `Expo-SDK-Version` 标头发送的 SDK 版本字符串。对于托管在 Expo 服务器上的应用是必需的。
 
 | iOS plist/dictionary key  | Android Map key  | Android meta-data name                      | Default | Required?                                                     |
 | ------------------------- | ---------------- | ------------------------------------------- | ------- | ------------------------------------------------------------- |
 | `EXUpdatesRuntimeVersion` | `runtimeVersion` | `expo.modules.updates.EXPO_RUNTIME_VERSION` | (none)  | (exactly one of `sdkVersion` or `runtimeVersion` is required) |
 
-The Runtime Version string to send under the `Expo-Runtime-Version` header in the manifest request.
+在 manifest 请求中作为 `Expo-Runtime-Version` 标头发送的 Runtime Version 字符串。
 
 | iOS plist/dictionary key  | Android Map key  | Android meta-data name                      | Default   | Required? |
 | ------------------------- | ---------------- | ------------------------------------------- | --------- | --------- |
 | `EXUpdatesReleaseChannel` | `releaseChannel` | `expo.modules.updates.EXPO_RELEASE_CHANNEL` | `default` | ❌        |
 
-The release channel string to send under the `Expo-Release-Channel` header in the manifest request.
+在 manifest 请求中作为 `Expo-Release-Channel` 标头发送的发布通道字符串。
 
 | iOS plist/dictionary key | Android Map key | Android meta-data name                              | Default  | Required? |
 | ------------------------ | --------------- | --------------------------------------------------- | -------- | --------- |
 | `EXUpdatesCheckOnLaunch` | `checkOnLaunch` | `expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH` | `ALWAYS` | ❌        |
 
-The condition under which `expo-updates` should automatically check for (and download, if one exists) an update upon app launch. Possible values are `ALWAYS`, `NEVER` (if you want to exclusively control updates via this module's JS API), `WIFI_ONLY` (if you want the app to automatically download updates only if the device is on an unmetered Wi-Fi connection when it launches), or `ERROR_RECOVERY_ONLY` (if you want the app to automatically download updates only if it encounters a fatal error when launching).
+`expo-updates` 应在应用启动时自动检查（如果存在则下载）更新的条件。可能的值为 `ALWAYS`、`NEVER`（如果你希望完全通过该模块的 JS API 控制更新）、`WIFI_ONLY`（如果你希望应用仅在设备启动时连接到未计费的 Wi-Fi 网络时自动下载更新），或 `ERROR_RECOVERY_ONLY`（如果你希望应用仅在启动时遇到致命错误时自动下载更新）。
 
-Regardless of the value of this setting, as long as updates are enabled, your app can always use the JS API to manually check for and download updates in the background while your app is running.
+无论此设置的值如何，只要更新已启用，你的应用始终可以使用 JS API 在应用运行时手动检查并在后台下载更新。
 
 | iOS plist/dictionary key | Android Map key | Android meta-data name                             | Default | Required? |
 | ------------------------ | --------------- | -------------------------------------------------- | ------- | --------- |
 | `EXUpdatesLaunchWaitMs`  | `launchWaitMs`  | `expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS` | `0`     | ❌        |
 
-The number of milliseconds `expo-updates` should delay the app launch and stay on the splash screen while trying to download an update, before falling back to a previously downloaded version. Setting this to `0` will cause the app to always launch with a previously downloaded update and will result in the fastest app launch possible.
+`expo-updates` 在尝试下载更新时，应延迟应用启动并停留在启动画面上的毫秒数，然后再回退到之前下载的版本。将其设置为 `0` 将使应用始终使用先前下载的更新启动，并带来尽可能快的应用启动速度。
 
-Some common configuration patterns are explained below:
+下面解释了一些常见的配置模式：
 
-### Automatic updates
+### 自动更新
 
-By default, `expo-updates` will immediately launch your app with a previously downloaded (or embedded) update when a user opens your app from being closed. It will additionally check for updates asynchronously in the background, and will try to fetch the latest published version. If a new update is available, `expo-updates` will try to download it and notify the running JavaScript of its success or failure using [events](/versions/latest/sdk/updates/#updatesevents). A newly fetched update will be launched next time the user swipes closed and reopens the app; if you want to run it sooner, you can call [`Updates.reloadAsync`](/versions/latest/sdk/updates/#updatesreloadasyncoptions) in your application code at an appropriate time.
+默认情况下，当用户从关闭状态打开应用时，`expo-updates` 会立即使用之前下载的（或内嵌的）更新启动应用。它还会在后台异步检查更新，并尝试获取最新发布版本。如果有新更新可用，`expo-updates` 会尝试下载它，并通过 [事件](/versions/latest/sdk/updates/#updatesevents) 向正在运行的 JavaScript 通知成功或失败。新获取到的更新会在用户下次滑掉并重新打开应用时启动；如果你希望更早运行它，可以在合适的时间在应用代码中调用 [`Updates.reloadAsync`](/versions/latest/sdk/updates/#updatesreloadasyncoptions)。
 
-You may also configure `expo-updates` to wait a specific amount of time to launch when a user opens the app by using the `launchWaitMs` setting. If a new update can be downloaded within this time, the new update will be launched right away, rather than waiting for the user to swipe closed and reopen the app. (Note, however, that if users have a slow network connection, your app can be delayed on the launch screen for as many milliseconds as `launchWaitMs`, so we recommend being conservative with this setting unless it's critically important for users to have the most recent update on each launch.) If no update is available, a previously downloaded update will be launched as soon as `expo-updates` is able to determine this.
+你也可以通过使用 `launchWaitMs` 设置，将 `expo-updates` 配置为在用户打开应用时等待特定时长再启动。如果在这段时间内可以下载到新更新，那么新更新会立即启动，而不是等用户滑掉并重新打开应用。（不过请注意，如果用户的网络连接较慢，你的应用可能会在启动画面上延迟长达 `launchWaitMs` 毫秒，因此除非用户每次启动都必须获得最新更新，否则我们建议对该设置保持保守。）如果没有可用更新，一旦 `expo-updates` 能够确定这一点，之前下载的更新就会立即启动。
 
-If you want this automatic update behavior to occur only when your users are on a Wi-Fi connection, you can set the `checkOnLaunch` setting to `WIFI_ONLY`.
+如果你希望这种自动更新行为仅在用户处于 Wi-Fi 连接时发生，可以将 `checkOnLaunch` 设置为 `WIFI_ONLY`。
 
-### Manual updates
+### 手动更新
 
-It's also possible to turn off these automatic updates, and to instead control updates entirely within your JS code. This is desirable if you want some custom logic around fetching updates (for example, only when users take a specific action in your UI).
+也可以关闭这些自动更新，而完全在你的 JS 代码中控制更新。如果你希望围绕获取更新实现一些自定义逻辑，这会很有用（例如，仅在用户在 UI 中执行特定操作时才获取更新）。
 
-Setting `checkOnLaunch` to `NEVER` will prevent `expo-updates` from automatically fetching the latest update every time your app is launched. Only the most recent cached version of your bundle will be loaded.
+将 `checkOnLaunch` 设置为 `NEVER` 将阻止 `expo-updates` 在每次应用启动时自动获取最新更新。此时只会加载你 bundle 的最近缓存版本。
 
-You can then use the [`expo-updates`](/versions/latest/sdk/updates/) module included with this library to download new updates and, if appropriate, notify the user and reload the experience.
+然后，你可以使用此库中包含的 [`expo-updates`](/versions/latest/sdk/updates/) 模块来下载新更新，并在适当时通知用户并重新加载体验。
 
 ```js
 try {
   const update = await Updates.checkForUpdateAsync();
   if (update.isAvailable) {
     await Updates.fetchUpdateAsync();
-    // ... notify user of update ...
+    // ... 通知用户有更新 ...
     Updates.reloadAsync();
   }
 } catch (e) {
-  // handle or log error
+  // 处理或记录错误
 }
 ```

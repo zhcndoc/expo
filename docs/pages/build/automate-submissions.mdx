@@ -1,25 +1,25 @@
 ---
-title: Automate submissions
-description: Learn how to enable automatic submissions with EAS Build.
+title: 自动提交
+description: 了解如何使用 EAS Build 启用自动提交。
 ---
 
 import { EasMetadataIcon } from '@expo/styleguide-icons/custom/EasMetadataIcon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 
-Many mobile deployment processes eventually evolve to the point where the app is automatically submitted to the respective store once an appropriate build is completed. This saves developers from having to wait around for the build to complete, avoids a bit of manual work, and eliminates the need to coordinate providing app store credentials to the team.
+许多移动部署流程最终都会演变到这样的程度：一旦完成合适的构建，应用就会自动提交到相应的商店。这让开发者无需等待构建完成，减少了一些手动工作，并且不再需要协调向团队提供应用商店凭据。
 
-EAS Build gives you automatic submissions out of the box with the `--auto-submit` flag. This flag tells EAS Build to pass the build along to EAS Submit with the appropriate submission profile upon completion. Refer to the [EAS Submit documentation](/submit/introduction) for more information on how to set up and configure submissions.
+EAS Build 通过 `--auto-submit` 标志为你开箱即用地提供自动提交。该标志会在构建完成后，将构建结果连同合适的提交配置文件一并传递给 EAS Submit。有关如何设置和配置提交的更多信息，请参阅 [EAS Submit 文档](/submit/introduction)。
 
-When you run `eas build --auto-submit` you will be provided with a link to a submission details page, where you can track the progress of the submission. You can also find this page at any time on the [submissions dashboard for your project](https://expo.dev/accounts/[account]/projects/[project]/submissions), and it is linked from your build details page.
+当你运行 `eas build --auto-submit` 时，系统会提供一个提交详情页面的链接，你可以在那里跟踪提交进度。你也可以随时在你的项目的 [提交仪表板](https://expo.dev/accounts/[account]/projects/[project]/submissions) 上找到此页面，并且它也会从你的构建详情页面链接过去。
 
-## Selecting a submission profile
+## 选择提交配置文件
 
-By default, `--auto-submit` will try to use a submission profile with the same name as the selected build profile. If this does not exist, or if you prefer to use a different profile, you can use `--auto-submit-with-profile=<profile-name>` instead.
+默认情况下，`--auto-submit` 会尝试使用与所选构建配置文件同名的提交配置文件。如果该配置文件不存在，或者你更希望使用不同的配置文件，可以改用 `--auto-submit-with-profile=<profile-name>`。
 
-## Build profile environment variables and submissions
+## 构建配置文件环境变量与提交
 
-When running `eas build --profile <profile-name> --auto-submit`, the project's **app.config.js** will be evaluated using any environment variables associated with the build profile `<profile-name>`. For example, suppose we ran `eas build -p ios --profile production --auto-submit` with the following configuration:
+当运行 `eas build --profile <profile-name> --auto-submit` 时，项目的 **app.config.js** 将使用与构建配置文件 `<profile-name>` 关联的任何环境变量进行评估。例如，假设我们使用以下配置运行了 `eas build -p ios --profile production --auto-submit`：
 
 ```json eas.json
 {
@@ -41,60 +41,60 @@ When running `eas build --profile <profile-name> --auto-submit`, the project's *
 ```js app.config.js
 export default () => {
   return {
-    name: process.env.APP_ENV === 'production' ? 'My App' : 'My App (DEV)',
+    name: process.env.APP_ENV === 'production' ? '我的应用' : '我的应用（开发）',
     ios: {
       bundleIdentifier: process.env.APP_ENV === 'production' ? 'com.my.app' : 'com.my.app-dev',
     },
-    // ... other config here
+    // ... 此处为其他配置
   };
 };
 ```
 
-The `APP_ENV` variable from the `production` profile will be used when evaluating **app.config.js** for the submission, and therefore the name will be `My App` and the bundle identifier will be `com.my.app`.
+`production` 配置文件中的 `APP_ENV` 变量将在评估提交所用的 **app.config.js** 时使用，因此名称将是 `我的应用`，bundle 标识符将是 `com.my.app`。
 
-## Default submission behavior for app stores
+## 应用商店的默认提交行为
 
-By default, the `--auto-submit` flag will make your build available for internal testing, but will not automatically submit your app to review for public distribution. Sections below describe the default submission behavior for Android and iOS.
+默认情况下，`--auto-submit` 标志会使你的构建可用于内部测试，但不会自动将你的应用提交审核以供公开发布。以下部分描述了 Android 和 iOS 的默认提交行为。
 
-### Android submissions
+### Android 提交
 
-For Android, if sufficient metadata is not provided, the default behavior is to create an internal release for new apps. To control where and how your build is submitted, you can specify the `releaseStatus` and `track` fields in your **eas.json** submission profile:
+对于 Android，如果未提供足够的元数据，默认行为是为新应用创建一个内部发布。要控制构建被提交到哪里以及如何提交，你可以在 **eas.json** 提交配置文件中指定 `releaseStatus` 和 `track` 字段：
 
-**Release status options:**
+**发布状态选项：**
 
-- `draft`: Creates a draft release that requires manual promotion in the Google Play Console
-- `completed`: Immediately releases to users on the specified track
-- `inProgress`: Staged rollout release (use with `rollout` percentage)
-- `halted`: Halted release
+- `draft`：创建草稿发布，需要在 Google Play 控制台中手动推进
+- `completed`：立即向指定轨道上的用户发布
+- `inProgress`：分阶段发布（与 `rollout` 百分比一起使用）
+- `halted`：已停止的发布
 
-When you explicitly set a track to your submission profile in **eas.json**, the `--auto-submit` flag will submit the build to the chosen track. This also requires the `releaseStatus` to be set to `completed`:
+当你在 **eas.json** 中显式为提交配置文件设置一个轨道时，`--auto-submit` 标志会将构建提交到所选轨道。这也要求 `releaseStatus` 设置为 `completed`：
 
-**Track options:**
+**轨道选项：**
 
-- `internal`: Internal testing track (up to 100 testers) (default)
-- `alpha`: Closed testing track
-- `beta`: Open testing track
-- `production`: Production track (public release)
+- `internal`：内部测试轨道（最多 100 名测试者）（默认）
+- `alpha`：封闭测试轨道
+- `beta`：开放测试轨道
+- `production`：生产轨道（公开发布）
 
-### iOS submissions
+### iOS 提交
 
-For iOS, the default submission behavior is to submit the build to TestFlight, but not for App Store review. This means:
+对于 iOS，默认提交行为是将构建提交到 TestFlight，但不用于 App Store 审核。这意味着：
 
-- The build is submitted to TestFlight and becomes available for internal testing.
-- If you have "Enable automatic distribution" turned on in App Store Connect, TestFlight will automatically create a group and invite all your internal TestFlight users to test the build.
-- You can also specify additional TestFlight groups using the [`groups`](/eas/json/#groups) field in your **eas.json** submission profile.
-- Using TestFlight, you can release a version of your app available for internal and external testing. TestFlight allows sharing with up to 100 testers internally and provides a public link to share with up to 10,000 external testers.
-- The release to Apple App Store review is a manual process. Once you have made a submission to TestFlight, you'll have to manually promote the build to the App Store.
+- 构建会被提交到 TestFlight，并可用于内部测试。
+- 如果你在 App Store Connect 中开启了“Enable automatic distribution”，TestFlight 将自动创建一个组，并邀请你所有的内部 TestFlight 用户来测试该构建。
+- 你还可以在 **eas.json** 提交配置文件中使用 [`groups`](/eas/json/#groups) 字段指定额外的 TestFlight 组。
+- 使用 TestFlight，你可以发布可供内部和外部测试的应用版本。TestFlight 允许与最多 100 名内部测试者共享，并提供一个公共链接，可供最多 10,000 名外部测试者共享。
+- 提交到 Apple App Store 审核是一个手动过程。一旦你提交到 TestFlight，你就必须手动将该构建推进到 App Store。
 
-This behavior ensures that all iOS releases go through TestFlight when using `--auto-submit`, allowing you to test the release before deciding to make it available to the public.
+这种行为确保在使用 `--auto-submit` 时，所有 iOS 发布都会经过 TestFlight，让你可以在决定向公众开放之前先测试该发布。
 
-### Modifying App Store listing (iOS only)
+### 修改 App Store 列表（仅限 iOS）
 
-On its own, EAS Submit does not update store metadata (app description, Apple advisory information, languages, and so on). However, once you upload a build to Testflight with EAS Submit with a new version number, you can update this information with EAS Metadata.
+单独使用时，EAS Submit 不会更新商店元数据（应用描述、Apple 警示信息、语言等）。不过，一旦你使用 EAS Submit 将一个带有新版本号的构建上传到 Testflight，你就可以使用 EAS Metadata 更新这些信息。
 
 <BoxLink
   href="/eas/metadata/getting-started/"
   title="EAS Metadata"
-  description="Learn how to update your iOS app's metadata automatically."
+  description="了解如何自动更新你的 iOS 应用元数据。"
   Icon={EasMetadataIcon}
 />

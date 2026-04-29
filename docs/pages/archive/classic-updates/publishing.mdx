@@ -1,59 +1,37 @@
 ---
-title: Publishing updates
+title: 发布更新
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-> This doc was archived in August 2022 and will not receive any further updates. Use EAS Update instead. [Learn more](/eas-update/introduction)
+> 本文档已于 2022 年 8 月归档，且不会再收到任何进一步更新。请改用 EAS Update。[了解更多](/eas-update/introduction)
 
-While you're developing your project, you're writing code on your
-computer, and when you use Expo CLI, a server and the Metro bundler run on your machine and bundle up all your source code and make
-it available from a URL. Your URL for a project you're working on
-probably looks something like this:
+在开发项目时，你是在自己的电脑上编写代码，而当你使用 Expo CLI 时，服务器和 Metro bundler 会在你的机器上运行，并将你的所有源代码打包后通过一个 URL 提供访问。你正在开发的项目的 URL 可能看起来像这样：
 `exp://i3-kvb.ccheever.an-example.exp.direct:80`
 
-`exp.direct` is a domain we use for tunneling, so that even if you're
-behind a VPN or firewall, any device on the internet that has your URL
-should be able to access your project. This makes it much easier to open
-your project on your phone or send it someone else you're collaborating
-with who isn't on the same LAN.
+`exp.direct` 是我们用于隧道转发的域名，因此即使你位于 VPN 或防火墙之后，只要互联网上的任何设备拥有你的 URL，就应该能够访问你的项目。这会让你更容易在手机上打开项目，或者把它发送给与你协作、但不在同一局域网中的其他人。
 
-But since the bundler and development server are running on your computer, if you
-turn off your laptop or stop Expo CLI, you won't be able to load your
-project from that URL. "Publish" is the term we use for deploying your
-project. It makes your project available at a persistent URL, for
-example https://expo.dev/@community/native-component-list, which can be
-opened with the Expo Go app. It also uploads all of your app images,
-fonts, and videos to a CDN ([read more
-here](/faq/#how-do-i-share-my-expo-project-can-i-submit-it-to-the-app-stores)).
+但由于 bundler 和开发服务器都运行在你的电脑上，如果你关闭笔记本电脑或停止 Expo CLI，就无法再通过该 URL 加载你的项目。“Publish” 是我们用于部署项目的术语。它会将你的项目发布到一个持久的 URL，例如 https://expo.dev/@community/native-component-list，可通过 Expo Go 应用打开。它还会将你应用中的所有图片、字体和视频上传到 CDN（[在这里阅读更多内容](/faq/#how-do-i-share-my-expo-project-can-i-submit-it-to-the-app-stores)）。
 
-## How to publish
+## 如何发布
 
-To publish a project, run `expo publish`. No setup is required, go ahead and create a new project
-and publish it without any changes and you will see that it works.
+要发布项目，请运行 `expo publish`。无需任何设置，你可以直接创建一个新项目并在不做任何更改的情况下发布它，你会看到它可以正常工作。
 
-When you do this, the bundler will minify all your code and generate
-two versions of your code (one for iOS, one for Android) and then upload
-those to a free hosting service provided by Expo. You'll get a link like [https://exp.host/@ccheever/an-example](https://exp.host/@ccheever/an-example)
-that anyone can load your project from.
+当你这样做时，bundler 会压缩你的所有代码，并生成两份代码版本（一个用于 iOS，一个用于 Android），然后将它们上传到 Expo 提供的免费托管服务。你会得到一个类似 [https://exp.host/@ccheever/an-example](https://exp.host/@ccheever/an-example) 的链接，任何人都可以通过它加载你的项目。
 
-If you haven't optimized your assets yet you will be prompted and asked
-if you'd like to do so when you run `expo publish`. This has the same effect
-as running `npx expo-optimize` and will compress all of the PNGs and JPEGs in your project.
+如果你还没有优化你的资源，在运行 `expo publish` 时系统会提示你，询问你是否愿意这样做。这与运行 `npx expo-optimize` 具有相同效果，并且会压缩你项目中的所有 PNG 和 JPEG 文件。
 
-Any time you want to deploy an update, hit publish again and a new
-version will be available immediately to your users the next time they
-open it.
+每当你想要部署一次更新时，再次点击 publish，新的版本会在用户下次打开时立即可用。
 
-## What version of the app will my users get?
+## 我的用户会得到什么版本的应用？
 
-Your users will get the most recent compatible release that was pushed to a [release channel](./release-channels). Factors that affect compatibility:
+你的用户将获得推送到某个 [发布通道](./release-channels) 的最近一次兼容发布。影响兼容性的因素包括：
 
-- sdkVersion (standalone apps are built to support only a single SDK version)
+- sdkVersion（独立应用只构建为支持单一 SDK 版本）
 - platform
 - releaseChannel
 
-The following flowchart shows how we determine which release to return to a user:
+下面的流程图展示了我们如何确定返回给用户的是哪个发布版本：
 
 <ContentSpotlight
   alt="Serving Flowchart"
@@ -61,59 +39,48 @@ The following flowchart shows how we determine which release to return to a user
   className="max-w-[600px]"
 />
 
-## Deploying to the App Store and Play Store
+## 部署到 App Store 和 Play Store
 
-When you're ready to distribute your app to end-users, you can create a
-standalone app binary (an ipa or apk file) and put it in the iOS App
-Store and the Google Play Store.
+当你准备将应用分发给最终用户时，你可以创建一个独立应用二进制文件（ipa 或 apk 文件），并将其发布到 iOS App Store 和 Google Play Store。
 
-The standalone app knows to look for updates at your app's published
-url, and if you publish an update then the next time a user opens your
-app they will automatically download the new version.
+独立应用会知道去你应用已发布的 url 中查找更新，如果你发布了更新，那么用户下次打开应用时，他们会自动下载新版本。
 
-## Uploading Assets to the CDN
+## 将资源上传到 CDN
 
-In order for assets to be uploaded to the CDN, they must be explicitly required somewhere in your application's code. Conditionally requiring assets will result in the Metro bundler being unable to detect them and therefore they will not be uploaded when you publish your project.
+为了让资源被上传到 CDN，它们必须在应用代码中的某处被显式 require。条件性地 require 资源会导致 Metro bundler 无法检测到它们，因此在你发布项目时，它们不会被上传。
 
-## Limitations
+## 限制
 
-### Some native configuration can't be updated by publishing
+### 某些原生配置无法通过发布更新
 
-If you make any of the following changes in **app.json**, you will need to
-re-build the binaries for your app for the change to take effect:
+如果你在 **app.json** 中进行了以下任一更改，则需要重新构建应用的二进制文件，变更才会生效：
 
-- Increment the Expo SDK Version
-- Change anything under the `ios`, `android`, or `notification` keys
-- Change your app `splash`
-- Change your app `icon`
-- Change your app `name`
-- Change your app `owner`
-- Change your app `scheme`
-- Change your `facebookScheme`
-- Change your bundled assets under `assetBundlePatterns`
+- 提升 Expo SDK 版本
+- 更改 `ios`、`android` 或 `notification` 键下的任何内容
+- 更改应用的 `splash`
+- 更改应用的 `icon`
+- 更改应用的 `name`
+- 更改应用的 `owner`
+- 更改应用的 `scheme`
+- 更改你的 `facebookScheme`
+- 更改 `assetBundlePatterns` 下打包的资源
 
-Additionally, changes to keys in Firebase configuration files (google-services.json and GoogleService-Info.plist) will require re-building the binaries to take effect in the iOS or Android standalone app.
+此外，修改 Firebase 配置文件（google-services.json 和 GoogleService-Info.plist）中各项键值，也需要重新构建二进制文件后，变更才会在 iOS 或 Android 独立应用中生效。
 
-### On iOS, you can't share your published link
+### 在 iOS 上，你不能分享你发布后的链接
 
-When you publish, any Android user can open your app inside Expo Go immediately.
+当你发布时，任何 Android 用户都可以立即在 Expo Go 中打开你的应用。
 
-Due to restrictions imposed by Apple, the best way to share your published app is
-to build a native binary with Expo's build service. You can use Apple TestFlight to
-share the app with your testers, and you can submit it to the iTunes Store to share
-more widely.
+由于 Apple 施加的限制，分享已发布应用的最佳方式是使用 Expo 的构建服务生成原生二进制文件。你可以使用 Apple TestFlight 与测试人员分享应用，也可以将其提交到 iTunes Store 以扩大分发范围。
 
-## Privacy
+## 隐私
 
-You can set the privacy of your project in your **app.json** configuration
-file by setting the key "privacy" to either `"public"` or `"unlisted"`.
+你可以在 **app.json** 配置文件中通过将键 "privacy" 设置为 `"public"` 或 `"unlisted"` 来设置项目的隐私。
 
-These options work similarly to the way they do on YouTube. Unlisted
-project URLs will be secret unless you tell people about them or share
-them. Public projects might be surfaced to other developers.
+这些选项的工作方式与 YouTube 上类似。未列出的项目 URL 会是保密的，除非你告诉别人或与他们分享。公开项目可能会展示给其他开发者。
 
-## How do I remove a managed Expo project that I published?
+## 我该如何移除一个我已发布的受管理 Expo 项目？
 
-The default privacy setting for managed apps is `unlisted` so nobody can find your app unless you share the link with them.
+受管理应用的默认隐私设置是 `unlisted`，因此除非你把链接分享给别人，否则没人能找到你的应用。
 
-If you really want your published app to be 'unpublished', check out our guide on [Advanced Release Channels](./advanced-release-channels), which explains how to roll back.
+如果你真的想让你已发布的应用“取消发布”，请查看我们的 [高级发布通道](./advanced-release-channels) 指南，其中解释了如何回滚。

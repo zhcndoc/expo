@@ -1,6 +1,6 @@
 ---
-title: Camera
-description: A React component that renders a preview for the device's front or back camera.
+title: 相机
+description: 一个 React 组件，用于渲染设备前置或后置摄像头的预览。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-53/packages/expo-camera'
 packageName: 'expo-camera'
 iconUrl: '/static/images/packages/expo-camera.png'
@@ -20,15 +20,15 @@ import {
 } from '~/ui/components/ConfigSection';
 import { SnackInline } from '~/ui/components/Snippet';
 
-`expo-camera` provides a React component that renders a preview of the device's front or back camera. The camera's parameters such as zoom, torch, and flash mode are adjustable. Using `CameraView`, you can take photos and record videos that are saved to the app's cache. The component is also capable of detecting bar codes appearing in the preview. Run the [example](#usage) on your device to see all these features working together.
+`expo-camera` 提供了一个 React 组件，用于渲染设备前置或后置摄像头的预览。摄像头的参数，例如缩放、闪光灯和闪光模式，都可以调整。使用 `CameraView`，你可以拍照和录制视频，并保存到应用的缓存中。该组件还能够检测预览中出现的条形码。在你的设备上运行 [示例](#usage) 来查看这些功能如何协同工作。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Configuration in app config
+## 在 app 配置中进行配置
 
-You can configure `expo-camera` using its built-in [config plugin](/config-plugins/introduction/) if you use config plugins in your project ([Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)). The plugin allows you to configure various properties that cannot be set at runtime and require building a new app binary to take effect. If your app does **not** use CNG, then you'll need to manually configure the library.
+如果你在项目中使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-camera` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置一些无法在运行时设置、并且需要重新构建新的应用二进制文件后才会生效的属性。如果你的应用**没有**使用 CNG，那么你需要手动配置该库。
 
 <ConfigPluginExample>
 
@@ -39,8 +39,8 @@ You can configure `expo-camera` using its built-in [config plugin](/config-plugi
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "cameraPermission": "允许 $(PRODUCT_NAME) 访问你的摄像头",
+          "microphonePermission": "允许 $(PRODUCT_NAME) 访问你的麦克风",
           "recordAudioAndroid": true
         }
       ]
@@ -56,20 +56,20 @@ You can configure `expo-camera` using its built-in [config plugin](/config-plugi
     {
       name: 'cameraPermission',
       platform: 'ios',
-      description: 'A string to set the [`NSCameraUsageDescription`](#ios) permission message.',
-      default: '"Allow $(PRODUCT_NAME) to access your camera"',
+      description: '用于设置 [`NSCameraUsageDescription`](#ios) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的摄像头"',
     },
     {
       name: 'microphonePermission',
       platform: 'ios',
-      description: 'A string to set the [`NSMicrophoneUsageDescription`](#ios) permission message.',
-      default: '"Allow $(PRODUCT_NAME) to access your microphone"',
+      description: '用于设置 [`NSMicrophoneUsageDescription`](#ios) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的麦克风"',
     },
     {
       name: 'recordAudioAndroid',
       platform: 'android',
       description:
-        'A boolean that determines whether to enable the `RECORD_AUDIO` permission on Android.',
+        '一个布尔值，用于决定是否在 Android 上启用 `RECORD_AUDIO` 权限。',
       default: 'true',
     },
   ]}
@@ -77,29 +77,29 @@ You can configure `expo-camera` using its built-in [config plugin](/config-plugi
 
 <ConfigReactNative>
 
-If you're not using Continuous Native Generation ([CNG](/workflow/continuous-native-generation/)) (you're using native **android** and **ios** projects manually), then you need to configure following permissions in your native projects:
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)）（也就是你在手动使用原生 **android** 和 **ios** 项目），那么你需要在原生项目中配置以下权限：
 
 **Android**
 
-- `expo-camera` automatically adds `android.permission.CAMERA` permission to your project's **android/app/src/main/AndroidManifest.xml**. If you want to record videos with audio, include `RECORD_AUDIO` permission:
+- `expo-camera` 会自动将 `android.permission.CAMERA` 权限添加到你项目的 **android/app/src/main/AndroidManifest.xml** 中。如果你想录制带音频的视频，请包含 `RECORD_AUDIO` 权限：
 
   ```xml
-  <!-- Added permission -->
+  <!-- 已添加的权限 -->
   <uses-permission android:name="android.permission.CAMERA" />
 
-  <!-- Only add when recording videos with audio -->
+  <!-- 仅在录制带音频的视频时添加 -->
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
   ```
 
-- Then, adjust the **android/build.gradle** file to add new maven block after all other repositories as show below:
+- 然后，调整 **android/build.gradle** 文件，在所有其他仓库后添加一个新的 maven 块，如下所示：
 
   ```groovy
   allprojects {
     repositories {
-        // * Your other repositories here *
-        // * Add a new maven block after other repositories / blocks *
+        // * 你的其他仓库放在这里 *
+        // * 在其他仓库 / 块之后添加一个新的 maven 块 *
         maven {
-            // expo-camera bundles a custom com.google.android:cameraview
+            // expo-camera 捆绑了一个自定义的 com.google.android:cameraview
             url "$rootDir/../node_modules/expo-camera/android/maven"
         }
     }
@@ -108,22 +108,22 @@ If you're not using Continuous Native Generation ([CNG](/workflow/continuous-nat
 
 **iOS**
 
-- Add `NSCameraUsageDescription` and `NSMicrophoneUsageDescription` keys to your project's **ios/[app]/Info.plist**:
+- 将 `NSCameraUsageDescription` 和 `NSMicrophoneUsageDescription` 键添加到你项目的 **ios/[app]/Info.plist** 中：
 
   ```xml
   <key>NSCameraUsageDescription</key>
-  <string>Allow $(PRODUCT_NAME) to access your camera</string>
+  <string>允许 $(PRODUCT_NAME) 访问你的摄像头</string>
   <key>NSMicrophoneUsageDescription</key>
-  <string>Allow $(PRODUCT_NAME) to access your microphone</string>
+  <string>允许 $(PRODUCT_NAME) 访问你的麦克风</string>
   ```
 
 </ConfigReactNative>
 
-## Usage
+## 使用
 
-> **warning** Only one Camera preview can be active at any given time. If you have multiple screens in your app, you should unmount `Camera` components whenever a screen is unfocused.
+> **warning** 在任意给定时间内，只能有一个 Camera 预览处于活动状态。如果你的应用有多个屏幕，当某个屏幕失去焦点时，你应该卸载 `Camera` 组件。
 
-<SnackInline label='Basic Camera Usage' dependencies={['expo-camera']}>
+<SnackInline label='基础摄像头用法' dependencies={['expo-camera']}>
 
 ```tsx
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
@@ -135,16 +135,16 @@ export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
 
   if (!permission) {
-    // Camera permissions are still loading.
+    // 摄像头权限仍在加载中。
     return <View />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet.
+    // 摄像头权限尚未授予。
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
+        <Text style={styles.message}>我们需要你的许可来显示摄像头</Text>
+        <Button onPress={requestPermission} title="授予权限" />
       </View>
     );
   }
@@ -158,7 +158,7 @@ export default function App() {
       <CameraView style={styles.camera} facing={facing} />
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-          <Text style={styles.text}>Flip Camera</Text>
+          <Text style={styles.text}>翻转摄像头</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -199,22 +199,22 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
-### Advanced usage
+### 高级用法
 
 <BoxLink
-  title="Camera app example"
-  description="A complete example that shows how to take a picture and display it. Written in TypeScript."
+  title="摄像头应用示例"
+  description="一个完整示例，展示如何拍照并将其显示出来。使用 TypeScript 编写。"
   Icon={GithubIcon}
   href="https://github.com/expo/examples/tree/master/with-camera"
 />
 
-## Web support
+## Web 支持
 
-Most browsers support a version of web camera functionality, you can check out the [web camera browser support here](https://caniuse.com/#feat=stream). Image URIs are always returned as base64 strings because local file system paths are unavailable in the browser.
+大多数浏览器都支持某种版本的网页摄像头功能，你可以在 [这里查看网页摄像头的浏览器支持情况](https://caniuse.com/#feat=stream)。图像 URI 总是以 base64 字符串返回，因为浏览器中不可用本地文件系统路径。
 
-### Chrome `iframe` usage
+### Chrome `iframe` 用法
 
-When using **Chrome versions 64+**, if you try to use a web camera in a cross-origin iframe nothing will render. To add support for cameras in your iframe simply add the attribute `allow="microphone; camera;"` to the iframe element:
+当使用 **Chrome 64 及以上版本** 时，如果你尝试在跨域 iframe 中使用网页摄像头，将不会渲染任何内容。要为你的 iframe 添加摄像头支持，只需向 iframe 元素添加属性 `allow="microphone; camera;"`：
 
 ```html
 <iframe src="..." allow="microphone; camera;">
@@ -230,16 +230,16 @@ import { CameraView } from 'expo-camera';
 
 <APISection packageName="expo-camera" apiName="Camera" exposeAllClassPropsInSidebar />
 
-## Permissions
+## 权限
 
 ### Android
 
-This package automatically adds the `CAMERA` permission to your app. If you want to record videos with audio, you have to include the `RECORD_AUDIO` in your **app.json** inside the [`expo.android.permissions`](../config/app/#permissions) array.
+此包会自动向你的应用添加 `CAMERA` 权限。如果你想录制带音频的视频，你必须在 **app.json** 的 [`expo.android.permissions`](../config/app/#permissions) 数组中包含 `RECORD_AUDIO`。
 
 <AndroidPermissions permissions={['CAMERA', 'RECORD_AUDIO']} />
 
 ### iOS
 
-The following usage description keys are used by this library:
+此库使用以下用途说明键：
 
 <IOSPermissions permissions={['NSCameraUsageDescription', 'NSMicrophoneUsageDescription']} />

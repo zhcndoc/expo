@@ -1,6 +1,6 @@
 ---
 title: SQLite
-description: A library that provides access to a database that can be queried through a SQLite API.
+description: 一个通过 SQLite API 提供对可查询数据库访问的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-54/packages/expo-sqlite'
 packageName: 'expo-sqlite'
 iconUrl: '/static/images/packages/expo-sqlite.png'
@@ -13,17 +13,17 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
 import { DiffBlock } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-`expo-sqlite` gives your app access to a database that can be queried through a SQLite API. The database is persisted across restarts of your app.
+`expo-sqlite` 让你的应用能够访问一个可通过 SQLite API 查询的数据库。该数据库会在应用重启后持续保留。
 
-> **Warning** On Apple TV, the underlying database file is in the caches directory and not the application documents directory, per [Apple platform guidelines](https://github.com/react-native-tvos/react-native-tvos/issues/68#issuecomment-628327676).
+> **Warning** 在 Apple TV 上，底层数据库文件位于 caches 目录，而不是应用的 documents 目录，详见 [Apple 平台指南](https://github.com/react-native-tvos/react-native-tvos/issues/68#issuecomment-628327676)。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Configuration in app config
+## 在 app 配置中进行配置
 
-You can configure `expo-sqlite` for advanced configurations using its built-in [config plugin](/config-plugins/introduction/) if you use config plugins in your project ([Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)). The plugin allows you to configure various properties that cannot be set at runtime and require building a new app binary to take effect. If your app does **not** use CNG, then you'll need to manually configure the library.
+如果你的项目使用了配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用内置的 [config plugin](/config-plugins/introduction/) 为 `expo-sqlite` 配置高级选项。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件后才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
 
 <ConfigPluginExample>
 
@@ -37,12 +37,12 @@ You can configure `expo-sqlite` for advanced configurations using its built-in [
           "enableFTS": true,
           "useSQLCipher": true,
           "android": {
-            // Override the shared configuration for Android
+            // 覆盖 Android 的共享配置
             "enableFTS": false,
             "useSQLCipher": false
           },
           "ios": {
-            // You can also override the shared configurations for iOS
+            // 你也可以覆盖 iOS 的共享配置
             "customBuildFlags": ["-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1"]
           }
         }
@@ -58,56 +58,56 @@ You can configure `expo-sqlite` for advanced configurations using its built-in [
   properties={[
     {
       name: 'customBuildFlags',
-      description: 'Custom build flags to be passed to the SQLite build process.',
+      description: '要传递给 SQLite 构建过程的自定义构建标志。',
     },
     {
       name: 'enableFTS',
       description:
-        'Whether to enable the [FTS3, FTS4](https://www.sqlite.org/fts3.html) and [FTS5](https://www.sqlite.org/fts5.html) extensions.',
+        '是否启用 [FTS3, FTS4](https://www.sqlite.org/fts3.html) 和 [FTS5](https://www.sqlite.org/fts5.html) 扩展。',
       default: 'true',
     },
     {
       name: 'useSQLCipher',
       description:
-        'Use the [SQLCipher](https://www.zetetic.net/sqlcipher/) implementations rather than the default SQLite.',
+        '使用 [SQLCipher](https://www.zetetic.net/sqlcipher/) 的实现，而不是默认的 SQLite。',
       default: 'false',
     },
     {
       name: 'withSQLiteVecExtension',
       description:
-        'Include the [sqlite-vec](https://github.com/asg017/sqlite-vec) extension to [`bundledExtensions`](#sqlitebundledextensions).',
+        '将 [sqlite-vec](https://github.com/asg017/sqlite-vec) 扩展包含到 [`bundledExtensions`](#sqlitebundledextensions) 中。',
       default: 'false',
     },
   ]}
 />
 
-## Web setup
+## Web 设置
 
-> **important** Web support is in alpha and may be unstable. [Create an issue on GitHub](https://github.com/expo/expo/issues) if you encounter any issues.
+> **important** Web 支持处于 alpha 阶段，可能不稳定。如果你遇到任何问题，请在 [GitHub 上创建 issue](https://github.com/expo/expo/issues)。
 
-To use `expo-sqlite` on web, you need to configure Metro bundler to support **wasm** files and add HTTP headers to allow [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) usage.
+要在 web 上使用 `expo-sqlite`，你需要配置 Metro bundler 以支持 **wasm** 文件，并添加 HTTP 头以允许使用 [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)。
 
-Add the following configuration to your **metro.config.js**. If you don't have the **metro.config.js** yet, you can run `npx expo customize metro.config.js`. [Learn more](/guides/customizing-metro/).
+将以下配置添加到你的 **metro.config.js** 中。如果你还没有 **metro.config.js**，可以运行 `npx expo customize metro.config.js`。[了解更多](/guides/customizing-metro/)。
 
 <DiffBlock source="/static/diffs/sqlite-web-metro-config.diff" />
 
-If you deploy your app to web hosting services, you will also need to add the `Cross-Origin-Embedder-Policy` and `Cross-Origin-Opener-Policy` headers to your web server. [Learn more about the `COEP`, `COOP` headers, and `SharedArrayBuffer`](https://developer.chrome.com/blog/enabling-shared-array-buffer/).
+如果你将应用部署到 web 托管服务，还需要在 web 服务器上添加 `Cross-Origin-Embedder-Policy` 和 `Cross-Origin-Opener-Policy` 头。[了解 `COEP`、`COOP` 头以及 `SharedArrayBuffer` 的更多信息](https://developer.chrome.com/blog/enabling-shared-array-buffer/)。
 
-## Usage
+## 使用
 
-Import the module from `expo-sqlite`.
+从 `expo-sqlite` 导入模块。
 
-```js Import the module from expo-sqlite
+```js 从 expo-sqlite 导入模块
 import * as SQLite from 'expo-sqlite';
 ```
 
-### Basic CRUD operations
+### 基本 CRUD 操作
 
-```js Basic CRUD operations
+```js 基本 CRUD 操作
 const db = await SQLite.openDatabaseAsync('databaseName');
 
-// `execAsync()` is useful for bulk queries when you want to execute altogether.
-// Note that `execAsync()` does not escape parameters and may lead to SQL injection.
+// `execAsync()` 适用于批量查询，当你希望一次性执行它们时。
+// 注意，`execAsync()` 不会转义参数，可能导致 SQL 注入。
 await db.execAsync(`
 PRAGMA journal_mode = WAL;
 CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY NOT NULL, value TEXT NOT NULL, intValue INTEGER);
@@ -116,36 +116,36 @@ INSERT INTO test (value, intValue) VALUES ('test2', 456);
 INSERT INTO test (value, intValue) VALUES ('test3', 789);
 `);
 
-// `runAsync()` is useful when you want to execute some write operations.
+// `runAsync()` 适用于你想执行一些写操作时。
 const result = await db.runAsync('INSERT INTO test (value, intValue) VALUES (?, ?)', 'aaa', 100);
 console.log(result.lastInsertRowId, result.changes);
-await db.runAsync('UPDATE test SET intValue = ? WHERE value = ?', 999, 'aaa'); // Binding unnamed parameters from variadic arguments
-await db.runAsync('UPDATE test SET intValue = ? WHERE value = ?', [999, 'aaa']); // Binding unnamed parameters from array
-await db.runAsync('DELETE FROM test WHERE value = $value', { $value: 'aaa' }); // Binding named parameters from object
+await db.runAsync('UPDATE test SET intValue = ? WHERE value = ?', 999, 'aaa'); // 从可变参数中绑定未命名参数
+await db.runAsync('UPDATE test SET intValue = ? WHERE value = ?', [999, 'aaa']); // 从数组中绑定未命名参数
+await db.runAsync('DELETE FROM test WHERE value = $value', { $value: 'aaa' }); // 从对象中绑定命名参数
 
-// `getFirstAsync()` is useful when you want to get a single row from the database.
+// `getFirstAsync()` 适用于你想从数据库中获取单行数据时。
 const firstRow = await db.getFirstAsync('SELECT * FROM test');
 console.log(firstRow.id, firstRow.value, firstRow.intValue);
 
-// `getAllAsync()` is useful when you want to get all results as an array of objects.
+// `getAllAsync()` 适用于你想将所有结果作为对象数组获取时。
 const allRows = await db.getAllAsync('SELECT * FROM test');
 for (const row of allRows) {
   console.log(row.id, row.value, row.intValue);
 }
 
-// `getEachAsync()` is useful when you want to iterate SQLite query cursor.
+// `getEachAsync()` 适用于你想迭代 SQLite 查询游标时。
 for await (const row of db.getEachAsync('SELECT * FROM test')) {
   console.log(row.id, row.value, row.intValue);
 }
 ```
 
-### Prepared statements
+### 预编译语句
 
-Prepared statements allow you to compile your SQL query once and execute it multiple times with different parameters. They automatically escape input parameters to defend against SQL injection attacks, and are recommended for queries that include user input. You can get a prepared statement by calling [`prepareAsync()`](#prepareasyncsource) or [`prepareSync()`](#preparesyncsource) method on a database instance. The prepared statement can fulfill CRUD operations by calling [`executeAsync()`](#executeasyncparams) or [`executeSync()`](#executesyncparams) method.
+预编译语句允许你只编译一次 SQL 查询，然后使用不同参数多次执行。它们会自动转义输入参数以防御 SQL 注入攻击，因此推荐用于包含用户输入的查询。你可以通过在数据库实例上调用 [`prepareAsync()`](#prepareasyncsource) 或 [`prepareSync()`](#preparesyncsource) 方法来获取预编译语句。预编译语句可以通过调用 [`executeAsync()`](#executeasyncparams) 或 [`executeSync()`](#executesyncparams) 方法来完成 CRUD 操作。
 
-> **Note:** Remember to call [`finalizeAsync()`](#finalizeasync) or [`finalizeSync()`](#finalizesync) method to release the prepared statement after you finish using the statement. `try-finally` block is recommended to ensure the prepared statement is finalized.
+> **Note:** 在使用完语句后，记得调用 [`finalizeAsync()`](#finalizeasync) 或 [`finalizeSync()`](#finalizesync) 方法来释放预编译语句。建议使用 `try-finally` 代码块来确保预编译语句被最终释放。
 
-```ts Prepared statements
+```ts 预编译语句
 const statement = await db.prepareAsync(
   'INSERT INTO test (value, intValue) VALUES ($value, $intValue)'
 );
@@ -168,23 +168,23 @@ try {
     $intValue: 100,
   });
 
-  // `getFirstAsync()` is useful when you want to get a single row from the database.
+  // `getFirstAsync()` 适用于你想从数据库中获取单行数据时。
   const firstRow = await result.getFirstAsync();
   console.log(firstRow.id, firstRow.value, firstRow.intValue);
 
-  // Reset the SQLite query cursor to the beginning for the next `getAllAsync()` call.
+  // 将 SQLite 查询游标重置到起始位置，以便下一次 `getAllAsync()` 调用。
   await result.resetAsync();
 
-  // `getAllAsync()` is useful when you want to get all results as an array of objects.
+  // `getAllAsync()` 适用于你想将所有结果作为对象数组获取时。
   const allRows = await result.getAllAsync();
   for (const row of allRows) {
     console.log(row.value, row.intValue);
   }
 
-  // Reset the SQLite query cursor to the beginning for the next `for-await-of` loop.
+  // 将 SQLite 查询游标重置到起始位置，以便下一次 `for-await-of` 循环。
   await result.resetAsync();
 
-  // The result object is also an async iterable. You can use it in `for-await-of` loop to iterate SQLite query cursor.
+  // 结果对象本身也是一个异步可迭代对象。你可以在 `for-await-of` 循环中使用它来迭代 SQLite 查询游标。
   for await (const row of result) {
     console.log(row.value, row.intValue);
   }
@@ -225,7 +225,7 @@ export function Header() {
   }, []);
   return (
     <View style={styles.headerContainer}>
-      <Text style={styles.headerText}>SQLite version: {version}</Text>
+      <Text style={styles.headerText}>SQLite 版本：{version}</Text>
     </View>
   );
 }
@@ -276,21 +276,21 @@ CREATE TABLE todos (id INTEGER PRIMARY KEY NOT NULL, value TEXT NOT NULL, intVal
     currentDbVersion = 1;
   }
   // if (currentDbVersion === 1) {
-  //   Add more migrations
+  //   添加更多迁移
   // }
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
 }
 
 const styles = StyleSheet.create({
-  // Your styles...
+  // 你的样式...
 });
 ```
 
-### `useSQLiteContext()` hook with `React.Suspense`
+### 带有 `React.Suspense` 的 `useSQLiteContext()` hook
 
-As with the [`useSQLiteContext()`](#usesqlitecontext-hook) hook, you can also integrate the [`SQLiteProvider`](#sqliteprovider) with [`React.Suspense`](https://react.dev/reference/react/Suspense) to show a fallback component until the database is ready. To enable the integration, pass the `useSuspense` prop to the `SQLiteProvider` component.
+与 [`useSQLiteContext()`](#usesqlitecontext-hook) hook 一样，你也可以将 [`SQLiteProvider`](#sqliteprovider) 与 [`React.Suspense`](https://react.dev/reference/react/Suspense) 集成，在数据库准备好之前显示一个 fallback 组件。要启用该集成，请向 `SQLiteProvider` 组件传入 `useSuspense` 属性。
 
-```tsx useSQLiteContext() hook with React.Suspense
+```tsx 带有 React.Suspense 的 useSQLiteContext() hook
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { Suspense } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -309,9 +309,9 @@ export default function App() {
 }
 ```
 
-### Executing queries within an async transaction
+### 在异步事务中执行查询
 
-```js Executing queries within an async transaction
+```js 在异步事务中执行查询
 const db = await SQLite.openDatabaseAsync('databaseName');
 
 await db.withTransactionAsync(async () => {
@@ -320,51 +320,47 @@ await db.withTransactionAsync(async () => {
 });
 ```
 
-Due to the nature of async/await, any query that runs while the transaction is active will be included in the transaction. This includes query statements that are outside of the scope function passed to `withTransactionAsync()` and may be surprising behavior. For example, the following test case runs queries inside and outside of a scope function passed to `withTransactionAsync()`. However, all of the queries will run within the actual SQL transaction because the second `UPDATE` query runs before the transaction finishes.
+由于 async/await 的特性，任何在事务处于活动状态时运行的查询都会被包含在事务中。这也包括传递给 `withTransactionAsync()` 的作用域函数之外的查询语句，这可能会让人感到意外。例如，下面的测试用例会在传递给 `withTransactionAsync()` 的作用域函数内部和外部运行查询。然而，所有查询都会在实际的 SQL 事务中运行，因为第二个 `UPDATE` 查询是在事务结束之前执行的。
 
 ```ts
 Promise.all([
-  // 1. A new transaction begins
+  // 1. 一个新的事务开始
   db.withTransactionAsync(async () => {
-    // 2. The value "first" is inserted into the test table and we wait 2
-    //    seconds
+    // 2. 值 "first" 被插入到测试表中，然后我们等待 2
+    //    秒
     await db.execAsync('INSERT INTO test (data) VALUES ("first")');
     await sleep(2000);
 
-    // 4. Two seconds in, we read the latest data from the table
+    // 4. 两秒后，我们从表中读取最新数据
     const row = await db.getFirstAsync<{ data: string }>('SELECT data FROM test');
 
-    // ❌ The data in the table will be "second" and this expectation will fail.
-    //    Additionally, this expectation will throw an error and roll back the
-    //    transaction, including the `UPDATE` query below since it ran within
-    //    the transaction.
+    // ❌ 表中的数据将是 "second"，这个断言会失败。
+    //    此外，这个断言还会抛出错误并回滚事务，包括下面的 `UPDATE` 查询，因为它是在事务中执行的。
     expect(row.data).toBe('first');
   }),
-  // 3. One second in, the data in the test table is updated to be "second".
-  //    This `UPDATE` query runs in the transaction even though its code is
-  //    outside of it because the transaction happens to be active at the time
-  //    this query runs.
+  // 3. 一秒后，测试表中的数据被更新为 "second"。
+  //    这个 `UPDATE` 查询虽然代码在事务外部，但由于执行时事务恰好处于活动状态，因此它仍会在事务中运行。
   sleep(1000).then(async () => db.execAsync('UPDATE test SET data = "second"')),
 ]);
 ```
 
-The [`withExclusiveTransactionAsync()`](#withexclusivetransactionasynctask) function addresses this. Only queries that run within the scope function passed to `withExclusiveTransactionAsync()` will run within the actual SQL transaction.
+[`withExclusiveTransactionAsync()`](#withexclusivetransactionasynctask) 函数可以解决这个问题。只有在传递给 `withExclusiveTransactionAsync()` 的作用域函数内部运行的查询，才会在实际的 SQL 事务中执行。
 
-### Executing PRAGMA queries
+### 执行 PRAGMA 查询
 
-```js Executing PRAGMA queries
+```js 执行 PRAGMA 查询
 const db = await SQLite.openDatabaseAsync('databaseName');
 await db.execAsync('PRAGMA journal_mode = WAL');
 await db.execAsync('PRAGMA foreign_keys = ON');
 ```
 
-> **info** **Tip:** Enable [WAL journal mode](https://www.sqlite.org/wal.html) when you create a new database to improve performance in general.
+> **info** **Tip:** 在创建新数据库时启用 [WAL journal mode](https://www.sqlite.org/wal.html)，通常可以提升性能。
 
-### Import an existing database
+### 导入现有数据库
 
-To open a new SQLite database using an existing **.db** file you already have, you can use the [`SQLiteProvider`](#sqliteprovider) with [`assetSource`](#assetsource).
+要使用你已有的 **.db** 文件打开一个新的 SQLite 数据库，你可以使用 [`SQLiteProvider`](#sqliteprovider) 和 [`assetSource`](#assetsource)。
 
-```tsx useSQLiteContext() with existing database
+```tsx 使用现有数据库的 useSQLiteContext()
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { View, Text, StyleSheet } from 'react-native';
 
@@ -380,13 +376,13 @@ export default function App() {
 }
 ```
 
-### Sharing a database between apps/extensions (iOS)
+### 在应用/扩展之间共享数据库（iOS）
 
-To share a database with other apps/extensions in the same App Group, you can use shared containers by following the steps below:
+要在同一个 App Group 中与其他应用/扩展共享数据库，你可以按照以下步骤使用共享容器：
 
 <Step label="1">
 
-Configure the App Group in app config:
+在 app 配置中配置 App Group：
 
 ```json app.json
 {
@@ -405,9 +401,9 @@ Configure the App Group in app config:
 
 <Step label="2">
 
-Use [`Paths.appleSharedContainers`](filesystem/#applesharedcontainers) from the [`expo-file-system`](filesystem/) library to retrieve the path to the shared container:
+使用 [`expo-file-system`](filesystem/) 库中的 [`Paths.appleSharedContainers`](filesystem/#applesharedcontainers) 来获取共享容器的路径：
 
-```tsx Using Shared Container for SQLite Database on iOS
+```tsx 在 iOS 上使用 Shared Container 存储 SQLite 数据库
 import { SQLiteProvider, defaultDatabaseDirectory } from 'expo-sqlite';
 import { Paths } from 'expo-file-system';
 import { useMemo } from 'react';
@@ -417,7 +413,7 @@ export default function App() {
   const dbDirectory = useMemo(() => {
     if (Platform.OS === 'ios') {
       return Object.values(Paths.appleSharedContainers)?.[0]?.uri;
-      // or `Paths.appleSharedContainers['group.com.myapp']?.uri` to choose specific container
+      // 或者使用 `Paths.appleSharedContainers['group.com.myapp']?.uri` 来选择特定容器
     }
     return defaultDatabaseDirectory;
   }, []);
@@ -435,11 +431,11 @@ export default function App() {
 
 </Step>
 
-### Passing binary data
+### 传递二进制数据
 
-Use [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) to pass binary data to the database:
+使用 [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) 向数据库传递二进制数据：
 
-```ts Passing binary data
+```ts 传递二进制数据
 await db.execAsync(`
 DROP TABLE IF EXISTS blobs;
 CREATE TABLE IF NOT EXISTS blobs (id INTEGER PRIMARY KEY NOT NULL, data BLOB);
@@ -452,18 +448,18 @@ const row = await db.getFirstAsync<{ data: Uint8Array }>('SELECT * FROM blobs');
 expect(row.data).toEqual(blob);
 ```
 
-### Browse an on-device database
+### 浏览设备上的数据库
 
-You can inspect a database, execute queries against it, and explore data with the [`drizzle-studio-expo` dev tools plugin](https://github.com/drizzle-team/drizzle-studio-expo). This plugin enables you to launch [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview), connected to a database in your app, directly from Expo CLI. This plugin can be used with any `expo-sqlite` configuration. It does not require that you use [Drizzle ORM](#drizzle-orm) in your app. [Learn how to install and use the plugin](https://github.com/drizzle-team/drizzle-studio-expo).
+你可以使用 [`drizzle-studio-expo` 开发工具插件](https://github.com/drizzle-team/drizzle-studio-expo) 来检查数据库、对其执行查询并浏览数据。这个插件可以让你直接从 Expo CLI 启动 [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview)，并连接到你应用中的数据库。该插件可用于任何 `expo-sqlite` 配置。它不要求你在应用中使用 [Drizzle ORM](#drizzle-orm)。[了解如何安装和使用该插件](https://github.com/drizzle-team/drizzle-studio-expo)。
 
-### Key-value storage
+### 键值存储
 
-The `expo-sqlite` library provides [`Storage`](#sqlitestorage) as a drop-in replacement for the [`@react-native-async-storage/async-storage`](https://github.com/react-native-async-storage/async-storage) library. This key-value store is backed by SQLite. If your project already uses `expo-sqlite`, you can leverage `expo-sqlite/kv-store` without needing to add another dependency.
+`expo-sqlite` 库提供了 [`Storage`](#sqlitestorage)，可作为 [`@react-native-async-storage/async-storage`](https://github.com/react-native-async-storage/async-storage) 库的直接替代。这个键值存储由 SQLite 支持。如果你的项目已经在使用 `expo-sqlite`，你可以直接使用 `expo-sqlite/kv-store`，而无需再添加另一个依赖。
 
-[`Storage`](#sqlitestorage) provides the same API as `@react-native-async-storage/async-storage`:
+[`Storage`](#sqlitestorage) 提供与 `@react-native-async-storage/async-storage` 相同的 API：
 
-```ts Using the Store
-// The storage API is the default export, you can call it Storage, AsyncStorage, or whatever you prefer.
+```ts 使用 Store
+// 存储 API 是默认导出，你可以将它命名为 Storage、AsyncStorage，或者任何你喜欢的名字。
 import Storage from 'expo-sqlite/kv-store';
 
 await Storage.setItem('key', JSON.stringify({ entity: 'value' }));
@@ -472,63 +468,63 @@ const entity = JSON.parse(value);
 console.log(entity); // { entity: 'value' }
 ```
 
-A key benefit of using `expo-sqlite/kv-store` is the addition of synchronous APIs for added convenience:
+使用 `expo-sqlite/kv-store` 的一个主要优点是还新增了同步 API，使用起来更加方便：
 
-```ts Using the Store with synchronous APIs
-// The storage API is the default export, you can call it Storage, AsyncStorage, or whatever you prefer.
+```ts 使用带有同步 API 的 Store
+// 存储 API 是默认导出，你可以将它命名为 Storage、AsyncStorage，或者任何你喜欢的名字。
 import Storage from 'expo-sqlite/kv-store';
 
 Storage.setItemSync('key', 'value');
 const value = Storage.getItemSync('key');
 ```
 
-If you're currently using `@react-native-async-storage/async-storage` in your project, switching to `expo-sqlite/kv-store` is as simple as changing the import statement:
+如果你当前在项目中使用的是 `@react-native-async-storage/async-storage`，切换到 `expo-sqlite/kv-store` 只需修改导入语句即可：
 
 ```diff
 - import AsyncStorage from '@react-native-async-storage/async-storage';
 + import AsyncStorage from 'expo-sqlite/kv-store';
 ```
 
-### The `localStorage` API
+### `localStorage` API
 
-The `expo-sqlite/localStorage/install` module provides a drop-in implementation for the [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) API. If you're already familiar with this API from the web, or you would like to be able to share storage code between web and other platforms, this may be useful. To use it, you just need to import the `expo-sqlite/localStorage/install` module:
+`expo-sqlite/localStorage/install` 模块提供了 [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) API 的直接实现。如果你已经熟悉网页端的这个 API，或者希望在 web 和其他平台之间共享存储代码，这会很有用。要使用它，你只需要导入 `expo-sqlite/localStorage/install` 模块：
 
-> **Note:** `import 'expo-sqlite/localStorage/install';` is a no-op on web and will be excluded from the production JS bundle.
+> **Note:** `import 'expo-sqlite/localStorage/install';` 在 web 上不会执行任何操作，并且会被排除在生产环境的 JS bundle 之外。
 
-```ts Install globalThis.localStorage
+```ts 安装 globalThis.localStorage
 import 'expo-sqlite/localStorage/install';
 
 globalThis.localStorage.setItem('key', 'value');
 console.log(globalThis.localStorage.getItem('key')); // 'value'
 ```
 
-## Security
+## 安全
 
-SQL injections are a class of vulnerabilities where attackers trick your app into executing user input as SQL code. You must escape all user input passed to SQLite to defend against SQL injections. [Prepared statements](#prepared-statements) are an effective defense against this problem. They explicitly separate a SQL query's logic from its input parameters, and SQLite automatically escapes inputs when executing prepared statements.
+SQL 注入是一类漏洞，攻击者会诱使你的应用将用户输入当作 SQL 代码执行。你必须对传递给 SQLite 的所有用户输入进行转义，以防御 SQL 注入。[预处理语句](#prepared-statements)是应对这一问题的有效防御手段。它们明确地将 SQL 查询的逻辑与其输入参数分离，而 SQLite 在执行预处理语句时会自动对输入进行转义。
 
-## Third-party library integrations
+## 第三方库集成
 
-The `expo-sqlite` library is designed to be a solid SQLite foundation. It enables broader integrations with third-party libraries for more advanced higher-level features. Here are some of the libraries that you can use with `expo-sqlite`.
+`expo-sqlite` 库旨在成为一个稳固的 SQLite 基础层。它支持与第三方库进行更广泛的集成，以实现更高级的上层功能。以下是一些可与 `expo-sqlite` 一起使用的库。
 
 ### Drizzle ORM
 
-[Drizzle](https://orm.drizzle.team/) is a ["headless TypeScript ORM with a head"](https://orm.drizzle.team/docs/overview). It runs on Node.js, Bun, Deno, and React Native. It also has a CLI companion called [`drizzle-kit`](https://orm.drizzle.team/kit-docs/overview) for generating SQL migrations.
+[Drizzle](https://orm.drizzle.team/) 是一个 [“没有头的、带头的 TypeScript ORM”](https://orm.drizzle.team/docs/overview)。它可运行于 Node.js、Bun、Deno 和 React Native。它还有一个名为 [`drizzle-kit`](https://orm.drizzle.team/kit-docs/overview) 的 CLI 配套工具，用于生成 SQL 迁移。
 
-Check out the [Drizzle ORM documentation](https://orm.drizzle.team/) and the [`expo-sqlite` integration guide](https://orm.drizzle.team/docs/get-started/expo-new) for more details.
+查看更多详情，请参阅 [Drizzle ORM 文档](https://orm.drizzle.team/) 和 [`expo-sqlite` 集成指南](https://orm.drizzle.team/docs/get-started/expo-new)。
 
 ### Knex.js
 
-[Knex.js](https://knexjs.org/) is a SQL query builder that is ["flexible, portable, and fun to use!"](https://github.com/knex/knex)
+[Knex.js](https://knexjs.org/) 是一个 SQL 查询构建器，具有[“灵活、可移植且使用起来很有趣！”](https://github.com/knex/knex) 的特点。
 
-Check out the [`expo-sqlite` integration guide](https://github.com/expo/knex-expo-sqlite-dialect) for more details.
+查看更多详情，请参阅 [`expo-sqlite` 集成指南](https://github.com/expo/knex-expo-sqlite-dialect)。
 
 ## SQLCipher
 
-> **Note:** SQLCipher is not supported on [Expo Go](https://expo.dev/go).
+> **注意：** [Expo Go](https://expo.dev/go) 不支持 SQLCipher。
 
-[SQLCipher](https://www.zetetic.net/sqlcipher/) is a fork of SQLite that adds encryption and authentication to the database. The `expo-sqlite` library supports SQLCipher for Android, iOS, and macOS. To use SQLCipher, you need to add the `useSQLCipher` config to your **app.json** as shown in the [Configuration in app config](#configuration-in-app-config) section and run `npx expo prebuild`.
+[SQLCipher](https://www.zetetic.net/sqlcipher/) 是 SQLite 的一个分支，为数据库增加了加密和身份验证功能。`expo-sqlite` 库支持 Android、iOS 和 macOS 上的 SQLCipher。要使用 SQLCipher，你需要按照 [app 配置中的配置](#configuration-in-app-config) 部分所示，将 `useSQLCipher` 配置添加到你的 **app.json** 中，然后运行 `npx expo prebuild`。
 
-Right after you open a database, you need to set a password for the database using the `PRAGMA key = 'password'` statement.
+在你打开数据库之后，需要使用 `PRAGMA key = 'password'` 语句为数据库设置密码。
 
 ```ts Add a password to the database
 const db = await SQLite.openDatabaseAsync('databaseName');
@@ -537,15 +533,15 @@ await db.execAsync(`PRAGMA key = 'password'`);
 
 ## API
 
-### Cheatsheet for the common API
+### 常用 API 速查表
 
-The following table summarizes the common API for [`SQLiteDatabase`](#sqlitedatabase) and [`SQLiteStatement`](#sqlitestatement) classes:
+下表总结了 [`SQLiteDatabase`](#sqlitedatabase) 和 [`SQLiteStatement`](#sqlitestatement) 类的常用 API：
 
-| [`SQLiteDatabase`](#sqlitedatabase) methods      | [`SQLiteStatement`](#sqlitestatement) methods                                 | Description                                                                                                                                                            | Use Case                                                                                                                                                                                   |
+| [`SQLiteDatabase`](#sqlitedatabase) 方法      | [`SQLiteStatement`](#sqlitestatement) 方法                                 | 描述                                                                                                                                                            | 使用场景                                                                                                                                                                                   |
 | ------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`runAsync()`](#runasyncsource-params)           | [`executeAsync()`](#executeasyncparams)                                       | Executes a SQL query, returning information on the changes made.                                                                                                       | Ideal for SQL write operations such as `INSERT`, `UPDATE`, `DELETE`.                                                                                                                       |
-| [`getFirstAsync()`](#getfirstasyncsource-params) | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getfirstasync) | Retrieves the first row from the query result.                                                                                                                         | Suitable for fetching a single row from the database. For example: `getFirstAsync('SELECT * FROM Users WHERE id = ?', userId)`.                                                            |
-| [`getAllAsync()`](#getallasyncsource-params)     | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync)   | Fetches all query results at once.                                                                                                                                     | Best suited for scenarios with smaller result sets, such as queries with a LIMIT clause, like `SELECT * FROM Table LIMIT 100`, where you intend to retrieve all results in a single batch. |
-| [`getEachAsync()`](#geteachasyncsource-params)   | [`executeAsync()`](#executeasyncparams) + `for-await-of` async iterator       | Provides an iterator for result set traversal. This method fetches one row at a time from the database, potentially reducing memory usage compared to `getAllAsync()`. | Recommended for handling large result sets incrementally, such as with infinite scrolling implementations.                                                                                 |
+| [`runAsync()`](#runasyncsource-params)           | [`executeAsync()`](#executeasyncparams)                                       | 执行 SQL 查询，并返回所做更改的信息。                                                                                                       | 适用于 SQL 写入操作，例如 `INSERT`、`UPDATE`、`DELETE`。                                                                                                                       |
+| [`getFirstAsync()`](#getfirstasyncsource-params) | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync) | 从查询结果中获取第一行。                                                                                                                         | 适合从数据库中获取单行。例如：`getFirstAsync('SELECT * FROM Users WHERE id = ?', userId)`。                                                            |
+| [`getAllAsync()`](#getallasyncsource-params)     | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync)   | 一次获取所有查询结果。                                                                                                                                     | 最适合结果集较小的场景，例如带有 LIMIT 子句的查询，如 `SELECT * FROM Table LIMIT 100`，你希望一次性获取全部结果。 |
+| [`getEachAsync()`](#geteachasyncsource-params)   | [`executeAsync()`](#executeasyncparams) + `for-await-of` async iterator       | 提供用于遍历结果集的迭代器。此方法会一次从数据库获取一行，与 `getAllAsync()` 相比，可能会减少内存使用。 | 推荐用于逐步处理较大的结果集，例如无限滚动实现。                                                                                 |
 
 <APISection packageName="expo-sqlite" apiName="SQLite" exposeAllClassPropsInSidebar />

@@ -1,7 +1,7 @@
 ---
-title: Configure multiple app variants
-sidebar_title: Multiple app variants
-description: Learn how to configure dynamic app config to install multiple app variants on a single device.
+title: 配置多个应用变体
+sidebar_title: 多个应用变体
+description: 了解如何配置动态应用配置，以便在一台设备上安装多个应用变体。
 hasVideoLink: true
 ---
 
@@ -11,17 +11,17 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-In this chapter, we'll configure our project to run multiple build types (development, preview, production) on a single device simultaneously. This setup will allow us to test various stages of our app development without the need to uninstall and reinstall different versions.
+在本章中，我们将配置项目，使其能够在同一台设备上同时运行多个构建类型（development、preview、production）。这种设置将使我们能够测试应用开发的不同阶段，而无需卸载并重新安装不同版本。
 
 <VideoBoxLink
   videoId="UtJJCAfrjIg"
-  title="Watch: How to configure multiple app variants"
-  description="Configure development, preview, and production app variants with unique bundle identifiers to run them side by side on one device."
+  title="观看：如何配置多个应用变体"
+  description="使用唯一的 bundle 标识符配置 development、preview 和 production 应用变体，以便它们能在同一台设备上并排运行。"
 />
 
 ---
 
-Each variant requires a unique Android Application ID and iOS Bundle Identifier to enable simultaneous installations on one device. Here's how the IDs are set up in our **app.json** file:
+每个变体都需要一个唯一的 Android Application ID 和 iOS Bundle Identifier，以便能在一台设备上同时安装。以下是这些 ID 在我们的 **app.json** 文件中的设置方式：
 
 ```json app.json
 {
@@ -42,16 +42,16 @@ Each variant requires a unique Android Application ID and iOS Bundle Identifier 
 
 <Step label="1">
 
-## Add app.config.js for dynamic configuration
+## 添加 app.config.js 以进行动态配置
 
-**app.json** contains app-related configuration in a JSON file. It's static and isn't ideal if we want to use [dynamic values for certain properties](/workflow/configuration/#dynamic-configuration). We're going to add different Android Application IDs and iOS Bundle Identifiers for all build profiles based on [environment variables](/workflow/configuration/#switching-configuration-based-on-the-environment).
+**app.json** 在 JSON 文件中包含与应用相关的配置。它是静态的，如果我们想使用[某些属性的动态值](/workflow/configuration/#dynamic-configuration)，它并不理想。我们将基于[环境变量](/workflow/configuration/#switching-configuration-based-on-the-environment)为所有构建配置文件添加不同的 Android Application ID 和 iOS Bundle Identifier。
 
-- In the root of your project, create a new file called **app.config.js**.
-- In **app.config.js**, export a default function that takes `config` as its argument. We'll then destructure the `config` to copy all existing properties from **app.json**.
+- 在项目根目录中，创建一个名为 **app.config.js** 的新文件。
+- 在 **app.config.js** 中，导出一个默认函数，该函数将 `config` 作为参数。然后我们会对 `config` 进行解构，以复制 **app.json** 中所有现有属性。
 
 ```js app.config.js
 export default ({ config }) => ({
-  /* @info The <CODE>config</CODE> object copies all existing configuration from app.json file.*/
+  /* @info <CODE>config</CODE> 对象会复制 app.json 文件中的所有现有配置。*/
   ...config,
   /* @end */
 });
@@ -61,16 +61,16 @@ export default ({ config }) => ({
 
 <Step label="2">
 
-## Update dynamic values based on environment
+## 根据环境更新动态值
 
-To identify the build type, let's add two environment variables called `IS_DEV` and`IS_PREVIEW` for `development` and `preview` build profiles in **app.config.js**:
+为了识别构建类型，让我们在 **app.config.js** 中为 `development` 和 `preview` 构建配置文件添加两个环境变量，分别叫做 `IS_DEV` 和`IS_PREVIEW`：
 
 ```js app.config.js
 const IS_DEV = process.env.APP_VARIANT === 'development';
 const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 ```
 
-Then, add two functions that dynamically change the app name, Android Application ID and iOS Bundle Identifier:
+然后，添加两个函数，动态更改应用名称、Android Application ID 和 iOS Bundle Identifier：
 
 ```js app.config.js
 const getUniqueIdentifier = () => {
@@ -87,38 +87,38 @@ const getUniqueIdentifier = () => {
 
 const getAppName = () => {
   if (IS_DEV) {
-    return 'StickerSmash (Dev)';
+    return 'StickerSmash（开发版）';
   }
 
   if (IS_PREVIEW) {
-    return 'StickerSmash (Preview)';
+    return 'StickerSmash（预览版）';
   }
 
-  return 'StickerSmash: Emoji Stickers';
+  return 'StickerSmash：表情贴纸';
 };
 ```
 
-We'll use `getAppName()` to assign dynamic `name` values for the app and `getUniqueIdentifier()` to differentiate `android.package` and `ios.bundleIdentifier` for development and preview builds:
+我们将使用 `getAppName()` 为应用分配动态的 `name` 值，并使用 `getUniqueIdentifier()` 来区分 development 和 preview 构建的 `android.package` 和 `ios.bundleIdentifier`：
 
 {/* prettier-ignore */}
 ```js app.config.js
 export default ({ config }) => ({
   ...config,
-  /* @info Using <CODE>getAppName()</CODE> for "name" property */
+  /* @info 使用 <CODE>getAppName()</CODE> 作为 "name" 属性 */
   name: getAppName(),
   /* @end */
   ios: {
-    /* @info Include existing <CODE>ios</CODE> configuration from app.json */
+    /* @info 包含来自 app.json 的现有 <CODE>ios</CODE> 配置 */
     ...config.ios,
     /* @end */
-    /* @info Using <CODE>getUniqueIdentifier()</CODE> for "bundleIdentifier" property */
+    /* @info 使用 <CODE>getUniqueIdentifier()</CODE> 作为 "bundleIdentifier" 属性 */
     bundleIdentifier: getUniqueIdentifier(),
   },
   android: {
-    /* @info Include existing <CODE>android</CODE> configuration from app.json */
+    /* @info 包含来自 app.json 的现有 <CODE>android</CODE> 配置 */
     ...config.android,
     /* @end */
-    /* @info Using <CODE>getUniqueIdentifier()</CODE> for "package" property */
+    /* @info 使用 <CODE>getUniqueIdentifier()</CODE> 作为 "package" 属性 */
     package: getUniqueIdentifier(),
   },
 });
@@ -128,9 +128,9 @@ export default ({ config }) => ({
 
 <Step label="3">
 
-## Configure eas.json
+## 配置 eas.json
 
-In **eas.json**, add the `APP_VARIANT` environment variable:
+在 **eas.json** 中，添加 `APP_VARIANT` 环境变量：
 
 {/* prettier-ignore */}
 ```json eas.json|collapseHeight=440
@@ -139,7 +139,7 @@ In **eas.json**, add the `APP_VARIANT` environment variable:
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      /* @info Add <CODE>env.APP_VARIANT</CODE> to access the environment variable for the build profile*/
+      /* @info 添加 <CODE>env.APP_VARIANT</CODE> 以访问该构建配置文件的环境变量*/
       "env": {
         "APP_VARIANT": "development"
       }
@@ -147,7 +147,7 @@ In **eas.json**, add the `APP_VARIANT` environment variable:
     },
     "preview": {
       "distribution": "internal",
-      /* @info Add <CODE>env.APP_VARIANT</CODE> to access the environment variable for the build profile*/
+      /* @info 添加 <CODE>env.APP_VARIANT</CODE> 以访问该构建配置文件的环境变量*/
       "env": {
         "APP_VARIANT": "preview"
       }
@@ -158,21 +158,21 @@ In **eas.json**, add the `APP_VARIANT` environment variable:
 }
 ```
 
-Running `eas build --profile development` will now set `APP_VARIANT` to `development`.
+运行 `eas build --profile development` 现在会将 `APP_VARIANT` 设置为 `development`。
 
-> **Note**: Since we changed the Android Application ID and iOS Bundle Identifier, the EAS CLI will prompt us to generate a new Keystore for Android and a new provisioning profile for iOS. To learn more about what these steps include, see the previous chapter for more information.
+> **注意**：由于我们更改了 Android Application ID 和 iOS Bundle Identifier，EAS CLI 会提示我们为 Android 生成一个新的 Keystore，并为 iOS 生成一个新的 provisioning profile。要了解这些步骤包含什么，请参阅上一章以获取更多信息。
 
-Since our `ios-simulator` build profile extends `development`, this configuration is automatically applied for iOS Simulators.
+由于我们的 `ios-simulator` 构建配置文件继承自 `development`，因此此配置会自动应用于 iOS 模拟器。
 
 </Step>
 
 <Step label="4">
 
-## Run development server
+## 运行开发服务器
 
-> After builds are complete, follow the same procedure from previous chapters to install them on a device or emulator/simulator.
+> 构建完成后，请按照前几章中的相同步骤将它们安装到设备或模拟器上。
 
-Since we're identifying our development build with the `APP_VARIANT` environment variable, we need to pass it to the command when starting the development server. To do this, add a `dev` script in the [`"scripts"`](https://docs.npmjs.com/cli/v10/using-npm/scripts) field of our project's **package.json**:
+由于我们通过 `APP_VARIANT` 环境变量来标识开发构建，因此在启动开发服务器时，需要将它传递给命令。为此，在项目的 **package.json** 的 [`"scripts"`](https://docs.npmjs.com/cli/v10/using-npm/scripts) 字段中添加一个 `dev` 脚本：
 
 ```json package.json
 {
@@ -182,38 +182,35 @@ Since we're identifying our development build with the `APP_VARIANT` environment
 }
 ```
 
-Run the `npm run dev` command to start the development server:
+运行 `npm run dev` 命令以启动开发服务器：
 
 <Terminal cmd={['$ npm run dev']} />
 
-This script will evaluate **app.config.js** locally and load the environment variable for the `development` profile.
+此脚本会在本地计算 **app.config.js**，并为 `development` 配置文件加载环境变量。
 
-Now, our development build will run on both Android and iOS, displaying the modified app name from **app.config.js**. For example, the below development build is running on an iOS Simulator. See that the app name is **StickerSmash (Dev)**:
+现在，我们的开发构建将在 Android 和 iOS 上运行，并显示来自 **app.config.js** 的修改后的应用名称。例如，下面这个开发构建正在 iOS 模拟器上运行。可以看到应用名称是 **StickerSmash（开发版）**：
 
 <ContentSpotlight
-  alt="Development variant running on Android device."
+  alt="在 Android 设备上运行的开发变体。"
   src="/static/images/tutorial/eas/ios-dev-variant.png"
   className="max-w-[240px]"
 />
 
-You can now continue using **app.json** for static values and use **app.config.js** for dynamic values.
+你现在可以继续使用 **app.json** 来保存静态值，并使用 **app.config.js** 来保存动态值。
 
 </Step>
 
-## Summary
+## 总结
 
 <ProgressTracker
   currentChapterIndex={4}
   name="EAS_TUTORIAL"
   summary={
     <>
-      We successfully created <strong>app.config.js</strong> just for our dynamic configuration
-      while leaving static configuration in <strong>app.json</strong> unchanged, added environment
-      variables in <strong>eas.json</strong> to configure specific build profile, and learned how to
-      start the development server with a custom <strong>package.json</strong> script.
+      我们成功创建了仅用于动态配置的 <strong>app.config.js</strong>，同时保持 <strong>app.json</strong> 中的静态配置不变；在 <strong>eas.json</strong> 中添加了环境变量以配置特定的构建配置文件；并学习了如何使用自定义的 <strong>package.json</strong> 脚本启动开发服务器。
     </>
   }
-  nextChapterDescription="In the next chapter, learn about what are internal distribution builds, why we need them, and how to create them."
-  nextChapterTitle="Create and share internal distribution build"
+  nextChapterDescription="在下一章中，了解什么是内部分发构建、为什么需要它们，以及如何创建它们。"
+  nextChapterTitle="创建并分享内部分发构建"
   nextChapterLink="/tutorial/eas/internal-distribution-builds/"
 />

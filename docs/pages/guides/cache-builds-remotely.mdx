@@ -1,19 +1,19 @@
 ---
-title: Use build cache providers
-sidebar_title: Cache builds remotely
-description: Accelerate local development by caching and reusing builds from a provider.
+title: 使用构建缓存提供程序
+sidebar_title: 远程缓存构建
+description: 通过从提供程序缓存和复用构建来加速本地开发。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-Build caching is a feature that speeds up `npx expo run:[android|ios]` by caching builds remotely, based on the project [fingerprint](/versions/latest/sdk/fingerprint/).
-When you run `npx expo run:[android|ios]`, it checks if a build with a matching fingerprint exists, then downloads and launches it rather than compiling it again. Otherwise, the project is compiled as usual and then the resulting binary is uploaded to the remote cache for future runs.
+构建缓存是一项功能，它通过基于项目 [fingerprint](/versions/latest/sdk/fingerprint/) 将构建远程缓存，从而加快 `npx expo run:[android|ios]` 的速度。
+当你运行 `npx expo run:[android|ios]` 时，它会检查是否存在具有匹配 fingerprint 的构建，然后下载并启动它，而不是重新编译。否则，项目会照常编译，然后将生成的二进制文件上传到远程缓存，供以后运行时使用。
 
-## Using EAS as a build provider
+## 使用 EAS 作为构建提供程序
 
-To use the EAS Build provider plugin, start by installing the `eas-build-cache-provider` package as a developer dependency:
+要使用 EAS Build provider 插件，请先将 `eas-build-cache-provider` 包作为开发依赖安装：
 
 <Tabs>
 
@@ -31,7 +31,7 @@ To use the EAS Build provider plugin, start by installing the `eas-build-cache-p
 
 </Tabs>
 
-Then, update your **app.json** to include the `buildCacheProvider` property and its provider:
+然后，更新你的 **app.json**，添加 `buildCacheProvider` 属性及其提供程序：
 
 ```json app.json
 {
@@ -42,22 +42,22 @@ Then, update your **app.json** to include the `buildCacheProvider` property and 
 }
 ```
 
-You can roll your own cache provider by exporting a plugin that implements the following methods:
+你可以通过导出一个实现以下方法的插件来自定义自己的缓存提供程序：
 
 ```ts
 type BuildCacheProviderPlugin<T = any> = {
   /**
-   * Try to fetch an existing build. Return its URL or null if missing.
+   * 尝试获取一个已存在的构建。若缺失则返回其 URL 或 null。
    */
   resolveBuildCache(props: ResolveBuildCacheProps, options: T): Promise<string | null>;
 
   /**
-   * Upload a new build binary. Return its URL or null on failure.
+   * 上传一个新的构建二进制文件。失败时返回其 URL 或 null。
    */
   uploadBuildCache(props: UploadBuildCacheProps, options: T): Promise<string | null>;
 
   /**
-   * (Optional) Customize the fingerprint hash algorithm.
+   * （可选）自定义 fingerprint 哈希算法。
    */
   calculateFingerprintHash?: (
     props: CalculateFingerprintHashProps,
@@ -85,14 +85,14 @@ type CalculateFingerprintHashProps = {
 };
 ```
 
-A reference implementation using GitHub Releases to cache builds can be found in the [Build Cache Provider Example](https://github.com/expo/examples/tree/master/with-github-remote-build-cache-provider).
+一个使用 GitHub Releases 缓存构建的参考实现可以在 [Build Cache Provider Example](https://github.com/expo/examples/tree/master/with-github-remote-build-cache-provider) 中找到。
 
-## Creating a custom build provider
+## 创建自定义构建提供程序
 
-Start by creating a **provider** directory for writing the provider plugin in TypeScript and add a **provider.plugin.js** file in the project root, which will be the plugin's entry point.
+首先创建一个 **provider** 目录，用于以 TypeScript 编写提供程序插件，并在项目根目录添加一个 **provider.plugin.js** 文件，它将作为插件入口点。
 
 <Step label="1">
-### Create a `provider/tsconfig.json` file
+### 创建一个 `provider/tsconfig.json` 文件
 
 ```json provider/tsconfig.json
 {
@@ -109,18 +109,18 @@ Start by creating a **provider** directory for writing the provider plugin in Ty
 </Step>
 
 <Step label="2">
-### Create a `provider/src/index.ts` file for your plugin
+### 创建一个 `provider/src/index.ts` 文件用于你的插件
 
 ```ts provider/src/index.ts
 import { type BuildCacheProviderPlugin } from '@expo/config';
 
 const plugin: BuildCacheProviderPlugin = {
   resolveBuildCache: async () => {
-    console.log('Searching for remote builds...');
+    console.log('正在搜索远程构建...');
     return null;
   },
   uploadBuildCache: async () => {
-    console.log('Uploading build to remote...');
+    console.log('正在上传构建到远程...');
     return null;
   },
 };
@@ -131,24 +131,24 @@ export default plugin;
 </Step>
 
 <Step label="3">
-### Create an `provider.plugin.js` file in the root directory
+### 在根目录创建一个 `provider.plugin.js` 文件
 
 ```js provider.plugin.js
-// This file configures the entry file for your plugin.
+// 此文件为你的插件配置入口文件。
 module.exports = require('./provider/build');
 ```
 
 </Step>
 
 <Step label="4">
-### Build your provider plugin
+### 构建你的提供程序插件
 
-At the root of your project, run `npm run build provider` to start the TypeScript compiler in watch mode.
+在项目根目录运行 `npm run build provider` 以启动 TypeScript 编译器的 watch 模式。
 
 </Step>
 
 <Step label="5">
-### Configure your example project to use your plugin by adding the following line to the `example/app.json` file:
+### 通过向 `example/app.json` 文件添加以下行来配置你的示例项目以使用你的插件：
 
 ```json example/app.json
 {
@@ -164,29 +164,29 @@ At the root of your project, run `npm run build provider` to start the TypeScrip
 </Step>
 
 <Step label="6">
-### Test your provider
-When you run the `npx expo run` command inside your **example** directory, you should see your plugin's console statements in the logs.
+### 测试你的提供程序
+当你在 **example** 目录中运行 `npx expo run` 命令时，你应该在日志中看到你的插件控制台输出。
 
 <Terminal
   cmd={[
-    '# Navigate to the example directory',
+    '# 导航到 example 目录',
     '$ cd example',
     '',
-    '# Run the example on Android',
+    '# 在 Android 上运行示例',
     '$ npx expo run:android',
     '',
-    '# Run the example on iOS',
+    '# 在 iOS 上运行示例',
     '$ npx expo run:ios',
   ]}
 />
 
-That's it! You now have a remote build cache provider to speed up your builds.
+就是这样！你现在拥有了一个远程构建缓存提供程序，可以加快你的构建速度。
 
 </Step>
 
-### Passing custom options
+### 传递自定义选项
 
-To inject custom options to your plugin you can use the `options` field and it will be forwarded as the second parameter of your custom functions. To do so modify the `buildCacheProvider` field in **example/app.json** as shown below:
+要向你的插件注入自定义选项，你可以使用 `options` 字段，它会作为你自定义函数的第二个参数传递进去。为此，请按如下所示修改 **example/app.json** 中的 `buildCacheProvider` 字段：
 
 ```json example/app.json
 {

@@ -1,6 +1,6 @@
 ---
-title: Android lifecycle listeners
-description: Learn about the mechanism that allows your library to hook into Android Activity and Application functions using Expo modules API.
+title: Android 生命周期监听器
+description: 了解一种机制，该机制允许你的库使用 Expo 模块 API 挂钩到 Android Activity 和 Application 函数。
 ---
 
 import { Step } from '~/ui/components/Step';
@@ -8,19 +8,19 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 
 To respond to certain Android system events relevant to an app, such as inbound links and configuration changes, it is necessary to override the corresponding lifecycle callbacks in **MainActivity.java** and/or **MainApplication.java**.
 
-The React Native module API does not provide any mechanism to hook into these, and so setup instructions for React Native libraries often include steps to copy code into these files. To simplify and automate setup and maintenance, the Expo Modules API provides a mechanism that allows your library to hook into `Activity` or `Application` functions.
+React Native 模块 API 并没有提供任何机制来接入这些回调，因此 React Native 库的设置说明中经常会包含将代码复制到这些文件中的步骤。为了简化并自动化设置与维护，Expo Modules API 提供了一种机制，允许你的库接入 `Activity` 或 `Application` 的函数。
 
-## Get started
+## 开始使用
 
-First, you need to have created an Expo module or integrated the Expo modules API in the library using the React Native module API. [Learn more](/modules/overview/#what-is-the-expo-modules-api).
+首先，你需要已经创建了一个 Expo 模块，或者使用 React Native 模块 API 将 Expo Modules API 集成到该库中。[了解更多](/modules/overview/#what-is-the-expo-modules-api)。
 
-Inside your module, create a concrete class that implements the [`Package`](https://github.com/expo/expo/tree/main/packages/expo-modules-core/android/src/main/java/expo/modules/core/interfaces/Package.java) interface. For most cases, you only need to implement the `createReactActivityLifecycleListeners` or `createApplicationLifecycleListeners` methods.
+在你的模块内部，创建一个实现 [`Package`](https://github.com/expo/expo/tree/main/packages/expo-modules-core/android/src/main/java/expo/modules/core/interfaces/Package.java) 接口的具体类。对于大多数情况，你只需要实现 `createReactActivityLifecycleListeners` 或 `createApplicationLifecycleListeners` 方法。
 
-## `Activity` lifecycle listeners
+## `Activity` 生命周期监听器
 
-You can hook into the `Activity` lifecycle using `ReactActivityLifecycleListener`. `ReactActivityLifecycleListener` hooks into React Native's `ReactActivity` lifecycle using its `ReactActivityDelegate` and provides a similar experience to the Android `Activity` lifecycle.
+你可以使用 `ReactActivityLifecycleListener` 接入 `Activity` 生命周期。`ReactActivityLifecycleListener` 通过 `ReactActivityDelegate` 接入 React Native 的 `ReactActivity` 生命周期，并提供类似 Android `Activity` 生命周期的体验。
 
-The following `Activity` lifecycle callbacks are currently supported:
+当前支持以下 `Activity` 生命周期回调：
 
 - `onCreate`
 - `onResume`
@@ -29,7 +29,7 @@ The following `Activity` lifecycle callbacks are currently supported:
 - `onNewIntent`
 - `onBackPressed`
 
-To create a `ReactActivityLifecycleListener`, you should implement `createReactActivityLifecycleListeners` in your derived `Package` class. For example, `MyLibPackage`.
+要创建一个 `ReactActivityLifecycleListener`，你应该在派生的 `Package` 类中实现 `createReactActivityLifecycleListeners`。例如，`MyLibPackage`。
 
 <Tabs tabs={["Kotlin", "Java"]}>
 
@@ -77,7 +77,7 @@ public class MyLibPackage implements Package {
 
 </Tabs>
 
-`MyLibReactActivityLifecycleListener` is a `ReactActivityLifecycleListener` derived class that you can hook into the lifecycles. You can only override the methods you need.
+`MyLibReactActivityLifecycleListener` 是一个派生自 `ReactActivityLifecycleListener` 的类，你可以在其中接入各个生命周期。你只需要覆盖你需要的方法即可。
 
 <Tabs tabs={["Kotlin", "Java"]}>
 
@@ -93,7 +93,7 @@ import expo.modules.core.interfaces.ReactActivityLifecycleListener
 
 class MyLibReactActivityLifecycleListener : ReactActivityLifecycleListener {
   override fun onCreate(activity: Activity, savedInstanceState: Bundle?) {
-    // Your setup code in `Activity.onCreate`.
+    // 你在 `Activity.onCreate` 中的设置代码
     doSomeSetupInActivityOnCreate(activity)
   }
 }
@@ -115,7 +115,7 @@ import expo.modules.core.interfaces.ReactActivityLifecycleListener;
 public class MyLibReactActivityLifecycleListener implements ReactActivityLifecycleListener {
   @Override
   public void onCreate(Activity activity, Bundle savedInstanceState) {
-    // Your setup code in `Activity.onCreate`.
+    // 你在 `Activity.onCreate` 中的设置代码
     doSomeSetupInActivityOnCreate(activity);
   }
 }
@@ -125,7 +125,7 @@ public class MyLibReactActivityLifecycleListener implements ReactActivityLifecyc
 
 </Tabs>
 
-You can also override other lifecycle methods. The example below shows how to override multiple lifecycle methods in a single listener class. It is based on `expo-linking` module, which uses different lifecycle methods to handle deep links. You can implement only the methods you need for your use case:
+你也可以覆盖其他生命周期方法。下面的示例展示了如何在单个监听器类中覆盖多个生命周期方法。它基于 `expo-linking` 模块，该模块使用不同的生命周期方法来处理深度链接。你可以只实现你用例中需要的方法：
 
 <Tabs tabs={["Kotlin", "Java"]}>
 
@@ -142,8 +142,8 @@ import expo.modules.core.interfaces.ReactActivityLifecycleListener
 
 class MyLibReactActivityLifecycleListener : ReactActivityLifecycleListener {
   override fun onCreate(activity: Activity?, savedInstanceState: Bundle?) {
-    // Called when the activity is first created
-    // Initialize your setup here, for example handling deep links
+    // 当 activity 首次创建时调用
+    // 在这里初始化你的设置，例如处理深度链接
     val deepLinkUrl = activity?.intent?.data
     if (deepLinkUrl != null) {
       handleDeepLink(deepLinkUrl.toString())
@@ -151,26 +151,26 @@ class MyLibReactActivityLifecycleListener : ReactActivityLifecycleListener {
   }
 
   override fun onResume(activity: Activity) {
-    // Called when the activity comes to the foreground
-    // For example, track when user returns to the app
+    // 当 activity 进入前台时调用
+    // 例如，跟踪用户何时返回应用
     trackAppStateChange("active")
   }
 
   override fun onPause(activity: Activity) {
-    // Called when the activity goes to the background
-    // For example, pause ongoing operations such as track analytics
+    // 当 activity 进入后台时调用
+    // 例如，暂停正在进行的操作，如分析跟踪
     trackAppStateChange("inactive")
   }
 
   override fun onDestroy(activity: Activity) {
-    // Called when the activity is being destroyed
-    // Clean up resources here
+    // 当 activity 正在被销毁时调用
+    // 在这里清理资源
     cleanup()
   }
 
   override fun onNewIntent(intent: Intent?): Boolean {
-    // Called when app receives a new intent while already running
-    // For example, handle new deep links while app is open
+    // 当应用在已经运行时收到一个新的 intent 时调用
+    // 例如，当应用打开时处理新的深度链接
     val newUrl = intent?.data
     if (newUrl != null) {
       handleDeepLink(newUrl.toString())
@@ -180,13 +180,13 @@ class MyLibReactActivityLifecycleListener : ReactActivityLifecycleListener {
   }
 
   override fun onBackPressed(): Boolean {
-    // Called when user presses the back button
-    // Return true to prevent default back behavior
+    // 当用户按下返回按钮时调用
+    // 返回 true 以阻止默认返回行为
     return handleCustomBackNavigation()
   }
 
-  // Now, you can add private functions to handle
-  // your logic for deep links, app state tracking, clean up, and so on.
+  // 现在，你可以添加私有函数来处理
+  // 你的深度链接、应用状态跟踪、清理等逻辑。
 }
 ```
 
@@ -207,8 +207,8 @@ import expo.modules.core.interfaces.ReactActivityLifecycleListener;
 public class MyLibReactActivityLifecycleListener implements ReactActivityLifecycleListener {
   @Override
   public void onCreate(Activity activity, Bundle savedInstanceState) {
-    // Called when the activity is first created
-    // Initialize your setup here, for example handling deep links
+    // 当 activity 首次创建时调用
+    // 在这里初始化你的设置，例如处理深度链接
     Uri deepLinkUrl = activity.getIntent().getData();
     if (deepLinkUrl != null) {
       handleDeepLink(deepLinkUrl.toString());
@@ -217,29 +217,29 @@ public class MyLibReactActivityLifecycleListener implements ReactActivityLifecyc
 
   @Override
   public void onResume(Activity activity) {
-    // Called when the activity comes to the foreground
-    // For example, track when user returns to the app
+    // 当 activity 进入前台时调用
+    // 例如，跟踪用户何时返回应用
     trackAppStateChange("active");
   }
 
   @Override
   public void onPause(Activity activity) {
-    // Called when the activity goes to the background
-    // For example, pause ongoing operations such as track analytics
+    // 当 activity 进入后台时调用
+    // 例如，暂停正在进行的操作，如分析跟踪
     trackAppStateChange("inactive");
   }
 
   @Override
   public void onDestroy(Activity activity) {
-    // Called when the activity is being destroyed
-    // Clean up resources here
+    // 当 activity 正在被销毁时调用
+    // 在这里清理资源
     cleanup();
   }
 
   @Override
   public boolean onNewIntent(Intent intent) {
-    // Called when app receives a new intent while already running
-    // For example, handle new deep links while app is open
+    // 当应用在已经运行时收到一个新的 intent 时调用
+    // 例如，当应用打开时处理新的深度链接
     Uri newUrl = intent.getData();
     if (newUrl != null) {
       handleDeepLink(newUrl.toString());
@@ -250,13 +250,13 @@ public class MyLibReactActivityLifecycleListener implements ReactActivityLifecyc
 
   @Override
   public boolean onBackPressed() {
-    // Called when user presses the back button
-    // Return true to prevent default back behavior
+    // 当用户按下返回按钮时调用
+    // 返回 true 以阻止默认返回行为
     return handleCustomBackNavigation();
   }
 
-  // Now, you can add private functions to handle
-  // your logic for deep links, app state tracking, clean up, and so on.
+  // 现在，你可以添加私有函数来处理
+  // 你的深度链接、应用状态跟踪、清理等逻辑。
 }
 ```
 
@@ -264,25 +264,25 @@ public class MyLibReactActivityLifecycleListener implements ReactActivityLifecyc
 
 </Tabs>
 
-## Lifecycle listeners to JavaScript event flow
+## 到 JavaScript 的生命周期监听器事件流
 
-Lifecycle listeners are singleton classes that exist independently of your Expo module instances. To communicate between a lifecycle listener and your module (for example, to send events to your app's JavaScript code), you need to observe events from your module and notify the lifecycle listener when events occur. A typical flow may consist of the following steps:
+生命周期监听器是独立存在的单例类，与 Expo 模块实例彼此独立。要在生命周期监听器和你的模块之间通信（例如向应用的 JavaScript 代码发送事件），你需要从模块中观察事件，并在事件发生时通知生命周期监听器。一个典型流程可能包括以下步骤：
 
-- **System integration**: Lifecycle listeners capture Android intents with URL data
-- **Observer pattern**: Singleton lifecycle listeners communicate with module instances
-- **Event bridging**: Module sends structured events to JavaScript
-- **Memory management**: Weak references prevent memory leaks
-- **Type safety and React integration**: TypeScript support with proper event types and a custom hook provides easy access to deep link events
+- **系统集成**：生命周期监听器捕获带有 URL 数据的 Android intent
+- **观察者模式**：单例生命周期监听器与模块实例通信
+- **事件桥接**：模块向 JavaScript 发送结构化事件
+- **内存管理**：弱引用防止内存泄漏
+- **类型安全与 React 集成**：配合正确的事件类型和自定义 Hook 的 TypeScript 支持，便于访问深度链接事件
 
-Your custom module implementation might not need all of the above from the event flow. However, you can adapt this pattern for other system events like app state changes, configuration changes, or custom business logic that needs to bridge Android lifecycle events to your React Native app.
+你的自定义模块实现可能并不需要事件流中的全部内容。不过，你可以将这种模式适配到其他系统事件，例如应用状态变化、配置变化，或者需要将 Android 生命周期事件桥接到 React Native 应用的自定义业务逻辑。
 
-The following example demonstrates how to use lifecycle listeners to bridge Android system events to your React Native app. It is based on [`expo-linking`](https://github.com/expo/expo/tree/main/packages/expo-linking), which uses lifecycle listeners to create a deep link handler that captures URLs when an app is opened or receives new intents.
+下面的示例演示如何使用生命周期监听器将 Android 系统事件桥接到你的 React Native 应用。它基于 [`expo-linking`](https://github.com/expo/expo/tree/main/packages/expo-linking)，该模块使用生命周期监听器创建一个深度链接处理器，在应用被打开或收到新 intent 时捕获 URL。
 
 <Step label="1">
 
-### Module registration
+### 模块注册
 
-Start by creating a module class that registers your lifecycle listener:
+首先创建一个模块类来注册你的生命周期监听器：
 
 <Tabs tabs={["Kotlin", "Java"]}>
 
@@ -333,9 +333,9 @@ public class DeepLinkHandlerPackage implements Package {
 
 <Step label="2">
 
-### Activity lifecycle listener with observer notifications
+### 带有观察者通知的 Activity 生命周期监听器
 
-Create a lifecycle listener that captures deep links and notifies the module observers:
+创建一个生命周期监听器来捕获深度链接并通知模块观察者：
 
 <Tabs tabs={["Kotlin", "Java"]}>
 
@@ -364,10 +364,10 @@ class DeepLinkHandlerActivityLifecycleListener : ReactActivityLifecycleListener 
   private fun handleIntent(intent: Intent?) {
     val url = intent?.data
     if (url != null) {
-      // Store the initial URL for later retrieval
+      // 保存初始 URL 以便稍后获取
       DeepLinkHandlerModule.initialUrl = url
 
-      // Notify all observers about the new deep link
+      // 通知所有观察者新的深度链接
       DeepLinkHandlerModule.urlReceivedObservers.forEach { observer ->
         observer(url)
       }
@@ -407,10 +407,10 @@ public class DeepLinkHandlerActivityLifecycleListener implements ReactActivityLi
 
     Uri url = intent.getData();
     if (url != null) {
-      // Store the initial URL for later retrieval
+      // 保存初始 URL 以便稍后获取
       DeepLinkHandlerModule.initialUrl = url;
 
-      // Notify all observers about the new deep link
+      // 通知所有观察者新的深度链接
       for (java.util.function.Consumer<Uri> observer : DeepLinkHandlerModule.urlReceivedObservers) {
         observer.accept(url);
       }
@@ -427,9 +427,9 @@ public class DeepLinkHandlerActivityLifecycleListener implements ReactActivityLi
 
 <Step label="3">
 
-### Expo module with event sending
+### 带事件发送的 Expo 模块
 
-Create a module that maintains observers and sends events to JavaScript:
+创建一个维护观察者并向 JavaScript 发送事件的模块：
 
 <Tabs tabs={["Kotlin", "Java"]}>
 
@@ -548,9 +548,9 @@ public class DeepLinkHandlerModule extends Module {
 
 <Step label="4">
 
-### TypeScript interface and React usage
+### TypeScript 接口和 React 用法
 
-Define a TypeScript interface for your module to bridge the Android lifecycle events to JavaScript:
+为你的模块定义一个 TypeScript 接口，以便将 Android 生命周期事件桥接到 JavaScript：
 
 ```ts DeepLinkHandler.ts
 import { requireNativeModule, NativeModule } from 'expo-modules-core';
@@ -574,7 +574,7 @@ const DeepLinkHandler = requireNativeModule<DeepLinkHandlerNativeModule>('DeepLi
 export default DeepLinkHandler;
 ```
 
-Create a React hook for an easy access to the deep link events:
+创建一个 React Hook 以便轻松访问深度链接事件：
 
 ```tsx useDeepLinkHandler.ts
 import { useEffect, useState } from 'react';
@@ -604,7 +604,7 @@ export function useDeepLinkHandler(): {
 }
 ```
 
-Use it in your React component:
+在你的 React 组件中使用它：
 
 ```tsx App.tsx
 import { Text, View, StyleSheet } from 'react-native';
@@ -645,9 +645,9 @@ const styles = StyleSheet.create({
 
 <Step label="5">
 
-### Module configuration
+### 模块配置
 
-Finally, configure your module in **expo-module.config.json** to connect the module to the lifecycle listener:
+最后，在 **expo-module.config.json** 中配置你的模块，以将模块连接到生命周期监听器：
 
 ```json expo-module.config.json
 {
@@ -660,16 +660,16 @@ Finally, configure your module in **expo-module.config.json** to connect the mod
 
 </Step>
 
-## `Application` lifecycle listeners
+## `Application` 生命周期监听器
 
-You can hook into the `Application` lifecycle using `ApplicationLifecycleListener`.
+你可以使用 `ApplicationLifecycleListener` 挂钩到 `Application` 生命周期。
 
-The following `Application` lifecycle callbacks are currently supported:
+当前支持以下 `Application` 生命周期回调：
 
 - `onCreate`
 - `onConfigurationChanged`
 
-To create an `ApplicationLifecycleListener`, you should implement `createApplicationLifecycleListeners` in your derived `Package` class. For example, `MyLibPackage`.
+要创建一个 `ApplicationLifecycleListener`，你应该在派生的 `Package` 类中实现 `createApplicationLifecycleListeners`。例如，`MyLibPackage`。
 
 <Tabs tabs={["Kotlin", "Java"]}>
 
@@ -716,7 +716,7 @@ public class MyLibPackage implements Package {
 
 </Tabs>
 
-`MyLibApplicationLifecycleListener` is an `ApplicationLifecycleListener` derived class that can hook into the `Application` lifecycle callbacks. You should only override the methods you need ([due to possible maintenance costs](#interface-stability)).
+`MyLibApplicationLifecycleListener` 是一个派生自 `ApplicationLifecycleListener` 的类，它可以挂钩到 `Application` 生命周期回调。你应该只重写你需要的方法（[由于可能的维护成本](#interface-stability)）。
 
 <Tabs tabs={["Kotlin", "Java"]}>
 
@@ -731,7 +731,7 @@ import expo.modules.core.interfaces.ApplicationLifecycleListener
 
 class MyLibApplicationLifecycleListener : ApplicationLifecycleListener {
   override fun onCreate(application: Application) {
-    // Your setup code in `Application.onCreate`.
+    // 你的 `Application.onCreate` 中的初始化代码。
     doSomeSetupInApplicationOnCreate(application)
   }
 }
@@ -752,7 +752,7 @@ import expo.modules.core.interfaces.ApplicationLifecycleListener;
 public class MyLibApplicationLifecycleListener implements ApplicationLifecycleListener {
   @Override
   public void onCreate(Application application) {
-    // Your setup code in `Application.onCreate`.
+    // 你的 `Application.onCreate` 中的初始化代码。
     doSomeSetupInApplicationOnCreate(application);
   }
 }
@@ -762,12 +762,12 @@ public class MyLibApplicationLifecycleListener implements ApplicationLifecycleLi
 
 </Tabs>
 
-## Known issues
+## 已知问题
 
-### Why there are no `onStart` and `onStop` Activity listeners
+### 为什么没有 `onStart` 和 `onStop` 的 Activity 监听器
 
-In the current implementation, we do not set up the hooks from `MainActivity` but from [`ReactActivityDelegate`](https://github.com/facebook/react-native/blob/400902093aa3ccfc05712a996c592a86f342253a/ReactAndroid/src/main/java/com/facebook/react/ReactActivityDelegate.java). There are some slight differences between `MainActivity` and `ReactActivityDelegate`. Since `ReactActivityDelegate` does not have `onStart` and `onStop`, we don't yet support them here.
+在当前实现中，我们不是从 `MainActivity`，而是从 [`ReactActivityDelegate`](https://github.com/facebook/react-native/blob/400902093aa3ccfc05712a996c592a86f342253a/ReactAndroid/src/main/java/com/facebook/react/ReactActivityDelegate.java) 设置这些钩子。`MainActivity` 和 `ReactActivityDelegate` 之间存在一些细微差异。由于 `ReactActivityDelegate` 没有 `onStart` 和 `onStop`，因此我们目前不支持它们。
 
-### Interface stability
+### 接口稳定性
 
-The listener interfaces may change from time to time between Expo SDK releases. Our strategy for backward compatibility is always to add new interfaces and add `@Deprecated` annotation for interfaces we plan to remove. Our interfaces are all based on Java 8 interface default method; you don't have to and should not implement all methods. Doing this will benefit your module's maintenance cost between Expo SDKs.
+这些监听器接口在 Expo SDK 的不同版本之间可能会时不时发生变化。我们对向后兼容性的策略始终是新增接口，并为我们计划移除的接口添加 `@Deprecated` 注解。我们的接口都基于 Java 8 接口默认方法；你不需要也不应该实现所有方法。这样做将有利于降低你的模块在不同 Expo SDK 之间的维护成本。

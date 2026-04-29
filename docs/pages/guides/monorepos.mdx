@@ -1,56 +1,56 @@
 ---
-title: Work with monorepos
-description: Learn about setting up Expo projects in a monorepo with workspaces.
+title: 使用 monorepo 开发
+description: 了解如何在 monorepo 中使用 workspaces 设置 Expo 项目。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-Monorepos, or _"monolithic repositories"_, are single repositories containing multiple apps or packages. They can help speed up development for larger projects, make it easier to share code, and act as a single source of truth. This guide will set up a simple monorepo with an Expo project. Expo has first-class support for monorepos managed with package managers supporting workspaces: [Bun](https://bun.sh/docs/install/workspaces), [npm](https://docs.npmjs.com/cli/using-npm/workspaces), [pnpm](https://pnpm.io/workspaces), and [Yarn](https://yarnpkg.com/features/workspaces) (v1 Classic and Berry). Expo automatically detects monorepos and configures new app projects added to a monorepo. The detection is based on the workspace configuration in your project.
+Monorepo，或 _“单体仓库”_，是包含多个应用或包的单个仓库。它们可以帮助加快大型项目的开发速度，让代码共享更容易，并作为单一事实来源。本指南将使用一个 Expo 项目搭建一个简单的 monorepo。Expo 对由支持工作区的包管理器管理的 monorepo 提供一流支持：[Bun](https://bun.sh/docs/install/workspaces)、[npm](https://docs.npmjs.com/cli/using-npm/workspaces)、[pnpm](https://pnpm.io/workspaces) 和 [Yarn](https://yarnpkg.com/features/workspaces)（v1 Classic 和 Berry）。Expo 会自动检测 monorepo，并为添加到 monorepo 中的新应用项目进行配置。检测基于你项目中的工作区配置。
 
-> **info** Monorepos are not for every project. They're useful if multiple apps live in a single repository and share code, or can be helpful to colocate native modules with your app. The tradeoff is increased complexity when setting up and configuring tooling. Check whether your tools and libraries work well within a monorepo before setting one up.
+> **info** Monorepo 并不适合每个项目。若多个应用位于同一个仓库中并共享代码，它会很有用；或者将原生模块与应用放在一起也会很方便。代价是在设置和配置工具链时复杂度会增加。在搭建 monorepo 之前，请先检查你的工具和库是否能在 monorepo 中良好工作。
 
-<Collapsible summary="Automatic Configuration (Migrating to SDK 52+)">
+<Collapsible summary="自动配置（迁移到 SDK 52+）">
 
 <a id="automatic-configuration" />
 
-Expo configures Metro automatically for monorepos. You don't have to manually configure Metro when using monorepos if you use [`expo/metro-config`](/guides/customizing-metro/).
+Expo 会为 monorepo 自动配置 Metro。在使用 monorepo 时，如果你使用的是 [`expo/metro-config`](/guides/customizing-metro/)，就不需要手动配置 Metro。
 
-If you previously configured Metro manually for monorepos and have a **metro.config.js** that modifies one of the following properties, delete these from your configuration:
+如果你之前为 monorepo 手动配置过 Metro，并且你的 **metro.config.js** 修改了以下属性之一，请将它们从配置中删除：
 
 - `watchFolders`
 - `resolver.nodeModulesPath`
 - `resolver.extraNodeModules`
 - `resolver.disableHierarchicalLookup`
 
-After deleting these options, you'll need to run Expo with `npx expo start --clear` once to erase the outdated Metro cache. If your app continues working as expected afterwards, it's a regular Node monorepo and won't need any special configuration going forward.
+删除这些选项后，你需要使用 `npx expo start --clear` 运行一次 Expo，以清除过时的 Metro 缓存。如果之后你的应用仍能按预期运行，那么它就是一个普通的 Node monorepo，今后不需要任何特殊配置。
 
 </Collapsible>
 
-<Collapsible summary="Manual Configuration (Before SDK 52)">
+<Collapsible summary="手动配置（在 SDK 52 之前）">
 
 <a id="manual-configuration" />
 
-Expo's Metro config has built-in monorepo support for Bun, npm, pnpm, and Yarn. You don't have to manually configure Metro when using monorepos if you use the config from [`expo/metro-config`](/guides/customizing-metro/).
+Expo 的 Metro 配置内置支持 Bun、npm、pnpm 和 Yarn 的 monorepo。如果你使用的是来自 [`expo/metro-config`](/guides/customizing-metro/) 的配置，在使用 monorepo 时就不需要手动配置 Metro。
 
-Before SDK 52, configuring a monorepo with Metro required two manual changes:
+在 SDK 52 之前，使用 Metro 配置 monorepo 需要两项手动更改：
 
-1. Metro had to be configured to watch code within the monorepo manually (for example, not just **apps/cool-app**.)
-2. Metro's resolution had to be adjusted to find packages in other workspaces and multiple `node_modules` folders (for example, **apps/cool-app/node_modules** or **node_modules**.)
+1. 必须手动配置 Metro 去监视 monorepo 内的代码（例如，不仅仅是 **apps/cool-app**。）
+2. 需要调整 Metro 的解析方式，以便查找其他工作区中的包以及多个 `node_modules` 文件夹（例如，**apps/cool-app/node_modules** 或 **node_modules**。）
 
-The configuration was adjusted by [creating a **metro.config.js**](/guides/customizing-metro/#customizing) with the following content:
+配置是通过[创建一个 **metro.config.js**](/guides/customizing-metro/#customizing) 并使用以下内容来完成的：
 
 ```js metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
-// This can be replaced with `find-yarn-workspace-root`
+// 这可以替换为 `find-yarn-workspace-root`
 const monorepoRoot = path.resolve(__dirname, '../..');
 const config = getDefaultConfig(__dirname);
 
-// 1. Watch all files within the monorepo
+// 1. 监视 monorepo 中的所有文件
 config.watchFolders = [monorepoRoot];
-// 2. Let Metro know where to resolve packages and in what order
+// 2. 让 Metro 知道去哪里以及按什么顺序解析包
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(monorepoRoot, 'node_modules'),
@@ -59,20 +59,20 @@ config.resolver.nodeModulesPaths = [
 module.exports = config;
 ```
 
-> Learn more about [customizing Metro](/guides/customizing-metro).
+> 了解更多关于[自定义 Metro](/guides/customizing-metro)的信息。
 
 </Collapsible>
 
-## Setting up a monorepo
+## 搭建 monorepo
 
-In a monorepo, your app will typically be a in sub-directory of your repository and your package manager is configured to allow you to add dependencies to other packages from within your monorepo.
-For example, a basic structure of a monorepo containing Expo apps may look like this:
+在 monorepo 中，你的应用通常会位于仓库的一个子目录中，而你的包管理器会配置为允许你在 monorepo 内为其他包添加依赖。
+例如，一个包含 Expo 应用的 monorepo 的基本结构可能如下所示：
 
-- **apps**: Contains multiple projects, including Expo apps.
-- **packages**: Contains different packages used by apps.
-- **package.json**: Root package file.
+- **apps**：包含多个项目，包括 Expo 应用。
+- **packages**：包含应用使用的不同包。
+- **package.json**：根目录包文件。
 
-All monorepos should have a "root" **package.json** file. It is the main configuration for monorepos and may contain tools installed for all projects in the repository. Depending on which package manager you're using, the steps for setting up workspaces might differ, but for [Bun](https://bun.sh/docs/install/workspaces), [npm](https://docs.npmjs.com/cli/using-npm/workspaces), and [Yarn](https://yarnpkg.com/features/workspaces), a `workspaces` property should be added to the root **package.json** file that specifies [glob patterns](https://classic.yarnpkg.com/lang/en/docs/workspaces/#toc-tips-tricks) for all workspaces in your monorepo:
+所有 monorepo 都应该有一个“根” **package.json** 文件。它是 monorepo 的主要配置，并且可能包含为仓库中所有项目安装的工具。根据你使用的包管理器不同，设置工作区的步骤可能会有所不同，但对于 [Bun](https://bun.sh/docs/install/workspaces)、[npm](https://docs.npmjs.com/cli/using-npm/workspaces) 和 [Yarn](https://yarnpkg.com/features/workspaces)，应在根 **package.json** 文件中添加一个 `workspaces` 属性，用来为 monorepo 中的所有工作区指定 [glob 模式](https://classic.yarnpkg.com/lang/en/docs/workspaces/#toc-tips-tricks)：
 
 ```json package.json
 {
@@ -83,7 +83,7 @@ All monorepos should have a "root" **package.json** file. It is the main configu
 }
 ```
 
-For [pnpm](https://pnpm.io/workspaces), you'll have to create a [**pnpm-workspace.yaml**](https://pnpm.io/pnpm-workspace_yaml) instead:
+对于 [pnpm](https://pnpm.io/workspaces)，你需要改为创建一个 [**pnpm-workspace.yaml**](https://pnpm.io/pnpm-workspace_yaml)：
 
 ```yaml pnpm-workspace.yaml
 packages:
@@ -91,11 +91,11 @@ packages:
   - 'packages/*'
 ```
 
-### Create your first app
+### 创建你的第一个应用
 
-Now that you have the basic monorepo structure set up, add your first app.
+现在你已经完成了基本的 monorepo 结构设置，接下来添加你的第一个应用。
 
-Before you create your app, you have to create the **apps** directory. This directory contains all separate apps or websites that belong to this monorepo. Inside this **apps** directory, you can create a sub-directory that contains the Expo app.
+在创建应用之前，你需要先创建 **apps** 目录。这个目录包含属于这个 monorepo 的所有独立应用或网站。在这个 **apps** 目录中，你可以创建一个包含 Expo 应用的子目录。
 
 <Terminal
   cmd={{
@@ -106,15 +106,15 @@ Before you create your app, you have to create the **apps** directory. This dire
   }}
 />
 
-> If you have an existing app, you can copy all those files into a directory inside **apps**.
+> 如果你已经有一个现有应用，可以把所有这些文件复制到 **apps** 内的一个目录中。
 
-After copying or creating the first app, install your dependencies with your package manager from the root directory of your monorepo to check for common warnings.
+复制或创建第一个应用后，请从 monorepo 的根目录使用你的包管理器安装依赖，以检查常见警告。
 
-### Create a package
+### 创建一个包
 
-Monorepos can help us group code in a single repository. That includes apps but also separate packages. They also don't need to be published. The [Expo repository](https://github.com/expo/expo) uses this as well. All the Expo SDK packages live inside the [**packages**](https://github.com/expo/expo/tree/main/packages) directory in our repo. It helps us test the code inside one of our [**apps**](https://github.com/expo/expo/tree/main/apps/native-component-list) directory before we publish them.
+Monorepo 可以帮助我们将代码分组到一个仓库中。这包括应用，也包括独立的包。它们也不一定需要发布。[Expo 仓库](https://github.com/expo/expo) 也使用了这种方式。所有 Expo SDK 包都位于我们仓库中的 [**packages**](https://github.com/expo/expo/tree/main/packages) 目录内。它有助于我们在发布这些包之前，先在我们 [**apps**](https://github.com/expo/expo/tree/main/apps/native-component-list) 目录中的某个应用里测试代码。
 
-Let's go back to the root and create the **packages** directory. This directory can contain all the separate packages that you want to make. Once you are inside this directory, we need to add a new sub-directory. The sub-directory is a separate package that we can use inside our app. In the example below, we named it **cool-package**.
+让我们回到根目录并创建 **packages** 目录。这个目录可以包含你想创建的所有独立包。进入这个目录后，我们需要添加一个新的子目录。这个子目录是一个可以在应用中使用的独立包。在下面的示例中，我们将其命名为 **cool-package**。
 
 <Terminal
   cmd={{
@@ -125,15 +125,15 @@ Let's go back to the root and create the **packages** directory. This directory 
   }}
 />
 
-We won't go into too much detail in creating a package. If you are not familiar with this, consider using a simple app without monorepos. But, to make the example complete, let's add an **index.js** file with the following content:
+我们不会过多展开如何创建一个包。如果你对此不熟悉，建议使用一个不带 monorepo 的简单应用。不过，为了让示例完整，我们来添加一个 **index.js** 文件，并包含以下内容：
 
 ```js index.js
 export const greeting = 'Hello!';
 ```
 
-### Using the package
+### 使用该包
 
-Like standard packages, we need to add our **cool-package** as a dependency to our **cool-app**. The main difference between a standard package, and one from the monorepo, is you'll always want to use the _"current state of the package"_ instead of a version. Let's add **cool-package** to our app by adding `"cool-package": "*"` to our app **package.json** file:
+像标准包一样，我们需要将 **cool-package** 作为依赖添加到我们的 **cool-app** 中。标准包和 monorepo 中的包之间的主要区别是，你通常总是想使用 _“包的当前状态”_ 而不是某个版本。让我们通过在应用的 **package.json** 文件中添加 `"cool-package": "*"` 来把 **cool-package** 添加到应用中：
 
 ```json package.json
 {
@@ -155,11 +155,11 @@ Like standard packages, we need to add our **cool-package** as a dependency to o
 }
 ```
 
-Bun, npm, and pnpm support specifying workspace dependencies using `"workspace:*"` instead of `"*"`. This will ensure that the workspace package never resolves a published package of the same name from the npm registry, but is optional.
+Bun、npm 和 pnpm 支持使用 `"workspace:*"` 而不是 `"*"` 来指定工作区依赖。这可以确保工作区包不会从 npm registry 解析到同名的已发布包，但这是可选的。
 
-After adding the package, install your dependencies with your package manager from the root directory of your monorepo to check for common warnings once again.
+添加包之后，请再次从 monorepo 的根目录使用你的包管理器安装依赖，以再次检查常见警告。
 
-Now you should be able to use the package inside your app! To test this, let's edit the **App.js** in your app and render the `greeting` text from our **cool-package**.
+现在你应该能够在应用中使用这个包了！为了测试这一点，让我们编辑应用中的 **App.js**，并渲染来自 **cool-package** 的 `greeting` 文本。
 
 ```jsx App.js
 import { greeting } from 'cool-package';
@@ -177,36 +177,36 @@ export default function App() {
 }
 ```
 
-## Common issues
+## 常见问题
 
-Monorepos may cause resolution and dependency issues that a regular project won't. They require more in-depth knowledge and require specific tooling configuration. You take on increased complexity and will need to solve issues you wouldn't run into without workspaces. Here are a couple of common issues you might encounter.
+Monorepo 可能会带来普通项目不会遇到的解析和依赖问题。它们需要更深入的知识，并且需要特定的工具配置。你需要接受更高的复杂度，并解决一些在没有工作区时不会遇到的问题。以下是你可能会遇到的一些常见问题。
 
-### Package managers with isolated dependencies
+### 具有隔离依赖的包管理器
 
-> **info** From **SDK 54**, Expo supports isolated dependencies and isolated installations.<br />
-> With **SDK 53**, disabling isolated dependencies is recommended, or you may encounter native build errors and dependency conflicts.
+> **info** 从 **SDK 54** 开始，Expo 支持隔离依赖和隔离安装。<br />
+> 在 **SDK 53** 中，建议禁用隔离依赖，否则你可能会遇到原生构建错误和依赖冲突。
 
-[Bun](https://bun.com/docs/install/isolated) and [pnpm](https://pnpm.io/settings#nodelinker) have first-class support for isolated installs. For pnpm, this is the default installation strategy unless it's disabled.
+[Bun](https://bun.com/docs/install/isolated) 和 [pnpm](https://pnpm.io/settings#nodelinker) 对隔离安装提供一流支持。对于 pnpm，除非被禁用，否则这就是默认安装策略。
 
-With isolated dependencies, package managers don't hoist packages from nested `node_modules` directories into higher ones. Instead, they create a central directory that contains your Node modules and create links to this directory. This dependency structure enforces that packages may only access their explicitly declared dependencies. This is a much stricter installation strategy than the traditional **hoisted** installation strategy, which are npm's and Yarn's default, to install dependencies in a flattened structure.
+使用隔离依赖时，包管理器不会将嵌套 `node_modules` 目录中的包提升到更高层级。相反，它们会创建一个包含你的 Node 模块的中心目录，并创建指向该目录的链接。这种依赖结构强制要求包只能访问它们显式声明的依赖。这比传统的 **hoisted** 安装策略严格得多，而 npm 和 Yarn 的默认策略就是使用扁平化结构来安装依赖。
 
-A side-effect of **hoisted** installations is that you can accidentally depend on Node modules you haven't specified in your own **package.json**'s `dependencies` or `peerDependencies`. Instead, many more dependencies that other packages rely on are hoisted and become accessible to you. This can cause non-deterministic behavior, and allow you to have broken dependency chains, which are more fragile and can cause resolution errors when updating or upgrading packages. This is especially common in monorepos.
+**hoisted** 安装的一个副作用是，你可能会意外依赖于自己 **package.json** 的 `dependencies` 或 `peerDependencies` 中并未指定的 Node 模块。相反，更多其他包所依赖的模块会被提升并变得可访问。这可能导致非确定性行为，并使你拥有有问题的依赖链；这些链更脆弱，并且在更新或升级包时可能引发解析错误。这在 monorepo 中尤其常见。
 
-**Starting with SDK 54**, Expo supports isolated dependencies. Unfortunately, not all packages you install will work and some React Native libraries may cause build or resolution errors when used with isolated dependencies. If you encounter issues with isolated installations with [pnpm](https://pnpm.io/settings#nodelinker), switch to the **hoisted** installation strategy by changing the `nodeLinker` setting in an **pnpm-workspace.yaml** file in the root of your repository:
+**从 SDK 54 开始**，Expo 支持隔离依赖。不幸的是，并非你安装的所有包都能正常工作，有些 React Native 库在与隔离依赖一起使用时可能会导致构建或解析错误。如果你在使用 [pnpm](https://pnpm.io/settings#nodelinker) 的隔离安装时遇到问题，可以通过修改仓库根目录下 **pnpm-workspace.yaml** 文件中的 `nodeLinker` 设置，切换为 **hoisted** 安装策略：
 
 ```yaml pnpm-workspace.yaml
 nodeLinker: hoisted
 ```
 
-### Duplicate native packages within monorepos
+### monorepo 中重复的原生包
 
-Expo has improved support for more complete **node_modules** patterns, such as isolated modules. Unfortunately, if your app contains duplicate dependencies, issues may still occur:
+Expo 已改进对更完整的 **node_modules** 模式的支持，例如隔离模块。不幸的是，如果你的应用包含重复依赖，问题仍然可能出现：
 
-- Duplicate React Native versions in a single monorepo are not supported
-- Duplicate React versions in a single app will cause runtime errors
-- Duplicate versions of Turbo and Expo modules may cause runtime or build errors
+- 单个 monorepo 中不支持重复的 React Native 版本
+- 单个应用中重复的 React 版本会导致运行时错误
+- Turbo 和 Expo 模块的重复版本可能导致运行时或构建错误
 
-You can check if your monorepo has multiple versions of a package, for example, `react-native`, and why they're installed through the package manager you use.
+你可以检查 monorepo 中是否存在某个包的多个版本，例如 `react-native`，以及它们是通过你使用的包管理器为什么会被安装的。
 
 <Terminal
   cmd={{
@@ -217,12 +217,12 @@ You can check if your monorepo has multiple versions of a package, for example, 
   }}
 />
 
-The output of these commands will be very different from one package manager to another, but you can spot duplicate packages in any of their outputs by looking for multiple versions of the package, for example `react-native@0.79.5` and `react-native@0.81.0`.
-**npm**,
+这些命令的输出在不同包管理器之间会有很大差异，但你可以通过查找该包的多个版本来识别输出中的重复包，例如 `react-native@0.79.5` 和 `react-native@0.81.0`。
+**npm**，
 
-#### Adding dependency resolutions for peer dependencies
+#### 为 peer 依赖添加依赖解析
 
-If the duplicate dependency is not resolvable by you changing your dependencies, you may have to add a resolution. For example, not all packages have updated their **peerDependencies** to support React 19. To work around this, you can create a resolution to force a single version of `react` to be installed.
+如果重复依赖无法通过你修改依赖来解决，那么你可能需要添加一个解析。例如，并非所有包都已更新其 **peerDependencies** 以支持 React 19。为了解决这个问题，你可以创建一个解析，强制安装单一版本的 `react`。
 
 ```json package.json
 {
@@ -236,19 +236,19 @@ If the duplicate dependency is not resolvable by you changing your dependencies,
 }
 ```
 
-For [npm](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#overrides), you have to use a property named `overrides` rather than `resolutions`.
+对于 [npm](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#overrides)，你必须使用名为 `overrides` 的属性，而不是 `resolutions`。
 
-#### Deduplicating auto-linked native modules
+#### 为自动链接的原生模块去重
 
-Often, duplicate dependencies won't cause any problems. However, native modules should never be duplicated, because only one version of a native module can be compiled for an app build at a time. Unlike JavaScript dependencies, native builds cannot contain two conflicting versions of a single native module.
+很多时候，重复依赖不会造成任何问题。然而，原生模块绝不应该重复，因为一次应用构建中只能编译一个版本的原生模块。与 JavaScript 依赖不同，原生构建不能包含同一个原生模块的两个冲突版本。
 
-From **SDK 54**, you can set `experiments.autolinkingModuleResolution` to `true` in your **app.json** to apply autolinking to Expo CLI and Metro bundler automatically. This will force dependencies that Metro resolves to match the native modules that [autolinking](/modules/autolinking/) links for your native builds.
+从 **SDK 54** 开始，你可以在 **app.json** 中将 `experiments.autolinkingModuleResolution` 设为 `true`，以将自动链接自动应用于 Expo CLI 和 Metro bundler。这将强制让 Metro 解析到的依赖与 [autolinking](/modules/autolinking/) 为你的原生构建所链接的原生模块保持一致。
 
-From **SDK 55**, this is enabled automatically for apps in monorepos.
+从 **SDK 55** 开始，这在 monorepo 中的应用里会自动启用。
 
 ### Script '...' does not exist
 
-React Native uses packages to ship both JavaScript and native files. These native files also need to be linked, like the [**react-native/react.Gradle**](https://github.com/facebook/react-native/blob/v0.70.6/react.gradle) file from **android/app/build.Gradle**. Usually, this path is hardcoded to something like:
+React Native 使用包来同时提供 JavaScript 和原生文件。这些原生文件也需要被链接，就像 **android/app/build.Gradle** 中的 [**react-native/react.Gradle**](https://github.com/facebook/react-native/blob/v0.70.6/react.gradle) 文件一样。通常，这个路径会被硬编码为类似下面这样的内容：
 
 **Android** ([source](https://github.com/facebook/react-native/blob/e918362be3cb03ae9dee3b8d50a240c599f6723f/template/android/app/build.gradle#L84))
 
@@ -262,7 +262,7 @@ apply from: "../../node_modules/react-native/react.gradle"
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 ```
 
-Unfortunately, this path can be different in monorepos because of [hoisting](https://classic.yarnpkg.com/blog/2018/02/15/nohoist/). It also doesn't use the [Node module resolution](https://nodejs.org/api/modules.html#all-together). You can avoid this issue by using Node to find the location of the package instead of hardcoding this:
+不幸的是，由于 [hoisting](https://classic.yarnpkg.com/blog/2018/02/15/nohoist/)，在 monorepo 中这个路径可能不同。它也没有使用 [Node 模块解析](https://nodejs.org/api/modules.html#all-together)。你可以通过使用 Node 来查找包的位置，而不是把这个路径硬编码，从而避免这个问题：
 
 **Android** ([source](https://github.com/expo/expo/blob/6877c1f5cdca62b395b0d5f49d87f2f3dbb50bec/templates/expo-template-bare-minimum/android/app/build.gradle#L87))
 
@@ -276,6 +276,6 @@ apply from: new File(["node", "--print", "require.resolve('react-native/package.
 require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")
 ```
 
-In the snippets above, you can see that we use Node's own [`require.resolve()`](https://nodejs.org/api/modules.html#requireresolverequest-options) method to find the package location. We explicitly refer to `package.json` because we want to find the root location of the package, not the location of the entry point. And with that root location, we can resolve to the expected relative path within the package. [Learn more about these references here](https://github.com/expo/expo/blob/main/packages/expo-modules-core/README.md).
+在上面的代码片段中，你可以看到我们使用了 Node 自身的 [`require.resolve()`](https://nodejs.org/api/modules.html#requireresolverequest-options) 方法来查找包的位置。我们明确引用 `package.json`，因为我们想找到包的根位置，而不是入口点的位置。有了这个根位置，我们就可以解析到包内预期的相对路径。[在这里了解更多关于这些引用的信息](https://github.com/expo/expo/blob/main/packages/expo-modules-core/README.md)。
 
-All Expo SDK modules and templates have these dynamic references and work with monorepos. However, occasionally, you might run into packages that still use the hardcoded path. You can manually edit it with [`patch-package`](https://github.com/ds300/patch-package#readme) or mention this to the package maintainers.
+所有 Expo SDK 模块和模板都使用这些动态引用，因此可以在 monorepo 中正常工作。不过，偶尔你可能会遇到仍然使用硬编码路径的包。你可以使用 [`patch-package`](https://github.com/ds300/patch-package#readme) 手动修改它，或者向该包的维护者提出来。

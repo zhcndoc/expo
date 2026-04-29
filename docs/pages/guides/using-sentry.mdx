@@ -1,7 +1,7 @@
 ---
-title: Using Sentry
+title: 使用 Sentry
 maxHeadingDepth: 4
-description: A guide on installing and configuring Sentry for crash reporting.
+description: 安装和配置 Sentry 以进行崩溃报告的指南。
 platforms: ['android', 'ios', 'web']
 ---
 
@@ -10,121 +10,119 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-[Sentry](http://getsentry.com/) is a crash reporting platform that provides you with **real-time insight into production deployments with info to reproduce and fix crashes**.
+[Sentry](http://getsentry.com/) 是一个崩溃报告平台，为你提供**对生产环境部署的实时洞察，以及用于复现和修复崩溃的信息**。
 
-It notifies you of exceptions or errors that your users run into while using your app and organizes them for you on a web dashboard. Reported exceptions include stacktraces, device info, version, and other relevant context automatically. You can also provide additional context that is specific to your application such as the current route and user id.
+它会在用户使用你的应用时通知你出现的异常或错误，并在网页仪表板中为你整理这些信息。报告的异常会自动包含堆栈跟踪、设备信息、版本以及其他相关上下文。你还可以提供特定于你应用的额外上下文，例如当前路由和用户 ID。
 
-## What you'll learn
+## 你将学到什么
 
-This guide covers three main aspects of integrating Sentry with your Expo projects:
+本指南涵盖将 Sentry 集成到 Expo 项目的三个主要方面：
 
-- [Install and configure Sentry](#install-and-configure-sentry) in your React Native app
+- 在你的 React Native 应用中[安装并配置 Sentry](#install-and-configure-sentry)
 
-- Using Sentry with EAS:
-  - [EAS Build](#usage-with-eas-build) for building your app
-  - [EAS Update](#usage-with-eas-update) for over-the-air updates
+- 在 EAS 中使用 Sentry：
+  - 用于构建应用的[EAS Build](#usage-with-eas-build)
+  - 用于空中更新的[EAS Update](#usage-with-eas-update)
 
-- [Setting up the Sentry-Expo integration](#sentry-integration-with-eas-dashboard) to view crash reports and session replays directly in your EAS dashboard
+- [设置 Sentry-Expo 集成](#sentry-integration-with-eas-dashboard)，以便直接在你的 EAS 仪表板中查看崩溃报告和会话回放
 
-## Install and configure Sentry
+## 安装并配置 Sentry
 
 <Step label="1">
 
-### Sign up for a Sentry account and create a project
+### 注册 Sentry 账号并创建项目
 
-Before proceeding with installing Sentry, you'll need to make sure you have created a Sentry account and project:
+在继续安装 Sentry 之前，你需要确保已经创建了 Sentry 账号和项目：
 
 <Step label="1.1">
 
-[Sign up for Sentry](https://sentry.io/signup/) (the free tier supports up to 5,000 events per month), and create a project in your
-Dashboard. Take note of your **organization slug**, **project name**, and **DSN** as you'll need
-them later:
+[注册 Sentry](https://sentry.io/signup/)（免费版每月最多支持 5,000 个事件），并在你的仪表板中创建一个项目。请记下你的**organization slug**、**项目名称**和**DSN**，因为稍后你会用到它们：
 
-- **organization slug** is available in your **Organization settings** tab
-- **project name** is available in your project's **Settings** > **Projects** tab (find it in the list)
-- **DSN** is available in your project's **Settings** > **Projects** > **Project name** > Under **SDK Setup** section > **Client Keys (DSN)** tab.
+- **organization slug** 可在你的 **Organization settings** 选项卡中找到
+- **项目名称** 可在你的项目的 **Settings** > **Projects** 选项卡中找到（在列表中查找）
+- **DSN** 可在你的项目的 **Settings** > **Projects** > **Project name** > **SDK Setup** 部分下的 **Client Keys (DSN)** 选项卡中找到
 
 </Step>
 
 <Step label="1.2">
 
-Go to the [Developer Settings > Auth Tokens](https://sentry.io/settings/auth-tokens/) page and create a new [Organization Auth Token](https://docs.sentry.io/account/auth-tokens/#organization-auth-tokens). The token is automatically scoped for Source Map Upload and Release Creation. Save it.
+前往 [Developer Settings > Auth Tokens](https://sentry.io/settings/auth-tokens/) 页面，创建一个新的 [Organization Auth Token](https://docs.sentry.io/account/auth-tokens/#organization-auth-tokens)。该 token 会自动配置为 Source Map Upload 和 Release Creation 的权限。请保存它。
 
 </Step>
 
-Once you have each of these: **organization slug**, **project name**, **DSN**, and **auth token**, you're all set to proceed.
+当你拥有以下各项后：**organization slug**、**项目名称**、**DSN** 和 **auth token**，就可以继续下一步了。
 
 </Step>
 
 <Step label="2">
 
-### Use the Sentry wizard to set up your project
+### 使用 Sentry 向导设置你的项目
 
-The easiest way to set up Sentry in your Expo project is to use the Sentry wizard. This tool will automatically configure your project with the right settings.
+在 Expo 项目中设置 Sentry 最简单的方法是使用 Sentry 向导。该工具会自动为你的项目配置正确的设置。
 
-Run the following command in your project directory:
+在你的项目目录中运行以下命令：
 
 <Terminal cmd={['$ npx @sentry/wizard@latest -i reactNative']} />
 
-The wizard will:
+该向导将会：
 
-- Install the required dependencies
-- Configure your project to use Sentry
-- Set up the Metro configuration automatically
-- Add the necessary initialization code to your app
+- 安装所需依赖
+- 配置你的项目以使用 Sentry
+- 自动设置 Metro 配置
+- 将必要的初始化代码添加到你的应用中
 
-Follow the prompts in the wizard to complete the setup process. The wizard will guide you to log in to your Sentry account and fetch all the correct information regarding your project.
+按照向导中的提示完成设置流程。向导会引导你登录 Sentry 账号，并获取与你的项目相关的所有正确信息。
 
 </Step>
 
 <Step label="3">
 
-### Verify the configuration
+### 验证配置
 
-Create a new release build of your app and verify that it uploads source maps correctly. You may want to add a button in your app to test that it is working and sourcemaps are wired up as expected, for example:
+为你的应用创建一个新的发布构建，并验证它是否正确上传了 sourcemaps。你可以考虑在应用中添加一个按钮来测试它是否正常工作并且 sourcemaps 是否按预期接入，例如：
 
 {/* prettier-ignore */}
 ```jsx
 import { Button } from 'react-native';
 
-// Inside some component
-<Button title="Press me" onPress={() => { throw new Error('Hello, again, Sentry!'); }}/>
+// 在某个组件内部
+<Button title="点我" onPress={() => { throw new Error('Hello, again, Sentry!'); }}/>
 ```
 
 </Step>
 
-## Usage with EAS Build
+## 与 EAS Build 一起使用
 
-Ensure that `SENTRY_AUTH_TOKEN` is set in your build environment, and Sentry will automatically upload source maps for you. If you use environment variables rather than properties in your app config, ensure that those are set as well.
+请确保在你的构建环境中设置了 `SENTRY_AUTH_TOKEN`，Sentry 就会自动为你上传 source maps。如果你使用的是环境变量而不是应用配置中的属性，也请确保这些变量同样已设置。
 
-Using the above instructions, no additional work is needed to integrate Sentry into your project when using EAS Build.
+按照上述说明，在使用 EAS Build 时，无需额外工作即可将 Sentry 集成到你的项目中。
 
-## Usage with EAS Update
+## 与 EAS Update 一起使用
 
-After running `eas update`, upload the source maps to Sentry:
+运行 `eas update` 后，将 source maps 上传到 Sentry：
 
 <Terminal
   cmd={[
-    '# Pass in the "dist" directory generated by `eas update` to the upload script',
+    '# 将 `eas update` 生成的 "dist" 目录传递给上传脚本',
     '$ npx sentry-expo-upload-sourcemaps dist',
   ]}
 />
 
-That's it! Errors for your updates will now be properly symbolicated in Sentry.
+就是这样！你更新中的错误现在将在 Sentry 中被正确符号化。
 
-<Collapsible summary="Do you want to publish an update and the sourcemaps in one command?">
+<Collapsible summary="你想在一个命令中同时发布更新和 sourcemaps 吗？">
 
-You can chain the commands together with `&&` to publish an update and upload the sourcemaps in one step:
+你可以使用 `&&` 将命令串联起来，一步完成发布更新并上传 sourcemaps：
 
 <Terminal cmd={['$ eas update --branch <branch> && npx sentry-expo-upload-sourcemaps dist']} />
 
 </Collapsible>
 
-<Collapsible summary="Do you want to append additional update-related metadata to error reports?">
+<Collapsible summary="你想为错误报告附加额外的更新相关元数据吗？">
 
-Configuring Sentry to tag your scope with information about your update allows you to see errors happening on certain updates in the Sentry dashboard.
+将 Sentry 配置为使用与你的更新相关的信息标记你的 scope，可以让你在 Sentry 仪表板中看到发生在某些更新中的错误。
 
-Add the following snippet in the global scope as early as possible in your application's lifecycle.
+请尽早在应用生命周期中的全局 scope 里添加以下代码片段。
 
 ```js
 import * as Sentry from '@sentry/react-native';
@@ -136,7 +134,7 @@ const extra = 'extra' in manifest ? manifest.extra : undefined;
 const updateGroup = metadata && 'updateGroup' in metadata ? metadata.updateGroup : undefined;
 
 Sentry.init({
-  // dsn, release, dist, etc...
+  // dsn、release、dist 等...
 });
 
 const scope = Sentry.getGlobalScope();
@@ -154,47 +152,47 @@ if (typeof updateGroup === 'string') {
     `https://expo.dev/accounts/${owner}/projects/${slug}/updates/${updateGroup}`
   );
 } else if (Updates.isEmbeddedLaunch) {
-  // This will be `true` if the update is the one embedded in the build, and not one downloaded from the updates server.
-  scope.setTag('expo-update-debug-url', 'not applicable for embedded updates');
+  // 如果该更新是构建中内嵌的那个更新，而不是从 updates 服务器下载的更新，则这里会是 `true`。
+  scope.setTag('expo-update-debug-url', 'embedded updates 不适用');
 }
 ```
 
-Once configured, information about the associated update will show up in an error's tag section:
+配置完成后，与该更新相关的信息将显示在错误的标签部分中：
 
 <ContentSpotlight alt="Sentry update tags" src="/static/images/guides/sentry-tags.png" />
 
 </Collapsible>
 
-## Sentry integration with EAS dashboard
+## Sentry 与 EAS 仪表板集成
 
-The Sentry integration with Expo allows you to view crash reports and Session Replays for your Expo app deployments directly within your EAS dashboard. This integration provides a direct link to Sentry stack traces with full context, session replays, and debugging capabilities.
+Sentry 与 Expo 的集成让你可以直接在 EAS 仪表板中查看 Expo 应用部署的崩溃报告和 Session Replays。此集成提供了到 Sentry 堆栈跟踪的直接链接，并包含完整上下文、会话回放和调试能力。
 
-### Install
+### 安装
 
-> **info** Sentry owner, manager, or admin permissions are required to install this integration.
+> **info** 安装此集成需要 Sentry 的 owner、manager 或 admin 权限。
 
-1. Log in to you Expo account and open [**Account settings > Overview**](https://expo.dev/accounts/[your-account]/settings).
-2. Under **Connections** and click **Connect** next to Sentry.
-3. Log in to your Sentry account and accept the integration into your organization. You will be redirected back to **Account settings**.
+1. 登录你的 Expo 账号，并打开 [**Account settings > Overview**](https://expo.dev/accounts/[your-account]/settings)。
+2. 在 **Connections** 下，点击 Sentry 旁边的 **Connect**。
+3. 登录你的 Sentry 账号，并接受将该集成加入你的组织。之后你会被重定向回 **Account settings**。
 
-### Link your project
+### 关联你的项目
 
-After connecting your accounts, you need to link your EAS Project to your Sentry Project:
+连接账号后，你需要将你的 EAS Project 关联到你的 Sentry Project：
 
-1. Open **Projects > [Your Project] > Configuration > Project settings** in EAS.
-2. Click **Link** and select your Sentry Project from the dropdown.
+1. 在 EAS 中打开 **Projects > [Your Project] > Configuration > Project settings**。
+2. 点击 **Link**，并从下拉菜单中选择你的 Sentry Project。
 
-### Usage
+### 使用
 
-To see your Sentry data in EAS dashboard, open **Projects > [Your Project] > Updates > Deployments > [Deployment]** to view Sentry data from a Release.
+要在 EAS 仪表板中查看你的 Sentry 数据，请打开 **Projects > [Your Project] > Updates > Deployments > [Deployment]**，以查看来自某个 Release 的 Sentry 数据。
 
-With this integration, you can:
+通过此集成，你可以：
 
-- View crash reports directly in your EAS dashboard
-- Access Session Replays to see exactly what happened before an error occurred
-- Get detailed stack traces with full context
-- Navigate seamlessly between EAS and Sentry for debugging
+- 直接在 EAS 仪表板中查看崩溃报告
+- 访问 Session Replays，准确查看错误发生前发生了什么
+- 获取包含完整上下文的详细堆栈跟踪
+- 在 EAS 和 Sentry 之间无缝切换以进行调试
 
-## Learn more about Sentry
+## 了解更多关于 Sentry 的信息
 
-Sentry does more than just catch fatal errors, learn more about how to use Sentry from their [JavaScript usage](https://docs.sentry.io/platforms/javascript/) documentation.
+Sentry 不仅仅能捕获致命错误，还可以通过他们的 [JavaScript usage](https://docs.sentry.io/platforms/javascript/) 文档了解更多关于如何使用 Sentry 的信息。

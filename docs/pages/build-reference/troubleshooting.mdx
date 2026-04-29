@@ -1,6 +1,6 @@
 ---
-title: Troubleshoot build errors and crashes
-description: A reference for troubleshooting build errors and crashes when using EAS Build.
+title: 排查构建错误和崩溃
+description: 使用 EAS Build 时排查构建错误和崩溃的参考指南。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
@@ -8,212 +8,210 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 import { A } from '~/ui/components/Text';
 
-When something goes wrong, it probably will go wrong in one of two following ways:
+当出问题时，它很可能会以以下两种方式之一出错：
 
-1. Your build will fail.
-2. The build will succeed but encounter a runtime error, for example, it crashes or hangs when you run it.
+1. 你的构建会失败。
+2. 构建会成功，但会遇到运行时错误，例如，在你运行它时崩溃或卡住。
 
-All standard advice around [narrowing down the source of an error](https://expo.fyi/manual-debugging) applies here; this document provides information that may be useful on top of your typical troubleshooting processes and techniques. Troubleshooting is an art, and you might need to think creatively.
+关于[缩小错误来源范围](https://expo.fyi/manual-debugging)的所有标准建议在这里都适用；本文档提供了一些可能在你常规排查流程和技巧之外有用的信息。故障排查是一门艺术，你可能需要创造性地思考。
 
-## Find the related error logs
+## 查找相关的错误日志
 
-Before you go further, you need to be sure that you have located the error message and read it. How you do this will be different depending on whether you're investigating a build failure or runtime error.
+在继续之前，你需要确认自己已经找到了错误信息并且读过了它。具体怎么做会因你是在排查构建失败还是运行时错误而有所不同。
 
 {/* vale off */}
 
-### Runtime errors
+### 运行时错误
 
-Common questions that fall under this category are: "my app runs well locally but crashes immediately when I run a build" or "my app works in Expo Go but hangs on the splash screen in my build". When your app builds successfully but crashes or hangs when you run it, this is considered a runtime error.
+属于此类别的常见问题包括：“我的应用在本地运行良好，但一旦我运行构建就会立即崩溃”或“我的应用在 Expo Go 中可以正常工作，但在我的构建中会卡在启动画面”。当你的应用构建成功，但在运行时崩溃或卡住时，这被视为运行时错误。
 
-Refer to the ["Production errors" section of the debugging guide](/debugging/runtime-issues/#production-errors) to learn how to locate logs when your release builds are crashing at runtime.
+请参阅[调试指南中的“生产环境错误”部分](/debugging/runtime-issues/#production-errors)，以了解当你的发布构建在运行时崩溃时如何查找日志。
 
-If you can't find any useful information through this approach, try [narrowing down the source of the crash step by step](https://expo.fyi/manual-debugging).
+如果通过这种方法仍然找不到任何有用的信息，请尝试[逐步缩小崩溃来源](https://expo.fyi/manual-debugging)。
 
 {/* vale on */}
 
-### Build errors
+### 构建错误
 
-Go to your build details page (find it on the [build dashboard](https://expo.dev/accounts/[account]/projects/[project]/builds) if you don't have it open already) and expand any failed build phases by clicking on them. Often, the earliest phase with errors will contain the most useful information and any subsequent failed phase will have cascaded from the first.
+前往你的构建详情页面（如果你还没有打开它，可以在 [构建仪表板](https://expo.dev/accounts/[account]/projects/[project]/builds) 中找到它），然后点击任何失败的构建阶段，将其展开。通常，最早出现错误的阶段会包含最有用的信息，而后续失败的阶段往往是由第一个错误级联导致的。
 
-Regardless of the phase, **it's common to see log entries prefixed with `[stderr]`, but keep in mind that this doesn't necessarily mean those logs point to errors**; it's common for CLI tools to use [stderr](<https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)>) to output warnings and other diagnostics.
+无论处于哪个阶段，**日志条目前缀带有 `[stderr]` 很常见，但请记住，这并不一定意味着这些日志指向错误**；CLI 工具经常使用 [stderr](<https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)>) 来输出警告和其他诊断信息。
 
-For example, you might see something like this on your Android builds:
-
-<Terminal
-  cmd={[
-    `[stderr] Note: /build/workingdir/build/app/node_modules/@react-native-async-storage/async-storage/android/src/main/java/com/reactnativecommunity/asyncstorage/AsyncStorageModule.java uses or overrides a deprecated API.`,
-    `[stderr] Note: Recompile with -Xlint:deprecation for details.`,
-  ]}
-/>
-
-While you may or may not be interested in following up on that warning, it is not the cause of your failed build. So how do you know which logs are truly responsible? If you are building a bare project, you will already be good at this. If you are building a [managed project](/workflow/overview/), it may be tricky because you don't directly interact with the native code, only write JavaScript.
-
-A good path forward is to **determine if the build failed due to a native or JavaScript error**. When your build fails due to a JavaScript build error, you will usually see something like this:
+例如，在你的 Android 构建中，你可能会看到类似这样的内容：
 
 <Terminal
   cmd={[
-    `❌ Metro encountered an error:`,
-    `Unable to resolve module ./src/Routes from /Users/expo/workingdir/build/App.js`,
+    `[stderr] 注意：/build/workingdir/build/app/node_modules/@react-native-async-storage/async-storage/android/src/main/java/com/reactnativecommunity/asyncstorage/AsyncStorageModule.java 使用或重写了已弃用的 API。`,
+    `[stderr] 注意：使用 -Xlint:deprecation 重新编译以获取详细信息。`,
   ]}
 />
 
-This particular error means that the app is importing **./src/Routes** and it is not found. The cause could be that the filename case is different in Git than the developer's filesystem (for example, **routes.js** in Git instead of **Routes.js**), or maybe the project has a build step and it wasn't set up to run on EAS Build. In this case, it turns out that in this case **./src/Routes** was intended to import **./src/Routes/index.js**, but that path was accidentally excluded in the developer's **.gitignore**.
+虽然你可能想进一步跟进这个警告，也可能不想，但它并不是导致构建失败的原因。那么，如何判断哪些日志才是真正的责任方呢？如果你在构建一个裸工作流项目，你应该已经很擅长识别这类问题了。如果你在构建一个 [托管项目](/workflow/overview/)，这可能会比较棘手，因为你并不直接与原生代码交互，只编写 JavaScript。
 
-It's important to note that with iOS builds the build details page only displays an abridged version of the logs because the full output from `xcodebuild` can be in the order of 10MB. Sometimes it's necessary to open the full Xcode logs to find the information that you need; for example, if the JavaScript build failed but you don't see any useful information on the build details page. To open the full Xcode logs, scroll to the bottom of the build details page when the build has been completed and either click to view or download them.
+一个好的方向是**判断构建失败是由原生错误还是 JavaScript 错误导致的**。当你的构建因 JavaScript 构建错误而失败时，通常会看到类似这样的信息：
+
+<Terminal
+  cmd={[
+    `❌ Metro 遇到一个错误：`,
+    `无法解析模块 ./src/Routes，来源于 /Users/expo/workingdir/build/App.js`,
+  ]}
+/>
+
+这个特定错误意味着应用正在导入 **./src/Routes**，但它没有被找到。原因可能是 Git 中的文件名大小写与开发者文件系统中的不同（例如，Git 中是 **routes.js**，而不是 **Routes.js**），或者项目有一个构建步骤，但它没有配置为在 EAS Build 上运行。在这种情况下，事实证明 **./src/Routes** 原本是要导入 **./src/Routes/index.js**，但这个路径不小心被开发者的 **.gitignore** 排除了。
+
+需要注意的是，对于 iOS 构建，构建详情页面只会显示一部分日志，因为 `xcodebuild` 的完整输出可能达到约 10MB。有时有必要打开完整的 Xcode 日志来查找你需要的信息；例如，当 JavaScript 构建失败但你在构建详情页面上看不到任何有用信息时。要打开完整的 Xcode 日志，请在构建完成后滚动到构建详情页面底部，然后点击查看或下载它们。
 
 {/* TODO: native and js build phases should be separate in eas build logs, this is too much work for people to figure out */}
 
-If you are working on a managed app and the build error is a native error rather than a JavaScript error, this is likely due to a [config plugin](/config-plugins/introduction/) or a dependency in your project. Keep an eye out in the logs for any new packages that you have added since your previous successful build. Run `npx expo-doctor` to determine that the versions of Expo SDK dependencies in your project are compatible with your Expo SDK version.
+如果你正在开发一个托管应用，并且构建错误是原生错误而不是 JavaScript 错误，那么这很可能是由 [config plugin](/config-plugins/introduction/) 或项目中的某个依赖导致的。请留意日志中自上次成功构建以来你新增的任何包。运行 `npx expo-doctor`，以确定项目中的 Expo SDK 依赖版本与你的 Expo SDK 版本是否兼容。
 
-Armed with your error logs, you can often start to fix your build or search the [forums](https://chat.expo.dev/) and GitHub issues for related packages to dig deeper. Some common sources of problems are listed below.
+有了错误日志，你通常可以开始修复构建问题，或者在 [论坛](https://chat.expo.dev/) 和 GitHub issues 中搜索相关包以深入排查。下面列出了一些常见问题来源。
 
-<Collapsible summary="Are you using a monorepo?">
+<Collapsible summary="你是否在使用 monorepo？">
 
-Monorepos are incredibly useful but they do introduce their own set of problems. It's necessary to upload the entire monorepo to the EAS Build builders, set it up, and run the build.
+Monorepo 非常有用，但它们也会带来自己的一套问题。需要将整个 monorepo 上传到 EAS Build 构建器，完成设置，然后运行构建。
 
-EAS Build is more like a typical CI service in that we need the source code, rather than a compiled JavaScript bundle and manifest. EAS Build has first-class support for Yarn workspaces, and [your success may vary when using other monorepo tools](/build-reference/limitations).
+EAS Build 更像是典型的 CI 服务，因为我们需要的是源代码，而不是编译后的 JavaScript bundle 和清单。EAS Build 对 Yarn workspaces 提供一流支持，而 [使用其他 monorepo 工具时，结果可能会有所不同](/build-reference/limitations)。
 
-For more information, see [Working with monorepos](/guides/monorepos).
-
-</Collapsible>
-
-<Collapsible summary="Out-of-memory (OOM) errors">
-
-If your build fails with "Gradle build daemon disappeared unexpectedly (it may have been killed or may have crashed)" in your Gradle logs, this is because the Node process responsible for bundling your app JavaScript was killed.
-
-This can often be a sign that your app bundle is extremely large, which will make your overall app binary larger and lead to slow boot up times, especially on low-end Android devices. Sometimes the error can occur when large text files are treated as source code, for example, if you have a JavaScript file that contains a string of 1MB+ of HTML to load into a webview, or a similarly sized JSON file.
-
-To determine how large your bundle is and to see a breakdown of where the size comes from, use [Expo Atlas](/guides/analyzing-bundles/).
-
-To increase memory limits on your EAS Build builders, use [`large` resource class](/eas/json/#resourceclass) in your **eas.json**. See [Android-specific resource class](/build-reference/infrastructure/#android-build-server-configurations) and [iOS-specific resource class](/build-reference/infrastructure/#ios-build-server-configurations) for more information.
+有关更多信息，请参阅 [使用 monorepo](/guides/monorepos)。
 
 </Collapsible>
 
-<Collapsible summary="None of the files exist error">
+<Collapsible summary="内存不足（OOM）错误">
 
-When you run `eas build`, your project's files are uploaded to Expo's build servers. However, any file or directory mentioned in the **.gitignore** is **not uploaded**. This is intentional to prevent sensitive information, such as API keys, from being exposed in your app's code.
+如果你的构建在 Gradle 日志中出现 "Gradle build daemon disappeared unexpectedly (it may have been killed or may have crashed)"，这是因为负责为应用 JavaScript 打包的 Node 进程被终止了。
 
-If your project imports a file listed in **.gitignore**, the build will fail with a `None of these files exist` error. There are different ways you can resolve this error:
+这通常表明你的应用 bundle 非常大，这会让整体应用二进制文件更大，并导致启动时间变慢，尤其是在低端 Android 设备上。有时，当较大的文本文件被当作源代码处理时也会出现这个错误，例如，如果你有一个包含 1MB+ HTML 字符串、用于加载到 webview 中的 JavaScript 文件，或者一个大小相近的 JSON 文件。
 
-- Remove the import statement for the ignored file and test your project. If your project functions as expected, that import statement may have been outdated or unused.
+要确定 bundle 的大小以及查看大小来源的分布情况，请使用 [Expo Atlas](/guides/analyzing-bundles/)。
 
-- Remove any files or directories Metro was unable to resolve from your **.gitignore**. However, this poses a security risk since any sensitive information included in these files will now be available in your project's source code and Git commit history.
-
-- Encode the file with `base64`, save that string as secrets, and create the file in an EAS Build hook. See [How can I upload files to EAS Build if they are gitignored?](https://expo.fyi/eas-build-archive.md#how-can-i-upload-files-to-eas-build-if-they-are-gitignored) for more information.
-
-- Refactor your source code to avoid importing sensitive files on the client side. If a file is an auto-generated code from a third-party provider and that provider has automatically listed files in your **.gitignore**, then that file probably contains sensitive information. You should not include it on the client side. During app development, ensure you follow secure practices, such as using environment variables or serving them through your backend. See [Using secrets in environment variables](/eas/environment-variables/#visibility-settings-for-environment-variables) for more information.
+要提高 EAS Build 构建器的内存限制，请在 **eas.json** 中使用 [`large` resource class](/eas/json/#resourceclass)。更多信息请参阅 [Android-specific resource class](/build-reference/infrastructure/#android-build-server-configurations) 和 [iOS-specific resource class](/build-reference/infrastructure/#ios-build-server-configurations)。
 
 </Collapsible>
 
-## Compare build logs
+<Collapsible summary="不存在任何文件的错误">
 
-When an EAS Build that previously succeeded starts failing, identifying what changed between the two builds can help pinpoint the root cause. The **Compare** button on the EAS Build details page helps you compare two builds side-by-side, showing differences in their build logs and configuration.
+当你运行 `eas build` 时，项目文件会被上传到 Expo 的构建服务器。然而，**.gitignore** 中提到的任何文件或目录都**不会被上传**。这样做是有意为之，目的是防止 API 密钥等敏感信息暴露在应用代码中。
 
-To compare two builds:
+如果你的项目导入了 **.gitignore** 中列出的文件，构建将会失败，并出现 `None of these files exist` 错误。你可以通过以下几种方式解决此错误：
 
-- Open your build details page on the [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/builds) of your failed build
-- Click the **Compare** button to open the compare modal
-- Enter the build ID or the complete build URL of the build you want to compare against. This will be the build that previously succeeded.
-- Click **Compare**.
+- 移除被忽略文件的导入语句并测试你的项目。如果项目按预期运行，那么该导入语句可能已经过时或未被使用。
+
+- 将 Metro 无法解析的任何文件或目录从 **.gitignore** 中移除。不过，这会带来安全风险，因为这些文件中包含的任何敏感信息现在都会出现在项目的源代码和 Git 提交历史中。
+
+- 使用 `base64` 对文件进行编码，将该字符串保存为 secrets，并在 EAS Build hook 中创建该文件。更多信息请参阅 [如果文件被 gitignore，如何将其上传到 EAS Build？](https://expo.fyi/eas-build-archive.md#how-can-i-upload-files-to-eas-build-if-they-are-gitignored)
+
+- 重构源代码，避免在客户端导入敏感文件。如果某个文件是第三方提供商自动生成的代码，并且该提供商已经自动将文件列入你的 **.gitignore**，那么该文件很可能包含敏感信息。你不应在客户端包含它。在应用开发过程中，请确保遵循安全实践，例如使用环境变量或通过后端提供这些内容。更多信息请参阅 [在环境变量中使用 secrets](/eas/environment-variables/#visibility-settings-for-environment-variables)。
+
+</Collapsible>
+
+## 比较构建日志
+
+当之前成功的 EAS Build 开始失败时，找出两次构建之间发生了哪些变化，有助于定位根本原因。EAS Build 详情页面上的 **Compare** 按钮可以帮助你并排比较两个构建，显示它们在构建日志和配置上的差异。
+
+要比较两个构建：
+
+- 在失败构建的 [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/builds) 中打开构建详情页面
+- 点击 **Compare** 按钮打开比较弹窗
+- 输入你想进行比较的构建的 build ID 或完整 build URL。这将是之前成功的构建。
+- 点击 **Compare**。
 
 <ContentSpotlight
-  alt="Compare builds modal."
+  alt="比较构建弹窗。"
   src="/static/images/eas-build/troubleshooting/compare-builds-modal.png"
   className="max-w-[600px]"
 />
 
-The above screenshot shows the comparison view that displays both builds with their metadata at the top. This includes, status, environment, Expo SDK version, and more. Below the metadata, a side-by-side log comparison shows output organized by each build phase.
+上面的截图展示了比较视图，它在顶部显示两个构建及其元数据。这包括状态、环境、Expo SDK 版本等。在元数据下方，并排的日志比较会按每个构建阶段组织输出。
 
-Within each build phase, an indicator is used to show what changed between the two builds:
+在每个构建阶段中，会使用指示标记来显示两个构建之间发生了什么变化：
 
-- **Changed (X lines)**: The phase ran in both builds but produced different output.
-- **+ Added**: The phase exists only in the comparison build (the original build failed before reaching it).
-- **- Removed**: The phase exists only in the original build.
+- **Changed (X lines)**：该阶段在两个构建中都运行了，但输出不同。
+- **+ Added**：该阶段只存在于比较构建中（原始构建在到达此阶段之前就失败了）。
+- **- Removed**：该阶段只存在于原始构建中。
 
 <ContentSpotlight
-  alt="Compare builds view."
+  alt="比较构建视图。"
   src="/static/images/eas-build/troubleshooting/compare-builds-view.png"
   className="max-w-[600px]"
 />
 
-In the above example, comparing a failed build on the right side against a successful build on the left reveals differences in installed packages and highlighted lock files mismatch.
+在上面的示例中，将右侧失败的构建与左侧成功的构建进行比较，可以看出已安装包的差异，并突出显示了 lock 文件不匹配的问题。
 
-## Verify that your JavaScript bundles locally
+## 在本地验证你的 JavaScript bundles
 
-When a build fails with `Task :app:bundleReleaseJsAndAssets FAILED` (Android) or `Metro encountered an error` (iOS), it means Metro bundler was unable to bundle the app's JavaScript code while trying to embed it in your app's binary. This error message is usually followed by a syntax error or other details about why bundling failed. Unfortunately, a standard React Native project is configured to perform this step late in the Gradle/Xcode build step, meaning it can take a while to see this error.
+当构建因 `Task :app:bundleReleaseJsAndAssets FAILED`（Android）或 `Metro encountered an error`（iOS）而失败时，这意味着 Metro bundler 在尝试将应用的 JavaScript 代码嵌入到应用二进制文件中时，无法完成打包。该错误信息通常后面会跟随语法错误或其他有关打包失败原因的详细信息。不幸的是，标准 React Native 项目被配置为在 Gradle/Xcode 构建步骤的后期执行此步骤，这意味着你可能需要花一段时间才能看到这个错误。
 
-You can build the production bundle locally by running `npx expo export` to bypass all of the other build steps so you can see this error much more quickly. Run this command repeatedly, resolving any syntax errors or other issues uncovered until the bundle builds successfully. Then try your EAS Build again.
+你可以在本地运行 `npx expo export` 来构建生产 bundle，从而绕过其他所有构建步骤，以便更快地看到这个错误。重复运行该命令，解决发现的任何语法错误或其他问题，直到 bundle 成功构建。然后再次尝试你的 EAS Build。
 
-## Verify that your project builds and runs locally
+## 在本地验证你的项目是否能构建并运行
 
-If the logs weren't enough to immediately help you understand and fix the root cause, it's time to try to reproduce the issue locally. If your project builds and runs locally in release mode then it will also build on EAS Build, provided that the following are all true:
+如果日志不足以立即帮助你理解并修复根本原因，那么现在该尝试在本地复现问题了。如果你的项目能在本地以 release 模式构建并运行，那么在 EAS Build 上也同样可以构建，只要以下条件都满足：
 
-- Relevant [Build tool versions](/build/eas-json#configuring-your-build-tools) (for example, Xcode, Node.js, npm, Yarn) are the same in both environments.
-- Relevant [environment variables](/eas/environment-variables) are the same in both environments.
-- The [archive](https://expo.fyi/eas-build-archive) that is uploaded to EAS Build includes the same relevant source files.
+- 相关的 [Build tool versions](/build/eas-json#configuring-your-build-tools)（例如 Xcode、Node.js、npm、Yarn）在两个环境中相同。
+- 相关的 [environment variables](/eas/environment-variables) 在两个环境中相同。
+- 上传到 EAS Build 的 [archive](https://expo.fyi/eas-build-archive) 包含相同的相关源文件。
 
-You can verify that your project builds on your local machine with the `npx expo run:android` and `npx expo run:ios` commands, with variant/configuration flags set to release to most faithfully reproduce what executes on EAS Build. For more information, see [Android build process](/build-reference/android-builds) and [iOS build process](/build-reference/ios-builds).
+你可以使用 `npx expo run:android` 和 `npx expo run:ios` 命令在本地验证项目是否能构建，并将 variant/configuration 标志设置为 release，以尽可能真实地复现 EAS Build 上的执行过程。更多信息请参阅 [Android build process](/build-reference/android-builds) 和 [iOS build process](/build-reference/ios-builds)。
 
 <Terminal
   cmd={[
-    '# Locally compile and run the Android app in release mode',
+    '# 在本地以 release 模式编译并运行 Android 应用',
     '$ npx expo run:android --variant release',
     '',
-    '# Locally compile and run the iOS app in release mode',
+    '# 在本地以 release 模式编译并运行 iOS 应用',
     '$ npx expo run:ios --configuration Release',
   ]}
 />
 
-> If use [CNG](/workflow/continuous-native-generation/), these commands will run `npx expo prebuild` to generate native projects to compile them.You likely want to [clean up the changes](https://expo.fyi/prebuild-cleanup) once you are done troubleshooting, unless you want to start managing these projects directly instead of generating them on demand.
+> 如果使用 [CNG](/workflow/continuous-native-generation/)，这些命令将运行 `npx expo prebuild` 来生成用于编译的原生项目。等你完成排查后，你很可能希望 [清理这些更改](https://expo.fyi/prebuild-cleanup)，除非你想直接开始管理这些项目，而不是按需生成它们。
 >
 > <br />
-> You can alternatively run a local build with `eas build --local` &mdash; this command will run a
-> series of steps that is as close as it can be to what runs remotely on the hosted EAS Build
-> service. It will copy your project to a temporary directory and make any necessary changes there.
-> [Learn how to set this up and use it for
-> debugging](/build-reference/local-builds/#use-local-builds-for-debugging).
+> 你也可以改为运行本地构建 `eas build --local` &mdash; 该命令将执行一系列步骤，尽可能接近托管 EAS Build 服务远程运行的流程。它会将你的项目复制到临时目录，并在那里进行任何必要的更改。
+> [了解如何进行设置并将其用于
+> 调试](/build-reference/local-builds/#use-local-builds-for-debugging)。
 
-If your native toolchains are installed correctly and you are unable to build and run your project in release mode on your local machine, it will not build on EAS Build. Fix the issues locally, then try again on EAS Build. The other advice in this doc may be useful to help you resolve the issue locally, but often this requires some knowledge of native tooling or judicious application of Google, Stack Overflow, and GitHub Issues.
+如果你的原生工具链安装正确，但仍无法在本地机器上以 release 模式构建并运行项目，那么它在 EAS Build 上也不会构建成功。先在本地修复问题，然后再尝试 EAS Build。本文档中的其他建议可能有助于你在本地解决问题，但这通常需要一些原生工具链方面的知识，或者恰当地借助 Google、Stack Overflow 和 GitHub Issues。
 
-<Collapsible summary="Don't have Xcode and Android Studio set up on your machine?">
+<Collapsible summary="你的机器上没有配置 Xcode 和 Android Studio？">
 
-**If you do not have native toolchains installed locally**, for example, because you do not have an Apple computer and therefore cannot build an iOS app on your machine, it can be trickier to get to the bottom of build errors. The feedback loop of making small changes locally and then seeing the result on EAS Build is slower than doing the same steps locally because the EAS Build builder must set up its environment, download your project, and install dependencies before starting the build.
+**如果你本地没有安装原生工具链**，例如你没有 Apple 电脑，因此无法在你的机器上构建 iOS 应用，那么排查构建错误会更棘手一些。在本地做小改动并查看 EAS Build 结果的反馈循环，要比在本地执行同样步骤更慢，因为 EAS Build 构建器必须先设置环境、下载你的项目并安装依赖，然后才能开始构建。
 
-If you are willing and able to set up the appropriate native tools, then refer to the [React Native environment setup guide](https://reactnative.dev/docs/environment-setup).
+如果你愿意并且能够配置相应的原生工具，请参阅 [React Native 环境设置指南](https://reactnative.dev/docs/environment-setup)。
 
 </Collapsible>
 
-<Collapsible summary="My app builds locally, but not on EAS Build">
+<Collapsible summary="我的应用在本地能构建，但在 EAS Build 上不能">
 
-By default, EAS Build follows a relatively straightforward process for building your app for ([Android](/build-reference/android-builds) or [iOS](/build-reference/ios-builds)). If `npx expo run:android --variant release` and `npx expo run:ios --configuration Release` work locally, but your builds fail, then it's time to narrow down what configuration exists on your machine that hasn't been set up for your project on EAS Build yet.
+默认情况下，EAS Build 会采用相对直接的流程来构建你的应用（[Android](/build-reference/android-builds) 或 [iOS](/build-reference/ios-builds)）。如果 `npx expo run:android --variant release` 和 `npx expo run:ios --configuration Release` 在本地可用，但你的构建失败了，那么现在需要缩小范围，找出你的机器上有哪些配置还没有为 EAS Build 上的项目设置好。
 
-- Do a fresh `git clone` of your project to a new directory and get it running, ideally on a different machine. Pay attention to each of the steps that are needed and verify that they are also configured for EAS Build.
-- Check that your [environment variables](/guides/environment-variables) are properly configured.
-- Verify that versions of Node.js, npm, Yarn, Xcode, Java, and other tools are the same in both environments.
-- Ensure that the [archive you are uploading to EAS Build](https://expo.fyi/eas-build-archive) includes the same relevant source files.
-
-</Collapsible>
-
-<Collapsible summary="Why does my production app not match my development app?">
-
-You can test how the JS part of your app will run in production by starting it with [`npx expo start --no-dev`](/workflow/development-mode/#production-mode). This tells the bundler to minify JavaScript before serving it, most notably stripping code protected by the `__DEV__` boolean. This will remove most of the logging, HMR, Fast Refresh functionality, and make debugging a bit harder, but you can iterate on the production bundle faster this way.
+- 在新目录中重新 `git clone` 一份你的项目，并让它运行起来，最好是在另一台机器上。留意所需的每一个步骤，并确认它们也已经为 EAS Build 配置好了。
+- 检查你的 [environment variables](/guides/environment-variables) 是否已正确配置。
+- 验证 Node.js、npm、Yarn、Xcode、Java 和其他工具的版本在两个环境中相同。
+- 确保你上传到 EAS Build 的 [archive](https://expo.fyi/eas-build-archive) 包含相同的相关源文件。
 
 </Collapsible>
 
-## Still having trouble?
+<Collapsible summary="为什么我的生产应用和开发应用不一致？">
 
-This guide is far from being comprehensive, and depending on your level of experience you might still be struggling to get your app working.
+你可以通过使用 [`npx expo start --no-dev`](/workflow/development-mode/#production-mode) 启动应用，来测试应用中 JS 部分在生产环境中的运行方式。这会告诉 bundler 在提供服务之前先压缩 JavaScript，尤其会移除受 `__DEV__` 布尔值保护的代码。这会移除大部分日志、HMR、Fast Refresh 功能，并让调试更困难一些，但这样你可以更快地迭代生产 bundle。
 
-If you have followed the advice here, you're now in a good position to describe your issue to other developers and get some help.
+</Collapsible>
 
-### How to ask a good question
+## 仍然有问题吗？
 
-Join us on <A href="https://chat.expo.dev/" shouldLeakReferrer>Discord and Forums</A> to ask for help from the community and the Expo team. The Expo team does our best to respond to high quality and well-articulated questions and issues, but responses are not guaranteed unless you are signed up for a [support plan](https://expo.dev/support-terms#target-response-time-guidelines-for-subscriptions). To ensure that an Expo team member sees your question, you can file a ticket at [expo.dev/contact](https://expo.dev/contact).
+本指南远非全面，且根据你的经验水平，你可能仍然在努力让你的应用正常工作。
 
-When you ask for troubleshooting help, be sure to share the following information:
+如果你已经遵循了这里的建议，那么你现在已经处于一个很好的位置，可以向其他开发者描述你的问题并获得一些帮助。
 
-- **A link to your build page**. This can only be accessed by your team or Expo employees. If you'd like to share it more publicly, take a screenshot. If you'd like to share it more privately, send an email to secure@expo.dev and mention that in your help request on chat or forums. If you are performing this build locally with `eas build --local`, you can omit this, but do mention this fact.
-- **Error logs**. Anything that you suspect may be related to your build or runtime error. If you can't provide this, explain why not.
-- **Minimal reproducible example or a link to your repository**. The quickest way to get a solution to your problem is to ensure that other developers can reproduce it. If you have ever worked on a team, you know this from experience. In many cases, if you can't provide a reproducible example then it may not be possible to help you, and at best the back-and-forth process of asking and answering questions will be an inefficient use of time. Learn more about how to create a reproducible example in the [manual debugging guide](https://expo.fyi/manual-debugging) and Stack Overflow's [Minimal Viable Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example) guide.
+### 如何提出一个好问题
 
-Try to be clear, precise, and helpful. General guidance provided by Stack Overflow's [How to ask a good question](https://stackoverflow.com/help/how-to-ask) guide applies.
+加入我们的 <A href="https://chat.expo.dev/" shouldLeakReferrer>Discord 和论坛</A>，向社区和 Expo 团队寻求帮助。Expo 团队会尽最大努力回应高质量且表述清晰的问题和议题，但除非你已订阅 [支持计划](https://expo.dev/support-terms#target-response-time-guidelines-for-subscriptions)，否则不保证会有回复。为了确保 Expo 团队成员看到你的问题，你可以在 [expo.dev/contact](https://expo.dev/contact) 提交工单。
+
+当你寻求排查帮助时，请务必提供以下信息：
+
+- **构建页面的链接**。只有你的团队或 Expo 员工才能访问它。如果你想更公开地分享，可以截屏。如果你想更私密地分享，可以发送电子邮件至 secure@expo.dev，并在你于聊天或论坛中的求助请求里提到这一点。如果你是使用 `eas build --local` 在本地执行此构建，则可以省略这一项，但请说明这一事实。
+- **错误日志**。任何你怀疑可能与构建或运行时错误相关的内容。如果你无法提供这些内容，请解释原因。
+- **最小可复现示例或你的仓库链接**。获得问题解决方案最快的方法是确保其他开发者能够复现它。如果你曾在团队中工作过，你就会从经验中知道这一点。在许多情况下，如果你无法提供可复现的示例，那么可能无法帮助你；即使能帮到，来回提问和回答的过程也会是对时间的低效利用。要了解如何创建可复现示例，请参阅 [手动调试指南](https://expo.fyi/manual-debugging) 和 Stack Overflow 的 [最小可行可复现示例](https://stackoverflow.com/help/minimal-reproducible-example) 指南。
+
+尽量做到清晰、准确且有帮助。Stack Overflow 的 [如何提出一个好问题](https://stackoverflow.com/help/how-to-ask) 指南中提供的一般建议同样适用。

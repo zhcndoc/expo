@@ -1,40 +1,40 @@
 ---
-title: Testing React Server Components
-sidebar_title: Testing RSC
-description: Learn about writing unit tests for React Server Components in Expo.
+title: 测试 React Server Components
+sidebar_title: 测试 RSC
+description: 了解如何为 Expo 中的 React Server Components 编写单元测试。
 platforms: ['android', 'ios', 'web']
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-> **important** This guide refers to the [experimental](/more/release-statuses/#experimental) feature React Server Components which is still in development.
+> **重要** 本指南涉及仍在开发中的 [experimental](/more/release-statuses/#experimental) 功能 React Server Components。
 
-React Server Components (RSC) is a new feature in React that allows you to build components that render on the server and can be hydrated on the client. This guide provides details on how to write unit tests for RSC in your project.
+React Server Components（RSC）是 React 中的一项新功能，允许你构建在服务器上渲染并可在客户端进行 hydration 的组件。本指南提供了如何在你的项目中为 RSC 编写单元测试的详细信息。
 
-## Jest testing
+## Jest 测试
 
-React Server Components run on Node.js. This means Jest on its own can closely emulate the server-side rendering environment, in contrast with client-based tests that require a Jest preset to communicate between Node.js and a web browser.
+React Server Components 运行在 Node.js 上。这意味着 Jest 本身就可以较为接近地模拟服务端渲染环境；相比之下，基于客户端的测试则需要一个 Jest 预设来在 Node.js 和 Web 浏览器之间通信。
 
-### Setup
+### 设置
 
-While standard server rendering is web-only, Expo's universal RSC bundles custom server renderers for each platform. This means platform-specific file extensions are supported. For example, when writing Server Components for an iOS app, platform-specific extensions such as **\*.ios.js** and **\*.native.ts** will be resolved.
+虽然标准的服务端渲染仅适用于 Web，但 Expo 的通用 RSC 会为每个平台打包自定义的服务端渲染器。这意味着支持平台特定的文件扩展名。例如，在为 iOS 应用编写 Server Components 时，平台特定扩展名如 **\*.ios.js** 和 **\*.native.ts** 都会被解析。
 
-`jest-expo` provides a couple different presets for testing Server Components:
+`jest-expo` 为测试 Server Components 提供了几种不同的预设：
 
-| Runner                  | Description                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------- |
-| `jest-expo/rsc/android` | An Android-only runner for RSC. Uses **\*.android.js**, **\*.native.js**, and **\*.js** files. |
-| `jest-expo/rsc/ios`     | An iOS-only runner for RSC. Uses **\*.ios.js**, **\*.native.js**, and **\*.js** files.         |
-| `jest-expo/rsc/web`     | A web-only runner for RSC. Uses **\*.web.js** and **\*.js** files.                             |
-| `jest-expo/rsc`         | A multi-runner that combines the above runners.                                                |
+| Runner                  | 描述                                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `jest-expo/rsc/android` | 仅适用于 Android 的 RSC runner。使用 **\*.android.js**、**\*.native.js** 和 **\*.js** 文件。 |
+| `jest-expo/rsc/ios`     | 仅适用于 iOS 的 RSC runner。使用 **\*.ios.js**、**\*.native.js** 和 **\*.js** 文件。         |
+| `jest-expo/rsc/web`     | 仅适用于 Web 的 RSC runner。使用 **\*.web.js** 和 **\*.js** 文件。                         |
+| `jest-expo/rsc`         | 一个组合了以上 runner 的多 runner。                                                         |
 
-To configure Jest for RSC, create a **jest-rsc.config.js** file in your project's root:
+要为 RSC 配置 Jest，请在项目根目录下创建一个 **jest-rsc.config.js** 文件：
 
 ```js jest-rsc.config.js
 module.exports = require('jest-expo/rsc/jest-preset');
 ```
 
-Then, you can add a script such as `test:rsc` to your **package.json**:
+然后，你可以在 **package.json** 中添加一个名为 `test:rsc` 的脚本，例如：
 
 ```json package.json
 {
@@ -44,9 +44,9 @@ Then, you can add a script such as `test:rsc` to your **package.json**:
 }
 ```
 
-### Writing tests
+### 编写测试
 
-Tests should be written in a **\_\_rsc_tests\_\_** directory to prevent Jest from running your client tests on the server.
+测试应写在 **\_\_rsc_tests\_\_** 目录中，以防止 Jest 在服务端运行你的客户端测试。
 
 ```tsx __rsc_tests__/my-component.test.ts
 /// <reference types="jest-expo/rsc/expect" />
@@ -66,42 +66,42 @@ it(`renders to RSC`, async () => {
 });
 ```
 
-Any code you import in your test files will run in the server environment. You can import server-only modules like `react-server` and `server-only`. This is useful for determining if a library is compatible with RSC.
+你在测试文件中导入的任何代码都会在服务器环境中运行。你可以导入诸如 `react-server` 和 `server-only` 这样的仅服务端模块。这对于判断某个库是否与 RSC 兼容很有用。
 
-### Custom expect matchers
+### 自定义 expect 匹配器
 
-`jest-expo` for RSC adds a couple of custom matchers to Jest's `expect`:
+`jest-expo` 为 RSC 给 Jest 的 `expect` 增加了几个自定义匹配器：
 
-- `toMatchFlight`: Render a JSX element using a pseudo-implementation of the render in Expo CLI and compare to a flight string.
-- `toMatchFlightSnapshot`: Same as `toMatchFlight` but saves the flight string to a snapshot file.
+- `toMatchFlight`：使用 Expo CLI 中渲染的伪实现来渲染一个 JSX 元素，并与 flight 字符串进行比较。
+- `toMatchFlightSnapshot`：与 `toMatchFlight` 相同，但会将 flight 字符串保存到快照文件中。
 
-Behind the scenes, these methods handle a part of the framework operation needed to render RSC. The component's render stream is buffered to a string and compared all at once. You can alternatively stream it manually to observe the rendering progress.
+在幕后，这些方法处理了渲染 RSC 所需的部分框架运作。组件的渲染流会被缓冲成一个字符串，然后一次性进行比较。你也可以手动流式读取它，以观察渲染进度。
 
-If a component fails to render, the matcher will throw an error to fail the test. In practice, the server renderer will generate an `E:` line, which will sent to the client to be thrown locally for the user.
+如果组件渲染失败，匹配器会抛出错误以使测试失败。实际上，服务端渲染器会生成一行 `E:`，它会被发送到客户端，从而在本地为用户抛出。
 
-### Running tests
+### 运行测试
 
-You can run your tests with the `test:rsc` script:
+你可以使用 `test:rsc` 脚本运行测试：
 
 <Terminal cmd={['$ yarn test:rsc --watch']} />
 
-If you're using the multi-runner, you can select a specific project using the `--selectProjects` flag. The following example only runs the web platform:
+如果你使用的是多 runner，可以使用 `--selectProjects` 标志来选择特定项目。下面的示例只运行 web 平台：
 
 <Terminal cmd={['$ yarn test:rsc --watch --selectProjects rsc/web']} />
 
-### Environments
+### 环境
 
-In an RSC bundling environment, you can import files like
+在 RSC 打包环境中，你可以导入如下文件
 
-## Tips
+## 提示
 
-Use the `server-only` and `client-only` modules to assert that a module should not be imported on the client or server:
+使用 `server-only` 和 `client-only` 模块来断言某个模块不应在客户端或服务端被导入：
 
 ```js my-module.js
 import 'server-only';
 ```
 
-RSC supports package exports by default. You can use the `react-server` condition to change what file is imported from a module:
+RSC 默认支持包导出。你可以使用 `react-server` 条件来改变从模块中导入的文件：
 
 ```json package.json
 {
@@ -114,6 +114,6 @@ RSC supports package exports by default. You can use the `react-server` conditio
 }
 ```
 
-When bundling for RSC, all modules are bundled in React Server mode and you can opt out with the `"use client"` directive. When `"use client"` is found, the module becomes an async reference to the client module.
+在为 RSC 打包时，所有模块都会以 React Server 模式进行打包，你可以使用 `"use client"` 指令来选择退出。当找到 `"use client"` 时，该模块会变成对客户端模块的异步引用。
 
-`"use server"` is not the opposite of `"use client"`. It is instead used to define a React Server Functions file.
+`"use server"` 不是 `"use client"` 的反义词。它用于定义一个 React Server Functions 文件。

@@ -1,6 +1,6 @@
 ---
-title: Asset selection and exclusion
-description: Learn how to use the asset selection feature and verify that an update includes all required app assets.
+title: 资源选择与排除
+description: 了解如何使用资源选择功能，并验证更新是否包含所有必需的应用资源。
 ---
 
 import { GithubIcon } from '@expo/styleguide-icons/custom/GithubIcon';
@@ -9,13 +9,13 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 import { CODE } from '~/ui/components/Text';
 
-Experimental **asset selection feature** allows the developer to specify that only certain assets should be included in updates. This can greatly reduce the number of assets that need to be uploaded to and downloaded from the updates server. This feature will work with the EAS Update server or any custom server that complies with the [`expo-updates` protocol](/technical-specs/expo-updates-1).
+实验性的**资源选择功能**允许开发者指定只有某些资源应被包含在更新中。这可以大幅减少需要上传到更新服务器以及从更新服务器下载的资源数量。此功能可与 EAS Update 服务器或任何符合 [`expo-updates` 协议](/technical-specs/expo-updates-1) 的自定义服务器配合使用。
 
-SDK 52 launched this feature to general availability.
+SDK 52 将此功能提升为正式可用。
 
-## Using asset selection
+## 使用资源选择
 
-To use asset selection in SDK versions below 52, include the property `extra.updates.assetPatternsToBeBundled` in your app config. It should define one or more file-matching patterns (regular expressions). For example, an **app.json** file has the patterns defined in the following way:
+要在 SDK 52 以下版本中使用资源选择，请在应用配置中包含 `extra.updates.assetPatternsToBeBundled` 属性。它应定义一个或多个文件匹配模式（正则表达式）。例如，**app.json** 文件中的模式可如下定义：
 
 ```json app.json
   "expo": {
@@ -30,7 +30,7 @@ To use asset selection in SDK versions below 52, include the property `extra.upd
   }
 ```
 
-To use asset selection in SDK 52 and later, include the property `updates.assetPatternsToBeBundled` in your app config. It should define one or more file-matching patterns (regular expressions). For example, an **app.json** file has the patterns defined in the following way:
+要在 SDK 52 及更高版本中使用资源选择，请在应用配置中包含 `updates.assetPatternsToBeBundled` 属性。它应定义一个或多个文件匹配模式（正则表达式）。例如，**app.json** 文件中的模式可如下定义：
 
 ```json app.json
   "expo": {
@@ -43,39 +43,38 @@ To use asset selection in SDK 52 and later, include the property `updates.assetP
   }
 ```
 
-After adding this configuration all **.png** files in all subdirectories of **app/images** will be included in updates. You have to also ensure that these assets need to be required in your JavaScript code.
+添加此配置后，**app/images** 下所有子目录中的所有 **.png** 文件都会包含在更新中。你还需要确保这些资源会在你的 JavaScript 代码中被引用。
 
-If `assetPatternsToBeBundled` isn't included in the app config, all assets resolved by the bundler will be included in updates (as per SDK 49 and earlier behavior).
+如果 app 配置中未包含 `assetPatternsToBeBundled`，则所有由打包器解析得到的资源都会包含在更新中（与 SDK 49 及更早版本的行为一致）。
 
-## Verifying that an update includes all required app assets
+## 验证更新是否包含所有必需的应用资源
 
-When using the asset selection, assets that do not match any file patterns will resolve in the Metro bundler. However, these assets will not be uploaded to the updates server. You have to be certain that assets not included in updates are built into the native build of the app.
+使用资源选择时，不匹配任何文件模式的资源仍会在 Metro 打包器中解析。但是，这些资源不会上传到更新服务器。你必须确保未包含在更新中的资源已构建进应用的原生构建中。
 
-If you are building your app locally or have access to the correct build for publishing updates (with the same [runtime version](/eas-update/runtime-versions/)), then use the `npx expo-updates assets:verify` command. It allows you to check whether all required assets will be included when you publish an update:
+如果你正在本地构建应用，或者可以访问用于发布更新的正确构建（具有相同的 [runtime version](/eas-update/runtime-versions/)），那么请使用 `npx expo-updates assets:verify` 命令。它可以帮助你检查发布更新时是否会包含所有必需的资源：
 
 <Terminal cmd={['$ npx expo-updates assets:verify <dir>']} />
 
-> **info** This new command is part of the `expo-updates` CLI, which also supports [EAS Update code signing](/eas-update/code-signing/). It is not part of the [Expo CLI](/more/expo-cli/) or the [EAS CLI](https://github.com/expo/eas-cli). Only available for ([`expo-updates`](/versions/latest/sdk/updates/) >= 0.24.10).
+> **info** 这个新命令属于 `expo-updates` CLI，它也支持 [EAS Update 代码签名](/eas-update/code-signing/)。它不属于 [Expo CLI](/more/expo-cli/) 或 [EAS CLI](https://github.com/expo/eas-cli)。仅适用于 ([`expo-updates`](/versions/latest/sdk/updates/) >= 0.24.10)。
 
-You can also use the `--help` option with the command to see the available options:
+你也可以将 `--help` 选项与该命令一起使用，以查看可用选项：
 
-| Option                                | Description                                                                                                               |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `<dir>`                               | Directory of the Expo project. Default: Current working directory.                                                        |
-| `-a, --asset-map-path <path>`         | Path to the **assetmap.json** in an export produced by the command `npx expo export --dump-assetmap` .                    |
-| `-e, --exported-manifest-path <path>` | Path to the **metadata.json** in an export produced by the command `npx expo export --dump-assetmap`.                     |
-| `-b, --build-manifest-path <path>`    | Path to the **app.manifest** file created by `expo-updates` in an Expo application build (either **android** or **ios**). |
-| `-p, --platform <platform>`           | Options: ["android", "ios"]                                                                                               |
-| `-h, --help`                          | Usage info.                                                                                                               |
+| 选项                                 | 描述                                                                                                               |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `<dir>`                               | Expo 项目的目录。默认值：当前工作目录。                                                                             |
+| `-a, --asset-map-path <path>`         | 指向通过命令 `npx expo export --dump-assetmap` 生成的导出结果中的 **assetmap.json** 的路径。                    |
+| `-e, --exported-manifest-path <path>` | 指向通过命令 `npx expo export --dump-assetmap` 生成的导出结果中的 **metadata.json** 的路径。                     |
+| `-b, --build-manifest-path <path>`    | 指向在 Expo 应用构建中由 `expo-updates` 创建的 **app.manifest** 文件的路径（**android** 或 **ios** 均可）。 |
+| `-p, --platform <platform>`           | 选项：["android", "ios"]                                                                                             |
+| `-h, --help`                          | 使用信息。                                                                                                           |
 
-## Example
+## 示例
 
 <BoxLink
   title="Working example"
   description={
     <>
-      See a working example of using asset selection, the <CODE>assets:verify</CODE> command, and
-      other EAS Update features.
+      查看一个使用资源选择、<CODE>assets:verify</CODE> 命令以及其他 EAS Update 功能的可运行示例。
     </>
   }
   Icon={GithubIcon}

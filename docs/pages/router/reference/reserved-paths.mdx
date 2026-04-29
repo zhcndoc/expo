@@ -1,63 +1,63 @@
 ---
-title: Reserved paths
-description: URL paths reserved by Metro and Expo Router that you should avoid using for routes or static files.
+title: 保留路径
+description: Metro 和 Expo Router 保留的 URL 路径，你应避免将其用于路由或静态文件。
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 
-If you create a route or place static files at certain URL paths, Metro or Expo Router will intercept the request instead of serving your content. Depending on the path, this can result in a "404 Asset not found" error or your page being silently replaced by an internal dev server response.
+如果你创建了某个路由，或者在某些 URL 路径下放置了静态文件，Metro 或 Expo Router 会拦截请求，而不是提供你的内容。根据路径不同，这可能会导致 “404 Asset not found” 错误，或者你的页面被静默替换为内部开发服务器响应。
 
 ## `/assets/*`
 
-Metro serves all bundled assets (images, fonts, and other files) at this path. If you create a route at **app/assets.tsx** or a directory at **public/assets/**, Metro intercepts the request and your content is never reached.
+Metro 会在此路径下提供所有打包资源（图片、字体和其他文件）。如果你创建了 **app/assets.tsx** 下的路由，或者 **public/assets/** 下的目录，Metro 会拦截请求，你的内容将永远不会被访问到。
 
-This applies to both top-level routes and static files:
+这同样适用于顶层路由和静态文件：
 
 <FileTree
   files={[
-    ['app/assets.tsx', 'Conflicts with Metro'],
-    ['app/assets/index.tsx', 'Conflicts with Metro'],
-    ['public/assets/logo.png', 'Conflicts with Metro'],
+    ['app/assets.tsx', '与 Metro 冲突'],
+    ['app/assets/index.tsx', '与 Metro 冲突'],
+    ['public/assets/logo.png', '与 Metro 冲突'],
   ]}
 />
 
-Rename your route or directory to avoid the conflict:
+请重命名你的路由或目录以避免冲突：
 
 <FileTree
   files={[
-    ['app/media.tsx', 'Works'],
-    ['public/images/logo.png', 'Works'],
+    ['app/media.tsx', '可用'],
+    ['public/images/logo.png', '可用'],
   ]}
 />
 
 ## `/_expo/*`
 
-Expo Router uses this path for multiple internal middlewares, including dev tools and manifests. Do not create routes or static files under this path.
+Expo Router 会将此路径用于多个内部中间件，包括开发工具和清单。请不要在此路径下创建路由或静态文件。
 
 ## `/_flight/*`
 
-React Server Components use this path internally. Do not create routes or static files under this path.
+React Server Components 会在内部使用此路径。请不要在此路径下创建路由或静态文件。
 
 ## `/inspector`
 
-React Native uses `/inspector/debug` and `/inspector/network` for the debugger. Avoid creating routes that match `/inspector` or its sub-paths.
+React Native 使用 `/inspector/debug` 和 `/inspector/network` 作为调试器。请避免创建匹配 `/inspector` 或其子路径的路由。
 
 ## `/expo-dev-plugins/*`
 
-Expo development tool plugins use this path. Do not create routes or static files under this path.
+Expo 开发工具插件使用此路径。请不要在此路径下创建路由或静态文件。
 
 ## `/manifest`
 
-The dev server serves the native app manifest at this path. If you create a route at **app/manifest.tsx**, the dev server responds with manifest JSON instead of your page. Your route will appear to silently not load during development.
+开发服务器会在此路径下提供原生应用清单。如果你创建了 **app/manifest.tsx** 下的路由，开发服务器会返回清单 JSON，而不是你的页面。你的路由在开发期间看起来会像是静默未加载。
 
 ## `/_sitemap`
 
-Expo Router automatically generates a sitemap route at this path for debugging. If you create a route at **app/\_sitemap.tsx**, it will override the built-in sitemap. See [Sitemap](/router/reference/sitemap/) for more details on this feature.
+Expo Router 会自动在此路径下生成一个站点地图路由用于调试。如果你创建了 **app/\_sitemap.tsx** 下的路由，它将覆盖内置站点地图。有关此功能的更多细节，请参见 [Sitemap](/router/reference/sitemap/)。
 
 ## `/public/*`
 
-If your project has a **public** directory, the `/public` URL path may conflict with static file serving. Avoid creating a route at **app/public.tsx** or **app/public/index.tsx** since the path is implicitly reserved when the **public** directory exists.
+如果你的项目有一个 **public** 目录，`/public` URL 路径可能会与静态文件服务冲突。请避免创建 **app/public.tsx** 或 **app/public/index.tsx** 下的路由，因为当 **public** 目录存在时，该路径会被隐式保留。
 
 ## `/favicon.ico`
 
-Unlike the paths above, `/favicon.ico` is safe to override. Expo CLI serves a default favicon when none is provided. You can replace it by placing a **favicon.ico** file in your **public** directory or by creating an [API route](/router/web/api-routes/).
+与上面的路径不同，`/favicon.ico` 可以安全覆盖。Expo CLI 在未提供时会提供一个默认 favicon。你可以通过将 **favicon.ico** 文件放入你的 **public** 目录，或者创建一个 [API route](/router/web/api-routes/) 来替换它。

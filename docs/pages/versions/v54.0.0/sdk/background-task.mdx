@@ -1,6 +1,6 @@
 ---
 title: BackgroundTask
-description: A library that provides an API for running background tasks.
+description: 一个用于运行后台任务的 API 库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-54/packages/expo-background-task'
 packageName: 'expo-background-task'
 platforms: ['android', 'ios', 'tvos', 'expo-go']
@@ -14,66 +14,66 @@ import { Terminal } from '~/ui/components/Snippet';
 import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-`expo-background-task` provides an API to run deferrable background tasks in a way that optimizes battery and power consumption on the end user's device. This module uses the [`WorkManager`](https://developer.android.com/topic/libraries/architecture/workmanager) API on Android and the [`BGTaskScheduler`](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) API on iOS to schedule tasks. It also uses the [`expo-task-manager`](task-manager.mdx) Native API to run JavaScript tasks.
+`expo-background-task` 提供了一个 API，用于以优化终端用户设备电池和电量消耗的方式运行可延迟的后台任务。此模块在 Android 上使用 [`WorkManager`](https://developer.android.com/topic/libraries/architecture/workmanager) API，在 iOS 上使用 [`BGTaskScheduler`](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) API 来调度任务。它还使用 [`expo-task-manager`](task-manager.mdx) 原生 API 来运行 JavaScript 任务。
 
 <VideoBoxLink
   videoId="4lFus7TvayI"
-  title="Watch: Expo Background Task Deep Dive"
-  description="Sync data, prefetch content, and run deferred work in the background with expo-background-task."
+  title="观看：Expo 后台任务深度解析"
+  description="使用 expo-background-task 在后台同步数据、预取内容并运行延迟工作。"
 />
 
-## Background tasks
+## 后台任务
 
-A background task is a deferrable unit of work that is performed in the background, outside your app's lifecycle. This is useful for tasks that need to be executed when the app is inactive, such as syncing data with a server, fetching new content, or even checking if there are any [`expo-updates`](updates.mdx).
+后台任务是在应用生命周期之外，在后台执行的一项可延迟工作单元。这对于需要在应用处于非活动状态时执行的任务很有用，例如与服务器同步数据、获取新内容，或者检查是否有任何 [`expo-updates`](updates.mdx)。
 
-### When are background tasks run?
+### 后台任务何时运行？
 
-The Expo Background Task API leverages each platform to execute tasks at the most optimal time for both the user and the device when the app is in the background.
+Expo Background Task API 会利用各个平台，在应用处于后台时，为用户和设备选择最合适的时间执行任务。
 
-This means that the task may not run immediately after it is scheduled, but it will run at some point in the future if the system decides so. You can specify a minimum interval in minutes for the task to run. The task will execute sometime after the interval has passed, provided the specified conditions are met.
+这意味着任务可能不会在调度后立即运行，但如果系统决定执行，它会在未来的某个时间运行。你可以为任务指定一个以分钟为单位的最小间隔。只要满足指定条件，任务就会在间隔过去后的某个时间执行。
 
-A background task will only run if the battery has enough charge (or the device is plugged into power) and the network is available. Without these conditions, the task won't execute. The exact behavior will vary depending on the operating system.
+只有当电池电量充足（或设备已接通电源）且网络可用时，后台任务才会运行。在这些条件不满足时，任务不会执行。具体行为会因操作系统而异。
 
-### When will they be stopped?
+### 它们何时会停止？
 
-Background tasks are managed by platform APIs and system constraints. Knowing when tasks stop helps plan their use effectively.
+后台任务由平台 API 和系统限制来管理。了解任务何时停止有助于更有效地规划其使用。
 
-- Background tasks are stopped if the user kills the app. Tasks resume when the app is restarted.
-- If the system stops the app or the device reboots, background tasks will resume, and the app will be restarted.
+- 如果用户强制结束应用，后台任务会停止。应用重新启动后，任务会恢复。
+- 如果系统停止应用或设备重启，后台任务会恢复，并且应用会被重新启动。
 
-On Android, removing an app from the recent apps list doesn't completely stop it, whereas on iOS, swiping it away in the app switcher fully terminates it.
+在 Android 上，从最近任务列表中移除应用并不会完全停止它；而在 iOS 上，在应用切换器中将其滑掉会完全终止它。
 
-> **Info** On Android, behavior varies by device vendor. For example, some implementations treat removing an app from the recent apps list as killing it. Read more about these differences here: [https://dontkillmyapp.com](https://dontkillmyapp.com).
+> **信息** 在 Android 上，行为因设备厂商而异。例如，有些实现会把从最近任务列表中移除应用视为结束应用。有关这些差异的更多信息请参见：[https://dontkillmyapp.com](https://dontkillmyapp.com)。
 
-## Platform differences
+## 平台差异
 
 ### Android&ensp;<PlatformTags platforms={['android']} />
 
-On Android, the [`WorkManager`](https://developer.android.com/topic/libraries/architecture/workmanager) API allows specifying a minimum interval for a task to run (minimum 15 minutes). The task will execute sometime after the interval has passed, provided the specified conditions are met.
+在 Android 上，[`WorkManager`](https://developer.android.com/topic/libraries/architecture/workmanager) API 允许为任务指定最小运行间隔（最少 15 分钟）。只要满足指定条件，任务就会在间隔过去后的某个时间执行。
 
 ### iOS&ensp;<PlatformTags platforms={['ios']} />
 
-On iOS, the [`BGTaskScheduler`](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) API decides the best time to launch your background task. The system will consider the battery level, the network availability, and the user's usage patterns to determine when to run the task. You can still specify a minimum interval for the task to run, but the system may choose to run the task at a later time.
+在 iOS 上，[`BGTaskScheduler`](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) API 会决定启动后台任务的最佳时间。系统会考虑电池电量、网络可用性以及用户的使用模式来确定何时运行任务。你仍然可以为任务指定最小运行间隔，但系统可能会选择在稍晚的时间运行该任务。
 
-## Known limitations
+## 已知限制
 
 ### iOS&ensp;<PlatformTags platforms={['ios']} />
 
-The [`Background Tasks`](https://developer.apple.com/documentation/backgroundtasks) API is unavailable on iOS simulators. It is only available when running on a physical device.
+[`Background Tasks`](https://developer.apple.com/documentation/backgroundtasks) API 在 iOS 模拟器上不可用。它仅在真机上运行时可用。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Configuration&ensp;<PlatformTags platforms={['ios']} />
+## 配置&ensp;<PlatformTags platforms={['ios']} />
 
-To be able to run background tasks on iOS, you need to add the `processing` value to the `UIBackgroundModes` array in your app's **Info.plist** file. This is required for background fetch to work properly.
+要在 iOS 上运行后台任务，你需要在应用的 **Info.plist** 文件中的 `UIBackgroundModes` 数组里添加 `processing` 值。这是后台获取正常工作的必要条件。
 
-**If you're using [CNG](/workflow/continuous-native-generation/)**, the required `UIBackgroundModes` configuration will be applied automatically by prebuild.
+**如果你正在使用 [CNG](/workflow/continuous-native-generation/)**，所需的 `UIBackgroundModes` 配置会在 prebuild 时自动应用。
 
-<Collapsible summary="Configure UIBackgroundModes manually on iOS">
+<Collapsible summary="在 iOS 上手动配置 UIBackgroundModes">
 
-If you're not using Continuous Native Generation ([CNG](/workflow/continuous-native-generation/)), then you'll need to add the following to your **Info.plist** file:
+如果你没有使用 Continuous Native Generation ([CNG](/workflow/continuous-native-generation/))，那么你需要将以下内容添加到你的 **Info.plist** 文件中：
 
 ```xml ios/project-name/Supporting/Info.plist
 <key>UIBackgroundModes</key>
@@ -85,9 +85,9 @@ If you're not using Continuous Native Generation ([CNG](/workflow/continuous-nat
 
 </Collapsible>
 
-## Usage
+## 用法
 
-Below is an example that demonstrates how to use `expo-background-task`.
+下面是一个演示如何使用 `expo-background-task` 的示例。
 
 ```tsx App.tsx
 import * as BackgroundTask from 'expo-background-task';
@@ -97,29 +97,29 @@ import { StyleSheet, Text, View, Button } from 'react-native';
 
 const BACKGROUND_TASK_IDENTIFIER = 'background-task';
 
-// Register and create the task so that it is available also when the background task screen
-// (a React component defined later in this example) is not visible.
-// Note: This needs to be called in the global scope, not in a React component.
+// 注册并创建任务，以便即使后台任务屏幕
+//（本示例后面定义的一个 React 组件）不可见时，它也可用。
+// 注意：这需要在全局作用域中调用，而不是在 React 组件中。
 TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
   try {
     const now = Date.now();
     console.log(`Got background task call at date: ${new Date(now).toISOString()}`);
   } catch (error) {
-    console.error('Failed to execute the background task:', error);
+    console.error('执行后台任务失败：', error);
     return BackgroundTask.BackgroundTaskResult.Failed;
   }
   return BackgroundTask.BackgroundTaskResult.Success;
 });
 
-// 2. Register the task at some point in your app by providing the same name
-// Note: This does NOT need to be in the global scope and CAN be used in your React components!
+// 2. 在应用中的某个时刻通过提供相同的名称来注册任务
+// 注意：这不需要在全局作用域中，且可以在你的 React 组件中使用！
 async function registerBackgroundTaskAsync() {
   return BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER);
 }
 
-// 3. (Optional) Unregister tasks by specifying the task name
-// This will cancel any future background task calls that match the given name
-// Note: This does NOT need to be in the global scope and CAN be used in your React components!
+// 3.（可选）通过指定任务名称来注销任务
+// 这将取消任何与给定名称匹配的未来后台任务调用
+// 注意：这不需要在全局作用域中，且可以在你的 React 组件中使用！
 async function unregisterBackgroundTaskAsync() {
   return BackgroundTask.unregisterTaskAsync(BACKGROUND_TASK_IDENTIFIER);
 }
@@ -152,7 +152,7 @@ export default function BackgroundTaskScreen() {
     <View style={styles.screen}>
       <View style={styles.textContainer}>
         <Text>
-          Background Task Service Availability:{' '}
+          后台任务服务可用性：{' '}
           <Text style={styles.boldText}>
             {status ? BackgroundTask.BackgroundTaskStatus[status] : null}
           </Text>
@@ -160,10 +160,10 @@ export default function BackgroundTaskScreen() {
       </View>
       <Button
         disabled={status === BackgroundTask.BackgroundTaskStatus.Restricted}
-        title={isRegistered ? 'Cancel Background Task' : 'Schedule Background Task'}
+        title={isRegistered ? '取消后台任务' : '调度后台任务'}
         onPress={toggle}
       />
-      <Button title="Check Background Task Status" onPress={updateAsync} />
+      <Button title="检查后台任务状态" onPress={updateAsync} />
     </View>
   );
 }
@@ -183,17 +183,17 @@ const styles = StyleSheet.create({
 });
 ```
 
-## Multiple background tasks
+## 多个后台任务
 
-Since the Background Tasks API on iOS and the WorkManager API on Android limit the number of tasks that can be scheduled for a single app, Expo Background Task uses a single worker on both platforms. While you can define multiple JavaScript background tasks, they will all run through this single worker.
+由于 iOS 上的 Background Tasks API 和 Android 上的 WorkManager API 都限制单个应用可调度的任务数量，Expo Background Task 在两个平台上都使用单个 worker。虽然你可以定义多个 JavaScript 后台任务，但它们都会通过这个单一 worker 运行。
 
-The last registered background task determines the minimum interval for execution.
+最后注册的后台任务决定执行的最小间隔。
 
-## Testing background tasks
+## 测试后台任务
 
-Background tasks can be tested using the [`triggerTaskWorkerForTestingAsync`](#backgroundtasktriggertaskworkerfortestingasync) method. This method will run all registered tasks directly on Android and invoke the `BGTaskScheduler` on iOS. This is useful for testing the behavior of your background tasks without having to wait for the system to trigger them.
+可以使用 [`triggerTaskWorkerForTestingAsync`](#backgroundtasktriggertaskworkerfortestingasync) 方法来测试后台任务。该方法会在 Android 上直接运行所有已注册任务，并在 iOS 上调用 `BGTaskScheduler`。这对于在不必等待系统触发任务的情况下测试后台任务行为非常有用。
 
-This method is only available in development mode. It will not work in production builds.
+此方法仅在开发模式下可用。在生产构建中它不会工作。
 
 ```tsx
 import * as BackgroundTask from 'expo-background-task';
@@ -204,19 +204,19 @@ function App() {
     await BackgroundTask.triggerTaskWorkerForTestingAsync();
   };
 
-  return <Button title="Trigger Background Task" onPress={triggerTask} />;
+  return <Button title="触发后台任务" onPress={triggerTask} />;
 }
 ```
 
-## Inspecting background tasks&ensp;<PlatformTags platforms={['android']} />
+## 检查后台任务&ensp;<PlatformTags platforms={['android']} />
 
-To troubleshoot or debug issues with background tasks on Android, use the `adb` tool included with the Android SDK to inspect scheduled tasks:
+要在 Android 上排查或调试后台任务问题，请使用 Android SDK 中包含的 `adb` 工具来检查已调度的任务：
 
 <Terminal
   cmd={['$ adb shell dumpsys jobscheduler | grep -A 40 -m 1 -E "JOB #.* <package-name>"']}
 />
 
-The output from this command will show you the scheduled tasks for your app, including their status, constraints, and other information. Look for the `JOB` line to find the ID of the job and other details in the output:
+该命令的输出会显示你应用的已调度任务，包括它们的状态、约束条件和其他信息。查找 `JOB` 行以在输出中找到作业 ID 和其他详细信息：
 
 ```text
 JOB #u0a453/275: 216a359 <package-name>/androidx.work.impl.background.systemjob.SystemJobService
@@ -235,27 +235,27 @@ JOB #u0a453/275: 216a359 <package-name>/androidx.work.impl.background.systemjob.
   Ready: false (job=false user=true !restricted=true !pending=true !active=true !backingup=true comp=true)
 ```
 
-The first line contains the Job ID (275). The `Run time: earliest` value indicates the earliest time the task may start, while `enqueue time` shows how long ago the task was scheduled.
+第一行包含作业 ID（275）。`Run time: earliest` 的值表示任务最早可能开始的时间，而 `enqueue time` 显示该任务是在多久之前被调度的。
 
-To force a task to run, use the `adb shell am broadcast` command. Move your app to the background before running this command, as the task will not run if the app is in the foreground.
+要强制任务运行，请使用 `adb shell am broadcast` 命令。在运行此命令之前，请先将应用切换到后台，因为如果应用处于前台，任务将不会运行。
 
 <Terminal cmd={['$ adb shell cmd jobscheduler run -f <package-name> <JOB_ID>']} />
 
-Where `JOB_ID` would be the identifier of the job you want to run that you found in the previous step.
+其中 `JOB_ID` 是你在上一步中找到的、希望运行的作业标识符。
 
-## Troubleshooting background tasks&ensp;<PlatformTags platforms={['ios']} />
+## 排查后台任务&ensp;<PlatformTags platforms={['ios']} />
 
-iOS does not have a tool similar to `adb` for inspecting background tasks. To test background tasks on iOS, use the built-in [`triggerTaskWorkerForTestingAsync`](#backgroundtasktriggertaskworkerfortestingasync) method. This method simulates the system triggering the task.
+iOS 没有类似 `adb` 的工具用于检查后台任务。要在 iOS 上测试后台任务，请使用内置的 [`triggerTaskWorkerForTestingAsync`](#backgroundtasktriggertaskworkerfortestingasync) 方法。此方法会模拟系统触发任务。
 
-You can trigger this method from your app in debug mode (it does not work in production builds) to test the behavior of your background tasks without waiting for the system. If your background task configuration is incorrect, you will see the error description in the Xcode console:
+你可以在应用的调试模式下从应用中触发此方法（它在生产构建中不起作用），以便在无需等待系统的情况下测试后台任务的行为。如果你的后台任务配置不正确，你会在 Xcode 控制台中看到错误描述：
 
 ```text
 No task request with identifier com.expo.modules.backgroundtask.processing has been scheduled
 ```
 
-The above error tells you that you need to run prebuild to apply the changes to your app's configuration.
+上述错误告诉你需要运行 prebuild 来将更改应用到你的应用配置中。
 
-This error also means you must run prebuild to apply your background task configuration to the app. Additionally, ensure you have defined and registered a background task as shown in [this example](#usage).
+此错误还意味着你必须运行 prebuild 来将后台任务配置应用到应用中。此外，请确保你已按照[此示例](#usage)定义并注册了一个后台任务。
 
 ## API
 

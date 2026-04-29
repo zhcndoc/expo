@@ -1,28 +1,28 @@
 ---
-title: Schema for EAS Metadata
-sidebar_title: Metadata schema
+title: EAS 元数据的模式
+sidebar_title: 元数据模式
 maxHeadingDepth: 4
-description: A reference of store config in EAS Metadata.
+description: EAS 元数据中 store config 的参考。
 ---
 
 import { MetadataTable, MetadataSubcategories } from '~/components/plugins/EasMetadataTable';
 import { Collapsible } from '~/ui/components/Collapsible';
 import { markdownComponents as MD } from '~/ui/components/Markdown';
 
-> **important** **EAS Metadata** is in [beta](/more/release-statuses/#beta) and subject to breaking changes.
+> **重要** **EAS Metadata** 处于 [beta](/more/release-statuses/#beta) 阶段，可能会有破坏性变更。
 
-The store config in EAS Metadata contains information that otherwise would be provided manually through the app store dashboards.
-This document outlines the structure of the object in your store config.
+EAS Metadata 中的商店配置包含了原本需要通过应用商店后台手动提供的信息。
+本文档概述了你在商店配置中对象的结构。
 
-> If you use the [VS Code Expo Tools extension](https://github.com/expo/vscode-expo#readme), you get all this information through auto-complete, suggestions, and warnings in your editor.
+> 如果你使用 [VS Code Expo Tools extension](https://github.com/expo/vscode-expo#readme)，你可以在编辑器中通过自动补全、建议和警告获取所有这些信息。
 
-## Config schema
+## 配置架构
 
-An essential property in the store config object is the `configVersion` property.
-App stores might require more or change existing information structures to publish your app.
-This property helps versioning changes that are not backward compatible.
+商店配置对象中的一个关键属性是 `configVersion` 属性。
+应用商店可能会要求更多信息，或更改现有信息结构，才能发布你的应用。
+此属性有助于对不向后兼容的更改进行版本管理。
 
-EAS Metadata _currently_ only supports the Apple App Store.
+EAS Metadata _目前_ 仅支持 Apple App Store。
 
 <MetadataTable>
   {[
@@ -30,21 +30,21 @@ EAS Metadata _currently_ only supports the Apple App Store.
       name: 'configVersion',
       type: 'number',
       rules: ['enum: 0'],
-      description: 'The EAS Metadata store configuration schema version.',
+      description: 'EAS Metadata 商店配置架构版本。',
     },
     {
       name: 'apple',
       type: 'object',
-      description: 'All configurable properties for the App Store.',
+      description: 'App Store 的所有可配置属性。',
     },
     {
       nested: 1,
       name: 'version',
       type: 'string',
       description: [
-        <MD.p>The app version to use when syncing all metadata defined in the store config.</MD.p>,
+        <MD.p>在同步商店配置中定义的所有元数据时使用的应用版本。</MD.p>,
         <MD.p>
-          EAS Metadata selects the latest available version in the app stores by default.
+          默认情况下，EAS Metadata 会选择应用商店中可用的最新版本。
         </MD.p>,
       ],
     },
@@ -53,20 +53,20 @@ EAS Metadata _currently_ only supports the Apple App Store.
       name: 'copyright',
       type: 'string',
       description:
-        'The name of the person or entity that owns the exclusive rights to the app, preceded by the year the rights were obtained. (for example, "2008 Acme Inc.")',
+        '拥有该应用独占权利的个人或实体名称，前面加上取得该权利的年份。（例如，“2008 Acme Inc.”）',
     },
     {
       nested: 1,
       name: 'advisory',
       type: <MD.a href="#apple-advisory">AppleAdvisory</MD.a>,
-      description: "The App Store questionnaire to determine the app's age rating.",
+      description: '用于确定应用年龄分级的 App Store 问卷。',
     },
     {
       nested: 1,
       name: 'categories',
       type: <MD.a href="#apple-categories">AppleCategories</MD.a>,
       description:
-        'App Store categories for the app. You can add primary, secondary, and possible subcategories.',
+        '应用在 App Store 中的类别。你可以添加主类别、次类别以及可能的子类别。',
     },
     {
       nested: 1,
@@ -80,31 +80,31 @@ EAS Metadata _currently_ only supports the Apple App Store.
           {'>'}
         </>
       ),
-      description: 'The localized App Store presence of your app.',
+      description: '你的应用在 App Store 中的本地化展示信息。',
     },
     {
       nested: 1,
       name: 'release',
       type: <MD.a href="#apple-release">AppleRelease</MD.a>,
-      description: 'The app release strategy for the selected version.',
+      description: '所选版本的应用发布策略。',
     },
     {
       nested: 1,
       name: 'review',
       type: <MD.a href="#apple-review">AppleReview</MD.a>,
       description:
-        'All required information to review the app for the App Store review team, including contact info and credentials. (if applicable)',
+        '供 App Store 审核团队审核应用所需的全部信息，包括联系信息和凭证。（如适用）',
     },
   ]}
 </MetadataTable>
 
 ### Apple advisory
 
-Apple uses a complex questionnaire to determine the app's [age rating](https://help.apple.com/app-store-connect/#/dev599d50efb).
-Parental controls on the App Store use this calculated age rating.
-EAS Metadata uses the least restrictive answer for each of these questions by default.
+Apple 使用一份复杂的问卷来确定应用的 [年龄分级](https://help.apple.com/app-store-connect/#/dev599d50efb)。
+App Store 上的家长控制会使用这个计算出的年龄分级。
+默认情况下，EAS Metadata 会对每个问题使用限制最少的答案。
 
-<Collapsible summary="Complete advisory with the least restrictive answers">
+<Collapsible summary="使用限制最少答案的完整 advisory">
 
 ```json store.config.json
 {
@@ -140,42 +140,37 @@ EAS Metadata uses the least restrictive answer for each of these questions by de
     {
       name: 'alcoholTobaccoOrDrugUseOrReferences',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain alcohol, tobacco, or drug use or references?',
+      description: '应用是否包含酒精、烟草或药物使用，或相关内容？',
     },
     {
       name: 'contests',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain contests?',
+      description: '应用是否包含竞赛？',
     },
-    { name: 'gambling', type: 'boolean', description: 'Does your app contain gambling?' },
+    { name: 'gambling', type: 'boolean', description: '你的应用是否包含赌博？' },
     {
       name: 'gamblingSimulated',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain simulated gambling?',
+      description: '应用是否包含模拟赌博？',
     },
     {
       name: 'horrorOrFearThemes',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain horror or fear themes?',
+      description: '应用是否包含恐怖或惊悚主题？',
     },
     {
       name: 'kidsAgeBand',
       type: <MD.a href="#apple-advisory-kids-age">AppleKidsAge</MD.a>,
       description: [
         <MD.p>
-          When parents visit the Kids category on the App Store, they expect the apps they find will
-          protect their children's data, provide only age-appropriate content, and require a
-          parental gate to link out of the app, request permissions, or present purchasing
-          opportunities.
+          当家长访问 App Store 的儿童分类时，他们期望所找到的应用能够保护其子女的数据，仅提供适龄内容，并且在跳转出应用、请求权限或提供购买机会时需要家长验证。
         </MD.p>,
         <MD.p>
-          It's critical that no personally identifiable information or device information be
-          transmitted to third parties, and that advertisements are human-reviewed for age
-          appropriateness to be displayed.
+          至关重要的是，不得向第三方传输任何可识别个人身份的信息或设备信息，并且广告必须经过人工审核以确保适合相应年龄后才能展示。
         </MD.p>,
         <MD.p>
           <MD.a openInNewTab href="https://developer.apple.com/news/?id=091202019a">
-            Learn more
+            了解更多
           </MD.a>
         </MD.p>,
       ],
@@ -183,31 +178,30 @@ EAS Metadata uses the least restrictive answer for each of these questions by de
     {
       name: 'matureOrSuggestiveThemes',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain mature or suggestive themes?',
+      description: '应用是否包含成人或暗示性主题？',
     },
     {
       name: 'medicalOrTreatmentInformation',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain medical or treatment information?',
+      description: '应用是否包含医疗或治疗信息？',
     },
     {
       name: 'profanityOrCrudeHumor',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain profanity or crude humor?',
+      description: '应用是否包含脏话或粗俗幽默？',
     },
     {
       name: 'ageRatingOverride',
       type: <MD.a href="#apple-advisory-age-rating-override">AppleAgeRatingOverride</MD.a>,
       description: [
         <MD.p>
-          If your app rates 12+ or lower, and you believe its content may not be suitable for
-          children, you can manually override the age rating.
+          如果你的应用评级为 12+ 或更低，并且你认为其内容可能不适合儿童，你可以手动覆盖年龄分级。
         </MD.p>,
         <MD.p>
           <MD.a
             openInNewTab
             href="https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating">
-            Learn more
+            了解更多
           </MD.a>
         </MD.p>,
       ],
@@ -219,15 +213,13 @@ EAS Metadata uses the least restrictive answer for each of these questions by de
       ),
       description: [
         <MD.p>
-          If your app rates 12+ or lower, and you believe its content may not be suitable for
-          children, you can manually override the age rating. Same as `ageRatingOverride`, but for
-          South Korea.
+          如果你的应用评级为 12+ 或更低，并且你认为其内容可能不适合儿童，你可以手动覆盖年龄分级。与 `ageRatingOverride` 相同，但适用于韩国。
         </MD.p>,
         <MD.p>
           <MD.a
             openInNewTab
             href="https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating">
-            Learn more
+            了解更多
           </MD.a>
         </MD.p>,
       ],
@@ -235,33 +227,33 @@ EAS Metadata uses the least restrictive answer for each of these questions by de
     {
       name: 'sexualContentGraphicAndNudity',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain graphic sexual content and nudity?',
+      description: '应用是否包含露骨的色情内容和裸体？',
     },
     {
       name: 'sexualContentOrNudity',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain sexual content or nudity?',
+      description: '应用是否包含色情内容或裸体？',
     },
     {
       name: 'unrestrictedWebAccess',
       type: 'boolean',
       description:
-        'Does your app contain unrestricted web access, such as with an embedded browser?',
+        '你的应用是否包含不受限制的网页访问，例如内嵌浏览器？',
     },
     {
       name: 'violenceCartoonOrFantasy',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain cartoon or fantasy violence?',
+      description: '应用是否包含卡通或幻想暴力内容？',
     },
     {
       name: 'violenceRealistic',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain realistic violence?',
+      description: '应用是否包含写实暴力内容？',
     },
     {
       name: 'violenceRealisticProlongedGraphicOrSadistic',
       type: <MD.a href="#apple-advisory-age-rating">AppleAgeRating</MD.a>,
-      description: 'Does the app contain prolonged graphic or sadistic realistic violence?',
+      description: '应用是否包含持续的露骨或施虐性质的写实暴力内容？',
     },
   ]}
 </MetadataTable>
@@ -270,14 +262,14 @@ EAS Metadata uses the least restrictive answer for each of these questions by de
 
 <MetadataTable headers={['Name', 'Description']}>
   {[
-    { name: 'NONE', description: 'For apps that do not use the subject whatsoever.' },
+    { name: 'NONE', description: '适用于完全不涉及该主题的应用。' },
     {
       name: 'INFREQUENT_OR_MILD',
-      description: 'For apps mentioning the subject or using the subject as a non-primary feature.',
+      description: '适用于提及该主题或将其作为非主要功能使用的应用。',
     },
     {
       name: 'FREQUENT_OR_INTENSE',
-      description: 'For apps using the subject as a primary feature.',
+      description: '适用于将该主题作为主要功能使用的应用。',
     },
   ]}
 </MetadataTable>
@@ -286,9 +278,9 @@ EAS Metadata uses the least restrictive answer for each of these questions by de
 
 <MetadataTable headers={['Name', 'Description']}>
   {[
-    { name: 'FIVE_AND_UNDER', description: 'For kids of 5 years old and below.' },
-    { name: 'SIX_TO_EIGHT', description: 'For kids between the age of 6 to 8 years.' },
-    { name: 'NINE_TO_ELEVEN', description: 'For kids between the age of 9 to 11 years.' },
+    { name: 'FIVE_AND_UNDER', description: '适用于 5 岁及以下儿童。' },
+    { name: 'SIX_TO_EIGHT', description: '适用于 6 至 8 岁儿童。' },
+    { name: 'NINE_TO_ELEVEN', description: '适用于 9 至 11 岁儿童。' },
   ]}
 </MetadataTable>
 
@@ -296,16 +288,16 @@ EAS Metadata uses the least restrictive answer for each of these questions by de
 
 <MetadataTable headers={['Name', 'Description']}>
   {[
-    { name: 'NONE', description: 'No age rating override' },
+    { name: 'NONE', description: '无年龄分级覆盖' },
     {
       name: 'SEVENTEEN_PLUS',
       description:
-        'App contains content that may not be suitable for children under the age of 17.',
+        '应用包含可能不适合 17 岁以下儿童的内容。',
     },
     {
       name: 'UNRATED',
       description:
-        'Adults Only. This content cannot be published on the App Store. It may be published on alternative app marketplaces on iOS or websites in the European Union.',
+        '仅限成人。此内容不能发布到 App Store。它可以发布到 iOS 上的其他应用市场或欧盟地区的网站上。',
     },
   ]}
 </MetadataTable>
@@ -314,25 +306,25 @@ EAS Metadata uses the least restrictive answer for each of these questions by de
 
 <MetadataTable headers={['Name', 'Description']}>
   {[
-    { name: 'NONE', description: 'No age rating override' },
+    { name: 'NONE', description: '无年龄分级覆盖' },
     {
       name: 'FIFTEEN_PLUS',
       description:
-        'App contains content that may not be suitable for children under the age of 15.',
+        '应用包含可能不适合 15 岁以下儿童的内容。',
     },
     {
       name: 'NINETEEN_PLUS',
       description:
-        'App contains content that may not be suitable for children under the age of 19.',
+        '应用包含可能不适合 19 岁以下儿童的内容。',
     },
   ]}
 </MetadataTable>
 
 ### Apple categories
 
-The App Store helps users discover new apps by [categorizing apps into categories](https://developer.apple.com/app-store/categories/), using primary, secondary, and possible subcategories.
+App Store 通过[将应用分类到各个类别中](https://developer.apple.com/app-store/categories/)，并使用主类别、次类别以及可能的子类别，帮助用户发现新应用。
 
-<Collapsible summary="Primary and secondary category">
+<Collapsible summary="主类别和次类别">
 
 ```json store.config.json
 {
@@ -345,7 +337,7 @@ The App Store helps users discover new apps by [categorizing apps into categorie
 
 </Collapsible>
 
-<Collapsible summary="Primary, subcategories, and secondary category">
+<Collapsible summary="主类别、子类别和次类别">
 
 ```json store.config.json
 {
@@ -363,45 +355,44 @@ The App Store helps users discover new apps by [categorizing apps into categorie
     {
       name: 'BOOKS',
       description:
-        'Apps with content that is traditionally offered in printed form and which provide additional interactivity.',
+        '包含传统以印刷形式提供、并提供额外交互性的内容的应用。',
     },
     {
       name: 'BUSINESS',
       description:
-        'Apps that assist with running a business or provide a means to collaborate, edit, or share business-related content.',
+        '帮助经营业务的应用，或提供协作、编辑或共享与业务相关内容的方式的应用。',
     },
     {
       name: 'DEVELOPER_TOOLS',
-      description: 'Apps that assist users with developing, maintaining, or sharing software.',
+      description: '帮助用户开发、维护或共享软件的应用。',
     },
     {
       name: 'EDUCATION',
       description:
-        'Apps that provide an interactive learning experience on specific skills or subjects.',
+        '提供针对特定技能或主题的交互式学习体验的应用。',
     },
     {
       name: 'ENTERTAINMENT',
       description:
-        'Interactive apps designed to entertain the user with audio, visual, or other content.',
+        '旨在通过音频、视觉或其他内容娱乐用户的交互式应用。',
     },
     {
       name: 'FINANCE',
       description:
-        'Apps that provide financial services or information to assist users with business or personal finances.',
+        '提供金融服务或信息以帮助用户处理商业或个人财务的应用。',
     },
     {
       name: 'FOOD_AND_DRINK',
       description:
-        'Apps that provide recommendations, instruction, or reviews related to preparing, consuming, or reviewing food or beverages.',
+        '提供与食物或饮料的准备、消费或评测相关的建议、说明或评论的应用。',
     },
     {
       name: 'GAMES',
       description: [
         <MD.p>
-          Apps that provide single or multiplayer interactive experiences for entertainment
-          purposes.
+          提供单人或多人交互式体验以用于娱乐目的的应用。
         </MD.p>,
-        <MD.p>This category can have up to 2 subcategories.</MD.p>,
+        <MD.p>此类别最多可包含 2 个子类别。</MD.p>,
         <MD.p>
           <MetadataSubcategories>
             {[
@@ -429,69 +420,69 @@ The App Store helps users discover new apps by [categorizing apps into categorie
     {
       name: 'GRAPHICS_AND_DESIGN',
       description:
-        'Apps that provide tools or tips for creating, editing, or sharing visual content.',
+        '提供创建、编辑或共享视觉内容的工具或技巧的应用。',
     },
     {
       name: 'HEALTH_AND_FITNESS',
       description:
-        'Apps related to healthy living, including stress management, fitness, and recreational activities.',
+        '与健康生活相关的应用，包括压力管理、健身和休闲活动。',
     },
     {
       name: 'LIFESTYLE',
-      description: 'Apps related to a general-interest subject matter or service.',
+      description: '与一般兴趣主题或服务相关的应用。',
     },
     {
       name: 'MAGAZINES_AND_NEWSPAPERS',
       description:
-        'Apps with journalistic content that is traditionally offered in printed form and which provide additional interactivity.',
+        '包含传统以印刷形式提供、并提供额外交互性的新闻内容的应用。',
     },
     {
       name: 'MEDICAL',
       description:
-        'Apps focused on medical education, information, or health reference for patients or healthcare professionals.',
+        '专注于患者或医疗专业人员的医学教育、信息或健康参考的应用。',
     },
     {
       name: 'MUSIC',
       description:
-        'Apps that are for discovering, listening, recording, performing, or composing music.',
+        '用于发现、聆听、录制、演奏或创作音乐的应用。',
     },
     {
       name: 'NAVIGATION',
-      description: 'Apps that provide information to help a user get to a physical location.',
+      description: '提供信息以帮助用户到达实体位置的应用。',
     },
     {
       name: 'NEWS',
       description:
-        'Apps that provide information about current events and/or developments in areas of interest such as politics, entertainment, business, science, technology, and other areas.',
+        '提供有关时事和/或政治、娱乐、商业、科学、技术及其他领域动态信息的应用。',
     },
     {
       name: 'PHOTO_AND_VIDEO',
       description:
-        'Apps that assist in capturing, editing, managing, storing, or sharing photos and videos.',
+        '协助拍摄、编辑、管理、存储或共享照片和视频的应用。',
     },
     {
       name: 'PRODUCTIVITY',
-      description: 'Apps that make a specific process or task more organized or efficient.',
+      description: '使特定流程或任务更有条理或更高效的应用。',
     },
     {
       name: 'REFERENCE',
-      description: 'Apps that assist the user in accessing or retrieving general information.',
+      description: '帮助用户访问或检索一般信息的应用。',
     },
-    { name: 'SHOPPING', description: 'Apps that provide a means to purchase goods or services.' },
+    { name: 'SHOPPING', description: '提供购买商品或服务方式的应用。' },
     {
       name: 'SOCIAL_NETWORKING',
-      description: 'Apps that connect people through text, voice, photo, or video.',
+      description: '通过文本、语音、照片或视频连接人们的应用。',
     },
     {
       name: 'SPORTS',
       description:
-        'Apps related to professional, amateur, collegiate, or recreational sporting activities.',
+        '与职业、业余、大学或休闲体育活动相关的应用。',
     },
     {
       name: 'STICKERS',
       description: [
-        <MD.p>Apps that provide extended visual functionality to messaging apps.</MD.p>,
-        <MD.p>This category can have up to 2 subcategories.</MD.p>,
+        <MD.p>为消息应用提供扩展视觉功能的应用。</MD.p>,
+        <MD.p>此类别最多可包含 2 个子类别。</MD.p>,
         <MD.p>
           <MetadataSubcategories>
             {[
@@ -518,22 +509,22 @@ The App Store helps users discover new apps by [categorizing apps into categorie
     {
       name: 'TRAVEL',
       description:
-        'Apps that assist the user with any aspect of travel, such as planning, purchasing, or tracking.',
+        '帮助用户处理旅行各个方面的应用，例如规划、购买或追踪。',
     },
     {
       name: 'UTILITIES',
-      description: 'Apps that enable the user to solve a problem or complete a specific task.',
+      description: '使用户能够解决问题或完成特定任务的应用。',
     },
-    { name: 'WEATHER', description: 'Apps with specific weather-related information.' },
+    { name: 'WEATHER', description: '包含特定天气相关信息的应用。' },
   ]}
 </MetadataTable>
 
 ### Apple info
 
-The App Store is a global service used by many people in different languages.
-You can localize your App Store presence in [multiple languages](#apple-info-languages).
+App Store 是一项面向全球用户、支持多种语言的服务。
+你可以用[多种语言](#apple-info-languages)本地化你的 App Store 展示信息。
 
-<Collapsible summary="Minimal localized info in English (U.S.)">
+<Collapsible summary="英文（美国）的最小本地化信息">
 
 ```json store.config.json
 {
@@ -551,7 +542,7 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
 
 </Collapsible>
 
-<Collapsible summary="Complete localized info written in English (U.S.)">
+<Collapsible summary="用英文（美国）编写的完整本地化信息">
 
 ```json store.config.json
 {
@@ -587,10 +578,10 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       rules: ['length: 2..30'],
       description: [
         <MD.p>
-          Name of the app in the store. This name should be similar to the installed app name.
+          应用在商店中的名称。此名称应与已安装的应用名称相似。
         </MD.p>,
         <MD.p theme="warning">
-          The name will be reviewed before it is made available on the App Store.
+          该名称在上架到 App Store 之前将经过审核。
         </MD.p>,
       ],
     },
@@ -599,9 +590,9 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       type: 'string',
       rules: ['length: 30'],
       description: [
-        <MD.p>Subtext for the app in the store. For example, "A Fun Game For Friends".</MD.p>,
+        <MD.p>应用在商店中的副标题。例如，“一个适合朋友的有趣游戏”。</MD.p>,
         <MD.p theme="warning">
-          The subtitle will be reviewed before it is made available on the App Store.
+          该副标题在上架到 App Store 之前将经过审核。
         </MD.p>,
       ],
     },
@@ -609,46 +600,46 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       name: 'description',
       type: 'string',
       rules: ['length: 10..4000'],
-      description: 'The main description of what the app does',
+      description: '应用功能的主要描述',
     },
     {
       name: 'keywords',
       type: 'string[]',
       rules: ['unique items', 'max length item: 100'],
-      description: 'List of keywords to help users find the app in the App Store',
+      description: '帮助用户在 App Store 中找到该应用的关键词列表',
     },
     {
       name: 'releaseNotes',
       type: 'string',
       rules: ['max length: 4000'],
-      description: 'Changes since the last public version',
+      description: '自上一个公开版本以来的更改',
     },
     {
       name: 'promoText',
       type: 'string',
       rules: ['max length: 170'],
-      description: 'The short tagline for the app',
+      description: '应用的简短宣传语',
     },
     {
       name: 'marketingUrl',
       type: 'string',
       rules: ['max length: 255'],
-      description: 'URL to the app marketing page',
+      description: '应用营销页面的 URL',
     },
     {
       name: 'supportUrl',
       type: 'string',
       rules: ['max length: 255'],
-      description: 'URL to the app support page',
+      description: '应用支持页面的 URL',
     },
-    { name: 'privacyPolicyText', type: 'string', description: 'Privacy policy for Apple TV' },
+    { name: 'privacyPolicyText', type: 'string', description: 'Apple TV 的隐私政策' },
     {
       name: 'privacyPolicyUrl',
       type: 'string',
       rules: ['max length: 255'],
       description: [
-        <MD.p>URL that links to your privacy policy.</MD.p>,
-        <MD.p theme="warning">A privacy policy is required for all apps.</MD.p>,
+        <MD.p>指向隐私政策的 URL。</MD.p>,
+        <MD.p theme="warning">所有应用都必须提供隐私政策。</MD.p>,
       ],
     },
     {
@@ -656,12 +647,12 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       type: 'string',
       rules: ['max length: 255'],
       description:
-        'URL where users can modify and delete the data collected from the app or decide how their data is used and shared.',
+        '用户可以在此 URL 修改和删除从应用收集的数据，或决定其数据的使用和共享方式。',
     },
   ]}
 </MetadataTable>
 
-#### Apple info languages
+#### Apple 信息语言
 
 <MetadataTable headers={['Language', 'Language Code']}>
   {[
@@ -671,10 +662,10 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       name: 'Chinese',
       description: [
         <MD.p>
-          <MD.code>zh-Hans</MD.code> (Simplified)
+          <MD.code>zh-Hans</MD.code>（简体）
         </MD.p>,
         <MD.p>
-          <MD.code>zh-Hant</MD.code> (Traditional)
+          <MD.code>zh-Hant</MD.code>（繁体）
         </MD.p>,
       ],
     },
@@ -686,16 +677,16 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       name: 'English',
       description: [
         <MD.p>
-          <MD.code>en-AU</MD.code> (Australia)
+          <MD.code>en-AU</MD.code>（澳大利亚）
         </MD.p>,
         <MD.p>
-          <MD.code>en-CA</MD.code> (Canada)
+          <MD.code>en-CA</MD.code>（加拿大）
         </MD.p>,
         <MD.p>
-          <MD.code>en-GB</MD.code> (U.K.)
+          <MD.code>en-GB</MD.code>（英国）
         </MD.p>,
         <MD.p>
-          <MD.code>en-US</MD.code> (U.S.)
+          <MD.code>en-US</MD.code>（美国）
         </MD.p>,
       ],
     },
@@ -704,10 +695,10 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       name: 'French',
       description: [
         <MD.p>
-          <MD.code>fr-CA</MD.code> (Canada)
+          <MD.code>fr-CA</MD.code>（加拿大）
         </MD.p>,
         <MD.p>
-          <MD.code>fr-FR</MD.code> (France)
+          <MD.code>fr-FR</MD.code>（法国）
         </MD.p>,
       ],
     },
@@ -727,10 +718,10 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       name: 'Portuguese',
       description: [
         <MD.p>
-          <MD.code>pt-BR</MD.code> (Brazil)
+          <MD.code>pt-BR</MD.code>（巴西）
         </MD.p>,
         <MD.p>
-          <MD.code>pt-PT</MD.code> (Portugal)
+          <MD.code>pt-PT</MD.code>（葡萄牙）
         </MD.p>,
       ],
     },
@@ -741,10 +732,10 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
       name: 'Spanish',
       description: [
         <MD.p>
-          <MD.code>es-MX</MD.code> (Mexico)
+          <MD.code>es-MX</MD.code>（墨西哥）
         </MD.p>,
         <MD.p>
-          <MD.code>es-ES</MD.code> (Spain)
+          <MD.code>es-ES</MD.code>（西班牙）
         </MD.p>,
       ],
     },
@@ -757,12 +748,12 @@ You can localize your App Store presence in [multiple languages](#apple-info-lan
 </MetadataTable>
 {/* vale on*/}
 
-### Apple release
+### Apple 发布
 
-There are multiple strategies to put the app in the hands of your users.
-You can release the app automatically after store approval or gradually release an update to your users.
+有多种策略可以将应用交到你的用户手中。
+你可以在商店审核通过后自动发布应用，或者逐步向用户发布更新。
 
-<Collapsible summary="Automatic release after 25th of December, 2022 (UTC)">
+<Collapsible summary="2022 年 12 月 25 日之后自动发布（UTC）">
 
 ```json store.config.json
 {
@@ -785,25 +776,25 @@ You can release the app automatically after store approval or gradually release 
       type: 'boolean|Date',
       description: [
         <MD.p>
-          If and how the app should automatically be released after approval from the App Store.
+          如果以及如何在 App Store 审核通过后自动发布应用。
         </MD.p>,
         <MD.ul>
           <MD.li>
-            <MD.code>false</MD.code> - Manually release the app after store approval. (default behavior)
+            <MD.code>false</MD.code> - 在商店审核通过后手动发布应用。（默认行为）
           </MD.li>
           <MD.li>
-            <MD.code>true</MD.code> - Automatically release after store approval.
+            <MD.code>true</MD.code> - 在商店审核通过后自动发布。
           </MD.li>
           <MD.li>
-            <MD.code>Date</MD.code> - Automatically schedule release on this date after store approval (using the{' '}
+            <MD.code>Date</MD.code> - 在商店审核通过后，自动安排在此日期发布（使用{' '}
             <MD.a openInNewTab href="https://www.rfc-editor.org/rfc/rfc3339">
               RFC 3339
             </MD.a>{' '}
-            format).
+            格式）。
           </MD.li>
         </MD.ul>,
         <MD.p>
-          Apple does not guarantee that your app is available at the chosen scheduled release date.
+          Apple 不保证你的应用会在所选的计划发布日期可用。
         </MD.p>,
       ],
     },
@@ -812,20 +803,18 @@ You can release the app automatically after store approval or gradually release 
       type: 'boolean',
       description: [
         <MD.p>
-          Phased release for automatic updates lets you gradually release this update over a 7-day
-          period to users who have turned on automatic updates.
+          用于自动更新的分阶段发布可让你在 7 天
+          期间内逐步向已开启自动更新的用户发布此更新。
         </MD.p>,
         <MD.p>
-          Keep in mind that this version will still be available to all users as a manual update
-          from the App Store.
+          请记住，此版本仍然可以作为来自 App Store 的手动更新供所有用户使用。
         </MD.p>,
         <MD.p>
-          You can pause the phased release for up to 30 days or release this update to all users at
-          any time.
+          你可以将分阶段发布暂停最长 30 天，或随时向所有用户发布此更新。
         </MD.p>,
         <MD.p>
           <MD.a openInNewTab href="https://help.apple.com/app-store-connect/#/dev3d65fcee1">
-            Learn more
+            了解更多
           </MD.a>
         </MD.p>,
       ],
@@ -833,12 +822,12 @@ You can release the app automatically after store approval or gradually release 
   ]}
 </MetadataTable>
 
-### Apple review
+### Apple 审核
 
-Before publishing the app on the App Store, store approval is required.
-The App Store review team must have all the information to test your app, or you risk an app rejection.
+在 App Store 上发布应用之前，需要先获得商店审核通过。
+App Store 审核团队必须拥有测试你的应用所需的全部信息，否则你可能会面临应用被拒。
 
-<Collapsible summary="Minimal review information">
+<Collapsible summary="最少审核信息">
 
 ```json store.config.json
 {
@@ -856,7 +845,7 @@ The App Store review team must have all the information to test your app, or you
 
 </Collapsible>
 
-<Collapsible summary="Complete review information">
+<Collapsible summary="完整审核信息">
 
 ```json store.config.json
 {
@@ -870,7 +859,7 @@ The App Store review team must have all the information to test your app, or you
       "demoUsername": "john",
       "demoPassword": "applereview",
       "demoRequired": false,
-      "notes": "This is an example app primarily used for educational purposes."
+      "notes": "这是一个主要用于教育目的的示例应用。"
     }
   }
 }
@@ -885,58 +874,57 @@ The App Store review team must have all the information to test your app, or you
       type: 'string',
       rules: ['min length: 1'],
       description:
-        "The app contact's first name in case communication is needed with the App Store review team is needed.",
+        "应用联系人在需要与 App Store 审核团队沟通时的名字。",
     },
     {
       name: 'lastName',
       type: 'string',
       rules: ['min length: 1'],
       description:
-        "The app contact's last name in case communication is needed with the App Store review team is needed.",
+        "应用联系人在需要与 App Store 审核团队沟通时的姓氏。",
     },
     {
       name: 'email',
       type: 'string',
       rules: ['email'],
       description:
-        'Email contact address in case communication is needed with the App Store review team.',
+        '在需要与 App Store 审核团队沟通时的电子邮件联系地址。',
     },
     {
       name: 'phone',
       type: 'string',
       description: [
         <MD.p>
-          Contact phone number in case communication is needed with the App Store review team.
+          在需要与 App Store 审核团队沟通时的联系电话。
         </MD.p>,
         <MD.p>
-          Preface the phone number with "+" followed by the country code. (for example, +44 844 209
-          0611)
+          电话号码前请加上“+”以及国家代码。（例如，+44 844 209
+          0611）
         </MD.p>,
       ],
     },
     {
       name: 'demoUsername',
       type: 'string',
-      description: 'The user name to sign in to your app to review its features.',
+      description: '用于登录你的应用以审核其功能的用户名。',
     },
     {
       name: 'demoPassword',
       type: 'string',
-      description: 'The password to sign in to your app to review its features.',
+      description: '用于登录你的应用以审核其功能的密码。',
     },
     {
       name: 'demoRequired',
       type: 'boolean',
       description: [
         <MD.p>
-          A Boolean value indicates if sign-in information is required to review your app's
-          features.
+          一个布尔值，表示审核你的应用功能是否需要登录信息。
         </MD.p>,
         <MD.p>
-          If users sign in using social media, provide information for an account for review.
+          如果用户使用社交媒体登录，请提供一个用于审核的账户信息。
         </MD.p>,
         <MD.p theme="warning">
-          Credentials must be valid and active for the duration of the review.
+          凭据在审核期间必须有效且处于激活状态。
         </MD.p>,
       ],
     },
@@ -945,10 +933,10 @@ The App Store review team must have all the information to test your app, or you
       type: 'string',
       rules: ['length: 2..4000'],
       description: [
-        <MD.p>Additional information about your app that can help during the review process.</MD.p>,
+        <MD.p>有关你的应用的其他信息，可在审核过程中提供帮助。</MD.p>,
         <MD.p theme="warning">
-          Do not include demo account details in the notes. Use the <MD.code>demoUsername</MD.code>{' '}
-          and <MD.code>demoPassword</MD.code> properties instead.
+          请勿在备注中包含演示账户详情。请改用 <MD.code>demoUsername</MD.code>{' '}
+          和 <MD.code>demoPassword</MD.code> 属性。
         </MD.p>,
       ],
     },

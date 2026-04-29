@@ -1,7 +1,7 @@
 ---
-title: EAS Submit
-sidebar_title: Introduction
-description: EAS Submit is a hosted service for submitting Android and iOS app binaries to the Google Play Store and Apple App Store from the command line.
+title: EAS 提交
+sidebar_title: 介绍
+description: EAS Submit 是一项托管服务，可通过命令行将 Android 和 iOS 应用二进制文件提交到 Google Play 商店和 Apple App Store。
 ---
 
 import { AppleAppStoreIcon } from '@expo/styleguide-icons/custom/AppleAppStoreIcon';
@@ -14,72 +14,72 @@ import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 import { FAQ } from '~/ui/components/FAQ';
 import { Terminal } from '~/ui/components/Snippet';
 
-**EAS Submit** is a hosted service from EAS (Expo Application Services) for submitting Android and iOS binaries directly to the Google Play Store and Apple App Store without opening the [Google Play Console](https://play.google.com/console), or downloading the [Transporter app](https://apps.apple.com/us/app/transporter/id1450874784).
+**EAS Submit** 是 EAS（Expo 应用服务）提供的一项托管服务，可将 Android 和 iOS 二进制文件直接提交到 Google Play 商店和 Apple App Store，而无需打开 [Google Play Console](https://play.google.com/console)，或下载 [Transporter 应用](https://apps.apple.com/us/app/transporter/id1450874784)。
 
-EAS Submit automates the final step of mobile app distribution by sending your built binaries to Google and Apple for store review. It removes the need for manual uploads and reduces errors that happen during store submission. It also allows developers using Windows and Linux to upload iOS builds, since this is only supported on macOS machines.
+EAS Submit 通过将你构建好的二进制文件发送给 Google 和 Apple 进行商店审核，自动完成移动应用分发的最后一步。它消除了手动上传的需要，并减少了在商店提交流程中发生的错误。它还允许使用 Windows 和 Linux 的开发者上传 iOS 构建，因为这项操作仅在 macOS 机器上受支持。
 
-EAS Submit works with apps built with [EAS Build](/build/introduction/) or locally and supports multiple submission profiles. You can trigger a submission from a CLI command, after a build is finished, or from a CI/CD service. This gives teams a faster, more consistent release workflow across both platforms.
+EAS Submit 可与使用 [EAS Build](/build/introduction/) 构建的应用配合使用，也可与本地构建的应用配合使用，并支持多个提交配置文件。你可以通过 CLI 命令、构建完成后，或通过 CI/CD 服务触发提交。这为团队在两个平台上提供了更快、更一致的发布工作流。
 
-## Quick start
+## 快速开始
 
-> **info** The `eas` commands below require EAS CLI. See [How to install EAS CLI](/eas/cli/#installation) for more information.
+> **info** 以下 `eas` 命令需要 EAS CLI。有关更多信息，请参阅 [如何安装 EAS CLI](/eas/cli/#installation)。
 
-Submit an Android build:
+提交 Android 构建：
 
 <Terminal cmd={['$ eas submit --platform android']} />
 
-Submit an iOS build:
+提交 iOS 构建：
 
 <Terminal cmd={['$ eas submit --platform ios']} />
 
-Build and submit in one step:
+一步完成构建和提交：
 
 <Terminal cmd={['$ eas build --platform ios --auto-submit']} />
 
-## How EAS Submit works
+## EAS Submit 的工作方式
 
-**EAS Submit** delivers your app to the app stores' distribution pipelines (a chosen track on Google Play Store or [TestFlight](https://developer.apple.com/testflight/) for iOS), following the [default submission behavior for app stores](/build/automate-submissions/#default-submission-behavior-for-app-stores). It queues up your app for distribution on the Google Play Console and App Store Connect, and then you can log into those sites to send your apps off to review, so then they can be distributed to your users.
+**EAS Submit** 会将你的应用交付到应用商店的分发流程中（Google Play Store 上你选择的轨道，或 iOS 的 [TestFlight](https://developer.apple.com/testflight/)），并遵循 [应用商店的默认提交行为](/build/automate-submissions/#default-submission-behavior-for-app-stores)。它会将你的应用排队到 Google Play Console 和 App Store Connect 进行分发，然后你可以登录这些站点将应用送去审核，随后它们就可以分发给你的用户。
 
-### Android (Google Play Store)
+### Android（Google Play Store）
 
-- Where it goes: EAS Submit uploads the build to Google Play Console.
-- What happens then: The build is placed in the track you specify (internal, alpha, beta, or production).
-- First-time submissions: Google requires you to upload your app manually at least once before API-based submissions work.
-- Does this mean production?
-  - If you use internal, alpha, or beta, the app is only available to testers in that track.
-  - If you explicitly choose production, then yes &mdash; once Google approves the release, it will be available to all users.
+- 去向：EAS Submit 会将构建上传到 Google Play Console。
+- 随后会发生什么：构建会被放入你指定的轨道中（internal、alpha、beta 或 production）。
+- 首次提交：在基于 API 的提交生效之前，Google 要求你至少先手动上传一次应用。
+- 这是否意味着 production？
+  - 如果你使用 internal、alpha 或 beta，则应用只对该轨道中的测试人员可见。
+  - 如果你明确选择 production，那么是的 —— 一旦 Google 批准发布，它就会对所有用户可用。
 
-### iOS (App Store Connect/TestFlight)
+### iOS（App Store Connect/TestFlight）
 
-- Where it goes: EAS Submit uploads the build to App Store Connect.
-- What happens then: The build becomes available in TestFlight.
-- Does this mean production? No &mdash; a TestFlight build is not automatically released to the Apple App Store.
-- How production happens: You must log into App Store Connect, fill in all the metadata, security questionnaire and upload app screenshots, then choose the build, and submit it for App Review before it can be released to production.
+- 去向：EAS Submit 会将构建上传到 App Store Connect。
+- 随后会发生什么：构建会在 TestFlight 中可用。
+- 这是否意味着 production？不 —— TestFlight 构建不会自动发布到 Apple App Store。
+- production 如何发生：你必须登录 App Store Connect，填写所有元数据、安全问卷并上传应用截图，然后选择该构建，并在可以发布到 production 之前将其提交进行 App Review。
 
-## When to use EAS Submit
+## 何时使用 EAS Submit
 
-| Scenario                                                                                                                                                   | Recommendation |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| Upload app binaries to [Google Play Console](https://play.google.com/console/about/) and [Apple App Store](https://developer.apple.com/app-store-connect/) | <YesIcon />    |
-| Upload iOS app binaries on non-macOS machines                                                                                                              | <YesIcon />    |
-| Avoid manual uploads through Play Console, App Store Connect or Transporter                                                                                | <YesIcon />    |
-| Submit builds from [CI or automated workflows](/eas/workflows/pre-packaged-jobs/#submit)                                                                   | <YesIcon />    |
-| Standardize release processes via [eas.json](/eas/json/) config file                                                                                       | <YesIcon />    |
-| Reduce human errors during submission                                                                                                                      | <YesIcon />    |
-| Testing locally and not ready for a store submission                                                                                                       | <NoIcon />     |
-| Do not have a store listing configured yet for Google Play Store                                                                                           | <NoIcon />     |
+| 场景                                                                                                                                                   | 建议 |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| 将应用二进制文件上传到 [Google Play Console](https://play.google.com/console/about/) 和 [Apple App Store](https://developer.apple.com/app-store-connect/) | <YesIcon />    |
+| 在非 macOS 机器上上传 iOS 应用二进制文件                                                                                                                 | <YesIcon />    |
+| 避免通过 Play Console、App Store Connect 或 Transporter 进行手动上传                                                                                     | <YesIcon />    |
+| 从 [CI 或自动化工作流](/eas/workflows/pre-packaged-jobs/#submit) 提交构建                                                                               | <YesIcon />    |
+| 通过 [eas.json](/eas/json/) 配置文件标准化发布流程                                                                                                       | <YesIcon />    |
+| 减少提交过程中的人为错误                                                                                                                                | <YesIcon />    |
+| 本地测试且尚未准备好提交到商店                                                                                                                           | <NoIcon />     |
+| 还没有为 Google Play Store 配置商店列表                                                                                                                 | <NoIcon />     |
 
-## Frequently asked questions (FAQ)
+## 常见问题解答（FAQ）
 
 <FAQ>
 
-<Collapsible summary="Can I submit builds that were not built with EAS Build?">
+<Collapsible summary="我可以提交不是使用 EAS Build 构建的构建吗？">
 
-Yes. EAS Submit accepts any valid **.aab** (Android App Bundle) or **.ipa** (iOS App Archive) file.
+可以。EAS Submit 接受任何有效的 **.aab**（Android App Bundle）或 **.ipa**（iOS App Archive）文件。
 
-For builds created with EAS Build, run `eas submit` and select a build from the list or let it use the latest build automatically.
+对于使用 EAS Build 创建的构建，运行 `eas submit` 并从列表中选择一个构建，或者让它自动使用最新构建。
 
-For local builds, use the `--path` flag to specify the binary:
+对于本地构建，使用 `--path` 标志来指定二进制文件：
 
 <Terminal
   cmd={[
@@ -89,21 +89,21 @@ For local builds, use the `--path` flag to specify the binary:
   ]}
 />
 
-The binary must be correctly signed. For Android, this means a release keystore. For iOS, this means a distribution certificate and provisioning profile.
+二进制文件必须正确签名。对于 Android，这意味着需要 release keystore。对于 iOS，这意味着需要分发证书和 provisioning profile。
 
 </Collapsible>
 
-<Collapsible summary="Can I use EAS Submit for TestFlight?">
+<Collapsible summary="我可以将 EAS Submit 用于 TestFlight 吗？">
 
-Yes. All iOS submissions through EAS Submit are uploaded to App Store Connect and appear in TestFlight after processing. Processing typically takes 10-15 minutes but can vary.
+可以。所有通过 EAS Submit 提交的 iOS 构建都会上传到 App Store Connect，并在处理完成后出现在 TestFlight 中。处理通常需要 10-15 分钟，但可能会有所不同。
 
-Once processed, you can distribute the build to internal testers immediately or add external testers after a brief Beta App Review. To release to the App Store, you must manually submit the build for App Review through App Store Connect.
+处理完成后，你可以立即将构建分发给内部测试人员，或者在经过简短的 Beta App Review 后添加外部测试人员。若要发布到 App Store，你必须通过 App Store Connect 手动提交该构建进行 App Review。
 
 </Collapsible>
 
-<Collapsible summary="Can I use EAS Submit inside EAS Workflows or from other CI/CD pipelines?">
+<Collapsible summary="我可以在 EAS Workflows 中或从其他 CI/CD 流水线中使用 EAS Submit 吗？">
 
-Yes. EAS Submit works in CI environments and integrates with [EAS Workflows](/eas/workflows/get-started/). You can add a submit job to your workflow configuration. For example:
+可以。EAS Submit 可在 CI 环境中运行，并与 [EAS Workflows](/eas/workflows/get-started/) 集成。你可以在工作流配置中添加一个 submit 作业。例如：
 
 ```yaml
 jobs:
@@ -115,62 +115,62 @@ jobs:
       - build_ios
 ```
 
-For more information, see [EAS Workflows pre-packaged jobs](/eas/workflows/pre-packaged-jobs/#submit).
+有关更多信息，请参阅 [EAS Workflows 预打包作业](/eas/workflows/pre-packaged-jobs/#submit)。
 
-For CI pipelines, you can also use the `--non-interactive` flag to skip prompts and `--latest` to automatically select the most recent build:
+对于 CI 流水线，你还可以使用 `--non-interactive` 标志跳过提示，并使用 `--latest` 自动选择最近的构建：
 
 <Terminal cmd={['$ eas submit --platform android --latest --non-interactive']} />
 
 </Collapsible>
 
-<Collapsible summary="Do I need to handle metadata or screenshots?">
+<Collapsible summary="我需要处理元数据或截图吗？">
 
-EAS Submit uploads your binary but does not manage store listing metadata, screenshots, or release notes.
+EAS Submit 会上传你的二进制文件，但不会管理商店列表元数据、截图或发布说明。
 
-For Google Play Store, configure your store listing directly in [Google Play Console](https://play.google.com/console/about/) before submitting.
+对于 Google Play Store，请在提交前直接在 [Google Play Console](https://play.google.com/console/about/) 中配置你的商店列表。
 
-For Apple App Store, you can use [EAS Metadata](/eas/metadata/) to automate app information and localized descriptions.
-
-</Collapsible>
-
-<Collapsible summary="What credentials do I need?">
-
-For Android, you need a [Google Service Account Key](/submit/android/#creating-a-google-service-account) with access to your app in Google Play Console. Your app must be uploaded manually at least once before API submissions work.
-
-For iOS, you need an Apple Developer account. EAS Submit requires your [`ascAppId`](/eas/json/#ascappid) (App Store Connect app ID) and will prompt for your Apple ID credentials or use an App Store Connect API Key if configured.
-
-For more information, see [Google's Play Store's prerequisites](/submit/android/#prerequisites) and [Apple's App Store prerequisites](/submit/ios/#prerequisites).
+对于 Apple App Store，你可以使用 [EAS Metadata](/eas/metadata/) 自动化应用信息和本地化描述。
 
 </Collapsible>
 
-<Collapsible summary="How do I know why my submission failed?">
+<Collapsible summary="我需要哪些凭证？">
 
-To understand why your EAS Submit submission failed, open the submission details page in the [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/submissions):
+对于 Android，你需要一个具有访问 Google Play Console 中你的应用权限的 [Google 服务账号密钥](/submit/android/#creating-a-google-service-account)。在 API 提交生效之前，你的应用必须至少先手动上传一次。
 
-- Use the logs provided on the submission details page to understand the error.
-- Look for ["Build Annotations" bubble](https://expo.dev/changelog/2023-12-01-build-annotations) if there is one. These highlight common failure reasons and suggested fixes directly in the logs.
+对于 iOS，你需要一个 Apple Developer 账号。EAS Submit 需要你的 [`ascAppId`](/eas/json/#ascappid)（App Store Connect 应用 ID），并会提示你输入 Apple ID 凭据，或者在已配置时使用 App Store Connect API Key。
+
+有关更多信息，请参阅 [Google Play Store 的前提条件](/submit/android/#prerequisites) 和 [Apple App Store 的前提条件](/submit/ios/#prerequisites)。
+
+</Collapsible>
+
+<Collapsible summary="我怎么知道提交为什么失败？">
+
+要了解你的 EAS Submit 提交为何失败，请打开 [EAS 仪表盘](https://expo.dev/accounts/[account]/projects/[project]/submissions) 中的提交详情页面：
+
+- 使用提交详情页面提供的日志来理解错误。
+- 如果有的话，请查看 ["Build Annotations" 气泡](https://expo.dev/changelog/2023-12-01-build-annotations)。这些会直接在日志中突出显示常见失败原因和建议的修复方法。
 
 </Collapsible>
 
 </FAQ>
 
-## Get started
+## 开始使用
 
 <BoxLink
-  title="Submit to the Google Play Store"
-  description="Learn how to submit an Android app to the Google Play Store."
+  title="提交到 Google Play Store"
+  description="了解如何将 Android 应用提交到 Google Play Store。"
   href="/submit/android"
   Icon={GoogleAppStoreIcon}
 />
 <BoxLink
-  title="Submit to the Apple App Store"
-  description="Learn how to submit an iOS/iPadOS app to the Apple App Store."
+  title="提交到 Apple App Store"
+  description="了解如何将 iOS/iPadOS 应用提交到 Apple App Store。"
   href="/submit/ios"
   Icon={AppleAppStoreIcon}
 />
 <BoxLink
-  title="Configuration with eas.json"
-  description="See how to configure your submissions with eas.json."
+  title="使用 eas.json 进行配置"
+  description="了解如何使用 eas.json 配置你的提交。"
   href="/submit/eas-json"
   Icon={Settings01Icon}
 />

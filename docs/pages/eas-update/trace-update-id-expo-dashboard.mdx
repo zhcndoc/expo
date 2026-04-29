@@ -1,17 +1,17 @@
 ---
-title: How to trace an update ID back to the EAS dashboard
-description: Learn how to trace an update ID back to the EAS dashboard when using EAS Update and expo-updates library.
-sidebar_title: Trace update ID back to the EAS dashboard
+title: 如何将更新 ID 追溯到 EAS 仪表盘
+description: 了解在使用 EAS Update 和 expo-updates 库时，如何将更新 ID 追溯到 EAS 仪表盘。
+sidebar_title: 将更新 ID 追溯到 EAS 仪表盘
 hideTOC: true
 ---
 
-When working with [EAS Updates](/eas-update/introduction/), you might encounter a scenario where you need to trace an `updateId` back to the [EAS dashboard](https://expo.dev/accounts/[account]). This can be challenging because `Updates.updateId` always returns an ID, regardless of whether [`Updates.isEmbeddedLaunch`](/versions/latest/sdk/updates/#updatesisembeddedlaunch) is `true` or `false`. However, if the app is running an embedded update, attempting to look up the `updateId` in the [EAS dashboard](https://expo.dev/accounts/[account]) will result in an error. This happens because embedded updates are not tracked in the dashboard.
+在使用 [EAS Updates](/eas-update/introduction/) 时，你可能会遇到需要将 `updateId` 追溯到 [EAS 仪表盘](https://expo.dev/accounts/[account]) 的场景。这可能很有挑战性，因为无论 [`Updates.isEmbeddedLaunch`](/versions/latest/sdk/updates/#updatesisembeddedlaunch) 是 `true` 还是 `false`，`Updates.updateId` 都会始终返回一个 ID。不过，如果应用运行的是嵌入式更新，那么尝试在 [EAS 仪表盘](https://expo.dev/accounts/[account]) 中查找 `updateId` 会导致错误。这是因为嵌入式更新不会在仪表盘中被跟踪。
 
-## Determine if the update is embedded or downloaded
+## 确定更新是嵌入式还是已下载
 
-To avoid this issue, you can use the `Updates.isEmbeddedLaunch` property to determine whether the app is running an embedded update or one downloaded from the server. If `Updates.isEmbeddedLaunch` is `true`, the currently running update is embedded in the build, which means it won't be available in the EAS dashboard.
+为避免此问题，你可以使用 `Updates.isEmbeddedLaunch` 属性来确定应用当前运行的是嵌入式更新，还是从服务器下载的更新。如果 `Updates.isEmbeddedLaunch` 为 `true`，则当前运行的更新是嵌入在构建中的，这意味着它不会出现在 EAS 仪表盘中。
 
-Here's an example of how you can display whether the update is embedded or downloaded:
+下面是一个示例，展示如何显示更新是嵌入式还是已下载：
 
 ```tsx update-status.tsx
 import * as Updates from 'expo-updates';
@@ -21,23 +21,23 @@ export default function UpdateStatus() {
   return (
     <Text>
       {Updates.isEmbeddedLaunch
-        ? '(Embedded) ❌ You cannot trace this update in the EAS dashboard.'
-        : '(Downloaded) ✅ You can trace this update in the EAS dashboard.'}
+        ? '(嵌入式) ❌ 你无法在 EAS 仪表盘中追溯此更新。'
+        : '(已下载) ✅ 你可以在 EAS 仪表盘中追溯此更新。'}
     </Text>
   );
 }
 ```
 
-When you navigate to an update group in the EAS dashboard (open your project, select **Over-the-air updates**, and click a specific update), the URL displays as:
+当你导航到 EAS 仪表盘中的某个更新组时（打开你的项目，选择 **Over-the-air updates**，然后点击某个特定更新），URL 会显示为：
 
 ```text
 https://expo.dev/accounts/[accountName]/projects/[projectName]/updates/[updateGroupId]
 ```
 
-You can replace `updateGroupId` with the `Updates.updateId` to navigate directly to a specific platform update:
+你可以将 `updateGroupId` 替换为 `Updates.updateId`，以直接导航到某个平台的特定更新：
 
 ```text
 https://expo.dev/accounts/[accountName]/projects/[projectName]/updates/[updateId]
 ```
 
-This opens the corresponding update group for the platform-specific update.
+这会打开对应于该平台特定更新的相应更新组。

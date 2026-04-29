@@ -1,88 +1,88 @@
 ---
-sidebar_title: Custom domain
-title: Custom domain
-description: Set up a custom domain for your production deployment.
+sidebar_title: 自定义域名
+title: 自定义域名
+description: 为你的生产部署设置自定义域名。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 
-By default, your production deployment on EAS Hosting will look like this: `my-app.expo.app` , where `my-app` is your chosen preview subdomain name. If you own a domain, you may assign it as a custom domain to the production deployment.
+默认情况下，您在 EAS Hosting 上的生产部署将会是这样：`my-app.expo.app`，其中 `my-app` 是您选择的预览子域名名称。如果您拥有一个域名，您可以将其作为自定义域名分配给生产部署。
 
-Each project can have exactly one custom domain, which is assigned to the production deployment.
+每个项目只能有且仅有一个自定义域名，并且它会被分配给生产部署。
 
-> **info** **Note**: Setting up a custom domain is a premium feature and isn't available on the free plan. Learn more about different plans and benefits at [EAS pricing](https://expo.dev/pricing).
+> **info** **注意**：设置自定义域名是一项高级功能，免费套餐中不可用。了解有关不同套餐及其权益的更多信息，请参阅 [EAS pricing](https://expo.dev/pricing)。
 
-## Prerequisites
+## 前置条件
 
-<Collapsible summary="An EAS Hosting project with a production deployment">
+<Collapsible summary="一个带有生产部署的 EAS Hosting 项目">
 
-The custom domain will always load the production deployment. Therefore, to add a custom domain to your project, you will need a deployment that's been promoted to production first.
-
-</Collapsible>
-
-<Collapsible summary="A domain name">
-
-You will need to own a domain name you want to use.
+自定义域名将始终加载生产部署。因此，要为您的项目添加自定义域名，您首先需要有一个已提升为生产环境的部署。
 
 </Collapsible>
 
-## Assigning a custom domain
+<Collapsible summary="一个域名">
 
-1. In your project's dashboard, navigate to [Hosting settings](https://expo.dev/accounts/[accountName]/projects/[projectName]/hosting/settings).
-2. If you do not have a production deployment, you'll be prompted to assign one first.
-3. Under **Custom domain**, enter the custom domain you'd like to set up. Both apex domains and subdomains are supported. If you own `example.com`, you can select:
-   - `example.com`: apex domain
-   - `anything.example.com`: a subdomain
+您需要拥有一个想要使用的域名。
 
-4. Next, you'll be prompted to fill out some DNS records with your DNS provider:
-   - **Verification**: to prove you own the domain
-   - **SSL**: to set up SSL certificates
-   - **CNAME** (subdomains) or **A record** (apex domains): to point the domain at your production deployment
+</Collapsible>
 
-5. Press the refresh button until all checks pass. Depending on your DNS provider, this step usually only takes a couple of minutes.
+## 分配自定义域名
 
-> If you require for the domain name switchover to be **zero downtime**, it's important to fill out these records one by one in the order they are presented in the table.
-> That is, add the **Verification TXT** record first, and press "Refresh" until the UI confirms the verification record. Then add the **SSL CNAME** record next until
-> it is confirmed, and set up the third record last.
-> If downtime isn't important or relevant, you may add all three DNS records at once.
+1. 在您项目的仪表板中，导航到 [Hosting settings](https://expo.dev/accounts/[accountName]/projects/[projectName]/hosting/settings)。
+2. 如果您还没有生产部署，系统会提示您先分配一个。
+3. 在 **Custom domain** 下，输入您想要设置的自定义域名。支持顶级域名和子域名。如果您拥有 `example.com`，您可以选择：
+   - `example.com`：顶级域名
+   - `anything.example.com`：子域名
 
-After assigning a custom domain to your app, the custom domain will route to your **production** deployment.
+4. 接下来，系统会提示您通过 DNS 提供商填写一些 DNS 记录：
+   - **Verification**：用于证明您拥有该域名
+   - **SSL**：用于设置 SSL 证书
+   - **CNAME**（子域名）或 **A record**（顶级域名）：用于将域名指向您的生产部署
 
-### Custom domain DNS records
+5. 按下刷新按钮，直到所有检查都通过。根据您的 DNS 提供商，这一步通常只需要几分钟。
 
-Two of the three records the dashboard presents you are to validate ownership of your domain.
-The **Verification TXT** record proves ownership of your domain, since it adds a custom token that can be read back to verify you're setting the domain up on a domain you control.
-The **SSL CNAME** record proves ownership of your domain to a certificate authority, also known as Domain Control Validation (DCV). This is a CNAME record because both renewal and validation is delegated to an automated process, which prevents certificates from expiring.
+> 如果您要求域名切换 **零停机**，请务必按照表格中呈现的顺序逐一填写这些记录。
+> 也就是说，先添加 **Verification TXT** 记录，并不断点击“Refresh”，直到界面确认验证记录。然后再添加 **SSL CNAME** 记录，直到
+> 它被确认，最后再设置第三条记录。
+> 如果停机时间并不重要或不相关，您可以一次性添加全部三条 DNS 记录。
 
-Both records are created on a subdomain of the custom domain you're setting up.
+在为您的应用分配自定义域名后，该自定义域名将路由到您的 **生产** 部署。
 
-- If you're setting up `example.com`, the records must be created on `_cf-custom-hostname.example.com` and `_acme-challenge.example.com` respectively
-- If you're setting up `anything.example.com`, the records must be created on `_cf-custom-hostname.anything.example.com` and `_acme-challenge.anything.example.com` respectively
+### 自定义域名 DNS 记录
 
-Lastly, the third DNS entry that the dashboard presents will always be the actual DNS record that points your domain at EAS Hosting.
+仪表板向您展示的三条记录中的两条是用于验证您对域名的所有权。
+**Verification TXT** 记录通过添加一个可回读的自定义令牌来证明您拥有该域名，以验证您是在您控制的域名上设置该域名。
+**SSL CNAME** 记录向证书颁发机构证明您对域名的所有权，也称为域控制验证（DCV）。这是一条 CNAME 记录，因为续期和验证都委托给了自动化流程，从而防止证书过期。
 
-- For apex domains, the dashboard typically recommends an **A record** to `172.66.0.241`
-- For subdomains, the dashboard typically recommends a **CNAME record** to `origin.expo.app`
+这两条记录都创建在您正在设置的自定义域名的子域名上。
 
-Both of these records are equivalent, however some DNS providers do not allow CNAME records to be set up on apex domains.
+- 如果您正在设置 `example.com`，这些记录必须分别创建在 `_cf-custom-hostname.example.com` 和 `_acme-challenge.example.com` 上
+- 如果您正在设置 `anything.example.com`，这些记录必须分别创建在 `_cf-custom-hostname.anything.example.com` 和 `_acme-challenge.anything.example.com` 上
 
-### Alias and wildcard subdomains
+最后，仪表板展示的第三条 DNS 记录始终是将您的域名指向 EAS Hosting 的实际 DNS 记录。
 
-> **info** If you had a custom domain set up already before **March 19, 2025**, you must press the "Refresh" button in your project's [Hosting settings](https://expo.dev/accounts/[accountName]/projects/[projectName]/hosting/settings) before following instructions for setting up wildcard domains.
+- 对于顶级域名，仪表板通常建议使用指向 `172.66.0.241` 的 **A record**
+- 对于子域名，仪表板通常建议使用指向 `origin.expo.app` 的 **CNAME record**
 
-While only a single custom domain can be set up per project, you can set up further subdomain DNS records to handle requests for other aliases than just the production alias.
-Requests will be routed to the deployment whose alias matches the subdomain.
+这两种记录是等价的，不过有些 DNS 提供商不允许在顶级域名上设置 CNAME 记录。
 
-For example, after [creating a `staging` alias](/eas/hosting/deployments-and-aliases/#aliases), you may set up CNAME record for your alias:
+### 别名和通配符子域名
 
-- If you've set up an apex domain, for example `example.com`, create a CNAME record on `staging.example.com` set to `origin.expo.app`
-- If you've set up subdomain domain, for example `anything.example.com`, create a CNAME record on `staging.anything.example.com` set to `origin.expo.app`
+> **info** 如果您在 **2025 年 3 月 19 日** 之前已经设置了自定义域名，那么在按照通配符域名设置说明之前，您必须先点击项目 [Hosting settings](https://expo.dev/accounts/[accountName]/projects/[projectName]/hosting/settings) 中的“Refresh”按钮。
 
-If you'd like to direct any subdomain request to any alias you've created, you may instead set up a wildcard CNAME record:
+虽然每个项目只能设置一个自定义域名，但您可以额外设置子域名 DNS 记录，以处理除生产别名之外的其他别名请求。
+请求将路由到其别名与该子域名匹配的部署。
 
-- If you've set up an apex domain, for example `example.com`, create a CNAME record on `*.example.com` set to `origin.expo.app`
-- If you've set up a subdomain domain, for example `anything.example.com`, create a CNAME record on `*.anything.example.com` set to `origin.expo.app`
+例如，在 [创建 `staging` 别名](/eas/hosting/deployments-and-aliases/#aliases) 之后，您可以为您的别名设置 CNAME 记录：
 
-A wildcard CNAME record always starts with `*` and stands for any subdomain. As long as subdomains on your custom domain are set to `origin.expo.app`, EAS Hosting will attempt to send the request to the deployment assigned to an alias with a matching name.
+- 如果您设置的是顶级域名，例如 `example.com`，请在 `staging.example.com` 上创建一个指向 `origin.expo.app` 的 CNAME 记录
+- 如果您设置的是子域名，例如 `anything.example.com`，请在 `staging.anything.example.com` 上创建一个指向 `origin.expo.app` 的 CNAME 记录
 
-The exceptions are `www` subdomains. If you've set up a `www` subdomain, and no alias named `www` exists, the request will be redirected to the custom domain with a 308 response and be treated as a request to the production deployment. If you wish to only set up an automatic redirection for the `www` subdomain on your custom domain, create a CNAME record on `www.<yourdomain>` set to `origin.expo.app`.
+如果您希望将任意子域名请求指向您创建的任意别名，您也可以改为设置通配符 CNAME 记录：
+
+- 如果您设置的是顶级域名，例如 `example.com`，请在 `*.example.com` 上创建一个指向 `origin.expo.app` 的 CNAME 记录
+- 如果您设置的是子域名，例如 `anything.example.com`，请在 `*.anything.example.com` 上创建一个指向 `origin.expo.app` 的 CNAME 记录
+
+通配符 CNAME 记录总是以 `*` 开头，表示任何子域名。只要您自定义域名上的子域名都设置为 `origin.expo.app`，EAS Hosting 就会尝试将请求发送到与匹配名称的别名相关联的部署。
+
+例外情况是 `www` 子域名。如果您已设置 `www` 子域名，但不存在名为 `www` 的别名，请求将以 308 响应重定向到自定义域名，并被视为对生产部署的请求。如果您只想为自定义域名上的 `www` 子域名设置自动重定向，请在 `www.<yourdomain>` 上创建一个指向 `origin.expo.app` 的 CNAME 记录。

@@ -1,6 +1,6 @@
 ---
 title: AppleAuthentication
-description: A library that provides Sign-in with Apple capability for iOS.
+description: 一个为 iOS 提供 Apple 登录能力的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-54/packages/expo-apple-authentication'
 packageName: 'expo-apple-authentication'
 platforms: ['ios', 'tvos', 'expo-go']
@@ -11,21 +11,21 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 import { ConfigReactNative, ConfigPluginExample } from '~/ui/components/ConfigSection';
 import { SnackInline } from '~/ui/components/Snippet';
 
-`expo-apple-authentication` provides Apple authentication for iOS. It does not yet support Android or web.
+`expo-apple-authentication` 为 iOS 提供 Apple 身份验证。它目前尚不支持 Android 或 web。
 
-Any app that includes third-party authentication options **must** provide Apple authentication as an option to comply with App Store Review guidelines. For more information, see Apple authentication on the [Sign In with Apple](https://developer.apple.com/sign-in-with-apple/) website.
+任何包含第三方身份验证选项的应用**必须**提供 Apple 身份验证作为一个选项，以符合 App Store 审核指南。更多信息请参阅 [使用 Apple 登录](https://developer.apple.com/sign-in-with-apple/) 网站上的 Apple 身份验证。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Configuration in app config
+## 在 app 配置中进行配置
 
-You can configure `expo-apple-authentication` using its built-in [config plugin](/config-plugins/introduction/) if you use config plugins in your project ([Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)). The plugin allows you to configure various properties that cannot be set at runtime and require building a new app binary to take effect. If your app does **not** use CNG, then you'll need to manually configure the library.
+如果你在项目中使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-apple-authentication` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置各种无法在运行时设置、且需要构建新的应用二进制文件后才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
 
-### Setup iOS project
+### 设置 iOS 项目
 
-To enable the **Sign In with Apple** capability in your app, set the [`ios.usesAppleSignIn`](../config/app/#usesapplesignin) property to `true` in your project's app config:
+要在应用中启用 **使用 Apple 登录** 功能，请在项目的 app 配置中将 [`ios.usesAppleSignIn`](../config/app/#usesapplesignin) 属性设置为 `true`：
 
 ```json app.json
 {
@@ -39,7 +39,7 @@ To enable the **Sign In with Apple** capability in your app, set the [`ios.usesA
 
 <ConfigPluginExample>
 
-Running [EAS Build](/build/introduction) locally will use [iOS capabilities signing](/build-reference/ios-capabilities) to enable the required capabilities before building.
+在本地运行 [EAS Build](/build/introduction) 时，会使用 [iOS capabilities signing](/build-reference/ios-capabilities) 在构建前启用所需的能力。
 
 ```json app.json
 {
@@ -53,9 +53,9 @@ Running [EAS Build](/build/introduction) locally will use [iOS capabilities sign
 
 <ConfigReactNative>
 
-Apps that don't use [EAS Build](/build/introduction) must [manually configure](/build-reference/ios-capabilities#manual-setup) the **Apple Sign In** capability for their bundle identifier.
+不使用 [EAS Build](/build/introduction) 的应用必须为其 bundle identifier [手动配置](/build-reference/ios-capabilities#manual-setup) **Apple 登录** 能力。
 
-If you enable the **Apple Sign In** capability through the [Apple Developer Console](/build-reference/ios-capabilities#apple-developer-console), then be sure to add the following entitlements in your **ios/[app]/[app].entitlements** file:
+如果你通过 [Apple Developer Console](/build-reference/ios-capabilities#apple-developer-console) 启用了 **Apple 登录** 能力，那么请务必在 **ios/[app]/[app].entitlements** 文件中添加以下 entitlements：
 
 ```xml
 <key>com.apple.developer.applesignin</key>
@@ -64,11 +64,11 @@ If you enable the **Apple Sign In** capability through the [Apple Developer Cons
 </array>
 ```
 
-Also, set `CFBundleAllowMixedLocalizations` to `true` in your **ios/[app]/Info.plist** to ensure the sign-in button uses the device locale.
+另外，请在 **ios/[app]/Info.plist** 中将 `CFBundleAllowMixedLocalizations` 设置为 `true`，以确保登录按钮使用设备语言区域。
 
 </ConfigReactNative>
 
-## Usage
+## 使用
 
 <SnackInline label="Apple Authentication Usage" dependencies={['expo-apple-authentication']} platforms={['ios']}>
 
@@ -92,12 +92,12 @@ export default function App() {
                 AppleAuthentication.AppleAuthenticationScope.EMAIL,
               ],
             });
-            // signed in
+            // 已登录
           } catch (e) {
             if (e.code === 'ERR_REQUEST_CANCELED') {
-              // handle that the user canceled the sign-in flow
+              // 处理用户取消登录流程
             } else {
-              // handle other errors
+              // 处理其他错误
             }
           }
         }}
@@ -121,20 +121,20 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
-## Development and testing
+## 开发与测试
 
-You can test this library in Expo Go on iOS without following any of the instructions above.
-However, you'll need to add the config plugin to use this library if you are using EAS Build.
-When you sign into Expo Go, the identifiers and values you receive will likely be different than what you'll receive in standalone apps.
+你可以在 iOS 上的 Expo Go 中测试这个库，而无需遵循以上任何说明。
+不过，如果你正在使用 EAS Build，则需要添加 config plugin 才能使用这个库。
+当你登录 Expo Go 时，你收到的标识符和值很可能会与在独立应用中收到的不同。
 
-You can do limited testing of this library on the iOS Simulator. However, not all methods will behave the same as on a device,
-so we highly recommend testing on a real device when possible while developing.
+你可以在 iOS 模拟器上对这个库进行有限的测试。不过，并非所有方法的表现都与真机相同，
+因此我们强烈建议在开发过程中尽可能使用真机进行测试。
 
-## Verifying the Response from Apple
+## 验证来自 Apple 的响应
 
-Apple's response includes a signed JWT with information about the user. To ensure that the response came from Apple,
-you can cryptographically verify the signature with Apple's public key, which is published at https://appleid.apple.com/auth/keys.
-This process is not specific to Expo.
+Apple 的响应包含一个带有用户信息的签名 JWT。为确保该响应来自 Apple，
+你可以使用 Apple 的公钥对签名进行加密验证，该公钥发布于 https://appleid.apple.com/auth/keys。
+此过程并非 Expo 特有。
 
 ## API
 
@@ -144,17 +144,17 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 
 <APISection packageName="expo-apple-authentication" apiName="AppleAuthentication" />
 
-## Error codes
+## 错误代码
 
-Most of the error codes match the official [Apple Authorization errors](https://developer.apple.com/documentation/authenticationservices/asauthorizationerror/code).
+大多数错误代码与官方的 [Apple Authorization errors](https://developer.apple.com/documentation/authenticationservices/asauthorizationerror/code) 相匹配。
 
-| Code                        | Description                                                                         |
-| --------------------------- | ----------------------------------------------------------------------------------- |
-| ERR_INVALID_OPERATION       | An invalid authorization operation has been performed.                              |
-| ERR_INVALID_RESPONSE        | The authorization request received an invalid response.                             |
-| ERR_INVALID_SCOPE           | An invalid [`AppleAuthenticationScope`](#appleauthenticationscope) was passed in.   |
-| ERR_REQUEST_CANCELED        | The user canceled the authorization attempt.                                        |
-| ERR_REQUEST_FAILED          | The authorization attempt failed. See the error message for additional information. |
-| ERR_REQUEST_NOT_HANDLED     | The authorization request wasn't correctly handled.                                 |
-| ERR_REQUEST_NOT_INTERACTIVE | The authorization request isn't interactive.                                        |
-| ERR_REQUEST_UNKNOWN         | The authorization attempt failed for an unknown reason.                             |
+| 代码                        | 描述                                                                             |
+| --------------------------- | -------------------------------------------------------------------------------- |
+| ERR_INVALID_OPERATION       | 执行了无效的授权操作。                                                            |
+| ERR_INVALID_RESPONSE        | 授权请求收到了无效响应。                                                          |
+| ERR_INVALID_SCOPE           | 传入了无效的 [`AppleAuthenticationScope`](#appleauthenticationscope)。           |
+| ERR_REQUEST_CANCELED        | 用户取消了授权尝试。                                                              |
+| ERR_REQUEST_FAILED          | 授权尝试失败。有关更多信息，请参阅错误消息。                                      |
+| ERR_REQUEST_NOT_HANDLED     | 授权请求未被正确处理。                                                            |
+| ERR_REQUEST_NOT_INTERACTIVE | 授权请求不是交互式的。                                                            |
+| ERR_REQUEST_UNKNOWN         | 授权尝试因未知原因失败。                                                          |

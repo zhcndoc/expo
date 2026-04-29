@@ -1,38 +1,38 @@
 ---
-title: Async routes
-description: Learn how to speed up development with async bundling in Expo Router.
+title: 异步路由
+description: 了解如何通过 Expo Router 中的异步打包来加快开发速度。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-> **important** Async routes is in [alpha](/more/release-statuses/#alpha).
+> **重要** 异步路由处于 [alpha](/more/release-statuses/#alpha) 阶段。
 
 <ContentSpotlight file="expo-router/async-routes.mp4" loop={false} />
 
-Expo Router can automatically split your JavaScript bundle based on the route files using [React Suspense](https://react.dev/reference/react/Suspense). This enables faster development as only the routes you navigate to will be bundled or loaded into memory. This can also be useful for reducing the initial bundle size for your application.
+Expo Router 可以使用 [React Suspense](https://react.dev/reference/react/Suspense) 根据路由文件自动拆分你的 JavaScript bundle。这样可以加快开发速度，因为只有你导航到的路由才会被打包或加载到内存中。这对于减小应用的初始 bundle 大小也很有帮助。
 
-Apps using the Hermes Engine will not benefit as much from bundle splitting as the bytecode is already memory mapped ahead of time. However, it will improve your over-the-air updates, React Server Components, and web support.
+使用 Hermes Engine 的应用不会从 bundle 拆分中获得太多收益，因为字节码已经提前映射到内存中。不过，它会提升你的空中更新、React Server Components 和 Web 支持。
 
-> When bundling for production **on native platforms**, all suspense boundaries **will be disabled** and there will be no loading states.
+> 在 **原生平台** 上进行生产环境打包时，所有 suspense 边界 **都会被禁用**，并且不会有加载状态。
 
-## How it works
+## 工作原理
 
-All Routes are wrapped inside a suspense boundary and are loaded asynchronously. This means that the first time you navigate to a route, it will take a little longer to load. However, once it is loaded, it will be cached and subsequent visits will be instant.
+所有路由都会被包裹在一个 suspense 边界中，并异步加载。这意味着你第一次导航到某个路由时，加载会稍微慢一些。不过，一旦加载完成，它就会被缓存，后续访问将会立即显示。
 
 {/* The [Suspense fallback](https://react.dev/reference/react/Suspense#displaying-a-fallback-while-content-is-loading) or loading state **cannot be customized** at this time. We plan to add support in the future via a **route+loading.js** file. */}
 
-Loading errors are handled in the parent route, via the [`ErrorBoundary`](/router/error-handling/#errorboundary) export.
+加载错误会在父路由中通过 [`ErrorBoundary`](/router/error-handling/#errorboundary) 导出进行处理。
 
-Async routes cannot be statically analyzed during development, so all files will be treated as routes even if they don't export a default component. After the component is bundled and loaded, any invalid route will use a fallback warning screen.
+在开发过程中，异步路由无法被静态分析，因此即使文件没有导出默认组件，也会将所有文件视为路由。在组件完成打包并加载后，任何无效路由都会使用一个回退警告界面。
 
-For those familiar with advanced bundling techniques, the async routes feature is composed of [React Suspense](https://react.dev/reference/react/Suspense), [route-based bundle splitting](https://legacy.reactjs.org/docs/code-splitting.html#route-based-code-splitting) and [lazy bundling](https://github.com/react-native-community/discussions-and-proposals/blob/main/proposals/0605-lazy-bundling.md) (in development).
+对于熟悉高级打包技术的人来说，异步路由功能由 [React Suspense](https://react.dev/reference/react/Suspense)、[基于路由的代码拆分](https://legacy.reactjs.org/docs/code-splitting.html#route-based-code-splitting) 和 [懒加载打包](https://github.com/react-native-community/discussions-and-proposals/blob/main/proposals/0605-lazy-bundling.md)（开发中）组成。
 
-## Setup
+## 设置
 
-Enable the feature by setting the `asyncRoutes` option in the Expo Router config plugin of your [app config](/versions/latest/config/app/):
+通过在你的 [app 配置](/versions/latest/config/app/) 中的 Expo Router 配置插件里设置 `asyncRoutes` 选项来启用该功能：
 
-    > Set `asyncRoutes` to `true` to enable production bundle splitting.
+    > 将 `asyncRoutes` 设置为 `true` 以启用生产环境的包拆分。
 
     ```json app.json
     {
@@ -53,7 +53,7 @@ Enable the feature by setting the `asyncRoutes` option in the Expo Router config
     }
     ```
 
-You can set platform-specific settings (`default`, `android`, `ios` or `web`) for `asyncRoutes` using an object:
+你可以使用对象为 `asyncRoutes` 设置平台特定配置（`default`、`android`、`ios` 或 `web`）：
 
 ```json app.json
 {
@@ -75,24 +75,24 @@ You can set platform-specific settings (`default`, `android`, `ios` or `web`) fo
 }
 ```
 
-Then, when you are about to start your project, you can use the `--clear` flag to clear the Metro cache. This will ensure that the routes are loaded asynchronously:
+然后，在即将启动项目时，你可以使用 `--clear` 标志清除 Metro 缓存。这将确保路由以异步方式加载：
 
 <Terminal
-  cmd={['$ npx expo start --clear', '', '# Or when exporting', '$ npx expo export --clear']}
+  cmd={['$ npx expo start --clear', '', '# 或在导出时', '$ npx expo export --clear']}
 />
 
-## Static rendering
+## 静态渲染
 
-Static rendering is supported in production web apps by rendering all Suspense boundaries synchronously in Node.js, then linking all of async chunks together in the HTML based on all the selected routes for a given HTML file. This ensures you don't encounter a waterfall of loading states on server navigations. Subsequent navigations will recursively load any missing chunks.
+在生产版 Web 应用中，静态渲染通过在 Node.js 中同步渲染所有 Suspense 边界来支持，然后基于某个 HTML 文件所选中的所有路由，将所有异步 chunk 连接到 HTML 中。这可以确保你在服务器导航时不会遇到一连串的加载状态。后续的导航会递归加载任何缺失的 chunk。
 
-To ensure a consistent first render, all layout routes leading up to the leaf route for a URL will be included in the initial server response.
+为了确保首次渲染的一致性，通向某个 URL 的叶子路由之前的所有布局路由都会包含在初始服务器响应中。
 
-All initial routes, defined with `unstable_settings = { initialRouteName: '...' }` will be included in the initial HTML file as they are required for the first render. For example, if the server request is for a modal, the screen rendered under the modal will also be included to ensure the modal is rendered correctly.
+所有使用 `unstable_settings = { initialRouteName: '...' }` 定义的初始路由都会包含在初始 HTML 文件中，因为首次渲染需要它们。例如，如果服务器请求的是一个模态框，那么模态框下方渲染的屏幕也会被包含进来，以确保模态框能够正确渲染。
 
-## Caveats
+## 注意事项
 
-Async Routes represents an early preview of how we plan to support [React Server Components](https://react.dev/blog/2023/03/22/react-labs-what-we-have-been-working-on-march-2023#react-server-components) in the future. As such, there are some caveats to be aware of:
+Async Routes 代表了我们未来计划支持 [React Server Components](https://react.dev/blog/2023/03/22/react-labs-what-we-have-been-working-on-march-2023#react-server-components) 的早期预览。因此，有一些注意事项需要了解：
 
-- Async Routes do not support native production apps yet.
-- In development, the runtime JavaScript is lazily bundled so you may encounter cases where the HTML doesn't match the available JavaScript.
-- The loading state cannot be customized at this time.
+- Async Routes 目前还不支持原生生产应用。
+- 在开发环境中，运行时 JavaScript 会采用懒加载打包，因此你可能会遇到 HTML 与可用 JavaScript 不匹配的情况。
+- 目前无法自定义加载状态。

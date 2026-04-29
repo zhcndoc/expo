@@ -8,17 +8,17 @@ import { Select } from '~/ui/components/Select';
 const options = [
   {
     id: Themes.AUTO,
-    label: 'Auto',
+    label: '自动',
     Icon: Contrast02SolidIcon,
   },
   {
     id: Themes.LIGHT,
-    label: 'Light',
+    label: '浅色',
     Icon: SunSolidIcon,
   },
   {
     id: Themes.DARK,
-    label: 'Dark',
+    label: '深色',
     Icon: Moon01SolidIcon,
   },
 ];
@@ -44,8 +44,8 @@ export function ThemeSelector() {
       value={themeName ?? Themes.AUTO}
       onValueChange={onThemeSelect}
       options={options}
-      optionsLabel="Theme"
-      ariaLabel="Theme selector"
+      optionsLabel="主题"
+      ariaLabel="主题选择器"
     />
   );
 }

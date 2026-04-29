@@ -1,165 +1,165 @@
 ---
-title: Security
-description: Learn how credentials and other sensitive data are handled when using EAS.
+title: 安全
+description: 了解在使用 EAS 时如何处理凭证和其他敏感数据。
 ---
 
-Before you enter outside credentials or provide other sensitive data to third-party software you should ask yourself whether you trust the software to use it responsibly and protect it. Due to the nature of what goes into building an app binary for distribution on app stores, the Expo standalone app build service requires various pieces of information with varying degrees of sensitivity. This document explains what those are, how we store them, and what could go wrong if they were to be compromised.
+在你向第三方软件输入外部凭证或提供其他敏感数据之前，你应该先问问自己是否信任该软件会负责任地使用并保护这些信息。由于构建用于在应用商店分发的应用二进制文件所涉及的性质，Expo 独立应用构建服务需要各种敏感程度不同的信息。本文档将说明这些信息是什么、我们如何存储它们，以及如果它们被泄露可能会发生什么。
 
-Most data stored by Expo servers (credentials or otherwise) is encrypted at rest by our cloud provider, Google Cloud. Credentials are additionally encrypted using [KMS](https://cloud.google.com/security/products/security-key-management). Credentials are only unencrypted for as long as we need them in memory in the standalone app builders or push notification services. Credentials are always encrypted in our databases, message queues, and other less transient parts of the system.
+Expo 服务器中存储的大多数数据（无论是否为凭证）在静态存储时都会由我们的云提供商 Google Cloud 加密。凭证还会使用 [KMS](https://cloud.google.com/security/products/security-key-management) 进行额外加密。凭证只有在我们需要它们于独立应用构建器或推送通知服务的内存中停留的期间内才会保持解密状态。凭证在我们的数据库、消息队列以及系统中其他更不易变动的部分始终是加密的。
 
-All of the data related to the information explained below can be downloaded and removed from Expo servers (if it is stored there at all in the first place), and some of it may be available through other locations such as the Apple Developer Portal.
+与下文所述信息相关的所有数据都可以从 Expo 服务器上下载并移除（如果它们一开始就存储在那里），其中一些也可能可通过其他位置获取，例如 Apple Developer Portal。
 
-## Android Push Notification credentials
+## Android 推送通知凭证
 
-Android uses Firebase Cloud Messaging (FCM) for push notifications. If you build a standalone app with Expo we store your FCM server key for you.
+Android 使用 Firebase Cloud Messaging（FCM）进行推送通知。如果你使用 Expo 构建独立应用，我们会为你存储 FCM 服务器密钥。
 
-### Consequences if compromised
+### 如果泄露的后果
 
-Each FCM server key can send push notifications to any of the Android apps associated with the Firebase project to which the key belongs. A malicious actor would need to have access to the FCM server key and device tokens to send a notification.
+每个 FCM 服务器密钥都可以向与该密钥所属 Firebase 项目关联的任何 Android 应用发送推送通知。恶意行为者需要同时访问 FCM 服务器密钥和设备令牌才能发送通知。
 
-You can create and delete server keys through the Firebase console. When you delete a key, notifications using that key will stop working. When you create a new one and upload it to Expo, notifications will resume working.
+你可以通过 Firebase 控制台创建和删除服务器密钥。当你删除某个密钥时，使用该密钥的通知将停止工作。当你创建新密钥并将其上传到 Expo 后，通知将恢复正常。
 
-### Consequences if lost
+### 如果丢失的后果
 
-None. You can access it through the Firebase console.
+没有影响。你可以通过 Firebase 控制台访问它。
 
-## Android build credentials
+## Android 构建凭证
 
-A keystore and keystore password are required to sign a build for release to the Play Store. These are encrypted with KMS and additionally at rest. After an app is first submitted to the Google Play Store, the same keystore must be used to sign the app again to update it. It proves that the APK came from the developer who owns the keystore. The keystore alone doesn't let you submit to Google Play &mdash; your Google account needs access to the Google Play Console as well.
+为将构建版本发布到 Play 商店，需要 keystore 和 keystore 密码来签名构建。它们使用 KMS 加密，并且在静态存储时也会被加密。应用首次提交到 Google Play 商店后，后续更新该应用时必须继续使用同一个 keystore 对应用签名。它证明 APK 来自拥有该 keystore 的开发者。仅有 keystore 本身并不能让你提交到 Google Play——你的 Google 账户还需要能够访问 Google Play 控制台。
 
-### Consequences if compromised
+### 如果泄露的后果
 
-Provided that your Google Play Developer account is secure, a malicious actor will not be able to update your app with your keystore and keystore password. You cannot change your keystore.
+只要你的 Google Play 开发者账户是安全的，恶意行为者就无法使用你的 keystore 和 keystore 密码更新你的应用。你无法更改你的 keystore。
 
-### Consequences if lost
+### 如果丢失的后果
 
-You will not be able to update your app on Google Play. You may want to download and backup the keystore and keystore password in a secure location of your choosing or in Google Play with the App Signing feature.
+你将无法在 Google Play 上更新你的应用。你可能希望将 keystore 和 keystore 密码下载并备份到你选择的安全位置，或者使用 App Signing 功能将其备份到 Google Play。
 
-## Google Developer credentials
+## Google 开发者凭证
 
-Expo tools never ask you to provide your Google account credentials.
+Expo 工具从不会要求你提供 Google 账户凭证。
 
-## Android submit credentials
+## Android 提交凭证
 
-### Google Service Account Key
+### Google 服务账号密钥
 
-Google Service Account Key is the authentication method used to submit an Android app to the Google Play Store with EAS Submit. This key is stored on Expo servers and encrypted using [KMS](https://cloud.google.com/security/products/security-key-management) when at rest. The key will remain on Expo servers to be re-used for subsequent submissions, and it can be removed at any time by a user with the requisite permissions.
+Google 服务账号密钥是使用 EAS Submit 将 Android 应用提交到 Google Play 商店时所使用的身份验证方法。该密钥存储在 Expo 服务器上，并在静态存储时使用 [KMS](https://cloud.google.com/security/products/security-key-management) 加密。该密钥会保留在 Expo 服务器上以供后续提交复用，并且拥有相应权限的用户可随时将其移除。
 
-#### Consequences if compromised
+#### 如果泄露的后果
 
-If a malicious actor somehow gains access to your Google Service Account Key, they would be able to perform actions in the Google Play Console on your behalf. The actions they could perform would be limited to the permissions granted to the service account key.
+如果恶意行为者以某种方式获得了你的 Google 服务账号密钥，他们将能够代表你在 Google Play 控制台中执行操作。其可执行的操作将仅限于授予该服务账号密钥的权限。
 
-If the attacker has additionally gained access to your upload keystore, they would be able to submit a new version of an existing app. The actor would not be able to submit a new app to the Google Play Store in your name, as the first Google Play submission needs to be done through the web console.
+如果攻击者还获取了你的上传 keystore，他们将能够提交现有应用的新版本。但攻击者无法以你的名义向 Google Play 商店提交一个新应用，因为首次 Google Play 提交需要通过网页控制台完成。
 
-#### Consequences if lost
+#### 如果丢失的后果
 
-None. If you lose the Google Service Account Key, you can revoke it using the Google Cloud Console and create a new one.
+没有影响。如果你丢失了 Google 服务账号密钥，可以使用 Google Cloud Console 将其撤销并创建一个新的。
 
-## iOS Push Notification credentials
+## iOS 推送通知凭证
 
-There are two types of iOS push notification credentials: one modern approach recommended by Apple and the legacy approach. The default behavior is to use the modern approach, but developers may opt-in to the legacy approach by providing a p12 certificate.
+iOS 推送通知凭证有两种类型：一种是 Apple 推荐的现代方式，另一种是旧方式。默认行为是使用现代方式，但开发者可以通过提供 p12 证书选择旧方式。
 
-### APNs auth key (p8) + key ID (string)
+### APNs auth key（p8）+ key ID（字符串）
 
-Each developer account has up to two auth keys, each of which can send notifications to any app on the account.
+每个开发者账户最多有两个 auth key，每个都可以向该账户下的任何应用发送通知。
 
-Auth keys are revocable from the Apple Developer Center. If you revoke them, notifications will stop working. If you provision a new auth key and upload it to Expo then notifications will resume working. Device tokens are not invalidated when auth keys are revoked.
+auth key 可在 Apple Developer Center 中撤销。如果你撤销它们，通知将停止工作。如果你生成新的 auth key 并将其上传到 Expo，通知将恢复正常。即使 auth key 被撤销，设备令牌也不会失效。
 
-### Consequences if compromised
+### 如果泄露的后果
 
-If a malicious actor were to somehow gain access to the credentials, they would be able to send push notifications to your app. However, they would need to know which device tokens to send them to.
+如果恶意行为者以某种方式获得了这些凭证，他们将能够向你的应用发送推送通知。不过，他们还需要知道要发送到哪些设备令牌。
 
-### Consequences if lost
+### 如果丢失的后果
 
-The Apple Developer console lets you download an APNs Auth Key only when it is created. If an Auth Key is lost, it can be revoked through the Apple Developer console and replaced with a new key.
+Apple Developer 控制台只允许你在创建 APNs Auth Key 时下载它。如果 Auth Key 丢失，可以通过 Apple Developer 控制台将其撤销并用新的密钥替换。
 
-## iOS build credentials
+## iOS 构建凭证
 
-This refers to the production distribution certificate and password (which are automatically generated if you let Expo manage them for you) and provisioning profiles (which are not secret). Like most credential data stored by Expo these are all encrypted with KMS. Your build credentials let you build an app to upload to App Store Connect. To actually upload it and submit it for review, though, you need to have your Apple Developer account credentials.
+这指的是生产分发证书和密码（如果你让 Expo 为你管理，它们会自动生成）以及配置文件（它们不是机密）。与 Expo 存储的大多数凭证数据一样，这些内容都使用 KMS 加密。你的构建凭证可让你构建应用以上传到 App Store Connect。不过，要真正上传并提交审核，你还需要 Apple Developer 账户凭证。
 
-### Consequences if compromised
+### 如果泄露的后果
 
-There isn't much that a malicious actor could do with this alone &mdash; they would be unable to submit any apps without having your Apple Developer account credentials. You can revoke the distribution certificate and provisioning profile from the Apple Developer website.
+仅凭这些，恶意行为者能做的事情并不多——没有你的 Apple Developer 账户凭证，他们无法提交任何应用。你可以在 Apple Developer 网站上撤销分发证书和配置文件。
 
-### Consequences if lost
+### 如果丢失的后果
 
-None. They are available through the Apple Developer console.
+没有影响。它们可通过 Apple Developer 控制台获取。
 
-## Apple Developer account credentials
+## Apple Developer 账户凭证
 
-When creating a standalone app build, or uploading to the App Store you will be prompted for your Apple Developer account credentials. We do not store these on our servers &mdash; EAS CLI only uses them locally. Your computer alone provisions distribution certificates and auth keys that are sent to Expo servers; your developer credentials are not sent to Expo servers. An additional layer of security is enforced by Apple, as they require two-factor authentication for all Apple Developer accounts.
+在创建独立应用构建或上传到 App Store 时，系统会提示你输入 Apple Developer 账户凭证。我们不会将这些凭证存储在服务器上——EAS CLI 只在本地使用它们。只有你的电脑会生成并向 Expo 服务器发送分发证书和 auth key；你的开发者凭证不会发送到 Expo 服务器。Apple 还施加了额外的安全层，因为所有 Apple Developer 账户都要求双重身份验证。
 
-When creating ad-hoc builds, we temporarily store an Apple Developer session token used to create an ad-hoc provisioning profile with your development device's UDID. Once we are done using this session token we destroy it.
+在创建 ad-hoc 构建时，我们会临时存储一个 Apple Developer 会话令牌，用于使用你的开发设备 UDID 创建 ad-hoc 配置文件。当我们不再使用该会话令牌时，我们会销毁它。
 
 ### Keychain
 
-By default, your Apple ID credentials are stored in the macOS Keychain.
-Your password is only ever stored locally on your computer. This feature is not available for Windows or Linux users.
+默认情况下，你的 Apple ID 凭证会存储在 macOS Keychain 中。
+你的密码只会保存在你电脑本地。此功能不适用于 Windows 或 Linux 用户。
 
-Disable Keychain support with the environment variable `EXPO_NO_KEYCHAIN=1`. You can also use this to change the saved password.
+可通过环境变量 `EXPO_NO_KEYCHAIN=1` 禁用 Keychain 支持。你也可以用它来更改已保存的密码。
 
-### Changing Apple ID password in Keychain
+### 在 Keychain 中更改 Apple ID 密码
 
-To delete the locally stored password, open the "Keychain Access" app, switch to "All Items", and search for "deliver. [Your Apple ID]" (example: `deliver.bacon@expo.dev`). Select the item you wish to modify and delete it. Next time running an Expo command you'll be prompted for a new password.
+要删除本地存储的密码，请打开“Keychain Access”应用，切换到“All Items”，然后搜索“deliver. [Your Apple ID]”（例如：`deliver.bacon@expo.dev`）。选中你想修改的项目并将其删除。下次运行 Expo 命令时，系统会提示你输入新密码。
 
-### Consequences if compromised
+### 如果泄露的后果
 
-For standalone builds, as explained above, your machine would need to be compromised for a malicious actor to have access to your username and password. They would also need to have access to your two-factor authentication code generator, which for Apple Developer accounts is a pre-authorized Apple device. At this point, you may have worse problems, but as you may expect, the actor would be able to do whatever they like with your Apple Developer account.
+对于独立构建，如上所述，恶意行为者要想获得你的用户名和密码，必须先入侵你的机器。他们还需要访问你的双重身份验证码生成器，而对于 Apple Developer 账户来说，这通常是一个已预先授权的 Apple 设备。到了这一步，你可能已经有更严重的问题了，但正如你所预料的那样，该行为者将能够使用你的 Apple Developer 账户执行他们想做的任何事情。
 
-For ad-hoc builds, if a user were to gain access to your session token it would be comparable to being signed in to your account.
+对于 ad-hoc 构建，如果有人获得了你的会话令牌，其效果相当于已登录你的账户。
 
-### Consequences if lost
+### 如果丢失的后果
 
-None. They are available through the Apple Developer console.
+没有影响。它们可通过 Apple Developer 控制台获取。
 
-## iOS submit credentials
+## iOS 提交凭证
 
-### Apple App Store Connect (ASC) API key
+### Apple App Store Connect（ASC）API key
 
-Apple App Store Connect (ASC) API key is one of the authentication methods that can be used to submit an iOS app to Apple's App Store using the EAS Submit service. This key is stored on the Expo servers and encrypted using [KMS](https://cloud.google.com/security/products/security-key-management) when at rest. The key will remain on Expo servers to be re-used for subsequent submissions, and it can be removed at any time by a user with the requisite permissions.
+Apple App Store Connect（ASC）API key 是使用 EAS Submit 服务将 iOS 应用提交到 Apple App Store 的认证方法之一。该密钥存储在 Expo 服务器上，并在静态存储时使用 [KMS](https://cloud.google.com/security/products/security-key-management) 加密。该密钥会保留在 Expo 服务器上以供后续提交复用，并且拥有相应权限的用户可随时将其移除。
 
-The ASC API key is the default and **recommended** authentication method for submitting your apps to the App Store using EAS Submit.
+ASC API key 是使用 EAS Submit 将应用提交到 App Store 时默认且**推荐**的认证方法。
 
-#### Consequences if compromised
+#### 如果泄露的后果
 
-If a malicious actor somehow gains access to the ASC API key, they would be able to perform actions in the App Store Connect on your behalf. The actions they could perform would be limited to the permissions granted to the API key.
+如果恶意行为者以某种方式获得了 ASC API key，他们将能够代表你在 App Store Connect 中执行操作。其可执行的操作将仅限于授予该 API key 的权限。
 
-If the attacker has additionally gained access to your build credentials, they would be able to submit a new version of an existing app. They would only be able to submit the app signed with those build credentials, and they can't submit any arbitrary app to the App Store in your name.
+如果攻击者还获取了你的构建凭证，他们将能够提交现有应用的新版本。他们只能提交由这些构建凭证签名的应用，并且不能以你的名义向 App Store 提交任何任意应用。
 
-#### Consequences if lost
+#### 如果丢失的后果
 
-None. If you lose the ASC API key, you can revoke it using the App Store Connect portal and create a new one.
+没有影响。如果你丢失了 ASC API key，可以使用 App Store Connect 门户将其撤销并创建一个新的。
 
-### Apple app-specific password
+### Apple 应用专用密码
 
-Apple app-specific password is another authentication method that can be used to submit an iOS app to Apple's App Store using the EAS Submit. Unlike other credentials, the app-specific password is not stored in the Expo servers between submissions, it must be provided each time it is to be used.
+Apple 应用专用密码是使用 EAS Submit 将 iOS 应用提交到 Apple App Store 的另一种认证方法。与其他凭证不同，应用专用密码不会在两次提交之间存储在 Expo 服务器上，必须每次使用时都提供。
 
-The password is encrypted using [KMS](https://cloud.google.com/security/products/security-key-management) and stored only for the period required to submit the app to the App Store plus 24 hours, to allow for retries during that time. Once this period is over, the password is deleted from the Expo servers.
+该密码使用 [KMS](https://cloud.google.com/security/products/security-key-management) 加密，并且只会存储提交应用到 App Store 所需的时间，再加上 24 小时，以便在这段时间内重试。该时间结束后，密码会从 Expo 服务器上删除。
 
-This authentication method is **not recommended**. We recommend using the Apple Store Connect (ASC) API key for submitting your apps to the App Store instead. Expo won't use the Apple app-specific password in any way other than to submit your app to the App Store.
+**不推荐**使用此认证方法。我们建议改用 Apple Store Connect（ASC）API key 来提交你的应用到 App Store。Expo 除了将你的应用提交到 App Store 之外，不会以其他任何方式使用 Apple 应用专用密码。
 
-#### Consequences if compromised
+#### 如果泄露的后果
 
-If a malicious actor somehow gains access to the app-specific password, they would be able to access information like mail, contacts, and calendars that you store in iCloud (check [Apple's documentation](https://support.apple.com/en-us/102654) for more details).
+如果恶意行为者以某种方式获得了应用专用密码，他们将能够访问你存储在 iCloud 中的邮件、联系人和日历等信息（更多详情请查看 [Apple 的文档](https://support.apple.com/en-us/102654)）。
 
-If the attacker has additionally gained access to your build credentials, they would be able to submit a new version of an existing app. They would only be able to submit the app signed with those build credentials, and they can't submit any arbitrary app to the App Store in your name.
+如果攻击者还获取了你的构建凭证，他们将能够提交现有应用的新版本。他们只能提交由这些构建凭证签名的应用，并且不能以你的名义向 App Store 提交任何任意应用。
 
-#### Consequences if lost
+#### 如果丢失的后果
 
-None. If you lose the app-specific password, you can revoke it and create a new one in the Apple account settings.
+没有影响。如果你丢失了应用专用密码，可以在 Apple 账户设置中撤销并创建一个新的。
 
-## Device tokens for Android and iOS push notifications
+## Android 和 iOS 推送通知的设备令牌
 
-On top of the platform-specific credentials, a device token is necessary to send a push notification. Expo manages this for you and provides an abstraction on top of it with the Expo Push Token. The device token identifies the recipient, that is, the device to whom the notification is being sent. The device tokens are encrypted at rest and periodically cycled automatically by Android and iOS.
+除了平台特定的凭据之外，发送推送通知还需要设备令牌。Expo 会为你管理这一点，并在其之上通过 Expo Push Token 提供一个抽象层。设备令牌用于标识接收者，也就是接收通知的设备。设备令牌在静态存储时会被加密，并且会由 Android 和 iOS 定期自动轮换。
 
-### Consequences if compromised
+### 如果被泄露的后果
 
-If a malicious actor has access to the device tokens, they will be unable to do anything with them unless they also have the push notification credentials for the appropriate platform.
+如果恶意行为者获取了设备令牌，除非他们同时拥有相应平台的推送通知凭据，否则他们无法利用这些令牌做任何事情。
 
-### Consequences if lost
+### 如果丢失的后果
 
-You won't be able to send notifications to users until they open your app again.
+在用户再次打开你的应用之前，你将无法向他们发送通知。
 
-## Need more control?
+## 需要更多控制？
 
-If the above information doesn't satisfy your security requirements, you may wish to run your standalone app builds [on your infrastructure](/build-reference/local-builds/). Note that you will still need to provide your push notification credentials to use the push notification service. If that is also impossible, we recommend handling push notifications on your own.
+如果上述信息无法满足你的安全要求，你可以考虑在[你的基础设施上](/build-reference/local-builds/)运行独立应用构建。请注意，要使用推送通知服务，你仍然需要提供推送通知凭据。如果这也不可能，我们建议你自行处理推送通知。

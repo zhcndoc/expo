@@ -1,6 +1,6 @@
 ---
-title: Server middleware
-description: Learn how to create middleware that runs for every request to the server in Expo Router.
+title: 服务器中间件
+description: 了解如何创建在 Expo Router 中对服务器的每个请求都运行的中间件。
 isAlpha: true
 ---
 
@@ -8,17 +8,17 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **important** Server middleware is in [alpha](/more/release-statuses/#alpha) and is available in SDK 54 and later. It requires a [deployed server](/router/web/api-routes/#deployment) for production use.
+> **重要** Server middleware 处于 [alpha](/more/release-statuses/#alpha) 阶段，并且可在 SDK 54 及更高版本中使用。它在生产环境中使用时需要一个[已部署的服务器](/router/web/api-routes/#deployment)。
 
-Server middleware in Expo Router allows you to run code before requests reach your routes, enabling powerful server-side functionality like authentication and logging for every request. Unlike [API routes](/router/web/api-routes) that handle specific endpoints, middleware runs for **every** request in your app, so it should run as quickly as possible to avoid slowing down your app's performance. Client-side navigation such as on native, or in a web app when using [`<Link />`](/versions/latest/sdk/router/link/#link), will not move through the server middleware.
+Expo Router 中的 Server middleware 允许你在请求到达路由之前运行代码，从而为每个请求启用强大的服务端功能，例如身份验证和日志记录。与处理特定端点的 [API routes](/router/web/api-routes) 不同，middleware 会对应用中的**每一个**请求运行，因此它应尽可能快速，以避免拖慢应用性能。在原生端进行的客户端导航，或在 Web 应用中使用 [`<Link />`](/versions/latest/sdk/router/link/#link) 时，都不会经过 server middleware。
 
-## Setup
+## 设置
 
 <Step label="1">
 
-### Enable server middleware in your app configuration
+### 在应用配置中启用 server middleware
 
-First, configure your app to use server output by adding the server configuration to your [app config](/versions/latest/config/app/):
+首先，通过在你的 [app config](/versions/latest/config/app/) 中添加服务器配置，将应用配置为使用 server 输出：
 
 ```json app.json
 {
@@ -26,7 +26,7 @@ First, configure your app to use server output by adding the server configuratio
     /* @hide ... */
     /* @end */
     "web": {
-      /* @info Middleware is only supported in server mode */
+      /* @info Middleware 仅在 server 模式下受支持 */
       "output": "server"
       /* @end */
     },
@@ -34,7 +34,7 @@ First, configure your app to use server output by adding the server configuratio
       [
         "expo-router",
         {
-          /* @info Enables server middleware */
+          /* @info 启用 server middleware */
           "unstable_useServerMiddleware": true
           /* @end */
         }
@@ -48,53 +48,53 @@ First, configure your app to use server output by adding the server configuratio
 
 <Step label="2">
 
-### Create your middleware file
+### 创建你的 middleware 文件
 
-Create a **+middleware.ts** file in your **src/app** directory, to define your server middleware function:
+在你的 **src/app** 目录中创建一个 **+middleware.ts** 文件，用于定义你的 server middleware 函数：
 
 ```ts src/app/+middleware.ts
 export default function middleware(request) {
   console.log(`Middleware executed for: ${request.url}`);
-  // Your middleware logic goes here
+  // 你的 middleware 逻辑写在这里
 }
 ```
 
-The middleware function must be the default export of the file. It receives an [immutable request](#request-immutability) and can return either a [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response), or nothing to let the request pass through unmodified. The request is immutable to prevent side effects; you can read headers and properties, but you cannot modify headers or consume the request body.
+middleware 函数必须作为该文件的默认导出。它接收一个[不可变请求](#request-immutability)，并且可以返回一个 [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)，或者什么都不返回以让请求按原样继续传递。请求是不可变的，以防止副作用；你可以读取 headers 和属性，但不能修改 headers 或消耗请求体。
 
 </Step>
 
 <Step label="3">
 
-### Start your development server
+### 启动你的开发服务器
 
-Run your development server to test the middleware:
+运行你的开发服务器以测试 middleware：
 
 <Terminal cmd={['$ npx expo start']} />
 
-Your middleware will now run for all requests to your app.
+现在你的 middleware 将对应用的所有请求运行。
 
 </Step>
 
 <Step label="4">
 
-### Test middleware functionality
+### 测试 middleware 功能
 
-Visit your app in a browser or make requests to test that your middleware is working. Check your console for the log messages from the middleware function.
+在浏览器中访问你的应用，或发起请求来测试 middleware 是否正常工作。检查控制台中来自 middleware 函数的日志消息。
 
 </Step>
 
 <Step label="5">
 
-### Configure middleware matchers (optional)
+### 配置 middleware 匹配器（可选）
 
-By default, middleware runs on all server requests. You can add a matcher to control when your middleware executes with `unstable_settings`:
+默认情况下，middleware 会运行于所有服务器请求。你可以使用 `unstable_settings` 添加一个 matcher 来控制 middleware 何时执行：
 
 ```ts src/app/+middleware.ts
 export const unstable_settings = {
   matcher: {
-    // Only run on GET requests
+    // 仅在 GET 请求上运行
     methods: ['GET'],
-    // Only run on API routes and specific paths
+    // 仅在 API 路由和特定路径上运行
     patterns: ['/api', '/admin/[...path]'],
   },
 };
@@ -104,76 +104,76 @@ export default function middleware(request) {
 }
 ```
 
-The matcher configuration allows you to:
+matcher 配置允许你：
 
-- **Filter by HTTP method**: Specify which methods should trigger the middleware
-- **Filter by path patterns**: Define which URL patterns should match using exact paths, named parameters, or regular expressions
+- **按 HTTP 方法过滤**：指定哪些方法会触发 middleware
+- **按路径模式过滤**：使用精确路径、命名参数或正则表达式定义应匹配哪些 URL 模式
 
 </Step>
 
-## How it works
+## 工作原理
 
-Middleware functions are executed before any route handlers, allowing you to perform actions like logging, authentication, or modifying responses. It runs exclusively on the server and only for actual HTTP requests.
+middleware 函数在任何路由处理程序之前执行，使你能够执行日志记录、身份验证或修改响应等操作。它仅在服务器上运行，并且只针对实际的 HTTP 请求运行。
 
-### Request/response flow
+### 请求/响应流程
 
-When a request comes to your app, Expo Router processes it in this order:
+当请求到达你的应用时，Expo Router 会按以下顺序处理它：
 
-1. The middleware function runs first with an [immutable request](#request-immutability).
-2. If middleware returns a `Response`, that response is sent immediately
-3. If middleware returns nothing, the request continues to the matching route
-4. The route handler processes the request and returns its response
+1. middleware 函数首先使用一个[不可变请求](#request-immutability)运行。
+2. 如果 middleware 返回一个 `Response`，则会立即发送该响应
+3. 如果 middleware 什么都不返回，请求将继续进入匹配的路由
+4. 路由处理程序处理请求并返回其响应
 
-### Pattern matching
+### 模式匹配
 
-Matchers support different pattern types to control when middleware runs:
+matcher 支持不同类型的模式，以控制 middleware 何时运行：
 
 ```ts
 export const unstable_settings = {
   matcher: {
     patterns: [
-      '/api', // Exact path
-      '/posts/[postId]', // Named parameter
-      '/blog/[...slug]', // Catch-all parameter
-      /^\/api\/v\d+\/users$/, // Regular expression
+      '/api', // 精确路径
+      '/posts/[postId]', // 命名参数
+      '/blog/[...slug]', // 捕获所有参数
+      /^\/api\/v\d+\/users$/, // 正则表达式
     ],
   },
 };
 ```
 
-- **Exact paths** match only the specified path. `/api` matches `/api` but not `/api/users`
-- **Named parameters** like `[postId]` capture any single segment. `/posts/[postId]` matches `/posts/123` or `/posts/my-post`
-- **Catch-all parameters** like `[...slug]` capture one or more segments. `/blog/[...slug]` matches `/blog/2024` or `/blog/2024/12/post`
-- **Regular expressions** for complex patterns. `/^\/api\/v\d+\/users$/` matches `/api/v1/users` but not `/api/users`
+- **精确路径** 只匹配指定路径。`/api` 匹配 `/api`，但不匹配 `/api/users`
+- **命名参数** 如 `[postId]` 会捕获任意单个段。`/posts/[postId]` 匹配 `/posts/123` 或 `/posts/my-post`
+- **捕获所有参数** 如 `[...slug]` 会捕获一个或多个段。`/blog/[...slug]` 匹配 `/blog/2024` 或 `/blog/2024/12/post`
+- **正则表达式** 用于复杂模式。`/^\/api\/v\d+\/users$/` 匹配 `/api/v1/users`，但不匹配 `/api/users`
 
-Middleware runs if **any** pattern matches the request URL. When both `methods` and `patterns` are specified, both conditions must be met for middleware to run.
+如果**任意**一个模式匹配请求 URL，middleware 就会运行。当同时指定 `methods` 和 `patterns` 时，middleware 运行必须同时满足这两个条件。
 
-### Middleware execution order
+### Middleware 执行顺序
 
-Expo Router supports a single middleware file named **+middleware.ts** that runs for all server requests. When using matchers, middleware executes only for requests that match the specified patterns and methods, before any route matching or rendering occurs.
+Expo Router 支持一个名为 **+middleware.ts** 的单一 middleware 文件，它会针对所有服务器请求运行。使用 matcher 时，middleware 只会对匹配指定模式和方法的请求执行，并且发生在任何路由匹配或渲染之前。
 
-### When middleware runs
+### middleware 何时运行
 
-Middleware executes only for actual HTTP requests to your server. This means it is executed for:
+middleware 仅针对发送到你服务器的实际 HTTP 请求执行。这意味着它会在以下情况执行：
 
-- Initial page loads, like when a user first visits your site
-- Full page refreshes
-- Direct URL navigation
-- API route calls from any client (native/web apps, external services)
-- Server-side rendering requests
+- 首次页面加载，例如用户第一次访问你的网站
+- 整页刷新
+- 直接 URL 导航
+- 来自任何客户端（原生/Web 应用、外部服务）的 API 路由调用
+- 服务端渲染请求
 
-Middleware does not run for:
+middleware 不会在以下情况运行：
 
-- Client-side navigation using [`<Link />`](/versions/latest/sdk/router/link/#link) or [`router`](/versions/latest/sdk/router/#router)
-- Native app screen transitions
-- Prefetched routes
-- Static asset requests like images and fonts
+- 使用 [`<Link />`](/versions/latest/sdk/router/link/#link) 或 [`router`](/versions/latest/sdk/router/#router) 的客户端导航
+- 原生应用的屏幕切换
+- 预取的路由
+- 静态资源请求，例如图片和字体
 
-## Examples
+## 示例
 
-<Collapsible summary="Authentication">
+<Collapsible summary="身份验证">
 
-Middleware is often used to perform authorization checks before a route has loaded. You can check headers, cookies, or query parameters to determine if a user has access to certain routes:
+middleware 常用于在路由加载之前执行授权检查。你可以检查 headers、cookies 或查询参数，以确定用户是否有权访问某些路由：
 
 ```ts src/app/+middleware.ts
 import { jwtVerify } from 'jose';
@@ -190,9 +190,9 @@ export default function middleware(request) {
 
 </Collapsible>
 
-<Collapsible summary="Logging">
+<Collapsible summary="日志记录">
 
-You can use middleware to log requests for debugging or analytics purposes. This can help you track user activity or diagnose issues in your app:
+你可以使用 middleware 记录请求，用于调试或分析。这有助于你跟踪用户活动或诊断应用中的问题：
 
 ```ts src/app/+middleware.ts
 export default function middleware(request) {
@@ -202,9 +202,9 @@ export default function middleware(request) {
 
 </Collapsible>
 
-<Collapsible summary="Dynamic redirects">
+<Collapsible summary="动态重定向">
 
-Middleware can also be used to perform dynamic redirects. This allows you to control user navigation based on specific conditions:
+middleware 也可以用于执行动态重定向。这使你能够根据特定条件控制用户导航：
 
 ```ts src/app/+middleware.ts
 export default function middleware(request) {
@@ -216,9 +216,9 @@ export default function middleware(request) {
 
 </Collapsible>
 
-<Collapsible summary="API-only middleware">
+<Collapsible summary="仅 API 的 middleware">
 
-Use matchers to run middleware only for API routes, keeping other routes unaffected:
+使用 matcher 仅对 API 路由运行 middleware，同时保持其他路由不受影响：
 
 ```ts src/app/+middleware.ts
 export const unstable_settings = {
@@ -228,10 +228,10 @@ export const unstable_settings = {
 };
 
 export default function middleware(request) {
-  // Log all API requests for debugging
+  // 记录所有 API 请求以用于调试
   console.log(`API request: ${request.method} ${request.url}`);
 
-  // Add CORS headers for API routes
+  // 为 API 路由添加 CORS 头
   const response = new Response();
   response.headers.set('Access-Control-Allow-Origin', '*');
   return response;
@@ -240,9 +240,9 @@ export default function middleware(request) {
 
 </Collapsible>
 
-<Collapsible summary="Method-specific authentication">
+<Collapsible summary="按方法进行身份验证">
 
-Protect write operations (POST, PUT, DELETE) while allowing public read access:
+保护写操作（POST、PUT、DELETE），同时允许公开读取访问：
 
 ```ts src/app/+middleware.ts
 export const unstable_settings = {
@@ -261,16 +261,16 @@ export default function middleware(request) {
 }
 
 function isValidToken(token: string): boolean {
-  // Your token validation logic
+  // 你的 token 验证逻辑
   return token.startsWith('Bearer ');
 }
 ```
 
 </Collapsible>
 
-<Collapsible summary="Selective logging">
+<Collapsible summary="选择性日志记录">
 
-Monitor specific endpoints without logging every request:
+监控特定端点，而不是记录每个请求：
 
 ```ts src/app/+middleware.ts
 export const unstable_settings = {
@@ -289,17 +289,17 @@ export default function middleware(request) {
 
 </Collapsible>
 
-## Additional notes
+## 其他说明
 
-### Best practices
+### 最佳实践
 
-- Keep middleware lightweight because it runs synchronously on every server request and directly impacts response times.
-- Use matchers to optimize performance by avoiding unnecessary middleware execution on routes that don't need it, especially for high-traffic applications.
-- Prefer exact paths and named parameters over regex as simple patterns are faster to evaluate and easier to maintain than complex regular expressions.
-- Combine method and pattern filtering for precise control over when middleware executes.
-- For native apps, use API routes for secure data fetching. When native apps call API routes, those requests will pass through middleware first.
+- 保持 middleware 轻量，因为它会在每个服务器请求上同步运行，并直接影响响应时间。
+- 使用 matcher 通过避免在不需要 middleware 的路由上执行它来优化性能，尤其适用于高流量应用。
+- 对于简单模式，优先使用精确路径和命名参数，而不是 regex，因为它们比复杂正则表达式更快、更易维护。
+- 结合方法和模式过滤，以精确控制 middleware 何时执行。
+- 对于原生应用，使用 API routes 进行安全的数据获取。当原生应用调用 API routes 时，这些请求会先经过 middleware。
 
-### Typed middleware
+### 类型化 middleware
 
 ```ts src/app/+middleware.ts
 import { MiddlewareFunction } from 'expo-router/server';
@@ -313,24 +313,24 @@ const middleware: MiddlewareFunction = request => {
 export default middleware;
 ```
 
-### Limitations
+### 限制
 
-- Middleware runs exclusively on the server and only for HTTP requests. It does not execute during client-side navigation, for example, with [`<Link />`](/versions/latest/sdk/router/link/#link) or native app screen transitions.
-- The request object passed to middleware is [immutable](#request-immutability) to prevent side effects. You cannot modify headers or consume the request body, ensuring it remains available for route handlers.
-- You can only have one root-level **+middleware.ts** in your app.
-- The same limitations that [apply to API routes](/router/web/api-routes/#known-limitations) also apply to middleware.
+- middleware 仅在服务器上运行，并且只针对 HTTP 请求运行。它不会在客户端导航期间执行，例如使用 [`<Link />`](/versions/latest/sdk/router/link/#link) 或原生应用的屏幕切换时。
+- 传递给 middleware 的 request 对象是[不可变的](#request-immutability)，以防止副作用。你不能修改 headers 或消耗请求体，从而确保它仍可供路由处理程序使用。
+- 你的应用中只能有一个根级 **+middleware.ts**。
+- [适用于 API routes 的相同限制](/router/web/api-routes/#known-limitations)也适用于 middleware。
 
-### Request immutability
+### 请求不可变性
 
-To prevent unintended side effects and ensure the request body remains available for route handlers, the [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) passed to middleware is immutable. This means you can:
+为防止意外副作用并确保请求体仍可供路由处理程序使用，传递给 middleware 的 [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) 是不可变的。这意味着你可以：
 
-- Read all request properties like `url`, `method`, `headers`, and so on
-- Read header values using `request.headers.get()`
-- Check for header existence with `request.headers.has()`
-- Access URL parameters and query strings
+- 读取所有请求属性，如 `url`、`method`、`headers` 等
+- 使用 `request.headers.get()` 读取 header 值
+- 使用 `request.headers.has()` 检查 header 是否存在
+- 访问 URL 参数和查询字符串
 
-But you won't be able to:
+但你不能：
 
-- Modify headers with `set()`, `append()`, `delete()`
-- Consume the request body with `text()`, `json()`, `formData()`, and so on
-- Access the `body` property directly
+- 使用 `set()`、`append()`、`delete()` 修改 headers
+- 使用 `text()`、`json()`、`formData()` 等方法消耗请求体
+- 直接访问 `body` 属性

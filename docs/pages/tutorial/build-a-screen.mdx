@@ -1,6 +1,6 @@
 ---
-title: Build a screen
-description: In this tutorial, learn how to use components such as React Native's Pressable and Expo Image to build a screen.
+title: 构建一个屏幕
+description: 在本教程中，学习如何使用诸如 React Native 的 Pressable 和 Expo Image 等组件来构建一个屏幕。
 hasVideoLink: true
 ---
 
@@ -11,87 +11,87 @@ import { Step } from '~/ui/components/Step';
 import { CODE } from '~/ui/components/Text';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-In this chapter, we'll create the first screen of the StickerSmash app.
+在本章中，我们将创建 StickerSmash 应用的第一个屏幕。
 
 <ContentSpotlight
-  alt="Initial layout."
+  alt="初始布局。"
   src="/static/images/tutorial/initial-layout.png"
   className="max-w-[300px]"
 />
 
-The screen above displays an image and two buttons. The app user can select an image using one of the two buttons. The first button allows the user to select an image from their device. The second button allows the user to continue with a default image provided by the app.
+上面的屏幕显示了一张图片和两个按钮。应用用户可以使用这两个按钮中的任意一个来选择图片。第一个按钮允许用户从设备中选择图片。第二个按钮允许用户继续使用应用提供的默认图片。
 
-Once the user selects an image, they can add a sticker to it. So, let's start creating this screen.
+一旦用户选择了图片，他们就可以为其添加贴纸。所以，让我们开始创建这个屏幕。
 
 <VideoBoxLink
   videoId="3rcOP8xDwTQ"
-  title="Watch: Building a screen in your universal Expo app"
-  description="Build the StickerSmash app's first screen using Pressable, Expo Image, and other core components to create an image picker layout."
+  title="观看：在你的通用 Expo 应用中构建一个屏幕"
+  description="使用 Pressable、Expo Image 和其他核心组件构建 StickerSmash 应用的第一个屏幕，创建一个图片选择器布局。"
 />
 
 ---
 
 <Step label="1">
 
-## Break down the screen
+## 分解这个屏幕
 
-Before we build this screen by writing code, let's break it down into some essential elements.
+在通过编写代码来构建这个屏幕之前，让我们先将其拆分为一些关键元素。
 
 <ContentSpotlight
-  alt="Break down of initial layout."
+  alt="初始布局的拆解。"
   src="/static/images/tutorial/breakdown-of-layout.png"
   className="max-w-[300px]"
 />
 
-There are two essential elements:
+这里有两个关键元素：
 
-- There is a large image displayed at the center of the screen
-- There are two buttons in the bottom half of the screen
+- 屏幕中央显示一张大图片
+- 屏幕下半部分有两个按钮
 
-The first button contains multiple components. The parent element provides a yellow border, and contains an icon and text components inside a row.
+第一个按钮包含多个组件。父元素提供一个黄色边框，并在一行中包含一个图标和文本组件。
 
 <ContentSpotlight
-  alt="Break down of the button component with row."
+  alt="带有一行布局的按钮组件拆解。"
   src="/static/images/tutorial/breakdown-of-buttons.png"
   className="max-w-[400px]"
 />
 
-Now that we've broken down the UI into smaller chunks, we're ready to start coding.
+现在我们已经将 UI 拆分为更小的部分，准备开始编码了。
 
 </Step>
 
 <Step label="2">
 
-## Display the image
+## 显示图片
 
-We'll use `expo-image` library to display the image in the app. It provides a cross-platform `<Image>` component to load and render an image. It is already included in the default project template we're using.
+我们将使用 `expo-image` 库在应用中显示图片。它提供了一个跨平台的 `<Image>` 组件来加载和渲染图片。它已经包含在我们正在使用的默认项目模板中。
 
-The Image component takes the source of an image as its value. The source can be either a [static asset](https://reactnative.dev/docs/images#static-image-resources) or a URL. For example, the source required from **assets/images** directory is static. It can also come from [Network](https://reactnative.dev/docs/images#network-images) as a `uri` property.
+Image 组件会将图片的 source 作为其值。source 可以是 [静态资源](https://reactnative.dev/docs/images#static-image-resources) 或 URL。例如，来自 **assets/images** 目录的 source 是静态的。它也可以通过 [Network](https://reactnative.dev/docs/images#network-images) 以 `uri` 属性的形式提供。
 
 <ContentSpotlight
-  alt="Background image that we are going to use as a placeholder for the tutorial."
+  alt="我们将用作教程占位符的背景图片。"
   src="/static/images/tutorial/background-image.png"
   className="max-w-[250px]"
 />
 
-To use the Image component in **app/(tabs)/index.tsx** file:
+要在 **app/(tabs)/index.tsx** 文件中使用 Image 组件：
 
-1. Import `Image` from the `expo-image` library.
-2. Create a `PlaceholderImage` variable to use **assets/images/background-image.png** file as the `source` prop on the `Image` component.
+1. 从 `expo-image` 库中导入 `Image`。
+2. 创建一个 `PlaceholderImage` 变量，将 **assets/images/background-image.png** 文件作为 `Image` 组件的 `source` 属性使用。
 
 {/* prettier-ignore */}
 ```tsx app/(tabs)/index.tsx|collapseHeight=380
 import { View, StyleSheet } from 'react-native';
-/* @tutinfo Import the <CODE>Image</CODE> component. */ import { Image } from 'expo-image'; /* @end */
+/* @tutinfo 导入 <CODE>Image</CODE> 组件。 */ import { Image } from 'expo-image'; /* @end */
 
-/* @tutinfo Import the image from the "assets/images/" directory. Since this picture is a static resource, you have to reference it using <CODE>require</CODE>. */
+/* @tutinfo 从 "assets/images/" 目录导入图片。由于这张图片是静态资源，你必须使用 <CODE>require</CODE> 来引用它。 */
 const PlaceholderImage = require('@/assets/images/background-image.png');
 /* @end */
 
 export default function Index() {
   return (
     <View style={styles.container}>
-      /* @tutinfo Wrap the <CODE>Image</CODE> component inside a container. Also, add the image component to display the placeholder image. */
+      /* @tutinfo 将 <CODE>Image</CODE> 组件包裹在一个容器中。同时，添加图片组件来显示占位图片。 */
       <View style={styles.imageContainer}>
         <Image source={PlaceholderImage} style={styles.image} />
       </View>
@@ -104,11 +104,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#25292e',
-    /* @tutinfo Modify container styles to remove <CODE>justifyContent</CODE> property. */
+    /* @tutinfo 修改容器样式，移除 <CODE>justifyContent</CODE> 属性。 */
     alignItems: 'center',
     /* @end */
   },
-  /* @tutinfo Add styles for the image container and image. */
+  /* @tutinfo 为图片容器和图片添加样式。 */
   imageContainer: {
     flex: 1,
   },
@@ -125,12 +125,12 @@ const styles = StyleSheet.create({
 
 <Step label="3">
 
-## Divide components into files
+## 将组件拆分到不同文件中
 
-Let's divide the code into multiple files as we add more components to this screen. Throughout this tutorial, we'll use the components directory to create custom components.
+随着我们向这个屏幕添加更多组件，让我们把代码拆分到多个文件中。在整个教程中，我们将使用 components 目录来创建自定义组件。
 
-1. Create a top-level **components** directory, and inside it, create the **ImageViewer.tsx** file.
-2. Move the code to display the image in this file along with the `image` styles.
+1. 创建一个顶层 **components** 目录，并在其中创建 **ImageViewer.tsx** 文件。
+2. 将显示图片的代码以及 `image` 样式移到这个文件中。
 
 {/* prettier-ignore */}
 ```tsx components/ImageViewer.tsx|collapseHeight=280
@@ -154,9 +154,9 @@ const styles = StyleSheet.create({
 });
 ```
 
-> **info** Since **ImageViewer** is a custom component, we are placing it in a separate directory instead of the **app** directory. Every file inside **app** directory is either a layout file or a route file. For more information, see [Non-navigation components live outside of app directory](/router/basics/core-concepts/#5-non-navigation-components-live-outside-of-app-directory).
+> **信息** 由于 **ImageViewer** 是一个自定义组件，我们将它放在单独的目录中，而不是 **app** 目录。**app** 目录中的每个文件要么是布局文件，要么是路由文件。更多信息请参见 [非导航组件应放在 app 目录之外](/router/basics/core-concepts/#5-non-navigation-components-live-outside-of-app-directory)。
 
-Import `ImageViewer` and use it in the **app/(tabs)/index.tsx**:
+导入 `ImageViewer` 并在 **app/(tabs)/index.tsx** 中使用它：
 
 {/* prettier-ignore */}
 ```tsx app/(tabs)/index.tsx|collapseHeight=320
@@ -170,7 +170,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
-        /* @tutinfo Replace <CODE>Image</CODE> component with <CODE>ImageViewer</CODE>. */
+        /* @tutinfo 用 <CODE>ImageViewer</CODE> 替换 <CODE>Image</CODE> 组件。 */
         <ImageViewer imgSource={PlaceholderImage} />
         /* @end */
       </View>
@@ -190,9 +190,9 @@ const styles = StyleSheet.create({
 });
 ```
 
-<Collapsible summary={<>What is the <CODE>@</CODE> in import statement?</>}>
+<Collapsible summary={<>导入语句中的 <CODE>@</CODE> 是什么？</>}>
 
-The `@` symbol is a custom [path alias](/guides/typescript/#path-aliases-optional) for importing custom components and other modules instead of relative paths. Expo CLI automatically configures it in **tsconfig.json**.
+`@` 符号是一个自定义的 [路径别名](/guides/typescript/#path-aliases-optional)，用于导入自定义组件和其他模块，而不是使用相对路径。Expo CLI 会在 **tsconfig.json** 中自动为其配置。
 
 </Collapsible>
 
@@ -200,11 +200,11 @@ The `@` symbol is a custom [path alias](/guides/typescript/#path-aliases-optiona
 
 <Step label="4">
 
-## Create buttons using Pressable
+## 使用 Pressable 创建按钮
 
-React Native includes a few different components for handling touch events, but [`<Pressable>`](https://reactnative.dev/docs/pressable) is recommended for its flexibility. It can detect single taps, long presses, trigger separate events when the button is pushed in and released, and more.
+React Native 包含一些用于处理触摸事件的不同组件，但由于 [`<Pressable>`](https://reactnative.dev/docs/pressable) 的灵活性，它是推荐使用的。它可以检测单次点击、长按，在按钮按下和释放时触发不同的事件，等等。
 
-In the design, there are two buttons we need to create. Each has a different style and label. Let's start by creating a reusable component for these buttons. Create a **Button.tsx** file inside the **components** directory with the following code:
+在设计中，我们需要创建两个按钮。每个按钮都有不同的样式和标签。让我们先创建一个可复用的按钮组件。在 **components** 目录中创建一个 **Button.tsx** 文件，并使用以下代码：
 
 {/* prettier-ignore */}
 ```tsx components/Button.tsx|collapseHeight=280
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-The app displays an alert when the user taps any of the buttons on the screen. It happens because `<Pressable>` calls `alert()` on its `onPress` prop. Let's import this component into **app/(tabs)/index.tsx** file and add styles for the `<View>` that encapsulates these buttons:
+当用户点击屏幕上的任意按钮时，应用会显示一个提醒。这是因为 `<Pressable>` 在其 `onPress` 属性中调用了 `alert()`。让我们将这个组件导入到 **app/(tabs)/index.tsx** 文件中，并为包裹这些按钮的 `<View>` 添加样式：
 
 {/* prettier-ignore */}
 ```tsx app/(tabs)/index.tsx
@@ -265,7 +265,7 @@ export default function Index() {
       <View style={styles.imageContainer}>
         <ImageViewer imgSource={PlaceholderImage} />
       </View>
-      /* @tutinfo Use the reusable <CODE>Button</CODE> component to create two buttons and encapsulate them inside a <CODE>View</CODE> component. */
+      /* @tutinfo 使用可复用的 <CODE>Button</CODE> 组件创建两个按钮，并将它们包裹在一个 <CODE>View</CODE> 组件中。 */
       <View style={styles.footerContainer}>
         <Button label="Choose a photo" />
         <Button label="Use this photo" />
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 28,
   },
-  /* @tutinfo Add the styles the following styles. */
+  /* @tutinfo 添加以下样式。 */
   footerContainer: {
     flex: 1 / 3,
     alignItems: 'center',
@@ -294,38 +294,38 @@ const styles = StyleSheet.create({
 });
 ```
 
-Let's take a look at our app on Android, iOS and the web:
+让我们在 Android、iOS 和 Web 上看看我们的应用：
 
 <ContentSpotlight
-  alt="Initial layout."
+  alt="初始布局。"
   src="/static/images/tutorial/buttons-created.png"
   className="max-w-[720px]"
 />
 
-The second button with the label "Use this photo" resembles the actual button from the design. However, the first button needs more styling to match the design.
+带有“Use this photo”标签的第二个按钮与设计中的实际按钮相似。不过，第一个按钮还需要更多样式才能匹配设计。
 
 </Step>
 
 <Step label="5">
 
-## Enhance the reusable button component
+## 增强可复用按钮组件
 
-The "Choose a photo" button requires different styling than the "Use this photo" button, so we will add a new button theme prop that will allow us to apply a `primary` theme. This button also has an icon before the label. We will use an icon from the `@expo/vector-icons` library.
+“Choose a photo” 按钮所需的样式与“Use this photo” 按钮不同，因此我们将添加一个新的 button theme 属性，使我们能够应用 `primary` 主题。这个按钮在标签前面还有一个图标。我们将使用 `@expo/vector-icons` 库中的图标。
 
-To load and display the icon on the button, let's use `FontAwesome` from the library. Modify **components/Button.tsx** to add the following code snippet:
+要在按钮上加载并显示图标，让我们使用库中的 `FontAwesome`。修改 **components/Button.tsx**，添加以下代码片段：
 
 {/* prettier-ignore */}
 ```tsx components/Button.tsx
 import { StyleSheet, View, Pressable, Text } from 'react-native';
-/* @tutinfo Import FontAwesome. */import FontAwesome from '@expo/vector-icons/FontAwesome';/* @end */
+/* @tutinfo 导入 FontAwesome。 */import FontAwesome from '@expo/vector-icons/FontAwesome';/* @end */
 
 type Props = {
   label: string;
-  /* @tutinfo Add theme prop. */theme?: 'primary';/* @end */
+  /* @tutinfo 添加 theme 属性。 */theme?: 'primary';/* @end */
 };
 
-export default function Button({ label, /* @tutinfo The prop <CODEtheme</CODE> to detect the button variant. */theme/* @end */ }: Props) {
-  /* @tutinfo Conditionally render the primary themed button. */
+export default function Button({ label, /* @tutinfo 用于检测按钮变体的 <CODEtheme</CODE> 属性。 */theme/* @end */ }: Props) {
+  /* @tutinfo 有条件地渲染 primary 主题按钮。 */
   if (theme === 'primary') {
   /* @end */
   /* @tutinfo */
@@ -346,7 +346,6 @@ export default function Button({ label, /* @tutinfo The prop <CODEtheme</CODE> t
   /* @end */
   /* @tutinfo */
   }
-  /* @end */
 
   return (
     <View style={styles.buttonContainer}>
@@ -374,7 +373,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
   },
-  /* @tutinfo Conditionally render the primary themed button. */
+  /* @tutinfo 有条件地渲染 primary 主题按钮。 */
   buttonIcon: {
     paddingRight: 8,
   },
@@ -386,13 +385,13 @@ const styles = StyleSheet.create({
 });
 ```
 
-Let's learn what the above code does:
+让我们了解一下上面的代码做了什么：
 
-- The primary theme button uses **inline styles**, which overrides the styles defined in `StyleSheet.create()` with an object directly passed in the `style` prop.
-- The `<Pressable>` component in the primary theme uses a `backgroundColor` property with a value `#fff` to set the button's background to white. If we add this property to the `styles.button`, the background color value will be set for both the primary theme and the unstyled one.
-- Inline styles use JavaScript and override the default styles for a specific value.
+- primary 主题按钮使用 **内联样式**，它会覆盖在 `StyleSheet.create()` 中定义的样式，因为对象直接传入了 `style` 属性。
+- primary 主题中的 `<Pressable>` 组件使用 `backgroundColor` 属性，值为 `#fff`，将按钮背景设置为白色。如果我们把这个属性加到 `styles.button` 中，那么这个背景色值将同时应用于 primary 主题和未设置样式的按钮。
+- 内联样式使用 JavaScript，并会覆盖特定值的默认样式。
 
-Now, modify the **app/(tabs)/index.tsx** file to use the `theme="primary"` prop on the first button.
+现在，修改 **app/(tabs)/index.tsx** 文件，为第一个按钮使用 `theme="primary"` 属性。
 
 {/* prettier-ignore */}
 ```tsx app/(tabs)/index.tsx
@@ -410,7 +409,7 @@ export default function Index() {
         <ImageViewer imgSource={PlaceholderImage} />
       </View>
       <View style={styles.footerContainer}>
-        /* @tutinfo Add <CODE>"primary"</CODE> theme on the first button. */
+        /* @tutinfo 在第一个按钮上添加 <CODE>"primary"</CODE> 主题。 */
         <Button theme="primary" label="Choose a photo" />
         /* @end */
         <Button label="Use this photo" />
@@ -435,19 +434,19 @@ const styles = StyleSheet.create({
 });
 ```
 
-Let's take a look at our app on Android, iOS and the web:
+让我们在 Android、iOS 和 Web 上看看我们的应用：
 
 <ContentSpotlight file="tutorial/04-complete-layout.mp4" />
 
 </Step>
 
-## Summary
+## 摘要
 
 <ProgressTracker
   currentChapterIndex={2}
   name="GET_STARTED"
-  summary="We've successfully implemented the initial design to start building our app's first screen."
-  nextChapterDescription="In the next chapter, we'll add the functionality to pick an image from the device's media library."
-  nextChapterTitle="Use an image picker"
+  summary="我们已经成功实现了初始设计，开始构建应用的第一个屏幕。"
+  nextChapterDescription="在下一章中，我们将添加从设备媒体库中选择图片的功能。"
+  nextChapterTitle="使用图片选择器"
   nextChapterLink="/tutorial/image-picker"
 />

@@ -1,47 +1,47 @@
 ---
-title: Using Supabase
-description: Add a Postgres Database and user authentication to your React Native app with Supabase.
+title: 使用 Supabase
+description: 使用 Supabase 为你的 React Native 应用添加 Postgres 数据库和用户认证。
 ---
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-[Supabase](https://supabase.com/?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) is a Backend-as-a-Service (BaaS) app development platform that provides hosted backend services such as a Postgres database, user authentication, file storage, edge functions, realtime syncing, and a vector and AI toolkit. It's an open-source alternative to Google's Firebase.
+[Supabase](https://supabase.com/?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 是一个 Backend-as-a-Service（BaaS）应用开发平台，提供托管的后端服务，例如 Postgres 数据库、用户身份验证、文件存储、边缘函数、实时同步，以及向量和 AI 工具包。它是 Google Firebase 的开源替代方案。
 
-Supabase automatically [generates a REST API](https://supabase.com/docs/guides/api?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) from your database and employs a concept called [row level security (RLS)](https://supabase.com/docs/guides/auth/row-level-security?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) to secure your data, making it possible to directly interact with your database from your React Native application without needing to go through a server!
+Supabase 会自动根据你的数据库[生成一个 REST API](https://supabase.com/docs/guides/api?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，并采用一种称为[行级安全性（RLS）](https://supabase.com/docs/guides/auth/row-level-security?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)的概念来保护你的数据，使你可以直接从 React Native 应用与数据库交互，而无需经过服务器！
 
-Supabase provides a TypeScript client library called [`supabase-js`](https://supabase.com/docs/reference/javascript/introduction?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) to interact with the REST API. Alternatively, Supabase also exposes a [GraphQL API](https://supabase.com/docs/guides/database/extensions/pg_graphql?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) allowing you to use your favorite GraphQL client (for example, [Apollo Client](https://supabase.github.io/pg_graphql/usage_with_apollo/)) should you wish to.
+Supabase 提供了一个名为 [`supabase-js`](https://supabase.com/docs/reference/javascript/introduction?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 的 TypeScript 客户端库，用于与 REST API 交互。或者，Supabase 也提供 [GraphQL API](https://supabase.com/docs/guides/database/extensions/pg_graphql?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，如果你愿意，可以使用你喜欢的 GraphQL 客户端（例如 [Apollo Client](https://supabase.github.io/pg_graphql/usage_with_apollo/)）。
 
-## Prerequisites
+## 前提条件
 
-Head over to [database.new](https://database.new?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) to create a new Supabase project.
+前往 [database.new](https://database.new?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 创建一个新的 Supabase 项目。
 
-### Get the API Keys
+### 获取 API 密钥
 
-Get the **Project URL** from the API settings and **Publishable key** from the API Keys:
+从 API 设置中获取 **Project URL**，并从 API Keys 中获取 **Publishable key**：
 
-1. Go to the [API Settings](https://supabase.com/dashboard/project/_/settings/api) page in the Dashboard.
-2. Find your Project `URL` and `service_role` keys on this page.
-3. Then go to the [API Keys](https://supabase.com/dashboard/project/_/settings/api-keys)
-4. Find your Project **Publishable key** on this page under the API Keys tab.
+1. 打开 Dashboard 中的 [API Settings](https://supabase.com/dashboard/project/_/settings/api) 页面。
+2. 在此页面上找到你的项目 `URL` 和 `service_role` 密钥。
+3. 然后前往 [API Keys](https://supabase.com/dashboard/project/_/settings/api-keys)
+4. 在 API Keys 选项卡下找到你的项目 **Publishable key**。
 
-## Using the Supabase TypeScript SDK
+## 使用 Supabase TypeScript SDK
 
-Using [`supabase-js`](https://supabase.com/docs/reference/javascript/introduction?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) is the most convenient way of leveraging the full power of the Supabase stack as it conveniently combines all the different services (database, auth, realtime, storage, edge functions) together.
+使用 [`supabase-js`](https://supabase.com/docs/reference/javascript/introduction?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 是充分利用 Supabase 技术栈全部能力最方便的方式，因为它将所有不同的服务（数据库、auth、realtime、storage、edge functions）都方便地组合在一起。
 
-### Install and initialize the Supabase TypeScript SDK
+### 安装并初始化 Supabase TypeScript SDK
 
 <Step label="1">
 
-After you have created your [Expo project](/get-started/create-a-project/), install `@supabase/supabase-js` and the required dependencies using the following command:
+在你创建好 [Expo 项目](/get-started/create-a-project/) 之后，使用以下命令安装 `@supabase/supabase-js` 和所需依赖：
 
 <Terminal cmd={['$ npx expo install @supabase/supabase-js expo-sqlite']} />
 </Step>
 
 <Step label="2">
 
-Create a helper file to initialize the Supabase client (`@supabase/supabase-js`). You need the API URL and the `Publishable` key copied [earlier](#get-the-api-keys). These variables are safe to expose in your Expo app since Supabase has [Row Level Security](https://supabase.com/docs/guides/auth/row-level-security?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) enabled in the Database.
+创建一个辅助文件来初始化 Supabase 客户端（`@supabase/supabase-js`）。你需要之前复制的 API URL 和 `Publishable` key [earlier](#get-the-api-keys)。由于 Supabase 已在数据库中启用 [行级安全性](https://supabase.com/docs/guides/auth/row-level-security?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，这些变量在你的 Expo 应用中公开是安全的。
 
 ```ts utils/supabase.ts
 import 'expo-sqlite/localStorage/install';
@@ -60,44 +60,44 @@ export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
 });
 ```
 
-Now you can `import { supabase } from '/utils/supabase'` throughout your application to leverage the full power of Supabase!
+现在你可以在整个应用中 `import { supabase } from '/utils/supabase'`，以利用 Supabase 的全部能力！
 
 </Step>
 
-## Next steps
+## 接下来的步骤
 
 <BoxLink
-  title="Build a User Management App"
-  description="Learn how to combine Supabase Auth and Database in this quickstart guide."
+  title="构建用户管理应用"
+  description="了解如何在这个快速入门指南中将 Supabase Auth 和 Database 结合起来。"
   href="https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
-  title="Sign in with Apple"
-  description="Supabase Auth supports using Sign in with Apple on the web and in native apps for iOS, macOS, watchOS or tvOS."
+  title="使用 Apple 登录"
+  description="Supabase Auth 支持在 Web 端以及 iOS、macOS、watchOS 或 tvOS 的原生应用中使用 Apple 登录。"
   href="https://supabase.com/docs/guides/auth/social-login/auth-apple?platform=react-native&utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
-  title="Sign in with Google"
-  description="Supabase Auth supports Sign in with Google on the web, native Android applications, and Chrome extensions."
+  title="使用 Google 登录"
+  description="Supabase Auth 支持在 Web 端、原生 Android 应用以及 Chrome 扩展中使用 Google 登录。"
   href="https://supabase.com/docs/guides/auth/social-login/auth-google?platform=react-native&utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
-  title="Deep Linking for OAuth and Magic Links"
-  description="When performing OAuth or sending magic link emails from native mobile applications, learn how to configure deep linking for Android and iOS applications."
+  title="OAuth 和 Magic Links 的深度链接"
+  description="在原生移动应用中执行 OAuth 或发送 magic link 邮件时，了解如何为 Android 和 iOS 应用配置深度链接。"
   href="https://supabase.com/docs/guides/auth/native-mobile-deep-linking?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
-  title="Offline-first React Native Apps with WatermelonDB"
-  description="Learn how to store your data locally and sync it with Postgres using WatermelonDB."
+  title="使用 WatermelonDB 的离线优先 React Native 应用"
+  description="了解如何将数据本地存储并使用 WatermelonDB 与 Postgres 同步。"
   href="https://supabase.com/blog/react-native-offline-first-watermelon-db?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
-  title="React Native file upload with Supabase Storage"
-  description="Learn how to implement authentication and file upload in a React Native app."
+  title="使用 Supabase Storage 进行 React Native 文件上传"
+  description="了解如何在 React Native 应用中实现身份验证和文件上传。"
   href="https://supabase.com/blog/react-native-storage?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />

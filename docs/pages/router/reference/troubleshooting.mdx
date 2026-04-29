@@ -1,23 +1,23 @@
 ---
-title: Troubleshooting
-description: Fixing common issues with Expo Router setup.
+title: 故障排除
+description: 修复 Expo Router 设置中的常见问题。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-## Missing files or source maps in React Native DevTools
+## React Native DevTools 中缺少文件或 source maps
 
-This can happen if your Chrome DevTools has exclusions within its ignore list. To fix the issue, use [React Native DevTools](https://reactnative.dev/docs/react-native-devtools):
+如果你的 Chrome DevTools 的忽略列表中包含排除项，就可能发生这种情况。要修复此问题，请使用 [React Native DevTools](https://reactnative.dev/docs/react-native-devtools)：
 
-1. Start the React Native DevTools by pressing <kbd>j</kbd> from the development server running in the terminal window
-2. Open **Settings** by clicking the gear icon
-3. Under **Extensions**, click **Restore defaults and reload**
-4. Open **Settings** again, and go to **Ignore List** tab
-5. Uncheck any exclusions for `/node_modules/`
+1. 在终端窗口中运行的开发服务器里按 <kbd>j</kbd> 启动 React Native DevTools
+2. 通过点击齿轮图标打开 **Settings**
+3. 在 **Extensions** 下，点击 **Restore defaults and reload**
+4. 再次打开 **Settings**，然后进入 **Ignore List** 选项卡
+5. 取消勾选 `/node_modules/` 的任何排除项
 
-## `EXPO_ROUTER_APP_ROOT` not defined
+## 未定义 `EXPO_ROUTER_APP_ROOT`
 
-If `process.env.EXPO_ROUTER_APP_ROOT` is not defined you'll see the following error:
+如果 `process.env.EXPO_ROUTER_APP_ROOT` 未定义，你会看到以下错误：
 
 <Terminal
   cmd={[
@@ -25,17 +25,17 @@ If `process.env.EXPO_ROUTER_APP_ROOT` is not defined you'll see the following er
   ]}
 />
 
-This can happen when the Babel plugin `expo-router/babel` is not used in the project **babel.config.js**. You can try clearing the cache with:
+当项目的 **babel.config.js** 中未使用 Babel 插件 `expo-router/babel` 时，就可能发生这种情况。你可以尝试使用以下命令清除缓存：
 
 <Terminal cmd={['$ npx expo start --clear']} />
 
-Alternatively, you can circumvent this issue by creating an **index.js** file in the root of your project with the following contents:
+或者，你也可以通过在项目根目录创建一个 **index.js** 文件，并使用以下内容来规避此问题：
 
 ```jsx index.js
 import { registerRootComponent } from 'expo';
 import { ExpoRoot } from 'expo-router';
 
-// Must be exported or Fast Refresh won't update the context
+// 必须导出，否则 Fast Refresh 不会更新上下文
 export function App() {
   const ctx = require.context('./app');
   return <ExpoRoot context={ctx} />;
@@ -44,7 +44,7 @@ export function App() {
 registerRootComponent(App);
 ```
 
-Then, update your app's main entry point in **package.json**:
+然后，在 **package.json** 中更新应用的主入口点：
 
 ```json package.json
 {
@@ -53,15 +53,15 @@ Then, update your app's main entry point in **package.json**:
 }
 ```
 
-> Do not use this to change the root directory (**app**) as it won't account for usage in any other places.
+> 不要使用此方法来更改根目录（**app**），因为它不会考虑在任何其他位置的使用情况。
 
-## `require.context` not enabled
+## 未启用 `require.context`
 
-This can happen when using a custom version of `@expo/metro-config` that does not enable context modules. Expo Router requires the project **metro.config.js** to use `expo-router/metro` as the default configuration. Delete the **metro.config.js**, or extend `expo/metro-config`. See [Customizing metro](/guides/customizing-metro/) for more information.
+当使用未启用上下文模块的 `@expo/metro-config` 自定义版本时，就可能发生这种情况。Expo Router 要求项目的 **metro.config.js** 使用 `expo-router/metro` 作为默认配置。删除 **metro.config.js**，或扩展 `expo/metro-config`。有关更多信息，请参阅 [自定义 metro](/guides/customizing-metro/)。
 
-## Missing back button
+## 缺少返回按钮
 
-If you set up a modal or another screen that is expected to have a back button, then you'll need to add [`unstable_settings`](/router/advanced/router-settings/) to the route's layout to ensure the initial route is configured. Initial routes are somewhat unique to mobile apps and fit awkwardly in the system &mdash; improvements pending.
+如果你设置了一个模态框或其他预期应有返回按钮的屏幕，那么你需要将 [`unstable_settings`](/router/advanced/router-settings/) 添加到路由的布局中，以确保初始路由已正确配置。初始路由在某种程度上是移动应用特有的，并且在系统中的适配有些别扭 —— 改进仍在进行中。
 
 ```tsx src/app/_layout.tsx
 export const unstable_settings = {

@@ -1,46 +1,46 @@
 ---
-title: Using Git submodules
-sidebar_title: Git submodules
-description: Learn how to configure EAS Build to use git submodules.
+title: 使用 Git 子模块
+sidebar_title: Git 子模块
+description: 了解如何配置 EAS Build 以使用 git 子模块。
 hideTOC: true
 ---
 
 import { Step } from '~/ui/components/Step';
 
-When using the default Version Control Systems (VCS) workflow, the content of your working directory is uploaded to EAS Build as it is, including the content of Git submodules. However, if you are building on CI or have `cli.requireCommit` set to `true` in **eas.json** or have a submodule in a private repository, you will need to initialize it to avoid uploading empty directories.
+使用默认的 Version Control Systems（VCS）工作流时，您的工作目录内容会按原样上传到 EAS Build，包括 Git 子模块的内容。但是，如果您在 CI 上构建，或在 **eas.json** 中将 `cli.requireCommit` 设置为 `true`，或者子模块位于私有仓库中，则需要先对其进行初始化，以避免上传空目录。
 
-## Submodules initialization
+## 子模块初始化
 
-To initialize a submodule on EAS Build builder:
+要在 EAS Build 构建器上初始化子模块：
 
 <Step label="1">
 
-Create a [secret](/eas/environment-variables/#visibility-settings-for-environment-variables) with a base64 encoded private SSH key that has permission to access submodule repositories.
+创建一个包含已 base64 编码的私有 SSH 密钥的 [secret](/eas/environment-variables/#visibility-settings-for-environment-variables)，该密钥需要有访问子模块仓库的权限。
 
 </Step>
 
 <Step label="2">
 
-Add an [`eas-build-pre-install` npm hook](/build-reference/npm-hooks/) to check out those submodules, for example:
+添加一个用于检出这些子模块的 [`eas-build-pre-install` npm hook](/build-reference/npm-hooks/)，例如：
 
 ```bash eas-build-pre-install.sh
 #!/usr/bin/env bash
 
 mkdir -p ~/.ssh
 
-# Real origin URL is lost during the packaging process, so if your
-# submodules are defined using relative urls in .gitmodules then
-# you need to restore it with:
+# 在打包过程中会丢失真实的 origin URL，因此如果你的
+# 子模块在 .gitmodules 中使用了相对 URL，那么你
+# 需要通过以下方式恢复它：
 #
 # git remote set-url origin git@github.com:example/repo.git
 
-# restore private key from env variable and generate public key
+# 从环境变量中恢复私钥并生成公钥
 umask 0177
 echo "$SSH_KEY_BASE64" | base64 -d > ~/.ssh/id_rsa
 umask 0022
 ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
 
-# add your git provider to the list of known hosts
+# 将你的 git 提供商添加到已知主机列表中
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 git submodule update --init

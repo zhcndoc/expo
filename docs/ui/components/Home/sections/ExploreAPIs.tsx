@@ -12,8 +12,8 @@ export function ExploreAPIs() {
   return (
     <>
       <Header
-        title="Explore APIs"
-        description="Expo supplies a vast array of SDK modules. You can also create your own."
+        title="探索 API"
+        description="Expo 提供了大量 SDK 模块，你也可以创建自己的模块。"
       />
       <div
         className={mergeClasses(
@@ -24,22 +24,22 @@ export function ExploreAPIs() {
           'max-sm-gutters:grid-cols-1'
         )}>
         <APIGridCell
-          title="Image"
+          title="图片"
           link="/versions/latest/sdk/image/"
           icon={<Image03DuotoneIcon className="size-16!" />}
         />
         <APIGridCell
-          title="Camera"
+          title="相机"
           link="/versions/latest/sdk/camera"
           icon={<CameraPlusDuotoneIcon className="size-16!" />}
         />
         <APIGridCell
-          title="Notifications"
+          title="通知"
           link="/versions/latest/sdk/notifications"
           icon={<NotificationMessageDuotoneIcon className="size-16!" />}
         />
         <APIGridCell
-          title="View all APIs"
+          title="查看全部 API"
           link="/versions/latest/"
           icon={<DocsLogo className="size-16!" />}
         />

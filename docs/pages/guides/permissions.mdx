@@ -1,21 +1,21 @@
 ---
-title: Permissions
-description: Learn about configuring and adding permissions in an app config file.
+title: 权限
+description: 了解如何在应用配置文件中配置和添加权限。
 ---
 
 import { ConfigReactNative } from '~/ui/components/ConfigSection';
 
-When developing a native app that requires access to potentially sensitive information on a user's device, such as their location or contacts, the app must request the user's permission first. For example, to access the user's media library, the app will need to run [`MediaLibrary.requestPermissionsAsync()`](/versions/latest/sdk/media-library#medialibraryrequestpermissionsasync).
+在开发原生应用时，如果应用需要访问用户设备上可能敏感的信息，例如位置信息或联系人，应用必须先请求用户的权限。例如，要访问用户的媒体库，应用需要运行 [`MediaLibrary.requestPermissionsAsync()`](/versions/latest/sdk/media-library#medialibraryrequestpermissionsasync)。
 
-Permissions in standalone and [development builds](/develop/development-builds/introduction/) require native build-time configuration before they can be requested using runtime JavaScript code. This is not required when testing projects in the [Expo Go](https://expo.dev/go) app.
+在独立应用和[开发构建](/develop/development-builds/introduction/)中，权限在通过运行时 JavaScript 代码请求之前，需要先进行原生构建时配置。在 [Expo Go](https://expo.dev/go) 应用中测试项目时则不需要这样做。
 
-> If you don't configure or explain the native permissions properly **it may result in your app getting rejected or pulled from the stores**.
+> 如果你没有正确配置或说明原生权限，**可能会导致你的应用被拒绝上架或从商店中下架**。
 
 ## Android
 
-Permissions are configured with the [`android.permissions`](/versions/latest/config/app/#permissions) and [`android.blockedPermissions`](/versions/latest/config/app/#blockedpermissions) keys in your [app config](/workflow/configuration/).
+权限通过你在 [app config](/workflow/configuration/) 中使用的 [`android.permissions`](/versions/latest/config/app/#permissions) 和 [`android.blockedPermissions`](/versions/latest/config/app/#blockedpermissions) 键进行配置。
 
-Most permissions are added automatically by libraries that you use in your app either with [config plugins](/config-plugins/plugins/#creating-a-config-plugin) or with a package-level **AndroidManifest.xml**. You only need to use `android.permissions` to add additional permissions that are not included by default in a library.
+大多数权限会由你在应用中使用的库自动添加，这些库要么通过 [config plugins](/config-plugins/plugins/#creating-a-config-plugin)，要么通过包级别的 **AndroidManifest.xml** 添加。你只需要使用 `android.permissions` 来添加某个库默认未包含的额外权限。
 
 ```json app.json
 {
@@ -25,7 +25,7 @@ Most permissions are added automatically by libraries that you use in your app e
 }
 ```
 
-The only way to remove permissions that are added by package-level **AndroidManifest.xml** files is to block them with the [`android.blockedPermissions`](/versions/latest/config/app/#blockedpermissions) property. To do this, specify the **full permission name**. For example, if you want to remove the audio recording permissions added by `expo-camera`:
+移除由包级别 **AndroidManifest.xml** 文件添加的权限的唯一方法，是通过 [`android.blockedPermissions`](/versions/latest/config/app/#blockedpermissions) 属性将其屏蔽。为此，请指定**完整的权限名称**。例如，如果你想移除由 `expo-camera` 添加的录音权限：
 
 ```json app.json
 {
@@ -35,13 +35,13 @@ The only way to remove permissions that are added by package-level **AndroidMani
 }
 ```
 
-- See [`android.permissions`](/versions/latest/config/app/#permissions) to learn about which permissions are included in the default [prebuild template](/workflow/continuous-native-generation#templates).
-- Apps using _dangerous_ or _signature_ permissions without valid reasons **may be rejected by Google**. Ensure you follow the [Android permissions best practices](https://developer.android.com/training/permissions/usage-notes) when submitting your app.
-- [All available Android `Manifest.permissions`](https://developer.android.com/reference/android/Manifest.permission).
+- 查看 [`android.permissions`](/versions/latest/config/app/#permissions)，了解默认 [prebuild template](/workflow/continuous-native-generation#templates) 中包含哪些权限。
+- 未提供正当理由而使用 _dangerous_ 或 _signature_ 权限的应用，**可能会被 Google 拒绝**。提交应用时，请确保遵循 [Android permissions best practices](https://developer.android.com/training/permissions/usage-notes)。
+- [所有可用的 Android `Manifest.permissions`](https://developer.android.com/reference/android/Manifest.permission)。
 
 <ConfigReactNative>
 
-Modify **AndroidManifest.xml** to exclude specific permissions: add the `tools:node="remove"` attribute to a `<use-permission>` tag to ensure it is removed, even if it's included in a library's **AndroidManifest.xml**.
+修改 **AndroidManifest.xml** 以排除特定权限：在 `<use-permission>` 标签中添加 `tools:node="remove"` 属性，以确保即使它包含在某个库的 **AndroidManifest.xml** 中也会被移除。
 
 ```xml
 <manifest xmlns:tools="http://schemas.android.com/tools">
@@ -49,27 +49,27 @@ Modify **AndroidManifest.xml** to exclude specific permissions: add the `tools:n
 </manifest>
 ```
 
-> You have to define the `xmlns:tools` attribute on `<manifest>` before you can use the `tools:node` attribute on permissions.
+> 在权限上使用 `tools:node` 属性之前，你必须先在 `<manifest>` 上定义 `xmlns:tools` 属性。
 
 </ConfigReactNative>
 
 ## iOS
 
-Your iOS app can ask for system permissions from the user. For example, to use the device's camera or access photos, Apple requires an explanation for how your app makes use of that data. Most packages will automatically provide a boilerplate reason for a given permission with [config plugins](/config-plugins/introduction/). These default messages will most likely need to be tailored to your specific use case for your app to be accepted by the App Store.
+你的 iOS 应用可以向用户请求系统权限。例如，要使用设备的摄像头或访问照片，Apple 要求解释你的应用将如何使用这些数据。大多数包会通过 [config plugins](/config-plugins/introduction/) 自动提供某个权限的标准说明。这些默认消息很可能需要根据你的具体用例进行定制，应用才能被 App Store 接受。
 
-To set permission messages, use the [`ios.infoPlist`](/versions/latest/config/app/#infoplist) key in your [app config](/workflow/configuration/), for example:
+要设置权限消息，请在你的 [app config](/workflow/configuration/) 中使用 [`ios.infoPlist`](/versions/latest/config/app/#infoplist) 键，例如：
 
 ```json app.json
 {
   "ios": {
     "infoPlist": {
-      "NSCameraUsageDescription": "This app uses the camera to scan barcodes on event tickets."
+      "NSCameraUsageDescription": "此应用使用摄像头扫描活动门票上的条形码。"
     }
   }
 }
 ```
 
-Many of these properties are also directly configurable using the [config plugin](/config-plugins/introduction/) properties associated with the library that adds them. For example, with [`expo-media-library`](/versions/latest/sdk/media-library) you can configure photo permission messages like this:
+这些属性中的许多也可以直接通过添加它们的库所关联的 [config plugin](/config-plugins/introduction/) 属性进行配置。例如，使用 [`expo-media-library`](/versions/latest/sdk/media-library) 时，你可以这样配置照片权限消息：
 
 ```json app.json
 {
@@ -77,30 +77,30 @@ Many of these properties are also directly configurable using the [config plugin
     [
       "expo-media-library",
       {
-        "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-        "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos."
+        "photosPermission": "允许 $(PRODUCT_NAME) 访问你的照片。",
+        "savePhotosPermission": "允许 $(PRODUCT_NAME) 保存照片。"
       }
     ]
   ]
 }
 ```
 
-- Changes to the **Info.plist** cannot be updated over-the-air, they will only be deployed when you submit a new native binary. For example, with [`eas build`](/build/introduction).
-- Apple's official [permission message recommendations](https://developer.apple.com/design/human-interface-guidelines/privacy#Requesting-permission).
-- [All available **Info.plist** properties](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html).
+- 对 **Info.plist** 的更改不能通过空中更新（over-the-air）进行更新，它们只会在你提交新的原生二进制文件时部署。例如，使用 [`eas build`](/build/introduction)。
+- Apple 官方的[权限消息建议](https://developer.apple.com/design/human-interface-guidelines/privacy#Requesting-permission)。
+- [所有可用的 **Info.plist** 属性](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html)。
 
 <ConfigReactNative>
 
-Add and modify the permission message values in **Info.plist** file directly. We recommend doing this directly in Xcode for autocompletion.
+直接在 **Info.plist** 文件中添加和修改权限消息值。我们建议直接在 Xcode 中这样做，以便自动补全。
 
 </ConfigReactNative>
 
 ## Web
 
-On the web, permissions like the `Camera` and `Location` can only be requested from a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts#When_is_a_context_considered_secure). For example, using `https://` or `http://localhost`. This limitation is similar to Android's manifest permissions and iOS's **Info.plist** usage messages and is enforced to increase privacy.
+在 Web 上，像 `Camera` 和 `Location` 这样的权限只能在[安全上下文](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts#When_is_a_context_considered_secure)中请求。例如，使用 `https://` 或 `http://localhost`。这一限制类似于 Android 的清单权限和 iOS 的 **Info.plist** 使用说明消息，并且是为了增强隐私而强制执行的。
 
-## Resetting permissions
+## 重置权限
 
-Often you want to be able to test what happens when a user rejects permissions, to ensure your app reacts gracefully. An operating-system level restriction on both Android and iOS prohibits an app from asking for the same permission more than once (you can imagine how this could be annoying for the user to be repeatedly prompted for permissions after rejecting them). To test different flows involving permissions in development, you may need to uninstall and reinstall the native app.
+你通常会希望测试当用户拒绝权限时会发生什么，以确保你的应用能够优雅地响应。在 Android 和 iOS 上，操作系统级别的限制禁止应用多次请求同一权限（你可以想象，如果用户拒绝后还反复被提示授权，这会多么令人烦恼）。要在开发中测试涉及权限的不同流程，你可能需要卸载并重新安装原生应用。
 
-When testing in [Expo Go](https://expo.dev/go), you can delete the app and reinstall it by running `npx expo start` and pressing <kbd>i</kbd> or <kbd>a</kbd> in the [Expo CLI](/more/expo-cli/) Terminal UI.
+在 [Expo Go](https://expo.dev/go) 中测试时，你可以通过运行 `npx expo start`，然后在 [Expo CLI](/more/expo-cli/) 终端界面中按 <kbd>i</kbd> 或 <kbd>a</kbd> 来删除并重新安装应用。

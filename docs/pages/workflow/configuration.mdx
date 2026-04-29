@@ -1,6 +1,6 @@
 ---
-title: Configure with app config
-description: Learn about what app.json/app.config.js/app.config.ts files are and how you can customize and use them dynamically.
+title: 使用应用配置进行配置
+description: 了解 app.json/app.config.js/app.config.ts 文件是什么，以及如何动态自定义和使用它们。
 ---
 
 import { DocsLogo } from '@expo/styleguide';
@@ -12,41 +12,41 @@ import { Terminal } from '~/ui/components/Snippet';
 
 <PossibleRedirectNotification newUrl="/versions/latest/config/app/" />
 
-The app config (**app.json**, **app.config.js**, **app.config.ts**) is used for configuring [Expo Prebuild](/more/glossary-of-terms/#prebuild) generation, how a project loads in [Expo Go](/get-started/set-up-your-environment/), and the OTA update manifest.
+应用配置（**app.json**、**app.config.js**、**app.config.ts**）用于配置 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 的生成、项目在 [Expo Go](/get-started/set-up-your-environment/) 中的加载方式，以及 OTA 更新清单。
 
-It must be located at the root of your project, next to the **package.json**. Here is a minimal example:
+它必须位于项目根目录，紧挨着 **package.json**。下面是一个最小示例：
 
 ```json app.json
 {
-  "name": "My app",
+  "name": "我的应用",
   "slug": "my-app"
 }
 ```
 
-If your Expo config has a top-level `expo: {}` object, then this will be used in place of the root object and all other keys will be ignored.
+如果你的 Expo 配置包含顶层的 `expo: {}` 对象，那么它将被用作根对象，其它所有键都会被忽略。
 
 <BoxLink
-  title="App config schema reference"
-  description="Explore the full schema of the app config (app.json/app.config.js)."
+  title="App 配置 schema 参考"
+  description="查看 app 配置（app.json/app.config.js）的完整 schema。"
   href="/versions/latest/config/app/"
   Icon={DocsLogo}
 />
 
-## Properties
+## 属性
 
-The app config configures many things such as app name, icon, splash screen, deep linking scheme, API keys to use for some services and so on. For a complete list of available properties, see [app.json/app.config.js/app.config.ts reference](/versions/latest/config/app/).
+app 配置可配置许多内容，例如应用名称、图标、启动画面、深度链接 scheme、用于某些服务的 API 密钥等。有关可用属性的完整列表，请参阅 [app.json/app.config.js/app.config.ts 参考](/versions/latest/config/app/)。
 
-> **info** Do you use Visual Studio Code? If so, we recommend that you install the [Expo Tools](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools) extension to get auto-completion of properties in **app.json** files.
+> **info** 你使用 Visual Studio Code 吗？如果是，我们建议安装 [Expo Tools](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools) 扩展，以便在 **app.json** 文件中自动补全属性。
 
-## Reading configuration values in your app
+## 在应用中读取配置值
 
-Most configuration in the app config is accessible at runtime from your JavaScript code, using [`Constants.expoConfig`](/versions/latest/sdk/constants/#nativeconstants--properties). You **should not** include any sensitive information in the app config (with a few exceptions for fields that are filtered out, as outlined below).
+app 配置中的大多数配置都可以在运行时通过 JavaScript 代码访问，使用 [`Constants.expoConfig`](/versions/latest/sdk/constants/#nativeconstants--properties)。你**不应该**在 app 配置中包含任何敏感信息（少数会被过滤掉的字段除外，如下所述）。
 
-You can verify which configuration will be embedded in your builds/updates and available at runtime by running `npx expo config --type public`.
+你可以通过运行 `npx expo config --type public` 来验证哪些配置会被嵌入到你的构建/更新中并在运行时可用。
 
-<Collapsible summary="Which fields are filtered out of the public app config?">
+<Collapsible summary="哪些字段会从公开的 app 配置中被过滤掉？">
 
-The following fields are filtered out of the public app config (and not accessible through the `Constants.expoConfig` object):
+以下字段会从公开的 app 配置中被过滤掉（并且无法通过 `Constants.expoConfig` 对象访问）：
 
 - [`hooks`](/versions/latest/config/app/#hooks)
 - [`ios.config`](/versions/latest/config/app/#config)
@@ -56,41 +56,41 @@ The following fields are filtered out of the public app config (and not accessib
 
 </Collapsible>
 
-> **warning** You should also avoid importing **app.json** or **app.config.js** directly in your JavaScript code, because this will import the entire file rather than a processed version of it. Instead, use [`Constants.expoConfig`](/versions/latest/sdk/constants/#nativeconstants--properties) to access the configuration.
+> **warning** 你还应避免在 JavaScript 代码中直接导入 **app.json** 或 **app.config.js**，因为这会导入整个文件，而不是其处理后的版本。相反，请使用 [`Constants.expoConfig`](/versions/latest/sdk/constants/#nativeconstants--properties) 来访问配置。
 
-## Extending configuration
+## 扩展配置
 
-Library authors can extend the app config by using [Expo Config plugins](/config-plugins/introduction/).
+库的作者可以通过使用 [Expo Config plugins](/config-plugins/introduction/) 来扩展 app 配置。
 
-> **info** Config plugins are mostly used to configure the [`npx expo prebuild`](/more/glossary-of-terms/#prebuild) command.
+> **info** 配置插件主要用于配置 [`npx expo prebuild`](/more/glossary-of-terms/#prebuild) 命令。
 
-## Dynamic configuration
+## 动态配置
 
-For more customization, you can use the JavaScript (**app.config.js**) or [TypeScript](#using-typescript-for-configuration-appconfigts-instead-of-appconfigjs) (**app.config.ts**). These configs have the following properties:
+为了进行更多自定义，你可以使用 JavaScript（**app.config.js**）或 [TypeScript](#using-typescript-for-configuration-appconfigts-instead-of-appconfigjs)（**app.config.ts**）。这些配置具有以下特性：
 
-- Comments, variables, and single quotes.
-- ESM import syntax (the `import` keyword) is not supported, except when using [TypeScript with `tsx`](/guides/typescript/#appconfigjs). JS files that are compatible with your current version of Node.js can be imported with `require()`.
-- TypeScript support with nullish coalescing and optional chaining.
-- Updated whenever Metro bundler reloads.
-- Provide environment information to your app.
-- Does not support Promises.
+- 支持注释、变量和单引号。
+- 不支持 ESM import 语法（`import` 关键字），但使用 [TypeScript with `tsx`](/guides/typescript/#appconfigjs) 时除外。与当前 Node.js 版本兼容的 JS 文件可以使用 `require()` 导入。
+- 支持带有 nullish coalescing 和可选链的 TypeScript。
+- 当 Metro bundler 重新加载时会更新。
+- 向你的应用提供环境信息。
+- 不支持 Promises。
 
-For example, you can export an object to define your custom config:
+例如，你可以导出一个对象来定义自定义配置：
 
 ```js app.config.js
-const myValue = 'My App';
+const myValue = '我的应用';
 
 module.exports = {
   name: myValue,
   version: process.env.MY_CUSTOM_PROJECT_VERSION || '1.0.0',
-  // All values in extra will be passed to your app.
+  // extra 中的所有值都会传递给你的应用。
   extra: {
-    fact: 'kittens are cool',
+    fact: '小猫很可爱',
   },
 };
 ```
 
-The `"extra"` key allows passing arbitrary configuration data to your app. The value of this key is accessed using [`expo-constants`](/versions/latest/sdk/constants/):
+`"extra"` 键允许向你的应用传递任意配置数据。该键的值可通过 [`expo-constants`](/versions/latest/sdk/constants/) 访问：
 
 ```js App.js
 import Constants from 'expo-constants';
@@ -98,58 +98,58 @@ import Constants from 'expo-constants';
 Constants.expoConfig.extra.fact === 'kittens are cool';
 ```
 
-You can access and modify incoming config values by exporting a function that returns an object. This is useful if your project also has an **app.json**. By default, Expo CLI will read the **app.json** first and send the normalized results to the **app.config.js**.
+你可以通过导出一个返回对象的函数来访问和修改传入的配置值。如果你的项目中也有 **app.json**，这会很有用。默认情况下，Expo CLI 会先读取 **app.json**，然后将规范化后的结果传递给 **app.config.js**。
 
-For example, your **app.json** could look like this:
+例如，你的 **app.json** 可能如下所示：
 
 ```json app.json
 {
-  "name": "My App"
+  "name": "我的应用"
 }
 ```
 
-And in your **app.config.js**, you are provided with that configuration in the arguments to the exported function:
+然后在你的 **app.config.js** 中，导出函数的参数会提供该配置：
 
 ```js app.config.js
 module.exports = ({ config }) => {
-  console.log(config.name); // prints 'My App'
+  console.log(config.name); // 打印 '我的应用'
   return {
     ...config,
   };
 };
 ```
 
-### Switching configuration based on the environment
+### 根据环境切换配置
 
-It's common to have some different configuration in development, staging, and production environments, or to swap out configuration entirely to white label an app. To accomplish this, you can use **app.config.js** along with environment variables.
+在开发、预发布和生产环境中拥有不同的配置很常见，或者完全替换配置以进行白标应用定制。为实现这一点，你可以结合环境变量使用 **app.config.js**。
 
 ```js app.config.js
 module.exports = () => {
   if (process.env.MY_ENVIRONMENT === 'production') {
     return {
-      /* your production config */
+      /* 你的生产环境配置 */
     };
   } else {
     return {
-      /* your development config */
+      /* 你的开发环境配置 */
     };
   }
 };
 ```
 
-To use this configuration with Expo CLI commands, set the environment variable either for specific commands or in your shell profile. To set environment variables for specific commands, prefix the command with the variables and values as shown in the example:
+要在 Expo CLI 命令中使用此配置，请为特定命令或在你的 shell 配置文件中设置环境变量。要为特定命令设置环境变量，请像示例中所示，在命令前加上变量和对应值：
 
 <Terminal cmd={['$ MY_ENVIRONMENT=production eas update']} />
 
-This is not anything unique to Expo CLI. On Windows you can approximate the above command with:
+这并不是 Expo CLI 独有的特性。在 Windows 上，你可以用以下方式近似实现上述命令：
 
 <Terminal cmd={['$ npx cross-env MY_ENVIRONMENT=production eas update']} />
 
-Or you can use any other mechanism that you are comfortable with for environment variables.
+或者你也可以使用任何你熟悉的其它环境变量处理方式。
 
-### Using TypeScript for configuration: app.config.ts instead of app.config.js
+### 使用 TypeScript 进行配置：使用 app.config.ts 替代 app.config.js
 
-You can use autocomplete and doc-blocks with an Expo config in TypeScript. Create an **app.config.ts** with the following contents:
+你可以在 TypeScript 中的 Expo 配置里使用自动补全和文档块。创建一个包含以下内容的 **app.config.ts**：
 
 ```ts app.config.ts
 import { ExpoConfig, ConfigContext } from 'expo/config';
@@ -157,21 +157,21 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   slug: 'my-app',
-  name: 'My App',
+  name: '我的应用',
 });
 ```
 
-To import other TypeScript files into **app.config.ts** or customize the language features, we recommend using [`tsx`](/guides/typescript/#appconfigjs). `tsx` also enables using `import` syntax in any file imported by **app.config.ts**. This means you can write local [config plugins](/config-plugins/introduction/) in TypeScript with full language features.
+要将其它 TypeScript 文件导入 **app.config.ts**，或自定义语言特性，我们建议使用 [`tsx`](/guides/typescript/#appconfigjs)。`tsx` 还支持在 **app.config.ts** 导入的任何文件中使用 `import` 语法。这意味着你可以使用完整语言特性，用 TypeScript 编写本地 [配置插件](/config-plugins/introduction/)。
 
-### Configuration resolution rules
+### 配置解析规则
 
-There are two different types of configs: static (**app.config.json**, **app.json**), and dynamic (**app.config.js**, **app.config.ts**). Static configs can be automatically updated with CLI tools, whereas dynamic configs must be manually updated by the developer.
+有两种不同类型的配置：静态配置（**app.config.json**、**app.json**）和动态配置（**app.config.js**、**app.config.ts**）。静态配置可以通过 CLI 工具自动更新，而动态配置必须由开发者手动更新。
 
-1. The static config is read if **app.config.json** exists (falls back to **app.json**). If no static config exists, then default values are inferred from the **package.json** and your dependencies.
-2. The dynamic config is read if either **app.config.ts** or **app.config.js** exist. If both exist, then the TypeScript config is used.
-3. If the dynamic config returns a function, then the static config is passed to the function with `({ config }) => ({})`. This function can then mutate the static config values. Think of this like middleware for the static config.
-4. The return value from the dynamic config is used as the final config. It cannot have any promises.
-5. All functions in the config are evaluated and serialized before any tool in the Expo ecosystem uses it. The config must be a JSON manifest when it is hosted.
-6. If the final config object has a top-level `expo: {}` object, then this will be used in place of the root object and all other keys will be ignored.
+1. 如果 **app.config.json** 存在，则读取静态配置（否则回退到 **app.json**）。如果不存在静态配置，则会从 **package.json** 和你的依赖项中推断默认值。
+2. 如果 **app.config.ts** 或 **app.config.js** 任一存在，则读取动态配置。如果两者都存在，则使用 TypeScript 配置。
+3. 如果动态配置返回一个函数，则静态配置会以 `({ config }) => ({})` 的形式传递给该函数。然后这个函数可以修改静态配置值。可以把这看作静态配置的中间件。
+4. 动态配置的返回值会作为最终配置。它不能包含任何 promises。
+5. 在 Expo 生态系统中的任何工具使用配置之前，配置中的所有函数都会被求值并序列化。配置在托管时必须是 JSON 清单。
+6. 如果最终配置对象包含顶层的 `expo: {}` 对象，那么它将被用作根对象，其它所有键都会被忽略。
 
-Running `npx expo config` will display the final configuration that will be used in Expo CLI after resolution has occurred.
+运行 `npx expo config` 将显示在解析完成后 Expo CLI 中将使用的最终配置。

@@ -1,6 +1,6 @@
 ---
-title: Protected routes
-description: Learn how to make screens inaccessible to client-side navigation.
+title: 受保护的路由
+description: 了解如何使屏幕无法通过客户端导航访问。
 hasVideoLink: true
 ---
 
@@ -9,21 +9,21 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 <VideoBoxLink
   videoId="zHZjJDTTHJg"
-  title="Watch: Using protected routes"
-  description="Restrict screen access based on authentication state using protected routes in Expo Router."
+  title="观看：使用受保护路由"
+  description="在 Expo Router 中使用受保护路由，根据身份验证状态限制屏幕访问。"
 />
 
-## Overview
+## 概览
 
-Protected screens allow you to prevent users from accessing certain routes using client-side navigation. If a user tries to navigate to a protected screen, or if a screen becomes protected while it is active, they will be redirected to the anchor route (usually the index screen) or the first available screen in the stack.
+受保护屏幕允许你通过客户端导航防止用户访问某些路由。如果用户尝试导航到受保护屏幕，或者某个屏幕在处于活动状态时变为受保护状态，他们将被重定向到锚点路由（通常是 index 屏幕）或堆栈中的第一个可用屏幕。
 
 <FileTree
   files={[
     'src/app/_layout.tsx',
     'src/app/index.tsx',
     'src/app/about.tsx',
-    ['src/app/login.tsx', 'Should only be available while not authenticated'],
-    ['src/app/private/_layout.tsx', 'Should only be available while authenticated'],
+    ['src/app/login.tsx', '仅在未认证时可用'],
+    ['src/app/private/_layout.tsx', '仅在已认证时可用'],
     'src/app/private/index.tsx',
     'src/app/private/page.tsx',
   ]}
@@ -44,23 +44,23 @@ export function AppLayout() {
       <Stack.Protected guard={isLoggedIn}>
         <Stack.Screen name="private" />
       </Stack.Protected>
-      {/* Expo Router includes all routes by default. Adding Stack.Protected creates exceptions for these screens. */}
+      {/* Expo Router 默认包含所有路由。添加 Stack.Protected 会为这些屏幕创建例外。 */}
     </Stack>
   );
 }
 ```
 
-In this example, the `/private` route is inaccessible because the `guard` is false. When a user attempts to access `/private`, they are redirected to the anchor route, which is the **index** screen.
+在这个示例中，`/private` 路由无法访问，因为 `guard` 为 false。当用户尝试访问 `/private` 时，他们会被重定向到锚点路由，也就是 **index** 屏幕。
 
-Additionally, if the user is on `/private/page` and the `guard` condition changes to **false**, they will be redirected automatically.
+此外，如果用户当前位于 `/private/page`，并且 `guard` 条件变为 **false**，他们也会自动被重定向。
 
-When a screen's **guard** is changed from **true** to **false**, all of its history entries will be removed from the navigation history.
+当某个屏幕的 **guard** 从 **true** 改为 **false** 时，它的所有历史记录条目都会从导航历史中移除。
 
-## Multiple protected screens
+## 多个受保护屏幕
 
-In Expo Router, a screen can **only exist in one active route group at a time**.
+在 Expo Router 中，一个屏幕在同一时间**只能存在于一个活动路由组中**。
 
-You should only declare a screen only once, in the most appropriate group or stack. If a screen's availability depends on logic, wrap it in a conditional group instead of duplicating the screen.
+你应该只在最合适的组或堆栈中声明一次屏幕。如果某个屏幕的可用性取决于逻辑，请将其包裹在条件组中，而不是重复声明该屏幕。
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -74,15 +74,15 @@ export function AppLayout() {
       <Stack.Protected guard={true}>
         <Stack.Screen name="profile" />
       </Stack.Protected>
-      <Stack.Screen name="profile" /> // ❌ Not allowed: duplicate screen
+      <Stack.Screen name="profile" /> // ❌ 不允许：重复的屏幕
     </Stack>
   );
 }
 ```
 
-## Nesting protected screens
+## 嵌套受保护屏幕
 
-Protected screens can be nested to define hierarchical access control logic.
+受保护屏幕可以嵌套，以定义分层访问控制逻辑。
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -105,14 +105,14 @@ export function AppLayout() {
 }
 ```
 
-In this case:
+在这种情况下：
 
-- `/private` is only protected if the user is logged in and is an admin.
-- `/about` is protected to any logged-in user.
+- 仅当用户已登录且是管理员时，`/private` 才受保护。
+- `/about` 对任何已登录用户受保护。
 
-## Falling back to a specific screen
+## 回退到特定屏幕
 
-You can configure the navigator to fall back to a specific screen if access is denied.
+你可以配置导航器在访问被拒绝时回退到某个特定屏幕。
 
 <FileTree
   files={[
@@ -145,11 +145,11 @@ export function AppLayout() {
 }
 ```
 
-In the above example, since the **index** screen is protected and the `guard` is **false**, the router redirects to the first available screen &mdash; **login**.
+在上面的示例中，由于 **index** 屏幕受保护且 `guard` 为 **false**，路由器会重定向到第一个可用屏幕 —— **login**。
 
-## Tabs and Drawer
+## Tabs 和 Drawer
 
-Protected routes are also available for [Tabs](/router/advanced/tabs/) and [Drawer](/router/advanced/drawer/) navigators.
+受保护路由也适用于 [Tabs](/router/advanced/tabs/) 和 [Drawer](/router/advanced/drawer/) 导航器。
 
 ```tsx src/app/_layout.tsx
 import { Tabs } from 'expo-router';
@@ -173,10 +173,10 @@ export default function TabLayout() {
 }
 ```
 
-## Custom navigators
+## 自定义导航器
 
-`Protected` is also available for [custom navigators](/router/migrate/from-react-navigation/#rewrite-custom-navigators) using the `withLayoutContext` hook.
+`Protected` 也可用于使用 `withLayoutContext` 钩子的[自定义导航器](/router/migrate/from-react-navigation/#rewrite-custom-navigators)。
 
-## Static rendering considerations
+## 静态渲染注意事项
 
-Protected screens are evaluated on the client side only. During static site generation, no HTML files are created for protected routes. However, if users know the URLs of these routes, they can still request the corresponding HTML or JavaScript files directly. Protected screens are not a replacement for server-side authentication or access control.
+受保护屏幕仅在客户端进行评估。在静态站点生成期间，不会为受保护路由创建任何 HTML 文件。不过，如果用户知道这些路由的 URL，他们仍然可以直接请求对应的 HTML 或 JavaScript 文件。受保护屏幕不能替代服务器端身份验证或访问控制。

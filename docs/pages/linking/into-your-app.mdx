@@ -1,77 +1,77 @@
 ---
-title: Linking into your app
-sidebar_title: Into your app
-description: Learn how to handle an incoming URL in your React Native and Expo app by creating a deep link.
+title: 链接到你的应用
+sidebar_title: 到你的应用中
+description: 了解如何通过创建深度链接来处理 React Native 和 Expo 应用中的传入 URL。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-This guide provides steps to configure standard **deep links** in your project by adding a custom scheme.
+本指南提供了通过添加自定义 scheme 来在项目中配置标准 **深度链接** 的步骤。
 
-> **info** For most apps, you probably want to set up [Android App/iOS Universal Links](/linking/overview/#universal-linking) instead of the deep links described in this guide or set up both.
+> **info** 对于大多数应用，你可能希望设置 [Android App/iOS Universal Links](/linking/overview/#universal-linking)，而不是本指南中描述的深度链接，或者同时设置两者。
 
-## Add a custom scheme in app config
+## 在应用配置中添加自定义 scheme
 
-To provide a link to your app, add a custom string to the [`scheme`](/versions/latest/config/app/#scheme) property in the [app config](/workflow/configuration/):
+要为你的应用提供链接，请在 [app config](/workflow/configuration/) 中的 [`scheme`](/versions/latest/config/app/#scheme) 属性里添加一个自定义字符串。
 
 ```json app.json
 {
   "expo": {
-    /* @info <CODE>scheme</CODE> property allows you to add a custom scheme to your app. */
+    /* @info <CODE>scheme</CODE> 属性允许你为应用添加自定义 scheme。 */
     "scheme": "myapp"
     /* @end */
   }
 }
 ```
 
-After adding a custom scheme to your app, you need to [create a new development build](/develop/development-builds/create-a-build/). Once the app is installed on a device, you can open links within your app using `myapp://`.
+为应用添加自定义 scheme 后，你需要 [创建一个新的开发构建](/develop/development-builds/create-a-build/)。应用安装到设备后，你就可以使用 `myapp://` 在应用内打开链接。
 
-If the **custom scheme is not defined**, the app will use `android.package` and `ios.bundleIdentifier` as the default schemes in both development and production builds. This is because [Expo Prebuild](/more/glossary-of-terms/#prebuild) automatically adds these properties as custom schemes for Android and iOS.
+如果**未定义自定义 scheme**，应用将在开发和生产构建中使用 `android.package` 和 `ios.bundleIdentifier` 作为默认 scheme。这是因为 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 会自动将这些属性添加为 Android 和 iOS 的自定义 scheme。
 
-## Test the deep link
+## 测试深度链接
 
-You can test a link that opens your app using [`npx uri-scheme`](https://github.com/expo/expo/tree/main/packages/uri-scheme#readme), which is a command-line utility for interacting and testing URI schemes.
+你可以使用 [`npx uri-scheme`](https://github.com/expo/expo/tree/main/packages/uri-scheme#readme) 测试打开应用的链接，它是一个用于交互和测试 URI scheme 的命令行工具。
 
-For example, if your app has a `/details` screen that you want to open when a user taps on a link (either through another app or a web browser), you can test this behavior by running the following command:
+例如，如果你的应用有一个 `/details` 页面，并且你希望用户点击链接时打开它（无论是通过其他应用还是网页浏览器），你可以通过运行以下命令来测试这种行为：
 
 <Terminal
   cmd={[
-    '# If you have `android.package` or `ios.bundleIdentifier` defined in your app.json',
+    '# 如果你的 app.json 中定义了 `android.package` 或 `ios.bundleIdentifier`',
     '$ npx uri-scheme open com.example.app://somepath/details --android',
     '',
-    '# If you have a `scheme` defined in your app.json',
+    '# 如果你的 app.json 中定义了 `scheme`',
     '$ npx uri-scheme open myapp://somepath/details --ios',
   ]}
 />
 
-Running the above command:
+运行上述命令将会：
 
-- Opens your app's `/details` screen
-- The `android` or `ios` options specify that the link should be opened on Android or iOS
-- Alternatively, you can try opening the link by clicking a link like `<a href="scheme://">Click me</a>` in the device's web browser. Note that entering the link in the address bar may not work as expected, and you can use [universal linking](/linking/overview/#universal-linking) to implement that ability.
+- 打开你应用的 `/details` 页面
+- `android` 或 `ios` 选项指定链接应在 Android 或 iOS 上打开
+- 或者，你也可以尝试在设备的网页浏览器中点击类似 `<a href="scheme://">Click me</a>` 的链接来打开它。请注意，在地址栏中输入该链接可能不会按预期工作，你可以使用 [universal linking](/linking/overview/#universal-linking) 来实现该能力。
 
-<Collapsible summary="Test a link using Expo Go">
+<Collapsible summary="使用 Expo Go 测试链接">
 
-By default, [Expo Go](https://expo.dev/go) uses the `exp://` scheme. If you link to `exp://` without specifying a URL address afterward, it will open the app to the home screen. In development, your app's complete URL looks like `exp://127.0.0.1:8081`.
+默认情况下，[Expo Go](https://expo.dev/go) 使用 `exp://` scheme。如果你链接到 `exp://` 但后面不指定 URL 地址，它会将应用打开到首页。在开发中，你的应用完整 URL 看起来像 `exp://127.0.0.1:8081`。
 
-To open the `/details` screen while testing on Expo Go, you can use `npx uri-scheme`:
+要在 Expo Go 中测试时打开 `/details` 页面，你可以使用 `npx uri-scheme`：
 
 <Terminal
   cmd={['$ npx uri-scheme open exp://127.0.0.1:8081/--/somepath/into/app?hello=world --ios']}
 />
 
-In Expo Go, `/--/` is added to the URL when a path is specified. This indicates to Expo Go that the substring after it corresponds to the deep link path and is not part of the path to the app itself.
+在 Expo Go 中，当指定了路径时，URL 中会添加 `/--/`。这向 Expo Go 表明，其后的子字符串对应的是深度链接路径，而不是应用自身路径的一部分。
 
-By default, `exp://` is replaced with `http://` when opening a URL in Expo Go. You can also use `exps://` to open `https://` URLs. However, `exps://` does not currently support loading sites with insecure TLS certificates.
+默认情况下，在 Expo Go 中打开 URL 时，`exp://` 会被替换为 `http://`。你也可以使用 `exps://` 打开 `https://` URL。不过，`exps://` 目前不支持加载使用不安全 TLS 证书的网站。
 
 </Collapsible>
 
-## Handle URLs
+## 处理 URL
 
-> **info** If you are using [Expo Router](/linking/overview/#use-expo-router-to-handle-deep-linking), you can ignore this section.
+> **info** 如果你正在使用 [Expo Router](/linking/overview/#use-expo-router-to-handle-deep-linking)，可以忽略本节。
 
-You can observe links that launch your app using the [`Linking.useURL()`](/versions/latest/sdk/linking/#useurl) hook from [`expo-linking`](/versions/latest/sdk/linking/).
+你可以使用 [`expo-linking`](/versions/latest/sdk/linking/) 中的 [`Linking.useURL()`](/versions/latest/sdk/linking/#useurl) hook 来观察启动你应用的链接。
 
 ```tsx index.tsx
 import * as Linking from 'expo-linking';
@@ -83,14 +83,14 @@ export default function Home() {
 }
 ```
 
-The `Linking.useURL()` hook works behind the scenes by following these imperative methods:
+[`Linking.useURL()`](/versions/latest/sdk/linking/#useurl) hook 的底层工作方式是通过以下命令式方法实现的：
 
-- The link that launched the app is initially returned using [`Linking.getInitialURL()`](/versions/latest/sdk/linking/#linkinggetinitialurl)
-- Any new links triggered while the app is already open are observed with [`Linking.addEventListener('url', callback)`](/versions/latest/sdk/linking/#linkingaddeventlistenertype-handler)
+- 启动应用的链接最初会通过 [`Linking.getInitialURL()`](/versions/latest/sdk/linking/#linkinggetinitialurl) 返回
+- 应用已经打开时触发的任何新链接都会通过 [`Linking.addEventListener('url', callback)`](/versions/latest/sdk/linking/#linkingaddeventlistenertype-handler) 进行监听
 
-## Parse URLs
+## 解析 URL
 
-You can use the [`Linking.parse()`](/versions/latest/sdk/linking/#linkingparseurl) method to parse the **path**, **hostname**, and **query parameters** from a URL. This method extracts deep linking information and considers nonstandard implementations.
+你可以使用 [`Linking.parse()`](/versions/latest/sdk/linking/#linkingparseurl) 方法从 URL 中解析 **path**、**hostname** 和 **query parameters**。该方法会提取深度链接信息，并考虑非标准实现。
 
 ```tsx index.tsx|collapseHeight=440
 import * as Linking from 'expo-linking';
@@ -109,13 +109,13 @@ export default function Home() {
   }
 
   return (
-    /* @hide Your React component here. */ /* @end */
+    /* @hide 你的 React 组件写在这里。 */ /* @end */
   )
 }
 ```
 
-## Limitations
+## 限制
 
-If a user does not have your app installed, deep links to your app will not work. Attribution services like [Branch](https://www.branch.io/deep-linking/) offer solutions for conditionally linking to your app or web page.
+如果用户没有安装你的应用，指向你应用的深度链接将无法工作。像 [Branch](https://www.branch.io/deep-linking/) 这样的归因服务提供了有条件地链接到你的应用或网页的解决方案。
 
-Android App/iOS Universal Links is another solution you can use to handle such cases. This type of linking allows your app to open when a user clicks follows an HTTP(S) link pointing to your web domain. If the user doesn't have your app installed, the link takes them to your website. For more details, see [universal linking](/linking/overview/#universal-linking).
+Android App/iOS Universal Links 也是一种可用于处理此类情况的解决方案。这种链接类型允许当用户点击指向你网站域名的 HTTP(S) 链接时打开你的应用。如果用户没有安装你的应用，该链接会将其带到你的网站。有关更多详情，请参阅 [universal linking](/linking/overview/#universal-linking)。

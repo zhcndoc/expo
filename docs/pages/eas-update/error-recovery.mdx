@@ -1,68 +1,68 @@
 ---
-title: Error recovery
-description: Learn how to take advantage of using built-in error recovery when using expo-updates library.
+title: 错误恢复
+description: 了解如何在使用 expo-updates 库时利用内置的错误恢复功能。
 ---
 
 import { Tab, Tabs } from '~/ui/components/Tabs';
 
-Apps using `expo-updates` can take advantage of built-in error recovery behavior as an extra safeguard against accidentally publishing broken updates.
+使用 `expo-updates` 的应用可以利用内置的错误恢复行为，作为防止意外发布损坏更新的额外保障。
 
-While we cannot stress enough the importance of testing updates in a staging environment before publishing to production, humans (and even computers) occasionally make mistakes, and the error recovery behavior described here can serve as a last resort in such cases.
+虽然我们再怎么强调在发布到生产环境之前先在暂存环境中测试更新的重要性都不为过，但人类（甚至计算机）偶尔也会犯错，而此处描述的错误恢复行为可以在这种情况下作为最后的补救手段。
 
-> **warning** **Disclaimer:** The behavior documented below is subject to change and should not be relied upon. Always test your code carefully and thoroughly in production-like environments before publishing updates.
+> **warning** **免责声明：** 下文记录的行为可能会发生变化，不应依赖。请始终在类似生产的环境中仔细且全面地测试你的代码，然后再发布更新。
 
-## Help! I published a broken update to production. What should I do?
+## 糟糕！我把一个损坏的更新发布到了生产环境。我该怎么办？
 
-First of all, don't panic. Mistakes happen; most likely, everything will be fine.
+首先，不要惊慌。出错在所难免；大概率一切都会没问题。
 
-The important thing is to **publish a new update with a fix as soon as possible (though not before you are 100% confident in your fix).** The error recovery mechanism in `expo-updates` will ensure that in most cases, even users who have already downloaded the broken update should be able to get the fix.
+最重要的是，**尽快发布一个包含修复的新更新（不过前提是你已经 100% 确信你的修复是正确的）。** `expo-updates` 中的错误恢复机制将确保在大多数情况下，即使是已经下载了损坏更新的用户，也应该能够获取到修复。
 
-The first thing to try is rolling back to an older update that you know was working. **However, this may not always be safe;** your broken update may, for example, have modified persistent state (such as data stored in AsyncStorage or on the device's file system) in a non-backwards-compatible way. It's important to test in a staging environment that emulates an end user's device state as closely as possible to load the broken update and then roll back.
+首先可以尝试回滚到你已知可正常工作的旧更新。**不过，这并不总是安全的；** 例如，你的损坏更新可能以一种不向后兼容的方式修改了持久化状态（例如存储在 AsyncStorage 中或设备文件系统中的数据）。因此，重要的是在一个尽可能模拟终端用户设备状态的暂存环境中进行测试，先加载损坏更新，然后再回滚。
 
-If you can identify an older update that is safe to roll back to, you can do so using EAS Update's `republish` option from [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/updates) or [EAS CLI](/eas-update/eas-cli/#republish-a-previous-update-within-a-branch).
+如果你能识别出一个可以安全回滚到的旧更新，可以通过 [EAS 控制台](https://expo.dev/accounts/[account]/projects/[project]/updates) 或 [EAS CLI](/eas-update/eas-cli/#republish-a-previous-update-within-a-branch) 中 EAS Update 的 `republish` 选项来完成。
 
-If you cannot identify an older update that is safe to roll back to, you'll need to fix it forward. While it's best to roll out a fix as quickly as possible, you should take the time to ensure your fix is solid, and know that even users who download your broken update in the meantime should be able to download your fix.
+如果你无法识别出一个可以安全回滚到的旧更新，就需要向前修复。虽然最好尽快推出修复，但你应该花时间确保修复足够稳妥，并且要知道，即使是在此期间下载了损坏更新的用户，也应该能够下载到你的修复。
 
-If you'd like more details about how this works, read on.
+如果你想了解更多它是如何工作的，请继续阅读。
 
-## Explaining the error recovery flow
+## 解释错误恢复流程
 
-The error recovery flow is intended to be as lightweight as possible. It is not a full safety net that protects your end users from the results of errors; in many cases, users will still see a crash.
+错误恢复流程的设计目标是尽可能轻量。它并不是一个完整的安全网，不能保护终端用户免受错误结果的影响；在很多情况下，用户仍然会看到崩溃。
 
-Rather, the purpose is to prevent updates from "bricking" your app (causing a crash on launch before the app can check for updates, making the app unusable until uninstalled and reinstalled) by ensuring that in as many cases as possible, the app has the opportunity to download a new update and fix itself.
+相反，它的目的是通过尽可能多地确保应用有机会下载新更新并自我修复，来防止更新把你的应用“卡死”（即在应用来不及检查更新之前就启动崩溃，导致应用在卸载并重新安装前都无法使用）。
 
-### Catching an error
+### 捕获错误
 
-If your app throws a fatal error when executing JS which is early enough in the app's lifecycle that it may prevent the app from being able to download further updates, `expo-updates` will catch this error.
+如果你的应用在执行 JS 时抛出一个致命错误，而且这个错误发生得足够早，早到可能阻止应用下载后续更新，那么 `expo-updates` 会捕获这个错误。
 
-> If more than 10 seconds have elapsed between your app's first render and the time a fatal error is thrown, `expo-updates` will not catch this error at all and none of the error recovery code will be triggered. Therefore, we highly recommend that your app check for updates very shortly after launching, whether automatically or manually to ensure you can push out fixes in the event of a future error.
+> 如果从应用首次渲染到抛出致命错误之间已经过去了超过 10 秒，`expo-updates` 将完全不会捕获这个错误，也不会触发任何错误恢复代码。因此，我们强烈建议你的应用在启动后尽快检查更新，无论是自动还是手动检查，以确保在未来出现错误时你能够推送修复。
 
-If `expo-updates` catches a JS error, what will happen next depends on whether React Native has fired the native "content appeared" event (`ReactMarkerConstants.CONTENT_APPEARED` on Android or `RCTContentDidAppearNotification` on iOS) &mdash; approximately when your app's first view has been rendered on the screen, for this particular update, either on this launch or a previous one.
+如果 `expo-updates` 捕获到一个 JS 错误，接下来会发生什么取决于 React Native 是否已经触发了原生的“内容已出现”事件（Android 上的 `ReactMarkerConstants.CONTENT_APPEARED` 或 iOS 上的 `RCTContentDidAppearNotification`）&mdash; 也就是针对这个特定更新，在本次启动或之前某次启动中，你的应用首个视图是否已经渲染到屏幕上。
 
-> **Why this distinction?** In some cases `expo-updates` may try to automatically roll back to an older (working) update, but this can be dangerous if your new update has modified persistent state in a non-backwards compatible way. We assume that if the error occurs before the first view has rendered, no such code has been able to execute, and so rolling back is safe. After this point `expo-updates` will only fix forward and will not roll back.
+> **为什么要区分这一点？** 在某些情况下，`expo-updates` 可能会尝试自动回滚到旧的（可工作）更新，但如果你的新更新以一种不向后兼容的方式修改了持久化状态，这可能很危险。我们的假设是：如果错误发生在首个视图渲染之前，那么不会有任何此类代码被执行，因此回滚是安全的。在这之后，`expo-updates` 将只会向前修复，而不会回滚。
 
-### If content has appeared
+### 如果内容已出现
 
-If an error is caught and the "content appeared" event has already fired, OR if it has ever been fired on this device on a past launch of the same update, the following will happen:
+如果错误被捕获且“内容已出现”事件已经触发，或者它曾经在该设备上于同一更新的过去启动中触发过，那么将发生以下情况：
 
-- A 5 second timer will be started, and (unless `EXUpdatesCheckOnLaunch`/`expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH` is set to `NEVER`) the app will check for a new update and download it if there is one.
-- If there is no new update, the update finishes downloading, or the timer runs out (whichever happens first), the app will throw the original error and crash.
+- 将启动一个 5 秒计时器，并且（除非 `EXUpdatesCheckOnLaunch`/`expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH` 被设置为 `NEVER`）应用将检查是否有新更新，并在有新更新时下载它。
+- 如果没有新更新、更新完成下载，或者计时器超时（以先发生者为准），应用将抛出原始错误并崩溃。
 
-Note that if a new update is downloaded, it will launch when the user next tries to open the app.
+请注意，如果下载了新更新，它会在用户下次尝试打开应用时启动。
 
-### If content has not appeared
+### 如果内容尚未出现
 
-If an error is caught before the "content appeared" event has fired, and this is the first time the current update is being launched on this device, the following will happen:
+如果错误在“内容已出现”事件触发之前就被捕获，并且这是当前更新第一次在该设备上启动，那么将发生以下情况：
 
-- The update will be marked as "failed" locally and will not be launched again on this device.
-- A 5 second timer will be started, and (unless `EXUpdatesCheckOnLaunch`/`expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH` is set to `NEVER`) the app will check for a new update and download it if there is one.
-- If a new update finishes downloading before the timer runs out, the app will immediately try to reload itself and launch the newly downloaded update.
-- If this newly downloaded update also throws a fatal error, or there is no new update, or the timer runs out, the app will immediately try to reload by rolling back to an older update, whichever one was most recently launched successfully.
-- If this also fails, or there is no older update available on the device, the app will throw the original error and crash.
+- 该更新将在本地被标记为“失败”，并且不会再在该设备上启动。
+- 将启动一个 5 秒计时器，并且（除非 `EXUpdatesCheckOnLaunch`/`expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH` 被设置为 `NEVER`）应用将检查是否有新更新，并在有新更新时下载它。
+- 如果新更新在计时器结束前完成下载，应用将立即尝试重新加载自身，并启动刚下载的新更新。
+- 如果这个刚下载的新更新也抛出了致命错误，或者没有新更新，或者计时器超时，应用将立即尝试通过回滚到一个旧更新来重新加载，以最近一次成功启动的更新为准。
+- 如果这也失败了，或者设备上没有可用的旧更新，应用将抛出原始错误并崩溃。
 
-## Error stacktraces
+## 错误堆栈跟踪
 
-If your app encounters a fatal JS error, and the error recovery system cannot recover, it will re-throw the original exception to cause a crash. The stacktrace will look similar to this:
+如果你的应用遇到一个致命的 JS 错误，并且错误恢复系统无法恢复，它会重新抛出原始异常以导致崩溃。堆栈跟踪看起来会类似这样：
 
 <Tabs tabs={["Android", "iOS"]}>
 
@@ -87,14 +87,14 @@ AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$4.run
 AndroidRuntime: 	at java.lang.Thread.run(Thread.java:923)
 ```
 
-On Android, the stacktrace of the original exception is preserved. Depending on your crash reporting service, you may or may not need to reproduce the crash locally to see more information about the underlying error.
+在 Android 上，原始异常的堆栈跟踪会被保留。根据你的崩溃报告服务，你可能需要也可能不需要在本地复现崩溃，才能看到底层错误的更多信息。
 
 </Tab>
 
 <Tab>
 
 ```text
-Last Exception Backtrace:
+最后的异常回溯：
 0   CoreFoundation                	0xf203feba4 __exceptionPreprocess + 220 (NSException.m:200)
 1   libobjc.A.dylib               	0xf201a1be7 objc_exception_throw + 60 (objc-exception.mm:565)
 2   MyApp                         	0x10926b7ee -[EXUpdatesAppController throwException:] + 24 (EXUpdatesAppController.m:422)
@@ -109,9 +109,9 @@ Last Exception Backtrace:
 11  libsystem_pthread.dylib       	0xf6da2742f start_wqthread + 8
 ```
 
-Even though it appears the exception was thrown from expo-updates, this stacktrace generally indicates **an error that originated in JavaScript**.
+尽管看起来异常是从 expo-updates 抛出的，但这个堆栈跟踪通常表明 **错误起源于 JavaScript**。
 
-Unfortunately, Apple's crash reporting does not include the exception message, which details the underlying error and its location in JavaScript. To see the message and help you narrow down the issue, you may need to reproduce the crash locally with the Xcode debugger or macOS Console app attached.
+不幸的是，Apple 的崩溃报告不包含异常消息，而该消息会详细说明底层错误及其在 JavaScript 中的位置。要查看该消息并帮助你缩小问题范围，你可能需要在连接着 Xcode 调试器或 macOS Console 应用的情况下，本地复现崩溃。
 
 </Tab>
 

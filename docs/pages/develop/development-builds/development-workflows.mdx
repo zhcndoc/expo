@@ -1,148 +1,148 @@
 ---
-title: Tools, workflows and extensions
-sidebar_title: Tools, workflows and extensions
-description: Learn more about different tools, workflows and extensions available when working with development builds.
+title: 工具、工作流和扩展
+sidebar_title: 工具、工作流和扩展
+description: 了解在使用开发构建时可用的不同工具、工作流和扩展。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-Development builds allow you to iterate quickly. However, you can extend the capabilities of your development build to provide a better developer experience when working in teams or customize the build to suit your needs.
+开发构建允许你快速迭代。不过，你可以扩展开发构建的功能，以便在团队协作时提供更好的开发体验，或者根据你的需求自定义构建。
 
-## Tools
+## 工具
 
-### Tunnel URLs
+### 隧道 URL
 
-Sometimes, restrictive network conditions make it difficult to connect to the development server. The `npx expo start` command exposes your development server on a publicly available URL that is accessible through firewalls from around the globe. This option is helpful if you are not able to connect to your development server with the default LAN option or if you want to get feedback on your implementation while you are developing.
+有时，受限的网络条件会使连接到开发服务器变得困难。`npx expo start` 命令会将你的开发服务器暴露在一个可公开访问的 URL 上，可通过全球各地的防火墙访问。如果你无法使用默认的 LAN 选项连接到开发服务器，或者你希望在开发过程中获得实现反馈，这个选项会很有帮助。
 
-To get a tunneled URL, pass the [`--tunnel` flag](/more/expo-cli/#tunneling) to `npx expo start` from the command line.
+要获取隧道 URL，请在命令行中向 `npx expo start` 传递 [`--tunnel` 标志](/more/expo-cli/#tunneling)。
 
-### Published updates
+### 已发布更新
 
-EAS CLI's `eas update` command bundles the current state of your JavaScript and asset files into an optimized "update". This update is stored on a hosting service by Expo. A development build of your app can load published updates without needing to check out a particular commit or leave a development machine running.
+EAS CLI 的 `eas update` 命令会将你的 JavaScript 和资源文件的当前状态打包成一个经过优化的“更新”。该更新由 Expo 存储在托管服务上。你的应用的开发构建可以加载已发布更新，而无需检出特定提交或让开发机器持续运行。
 
-### Manually entering an update's URL
+### 手动输入更新的 URL
 
-When a development build launches, it will expose UI to load a development server, or to "Enter URL manually". You can provide a URL manually that will launch a specific branch. The URL follows this pattern:
+当开发构建启动时，它会提供用于加载开发服务器的界面，或者“手动输入 URL”。你可以手动提供一个 URL，以启动特定分支。该 URL 采用以下格式：
 
 ```text
 https://u.expo.dev/[your-project-id]?channel-name=[channel-name]
 
-# Example
+# 示例
 https://u.expo.dev/F767ADF57-B487-4D8F-9522-85549C39F43F?channel-name=main
 ```
 
-To get your project's ID, use the URL in the [app config's `expo.updates.url`](/versions/latest/config/app/#url) field. To see a list of channels, run `eas channel:list`.
+要获取你的项目 ID，请使用 [应用配置中的 `expo.updates.url`](/versions/latest/config/app/#url) 字段里的 URL。要查看通道列表，请运行 `eas channel:list`。
 
 {/* TODO: @aman move this section out of this page -- make it part of the main path or a standalone guide, this is important part that should be searchable for eg: Deep linking URLs for Development builds/EAS Builds (when using expo-dev-client) */}
 
-### Deep linking to an update's URL
+### 深入链接到更新的 URL
 
-You can load your app on a device that has a compatible build of your custom client by opening a URL of the form `{scheme}://expo-development-client/?url={manifestUrl}`. You'll need to pass the following parameters:
+你可以通过打开形如 `{scheme}://expo-development-client/?url={manifestUrl}` 的 URL，在具有与你的自定义客户端兼容构建的设备上加载你的应用。你需要传递以下参数：
 
-| parameter     | value                                                                                                                                     |
+| 参数           | 值                                                                                                                                     |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `scheme`      | URL scheme of your client (defaults to `exp+{slug}` where [`slug`](/versions/latest/config/app/#slug) is the value set in the app config) |
-| `manifestUrl` | URL-encoded URL of an update manifest to load. The URL will be `https://u.expo.dev/[your-project-id]?channel-name=[channel-name]`         |
+| `scheme`      | 你的客户端的 URL scheme（默认是 `exp+{slug}`，其中 [`slug`](/versions/latest/config/app/#slug) 是在应用配置中设置的值） |
+| `manifestUrl` | 要加载的更新清单的 URL 编码 URL。该 URL 将是 `https://u.expo.dev/[your-project-id]?channel-name=[channel-name]`         |
 
-Example:
+示例：
 
 ```text
 exp+app-slug://expo-development-client/?url=https%3A%2F%2Fu.expo.dev%2F767ADF57-B487-4D8F-9522-85549C39F43F%2F%3Fchannel-name%3Dmain
 ```
 
-In the example above, the `scheme` is `exp+app-slug`, and the `manifestUrl` is a project with an ID of `F767ADF57-B487-4D8F-9522-85549C39F43F` and a channel of `main`.
+在上面的示例中，`scheme` 是 `exp+app-slug`，而 `manifestUrl` 是一个 ID 为 `F767ADF57-B487-4D8F-9522-85549C39F43F`、频道为 `main` 的项目。
 
-#### Using updates deep links in automation scenarios
+#### 在自动化场景中使用更新深层链接
 
-When launching an update URL in a development build on an emulator or simulator using automation, such as in a CI/CD workflow, you can add the `disableOnboarding=1` query parameter to the URL to skip the onboarding screen that appears on the first launch of a development build after installation.
+当在模拟器或仿真器上通过自动化启动开发构建中的更新 URL 时，例如在 CI/CD 工作流中，你可以在 URL 中添加 `disableOnboarding=1` 查询参数，以跳过安装后首次启动开发构建时出现的引导屏幕。
 
-#### App-specific deep links
+#### 应用特定的深层链接
 
-When testing deep links in your development build, such as when navigating to a specific screen in an Expo Router app or testing redirecting back to your app during an Oauth login flow, construct the URL exactly as you would if you were deep-linking into a standalone build of your app (for example, `myscheme://path/to/screen`).
+在开发构建中测试深层链接时，例如在 Expo Router 应用中导航到特定屏幕，或在 Oauth 登录流程中测试重定向回你的应用时，请像深层链接到你应用的独立构建一样准确地构造 URL（例如，`myscheme://path/to/screen`）。
 
-Your project must be already open in the development build for an app-specific deep link to work. Cold-launching a development build with an app-specific deep link is not currently supported. Avoid using `expo-development-client` in your app-specific deep links in the path, as it is a reserved path used for launching an updated URL.
+应用特定的深层链接要生效，你的项目必须已经在开发构建中打开。目前还不支持使用应用特定的深层链接进行冷启动开发构建。避免在应用特定深层链接的路径中使用 `expo-development-client`，因为它是用于启动更新 URL 的保留路径。
 
-### QR codes
+### 二维码
 
-You can use our endpoint to generate a QR code that can be easily loaded by a development build.
+你可以使用我们的端点生成一个二维码，使其能够被开发构建轻松加载。
 
-Requests send to `https://qr.expo.dev/development-client` when supplied the query parameters such as `appScheme` and `url` will receive a response with an SVG image containing a QR code that can be easily scanned to load a version of your project in your development build.
+当向 `https://qr.expo.dev/development-client` 发送请求并提供诸如 `appScheme` 和 `url` 等查询参数时，将返回一个包含二维码的 SVG 图像响应，该二维码可被轻松扫描，以在你的开发构建中加载你项目的某个版本。
 
-| parameter   | value                                                                                                                                                                    |
+| 参数        | 值                                                                                                                                                                    |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `appScheme` | URL-encoded deeplinking scheme of your development build (defaults to `exp+{slug}` where [`slug`](/versions/latest/config/app/#slug) is the value set in the app config) |
-| `url`       | URL-encoded URL of an update manifest to load. The URL will be `https://u.expo.dev/[your-project-id]?channel-name=[channel-name]`                                        |
+| `appScheme` | 你的开发构建的 URL 编码深层链接 scheme（默认是 `exp+{slug}`，其中 [`slug`](/versions/latest/config/app/#slug) 是在应用配置中设置的值） |
+| `url`       | 要加载的更新清单的 URL 编码 URL。该 URL 将是 `https://u.expo.dev/[your-project-id]?channel-name=[channel-name]`                                        |
 
-Example:
+示例：
 
 ```text
 https://qr.expo.dev/development-client?appScheme=exp%2Bapps-slug&url=https%3A%2F%2Fu.expo.dev%2FF767ADF57-B487-4D8F-9522-85549C39F43F0%3Fchannel-name%3Dmain
 ```
 
-In the example above, the `scheme` is `exp+app-slug`, and the `url` is a project with an ID of `F767ADF57-B487-4D8F-9522-85549C39F43F` and a channel of `main`.
+在上面的示例中，`scheme` 是 `exp+app-slug`，而 `url` 是一个 ID 为 `F767ADF57-B487-4D8F-9522-85549C39F43F`、频道为 `main` 的项目。
 
-## Example workflows
+## 示例工作流
 
-These are a few examples of workflows to help your team get the most out of your development build. If you come up with others that would be useful for other teams, [submit a PR](https://github.com/expo/expo/tree/main/CONTRIBUTING.md#-updating-documentation) to share your knowledge!
+以下是一些工作流示例，可帮助你的团队充分利用开发构建。如果你还有其他对其他团队也有用的工作流，[提交 PR](https://github.com/expo/expo/tree/main/CONTRIBUTING.md#-updating-documentation) 来分享你的经验！
 
-### PR previews
+### PR 预览
 
-You can set up your CI process to publish an EAS Update whenever a pull request is updated and add a QR code that is used to view the change in a compatible development build.
+你可以设置 CI 流程，在每次拉取请求更新时发布一个 EAS Update，并添加一个用于在兼容的开发构建中查看更改的二维码。
 
-See [instructions for publishing app previews on pull requests](/eas-update/github-actions/#publish-previews-on-pull-requests) to implement this workflow in your project using GitHub Actions or serve as a template in your CI of choice.
+请参阅[在拉取请求上发布应用预览的说明](/eas-update/github-actions/#publish-previews-on-pull-requests)，使用 GitHub Actions 在你的项目中实现此工作流，或将其作为你所选 CI 的模板。
 
-## Extensions
+## 扩展
 
-Extensions allow you to extend your development client with additional capabilities.
+扩展允许你为开发客户端增加额外功能。
 
-### Extending the dev menu
+### 扩展开发菜单
 
-The dev menu can be extended to include extra buttons by using the `registerDevMenuItems` API:
+可以使用 `registerDevMenuItems` API 来扩展开发菜单，添加额外按钮：
 
 ```tsx
 import { registerDevMenuItems } from 'expo-dev-menu';
 
 const devMenuItems = [
   {
-    name: 'My Custom Button',
-    callback: () => console.log('Hello world!'),
+    name: '我的自定义按钮',
+    callback: () => console.log('你好，世界！'),
   },
 ];
 
 registerDevMenuItems(devMenuItems);
 ```
 
-This will create a new section in the dev menu that includes the buttons you have registered:
+这将在开发菜单中创建一个新部分，其中包含你注册的按钮：
 
 <ContentSpotlight
-  alt="An example of a custom menu button in expo-dev-menu"
+  alt="expo-dev-menu 中自定义菜单按钮的示例"
   src="/static/images/dev-client/custom-menu-button.png"
   className="max-w-[400px]"
 />
 
-> Subsequent calls of `registerDevMenuItems` will override all previous entries.
+> 对 `registerDevMenuItems` 的后续调用将覆盖之前的所有条目。
 
 ### EAS Update
 
 <ContentSpotlight
-  alt="An example list of EAS Update that can be loaded in the expo-dev-client."
+  alt="可在 expo-dev-client 中加载的 EAS Update 示例列表。"
   src="/static/images/dev-client/eas-updates-screen.png"
   className="max-w-[400px]"
 />
 
-The EAS Update extension provides the ability to view and load published updates in your development client. To install it, you'll need the most recent publish of `expo-updates`:
+EAS Update 扩展提供了在开发客户端中查看和加载已发布更新的能力。要安装它，你需要最新发布版的 `expo-updates`：
 
 <Terminal cmd={['$ npx expo install expo-dev-client expo-updates']} />
 
-#### Configure EAS Update
+#### 配置 EAS Update
 
-If you have not yet configured EAS Updates in your project, you can find [additional instructions on how to do so here.](/eas-update/getting-started/)
+如果你尚未在项目中配置 EAS Updates，可以在[这里找到更多操作说明。](/eas-update/getting-started/)
 
-You can now view and load EAS Updates in your development build via the `Extensions` panel.
+现在你可以通过 `Extensions` 面板在开发构建中查看和加载 EAS Updates。
 
-## Set runtimeVersion in app config
+## 在应用配置中设置 runtimeVersion
 
-When you create a development build of your project, you'll get a stable environment to load any changes to your app that are defined in JavaScript or other asset-related changes. Other changes to your app, whether defined directly in **android** and **ios** directories or by packages or SDKs you choose to install, will require you to create a new build of your development build.
+当你为项目创建开发构建时，你会获得一个稳定的环境，用于加载在 JavaScript 中定义的应用更改或其他与资源相关的更改。你的应用中的其他更改，无论是直接在 **android** 和 **ios** 目录中定义的，还是由你选择安装的包或 SDK 所引入的，都需要你为开发构建创建一个新的构建。
 
-To enforce an API contract between the JavaScript and native layers of your app, you should set the [`runtimeVersion`](/eas-update/runtime-versions) value in the app config. Each build you make will have this value embedded and will only load bundles with the same `runtimeVersion`, in both development and production.
+为了在应用的 JavaScript 层和原生层之间强制执行 API 契约，你应在应用配置中设置 [`runtimeVersion`](/eas-update/runtime-versions) 值。你创建的每个构建都会嵌入此值，并且只会加载具有相同 `runtimeVersion` 的 bundle，无论是在开发环境还是生产环境中。

@@ -1,7 +1,7 @@
 ---
-title: Run E2E tests on EAS Workflows with Maestro
-sidebar_title: Run E2E tests
-description: Learn how to set up and run E2E tests on EAS Workflows with Maestro.
+title: 使用 Maestro 在 EAS Workflows 上运行 E2E 测试
+sidebar_title: 运行 E2E 测试
+description: 了解如何使用 Maestro 在 EAS Workflows 上设置并运行 E2E 测试。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -12,43 +12,43 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-In this guide, you'll learn how to run end-to-end (E2E) tests on EAS Workflows using [Maestro](https://maestro.dev/). The example demonstrates how to configure your E2E tests workflow using the [default Expo template](/more/create-expo/#--template). For your own app, you'll need to adjust the flows to match your app's UI.
+在本指南中，你将学习如何使用 [Maestro](https://maestro.dev/) 在 EAS Workflows 上运行端到端（E2E）测试。该示例演示了如何使用 [默认 Expo 模板](/more/create-expo/#--template) 配置 E2E 测试工作流。对于你自己的应用，你需要调整这些 flow，以匹配你的应用 UI。
 
 <Step label="1">
-## Set up your project
+## 设置你的项目
 
-If you haven't already, create a new project and sync it with EAS.
+如果你还没有这样做，请创建一个新项目并将其与 EAS 同步。
 
-Follow the [Get started with EAS Workflows guide](/eas/workflows/get-started/) to create a new project and sync it with EAS. Then, [configure your project](/eas/workflows/get-started/) and link your GitHub repository.
+按照 [EAS Workflows 入门指南](/eas/workflows/get-started/) 创建一个新项目并将其与 EAS 同步。然后，[配置你的项目](/eas/workflows/get-started/) 并关联你的 GitHub 仓库。
 
 </Step>
 
 <Step label="2">
 
-## Add example Maestro test cases
+## 添加示例 Maestro 测试用例
 
-This is what the UI of the app created from the default Expo template looks like:
+以下是使用默认 Expo 模板创建的应用 UI 的样子：
 
 <div style={{ display: 'flex', justifyContent: 'center' }}>
   <ContentSpotlight src="/static/images/eas-build/tests/01-home.png" className="max-w-[360px]" />
   <ContentSpotlight src="/static/images/eas-build/tests/02-explore.png" className="max-w-[360px]" />
 </div>
 
-Let's create two simple Maestro flows for the example app. Start by creating a directory called **.maestro** in the root of your project directory. This directory will contain the flows you'll configure and should be at the same level as **eas.json**.
+让我们为示例应用创建两个简单的 Maestro flow。首先，在项目根目录下创建一个名为 **.maestro** 的目录。这个目录将包含你要配置的 flow，并且应与 **eas.json** 处于同一级别。
 
-Inside, create a new file called **home.yml**. This flow will launch the app and assert that the text "Welcome!" is visible on the home screen.
+在其中创建一个名为 **home.yml** 的新文件。这个 flow 将启动应用，并断言主屏幕上可见文本 "Welcome!"。
 
 ```yaml .maestro/home.yml
-appId: dev.expo.eastestsexample # This is an example app id. Replace it with your app id.
+appId: dev.expo.eastestsexample # 这是一个示例应用 ID。请将其替换为你的应用 ID。
 ---
 - launchApp
 - assertVisible: 'Welcome!'
 ```
 
-Next, create a new flow called **expand_test.yml**. This flow will open the "Explore" screen in the example app, click on the "File-based routing" collapsible, and assert that the text "This app has two screens." is visible on the screen.
+接下来，创建一个名为 **expand_test.yml** 的新 flow。这个 flow 将打开示例应用中的 "Explore" 屏幕，点击 "File-based routing" 可折叠项，并断言屏幕上可见文本 "This app has two screens."。
 
 ```yaml .maestro/expand_test.yml
-appId: dev.expo.eastestsexample # This is an example app id. Replace it with your app id.
+appId: dev.expo.eastestsexample # 这是一个示例应用 ID。请将其替换为你的应用 ID。
 ---
 - launchApp
 - tapOn: 'Explore.*'
@@ -59,28 +59,28 @@ appId: dev.expo.eastestsexample # This is an example app id. Replace it with you
 </Step>
 
 <Step label="3">
-## Run Maestro tests locally (optional)
+## 在本地运行 Maestro 测试（可选）
 
-To run Maestro tests locally, install the Maestro CLI by following the instructions in [Installing Maestro](https://docs.maestro.dev/maestro-cli/how-to-install-maestro-cli).
+要在本地运行 Maestro 测试，请按照 [安装 Maestro](https://docs.maestro.dev/maestro-cli/how-to-install-maestro-cli) 中的说明安装 Maestro CLI。
 
-[Install your app on a local Android Emulator or iOS Simulator](/more/expo-cli/#compiling). Open a terminal, navigate to the Maestro directory, and run the following commands to start the tests with the Maestro CLI:
+[将你的应用安装到本地 Android 模拟器或 iOS 模拟器](/more/expo-cli/#compiling)。打开终端，进入 Maestro 目录，并运行以下命令，使用 Maestro CLI 启动测试：
 
 <Terminal
   cmd={['$ maestro test .maestro/expand_test.yml', '', '$ maestro test .maestro/home.yml']}
 />
 
-The video below shows a successful run of the **.maestro/expand_test.yml** flow:
+下面的视频展示了 **.maestro/expand_test.yml** flow 成功运行的过程：
 
 <ContentSpotlight file="guides/local-e2e.mp4" />
 
 </Step>
 
 <Step label="4">
-## Build profile for E2E tests
+## E2E 测试的构建配置
 
-E2E tests require a built app file: **.apk** for Android or **.app** for iOS &mdash; that EAS can install and test on an emulator/simulator.
+E2E 测试需要一个已构建的应用文件：Android 使用 **.apk**，iOS 使用 **.app** &mdash; EAS 可以将其安装到模拟器上并进行测试。
 
-In your **eas.json** file, create a build profile for E2E tests. If the file doesn't exist, run `eas build:configure` to generate it.
+在你的 **eas.json** 文件中，为 E2E 测试创建一个构建配置。如果该文件不存在，请运行 `eas build:configure` 来生成它。
 
 ```json eas.json
 {
@@ -98,27 +98,27 @@ In your **eas.json** file, create a build profile for E2E tests. If the file doe
 }
 ```
 
-The above build profile creates an **.apk** for Android and an **.app** for iOS. The workflow uses this profile to build the app on EAS servers.
+上述构建配置会为 Android 生成 **.apk**，并为 iOS 生成 **.app**。该工作流使用此配置在 EAS 服务器上构建应用。
 
 </Step>
 
 <Step label="5">
-## Create an E2E test workflow
+## 创建一个 E2E 测试工作流
 
-At the root of your project, create an **.eas/workflows** directory. Then, add a YAML file for your E2E test workflow, such as **.eas/workflows/e2e-test-android.yml**.
+在项目根目录下，创建一个 **.eas/workflows** 目录。然后，为你的 E2E 测试工作流添加一个 YAML 文件，例如 **.eas/workflows/e2e-test-android.yml**。
 
 ```yaml .eas/workflows/e2e-test-android.yml
 name: e2e-test-android
 
 on:
   pull_request:
-    branches: ['*'] # Run the E2E test workflow on every pull request.
+    branches: ['*'] # 在每个 pull request 上运行 E2E 测试工作流。
 jobs:
   build_android_for_e2e:
     type: build
     params:
       platform: android
-      profile: e2e-test # your eas build profile for E2E test
+      profile: e2e-test # 你的 E2E 测试用 eas build 配置
 
   maestro_test:
     needs: [build_android_for_e2e]
@@ -128,9 +128,9 @@ jobs:
       flow_path: ['.maestro/home.yml', '.maestro/expand_test.yml']
 ```
 
-This workflow builds an **.apk** for Android using the `e2e-test` build profile from the previous step. Then it runs the **.maestro/home.yml** flow on the built APK.
+此工作流使用上一步中的 `e2e-test` 构建配置为 Android 构建一个 **.apk**。然后在构建好的 APK 上运行 **.maestro/home.yml** flow。
 
-Here's an example of the same test workflow for iOS:
+下面是 iOS 的同样测试工作流示例：
 
 ```yaml .eas/workflows/e2e-test-ios.yml
 name: e2e-test-ios
@@ -144,7 +144,7 @@ jobs:
     type: build
     params:
       platform: ios
-      profile: e2e-test # your eas build profile for E2E test
+      profile: e2e-test # 你的 E2E 测试用 eas build 配置
 
   maestro_test:
     needs: [build_ios_for_e2e]
@@ -154,48 +154,48 @@ jobs:
       flow_path: ['.maestro/home.yml', '.maestro/expand_test.yml']
 ```
 
-Learn more about [Syntax for EAS Workflows](/eas/workflows/syntax/).
+了解更多关于 [EAS Workflows 语法](/eas/workflows/syntax/) 的信息。
 
 </Step>
 
 <Step label="6">
-## Run the E2E test workflow
+## 运行 E2E 测试工作流
 
-You can run the E2E test workflow in two ways:
+你可以通过两种方式运行 E2E 测试工作流：
 
-1. **Manually using the EAS CLI**
+1. **使用 EAS CLI 手动运行**
 
 <Terminal cmd={['$ npx eas-cli@latest workflow:run .eas/workflows/e2e-test-android.yml']} />
 
-2. **Automatically when you open a pull request**
+2. **在你打开 pull request 时自动运行**
 
-The workflow uses a `pull_request` trigger to run automatically when someone opens a pull request to your repository. Learn more about [EAS Workflows triggers](/eas/workflows/syntax/#on).
+该工作流使用 `pull_request` 触发器，在有人向你的仓库打开 pull request 时自动运行。了解更多关于 [EAS Workflows 触发器](/eas/workflows/syntax/#on) 的信息。
 
-After the workflow starts, you can track its progress and view the results in the EAS dashboard. Here's a screenshot of a completed workflow run:
+工作流启动后，你可以在 EAS 仪表板中跟踪进度并查看结果。下面是一个已完成工作流运行的截图：
 
 <ContentSpotlight src="/static/images/eas-build/tests/e2e-workflow.png" />
 
 </Step>
 
-## More
+## 更多
 
 <BoxLink
-  title="Syntax for EAS Workflows"
-  description="Learn more about the syntax for EAS Workflows."
+  title="EAS Workflows 语法"
+  description="了解更多关于 EAS Workflows 语法的信息。"
   href="/eas/workflows/syntax/"
   Icon={Dataflow03Icon}
 />
 
 <BoxLink
-  title="Example CI/CD workflows"
-  description="Learn more about example CI/CD workflows for EAS Workflows."
+  title="示例 CI/CD 工作流"
+  description="了解更多关于 EAS Workflows 示例 CI/CD 工作流的信息。"
   href="/eas/workflows/examples/introduction/"
   Icon={Dataflow03Icon}
 />
 
 <BoxLink
-  title="Maestro documentation"
-  description="Learn more about Maestro flows and how to write them."
+  title="Maestro 文档"
+  description="了解更多关于 Maestro flows 以及如何编写它们。"
   href="https://docs.maestro.dev/"
   Icon={BookOpen02Icon}
 />

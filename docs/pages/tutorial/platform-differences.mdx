@@ -1,6 +1,6 @@
 ---
-title: Handle platform differences
-description: In this tutorial, learn how to handle platform differences between native and web when creating a universal app.
+title: 处理平台差异
+description: 在本教程中，学习在创建通用应用时如何处理原生和 Web 之间的平台差异。
 hasVideoLink: true
 ---
 
@@ -12,43 +12,43 @@ import { Step } from '~/ui/components/Step';
 import { CODE } from '~/ui/components/Text';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-Android, iOS, and the web have different capabilities. In our case, both Android and iOS can capture a screenshot with the `react-native-view-shot` library. However, web browsers cannot.
+Android、iOS 和 Web 具有不同的能力。在我们的案例中，Android 和 iOS 都可以使用 `react-native-view-shot` 库来捕获屏幕截图。然而，Web 浏览器不能。
 
-In this chapter, we'll learn how to handle capturing screenshots for web browsers so our app has the same functionality on all platforms.
+在本章中，我们将学习如何处理 Web 浏览器的截图捕获，这样我们的应用就能在所有平台上拥有相同的功能。
 
 <VideoBoxLink
   videoId="mEKQvF4irBM"
-  title="Watch: Handling platform differences in your universal Expo app"
-  description="Handle platform differences between Android, iOS, and web by implementing platform-specific screenshot capture with dom-to-image."
+  title="观看：在你的通用 Expo 应用中处理平台差异"
+  description="通过使用 dom-to-image 实现平台特定的截图捕获，处理 Android、iOS 和 Web 之间的平台差异。"
 />
 
 ---
 
 <Step label="1">
 
-## Install and import dom-to-image
+## 安装并导入 dom-to-image
 
-To capture a screenshot on the web and save it as an image, we'll use a third-party library called [`dom-to-image`](https://github.com/tsayen/dom-to-image#readme). It takes a screenshot of any DOM node and turns it into a vector (SVG) or raster (PNG or JPEG) image.
+为了在 Web 上捕获截图并将其保存为图片，我们将使用一个名为 [`dom-to-image`](https://github.com/tsayen/dom-to-image#readme) 的第三方库。它可以截取任意 DOM 节点，并将其转换为矢量（SVG）或栅格（PNG 或 JPEG）图像。
 
-Stop the development server and run the following command to install the library:
+停止开发服务器并运行以下命令来安装该库：
 
 <Terminal cmd={['$ npm install dom-to-image']} />
 
-> **Note:** The `dom-to-image` library is used here for illustrative purposes. For production apps, you may want to explore other solutions or APIs that better suit your specific use case.
+> **注意：** 这里使用 `dom-to-image` 库仅用于演示目的。对于生产环境应用，你可能需要探索其他更适合你具体用例的解决方案或 API。
 
-After installing it, make sure to restart the development server and press <kbd>w</kbd> in the terminal.
+安装完成后，请确保重启开发服务器，并在终端中按下 <kbd>w</kbd>。
 
 </Step>
 
 <Step label="2">
 
-## Add platform-specific code
+## 添加平台特定代码
 
-Using `Platform` module from React Native, we can implement platform-specific behavior. Inside **app/(tabs)/index.tsx**:
+使用 React Native 中的 `Platform` 模块，我们可以实现平台特定的行为。在 **app/(tabs)/index.tsx** 中：
 
-1. Import the `Platform` module from `react-native`.
-2. Import the `domtoimage` library from `dom-to-image`.
-3. Update the `onSaveImageAsync()` function to check whether the current platform is `'web'` with the `Platform.OS` property. If it is `'web'`, we'll use the `domtoimage.toJpeg()` method to convert and capture the current `<View>` as a JPEG image. Otherwise, we'll keep using the same logic added for native platforms.
+1. 从 `react-native` 导入 `Platform` 模块。
+2. 从 `dom-to-image` 导入 `domtoimage` 库。
+3. 更新 `onSaveImageAsync()` 函数，通过 `Platform.OS` 属性检查当前平台是否为 `'web'`。如果是 `'web'`，我们将使用 `domtoimage.toJpeg()` 方法把当前 `<View>` 转换并捕获为 JPEG 图像。否则，我们将继续使用为原生平台添加的相同逻辑。
 
 {/* prettier-ignore */}
 ```tsx app/(tabs)/index.tsx
@@ -58,7 +58,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ImageSourcePropType, View, StyleSheet, /* @tutinfo */Platform/* @end */ } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { captureRef } from 'react-native-view-shot';
-/* @tutinfo Import <CODE>domtoimage</CODE> library. */import domtoimage from 'dom-to-image';/* @end */
+/* @tutinfo 导入 <CODE>domtoimage</CODE> 库。 */import domtoimage from 'dom-to-image';/* @end */
 
 import Button from '@/components/Button';
 import ImageViewer from '@/components/ImageViewer';
@@ -112,7 +112,7 @@ export default function Index() {
   };
 
   const onSaveImageAsync = async () => {
-    /* @tutinfo Add the if condition here to check whether the current platform is web or not. */
+    /* @tutinfo 在这里添加 if 条件，以检查当前平台是否为 web。 */
     if (Platform.OS !== 'web') {
     /* @end */
       try {
@@ -128,7 +128,7 @@ export default function Index() {
       } catch (e) {
         console.log(e);
       }
-    /* @tutinfo Add an else condition to run the logic when the current platform is the web. */
+    /* @tutinfo 添加 else 条件，以便在当前平台为 web 时运行逻辑。 */
     } else {
       try {
         const dataUrl = await domtoimage.toJpeg(imageRef.current, {
@@ -201,9 +201,9 @@ const styles = StyleSheet.create({
 });
 ```
 
-<Collapsible summary={<>Fix <CODE>dom-to-image</CODE> TypeScript module error</>}>
+<Collapsible summary={<>修复 <CODE>dom-to-image</CODE> TypeScript 模块错误</>}>
 
-We need to add a type definition after importing the `domtoimage` library since we're using TypeScript. We can do this by creating a file **types.d.ts** in the root of our project directory and adding the declaration statement:
+由于我们使用的是 TypeScript，在导入 `domtoimage` 库后还需要添加一个类型定义。我们可以通过在项目目录根目录下创建一个 **types.d.ts** 文件并添加以下声明来实现：
 
 ```tsx types.d.ts
 declare module 'dom-to-image';
@@ -211,19 +211,19 @@ declare module 'dom-to-image';
 
 </Collapsible>
 
-On running the app in a web browser, we can now save a screenshot:
+在 Web 浏览器中运行应用后，我们现在可以保存截图了：
 
 <ContentSpotlight file="tutorial/web.mp4" />
 
 </Step>
 
-## Summary
+## 总结
 
 <ProgressTracker
   currentChapterIndex={7}
   name="GET_STARTED"
-  summary="The app does everything we set out for it to do, so it's time to shift our focus toward the purely aesthetic.."
-  nextChapterDescription="In the next chapter, we will customize the app's status bar, splash screen, and app icon."
-  nextChapterTitle="Configure status bar, splash screen and app icon"
+  summary="该应用已经完成了我们最初设定的所有功能，所以现在是时候把重点转向纯粹的美观方面了.."
+  nextChapterDescription="在下一章中，我们将自定义应用的状态栏、启动画面和应用图标。"
+  nextChapterTitle="配置状态栏、启动画面和应用图标"
   nextChapterLink="/tutorial/configuration"
 />

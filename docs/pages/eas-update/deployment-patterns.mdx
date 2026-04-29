@@ -1,190 +1,190 @@
 ---
-title: Alternative deployment patterns
-description: Learn about different deployment patterns for your project when using EAS Update.
+title: 其他部署模式
+description: 了解在使用 EAS Update 时适用于你的项目的不同部署模式。
 ---
 
 import { Diagram } from '~/ui/components/Diagram';
 
-Once we've created features and fixed bugs in our app, we want to deliver those features and bug fixes to our users as quickly and safely as we can. Often "safe" and "fast" are opposing forces when delivering code to our users.
-We could push our code directly to production, which would be fast yet less safe since we never tested our code. On the other hand, we could make test builds, share them with a QA team, and release them periodically, which would be safer but slower to deliver changes to our users.
+一旦我们在应用中创建了功能并修复了 bug，我们就希望尽快且安全地将这些功能和 bug 修复交付给用户。通常，在向用户交付代码时，“安全”和“快速”是相互对立的力量。
+我们可以直接将代码推送到生产环境，这样会很快，但安全性较低，因为我们从未测试过代码。另一方面，我们可以创建测试构建，与 QA 团队共享，并按周期发布，这样会更安全，但向用户交付变更的速度会更慢。
 
-Depending on your project, you'll have some tolerance for how "fast" and how "safe" you'll need to be when delivering updates to your users.
+根据你的项目，在向用户交付更新时，你对“快”和“安全”的容忍度会有所不同。
 
-There are three parts to consider when designing the EAS Update deployment process:
+在设计 EAS Update 部署流程时，需要考虑三个部分：
 
-1. **Creating builds**
-   - (a) We can create builds for production use only.
-   - (b) We can create builds for production use and separate builds for pre-production change testing.
-2. **Testing changes**
-   - (a) We can test changes with TestFlight and Play Store Internal Track.
-   - (b) We can test changes with an internal distribution build.
-   - (c) We can test changes with Expo Go or a [development build](/develop/development-builds/introduction/).
-3. **Publishing updates**
-   - (a) We can publish updates to a single branch.
-   - (b) We can create update branches that are environment-based, like "production" and "staging".
-   - (c) We can create update branches that are version-based, like "version-1.0", which enables us to promote updates from one channel to another.
+1. **创建构建**
+   - (a) 我们可以只创建用于生产的构建。
+   - (b) 我们可以创建用于生产的构建，并为预生产变更测试单独创建构建。
+2. **测试变更**
+   - (a) 我们可以使用 TestFlight 和 Play Store Internal Track 测试变更。
+   - (b) 我们可以使用内部分发构建测试变更。
+   - (c) 我们可以使用 Expo Go 或 [development build](/develop/development-builds/introduction/) 测试变更。
+3. **发布更新**
+   - (a) 我们可以将更新发布到单个分支。
+   - (b) 我们可以创建基于环境的更新分支，例如“production”和“staging”。
+   - (c) 我们可以创建基于版本的更新分支，例如“version-1.0”，这使我们能够将更新从一个渠道提升到另一个渠道。
 
-We can mix, match, and tweak the parts above to create a process that is the right balance of release cadence and safety for our team and users.
+我们可以把上面的各部分混合、匹配并调整，以创建一种适合我们团队和用户的发布节奏与安全性平衡的流程。
 
-Another trade-off to consider is the amount of bookkeeping of versions/names/environments we'll have to do throughout the process. The less bookkeeping we have to do will make it easier to follow a consistent process. It'll also make it easier to communicate with our colleagues. If we need fine-grained control, bookkeeping will be required to get the exact process we want.
+另一个需要考虑的权衡是，在整个过程中我们需要处理多少版本/名称/环境的记录工作。我们需要做的记录越少，就越容易遵循一致的流程。这也会让我们更容易与同事沟通。如果我们需要细粒度控制，就需要通过记录来获得我们想要的精确流程。
 
-Below, we've outlined four common patterns on how to deploy a project using EAS Update.
+下面，我们概述了使用 EAS Update 部署项目的四种常见模式。
 
-## Two-command flow
+## 两条命令的流程
 
-This flow is the simplest and fastest flow, with the fewest amount of safety checks. It's great for trying out Expo and for smaller projects. Here are the parts of the deployment process above that make up this flow:
+这个流程是最简单、最快速的流程，但安全检查最少。它非常适合尝试 Expo 和较小的项目。以下是构成此流程的上面部署过程中的各部分：
 
-**Creating builds:** (a) Create builds for production use only.
+**创建构建：** (a) 只创建用于生产的构建。
 
-**Testing changes:** (c) Test changes with Expo Go or a [development build](/develop/development-builds/introduction/).
+**测试变更：** (c) 使用 Expo Go 或 [development build](/develop/development-builds/introduction/) 测试变更。
 
-**Publishing updates:** (a) Publish to a single branch.
+**发布更新：** (a) 发布到单个分支。
 
-### Diagram of flow
+### 流程图
 
 <Diagram
   source="/static/images/eas-update/deployment-patterns/deployment-two-command.png"
   darkSource="/static/images/eas-update/deployment-patterns/deployment-two-command-dark.png"
-  alt="Two-command deployment diagram"
+  alt="两条命令部署流程图"
 />
 
-### Explanation of flow
+### 流程说明
 
-1. Develop a project locally and test changes in a development build or in Expo Go.
-2. Run `eas build` to create builds, then submit them to app stores. These builds are for public use and should be submitted/reviewed, and released on the app stores.
-3. When we have updates we'd like to deliver, run `eas update --branch production` to deliver updates to our users immediately.
+1. 在本地开发项目，并在开发构建或 Expo Go 中测试变更。
+2. 运行 `eas build` 创建构建，然后将它们提交到应用商店。这些构建供公开使用，应该经过提交/审核，并在应用商店上发布。
+3. 当我们有想要交付的更新时，运行 `eas update --branch production` 即可立即将更新交付给用户。
 
-#### Advantages of this flow
+#### 此流程的优点
 
-- This flow does not require bookkeeping extra version or environment names, which makes it easy to communicate to others.
-- Delivering updates to builds is very fast.
+- 此流程不需要额外记录版本或环境名称，因此更容易与他人沟通。
+- 向构建交付更新的速度非常快。
 
-#### Disadvantages of this flow
+#### 此流程的缺点
 
-- There are no pre-production checks to make sure the code will function as intended. We can test with Expo Go or a [development build](/develop/development-builds/introduction/), but this is less safe than having a dedicated test environment.
+- 没有预生产检查来确保代码按预期运行。我们可以用 Expo Go 或 [development build](/develop/development-builds/introduction/) 测试，但这比拥有专门的测试环境更不安全。
 
-## Persistent staging flow
+## 持久 staging 流程
 
-This flow is like an un-versioned variant of the "branch promotion flow". We do not track release versions with branches. Instead, we'll have persistent "staging" and "production" branches that we can merge into forever. Here are the parts of the deployment process above that make up this flow:
+这个流程类似于“分支提升流程”的一个不版本化变体。我们不会用分支来跟踪发布版本。相反，我们会拥有持续存在的“staging”和“production”分支，并且可以一直向其中合并。以下是构成此流程的上面部署过程中的各部分：
 
-**Creating builds:** (b) Create builds for production and separate builds for testing.
+**创建构建：** (b) 创建用于生产的构建和单独用于测试的构建。
 
-**Testing changes:** (a) Test changes on TestFlight and the Play Store Internal Track and/or (b) Test changes with internal distribution builds.
+**测试变更：** (a) 使用 TestFlight 和 Play Store Internal Track 测试变更，和/或 (b) 使用内部分发构建测试变更。
 
-**Publishing updates:** (b) Create update branches that are environment-based, like "staging" and "production".
+**发布更新：** (b) 创建基于环境的更新分支，例如“staging”和“production”。
 
-### Diagram of flow
+### 流程图
 
 <Diagram
   source="/static/images/eas-update/deployment-patterns/deployment-staging.png"
   darkSource="/static/images/eas-update/deployment-patterns/deployment-staging-dark.png"
-  alt="Staging deployment diagram"
+  alt="staging 部署流程图"
 />
 
-### Explanation of flow
+### 流程说明
 
-1. Develop a project locally and test changes in Expo Go.
-2. Create builds with channels named "production", which will eventually get reviewed and become available on app stores. Create another set of builds with channels named "staging", which will be used for testing on TestFlight and the Play Store Internal Track.
-3. Set up `expo-github-action` to publish updates when merging commits to branches.
-4. Merge changes into a branch named "staging". The GitHub Action will publish an update and make it available on our test builds.
-5. When ready, merge changes into the "production" branch to publish an update to our production builds.
+1. 在本地开发项目，并在 Expo Go 中测试变更。
+2. 创建名为“production”的渠道构建，这些构建最终会经过审核并在应用商店上可用。再创建另一组名为“staging”的渠道构建，用于在 TestFlight 和 Play Store Internal Track 上测试。
+3. 设置 `expo-github-action`，在将提交合并到分支时发布更新。
+4. 将变更合并到名为“staging”的分支。GitHub Action 会发布一个更新，并使其可用于我们的测试构建。
+5. 准备就绪后，将变更合并到“production”分支，以向生产构建发布更新。
 
-#### Advantages of this flow
+#### 此流程的优点
 
-- This flow allows you to control the pace of deploying to production independent of the pace of development. This adds an extra chance to test your app and avoids your user having to download a new update every time a PR is landed.
-- It's easy to communicate to your team, since deploying updates occurs when merging into GitHub branches named "staging" and "production".
+- 此流程允许你独立于开发速度来控制部署到生产环境的节奏。这增加了额外一次测试应用的机会，并避免用户在每次 PR 合并后都必须下载新更新。
+- 它很容易向团队沟通，因为部署更新发生在合并到名为“staging”和“production”的 GitHub 分支时。
 
-#### Disadvantages of this flow
+#### 此流程的缺点
 
-- Checking out previous versions of your app is slightly more complex, since we'd need to check out an old commit instead of an old branch.
-- When merging to "production", the update would be re-built and re-published instead of moved from the builds with channel "staging" to the builds with channel "production".
+- 回查应用的早期版本会稍微复杂一些，因为我们需要检出旧的 commit，而不是旧分支。
+- 当合并到“production”时，更新会被重新构建并重新发布，而不是从渠道“staging”的构建移动到渠道“production”的构建。
 
-## Platform-specific flow
+## 平台特定流程
 
-This flow is for projects that need to build and update their Android and iOS apps separately all the time. It will result in separate commands for delivering updates to the Android and iOS apps. Here are the parts of the deployment process above that make up this flow:
+这个流程适用于需要始终分别构建和更新 Android 与 iOS 应用的项目。它会为向 Android 和 iOS 应用交付更新带来分别的命令。以下是构成此流程的上面部署过程中的各部分：
 
-**Creating builds:** (a) Create builds for production only, or (b) create builds for production and separate builds for testing.
+**创建构建：** (a) 只创建用于生产的构建，或 (b) 创建用于生产的构建和单独用于测试的构建。
 
-**Testing changes:** (a) Test changes on TestFlight and the Play Store Internal Track and/or (b) Test changes with internal distribution builds.
+**测试变更：** (a) 使用 TestFlight 和 Play Store Internal Track 测试变更，和/或 (b) 使用内部分发构建测试变更。
 
-**Publishing updates:** (b) Create update branches that are environment- and platform-based, like "ios-staging", "ios-production", "android-staging", and "android-production".
+**发布更新：** (b) 创建基于环境和平台的更新分支，例如“ios-staging”、“ios-production”、“android-staging”和“android-production”。
 
-### Diagram of flow
+### 流程图
 
 <Diagram
   source="/static/images/eas-update/deployment-patterns/deployment-platform-specific.png"
   darkSource="/static/images/eas-update/deployment-patterns/deployment-platform-specific-dark.png"
-  alt="Platform specific deployment diagram"
+  alt="平台特定部署流程图"
 />
 
-### Explanation of flow
+### 流程说明
 
-1. Develop a project locally and test changes in Expo Go.
-2. Create builds with channels named like "ios-staging", "ios-production", "android-staging", and "android-production". Then put the "ios-staging" build on TestFlight and submit the "ios-production" build to the public App Store. Likewise, put the "android-staging" build on the Play Store Internal Track, and submit the "android-production" build to the public Play Store.
-3. Set up `expo-github-action` to publish updates to the required platforms when merging commits to branches.
-4. Then, merge changes for the iOS app into the branch "ios-staging", then when ready merge changes into the "ios-production" branch. Likewise, merge changes for the Android app into the branch "android-staging" and when ready, into the branch named "android-production".
+1. 在本地开发项目，并在 Expo Go 中测试变更。
+2. 创建名为“ios-staging”、“ios-production”、“android-staging”和“android-production”的渠道构建。然后将“ios-staging”构建放到 TestFlight 上，并将“ios-production”构建提交到公开的 App Store。同样地，将“android-staging”构建放到 Play Store Internal Track 上，并将“android-production”构建提交到公开的 Play Store。
+3. 设置 `expo-github-action`，在将提交合并到分支时向所需平台发布更新。
+4. 然后，将 iOS 应用的变更合并到“ios-staging”分支，准备就绪后再合并到“ios-production”分支。同样地，将 Android 应用的变更合并到“android-staging”分支，准备就绪后再合并到名为“android-production”的分支。
 
-#### Advantages of this flow
+#### 此流程的优点
 
-- This flow gives you full control of which updates go to your Android and iOS builds. Updates will never apply to both platforms.
+- 此流程让你完全控制哪些更新会进入 Android 和 iOS 构建。更新绝不会同时应用于两个平台。
 
-#### Disadvantages of this flow
+#### 此流程的缺点
 
-- You'll have to run two commands instead of one to fix changes on both platforms.
+- 如果要修复两个平台上的变更，你需要运行两个命令，而不是一个。
 
-## Branch promotion flow
+## 分支提升流程
 
-This flow is an example of a flow for managing versioned releases.
+这个流程是管理版本化发布的一种流程示例。
 
-> **warning** This flow requires a bit more bookkeeping and does not support automatic [runtime version policies](/eas-update/runtime-versions/#setting-runtimeversion) (`"sdkVersion"`, `"appVersion"`, `"nativeVersion"` and `"fingerprint"`). You will need to [manually specify](/eas-update/runtime-versions/#custom-runtimeversion) your runtimes' versions with this flow.
+> **warning** 这个流程需要更多记录工作，并且不支持自动 [runtime version policies](/eas-update/runtime-versions/#setting-runtimeversion)（`"sdkVersion"`、`"appVersion"`、`"nativeVersion"` 和 `"fingerprint"`）。在这个流程中，你需要[手动指定](/eas-update/runtime-versions/#custom-runtimeversion)运行时版本。
 
-Here are the parts of the deployment process above that make up this flow:
+以下是构成此流程的上面部署过程中的各部分：
 
-**Creating builds:** (b) Create builds for production (one per major version) and separate builds for testing.
+**创建构建：** (b) 创建用于生产的构建（每个主要版本一个）和单独用于测试的构建。
 
-**Testing changes:** (a) Test changes on TestFlight and the Play Store Internal Track and/or (b) Test changes with internal distribution builds.
+**测试变更：** (a) 使用 TestFlight 和 Play Store Internal Track 测试变更，和/或 (b) 使用内部分发构建测试变更。
 
-**Publishing updates:** (c) Create update branches that are version based, like "version-1.0". Branches are dynamically mapped to channels to promote well-tested changes from testing to production.
+**发布更新：** (c) 创建基于版本的更新分支，例如“version-1.0”。分支会动态映射到渠道，以将经过充分测试的变更从测试提升到生产。
 
-### Diagram of flow
+### 流程图
 
 <Diagram
   source="/static/images/eas-update/deployment-patterns/deployment-branch.png"
   darkSource="/static/images/eas-update/deployment-patterns/deployment-branch-dark.png"
-  alt="Branch deployment diagram"
+  alt="分支部署流程图"
 />
 
-### Explanation of flow
+### 流程说明
 
-1. Develop a project locally and test changes in Expo Go or a [development build](/develop/development-builds/introduction/).
-2. Create builds with channels named "production-rtv-1" (indicating a channel with a runtime version "1"), which will eventually get reviewed and become available on app stores. Create another set of builds with channels named "staging", which will be used for testing on TestFlight and the Play Store Internal Track.
-3. Set up `expo-github-action` to publish updates when merging commits to branches.
-4. Merge changes into a branch named "version-1".
-5. Use the website or EAS CLI to point the "staging" channel at the EAS Update branch "version-1". Test the update by opening the apps on TestFlight and the Play Store Internal Track.
-6. When ready, use the website or EAS CLI to point the "production-rtv-1" channel at the EAS Update branch "version-1".
-7. Then, there are two update scenarios you may encounter:
-   - A new release does not require a new runtime version:
-     1. Create another GitHub branch named "version-2".
-     2. Use the website or EAS CLI to point the "staging" channel at the EAS Update branch "version-2".
-     3. Merge commits into the "version-2" branch until the new features and fixes are ready and stable.
-     4. Use the website or EAS CLI to point the "production-rtv-1" channel at the EAS Update branch "version-2". This will mean that everyone with a production build (users who downloaded the app from the app stores) will now get the latest update on the "version-2" branch.
-   - A new release requires a new runtime version (for example, when new native libraries are added or SDK version is upgraded):
-     1. Bump your runtime version from "1" to "2".
-     2. Create a new "staging" build with the new runtime version.
-     3. Create another GitHub branch named "version-2".
-     4. Use the website or EAS CLI to point the "staging" channel at the EAS Update branch "version-2".
-     5. Merge commits into the "version-2" branch until the new features and fixes are ready and stable.
-     6. Create a new build with channel named "production-rtv-2", which will eventually get reviewed and become available on app stores.
-     7. Use the website or EAS CLI to point the "production-rtv-2" channel at the EAS Update branch "version-2". This will mean that everyone who previously had a production build (users who downloaded the app from the app stores) will continue to get the latest update on EAS Update branch "version-1" until they download the new version of the app from the app store, at which time they will get the latest update on EAS Update branch "version-2".
+1. 在本地开发项目，并在 Expo Go 或 [development build](/develop/development-builds/introduction/) 中测试变更。
+2. 创建名为“production-rtv-1”的渠道构建（表示运行时版本为“1”的渠道），这些构建最终会经过审核并在应用商店上可用。再创建另一组名为“staging”的渠道构建，用于在 TestFlight 和 Play Store Internal Track 上测试。
+3. 设置 `expo-github-action`，在将提交合并到分支时发布更新。
+4. 将变更合并到名为“version-1”的分支。
+5. 使用网站或 EAS CLI 将“staging”渠道指向 EAS Update 分支“version-1”。通过在 TestFlight 和 Play Store Internal Track 中打开应用来测试更新。
+6. 准备就绪后，使用网站或 EAS CLI 将“production-rtv-1”渠道指向 EAS Update 分支“version-1”。
+7. 然后，你可能会遇到两种更新场景：
+   - 新版本不需要新的运行时版本：
+     1. 再创建一个名为“version-2”的 GitHub 分支。
+     2. 使用网站或 EAS CLI 将“staging”渠道指向 EAS Update 分支“version-2”。
+     3. 将提交持续合并到“version-2”分支，直到新功能和修复准备就绪且稳定。
+     4. 使用网站或 EAS CLI 将“production-rtv-1”渠道指向 EAS Update 分支“version-2”。这意味着所有使用生产构建的人（从应用商店下载应用的用户）现在都会从“version-2”分支获得最新更新。
+   - 新版本需要新的运行时版本（例如，添加新的原生库或升级 SDK 版本时）：
+     1. 将你的运行时版本从“1”提升到“2”。
+     2. 使用新的运行时版本创建一个新的“staging”构建。
+     3. 再创建一个名为“version-2”的 GitHub 分支。
+     4. 使用网站或 EAS CLI 将“staging”渠道指向 EAS Update 分支“version-2”。
+     5. 将提交持续合并到“version-2”分支，直到新功能和修复准备就绪且稳定。
+     6. 创建一个名为“production-rtv-2”的渠道构建，这些构建最终会经过审核并在应用商店上可用。
+     7. 使用网站或 EAS CLI 将“production-rtv-2”渠道指向 EAS Update 分支“version-2”。这意味着所有之前拥有生产构建的人（从应用商店下载应用的用户）将继续从 EAS Update 分支“version-1”获得最新更新，直到他们从应用商店下载应用的新版本为止；到那时，他们将从 EAS Update 分支“version-2”获得最新更新。
 
-#### Advantages of this flow
+#### 此流程的优点
 
-- This flow is safer than the other flows. All updates are tested on test builds which are distributed to internal testers, and branches are moved between channels, so the exact artifact tested is the one deployed to production builds.
-- This flow creates a direct mapping between GitHub branches and EAS Update branches. It also creates a mapping between GitHub commits and EAS Update updates. If you're keeping track of GitHub branches, you can create EAS Update branches for each GitHub branch and link those branches to a build's channel.
-  In practice, this makes it so you can push to GitHub, then select the same branch name on Expo to link to builds.
-- Previous versions of your deployments are always preserved on GitHub. Once the "version-1.0" branch is deployed, then another version is deployed after it (like "version-1.1"), the "version-1.0" branch is forever preserved, making it easy to checkout a previous version of your project.
+- 此流程比其他流程更安全。所有更新都在分发给内部测试者的测试构建上进行测试，并且分支会在渠道之间移动，因此实际测试的制品就是部署到生产构建的那个制品。
+- 此流程在 GitHub 分支和 EAS Update 分支之间建立了直接映射。它也在 GitHub commit 和 EAS Update 更新之间建立了映射。如果你在跟踪 GitHub 分支，你可以为每个 GitHub 分支创建 EAS Update 分支，并将这些分支链接到构建的渠道。
+  在实践中，这意味着你可以先推送到 GitHub，然后在 Expo 上选择相同的分支名称来链接到构建。
+- 你部署的早期版本会始终保留在 GitHub 上。一旦“version-1.0”分支被部署，而之后又部署了另一个版本（例如“version-1.1”），那么“version-1.0”分支会永远保留，这使得回查项目的早期版本变得容易。
 
-#### Disadvantages of this flow
+#### 此流程的缺点
 
-- One channel per production runtime version is needed to maintain historical updates for previous production releases. This makes using a runtime version policy more difficult.
-- Bookkeeping of branch names is required for this flow, which will mean communicating with your team which branches are currently pointed at your test builds and your production builds.
+- 为了保留之前生产发布的历史更新，每个生产运行时版本都需要一个渠道。这使得使用运行时版本策略更加困难。
+- 此流程需要记录分支名称，这意味着你需要与团队沟通哪些分支当前指向测试构建，哪些分支当前指向生产构建。

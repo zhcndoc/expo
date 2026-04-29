@@ -1,7 +1,7 @@
 ---
-title: 'Tutorial: Create a native module'
-sidebar_title: Create a native module
-description: A tutorial on creating a native module that persists settings with Expo Modules API.
+title: '教程：创建一个原生模块'
+sidebar_title: 创建一个原生模块
+description: 使用 Expo Modules API 创建一个可持久化设置的原生模块教程。
 hasVideoLink: true
 ---
 
@@ -12,33 +12,33 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-In this tutorial, you build a module that stores the user's preferred app theme: dark, light, or system. On Android, use [`SharedPreferences`](https://developer.android.com/reference/android/content/SharedPreferences), and on iOS, use [`UserDefaults`](https://developer.apple.com/documentation/foundation/userdefaults). You can implement web support with [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), but this tutorial does not cover that.
+在本教程中，你将构建一个模块，用于存储用户偏好的应用主题：深色、浅色或系统默认。在 Android 上，使用 [`SharedPreferences`](https://developer.android.com/reference/android/content/SharedPreferences)；在 iOS 上，使用 [`UserDefaults`](https://developer.apple.com/documentation/foundation/userdefaults)。你还可以使用 [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) 实现 Web 支持，但本教程不涉及这部分。
 
 <VideoBoxLink
   videoId="CdaQSlyGik8"
-  title="Watch: How to create a native module with the Expo Modules API"
-  description="Build a native module that persists user settings using SharedPreferences on Android and UserDefaults on iOS."
+  title="观看：如何使用 Expo Modules API 创建原生模块"
+  description="构建一个使用 SharedPreferences（Android）和 UserDefaults（iOS）持久化用户设置的原生模块。"
 />
 
 ---
 
 <Step label="1">
 
-## Initialize a new module
+## 初始化一个新模块
 
-First, create a new module. For this tutorial, the module is named `expo-settings` or `ExpoSettings`. You can choose a different name, but adjust the instructions to match your choice.
+首先，创建一个新模块。在本教程中，该模块命名为 `expo-settings` 或 `ExpoSettings`。你可以选择不同的名称，但需要相应调整说明以匹配你的选择。
 
 <Terminal cmd={['$ npx create-expo-module expo-settings']} />
 
-> **info** Since you aren't going to actually ship this library, you can hit <kbd>return</kbd> for all the prompts to accept the default values.
+> **info** 由于你不会真正发布这个库，所以对于所有提示都可以直接按 <kbd>return</kbd> 接受默认值。
 
 </Step>
 
 <Step label="2">
 
-## Set up workspace
+## 设置工作区
 
-Clean up the default module to start with a clean slate. Delete the view module since this guide does not use it.
+清理默认模块，从一个干净的状态开始。删除视图模块，因为本指南不会用到它。
 
 <Terminal
   cmdCopy="cd expo-settings && rm ios/ExpoSettingsView.swift && rm android/src/main/java/expo/modules/settings/ExpoSettingsView.kt && rm src/ExpoSettingsView.tsx src/ExpoSettingsView.web.tsx src/ExpoSettingsModule.web.ts"
@@ -51,7 +51,7 @@ Clean up the default module to start with a clean slate. Delete the view module 
   ]}
 />
 
-Locate the following files and replace their contents with the provided minimal boilerplate:
+找到以下文件，并将其内容替换为提供的最小样板代码：
 
 ```kotlin android/src/main/java/expo/modules/settings/ExpoSettingsModule.kt
 package expo.modules.settings
@@ -97,7 +97,7 @@ declare class ExpoSettingsModule extends NativeModule<ExpoSettingsModuleEvents> 
   getTheme: () => string;
 }
 
-// This call loads the native module object from the JSI.
+// 此调用会从 JSI 加载原生模块对象。
 export default requireNativeModule<ExpoSettingsModule>('ExpoSettings');
 ```
 
@@ -116,7 +116,7 @@ import { Text, View } from 'react-native';
 export default function App() {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Theme: {Settings.getTheme()}</Text>
+      <Text>主题：{Settings.getTheme()}</Text>
     </View>
   );
 }
@@ -126,44 +126,44 @@ export default function App() {
 
 <Step label="3">
 
-## Run the example project
+## 运行示例项目
 
-Start the TypeScript compiler to watch for changes.
+启动 TypeScript 编译器以监听更改。
 
 <Terminal
   cmdCopy="npm run build"
   cmd={[
-    '# Run this in the root of the project to start the TypeScript compiler',
+    '# 在项目根目录中运行此命令以启动 TypeScript 编译器',
     '$ npm run build',
   ]}
 />
 
-In a separate terminal window, run the example app.
+在另一个终端窗口中，运行示例应用。
 
 <Terminal
   cmdCopy="cd example && npx expo run:ios"
   cmd={[
     '$ cd example',
-    '# Run the example app on Android',
+    '# 在 Android 上运行示例应用',
     '$ npx expo run:android',
-    '# Run the example app on iOS',
+    '# 在 iOS 上运行示例应用',
     '$ npx expo run:ios',
   ]}
 />
 
-You should see the text "Theme: system" in the center of the screen when you launch the example app. The value `"system"` comes from synchronously calling the `getTheme()` function in the native module. You will change this value in the next step.
+当你启动示例应用时，应该会在屏幕中央看到文本“主题：system”。该值 `"system"` 来自于同步调用原生模块中的 `getTheme()` 函数。你将在下一步中更改这个值。
 
 </Step>
 
 <Step label="4">
 
-## Get, set, and persist the theme preference value
+## 获取、设置并持久化主题偏好值
 
-### Android native module
+### Android 原生模块
 
-To read the value, look for a `SharedPreferences` string under the key `"theme"`. If the key does not exist, default to `"system"`. Use the `reactContext` (a React Native [ContextWrapper](https://developer.android.com/reference/android/content/ContextWrapper)) to access the `SharedPreferences` instance with `getSharedPreferences()`.
+要读取该值，请查找键 `"theme"` 下的 `SharedPreferences` 字符串。如果该键不存在，则默认值为 `"system"`。使用 `reactContext`（React Native 的 [ContextWrapper](https://developer.android.com/reference/android/content/ContextWrapper)）通过 `getSharedPreferences()` 访问 `SharedPreferences` 实例。
 
-To set the value, use the `edit()` method of `SharedPreferences` to get an `Editor` instance. Then, use `putString()` to set the value. Ensure the `setTheme` function accepts a value of type `String`.
+要设置该值，请使用 `SharedPreferences` 的 `edit()` 方法获取一个 `Editor` 实例。然后使用 `putString()` 设置值。确保 `setTheme` 函数接受 `String` 类型的值。
 
 ```kotlin android/src/main/java/expo/modules/settings/ExpoSettingsModule.kt
 package expo.modules.settings
@@ -195,11 +195,11 @@ class ExpoSettingsModule : Module() {
 }
 ```
 
-### iOS native module
+### iOS 原生模块
 
-To read the value on iOS, look for a `UserDefaults` string under the key `"theme"`. If the key does not exist, default to `"system"`.
+要在 iOS 上读取该值，请查找键 `"theme"` 下的 `UserDefaults` 字符串。如果该键不存在，则默认值为 `"system"`。
 
-To set the value, use the `set(_:forKey:)` method of `UserDefaults`. Ensure the `setTheme` function accepts a value of type `String`.
+要设置该值，请使用 `UserDefaults` 的 `set(_:forKey:)` 方法。确保 `setTheme` 函数接受 `String` 类型的值。
 
 ```swift ios/ExpoSettingsModule.swift
 import ExpoModulesCore
@@ -219,9 +219,9 @@ public class ExpoSettingsModule: Module {
 }
 ```
 
-### TypeScript module
+### TypeScript 模块
 
-Update the **ExpoSettingsModule.ts** to add a TypeScript interface for the `ExpoSettingsModule` native module to update the theme.
+更新 **ExpoSettingsModule.ts**，为 `ExpoSettingsModule` 原生模块添加一个 TypeScript 接口，以便更新主题。
 
 ```ts src/ExpoSettingsModule.ts
 import { NativeModule, requireNativeModule } from 'expo';
@@ -233,11 +233,11 @@ declare class ExpoSettingsModule extends NativeModule<ExpoSettingsModuleEvents> 
   getTheme: () => string;
 }
 
-// This call loads the native module object from the JSI.
+// 此调用会从 JSI 加载原生模块对象。
 export default requireNativeModule<ExpoSettingsModule>('ExpoSettings');
 ```
 
-Now, call your native modules from TypeScript.
+现在，从 TypeScript 中调用你的原生模块。
 
 ```ts src/index.ts
 import ExpoSettingsModule from './ExpoSettingsModule';
@@ -251,9 +251,9 @@ export function setTheme(theme: string): void {
 }
 ```
 
-### Example app
+### 示例应用
 
-You can now use the Settings API in your example app.
+现在你可以在示例应用中使用 Settings API。
 
 ```tsx example/App.tsx
 import * as Settings from 'expo-settings';
@@ -261,31 +261,31 @@ import { Button, Text, View } from 'react-native';
 
 export default function App() {
   const theme = Settings.getTheme();
-  // Toggle between dark and light theme
+  // 在深色和浅色主题之间切换
   const nextTheme = theme === 'dark' ? 'light' : 'dark';
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Theme: {Settings.getTheme()}</Text>
-      <Button title={`Set theme to ${nextTheme}`} onPress={() => Settings.setTheme(nextTheme)} />
+      <Text>主题：{Settings.getTheme()}</Text>
+      <Button title={`将主题设为 ${nextTheme}`} onPress={() => Settings.setTheme(nextTheme)} />
     </View>
   );
 }
 ```
 
-When you rebuild and run the app, the "system" theme is still set. Pressing the button does nothing, but when you reload the app, the theme changes. This happens because the app does not fetch the new theme value or re-render. You will fix this in the next step.
+当你重新构建并运行应用时，仍然会设置为“system”主题。点击按钮不会产生任何效果，但当你重新加载应用时，主题会发生变化。这是因为应用没有获取新的主题值或重新渲染。你将在下一步中修复这个问题。
 
 </Step>
 
 <Step label="5">
 
-## Emit change events for the theme value
+## 为主题值发送变更事件
 
-Ensure developers using your API can react to theme value changes by emitting a change event whenever the value updates. Use the [Events](/modules/module-api/#events) definition component to describe the events your module emits, `sendEvent` to emit the event from native code, and the [EventEmitter](/modules/module-api/#sending-events) API to subscribe to events in JavaScript. The event payload is `{ theme: string }`.
+确保使用你的 API 的开发者可以在主题值变化时做出响应：每当值更新时发送一个变更事件。使用 [Events](/modules/module-api/#events) 定义组件来描述模块发出的事件，使用 `sendEvent` 从原生代码发送事件，并使用 [EventEmitter](/modules/module-api/#sending-events) API 在 JavaScript 中订阅事件。事件负载为 `{ theme: string }`。
 
-### Android native module
+### Android 原生模块
 
-Events payloads are represented as [`Bundle`](https://developer.android.com/reference/android/os/Bundle.html) instances on Android, which you can create using the [`bundleOf`](<https://developer.android.com/reference/kotlin/androidx/core/os/package-summary#bundleOf(kotlin.Array)>) function.
+事件负载在 Android 上表示为 [`Bundle`](https://developer.android.com/reference/android/os/Bundle.html) 实例，你可以使用 [`bundleOf`](<https://developer.android.com/reference/kotlin/androidx/core/os/package-summary#bundleOf(kotlin.Array)>) 函数创建它。
 
 ```kotlin android/src/main/java/expo/modules/settings/ExpoSettingsModule.kt
 package expo.modules.settings
@@ -321,7 +321,7 @@ class ExpoSettingsModule : Module() {
 }
 ```
 
-### iOS native module
+### iOS 原生模块
 
 ```swift ios/ExpoSettingsModule.swift
 import ExpoModulesCore
@@ -346,7 +346,7 @@ public class ExpoSettingsModule: Module {
 }
 ```
 
-### TypeScript module
+### TypeScript 模块
 
 ```ts src/ExpoSettings.types.ts
 export type ThemeChangeEvent = {
@@ -376,7 +376,7 @@ export function setTheme(theme: string): void {
 }
 ```
 
-### Example app
+### 示例应用
 
 ```tsx example/App.tsx
 import * as Settings from 'expo-settings';
@@ -394,13 +394,13 @@ export default function App() {
     return () => subscription.remove();
   }, [setTheme]);
 
-  // Toggle between dark and light theme
+  // 在深色和浅色主题之间切换
   const nextTheme = theme === 'dark' ? 'light' : 'dark';
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Theme: {Settings.getTheme()}</Text>
-      <Button title={`Set theme to ${nextTheme}`} onPress={() => Settings.setTheme(nextTheme)} />
+      <Text>主题：{Settings.getTheme()}</Text>
+      <Button title={`将主题设为 ${nextTheme}`} onPress={() => Settings.setTheme(nextTheme)} />
     </View>
   );
 }
@@ -410,11 +410,11 @@ export default function App() {
 
 <Step label="6">
 
-## Improve type safety with Enums
+## 使用枚举提高类型安全
 
-It's easy to make mistakes when using the `Settings.setTheme()` API in its current form, as it allows any string value. Improve the type safety of this API by using an enum to restrict the possible values to `system`, `light`, and `dark`.
+在当前形式下使用 `Settings.setTheme()` API 很容易出错，因为它允许任何字符串值。通过使用枚举将可能的值限制为 `system`、`light` 和 `dark`，来提升这个 API 的类型安全性。
 
-### Android native module
+### Android 原生模块
 
 ```kotlin android/src/main/java/expo/modules/settings/ExpoSettingsModule.kt
 package expo.modules.settings
@@ -457,7 +457,7 @@ enum class Theme(val value: String) : Enumerable {
 }
 ```
 
-### iOS native module
+### iOS 原生模块
 
 ```swift ios/ExpoSettingsModule.swift
 import ExpoModulesCore
@@ -488,7 +488,7 @@ public class ExpoSettingsModule: Module {
 }
 ```
 
-### TypeScript module
+### TypeScript 模块
 
 ```ts src/ExpoSettings.types.ts
 export type Theme = 'light' | 'dark' | 'system';
@@ -512,7 +512,7 @@ declare class ExpoSettingsModule extends NativeModule<ExpoSettingsModuleEvents> 
   getTheme: () => Theme;
 }
 
-// This call loads the native module object from the JSI.
+// 此调用会从 JSI 加载原生模块对象。
 export default requireNativeModule<ExpoSettingsModule>('ExpoSettings');
 ```
 
@@ -536,9 +536,9 @@ export function setTheme(theme: Theme): void {
 }
 ```
 
-### Example app
+### 示例应用
 
-If you change `Settings.setTheme(nextTheme)` to `Settings.setTheme("not-a-real-theme")`, TypeScript will raise an error. If you ignore the error and press the button, you will see the following runtime error:
+如果你将 `Settings.setTheme(nextTheme)` 改为 `Settings.setTheme("not-a-real-theme")`，TypeScript 会报错。如果你忽略该错误并点击按钮，你会看到如下运行时错误：
 
 ```text
  ERROR  Error: FunctionCallException: Calling the 'setTheme' function has failed (at ExpoModulesCore/SyncFunctionComponent.swift:76)
@@ -546,24 +546,24 @@ If you change `Settings.setTheme(nextTheme)` to `Settings.setTheme("not-a-real-t
 → Caused by: EnumNoSuchValueException: 'not-a-real-theme' is not present in Theme enum, it must be one of: 'light', 'dark', 'system' (at ExpoModulesCore/Enumerable.swift:37)
 ```
 
-The last line of the error message shows that `not-a-real-theme` is not a valid value for the `Theme` enum. The only valid values are `light`, `dark`, and `system`.
+错误信息的最后一行表明，`not-a-real-theme` 不是 `Theme` 枚举的有效值。唯一有效的值是 `light`、`dark` 和 `system`。
 
 </Step>
 
-Congratulations! You have created your first Expo Module for Android and iOS.
+恭喜！你已经为 Android 和 iOS 创建了你的第一个 Expo 模块。
 
-## Next steps
+## 下一步
 
 <BoxLink
-  title="Expo Modules API Reference"
-  description="Create native modules using Kotlin and Swift."
+  title="Expo 模块 API 参考"
+  description="使用 Kotlin 和 Swift 创建原生模块。"
   href="/modules/module-api/"
   Icon={Grid01Icon}
 />
 
 <BoxLink
-  title="Tutorial: Creating a native view"
-  description="A tutorial on creating a native view with Expo Modules API."
+  title="教程：创建原生视图"
+  description="关于使用 Expo Modules API 创建原生视图的教程。"
   href="/modules/native-view-tutorial/"
   Icon={Grid01Icon}
 />

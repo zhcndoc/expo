@@ -1,11 +1,11 @@
 ---
-title: Authentication in Expo Router
-sidebar_title: Authentication
-description: How to implement authentication and protect routes with Expo Router.
+title: Expo Router 中的身份验证
+sidebar_title: 身份验证
+description: 如何使用 Expo Router 实现身份验证并保护路由。
 hasVideoLink: true
 ---
 
-> **info** For the previous version of this guide (SDK 52 and earlier), see [Authentication (redirects)](/router/advanced/authentication-rewrites/).
+> **info** 关于本指南的先前版本（SDK 52 及更早版本），请参见 [身份验证（重定向）](/router/advanced/authentication-rewrites/)。
 
 import { Lock01Icon } from '@expo/styleguide-icons/outline/Lock01Icon';
 import { LockUnlocked01Icon } from '@expo/styleguide-icons/outline/LockUnlocked01Icon';
@@ -15,38 +15,38 @@ import { FileTree } from '~/ui/components/FileTree';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-With Expo Router, all routes are always defined and accessible. You can use runtime logic to redirect users away from specific screens depending on whether they are authenticated. There are two different techniques for authenticating users within routes. This guide provides an example that demonstrates the functionality of standard native apps.
+使用 Expo Router 时，所有路由始终都会被定义且可访问。你可以使用运行时逻辑，根据用户是否已通过身份验证，将用户重定向到特定屏幕之外。本指南提供了一个示例，演示标准原生应用的功能。
 
-## Using Protected Routes
+## 使用受保护路由
 
-[Protected routes](/router/advanced/protected/) allow you to prevent users from accessing certain routes using client-side navigation. If a user tries to navigate to a protected screen, or if a screen becomes protected while it is active, they will be redirected to the anchor route (usually the index screen) or the first available screen in the stack. Consider the following project structure that has a `/sign-in` route that is always accessible and a `(app)` group that requires authentication:
+[受保护路由](/router/advanced/protected/) 允许你通过客户端导航阻止用户访问某些路由。如果用户尝试导航到受保护屏幕，或者某个屏幕在处于激活状态时变为受保护状态，他们会被重定向到锚点路由（通常是 index 屏幕）或栈中第一个可用的屏幕。请考虑以下项目结构，其中有一个始终可访问的 `/sign-in` 路由，以及一个需要身份验证的 `(app)` 组：
 
 <FileTree
   files={[
-    ['src/app/_layout.tsx', <span>Controls what is protected</span>],
+    ['src/app/_layout.tsx', <span>控制哪些内容受保护</span>],
     [
       'src/app/sign-in.tsx',
       <span>
-        Always accessible <LockUnlocked01Icon className="mb-1 inline" />
+        始终可访问 <LockUnlocked01Icon className="mb-1 inline" />
       </span>,
     ],
     [
       'src/app/(app)/_layout.tsx',
       <span>
-        Requires authorization <Lock01Icon className="mb-1 inline" />
+        需要授权 <Lock01Icon className="mb-1 inline" />
       </span>,
     ],
-    ['src/app/(app)/index.tsx', <span>Should be protected by the (app)/_layout</span>],
+    ['src/app/(app)/index.tsx', <span>应该由 (app)/_layout 保护</span>],
   ]}
 />
 
 <Step label="1">
 
-To follow the above example, set up a [React Context provider](https://react.dev/reference/react/createContext) that can expose an authentication session to the entire app. You can implement your custom authentication session provider or use the one from the **Example authentication context** below.
+要实现上面的示例，请设置一个 [React Context provider](https://react.dev/reference/react/createContext)，它可以向整个应用暴露身份验证会话。你可以实现自己的自定义身份验证会话提供器，或者使用下面“示例身份验证上下文”中的提供器。
 
-<Collapsible summary="Example authentication context">
+<Collapsible summary="示例身份验证上下文">
 
-This provider uses a mock implementation. You can replace it with your own [authentication provider](/guides/authentication/).
+这个提供器使用的是模拟实现。你可以将其替换为你自己的 [身份验证提供器](/guides/authentication/)。
 
 ```tsx src/ctx.tsx
 import { use, createContext, type PropsWithChildren } from 'react';
@@ -65,7 +65,7 @@ const AuthContext = createContext<{
   isLoading: false,
 });
 
-// Use this hook to access the user info.
+// 使用此 hook 访问用户信息。
 export function useSession() {
   const value = use(AuthContext);
   if (!value) {
@@ -82,7 +82,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     <AuthContext.Provider
       value={{
         signIn: () => {
-          // Perform sign-in logic here
+          // 在这里执行登录逻辑
           setSession('xxx');
         },
         signOut: () => {
@@ -97,7 +97,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 }
 ```
 
-The following code snippet is a basic hook that persists tokens securely on native with [`expo-secure-store`](/versions/latest/sdk/securestore) and in local storage on web.
+下面的代码片段是一个基础 hook，它会在原生端使用 [`expo-secure-store`](/versions/latest/sdk/securestore) 安全地持久化 token，并在 web 端将其存储在本地存储中。
 
 {/* prettier-ignore */}
 ```tsx src/useStorageState.ts
@@ -125,7 +125,7 @@ export async function setStorageItemAsync(key: string, value: string | null) {
         localStorage.setItem(key, value);
       }
     } catch (e) {
-      console.error('Local storage is unavailable:', e);
+      console.error('本地存储不可用：', e);
     }
   } else {
     if (value == null) {
@@ -137,10 +137,10 @@ export async function setStorageItemAsync(key: string, value: string | null) {
 }
 
 export function useStorageState(key: string): UseStateHook<string> {
-  // Public
+  // 公共
   const [state, setState] = useAsyncState<string>();
 
-  // Get
+  // 获取
   useEffect(() => {
     if (Platform.OS === 'web') {
       try {
@@ -148,7 +148,7 @@ export function useStorageState(key: string): UseStateHook<string> {
           setState(localStorage.getItem(key));
         }
       } catch (e) {
-        console.error('Local storage is unavailable:', e);
+        console.error('本地存储不可用：', e);
       }
     } else {
       SecureStore.getItemAsync(key).then((value: string | null) => {
@@ -157,7 +157,7 @@ export function useStorageState(key: string): UseStateHook<string> {
     }
   }, [key]);
 
-  // Set
+  // 设置
   const setValue = useCallback(
     (value: string | null) => {
       setState(value);
@@ -176,7 +176,7 @@ export function useStorageState(key: string): UseStateHook<string> {
 
 <Step label="2">
 
-Create a **SplashScreenController** to manage the splash screen. Authentication loading is asynchronous, so keep the splash screen visible until authentication loads.
+创建一个 **SplashScreenController** 来管理启动画面。身份验证加载是异步的，因此在身份验证加载完成之前保持启动画面可见。
 
 ```tsx src/splash.tsx
 import { SplashScreen } from 'expo-router';
@@ -199,7 +199,7 @@ export function SplashScreenController() {
 
 <Step label="3">
 
-Add the `SessionProvider` to your root layout. This gives your entire app access to the authentication context. Ensure the `SplashScreenController` is inside the `SessionProvider`.
+将 `SessionProvider` 添加到你的根布局中。这会让整个应用都能访问身份验证上下文。确保 `SplashScreenController` 位于 `SessionProvider` 内部。
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -208,7 +208,7 @@ import { SessionProvider } from '@/ctx';
 import { SplashScreenController } from '@/splash';
 
 export default function Root() {
-  // Set up the auth context and render your layout inside of it.
+  // 设置 auth 上下文，并在其中渲染你的布局。
   return (
     <SessionProvider>
       <SplashScreenController />
@@ -217,7 +217,7 @@ export default function Root() {
   );
 }
 
-// Create a new component that can access the SessionProvider context later.
+// 创建一个新组件，以便后续可以访问 SessionProvider 上下文。
 function RootNavigator() {
   return <Stack />;
 }
@@ -227,7 +227,7 @@ function RootNavigator() {
 
 <Step label="4">
 
-Create the `/sign-in` screen. This screen toggles authentication using `signIn()`. Since this screen is outside the `(app)` group, the group's layout and authentication check do not run when rendering this screen. This lets logged-out users access this screen.
+创建 `/sign-in` 屏幕。该屏幕使用 `signIn()` 切换身份验证。由于此屏幕位于 `(app)` 组之外，因此渲染此屏幕时不会运行该组的布局和身份验证检查。这使得未登录用户可以访问此屏幕。
 
 ```tsx src/app/sign-in.tsx|collapseHeight=480
 import { router } from 'expo-router';
@@ -242,10 +242,10 @@ export default function SignIn() {
       <Text
         onPress={() => {
           signIn();
-          // Navigate after signing in. You may want to tweak this to ensure sign-in is successful before navigating.
+          // 登录后进行导航。你可能需要调整这里，以确保在导航前登录成功。
           router.replace('/');
         }}>
-        Sign In
+        登录
       </Text>
     </View>
   );
@@ -256,13 +256,13 @@ export default function SignIn() {
 
 <Step label="5">
 
-Now modify the `RootNavigator` to protect routes based on your `SessionProvider`.
+现在根据你的 `SessionProvider` 修改 `RootNavigator` 来保护路由。
 
 ```tsx src/app/_layout.tsx|collapseHeight=400
-// All import statements remain the same except you need to import `useSession` from your `ctx.tsx` file.
+// 除了你需要从 `ctx.tsx` 文件中导入 `useSession` 之外，其余导入语句保持不变。
 import { SessionProvider, useSession } from '@/ctx';
 
-// All of the above code remains unchanged. Update the `RootNavigator` to protect routes based on your `SessionProvider` below.
+// 上面的代码都保持不变。下面更新 `RootNavigator`，使其根据你的 `SessionProvider` 保护路由。
 
 function RootNavigator() {
   const { session } = useSession();
@@ -285,7 +285,7 @@ function RootNavigator() {
 
 <Step label="6">
 
-Implement an authenticated screen that lets users sign out.
+实现一个已认证屏幕，让用户可以退出登录。
 
 ```tsx src/app/(app)/index.tsx|collapseHeight=480
 import { Text, View } from 'react-native';
@@ -298,10 +298,10 @@ export default function Index() {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text
         onPress={() => {
-          // The guard in `RootNavigator` redirects back to the sign-in screen.
+          // `RootNavigator` 中的 guard 会重定向回登录屏幕。
           signOut();
         }}>
-        Sign Out
+        退出登录
       </Text>
     </View>
   );
@@ -312,35 +312,35 @@ export default function Index() {
 
 <Step label="7">
 
-Create the **src/app/(app)/\_layout.tsx**:
+创建 **src/app/(app)/\_layout.tsx**：
 
 ```tsx src/app/(app)/_layout.tsx
 import { Stack } from 'expo-router';
 
 export default function AppLayout() {
-  // This renders the navigation stack for all authenticated app routes.
+  // 这会渲染所有已认证应用路由的导航栈。
   return <Stack />;
 }
 ```
 
 </Step>
 
-You now have an app that will present the splash screen until the initial authentication state has loaded and will redirects to the sign-in screen if the user is not authenticated. If a user visits a deep link to any routes with the authentication check, they'll be redirected to the sign-in screen.
+现在你已经拥有一个应用：它会在初始身份验证状态加载完成之前显示启动画面；如果用户未通过身份验证，则会重定向到登录屏幕。如果用户访问任何带有身份验证检查的深层链接，他们会被重定向到登录屏幕。
 
-## Modals and per-route authentication
+## 模态窗口和按路由认证
 
-Another common pattern is to render a sign-in modal over the top of the app. This enables you to dismiss and partially preserve deep links when the authentication is complete. However, this pattern requires routes to be rendered in the background as these routes require handling data loading without authentication.
+另一种常见模式是在应用顶部渲染一个登录模态窗口。这样在认证完成后，你可以关闭模态并部分保留深层链接。然而，这种模式要求路由在后台仍然被渲染，因为这些路由需要在没有身份验证的情况下处理数据加载。
 
 <FileTree
   files={[
-    ['src/app/_layout.tsx', 'Declares global session context'],
+    ['src/app/_layout.tsx', '声明全局会话上下文'],
     'src/app/(app)/_layout.tsx',
-    ['src/app/(app)/sign-in.tsx', <span>Modal presented over the root</span>],
-    ['src/app/(app)/(root)/_layout.tsx', <span>Protects child routes</span>],
+    ['src/app/(app)/sign-in.tsx', <span>在根层之上呈现的模态窗口</span>],
+    ['src/app/(app)/(root)/_layout.tsx', <span>保护子路由</span>],
     [
       'src/app/(app)/(root)/index.tsx',
       <span>
-        Requires authorization <Lock01Icon className="mb-1 inline" />
+        需要授权 <Lock01Icon className="mb-1 inline" />
       </span>,
     ],
   ]}
@@ -368,16 +368,16 @@ export default function AppLayout() {
 }
 ```
 
-## More information
+## 更多信息
 
-For more information, read the [Protected routes documentation](/router/advanced/protected/) to learn more about patterns.
+如需了解更多信息，请阅读 [受保护路由文档](/router/advanced/protected/)，以了解更多模式。
 
 <VideoBoxLink
   videoId="XCTaMu0qnFY"
-  title="How to use Protected Routes in Expo Router version 5 and later for smooth authentication"
-  description="Learn how to use Protected Routes in Expo Router version 5 and later to create an authentication flow."
+  title="如何在 Expo Router 版本 5 及更高版本中使用受保护路由，以实现流畅的身份验证"
+  description="了解如何在 Expo Router 版本 5 及更高版本中使用受保护路由来创建身份验证流程。"
 />
 
-## Middleware
+## 中间件
 
-Traditionally, websites may leverage some form of server-side redirection to protect routes. Expo Router on the web currently only supports build-time static generation and has no support for custom middleware or serving. This can be added in the future to provide a more optimal web experience. In the meantime, authentication can be implemented by using client-side redirects and a loading state.
+传统上，网站可能会利用某种形式的服务器端重定向来保护路由。Expo Router 在 Web 上目前仅支持构建时静态生成，不支持自定义中间件或服务。未来可以添加此功能，以提供更优化的 Web 体验。与此同时，可以通过使用客户端重定向和加载状态来实现身份验证。

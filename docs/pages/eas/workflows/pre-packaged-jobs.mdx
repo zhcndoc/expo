@@ -1,78 +1,78 @@
 ---
-title: Pre-packaged jobs in EAS Workflows
-sidebar_title: Pre-packaged jobs
-description: Learn how to set up and use pre-packaged jobs in EAS Workflows.
+title: EAS Workflows 中的预打包作业
+sidebar_title: 预打包作业
+description: 了解如何在 EAS Workflows 中设置和使用预打包作业。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { FAQ } from '~/ui/components/FAQ';
 
-Pre-packaged jobs are ready-to-use workflow jobs that help you automate common tasks like building, submitting, and testing your app. They provide a standardized way to handle these operations without having to write custom job configurations from scratch. This guide covers the available pre-packaged jobs and how to use them in your workflows.
+预打包作业是即用型工作流作业，可帮助你自动化构建、提交和测试应用等常见任务。它们提供了一种标准化方式来处理这些操作，而无需从头编写自定义作业配置。本指南将介绍可用的预打包作业，以及如何在工作流中使用它们。
 
-## Build
+## 构建
 
-Build your project into an Android or iOS app.
+将你的项目构建为 Android 或 iOS 应用。
 
-Build jobs can be customized so that you can execute custom commands during the build process. See [Custom builds](/custom-builds/get-started/) for more information.
+构建作业可以自定义，因此你可以在构建过程中执行自定义命令。更多信息请参见 [自定义构建](/custom-builds/get-started/)。
 
-### Prerequisites
+### 前提条件
 
-To successfully use the build job, you'll need to complete a build with EAS CLI using the same platform and profile as the pre-packaged job. Learn how to [create your first build](/build/setup/) to get started.
+要成功使用构建作业，你需要使用与预打包作业相同的平台和配置文件，通过 EAS CLI 完成一次构建。了解如何 [创建你的第一个构建](/build/setup/) 以开始使用。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   build_app:
     type: build
-    runs_on: string # optional - see https://docs.expo.dev/build-reference/infrastructure/ for available options
+    runs_on: string # 可选 - 可用选项请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      platform: android | ios # required
-      profile: string # optional - default: production
-      message: string # optional
+      platform: android | ios # 必填
+      profile: string # 可选 - 默认值：production
+      message: string # 可选
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以向 `params` 列表传入以下参数：
 
-| Parameter | Type   | Description                                                                                                   |
-| --------- | ------ | ------------------------------------------------------------------------------------------------------------- |
-| platform  | string | **Required.** The platform to build for. Can be either `android` or `ios`.                                    |
-| profile   | string | Optional. The build profile to use. Defaults to `production`.                                                 |
-| message   | string | Optional. Custom message attached to the build. Corresponds to the `--message` flag when running `eas build`. |
+| 参数      | 类型   | 描述                                                                                                   |
+| --------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| platform  | string | **必填。** 要构建的平台。可以是 `android` 或 `ios`。                                                   |
+| profile   | string | 可选。要使用的构建配置文件。默认值为 `production`。                                                     |
+| message   | string | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。 |
 
-#### Environment variables
+#### 环境变量
 
-If you need certain environment variables during the build process, you can include them in your [eas.json](/eas/json/#environment), for your specified build `profile`. They will be pulled from [EAS environment variables](/eas/environment-variables/).
+如果你在构建过程中需要某些环境变量，可以将它们包含在你指定构建 `profile` 的 [eas.json](/eas/json/#environment) 中。它们将从 [EAS 环境变量](/eas/environment-variables/) 中提取。
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续作业中引用以下输出：
 
-| Output            | Type   | Description                                                        |
-| ----------------- | ------ | ------------------------------------------------------------------ |
-| build_id          | string | The ID of the created build.                                       |
-| app_build_version | string | The version code/build number of the app.                          |
-| app_identifier    | string | The bundle identifier/package name of the app.                     |
-| app_version       | string | The version of the app.                                            |
-| channel           | string | The update channel used for the build.                             |
-| distribution      | string | The distribution method used. Can be `internal` or `store`.        |
-| fingerprint_hash  | string | The fingerprint hash of the build.                                 |
-| git_commit_hash   | string | The git commit hash used for the build.                            |
-| platform          | string | The platform the build was created for. Either `android` or `ios`. |
-| profile           | string | The build profile used.                                            |
-| runtime_version   | string | The runtime version used.                                          |
-| sdk_version       | string | The SDK version used.                                              |
-| simulator         | string | Whether the build is for simulator.                                |
+| 输出              | 类型   | 描述                                                      |
+| ----------------- | ------ | --------------------------------------------------------- |
+| build_id          | string | 创建的构建的 ID。                                         |
+| app_build_version | string | 应用的版本代码/构建号。                                   |
+| app_identifier    | string | 应用的包标识符/包名。                                     |
+| app_version       | string | 应用的版本。                                              |
+| channel           | string | 构建所使用的更新通道。                                    |
+| distribution      | string | 使用的分发方式。可以是 `internal` 或 `store`。            |
+| fingerprint_hash  | string | 构建的指纹哈希。                                          |
+| git_commit_hash   | string | 构建所使用的 git 提交哈希。                               |
+| platform          | string | 创建构建所对应的平台。为 `android` 或 `ios`。            |
+| profile           | string | 使用的构建配置文件。                                      |
+| runtime_version   | string | 使用的运行时版本。                                        |
+| sdk_version       | string | 使用的 SDK 版本。                                         |
+| simulator         | string | 是否为模拟器构建。                                        |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the build job:
+以下是一些使用构建作业的实用示例：
 
-<Collapsible summary="Basic build for a specific platform">
+<Collapsible summary="针对特定平台的基础构建">
 
-This workflow builds your iOS app whenever you push to the main branch.
+此工作流会在你推送到 main 分支时构建你的 iOS 应用。
 
 ```yaml .eas/workflows/build-ios.yml
 name: Build iOS app
@@ -92,9 +92,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Build for both platforms in parallel">
+<Collapsible summary="同时为两个平台构建">
 
-This workflow builds both Android and iOS apps in parallel when you push to the main branch.
+此工作流会在你推送到 main 分支时并行构建 Android 和 iOS 应用。
 
 ```yaml .eas/workflows/build-all.yml
 name: Build for all platforms
@@ -121,9 +121,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Build with environment variables">
+<Collapsible summary="使用环境变量构建">
 
-This workflow builds your Android app with custom environment variables that can be used during the build process.
+此工作流会使用可在构建过程中使用的自定义环境变量来构建你的 Android 应用。
 
 ```yaml .eas/workflows/build-with-env.yml
 name: Build with environment variables
@@ -146,9 +146,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Build with different profiles">
+<Collapsible summary="使用不同配置文件构建">
 
-This workflow creates two different Android builds using different profiles - one for internal distribution and one for store submission using the development and production profiles.
+此工作流使用不同配置文件创建两个不同的 Android 构建——一个用于内部分发，另一个用于提交到商店，分别使用 development 和 production 配置文件。
 
 ```yaml .eas/workflows/build-profiles.yml
 name: Build with different profiles
@@ -175,54 +175,54 @@ jobs:
 
 </Collapsible>
 
-## Deploy
+## 部署
 
-Deploy your application using [EAS Hosting](/eas/hosting/introduction).
+使用 [EAS Hosting](/eas/hosting/introduction) 部署你的应用程序。
 
-### Prerequisites
+### 前提条件
 
-To deploy your application using EAS Hosting, you'll need to set up your project. See [Get Started with EAS Hosting](/eas/hosting/get-started/#prerequisites) for more information.
+要使用 EAS Hosting 部署你的应用程序，你需要先设置你的项目。更多信息请参见 [EAS Hosting 入门](/eas/hosting/get-started/#prerequisites)。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   deploy_web:
     type: deploy
     params:
-      alias: string # optional
-      prod: boolean # optional
+      alias: string # 可选
+      prod: boolean # 可选
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以向 `params` 列表传入以下参数：
 
-| Parameter | Type    | Description                                                                        |
-| --------- | ------- | ---------------------------------------------------------------------------------- |
-| alias     | string  | Optional. The [alias](/eas/hosting/deployments-and-aliases/#aliases) to deploy to. |
-| prod      | boolean | Optional. Whether to deploy to production.                                         |
+| 参数  | 类型    | 描述                                                                 |
+| ----- | ------- | -------------------------------------------------------------------- |
+| alias | string  | 可选。要部署到的 [别名](/eas/hosting/deployments-and-aliases/#aliases)。 |
+| prod  | boolean | 可选。是否部署到生产环境。                                           |
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续作业中引用以下输出：
 
-| Output                | Type   | Description                                                                                                                                      |
-| --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| deploy_json           | string | JSON object containing the deployment details (output of `npx eas-cli deploy --json`).                                                           |
-| deploy_url            | string | URL to the deployment. It uses production URL if this was a production deployment. Otherwise, it uses the first alias URL or the deployment URL. |
-| deploy_alias_url      | string | Alias URL to the deployment (for example, `https://account-project--alias.expo.app`).                                                            |
-| deploy_deployment_url | string | Unique URL to the deployment (for example, `https://account-project--uniqueid.expo.app`).                                                        |
-| deploy_identifier     | string | Identifier of the deployment.                                                                                                                    |
-| deploy_dashboard_url  | string | URL to the deployment dashboard (for example, `https://expo.dev/projects/[project]/hosting/deployments`).                                        |
+| 输出                  | 类型   | 描述                                                                                                                                      |
+| --------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| deploy_json           | string | 包含部署详情的 JSON 对象（`npx eas-cli deploy --json` 的输出）。                                                                          |
+| deploy_url            | string | 指向该部署的 URL。如果这是一个生产部署，则使用生产 URL。否则，使用第一个别名 URL 或部署 URL。                                            |
+| deploy_alias_url      | string | 指向该部署的别名 URL（例如，`https://account-project--alias.expo.app`）。                                                                |
+| deploy_deployment_url | string | 指向该部署的唯一 URL（例如，`https://account-project--uniqueid.expo.app`）。                                                              |
+| deploy_identifier     | string | 部署的标识符。                                                                                                                             |
+| deploy_dashboard_url  | string | 指向部署仪表板的 URL（例如，`https://expo.dev/projects/[project]/hosting/deployments`）。                                                |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the deploy job:
+以下是一些使用部署作业的实用示例：
 
-<Collapsible summary="Basic deployment to production">
+<Collapsible summary="部署到生产环境的基础示例">
 
-This workflow deploys your application to production using EAS Hosting.
+此工作流会使用 EAS Hosting 将你的应用程序部署到生产环境。
 
 ```yaml .eas/workflows/deploy-basic.yml
 name: Basic Deployment
@@ -237,9 +237,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Deploy to production only on merges to the `main` branch">
+<Collapsible summary="仅在合并到 `main` 分支时部署到生产环境">
 
-This workflow deploys your application to production when you merge to the main branch, and makes a non-production deployment on all other branches.
+此工作流会在你合并到 main 分支时将应用程序部署到生产环境，并在所有其他分支上进行非生产环境部署。
 
 ```yaml .eas/workflows/deploy.yml
 name: Deploy
@@ -258,9 +258,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Deployment with custom alias">
+<Collapsible summary="使用自定义别名进行部署">
 
-This workflow deploys your application to a custom alias in production.
+此工作流会将你的应用程序部署到生产环境中的一个自定义别名。
 
 ```yaml .eas/workflows/deploy-alias.yml
 name: Deployment with Alias
@@ -276,53 +276,53 @@ jobs:
 
 </Collapsible>
 
-## Fingerprint
+## 指纹
 
-Calculates a fingerprint of your project.
+计算你的项目指纹。
 
-> **Note:** This job type only supports [CNG (managed)](/workflow/continuous-native-generation/) workflows. If you commit your **android** or **ios** directories, the fingerprint job won't work.
+> **注意：** 此作业类型仅支持 [CNG（托管）](/workflow/continuous-native-generation/) 工作流。如果你提交了 **android** 或 **ios** 目录，指纹作业将无法工作。
 
-> **Note:** To ensure fingerprints match your builds, use the same `environment` setting as your build profile. For environment variables, we recommend using [EAS environment variables](/eas/environment-variables/) rather than the [`env`](/eas/workflows/syntax/#jobsjob_idenv) field for better consistency.
+> **注意：** 为确保指纹与你的构建匹配，请使用与构建配置文件相同的 `environment` 设置。对于环境变量，我们建议使用 [EAS 环境变量](/eas/environment-variables/) 而不是 [`env`](/eas/workflows/syntax/#jobsjob_idenv) 字段，以获得更好的一致性。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   fingerprint:
     type: fingerprint
-    environment: production | preview | development # optional, defaults to production
-    env: # optional list of environment variables
+    environment: production | preview | development # 可选，默认值为 production
+    env: # 可选的环境变量列表
       ENV_VAR_NAME: value
 ```
 
-#### Environment variables
+#### 环境变量
 
-You can pass a list of environment variables into the `env` parameter. These environment variables will be pulled from [EAS environment variables](/eas/environment-variables/). The passed `environment` parameter will be used for the environment variable's environment, which is useful when the same environment variable is defined across different environments.
+你可以向 `env` 参数传入一个环境变量列表。这些环境变量将从 [EAS 环境变量](/eas/environment-variables/) 中提取。传入的 `environment` 参数将用于该环境变量所属的环境，当同一个环境变量在不同环境中都被定义时，这会很有用。
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以向 `params` 列表传入以下参数：
 
-| Parameter               | Type    | Description                                                                                                                                               |
-| ----------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| unstable_skip_cng_check | boolean | Optional. Whether to skip the check for [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) compatibility. Defaults to `false`. |
+| 参数                    | 类型    | 描述                                                                                                  |
+| ----------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| unstable_skip_cng_check | boolean | 可选。是否跳过 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 兼容性检查。默认值为 `false`。 |
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续作业中引用以下输出：
 
-| Output                   | Type   | Description                       |
-| ------------------------ | ------ | --------------------------------- |
-| android_fingerprint_hash | string | The fingerprint hash for Android. |
-| ios_fingerprint_hash     | string | The fingerprint hash for iOS.     |
+| 输出                     | 类型   | 描述                       |
+| ------------------------ | ------ | -------------------------- |
+| android_fingerprint_hash | string | Android 的指纹哈希。       |
+| ios_fingerprint_hash     | string | iOS 的指纹哈希。           |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the fingerprint job:
+以下是一些使用指纹作业的实用示例：
 
-<Collapsible summary="Basic fingerprint calculation">
+<Collapsible summary="基础指纹计算">
 
-This workflow calculates fingerprints for both Android and iOS builds. The `environment` should match your build profile for accurate fingerprint matching.
+此工作流会为 Android 和 iOS 构建都计算指纹。`environment` 应与构建配置文件匹配，以实现准确的指纹匹配。
 
 ```yaml .eas/workflows/fingerprint-basic.yml
 name: Basic Fingerprint
@@ -331,16 +331,16 @@ jobs:
   fingerprint:
     name: Calculate Fingerprint
     type: fingerprint
-    # @info Match your build profile's environment #
+    # @info 将你的构建配置文件的 environment 匹配起来 #
     environment: production
     # @end #
 ```
 
 </Collapsible>
 
-<Collapsible summary="Fingerprint with inline environment variables">
+<Collapsible summary="使用内联环境变量的指纹">
 
-> **Note:** If you depend on inline environment variables, you will need to always make sure to set the right set of environment variables to the right values in every place (build profile, fingerprint job, update job, and so on) for fingerprints to match. **We recommend using [EAS Environment Variables](/eas/environment-variables/) instead**, where you can group sets of variables into environments and reference them in the build profile and workflow jobs.
+> **注意：** 如果你依赖内联环境变量，你需要始终确保在每个位置（构建配置文件、指纹作业、更新作业等）将正确的一组环境变量设置为正确的值，以确保指纹匹配。**我们建议改用 [EAS 环境变量](/eas/environment-variables/)，** 在那里你可以将变量集合分组到环境中，并在构建配置文件和工作流作业中引用它们。
 
 ```yaml .eas/workflows/fingerprint-with-env.yml
 name: Fingerprint with Environment Variables
@@ -350,8 +350,8 @@ jobs:
     name: Calculate Fingerprint
     type: fingerprint
     environment: production
-    # Resulting environment will be a union of the "production" environment and the inline environment variables.
-    # `env` variables override environment variables of the same name from the "production" environment.
+    # 结果环境将是 "production" 环境与内联环境变量的并集。
+    # `env` 变量会覆盖 "production" 环境中同名的环境变量。
     env:
       APP_VARIANT: staging
       API_URL: https://api.staging.example.com
@@ -359,88 +359,88 @@ jobs:
 
 </Collapsible>
 
-## Get Build
+## 获取构建
 
-Retrieve an existing build from EAS that matches the provided parameters.
+从 EAS 中检索一个与提供参数匹配的现有构建。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   get_build:
     type: get-build
     params:
-      platform: ios | android # optional
-      profile: string # optional
-      distribution: store | internal | simulator # optional
-      channel: string # optional
-      app_identifier: string # optional
-      app_build_version: string # optional
-      app_version: string # optional
-      git_commit_hash: string # optional
-      fingerprint_hash: string # optional
-      sdk_version: string # optional
-      runtime_version: string # optional
-      simulator: boolean # optional
-      wait_for_in_progress: boolean # optional
+      platform: ios | android # 可选
+      profile: string # 可选
+      distribution: store | internal | simulator # 可选
+      channel: string # 可选
+      app_identifier: string # 可选
+      app_build_version: string # 可选
+      app_version: string # 可选
+      git_commit_hash: string # 可选
+      fingerprint_hash: string # 可选
+      sdk_version: string # 可选
+      runtime_version: string # 可选
+      simulator: boolean # 可选
+      wait_for_in_progress: boolean # 可选
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以将以下参数传入 `params` 列表：
 
-| Parameter            | Type    | Description                                                                    |
+| 参数                 | 类型    | 描述                                                                           |
 | -------------------- | ------- | ------------------------------------------------------------------------------ |
-| platform             | string  | Optional. The platform to get the build for. Can be `ios` or `android`.        |
-| profile              | string  | Optional. The build profile to use.                                            |
-| distribution         | string  | Optional. The distribution method. Can be `store`, `internal`, or `simulator`. |
-| channel              | string  | Optional. The update channel.                                                  |
-| app_identifier       | string  | Optional. The bundle identifier/package name.                                  |
-| app_build_version    | string  | Optional. The build version.                                                   |
-| app_version          | string  | Optional. The app version.                                                     |
-| git_commit_hash      | string  | Optional. The git commit hash.                                                 |
-| fingerprint_hash     | string  | Optional. The fingerprint hash.                                                |
-| sdk_version          | string  | Optional. The SDK version.                                                     |
-| runtime_version      | string  | Optional. The runtime version.                                                 |
-| simulator            | boolean | Optional. Whether to get a simulator build.                                    |
-| wait_for_in_progress | boolean | Optional. Whether to wait for a matching in-progress build. Default: `false`.  |
+| platform             | string  | 可选。要获取构建的平台。可以是 `ios` 或 `android`。                              |
+| profile              | string  | 可选。要使用的构建配置文件。                                                     |
+| distribution         | string  | 可选。发布方式。可以是 `store`、`internal` 或 `simulator`。                      |
+| channel              | string  | 可选。更新通道。                                                                 |
+| app_identifier       | string  | 可选。包标识符/包名。                                                            |
+| app_build_version    | string  | 可选。构建版本。                                                                 |
+| app_version          | string  | 可选。应用版本。                                                                 |
+| git_commit_hash      | string  | 可选。git 提交哈希。                                                            |
+| fingerprint_hash     | string  | 可选。指纹哈希。                                                                 |
+| sdk_version          | string  | 可选。SDK 版本。                                                                 |
+| runtime_version      | string  | 可选。运行时版本。                                                               |
+| simulator            | boolean | 可选。是否获取模拟器构建。                                                       |
+| wait_for_in_progress | boolean | 可选。是否等待匹配的进行中构建。默认：`false`。                                   |
 
-If `wait_for_in_progress` is set to `true`, the job will still prioritize continuing immediately with a successful build, but it will also look for in-progress builds. If no successful build is found, the job will wait for an in-progress build to complete before continuing. If the matched build succeeds, the job will be marked as successful and will return the successful build. If the matched build fails, the job will be marked as successful and its outputs will be empty &mdash; as if the build has not been matched.
+如果将 `wait_for_in_progress` 设置为 `true`，该任务仍会优先立即继续使用成功的构建，但也会查找进行中的构建。如果未找到成功的构建，任务将在继续前等待进行中的构建完成。如果匹配的构建成功，则任务将被标记为成功，并返回该成功构建。如果匹配的构建失败，则任务将被标记为成功，且其输出将为空 &mdash; 就像该构建未被匹配一样。
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续任务中引用以下输出：
 
-| Output            | Type   | Description                                    |
-| ----------------- | ------ | ---------------------------------------------- |
-| build_id          | string | The ID of the retrieved build.                 |
-| app_build_version | string | The build version of the app.                  |
-| app_identifier    | string | The bundle identifier/package name of the app. |
-| app_version       | string | The version of the app.                        |
-| channel           | string | The update channel used for the build.         |
-| distribution      | string | The distribution method used.                  |
-| fingerprint_hash  | string | The fingerprint hash of the build.             |
-| git_commit_hash   | string | The git commit hash used for the build.        |
-| platform          | string | The platform the build was created for.        |
-| profile           | string | The build profile used.                        |
-| runtime_version   | string | The runtime version used.                      |
-| sdk_version       | string | The SDK version used.                          |
-| simulator         | string | Whether the build is for simulator.            |
+| 输出               | 类型   | 描述                               |
+| ------------------ | ------ | ---------------------------------- |
+| build_id           | string | 检索到的构建 ID。                  |
+| app_build_version  | string | 应用的构建版本。                   |
+| app_identifier     | string | 应用的包标识符/包名。              |
+| app_version        | string | 应用版本。                         |
+| channel            | string | 构建所使用的更新通道。             |
+| distribution       | string | 所使用的发布方式。                 |
+| fingerprint_hash   | string | 构建的指纹哈希。                   |
+| git_commit_hash    | string | 构建所使用的 git 提交哈希。        |
+| platform           | string | 构建创建所针对的平台。             |
+| profile            | string | 所使用的构建配置文件。             |
+| runtime_version    | string | 所使用的运行时版本。               |
+| sdk_version        | string | 所使用的 SDK 版本。                |
+| simulator          | string | 是否为模拟器构建。                 |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the get-build job:
+以下是一些使用 get-build 任务的实际示例：
 
-<Collapsible summary="Get latest production build">
+<Collapsible summary="获取最新生产构建">
 
-This workflow retrieves the latest production build for iOS from the store distribution channel.
+此工作流从 store 发布通道中检索 iOS 的最新生产构建。
 
 ```yaml .eas/workflows/get-build-production.yml
-name: Get Production Build
+name: 获取生产构建
 
 jobs:
   get_build:
-    name: Get Latest Production Build
+    name: 获取最新生产构建
     type: get-build
     params:
       platform: ios
@@ -451,16 +451,16 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Get build by version">
+<Collapsible summary="按版本获取构建">
 
-This workflow retrieves a specific version of an Android build by its app version and build version.
+此工作流根据应用版本和构建版本检索 Android 构建的特定版本。
 
 ```yaml .eas/workflows/get-build-version.yml
-name: Get Build by Version
+name: 按版本获取构建
 
 jobs:
   get_build:
-    name: Get Specific Version Build
+    name: 获取特定版本构建
     type: get-build
     params:
       platform: android
@@ -471,16 +471,16 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Get simulator build">
+<Collapsible summary="获取模拟器构建">
 
-This workflow retrieves a simulator build for iOS development. `wait_for_in_progress` is set to `true` so that if a build matching the filter already exists, the job will wait for it to complete before continuing.
+此工作流为 iOS 开发检索一个模拟器构建。`wait_for_in_progress` 设置为 `true`，因此如果已经存在与过滤条件匹配的构建，任务将在继续之前等待其完成。
 
 ```yaml .eas/workflows/get-build-simulator.yml
-name: Get Simulator Build
+name: 获取模拟器构建
 
 jobs:
   get_build:
-    name: Get Simulator Build
+    name: 获取模拟器构建
     type: get-build
     params:
       platform: ios
@@ -491,66 +491,66 @@ jobs:
 
 </Collapsible>
 
-## Submit
+## 提交
 
-Submit an Android or iOS build to the app store using EAS Submit.
+使用 EAS Submit 将 Android 或 iOS 构建提交到应用商店。
 
-### Prerequisites
+### 前提条件
 
-Submission jobs require additional configuration to run within a CI/CD process. See our [Apple App Store CI/CD submission guide](/submit/ios/#submitting-your-app-using-cicd-services) and [Google Play Store CI/CD submission guide](/submit/android/#submitting-your-app-using-cicd-services) for more information.
+提交任务需要额外配置才能在 CI/CD 流程中运行。有关更多信息，请参阅我们的 [Apple App Store CI/CD 提交指南](/submit/ios/#submitting-your-app-using-cicd-services) 和 [Google Play Store CI/CD 提交指南](/submit/android/#submitting-your-app-using-cicd-services)。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   submit_to_store:
     type: submit
-    runs_on: string # optional - see https://docs.expo.dev/build-reference/infrastructure/ for available options
+    runs_on: string # 可选 - 可用选项见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      build_id: string # required
-      profile: string # optional - default: production
+      build_id: string # 必需
+      profile: string # 可选 - 默认：production
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以将以下参数传入 `params` 列表：
 
-| Parameter | Type   | Description                                                    |
-| --------- | ------ | -------------------------------------------------------------- |
-| build_id  | string | Required. The ID of the build to submit.                       |
-| profile   | string | Optional. The submit profile to use. Defaults to `production`. |
+| 参数      | 类型   | 描述                                         |
+| --------- | ------ | -------------------------------------------- |
+| build_id  | string | 必需。要提交的构建 ID。                      |
+| profile   | string | 可选。要使用的提交配置文件。默认是 `production`。 |
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续任务中引用以下输出：
 
-| Output                | Type   | Description                                       |
-| --------------------- | ------ | ------------------------------------------------- |
-| apple_app_id          | string | The Apple App ID of the submitted build.          |
-| ios_bundle_identifier | string | The iOS bundle identifier of the submitted build. |
-| android_package_id    | string | The Android package ID of the submitted build.    |
+| 输出                  | 类型   | 描述                                |
+| --------------------- | ------ | ----------------------------------- |
+| apple_app_id          | string | 已提交构建的 Apple App ID。         |
+| ios_bundle_identifier | string | 已提交构建的 iOS 包标识符。         |
+| android_package_id    | string | 已提交构建的 Android 包 ID。        |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the submit job:
+以下是一些使用 submit 任务的实际示例：
 
-<Collapsible summary="Submit iOS build">
+<Collapsible summary="提交 iOS 构建">
 
-This workflow submits an iOS build to the App Store using the production submit profile.
+此工作流使用 production 提交配置文件将 iOS 构建提交到 App Store。
 
 ```yaml .eas/workflows/submit-ios.yml
-name: Submit iOS Build
+name: 提交 iOS 构建
 
 jobs:
   build_ios:
-    name: Build iOS
+    name: 构建 iOS
     type: build
     params:
       platform: ios
       profile: production
 
   submit:
-    name: Submit to App Store
+    name: 提交到 App Store
     type: submit
     needs: [build_ios]
     params:
@@ -560,23 +560,23 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Submit Android build">
+<Collapsible summary="提交 Android 构建">
 
-This workflow submits an Android build to the Play Store using the production submit profile.
+此工作流使用 production 提交配置文件将 Android 构建提交到 Play Store。
 
 ```yaml .eas/workflows/submit-android.yml
-name: Submit Android Build
+name: 提交 Android 构建
 
 jobs:
   build_android:
-    name: Build Android
+    name: 构建 Android
     type: build
     params:
       platform: android
       profile: production
 
   submit:
-    name: Submit to Play Store
+    name: 提交到 Play Store
     type: submit
     needs: [build_android]
     params:
@@ -588,73 +588,73 @@ jobs:
 
 ## TestFlight
 
-Distribute iOS builds to TestFlight internal and external testing groups. This is an alternative to the iOS submit job for when you need more advanced TestFlight features. If you need to control test groups, changelog, or Beta App Review submission, use the `testflight` job instead of submit.
+将 iOS 构建分发到 TestFlight 内部和外部测试组。这是 iOS submit 任务的替代方案，适用于你需要更高级的 TestFlight 功能时。如果你需要控制测试组、更新日志或 Beta App Review 提交，请使用 `testflight` 任务而不是 submit。
 
-### Prerequisites
+### 前提条件
 
-TestFlight jobs require an iOS build created with `distribution: store`. You'll need to have your Apple Developer account configured. See the [TestFlight submission guide](/submit/ios/#submitting-your-app-using-cicd-services) for more information.
+TestFlight 任务需要使用 `distribution: store` 创建的 iOS 构建。你需要配置好 Apple Developer 账户。有关更多信息，请参阅 [TestFlight 提交指南](/submit/ios/#submitting-your-app-using-cicd-services)。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   testflight_distribution:
     type: testflight
-    runs_on: string # optional - see https://docs.expo.dev/build-reference/infrastructure/ for available options
+    runs_on: string # 可选 - 可用选项见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      build_id: string # required
-      profile: string # optional - default: production
-      internal_groups: string[] # optional
-      external_groups: string[] # optional
-      changelog: string # optional
-      submit_beta_review: boolean # optional
-      wait_processing_timeout_seconds: number # optional - default: 1800 (30 minutes)
+      build_id: string # 必需
+      profile: string # 可选 - 默认：production
+      internal_groups: string[] # 可选
+      external_groups: string[] # 可选
+      changelog: string # 可选
+      submit_beta_review: boolean # 可选
+      wait_processing_timeout_seconds: number # 可选 - 默认：1800（30 分钟）
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以将以下参数传入 `params` 列表：
 
-| Parameter                       | Type     | Description                                                                                                                                 |
-| ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id                        | string   | Required. The ID of the iOS build to distribute.                                                                                            |
-| profile                         | string   | Optional. The submit profile to use. Defaults to `production`.                                                                              |
-| internal_groups                 | string[] | Optional. An array of TestFlight internal group names to add the build to. Only include groups without automatic distribution enabled.      |
-| external_groups                 | string[] | Optional. An array of TestFlight external group names to add the build to.                                                                  |
-| changelog                       | string   | Optional. Test notes ("What to Test") for TestFlight testers.                                                                               |
-| submit_beta_review              | boolean  | Optional. Whether to submit for Beta App Review. If not specified, defaults to `true` when external_groups are provided, `false` otherwise. |
-| wait_processing_timeout_seconds | number   | Optional. Timeout in seconds to wait for App Store Connect build processing. Defaults to `1800` (30 minutes).                               |
+| 参数                           | 类型      | 描述                                                                                                                                     |
+| ------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| build_id                       | string    | 必需。要分发的 iOS 构建 ID。                                                                                                              |
+| profile                        | string    | 可选。要使用的提交配置文件。默认是 `production`。                                                                                         |
+| internal_groups                | string[]  | 可选。要将构建添加到的 TestFlight 内部组名称数组。仅包含未启用自动分发的组。                                                            |
+| external_groups                | string[]  | 可选。要将构建添加到的 TestFlight 外部组名称数组。                                                                                      |
+| changelog                      | string    | 可选。TestFlight 测试者的测试说明（“要测试什么”）。                                                                                      |
+| submit_beta_review             | boolean   | 可选。是否提交进行 Beta App Review。如果未指定，当提供 external_groups 时默认为 `true`，否则为 `false`。                                |
+| wait_processing_timeout_seconds | number    | 可选。等待 App Store Connect 构建处理完成的超时时间（秒）。默认为 `1800`（30 分钟）。                                                   |
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续任务中引用以下输出：
 
-| Output                | Type   | Description                                       |
-| --------------------- | ------ | ------------------------------------------------- |
-| apple_app_id          | string | The Apple App ID of the submitted build.          |
-| ios_bundle_identifier | string | The iOS bundle identifier of the submitted build. |
+| 输出                  | 类型   | 描述                                |
+| --------------------- | ------ | ----------------------------------- |
+| apple_app_id          | string | 已提交构建的 Apple App ID。         |
+| ios_bundle_identifier | string | 已提交构建的 iOS 包标识符。         |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the TestFlight job:
+以下是一些使用 TestFlight 任务的实际示例：
 
-<Collapsible summary="Full distribution with internal and external groups">
+<Collapsible summary="包含内部和外部组的完整分发">
 
-This workflow distributes to both internal and external TestFlight groups with a changelog.
+此工作流带有更新日志，同时分发到内部和外部 TestFlight 组。
 
 ```yaml .eas/workflows/testflight-full.yml
-name: TestFlight Distribution
+name: TestFlight 分发
 
 jobs:
   build_ios:
-    name: Build iOS
+    name: 构建 iOS
     type: build
     params:
       platform: ios
       profile: production
 
   testflight:
-    name: Distribute to TestFlight
+    name: 分发到 TestFlight
     type: testflight
     needs: [build_ios]
     params:
@@ -662,92 +662,92 @@ jobs:
       internal_groups: ['QA Team']
       external_groups: ['Public Beta']
       changelog: |
-        What's new in this release:
-        - New features
-        - Bug fixes
+        此版本的新内容：
+        - 新功能
+        - 错误修复
 ```
 
 </Collapsible>
 
-<Collapsible summary="Upload with changelog only">
+<Collapsible summary="仅上传更新日志">
 
-This workflow uploads a build with a changelog but without specifying any groups to explicitly add the build to. The build will only get added to internal groups with "auto-distribute" enabled.
+此工作流上传一个带有更新日志的构建，但不指定任何要显式添加到的组。该构建将仅被添加到启用了“自动分发”的内部组。
 
 ```yaml .eas/workflows/testflight-changelog.yml
 name: TestFlight with Changelog
 
 jobs:
   testflight:
-    name: Upload with Changelog
+    name: 上传更新日志
     type: testflight
     params:
       build_id: ${{ needs.build_ios.outputs.build_id }}
-      changelog: "${{ github.commit_message || 'Bug fixes' }}"
-      # github.commit_message only available in push & schedule events.
+      changelog: "${{ github.commit_message || '错误修复' }}"
+      # github.commit_message 仅在 push 和 schedule 事件中可用。
 ```
 
 </Collapsible>
 
-## Update
+## 更新
 
-Publish an update using [EAS Update](/eas-update/introduction/).
+使用 [EAS Update](/eas-update/introduction/) 发布更新。
 
-### Prerequisites
+### 前提条件
 
-To publish update previews and to send over-the-air updates, you'll need to run `npx eas-cli@latest update:configure`, then create new builds. Learn more about [configuring EAS Update](/eas-update/getting-started/#prerequisites).
+要发布更新预览并进行空中更新，你需要运行 `npx eas-cli@latest update:configure`，然后创建新的构建。了解更多关于 [配置 EAS Update](/eas-update/getting-started/#prerequisites)。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   publish_update:
     type: update
-    environment: production | preview | development # optional, defaults to production
-    env: # optional list of environment variables
+    environment: production | preview | development # 可选，默认为 production
+    env: # 可选的环境变量列表
       ENV_VAR_NAME: value
-    runs_on: string # optional - see https://docs.expo.dev/build-reference/infrastructure/ for available options
+    runs_on: string # 可选 - 可用选项请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      message: string # optional
-      platform: string # optional - android | ios | all, defaults to all
-      branch: string # optional
-      channel: string # optional - cannot be used with branch
-      private_key_path: string # optional
-      upload_sentry_sourcemaps: boolean # optional - defaults to "try uploading, but don't fail the job if it fails"
+      message: string # 可选
+      platform: string # 可选 - android | ios | all，默认为 all
+      branch: string # 可选
+      channel: string # 可选 - 不能与 branch 同时使用
+      private_key_path: string # 可选
+      upload_sentry_sourcemaps: boolean # 可选 - 默认为“尝试上传，但如果失败不使作业失败”
 ```
 
-#### Environment variables
+#### 环境变量
 
-You can pass a list of environment variables into the `env` parameter. These environment variables will be pulled from [EAS environment variables](/eas/environment-variables/). The passed `environment` parameter will be used for the environment variable's environment, which is useful when the same environment variable is defined across different environments.
+你可以通过 `env` 参数传入一个环境变量列表。这些环境变量将从 [EAS 环境变量](/eas/environment-variables/) 中提取。传入的 `environment` 参数将用于该环境变量的环境，这在同一个环境变量跨不同环境定义时很有用。
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以将以下参数传入 `params` 列表：
 
-| Parameter                | Type    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 参数                     | 类型    | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| message                  | string  | Optional. Message to use for the update. If not provided, the commit message will be used.                                                                                                                                                                                                                                                                                                                                                                   |
-| platform                 | string  | Optional. Platform to use for the update. Can be `android`, `ios`, or `all`. Defaults to `all`.                                                                                                                                                                                                                                                                                                                                                              |
-| branch                   | string  | Optional. Branch to use for the update. If not provided, the branch from the workflow run will be used. For manually run workflows you need to provide a value. Example: `${{ github.ref_name \|\| 'testing' }}`. Provide _either_ a branch or a channel, not both.                                                                                                                                                                                          |
-| channel                  | string  | Optional. Channel to use for the update. Provide _either_ a branch or a channel, not both.                                                                                                                                                                                                                                                                                                                                                                   |
-| private_key_path         | string  | Optional. Path to the file containing the PEM-encoded private key corresponding to the certificate in [EAS Update configuration](/eas-update/code-signing/#publish-a-signed-update-for-your-app). You can reference a file type [EAS environment variable](/eas/environment-variables/) with `"$VARIABLE_NAME"` syntax. This is equivalent to passing `--private-key-path` to the EAS CLI.                                                                   |
-| upload_sentry_sourcemaps | boolean | Optional. Whether to upload Sentry sourcemaps. If the value is `true`, the job will upload Sentry source maps and fail if uploading fails. If the value is `false`, the job will not upload sourcemaps to Sentry. If the value is not provided, the job is going to check if `@sentry/react-native` is installed and if it is, try to upload sourcemaps. If that fails, it will only print the error message and continue with the job marked as successful. |
+| message                  | string  | 可选。用于更新的消息。如果未提供，将使用提交信息。                                                                                                                                                                                                                                                                                                                                                                   |
+| platform                 | string  | 可选。用于更新的平台。可以是 `android`、`ios` 或 `all`。默认为 `all`。                                                                                                                                                                                                                                                                                                                                                              |
+| branch                   | string  | 可选。用于更新的分支。如果未提供，将使用工作流运行中的分支。对于手动运行的工作流，你需要提供一个值。示例：`${{ github.ref_name \|\| 'testing' }}`。请提供 _branch_ 或 _channel_ 其一，不要同时提供。                                                                                                                                                                                          |
+| channel                  | string  | 可选。用于更新的频道。请提供 _branch_ 或 _channel_ 其一，不要同时提供。                                                                                                                                                                                                                                                                                                                                                                   |
+| private_key_path         | string  | 可选。包含与 [EAS Update 配置](/eas-update/code-signing/#publish-a-signed-update-for-your-app) 中证书对应的、经 PEM 编码的私钥文件路径。你可以使用 `"$VARIABLE_NAME"` 语法引用一个文件类型的 [EAS 环境变量](/eas/environment-variables/)。这等同于向 EAS CLI 传递 `--private-key-path`。                                                                   |
+| upload_sentry_sourcemaps | boolean | 可选。是否上传 Sentry sourcemaps。如果值为 `true`，作业将上传 Sentry source maps，并在上传失败时使作业失败。如果值为 `false`，作业将不会上传 sourcemaps 到 Sentry。如果未提供该值，作业将检查是否安装了 `@sentry/react-native`，如果已安装，则尝试上传 sourcemaps。如果失败，则只会打印错误信息，并继续执行，且作业仍会被标记为成功。 |
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续作业中引用以下输出：
 
-| Output                | Type   | Description                                                   |
+| 输出                  | 类型   | 描述                                                   |
 | --------------------- | ------ | ------------------------------------------------------------- |
-| first_update_group_id | string | The ID of the first update group.                             |
-| updates_json          | string | A JSON string containing information about all update groups. |
+| first_update_group_id | string | 第一个更新组的 ID。                             |
+| updates_json          | string | 包含所有更新组信息的 JSON 字符串。 |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the update job:
+以下是一些使用 update 作业的实际示例：
 
-<Collapsible summary="Basic update to production channel">
+<Collapsible summary="发布到生产频道的基础更新">
 
-This workflow publishes an update to the production channel whenever you push to the main branch, using the commit message as the update message.
+当你推送到 main 分支时，此工作流会使用提交信息作为更新消息，将更新发布到生产频道。
 
 ```yaml .eas/workflows/update-production.yml
 name: Update Production
@@ -766,9 +766,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Platform-specific updates">
+<Collapsible summary="按平台分别更新">
 
-This workflow publishes separate updates for Android and iOS platforms, allowing for platform-specific changes.
+此工作流会分别为 Android 和 iOS 平台发布更新，从而允许进行平台特定的更改。
 
 ```yaml .eas/workflows/update-platforms.yml
 name: Platform-specific Updates
@@ -795,9 +795,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Update with branch-based deployment">
+<Collapsible summary="基于分支部署的更新">
 
-This workflow publishes updates based on the branch name, allowing for different environments (staging/production) based on the branch.
+此工作流会根据分支名称发布更新，从而可以基于分支使用不同的环境（staging/production）。
 
 ```yaml .eas/workflows/update-branches.yml
 name: Branch-based Updates
@@ -819,58 +819,58 @@ jobs:
 
 ## Maestro
 
-Run Maestro tests on a Android emulator or iOS Simulator build.
+在 Android 模拟器或 iOS 模拟器构建上运行 Maestro 测试。
 
-> **important** Maestro tests are in [alpha](/more/release-statuses/#alpha).
+> **important** Maestro 测试处于 [alpha](/more/release-statuses/#alpha) 阶段。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   run_maestro_tests:
     type: maestro
-    environment: production | preview | development # optional - defaults to preview
-    image: string # optional - see https://docs.expo.dev/build-reference/infrastructure/ for a list of available images.
+    environment: production | preview | development # 可选 - 默认为 preview
+    image: string # 可选 - 可用镜像列表请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      build_id: string # required
-      flow_path: string | string[] # required
-      shards: number # optional - defaults to 1
-      retries: number # optional - defaults to 1
-      record_screen: boolean # optional - defaults to false
-      include_tags: string | string[] # optional
-      exclude_tags: string | string[] # optional
-      maestro_version: string # optional - defaults to latest
-      android_system_image_package: string # optional
-      device_identifier: string | { android: string, ios: string } # optional
-      output_format: string # optional - defaults to junit
+      build_id: string # 必需
+      flow_path: string | string[] # 必需
+      shards: number # 可选 - 默认为 1
+      retries: number # 可选 - 默认为 1
+      record_screen: boolean # 可选 - 默认为 false
+      include_tags: string | string[] # 可选
+      exclude_tags: string | string[] # 可选
+      maestro_version: string # 可选 - 默认为 latest
+      android_system_image_package: string # 可选
+      device_identifier: string | { android: string, ios: string } # 可选
+      output_format: string # 可选 - 默认为 junit
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以将以下参数传入 `params` 列表：
 
-| Parameter                    | Type                                                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 参数                         | 类型                                                  | 描述                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id                     | string                                                | Required. The ID of the build to test.                                                                                                                                                                                                                                                                                                                                                                                                |
-| flow_path                    | string or string[]                                    | Required. The path to the Maestro flow file(s) or directory to run.                                                                                                                                                                                                                                                                                                                                                                   |
-| shards                       | number                                                | Optional and experimental. The number of shards to split the tests into. Defaults to 1.                                                                                                                                                                                                                                                                                                                                               |
-| retries                      | number                                                | Optional. The number of times to retry failed tests. Defaults to 1.                                                                                                                                                                                                                                                                                                                                                                   |
-| record_screen                | boolean                                               | Optional. Whether to record the screen. Defaults to false. Note: recording screen may impact emulator performance. You may want to use large runners when recording screen.                                                                                                                                                                                                                                                           |
-| include_tags                 | string or string[]                                    | Optional. Flow tags to include in the tests. Will be passed to Maestro as `--include-tags`.                                                                                                                                                                                                                                                                                                                                           |
-| exclude_tags                 | string or string[]                                    | Optional. Flow tags to exclude from the tests. Will be passed to Maestro as `--exclude-tags`.                                                                                                                                                                                                                                                                                                                                         |
-| maestro_version              | string                                                | Optional. Version of Maestro to use for the tests. If not provided, the latest version will be used.                                                                                                                                                                                                                                                                                                                                  |
-| output_format                | string                                                | Optional. Maestro test report format. Defaults to `junit`. Will be passed to Maestro as `--format`. Can be `junit` or other supported formats.                                                                                                                                                                                                                                                                                        |
-| android_system_image_package | string                                                | Optional. Android Emulator system image package to use. Run `sdkmanager --list` on your machine to list available packages. Choose an `x86_64` variant. Examples: `system-images;android-36;google_apis;x86_64`, `system-images;android-35-ext15;google_apis_playstore;x86_64`. Note that newer images require more computing resources, for which you may want to use large runners.                                                 |
-| device_identifier            | string or `{ android?: string, ios?: string }` object | Optional. Device identifier to use for the tests. You can also use a single-value expression like `pixel_6`, `iPhone 16 Plus` or `${{ needs.build.outputs.platform == "android" ? "pixel_6" : "iPhone 16 Plus" }}` and an object like `device_identifier: { android: "pixel_6", ios: "iPhone 16 Plus" }`. Note that iOS devices availability differs across runner images. A list of available devices can be found in the jobs logs. |
-| skip_build_check             | boolean                                               | Optional. Skip validation of the build (whether an iOS build is a simulator build). Defaults to false.                                                                                                                                                                                                                                                                                                                                |
+| build_id                     | string                                                | 必需。要测试的构建 ID。                                                                                                                                                                                                                                                                                                                                                                                                |
+| flow_path                    | string or string[]                                    | 必需。要运行的 Maestro flow 文件或目录路径。                                                                                                                                                                                                                                                                                                                                                                   |
+| shards                       | number                                                | 可选且实验性。将测试拆分成的分片数量。默认为 1。                                                                                                                                                                                                                                                                                                                                               |
+| retries                      | number                                                | 可选。失败测试的重试次数。默认为 1。                                                                                                                                                                                                                                                                                                                                                                   |
+| record_screen                | boolean                                               | 可选。是否录制屏幕。默认为 false。注意：录屏可能会影响模拟器性能。录屏时你可能希望使用 large runners。                                                                                                                                                                                                                                                           |
+| include_tags                 | string or string[]                                    | 可选。要在测试中包含的 flow 标签。将作为 `--include-tags` 传递给 Maestro。                                                                                                                                                                                                                                                                                                                                           |
+| exclude_tags                 | string or string[]                                    | 可选。要从测试中排除的 flow 标签。将作为 `--exclude-tags` 传递给 Maestro。                                                                                                                                                                                                                                                                                                                                         |
+| maestro_version              | string                                                | 可选。用于测试的 Maestro 版本。如果未提供，将使用最新版本。                                                                                                                                                                                                                                                                                                                                  |
+| output_format                | string                                                | 可选。Maestro 测试报告格式。默认为 `junit`。将作为 `--format` 传递给 Maestro。可以是 `junit` 或其他受支持的格式。                                                                                                                                                                                                                                                                                        |
+| android_system_image_package | string                                                | 可选。要使用的 Android Emulator 系统镜像包。在你的机器上运行 `sdkmanager --list` 以列出可用包。选择 `x86_64` 变体。示例：`system-images;android-36;google_apis;x86_64`、`system-images;android-35-ext15;google_apis_playstore;x86_64`。注意，更高版本的镜像需要更多计算资源，因此你可能希望使用 large runners。                                                 |
+| device_identifier            | string or `{ android?: string, ios?: string }` object | 可选。用于测试的设备标识符。你也可以使用单值表达式，例如 `pixel_6`、`iPhone 16 Plus` 或 `${{ needs.build.outputs.platform == "android" ? "pixel_6" : "iPhone 16 Plus" }}`，以及对象形式 `device_identifier: { android: "pixel_6", ios: "iPhone 16 Plus" }`。注意，iOS 设备可用性因 runner 镜像而异。可用设备列表可在作业日志中找到。 |
+| skip_build_check             | boolean                                               | 可选。跳过对构建的验证（即 iOS 构建是否为模拟器构建）。默认为 false。                                                                                                                                                                                                                                                                                                                                |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the Maestro job:
+以下是一些使用 Maestro 作业的实际示例：
 
-<Collapsible summary="Basic Maestro test">
+<Collapsible summary="基础 Maestro 测试">
 
-This workflow runs Maestro tests on an iOS Simulator build using the default settings.
+此工作流使用默认设置在 iOS 模拟器构建上运行 Maestro 测试。
 
 ```yaml .eas/workflows/maestro-basic.yml
 name: Basic Maestro Test
@@ -887,9 +887,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Maestro test with sharding">
+<Collapsible summary="带分片的 Maestro 测试">
 
-This workflow runs Maestro tests on an Android emulator build with 3 shards and 2 retries for failed tests.
+此工作流在 Android 模拟器构建上运行 Maestro 测试，使用 3 个分片和 2 次失败重试。
 
 ```yaml .eas/workflows/maestro-sharded.yml
 name: Sharded Maestro Test
@@ -909,9 +909,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Using Maestro prefixed environment variables">
+<Collapsible summary="使用带 Maestro 前缀的环境变量">
 
-Maestro can automatically read environment variables in a workflow when the variable is prefixed by `MAESTRO_`. For more information, see the [Maestro documentation on shell variables](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/parameters-and-constants#accessing-shell-variables).
+当变量以 `MAESTRO_` 为前缀时，Maestro 可以在工作流中自动读取环境变量。更多信息请参见 [Maestro 关于 shell 变量的文档](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/parameters-and-constants#accessing-shell-variables)。
 
 ```yaml .eas/workflows/maestro-basic.yml
 name: Basic Maestro Test
@@ -928,9 +928,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Recording screen and using a specific device">
+<Collapsible summary="录制屏幕并使用特定设备">
 
-This workflow runs Maestro tests on an Android emulator build with a specific device and records the screen.
+此工作流在 Android 模拟器构建上运行 Maestro 测试，使用特定设备并录制屏幕。
 
 ```yaml .eas/workflows/maestro-sharded.yml
 name: Pixel E2E Test
@@ -949,11 +949,11 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Saving screenshots and recordings">
+<Collapsible summary="保存截图和录屏">
 
-To save assets created by Maestro commands (such as [`takeScreenshot`](https://docs.maestro.dev/reference/commands-available/takescreenshot) or [`startRecording`](https://docs.maestro.dev/reference/commands-available/startrecording)) to use for debugging later, use the `MAESTRO_TESTS_DIR` environment variable.
+要保存由 Maestro 命令创建的资源（例如 [`takeScreenshot`](https://docs.maestro.dev/reference/commands-available/takescreenshot) 或 [`startRecording`](https://docs.maestro.dev/reference/commands-available/startrecording)），以便日后调试时使用，请使用 `MAESTRO_TESTS_DIR` 环境变量。
 
-In your Maestro flow file, specify the asset locations:
+在你的 Maestro flow 文件中，指定资源位置：
 
 ```yaml maestro/flows/test-flow.yaml
 appId: com.myapp
@@ -961,100 +961,100 @@ appId: com.myapp
 - launchApp
 - startRecording: ${MAESTRO_TESTS_DIR}/my_recording
 - takeScreenshot: ${MAESTRO_TESTS_DIR}/my_screenshot
-- tapOn: 'Login Button'
+- tapOn: '登录按钮'
 - takeScreenshot: ${MAESTRO_TESTS_DIR}/after_login_screenshot
 - stopRecording
 ```
 
-The assets will be available within the "Maestro Test Results" artifact in the Artifacts section.
+这些资源将在 Artifacts 部分中的“Maestro Test Results”产物里可用。
 
 </Collapsible>
 
 ## Maestro Cloud
 
-Run Maestro tests on Maestro Cloud.
+在 Maestro Cloud 上运行 Maestro 测试。
 
-> **important** This requires a Maestro Cloud account and Cloud Plan subscription. Go to [Maestro docs](https://docs.maestro.dev/maestro-cloud/run-tests-on-maestro-cloud) to learn more.
+> **重要** 这需要一个 Maestro Cloud 账户和 Cloud Plan 订阅。前往 [Maestro 文档](https://docs.maestro.dev/maestro-cloud/run-tests-on-maestro-cloud) 了解更多。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   run_maestro_tests:
     type: maestro-cloud
-    environment: production | preview | development # optional - defaults to preview
-    image: string # optional- see https://docs.expo.dev/build-reference/infrastructure/ for a list of available images.
+    environment: production | preview | development # 可选 - 默认为 preview
+    image: string # 可选 - 请参阅 https://docs.expo.dev/build-reference/infrastructure/ 了解可用镜像列表。
     params:
-      build_id: string # required - ID of the build to test.
-      maestro_project_id: string # required - Maestro Cloud project ID. Example: `proj_01jw6hxgmdffrbye9fqn0pyzm0`.
-      flows: string # required - Path to the Maestro flow file or directory containing the flows to run. Corresponds to `--flows` param to `maestro cloud`.
-      maestro_api_key: string # optional - defaults to `$MAESTRO_CLOUD_API_KEY`
-      include_tags: string | string[] # optional - tags to include in the tests. Will be passed to Maestro as `--include-tags`.
-      exclude_tags: string | string[] # optional - tags to exclude from the tests. Will be passed to Maestro as `--exclude-tags`.
-      maestro_version: string # optional - version of Maestro to use for the tests. If not provided, the latest version will be used.
-      android_api_level: string # optional - Android API level to use for the tests. Will be passed to Maestro as `--android-api-level`.
-      maestro_config: string # optional - path to the Maestro `config.yaml` file to use for the tests. Will be passed to Maestro as `--config`.
-      device_locale: string # optional - device locale to use for the tests. Will be passed to Maestro as `--device-locale`. Run `maestro cloud --help` for a list of supported values.
-      device_model: string # optional - model of the device to use for the tests. Will be passed to Maestro as `--device-model`. Run `maestro cloud --help` for a list of supported values.
-      device_os: string # optional - OS of the device to use for the tests. Will be passed to Maestro as `--device-os`. Run `maestro cloud --help` for a list of supported values.
-      name: string # optional - name for the Maestro Cloud upload. Corresponds to `--name` param to `maestro cloud`.
-      branch: string # optional - override for the branch the Maestro Cloud upload originated from. By default, if the workflow run has been triggered from GitHub, the branch of the workflow run will be used. Corresponds to `--branch` param to `maestro cloud`.
-      async: boolean # optional - run the Maestro Cloud tests asynchronously. If true, the status of the job will only denote whether the upload was successful, _not_ whether the tests succeeded. Corresponds to `--async` param to `maestro cloud`.
+      build_id: string # 必需 - 要测试的构建 ID。
+      maestro_project_id: string # 必需 - Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
+      flows: string # 必需 - 要运行的 Maestro flow 文件或包含这些 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。
+      maestro_api_key: string # 可选 - 默认为 `$MAESTRO_CLOUD_API_KEY`
+      include_tags: string | string[] # 可选 - 要包含在测试中的标签。将作为 `--include-tags` 传递给 Maestro。
+      exclude_tags: string | string[] # 可选 - 要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
+      maestro_version: string # 可选 - 测试中使用的 Maestro 版本。如果未提供，将使用最新版本。
+      android_api_level: string # 可选 - 测试中使用的 Android API 级别。将作为 `--android-api-level` 传递给 Maestro。
+      maestro_config: string # 可选 - 测试中使用的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
+      device_locale: string # 可选 - 测试中使用的设备区域设置。将作为 `--device-locale` 传递给 Maestro。运行 `maestro cloud --help` 查看支持值列表。
+      device_model: string # 可选 - 测试中使用的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro cloud --help` 查看支持值列表。
+      device_os: string # 可选 - 测试中使用的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro cloud --help` 查看支持值列表。
+      name: string # 可选 - Maestro Cloud 上传的名称。对应 `maestro cloud` 的 `--name` 参数。
+      branch: string # 可选 - 覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是由 GitHub 触发的，则使用该工作流运行所在的分支。对应 `maestro cloud` 的 `--branch` 参数。
+      async: boolean # 可选 - 异步运行 Maestro Cloud 测试。如果为 true，作业状态只会表示上传是否成功，_不会_表示测试是否通过。对应 `maestro cloud` 的 `--async` 参数。
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以将以下参数传入 `params` 列表：
 
-| Parameter          | Type    | Description                                                                                                                                                                                                                                  |
-| ------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id           | string  | Required. The ID of the build to test. Example: `${{ needs.build_android.outputs.build_id }}`.                                                                                                                                               |
-| maestro_project_id | string  | Required. The ID of the Maestro Cloud project to use. Corresponds to `--project-id` param to `maestro cloud`. Example: `proj_01jw6hxgmdffrbye9fqn0pyzm0`. Go to [Maestro Cloud](https://app.maestro.dev/) to find yours.                     |
-| flows              | string  | Required. The path to the Maestro flow file or directory containing the flows to run. Corresponds to `--flows` param to `maestro cloud`.                                                                                                     |
-| maestro_api_key    | string  | Optional. The API key to use for the Maestro project. By default, `MAESTRO_CLOUD_API_KEY` environment variable will be used. Corresponds to `--api-key` param to `maestro cloud`.                                                            |
-| include_tags       | string  | Optional. The tags to include in the tests. Corresponds to `--include-tags` param to `maestro cloud`. Example: `"pull,push"`.                                                                                                                |
-| exclude_tags       | string  | Optional. The tags to exclude from the tests. Corresponds to `--exclude-tags` param to `maestro cloud`. Example: `"disabled"`.                                                                                                               |
-| maestro_version    | string  | Optional. The version of Maestro to use. Example: `1.30.0`.                                                                                                                                                                                  |
-| android_api_level  | string  | Optional. The Android API level to use. Corresponds to `--android-api-level` param to `maestro cloud`. Example: `29`.                                                                                                                        |
-| maestro_config     | string  | Optional. The path to the Maestro `config.yaml` file to use. Corresponds to `--config` param to `maestro cloud`. Example: `.maestro/config.yaml`.                                                                                            |
-| device_locale      | string  | Optional. The locale that will be set on devices used for the tests. Corresponds to `--device-locale` param to `maestro cloud`. Example: `pl_PL`.                                                                                            |
-| device_model       | string  | Optional. The model of the device to use for the tests. Corresponds to `--device-model` param to `maestro cloud`. Example: `iPhone-11`. Run `maestro cloud --help` for a list of supported values.                                           |
-| device_os          | string  | Optional. The OS of the device to use for the tests. Corresponds to `--device-os` param to `maestro cloud`. Example: `iOS-18-2`. Run `maestro cloud --help` for a list of supported values.                                                  |
-| name               | string  | Optional. Name for the Maestro Cloud upload. Corresponds to `--name` param to `maestro cloud`.                                                                                                                                               |
-| branch             | string  | Optional. Override for the branch the Maestro Cloud upload originated from. By default, if the workflow run has been triggered from GitHub, the branch of the workflow run will be used. Corresponds to `--branch` param to `maestro cloud`. |
-| async              | boolean | Optional. Run the Maestro Cloud tests asynchronously. If true, the status of the job will only denote whether the upload was successful, _not_ whether the tests succeeded. Corresponds to `--async` param to `maestro cloud`.               |
+| 参数               | 类型    | 描述                                                                                                                                                                                                                                          |
+| ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| build_id           | string  | 必需。要测试的构建 ID。示例：`${{ needs.build_android.outputs.build_id }}`。                                                                                                                                                                  |
+| maestro_project_id | string  | 必需。要使用的 Maestro Cloud 项目 ID。对应 `maestro cloud` 的 `--project-id` 参数。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。前往 [Maestro Cloud](https://app.maestro.dev/) 查找你的项目 ID。                                                |
+| flows              | string  | 必需。要运行的 Maestro flow 文件或包含这些 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。                                                                                                                                          |
+| maestro_api_key    | string  | 可选。用于 Maestro 项目的 API 密钥。默认情况下，将使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。                                                                                                          |
+| include_tags       | string  | 可选。要包含在测试中的标签。对应 `maestro cloud` 的 `--include-tags` 参数。示例：`"pull,push"`。                                                                                                                                             |
+| exclude_tags       | string  | 可选。要从测试中排除的标签。对应 `maestro cloud` 的 `--exclude-tags` 参数。示例：`"disabled"`。                                                                                                                                              |
+| maestro_version    | string  | 可选。要使用的 Maestro 版本。示例：`1.30.0`。                                                                                                                                                                                                 |
+| android_api_level  | string  | 可选。要使用的 Android API 级别。对应 `maestro cloud` 的 `--android-api-level` 参数。示例：`29`。                                                                                                                                             |
+| maestro_config     | string  | 可选。要使用的 Maestro `config.yaml` 文件路径。对应 `maestro cloud` 的 `--config` 参数。示例：`.maestro/config.yaml`。                                                                                                                        |
+| device_locale      | string  | 可选。将在用于测试的设备上设置的区域设置。对应 `maestro cloud` 的 `--device-locale` 参数。示例：`pl_PL`。                                                                                                                                    |
+| device_model       | string  | 可选。要用于测试的设备型号。对应 `maestro cloud` 的 `--device-model` 参数。示例：`iPhone-11`。运行 `maestro cloud --help` 查看支持值列表。                                                                                                   |
+| device_os          | string  | 可选。要用于测试的设备操作系统。对应 `maestro cloud` 的 `--device-os` 参数。示例：`iOS-18-2`。运行 `maestro cloud --help` 查看支持值列表。                                                                                                   |
+| name               | string  | 可选。Maestro Cloud 上传的名称。对应 `maestro cloud` 的 `--name` 参数。                                                                                                                                                                       |
+| branch             | string  | 可选。覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是由 GitHub 触发的，则使用该工作流运行所在的分支。对应 `maestro cloud` 的 `--branch` 参数。                                                                                 |
+| async              | boolean | 可选。异步运行 Maestro Cloud 测试。如果为 true，作业状态只会表示上传是否成功，_不会_表示测试是否通过。对应 `maestro cloud` 的 `--async` 参数。                                                                                                 |
 
-> **important** You need to either set `maestro_api_key` parameter or `MAESTRO_CLOUD_API_KEY` environment variable in the job environment. Go to "Settings" on [Maestro Cloud](https://app.maestro.dev/) to generate an API key and then to [Environment variables](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) to add it to your project.
+> **重要** 你需要在作业环境中设置 `maestro_api_key` 参数或 `MAESTRO_CLOUD_API_KEY` 环境变量。前往 [Maestro Cloud](https://app.maestro.dev/) 的“Settings”生成 API 密钥，然后前往 [环境变量](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 将其添加到你的项目中。
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续作业中引用以下输出：
 
-| Output                     | Type   | Description                                                              |
-| -------------------------- | ------ | ------------------------------------------------------------------------ |
-| maestro_cloud_url          | string | URL to the Maestro Cloud upload results page.                            |
-| total_flows_count          | number | Total number of flows that were executed.                                |
-| successful_flows_count     | number | Number of flows that completed successfully (status SUCCESS or WARNING). |
-| failed_flows_count         | number | Number of flows that failed (status ERROR or STOPPED).                   |
-| successful_flow_names_json | string | JSON array containing the names of successful flows.                     |
-| failed_flow_names_json     | string | JSON array containing the names of failed flows.                         |
+| 输出                       | 类型   | 描述                                                                 |
+| -------------------------- | ------ | -------------------------------------------------------------------- |
+| maestro_cloud_url          | string | Maestro Cloud 上传结果页面的 URL。                                   |
+| total_flows_count          | number | 已执行的 flow 总数。                                                 |
+| successful_flows_count     | number | 成功完成的 flow 数量（状态为 SUCCESS 或 WARNING）。                  |
+| failed_flows_count         | number | 失败的 flow 数量（状态为 ERROR 或 STOPPED）。                        |
+| successful_flow_names_json | string | 包含成功 flow 名称的 JSON 数组。                                     |
+| failed_flow_names_json     | string | 包含失败 flow 名称的 JSON 数组。                                     |
 
-> **Note:** When using `async: true` mode, only the `maestro_cloud_url` output is guaranteed to be valid. Other outputs (flow counts and flow names) may be invalid or empty because the job does not wait for the upload to complete and the flows have not been executed yet.
+> **注意：** 当使用 `async: true` 模式时，只有 `maestro_cloud_url` 输出可以保证有效。其他输出（flow 数量和 flow 名称）可能无效或为空，因为作业不会等待上传完成，flows 也尚未执行。
 
-### Examples
+### 示例
 
-Here are some practical examples of using the Maestro job:
+以下是一些使用 Maestro 作业的实际示例：
 
-<Collapsible summary="Basic Maestro Cloud test">
+<Collapsible summary="基础 Maestro Cloud 测试">
 
-This workflow runs Maestro tests on an iOS Simulator build using the default settings.
+此工作流使用默认设置在 iOS 模拟器构建上运行 Maestro 测试。
 
 ```yaml .eas/workflows/maestro-basic.yml
 name: Basic Maestro Test
 
 jobs:
   test:
-    name: Run Maestro Tests
+    name: 运行 Maestro 测试
     type: maestro-cloud
     environment: preview
     params:
@@ -1065,16 +1065,16 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Using Maestro prefixed environment variables">
+<Collapsible summary="使用带 Maestro 前缀的环境变量">
 
-Maestro can automatically read environment variables in a workflow when the variable is prefixed by `MAESTRO_`. For more information, see the [Maestro documentation on shell variables](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/parameters-and-constants#accessing-shell-variables).
+当工作流中的变量以 `MAESTRO_` 为前缀时，Maestro 可以自动读取该环境变量。有关更多信息，请参阅 [Maestro 关于 shell 变量的文档](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/parameters-and-constants#accessing-shell-variables)。
 
 ```yaml .eas/workflows/maestro-basic.yml
 name: Basic Maestro Test
 
 jobs:
   test:
-    name: Run Maestro Tests
+    name: 运行 Maestro 测试
     type: maestro-cloud
     env:
       MAESTRO_APP_ID: 'com.yourhost.yourapp'
@@ -1086,16 +1086,16 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Using Maestro Cloud outputs in subsequent jobs">
+<Collapsible summary="在后续作业中使用 Maestro Cloud 输出">
 
-This workflow runs Maestro Cloud tests and then uses the test results in a Slack notification.
+此工作流运行 Maestro Cloud 测试，然后在 Slack 通知中使用测试结果。
 
 ```yaml .eas/workflows/maestro-with-notification.yml
 name: Maestro Cloud with Notification
 
 jobs:
   maestro_test:
-    name: Run Maestro Cloud Tests
+    name: 运行 Maestro Cloud 测试
     type: maestro-cloud
     environment: preview
     params:
@@ -1104,50 +1104,50 @@ jobs:
       flows: ./maestro/flows
 
   notify:
-    name: Send Test Results
+    name: 发送测试结果
     after: [maestro_test]
     type: slack
     environment: production
     params:
-      webhook_url: ${{ env.SLACK_WEBHOOK_URL }} # make sure to set it up in the right environment (see "environment: ..." above)
-      message: 'Tests complete: ${{ after.maestro_test.outputs.successful_flows_count }}/${{ after.maestro_test.outputs.total_flows_count }} passed'
+      webhook_url: ${{ env.SLACK_WEBHOOK_URL }} # 确保在正确的环境中进行设置（见上方 "environment: ..."）
+      message: '测试完成：${{ after.maestro_test.outputs.successful_flows_count }}/${{ after.maestro_test.outputs.total_flows_count }} 通过'
 ```
 
 </Collapsible>
 
 ## Slack
 
-Send a message to a Slack channel using a [Slack webhook URL](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks).
+使用 [Slack webhook URL](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks) 向 Slack 频道发送消息。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   send_slack_notification:
     type: slack
     params:
-      webhook_url: string # required
-      message: string # required if payload is not provided
-      payload: object # required if message is not provided
+      webhook_url: string # 必需
+      message: string # 如果未提供 payload，则必需
+      payload: object # 如果未提供 message，则必需
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以将以下参数传入 `params` 列表：
 
-| Parameter   | Type   | Description                                                                                                                                                                |
-| ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| webhook_url | string | Required. The Slack webhook URL to send the message to. Currently only hardcoded strings are supported. Using webhooks stored in `env` are upcoming but not yet supported. |
-| message     | string | Required if payload is not provided. The message to send.                                                                                                                  |
-| payload     | object | Required if message is not provided. The [Slack Block Kit](https://docs.slack.dev/block-kit) payload to send.                                                              |
+| 参数 | 类型 | 描述                                                                                                                                                               |
+| ---- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| webhook_url | string | 必需。用于发送消息的 Slack webhook URL。目前仅支持硬编码字符串。使用存储在 `env` 中的 webhook 即将支持，但尚未支持。 |
+| message | string | 如果未提供 payload，则必需。要发送的消息。                                                                                                                  |
+| payload | object | 如果未提供 message，则必需。要发送的 [Slack Block Kit](https://docs.slack.dev/block-kit) payload。                                                              |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the Slack job:
+以下是使用 Slack 作业的一些实际示例：
 
-<Collapsible summary="Basic build notification">
+<Collapsible summary="基础构建通知">
 
-This workflow builds an iOS app and then sends a notification with the app identifier and version from the build job outputs.
+此工作流构建一个 iOS 应用，然后使用构建作业输出中的应用标识符和版本发送通知。
 
 ```yaml .eas/workflows/slack-build-notification.yml
 name: Build Notification
@@ -1166,14 +1166,14 @@ jobs:
     type: slack
     params:
       webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
-      message: 'Build completed for app ${{ needs.build_ios.outputs.app_identifier }} (version ${{ needs.build_ios.outputs.app_version }})'
+      message: '针对应用 ${{ needs.build_ios.outputs.app_identifier }}（版本 ${{ needs.build_ios.outputs.app_version }}）的构建已完成'
 ```
 
 </Collapsible>
 
-<Collapsible summary="Rich build notification with Block Kit">
+<Collapsible summary="使用 Block Kit 的丰富构建通知">
 
-This workflow builds an Android app and sends a rich notification using the build job outputs.
+此工作流构建一个 Android 应用，并使用构建作业输出发送丰富通知。
 
 ```yaml .eas/workflows/slack-rich-notification.yml
 name: Rich Build Notification
@@ -1197,96 +1197,96 @@ jobs:
           - type: header
             text:
               type: plain_text
-              text: 'Build Completed'
+              text: '构建已完成'
           - type: section
             fields:
               - type: mrkdwn
-                text: "*App:*\n${{ needs.build_android.outputs.app_identifier }}"
+                text: "*应用:*\n${{ needs.build_android.outputs.app_identifier }}"
               - type: mrkdwn
-                text: "*Version:*\n${{ needs.build_android.outputs.app_version }}"
+                text: "*版本:*\n${{ needs.build_android.outputs.app_version }}"
           - type: section
             fields:
               - type: mrkdwn
-                text: "*Build ID:*\n${{ needs.build_android.outputs.build_id }}"
+                text: "*构建 ID:*\n${{ needs.build_android.outputs.build_id }}"
               - type: mrkdwn
-                text: "*Platform:*\n${{ needs.build_android.outputs.platform }}"
+                text: "*平台:*\n${{ needs.build_android.outputs.platform }}"
           - type: section
             text:
               type: mrkdwn
-              text: 'Distribution: ${{ needs.build_android.outputs.distribution }}'
+              text: '分发：${{ needs.build_android.outputs.distribution }}'
 ```
 
 </Collapsible>
 
 ## GitHub Comment
 
-Automatically post reports of your workflow's completed builds, updates, and deployments to GitHub pull requests. It's particularly useful for providing instant feedback on PR builds, sharing test builds with QR codes for easy device testing, displaying EAS Hosting deployment previews, and automating deployment notifications. You can also override the comment contents by providing the `payload` parameter.
+自动将你的工作流已完成的构建、更新和部署报告发布到 GitHub 拉取请求中。它特别适用于为 PR 构建提供即时反馈、通过二维码共享测试构建以便轻松在设备上测试、展示 EAS Hosting 部署预览，以及自动化部署通知。你也可以通过提供 `payload` 参数来覆盖评论内容。
 
-### Prerequisites
+### 前提条件
 
-To use the GitHub Comment job, your project must have a GitHub repository connected. Learn how to [connect your GitHub repository](/build/building-from-github) to get started.
+要使用 GitHub Comment 作业，你的项目必须已连接 GitHub 仓库。了解如何 [连接你的 GitHub 仓库](/build/building-from-github) 以开始使用。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   github_comment:
     type: github-comment
     params:
-      message: string # optional - custom message to include in the report
-      build_ids: string[] # optional - specific build IDs to include, defaults to all related to the running workflow
-      update_group_ids: string[] # optional - specific update group IDs to include, defaults to all related to the workflow
-      deployment_ids: string[] # optional - specific deployment IDs to include, defaults to all related to the workflow
+      message: string # 可选 - 要包含在报告中的自定义消息
+      build_ids: string[] # 可选 - 要包含的特定构建 ID，默认是与正在运行的工作流相关的全部构建
+      update_group_ids: string[] # 可选 - 要包含的特定更新组 ID，默认是与工作流相关的全部更新
+      deployment_ids: string[] # 可选 - 要包含的特定部署 ID，默认是与工作流相关的全部部署
 
-  # instead of using message and the builds, updates, and deployments table, you can also override the comment contents with `payload`
+  # 不使用 message 以及 builds、updates 和 deployments 表格的情况下，你也可以通过 `payload` 覆盖评论内容
   custom_github_comment:
     type: github-comment
     params:
-      payload: string # optional - raw markdown/HTML content for fully custom comment
+      payload: string # 可选 - 用于完全自定义评论的原始 markdown/HTML 内容
 ```
 
-#### Parameters
+#### 参数
 
-The job operates in two mutually exclusive modes:
+该作业有两种互斥模式：
 
-##### Mode 1: Auto-with-overrides mode
+##### 模式 1：自动发现并可覆盖模式
 
-Default behavior is auto discovery builds and updates, you can specify any of these parameters if you want to:
+默认行为是自动发现构建和更新，如果你愿意，也可以指定以下任意参数：
 
-| Parameter        | Type     | Description                                                                                                                                                      |
-| ---------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| message          | string   | Optional. Custom message to include at the top of the comment. Defaults to "Your builds, updates, and deployments are ready for testing!"                        |
-| build_ids        | string[] | Optional. Array of specific build IDs to include. If not specified, auto-discovers all completed/failed/canceled builds. Use empty array `[]` to exclude builds. |
-| update_group_ids | string[] | Optional. Array of specific update group IDs to include. If not specified, auto-discovers all successful updates. Use empty array `[]` to exclude updates.       |
-| deployment_ids   | string[] | Optional. Array of specific deployment IDs to include. If not specified, auto-discovers all successful deployments. Use empty array `[]` to exclude deployments. |
+| 参数 | 类型 | 描述                                                                                                                                                      |
+| ---- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message | string | 可选。要包含在评论顶部的自定义消息。默认为 "Your builds, updates, and deployments are ready for testing!"                        |
+| build_ids | string[] | 可选。要包含的特定构建 ID 数组。如果未指定，则自动发现所有已完成/失败/已取消的构建。使用空数组 `[]` 可排除构建。 |
+| update_group_ids | string[] | 可选。要包含的特定更新组 ID 数组。如果未指定，则自动发现所有成功的更新。使用空数组 `[]` 可排除更新。       |
+| deployment_ids | string[] | 可选。要包含的特定部署 ID 数组。如果未指定，则自动发现所有成功的部署。使用空数组 `[]` 可排除部署。 |
 
-> **Auto-discovery behavior**: When `build_ids`, `update_group_ids`, or `deployment_ids` are not specified (undefined), the job automatically discovers all relevant builds, updates, and deployments from the current workflow. To explicitly exclude builds, updates, or deployments, pass an empty array `[]`.
+> **自动发现行为**：当未指定（即未定义）`build_ids`、`update_group_ids` 或 `deployment_ids` 时，作业会自动发现当前工作流中所有相关的构建、更新和部署。若要明确排除构建、更新或部署，请传入空数组 `[]`。
 
-##### Mode 2: Payload mode
+##### 模式 2：Payload 模式
 
-When using payload mode, you cannot specify any other parameters.
+使用 payload 模式时，不能指定任何其他参数。
 
-| Parameter | Type   | Description                                                                                    |
-| --------- | ------ | ---------------------------------------------------------------------------------------------- |
-| payload   | string | Raw markdown or HTML content to post as the comment. Supports workflow variable interpolation. |
+| 参数 | 类型 | 描述                                                                                    |
+| ---- | ------ | --------------------------------------------------------------------------------------- |
+| payload | string | 作为评论发布的原始 markdown 或 HTML 内容。支持工作流变量插值。 |
 
-#### Outputs
+#### 输出
 
-You can reference the following outputs in subsequent jobs:
+你可以在后续作业中引用以下输出：
 
-| Output      | Type   | Description                                                                                |
-| ----------- | ------ | ------------------------------------------------------------------------------------------ |
-| comment_url | string | URL of the posted GitHub comment (only available when the comment is successfully posted). |
+| 输出 | 类型 | 描述                                                                                |
+| ---- | ---- | ----------------------------------------------------------------------------------- |
+| comment_url | string | 已发布 GitHub 评论的 URL（仅在评论成功发布时可用）。 |
 
-### Examples
+### 示例
 
-Here are practical examples demonstrating both modes of the GitHub Comment job:
+以下是演示 GitHub Comment 作业两种模式的实际示例：
 
-#### Auto-with-overrides mode examples
+#### 自动发现并可覆盖模式示例
 
-<Collapsible summary="Auto-discover all builds, updates, and deployments">
+<Collapsible summary="自动发现所有构建、更新和部署">
 
-This is the simplest usage - automatically discovers and posts all builds, updates, and deployments from the workflow.
+这是最简单的用法——自动发现并发布工作流中的所有构建、更新和部署。
 
 ```yaml .eas/workflows/pr-auto-comment.yml
 name: PR Auto Comment
@@ -1301,14 +1301,14 @@ jobs:
     name: Post Results to PR
     after: [build_ios, build_android, publish_update, deploy]
     type: github-comment
-    # No params needed - auto-discovers all builds, updates, and deployments
+    # 无需 params - 自动发现所有构建、更新和部署
 ```
 
 </Collapsible>
 
-<Collapsible summary="Custom message with auto-discovery">
+<Collapsible summary="带自动发现的自定义消息">
 
-Adds a custom message while still auto-discovering all builds, updates, and deployments.
+在自动发现所有构建、更新和部署的同时添加自定义消息。
 
 ```yaml .eas/workflows/pr-custom-message.yml
 name: PR Custom Message
@@ -1324,15 +1324,15 @@ jobs:
     after: [build_ios, build_android, publish_update, deploy]
     type: github-comment
     params:
-      message: '🎉 Preview builds are ready! Please test these changes before approving the PR.'
-      # build_ids, update_group_ids, and deployment_ids are undefined, so auto-discovery is enabled
+      message: '🎉 预览构建已就绪！请在批准 PR 之前测试这些更改。'
+      # build_ids、update_group_ids 和 deployment_ids 未定义，因此已启用自动发现
 ```
 
 </Collapsible>
 
-<Collapsible summary="PR preview with EAS Hosting deployment">
+<Collapsible summary="带 EAS Hosting 部署的 PR 预览">
 
-This workflow deploys a preview of your website using EAS Hosting and posts the deployment details to the pull request.
+此工作流使用 EAS Hosting 部署你网站的预览，并将部署详情发布到拉取请求中。
 
 ```yaml .eas/workflows/pr-preview.yml
 name: PR Preview
@@ -1352,9 +1352,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Specify exact builds and updates">
+<Collapsible summary="指定确切的构建和更新">
 
-Explicitly specify which builds and updates to include in the comment.
+明确指定要包含在评论中的构建和更新。
 
 ```yaml .eas/workflows/pr-specific-builds.yml
 name: PR Specific Builds
@@ -1370,7 +1370,7 @@ jobs:
     after: [build_ios, build_android, publish_update]
     type: github-comment
     params:
-      message: 'Testing builds ready for QA review'
+      message: '等待 QA 审查的测试构建已就绪'
       build_ids:
         - ${{ after.build_ios.outputs.build_id }}
         - ${{ after.build_android.outputs.build_id }}
@@ -1380,9 +1380,9 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Exclude builds, updates, or deployments">
+<Collapsible summary="排除构建、更新或部署">
 
-Use empty arrays to exclude specific content types.
+使用空数组来排除特定内容类型。
 
 ```yaml .eas/workflows/pr-updates-only.yml
 name: PR Updates Only
@@ -1398,19 +1398,19 @@ jobs:
     after: [publish_update]
     type: github-comment
     params:
-      message: 'New update available for testing!'
-      build_ids: [] # Empty array excludes all builds
-      deployment_ids: [] # Empty array excludes all deployments
-      # update_group_ids undefined = auto-discover updates
+      message: '有新的更新可供测试！'
+      build_ids: [] # 空数组会排除所有构建
+      deployment_ids: [] # 空数组会排除所有部署
+      # update_group_ids 未定义 = 自动发现更新
 ```
 
 </Collapsible>
 
-#### Payload mode examples
+#### Payload 模式示例
 
-<Collapsible summary="Fully custom comment with payload">
+<Collapsible summary="使用 payload 的完全自定义评论">
 
-Payload mode gives you complete control over the comment content. Note that when using payload, you cannot specify any other parameters.
+Payload 模式让你可以完全控制评论内容。请注意，使用 payload 时，不能指定任何其他参数。
 
 ```yaml .eas/workflows/custom-pr-comment.yml
 name: Custom PR Comment
@@ -1426,30 +1426,30 @@ jobs:
     needs: [build_ios]
     type: github-comment
     params:
-      # Payload mode: complete control over content
-      # Cannot use message, build_ids, or update_group_ids with payload
+      # Payload 模式：完全控制内容
+      # 不能将 message、build_ids 或 update_group_ids 与 payload 一起使用
       payload: |
-        ## 🚀 Build Status Update
+        ## 🚀 构建状态更新
 
-        ### iOS Build Completed
-        - **Build ID**: `${{ needs.build_ios.outputs.build_id }}`
-        - **Version**: ${{ needs.build_ios.outputs.app_version }}
-        - **Build Number**: ${{ needs.build_ios.outputs.app_build_version }}
+        ### iOS 构建已完成
+        - **构建 ID**: `${{ needs.build_ios.outputs.build_id }}`
+        - **版本**: ${{ needs.build_ios.outputs.app_version }}
+        - **构建号**: ${{ needs.build_ios.outputs.app_build_version }}
 
-        ### Next Steps
-        1. Download the build from [EAS Dashboard](https://expo.dev/accounts/[account]/projects/[project]/builds/${{ needs.build_ios.outputs.build_id }})
-        2. Test on physical device
-        3. Approve for TestFlight distribution
+        ### 下一步
+        1. 从 [EAS Dashboard](https://expo.dev/accounts/[account]/projects/[project]/builds/${{ needs.build_ios.outputs.build_id }}) 下载构建
+        2. 在实体设备上测试
+        3. 批准以进行 TestFlight 分发
 
         ---
-        *This comment was automatically generated by EAS Workflows*
+        *此评论由 EAS Workflows 自动生成*
 ```
 
 </Collapsible>
 
-<Collapsible summary="Conditional comment based on build status">
+<Collapsible summary="基于构建状态的条件评论">
 
-This workflow posts different comments based on whether the build succeeded or failed.
+此工作流会根据构建成功或失败发布不同的评论。
 
 ```yaml .eas/workflows/conditional-comment.yml
 name: Conditional PR Comment
@@ -1471,8 +1471,8 @@ jobs:
     if: ${{ needs.build_android.status == 'success' }}
     type: github-comment
     params:
-      message: '✅ Android build succeeded! Ready for testing.'
-      build_ids: # provided only for instructional purposes, you could as well omit this here
+      message: '✅ Android 构建成功！可供测试。'
+      build_ids: # 仅为说明目的提供，你也可以在这里省略它
         - ${{ needs.build_android.outputs.build_id }}
 
   comment_failure:
@@ -1482,18 +1482,18 @@ jobs:
     type: github-comment
     params:
       payload: |
-        ❌ **Android build failed**
+        ❌ **Android 构建失败**
 
-        Please check the [workflow logs](https://expo.dev/accounts/[account]/projects/[project]/workflows) for details.
+        请查看 [工作流日志](https://expo.dev/accounts/[account]/projects/[project]/workflows) 以获取详情。
 ```
 
 </Collapsible>
 
-## Require Approval
+## 需要审批
 
-Require approval from a user before continuing with the workflow. A user can approve or reject which translates to success or failure of the job.
+在继续工作流之前，需要先获得用户的批准。用户可以批准或拒绝，这分别会转换为任务的成功或失败。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
@@ -1501,31 +1501,31 @@ jobs:
     type: require-approval
 ```
 
-#### Parameters
+#### 参数
 
-This job doesn't take any parameters.
+这个任务不接受任何参数。
 
-### Examples
+### 示例
 
-Here are some practical examples of using the Require Approval job:
+以下是一些使用 Require Approval 任务的实际示例：
 
-<Collapsible summary="Ask for approval before deploying to production">
+<Collapsible summary="在部署到生产环境之前请求批准">
 
-This workflow deploys a web app to preview and then requires approval from a user before deploying to production.
+此工作流会先将一个 Web 应用部署到预览环境，然后在部署到生产环境之前要求用户批准。
 
 ```yaml .eas/workflows/web.yml
 jobs:
   web_preview:
-    name: Deploy Web Preview
+    name: 部署 Web 预览版
     type: deploy
 
   require_approval:
-    name: Deploy Web to Production?
+    name: 将 Web 部署到生产环境？
     needs: [web_preview]
     type: require-approval
 
   web_production:
-    name: Deploy Web Production
+    name: 部署 Web 生产版
     needs: [require_approval]
     type: deploy
     params:
@@ -1534,59 +1534,59 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="Control flow of the workflow">
+<Collapsible summary="控制工作流的流程">
 
-This workflow lets a user decide how the story ends by requiring approval before revealing the conclusion.
+这个工作流通过在揭晓结局之前要求批准，让用户决定故事如何收尾。
 
 ```yaml .eas/workflows/dragon-knight-interactive.yml
 jobs:
   show_story_intro:
-    name: Dragon and Knight Story Intro
+    name: 龙与骑士故事开场
     type: doc
     params:
       md: |
-        # The Dragon and the Knight
+        # 龙与骑士
 
-        Once upon a time, in a land far away, a brave knight set out to face a mighty dragon.
+        很久以前，在一个遥远的国度里，一位勇敢的骑士踏上征程，去面对一条强大的巨龙。
 
-        The dragon roared, breathing fire across the valley, but the knight stood firm, shield raised high.
+        巨龙咆哮着，向山谷喷吐火焰，但骑士坚定不移，高举盾牌。
 
-        Now, the fate of their encounter is in your hands...
+        现在，他们这场相遇的命运掌握在你手中……
 
   require_approval:
-    name: Should the knight and dragon become friends?
+    name: 骑士和巨龙应该成为朋友吗？
     needs: [show_story_intro]
     type: require-approval
 
   happy_ending:
-    name: Friendship Ending
+    name: 友谊结局
     needs: [require_approval]
     type: doc
     params:
       md: |
-        ## A New Friendship
+        ## 一段新的友谊
 
-        The knight lowered his sword, and the dragon ceased its fire. They realized they both longed for peace. From that day on, they became the best of friends, protecting the kingdom together.
+        骑士放下了剑，巨龙也停止了喷火。他们意识到彼此都渴望和平。从那天起，他们成为了最好的朋友，一起守护王国。
 
   epic_battle:
-    name: Epic Battle Ending
+    name: 史诗战斗结局
     after: [require_approval]
     if: ${{ failure() }}
     type: doc
     params:
       md: |
-        ## The Epic Battle
+        ## 史诗之战
 
-        The knight charged forward, and the dragon unleashed a mighty roar. Their battle shook the mountains and echoed through the ages. In the end, both were remembered as fierce and noble adversaries.
+        骑士向前冲锋，巨龙发出震天怒吼。他们的战斗震动了群山，并在岁月中回响。最终，他们都被铭记为凶猛而高贵的对手。
 ```
 
 </Collapsible>
 
-## Doc
+## 文档
 
-Displays a Markdown section in the workflow logs.
+在工作流日志中显示一个 Markdown 区块。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
@@ -1596,33 +1596,33 @@ jobs:
       md: string
 ```
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以向 `params` 列表传入以下参数：
 
-| Parameter | Type   | Description                                                                                 |
-| --------- | ------ | ------------------------------------------------------------------------------------------- |
-| md        | string | Required. The Markdown content to display. You can use `${{ ... }}` workflow interpolation. |
+| 参数 | 类型   | 描述                                                                                 |
+| ---- | ------ | ------------------------------------------------------------------------------------ |
+| md   | string | 必需。要显示的 Markdown 内容。你可以使用 `${{ ... }}` 工作流插值。 |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the Doc job:
+以下是一些使用 Doc 任务的实际示例：
 
-<Collapsible summary="Display instructions">
+<Collapsible summary="显示说明">
 
-This workflow builds an iOS app and then displays a Markdown section in the workflow logs.
+此工作流会构建一个 iOS 应用，然后在工作流日志中显示一个 Markdown 区块。
 
 ```yaml .eas/workflows/build-and-submit-ios.yml
 jobs:
   build_ios:
-    name: Build iOS
+    name: 构建 iOS
     type: build
     params:
       platform: ios
       profile: production
 
   submit:
-    name: Submit to App Store
+    name: 提交到 App Store
     type: submit
     needs: [build_ios]
     params:
@@ -1630,83 +1630,83 @@ jobs:
       profile: production
 
   next_steps:
-    name: Next Steps
+    name: 后续步骤
     needs: [submit]
     type: doc
     params:
       md: |
-        # To do next
+        # 接下来要做什么
 
-        Your app has just been sent to [App Store Connect](https://appstoreconnect.apple.com/apps).
+        你的应用刚刚已发送到 [App Store Connect](https://appstoreconnect.apple.com/apps)。
 
-        1. Download the app from TestFlight.
-        2. Test the app a bunch.
-        3. Submit the app for review.
+        1. 从 TestFlight 下载应用。
+        2. 充分测试应用。
+        3. 提交应用进行审核。
 ```
 
 </Collapsible>
 
-## Repack
+## 重打包
 
-Repackages an app from an existing build. This job repackages the app's metadata and JavaScript bundle without performing a full native rebuild, which is useful for creating a faster build compatible with a specific fingerprint.
+基于现有构建对应用进行重新打包。此任务会重新打包应用的元数据和 JavaScript bundle，而不执行完整的原生重建，这对于创建与特定指纹兼容、速度更快的构建非常有用。
 
-### Syntax
+### 语法
 
 ```yaml
 jobs:
   repack:
     type: repack
-    runs_on: string # optional - see https://docs.expo.dev/build-reference/infrastructure/ for available options
+    runs_on: string # 可选 - 可用选项请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      build_id: string # required
-      profile: string # optional
-      embed_bundle_assets: boolean # optional
-      message: string # optional
-      repack_version: string # optional
+      build_id: string # 必需
+      profile: string # 可选
+      embed_bundle_assets: boolean # 可选
+      message: string # 可选
+      repack_version: string # 可选
 ```
 
-> **Note:** If the build might still be in progress, use [`get-build`](#get-build) with `wait_for_in_progress: true`, then pass its `build_id` to `repack`.
+> **注意：** 如果构建可能仍在进行中，请使用 [`get-build`](#get-build) 并设置 `wait_for_in_progress: true`，然后将其 `build_id` 传递给 `repack`。
 
-### Common questions
+### 常见问题
 
 <FAQ>
 
-<Collapsible summary="When to use and when not to use repack?">
+<Collapsible summary="何时使用重打包，何时不使用？">
 
-Repack job is suitable for the following use cases:
+Repack 任务适用于以下场景：
 
-- Reducing CI build times by reusing existing builds
-- Triggering full native builds when required
-- Delivering faster feedback loops to your team
+- 通过复用现有构建来减少 CI 构建时间
+- 在需要时触发完整的原生构建
+- 为团队提供更快的反馈循环
 
-Repack job is not suitable for the following use cases:
+Repack 任务不适用于以下场景：
 
-- Production builds that require builds to go through the complete pipeline for correct symbolication and app signing
+- 需要完整流程才能正确完成符号化和应用签名的生产构建
 
 </Collapsible>
 
 </FAQ>
 
-#### Parameters
+#### 参数
 
-You can pass the following parameters into the `params` list:
+你可以向 `params` 列表传入以下参数：
 
-| Parameter           | Type    | Description                                                                                                                                 |
-| ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id            | string  | Required. The source build ID of the build to repack.                                                                                       |
-| profile             | string  | Optional. The build profile to use. Defaults to the profile of the source build retrieved from `build_id`.                                  |
-| embed_bundle_assets | boolean | Optional. Whether to embed the bundle assets in the repacked build. By default, this is automatically determined based on the source build. |
-| js_bundle_only      | boolean | Optional. Whether to only repack the JavaScript bundle. Defaults to false, which means the entire app metadata will be updated.             |
-| message             | string  | Optional. Custom message attached to the build. Corresponds to the `--message` flag when running `eas build`.                               |
-| repack_version      | string  | Optional. The version of the `@expo/repack-app` to use. Defaults to the latest version.                                                     |
+| 参数                | 类型    | 描述                                                                                                                                 |
+| ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| build_id            | string  | 必需。要重打包的构建的源构建 ID。                                                                                                   |
+| profile             | string  | 可选。要使用的构建配置文件。默认使用从 `build_id` 获取的源构建配置文件。                                                            |
+| embed_bundle_assets | boolean | 可选。是否将 bundle 资源嵌入到重打包后的构建中。默认会根据源构建自动确定。                                                           |
+| js_bundle_only      | boolean | 可选。是否只重打包 JavaScript bundle。默认值为 false，表示会更新整个应用元数据。                                                   |
+| message             | string  | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。                                                      |
+| repack_version      | string  | 可选。要使用的 `@expo/repack-app` 版本。默认使用最新版本。                                                                         |
 
-### Examples
+### 示例
 
-Here are some practical examples of using the Fingerprint with Repack jobs:
+以下是一些在 Repack 任务中使用 Fingerprint 的实际示例：
 
-<Collapsible summary="Continuous Deployment with Fingerprint and Repack">
+<Collapsible summary="结合 Fingerprint 和 Repack 的持续部署">
 
-This workflow first generates a fingerprint and then builds or repacks the app depending on whether a compatible build for that fingerprint already exists. Finally, it runs Maestro tests.
+此工作流首先生成指纹，然后根据该指纹是否已存在兼容构建来决定是构建还是重打包应用。最后，它运行 Maestro 测试。
 
 ```yaml .eas/workflows/cd-fingerprint-repack.yml
 name: continuous-deploy-fingerprint
@@ -1715,7 +1715,7 @@ jobs:
   fingerprint:
     id: fingerprint
     type: fingerprint
-    # @info Match your build profile's environment #
+    # @info 与你的构建配置文件环境匹配 #
     environment: production
     # @end #
 

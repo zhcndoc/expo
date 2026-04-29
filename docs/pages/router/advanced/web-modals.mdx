@@ -1,27 +1,27 @@
 ---
-title: Web modals
-description: Learn how to implement and customize the behavior of a modal in your web app using Expo Router.
+title: Web 模态框
+description: 了解如何使用 Expo Router 在你的 web 应用中实现并自定义模态框的行为。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { FileTree } from '~/ui/components/FileTree';
 
-> **important** Web modals are in [alpha](/more/release-statuses/#alpha) and available in SDK 54 and later. To use this feature, you must set the `EXPO_UNSTABLE_WEB_MODAL=1` environment variable in your project.
+> **important** Web 模态框处于 [alpha](/more/release-statuses/#alpha) 阶段，并可在 SDK 54 及更高版本中使用。要使用此功能，你必须在项目中设置 `EXPO_UNSTABLE_WEB_MODAL=1` 环境变量。
 
-Modern web apps require a flexible modal experience that adapts to different content sizes and user interactions. Expo Router provides various modal presentation patterns for modern web experiences. These patterns leverage `presentation` with `modal`, `formSheet`, `transparentModal`, or `containedTransparentModal` to present either a modal based on different screen widths, and provide customizable styling props using `webModalStyle`.
+现代 Web 应用需要一种灵活的模态体验，以适应不同的内容大小和用户交互。Expo Router 为现代 Web 体验提供了多种模态展示模式。这些模式利用 `presentation` 配合 `modal`、`formSheet`、`transparentModal` 或 `containedTransparentModal` 来呈现基于不同屏幕宽度的模态，并使用 `webModalStyle` 提供可自定义的样式属性。
 
-## Get started
+## 开始使用
 
-> **info** To use the new web modal features, you must set the `EXPO_UNSTABLE_WEB_MODAL=1` environment variable for both development and [export](/deploy/web/#export-your-web-project) builds. You can do this by adding it to your **.env** file at the root of your project or by prefixing your commands, for example: `EXPO_UNSTABLE_WEB_MODAL=1 npx expo start`.
+> **info** 要使用新的 Web 模态功能，你必须在开发和 [导出](/deploy/web/#export-your-web-project) 构建中都设置 `EXPO_UNSTABLE_WEB_MODAL=1` 环境变量。你可以通过将其添加到项目根目录的 **.env** 文件中，或者在命令前加上前缀来实现，例如：`EXPO_UNSTABLE_WEB_MODAL=1 npx expo start`。
 
-Modals in Expo Router are configured using `Stack.Screen` component with specific options. This requires the modal screen to be added to the layout file of your app's `Stack`.
+Expo Router 中的模态通过 `Stack.Screen` 组件及特定选项进行配置。这要求将模态屏幕添加到应用 `Stack` 的布局文件中。
 
-Consider the following navigation tree, which includes a stack navigator defined in the layout file, a home screen where the modal is accessed, and the modal screen component:
+考虑以下导航树，其中包括在布局文件中定义的堆栈导航器、访问模态的主页，以及模态屏幕组件：
 
 <FileTree files={['src/app/_layout.tsx', 'src/app/index.tsx', 'src/app/modal.tsx']} />
 
-In the layout file (**src/app/\_layout.tsx**), the modal screen component is added to the Stack navigator:
+在布局文件（**src/app/\_layout.tsx**）中，模态屏幕组件被添加到 Stack 导航器：
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -37,8 +37,8 @@ export default function Layout() {
       <Stack.Screen
         name="modal"
         options={{
-          presentation: 'modal', // Enables modal behavior
-          sheetAllowedDetents: [0.5, 1], // Array of snap positions for screens that have a width less than 768px.
+          presentation: 'modal', // 启用模态行为
+          sheetAllowedDetents: [0.5, 1], // 对于宽度小于 768px 的屏幕，数组形式的吸附位置。
         }}
       />
     </Stack>
@@ -46,17 +46,17 @@ export default function Layout() {
 }
 ```
 
-The **modal.tsx** is used to display the contents of a modal:
+**modal.tsx** 用于显示模态的内容：
 
 ```tsx src/app/modal.tsx
 import { Text, View } from 'react-native';
 
 export default function Modal() {
-  return <View style={{ flex: 1, padding: 16 }}>{/* Modal content goes here */}</View>;
+  return <View style={{ flex: 1, padding: 16 }}>{/* 模态内容放在这里 */}</View>;
 }
 ```
 
-Now, to open the modal from **index.tsx**, you can use `router.push('/modal')` in your index route:
+现在，要从 **index.tsx** 打开模态，你可以在 index 路由中使用 `router.push('/modal')`：
 
 ```tsx src/app/index.tsx
 import { router } from 'expo-router';
@@ -65,9 +65,9 @@ import { Pressable, Text, View, StyleSheet } from 'react-native';
 export default function Home() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home Screen</Text>
+      <Text style={styles.title}>主页</Text>
       <Pressable onPress={() => router.push('/modal')} style={styles.button}>
-        <Text style={styles.buttonText}>Open Modal</Text>
+        <Text style={styles.buttonText}>打开模态</Text>
       </Pressable>
     </View>
   );
@@ -97,100 +97,100 @@ const styles = StyleSheet.create({
 });
 ```
 
-Here's the result of the above example:
+以下是上述示例的效果：
 
 <ContentSpotlight file="expo-router/web-modals/01.mp4" />
 
-## Anchors and nested stacks
+## 锚点和嵌套堆栈
 
-When working with stack or nested stack navigators, modals need to be properly anchored to ensure correct navigation behavior, especially when deep-linking to modal routes. Without anchoring, the screen behind the modal will be wiped away, leaving no navigation context.
+在使用堆栈或嵌套堆栈导航器时，模态需要正确地锚定，以确保导航行为正确，尤其是在深度链接到模态路由时。如果没有锚定，模态后面的屏幕会被清除，从而失去导航上下文。
 
-An _anchor_ serves as the base for the modal. In complex apps, when you have nested stacks, the anchor must be defined for the nested stack, and its value becomes the initial route of the stack.
+_锚点_ 充当模态的基础。在复杂应用中，当你有嵌套堆栈时，必须为嵌套堆栈定义锚点，其值会成为该堆栈的初始路由。
 
-You can configure an anchor by exporting `unable_settings` from your stack's layout file:
+你可以通过从堆栈的布局文件中导出 `unable_settings` 来配置锚点：
 
 ```tsx
 export const unstable_settings = {
-  anchor: 'index', // Anchor to the index route
+  anchor: 'index', // 锚定到 index 路由
 };
 ```
 
-In the above example, the `anchor: 'index'` tells the Expo Router that it should maintain the specified anchor route in the background when presenting a modal.
+在上面的示例中，`anchor: 'index'` 告诉 Expo Router，在展示模态时应在后台保留指定的锚点路由。
 
-## Modal presentation style
+## 模态展示样式
 
-The difference between the presentation of how a modal appears in your web app on a large screen (for example, a desktop) while maintaining the sheet behavior when the web app runs on a mobile device, depends on the configuration options. The following are options available for configuring a web modal's appearance that can be passed to the `options` object of a `Stack.Screen`.
+在你的 Web 应用中，模态在大屏幕上（例如桌面端）的呈现方式，与 Web 应用在移动设备上运行时保持抽屉式行为之间的差异，取决于配置选项。以下是可用于配置 Web 模态外观的选项，这些选项可以传递给 `Stack.Screen` 的 `options` 对象。
 
-| Option                | Type                                                                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 选项                  | 类型                                                                          | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | --------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `presentation`        | `'modal'`, `'formSheet'`, `'transparentModal'`, `'containedTransparentModal'` | Modal presentation style. On screens with width more than 768px, all styles display as a centered overlay (for example, a lightbox). <br /><br /> On screens with width less than `768px`, `formSheet` is used to display as a bottom sheet.<br /><br /> When set to `transparentModal`, it displays as an overlay without a completely obscure background content. Detents and sheet grabber properties are not applied. This presentation is useful when building your own custom modal. <br /><br /> Similar to `transparentModal`, when set to `containedTransparentModal`, it displays as an overlay without a completely obscure background content. Detents and other properties are not applied. This presentation is useful when building your own custom modal. |
-| `sheetAllowedDetents` | `number[]`, `'fitToContents'`                                                 | Snap positions as percentages (0.0-1.0) or automatic fitting. Only applies to screens with less than `768px` width.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `sheetGrabberVisible` | `boolean`                                                                     | **On iOS, s**hows/hides the drag handle at the top of the sheet. Not supported on Android and web. We recommend using a custom sheet header component to imitate the grabber across all platforms.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `sheetCornerRadius`   | `number`                                                                      | Corner radius of the sheet in pixels.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `webModalStyle`       | `WebModalStyle`                                                               | Special prop that allows web-specific styling options for fine-tuning modal appearance.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `presentation`        | `'modal'`, `'formSheet'`, `'transparentModal'`, `'containedTransparentModal'` | 模态展示样式。在宽度大于 768px 的屏幕上，所有样式都会显示为居中的覆盖层（例如，类似 lightbox）。<br /><br /> 在宽度小于 `768px` 的屏幕上，`formSheet` 会以底部抽屉的形式显示。<br /><br /> 当设置为 `transparentModal` 时，它会显示为覆盖层，但不会完全遮挡背景内容。不会应用 detents 和 sheet 抓手属性。此展示方式适合构建你自己的自定义模态。<br /><br /> 与 `transparentModal` 类似，当设置为 `containedTransparentModal` 时，它会显示为覆盖层，但不会完全遮挡背景内容。不会应用 detents 和其他属性。此展示方式适合构建你自己的自定义模态。 |
+| `sheetAllowedDetents` | `number[]`, `'fitToContents'`                                                 | 以百分比（0.0-1.0）表示的吸附位置，或自动适配内容。仅适用于宽度小于 `768px` 的屏幕。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `sheetGrabberVisible` | `boolean`                                                                     | **在 iOS 上，**显示/隐藏抽屉顶部的拖拽把手。不支持 Android 和 web。我们建议使用自定义的抽屉头部组件，以在所有平台上模拟这个把手。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `sheetCornerRadius`   | `number`                                                                      | 抽屉的圆角半径（像素）。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `webModalStyle`       | `WebModalStyle`                                                               | 特殊属性，允许使用仅限 Web 的样式选项来微调模态外观。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
-## Custom modal styling with `webModalStyle`
+## 使用 `webModalStyle` 自定义 modal 样式
 
-> **info** **Note:** The `webModalStyle` properties only apply to web platforms. On mobile, the modal will automatically adapt to use sheet-like behavior for touch interaction.
+> **info** **注意：** `webModalStyle` 属性仅适用于 web 平台。在移动端，modal 会自动适配为适合触控交互的 sheet 行为。
 
-You can use `webModalStyle` to customize the dimensions and appearance of your modals on web. It provides the following properties for further customization:
+你可以使用 `webModalStyle` 自定义 web 端 modal 的尺寸和外观。它提供了以下属性以便进一步定制：
 
-| Property            | Type              | Description                                                                                                                    | Default                |
-| ------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
-| `width`             | `number` `string` | Override the width of the modal (px or percentage). Only applies for web platform on a desktop.                                | `83vw`                 |
-| `height`            | `number` `string` | Override the height of the modal (px or percentage). Only applies for web platform on a desktop.                               | `79vh`                 |
-| `minHeight`         | `number` `string` | Minimum height of the desktop modal (px or percentage). Overrides the default iOS 26 sizing.                                   | `min(586px, 79vh)`     |
-| `minWidth`          | `number` `string` | Minimum width of the desktop modal (px or percentage). Overrides the default iOS 26 sizing.                                    | `min(936px, 83vw)`     |
-| `border`            | `string`          | Override the border of the desktop modal (any valid CSS border value, for example, '1px solid #ccc' or 'none')                 | None                   |
-| `overlayBackground` | `string`          | Override the overlay background color (any valid CSS color or rgba/hsla value).                                                | Semi-transparent black |
-| `shadow`            | `string`          | Override the modal shadow filter (any valid CSS filter value, for example, 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' or 'none') | Drop-shadow filter     |
+| 属性                | 类型              | 描述                                                                                                                     | 默认值                 |
+| ------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| `width`             | `number` `string` | 覆盖 modal 的宽度（px 或百分比）。仅适用于桌面端的 web 平台。                                                            | `83vw`                 |
+| `height`            | `number` `string` | 覆盖 modal 的高度（px 或百分比）。仅适用于桌面端的 web 平台。                                                           | `79vh`                 |
+| `minHeight`         | `number` `string` | 桌面端 modal 的最小高度（px 或百分比）。覆盖默认的 iOS 26 尺寸。                                                         | `min(586px, 79vh)`     |
+| `minWidth`          | `number` `string` | 桌面端 modal 的最小宽度（px 或百分比）。覆盖默认的 iOS 26 尺寸。                                                         | `min(936px, 83vw)`     |
+| `border`            | `string`          | 覆盖桌面端 modal 的边框（任何有效的 CSS border 值，例如 `'1px solid #ccc'` 或 `'none'`）                                | 无                     |
+| `overlayBackground` | `string`          | 覆盖遮罩层背景颜色（任何有效的 CSS 颜色或 rgba/hsla 值）。                                                                | 半透明黑色             |
+| `shadow`            | `string`          | 覆盖 modal 的阴影滤镜（任何有效的 CSS filter 值，例如 `'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'` 或 `'none'`）        | 投影阴影滤镜           |
 
-### Custom CSS properties
+### 自定义 CSS 属性
 
-Expo Router uses custom CSS properties to style modals, which you can override globally using `webModalStyle`. These variables provide fine-grained control over a modal's appearance.
+Expo Router 使用自定义 CSS 属性来设置 modal 样式，你可以通过 `webModalStyle` 全局覆盖这些属性。这些变量可以对 modal 的外观进行细粒度控制。
 
-#### Width and height sizing variables
+#### 宽度和高度尺寸变量
 
 ```css
-/* Default modal width (83vw on desktop, following iOS 26 specifications) */
+/* 默认 modal 宽度（桌面端为 83vw，遵循 iOS 26 规范） */
 --expo-router-modal-width: 83vw;
 
-/* Maximum modal width (936px max, 83vw by default, following iOS 26) */
+/* 最大 modal 宽度（最大 936px，默认 83vw，遵循 iOS 26） */
 --expo-router-modal-max-width: min(936px, 83vw);
 
-/* Minimum modal width (auto by default) */
+/* 最小 modal 宽度（默认 auto） */
 --expo-router-modal-min-width: auto;
 
-/* Default modal height (79vh, following iOS 26 specifications) */
+/* 默认 modal 高度（79vh，遵循 iOS 26 规范） */
 --expo-router-modal-height: 79vh;
 
-/* Minimum modal height (586px max, 79vh by default, following iOS 26) */
+/* 最小 modal 高度（最大 586px，默认 79vh，遵循 iOS 26） */
 --expo-router-modal-min-height: min(586px, 79vh);
 ```
 
-#### Border and overlay styling variables
+#### 边框和遮罩层样式变量
 
 ```css
-/* Modal border (none by default) */
+/* modal 边框（默认 none） */
 --expo-router-modal-border: none;
 
-/* Modal corner radius (24px by default, following iOS 26) */
+/* modal 圆角（默认 24px，遵循 iOS 26） */
 --expo-router-modal-border-radius: 24px;
 
-/* Modal shadow filter (drop-shadow by default) */
+/* modal 阴影滤镜（默认 drop-shadow） */
 --expo-router-modal-shadow: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04))
   drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));
 
-/* Overlay background color (25% black by default) */
+/* 遮罩层背景颜色（默认 25% 黑色） */
 --expo-router-modal-overlay-background: rgba(0, 0, 0, 0.25);
 ```
 
-#### How `webModalStyle` maps to CSS variables
+#### `webModalStyle` 如何映射到 CSS 变量
 
-When you use `webModalStyle` to override any of the sizing variables, Expo Router automatically sets these CSS variables to the values you provide:
+当你使用 `webModalStyle` 覆盖任意尺寸变量时，Expo Router 会自动将这些 CSS 变量设置为你提供的值：
 
 ```tsx
-// This webModalStyle configuration
+// 此 webModalStyle 配置
 webModalStyle: {
   width: 800,
   height: 600,
@@ -199,7 +199,7 @@ webModalStyle: {
   shadow: 'drop-shadow(0 8px 16px rgba(0,0,0,0.2))',
 }
 
-// ...automatically sets these CSS variables:
+// ...会自动设置这些 CSS 变量：
 // --expo-router-modal-width: 800px
 // --expo-router-modal-height: 600px
 // --expo-router-modal-border: 2px solid blue
@@ -207,11 +207,11 @@ webModalStyle: {
 // --expo-router-modal-shadow: drop-shadow(0 8px 16px rgba(0,0,0,0.2))
 ```
 
-## Common examples
+## 常见示例
 
-<Collapsible summary="Full screen modal example">
+<Collapsible summary="全屏 modal 示例">
 
-To create a full screen modal for content that covers maximum space, you can use `webModalStyle` property in your modal route's `Stack.Screen` options:
+如果要为覆盖最大空间的内容创建一个全屏 modal，可以在 modal 路由的 `Stack.Screen` 选项中使用 `webModalStyle` 属性：
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -240,11 +240,11 @@ export default function Layout() {
 }
 ```
 
-Here's the result of the above example:
+以上示例的效果如下：
 
 <ContentSpotlight file="expo-router/web-modals/02.mp4" />
 
-When running your web app on mobile devices, you can set `sheetAllowedDetents` to `fitToContents` or a custom value if you want to avoid showing a full screen modal:
+当你在移动设备上运行 web 应用时，如果你想避免显示全屏 modal，可以将 `sheetAllowedDetents` 设置为 `fitToContents` 或自定义值：
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -274,15 +274,15 @@ export default function Layout() {
 }
 ```
 
-The modal appears as a sheet on a mobile device:
+在移动设备上，modal 会以 sheet 的形式显示：
 
 <ContentSpotlight file="expo-router/web-modals/03.mp4" />
 
 </Collapsible>
 
-<Collapsible summary="Compact modal example">
+<Collapsible summary="紧凑型 modal 示例">
 
-For smaller interactions, you can create a compact modal that fits its content:
+对于较小的交互，你可以创建一个适配内容的紧凑型 modal：
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -315,15 +315,15 @@ export default function Layout() {
 }
 ```
 
-Here's the result of the above example:
+以上示例的效果如下：
 
 <ContentSpotlight file="expo-router/web-modals/04.mp4" />
 
 </Collapsible>
 
-<Collapsible summary="Transparent modal example">
+<Collapsible summary="透明 modal 示例">
 
-You can set the `presentation` option to `transparentModal` when you want to display an overlay that should maintain the visual context of the underlying screen:
+当你希望显示一个遮罩层并保留底层屏幕的视觉上下文时，可以将 `presentation` 选项设置为 `transparentModal`：
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -347,15 +347,15 @@ export default function Layout() {
 }
 ```
 
-Here's the result of the above example:
+以上示例的效果如下：
 
 <ContentSpotlight file="expo-router/web-modals/05.mp4" />
 
 </Collapsible>
 
-<Collapsible summary="Corner radius example">
+<Collapsible summary="圆角示例">
 
-You customize the corner radius using `sheetCornerRadius`:
+你可以使用 `sheetCornerRadius` 来自定义圆角：
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -381,18 +381,18 @@ export default function Layout() {
 }
 ```
 
-Here's the result of the above example:
+以上示例的效果如下：
 
 <ContentSpotlight
   src="/static/images/expo-router/web-modal-with-corner-radius.png"
-  alt="Web modal with corner radius."
+  alt="具有圆角的 web modal。"
 />
 
 </Collapsible>
 
-<Collapsible summary="Custom detents example">
+<Collapsible summary="自定义 detents 示例">
 
-You can use `sheetAllowedDetents` to define the height at which the modal can rest:
+你可以使用 `sheetAllowedDetents` 来定义 modal 可停靠的高度：
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -417,20 +417,20 @@ export default function Layout() {
 }
 ```
 
-Here's the result of the above example:
+以上示例的效果如下：
 
 <ContentSpotlight file="expo-router/web-modals/06.mp4" />
 
 </Collapsible>
 
-## Global CSS customization
+## 全局 CSS 自定义
 
-For your web app, if you are using a [global CSS](https://docs.expo.dev/versions/latest/config/metro/#global-css) file in your project, you can also override width, height, border, and overlay variables.
+对于你的 web 应用，如果项目中使用了 [global CSS](https://docs.expo.dev/versions/latest/config/metro/#global-css) 文件，也可以覆盖宽度、高度、边框和遮罩层变量。
 
-You can add custom values using the `--expo-router-*` variables in your global CSS file:
+你可以在全局 CSS 文件中使用 `--expo-router-*` 变量添加自定义值：
 
 ```css
-/* Override default modal styling globally */
+/* 全局覆盖默认 modal 样式 */
 :root {
   --expo-router-modal-width: 700px;
   --expo-router-modal-min-width: auto;
@@ -444,22 +444,22 @@ You can add custom values using the `--expo-router-*` variables in your global C
 }
 ```
 
-## Custom modal route implementation
+## 自定义 modal 路由实现
 
 {/* TODO (@aman): When publishing this guide, remove "Web modals implementation" from the modals.tsx file. */}
 
 <ContentSpotlight file="expo-router/web-modal.mp4" />
 
-The video above demonstrates a modal window that appears over the main content of the web page. The background dims to draw focus to the modal, which contains information for the user. This is typical behavior for web modals, where users can interact with the modal or close it to return to the main page.
+上方视频演示了一个显示在网页主内容之上的模态窗口。背景会变暗以将注意力吸引到模态窗口上，模态窗口中包含用户所需的信息。这是网页模态窗口的典型行为，用户可以与模态窗口交互，或将其关闭以返回主页面。
 
-You can achieve the above web modal behavior by using the [`transparentModal`](https://reactnavigation.org/docs/stack-navigator/#transparent-modals) presentation mode, styling the overlay and modal content, and utilizing [`react-native-reanimated`](/versions/latest/sdk/reanimated/#installation) to animate the modal's presentation.
+你可以通过使用 [`transparentModal`](https://reactnavigation.org/docs/stack-navigator/#transparent-modals) 展示模式、为覆盖层和模态内容设置样式，以及利用 [`react-native-reanimated`](/versions/latest/sdk/reanimated/#installation) 来为模态窗口的展示添加动画，从而实现上述网页模态行为。
 
-Modify your project's root layout (**src/app/\_layout.tsx**) to add an `options` object to the modal route:
+修改项目的根布局（**src/app/\_layout.tsx**），为模态路由添加一个 `options` 对象：
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
 
-/* @info <CODE>unstable_settings</CODE> can be set in any stack's <CODE>_layout.tsx</CODE> file. It is used to define the initial route name for the stack, which ensures that users have a consistent starting point, especially when deep linking. */
+/* @info <CODE>unstable_settings</CODE> 可以在任何堆栈的 <CODE>_layout.tsx</CODE> 文件中设置。它用于定义该堆栈的初始路由名称，从而确保用户拥有一致的起始点，尤其是在深度链接时。 */
 export const unstable_settings = {
   initialRouteName: 'index',
 };
@@ -472,13 +472,13 @@ export default function Layout() {
       <Stack.Screen
         name="modal"
         options={{
-          /* @info Set the <CODE>presentation</CODE> mode to <CODE>transparentModal</CODE> for the modal route.*/
+          /* @info 将 <CODE>presentation</CODE> 模式设置为模态路由的 <CODE>transparentModal</CODE>。*/
           presentation: 'transparentModal',
           /* @end */
-          /* @info (Optional) Set the <CODE>animation</CODE> to <CODE>fade</CODE>.*/
+          /* @info（可选）将 <CODE>animation</CODE> 设置为 <CODE>fade</CODE>。*/
           animation: 'fade',
           /* @end */
-          /* @info Prevents showing the header. Useful for the behavior of web modals.*/
+          /* @info 防止显示标题栏。对于网页模态窗口的行为很有用。*/
           headerShown: false,
           /* @end */
         }}
@@ -488,11 +488,11 @@ export default function Layout() {
 }
 ```
 
-> **info** **Note:** `unstable_settings` currently works only with `Stack` navigators.
+> **info** **注意：** `unstable_settings` 当前仅适用于 `Stack` 导航器。
 
-The above example sets the `index` screen as the [`initialRouteName`](/router/advanced/router-settings/#initialroutename) using [`unstable_settings`](/router/advanced/router-settings). This ensures that the transparent modal is always rendered on top of the current screen, even when users navigate to the modal screen via a direct link.
+上面的示例使用 [`unstable_settings`](/router/advanced/router-settings) 将 `index` 屏幕设置为 [`initialRouteName`](/router/advanced/router-settings/#initialroutename)。这确保透明模态始终渲染在当前屏幕之上，即使用户通过直接链接导航到模态屏幕也是如此。
 
-Style the overlay and modal content in **modal.tsx** as shown below:
+在 **modal.tsx** 中为覆盖层和模态内容设置样式，如下所示：
 
 {/* prettier-ignore */}
 ```tsx src/app/modal.tsx|collapseHeight=250
@@ -503,10 +503,10 @@ import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 export default function Modal() {
   return (
     <Animated.View
-      /* @info Fade in animation when the modal is presented.*/
+      /* @info 当模态框显示时的淡入动画。*/
       entering={FadeIn}
       /* @end */
-      /* @info This style ensures the view takes the entire screen space, sets the overlay to black with 40% opacity, and centers the content.*/
+      /* @info 此样式确保视图占据整个屏幕空间，将遮罩层设置为 40% 透明度的黑色，并使内容居中。*/
       style={{
         flex: 1,
         justifyContent: 'center',
@@ -515,15 +515,15 @@ export default function Modal() {
       }}
       /* @end */
     >
-      {/* Dismiss modal when pressing outside */}
+      {/* 点击外部区域时关闭模态框 */}
       <Link href={'/'} asChild>
         <Pressable style={StyleSheet.absoluteFill} />
       </Link>
       <Animated.View
-        /* @info Slide in animation when the modal is presented.*/
+        /* @info 当模态框显示时的滑入动画。*/
         entering={SlideInDown}
         /* @end */
-        /* @info This view contains the modal content.*/
+        /* @info 此视图包含模态框内容。*/
         style={{
           width: '90%',
           height: '80%',
@@ -533,9 +533,9 @@ export default function Modal() {
         }}
         /* @end */
       >
-        <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>Modal Screen</Text>
+        <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>模态框屏幕</Text>
         <Link href="/">
-          <Text>← Go back</Text>
+          <Text>← 返回</Text>
         </Link>
       </Animated.View>
     </Animated.View>
@@ -543,4 +543,4 @@ export default function Modal() {
 }
 ```
 
-You can customize the modal's appearance as per your needs.
+你可以根据需要自定义模态框的外观。

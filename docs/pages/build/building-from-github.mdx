@@ -1,21 +1,21 @@
 ---
-title: Trigger builds from the Expo GitHub App
-sidebar_title: Trigger builds from GitHub App
-description: Learn how to trigger builds on EAS for your app using the Expo GitHub App.
+title: 使用 Expo GitHub App 触发构建
+sidebar_title: 从 GitHub App 触发构建
+description: 了解如何使用 Expo GitHub App 为你的应用在 EAS 上触发构建。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-This guide explains how to trigger builds directly from your GitHub repository using the Expo GitHub App.
+本指南说明如何使用 Expo GitHub App 直接从你的 GitHub 仓库触发构建。
 
-## Prerequisites
+## 前提条件
 
-### Set the `image` field in your eas.json
+### 在你的 eas.json 中设置 `image` 字段
 
-For the build profiles you want to use with GitHub, specify an [`image`](/eas/json/#image) to use for the native platform in **eas.json**.
+对于你希望与 GitHub 一起使用的构建配置文件，请在 **eas.json** 中为原生平台指定要使用的 [`image`](/eas/json/#image)。
 
-Use the `latest` image if your project's configuration does not rely on a specific [build image](/build-reference/infrastructure/). For example:
+如果你的项目配置不依赖于特定的[构建镜像](/build-reference/infrastructure/)，请使用 `latest` 镜像。例如：
 
 ```json eas.json
 {
@@ -33,122 +33,122 @@ Use the `latest` image if your project's configuration does not rely on a specif
 }
 ```
 
-### Run a successful build from your local machine
+### 在本地机器上成功运行一次构建
 
-To trigger EAS builds from a GitHub repo, you'll need to configure your project for EAS Build and successfully run a build from your computer for each platform that you'd like to support on GitHub.
+要从 GitHub 仓库触发 EAS 构建，你需要先为项目配置好 EAS Build，并且在你的电脑上成功为你希望在 GitHub 上支持的每个平台运行一次构建。
 
-If you haven't successfully run `eas build -p [all|ios|android]` yet, see [Create your first build](/build/setup/) for more information. Once you have, continue with the steps in this guide.
+如果你还没有成功运行过 `eas build -p [all|ios|android]`，请查看[创建你的首次构建](/build/setup/)了解更多信息。一旦完成，请继续阅读本指南中的步骤。
 
-The following must also be true:
+以下条件也必须满足：
 
-- An Expo user in the organization must have a linked GitHub user with access to the target repository. Check **Account settings** > **Overview** > **User settings** > [**Connections**](https://expo.dev/settings#connections) and verify that your GitHub user account is linked.
-- You must accept the permissions requested by the [Expo GitHub app](https://github.com/settings/installations).
+- 组织中的 Expo 用户必须拥有一个已关联、且对目标仓库有访问权限的 GitHub 用户。请检查 **Account settings** > **Overview** > **User settings** > [**Connections**](https://expo.dev/settings#connections)，并确认你的 GitHub 用户账号已关联。
+- 你必须接受 [Expo GitHub app](https://github.com/settings/installations) 请求的权限。
 
-## Configure your app for GitHub
+## 为 GitHub 配置你的应用
 
-### Link your GitHub repository to your Expo project
+### 将你的 GitHub 仓库关联到 Expo 项目
 
-Visit your project's [GitHub settings](https://expo.dev/accounts/[account]/projects/[projectName]/github).
+访问你项目的[GitHub 设置](https://expo.dev/accounts/[account]/projects/[projectName]/github)。
 
 <ContentSpotlight
-  alt="The project GitHub settings page"
+  alt="项目的 GitHub 设置页面"
   src="/static/images/eas-build/build-from-github/project-github-page.png"
 />
 
-Install the Expo GitHub App on your GitHub account.
+在你的 GitHub 账号上安装 Expo GitHub App。
 
-> **Note:** You must have [Owner or Admin access](/accounts/account-types/#manage-access) of the Expo account to install the app.
+> **注意：** 你必须拥有 Expo 账号的 [Owner 或 Admin 访问权限](/accounts/account-types/#manage-access) 才能安装该应用。
 
 <ContentSpotlight
-  alt="The GitHub app installation UI"
+  alt="GitHub 应用安装界面"
   src="/static/images/eas-build/build-from-github/install-github-app.png"
   className="max-w-[480px]"
 />
 
-Then, link the GitHub repository to your Expo project.
+然后，将 GitHub 仓库关联到你的 Expo 项目。
 
-> **Note:** You can only link [GitHub organization repositories](https://docs.github.com/en/organizations) to Expo organizations.
+> **注意：** 你只能将 [GitHub 组织仓库](https://docs.github.com/en/organizations)关联到 Expo 组织。
 
 <ContentSpotlight
-  alt="The repository selector on the Expo project GitHub settings page"
+  alt="Expo 项目 GitHub 设置页面上的仓库选择器"
   src="/static/images/eas-build/build-from-github/connect-a-repository.png"
   className="max-w-[600px]"
 />
 
-To add a repository from a different GitHub account, click the **Add new account** option in the account selector dropdown.
+如需从另一个 GitHub 账号添加仓库，请在账号选择下拉菜单中点击 **Add new account** 选项。
 
 <ContentSpotlight
-  alt="The account selector on the Expo project GitHub settings page"
+  alt="Expo 项目 GitHub 设置页面上的账号选择器"
   src="/static/images/eas-build/build-from-github/add-new-account.png"
   className="max-w-[320px]"
 />
 
-### Configure your repository settings
+### 配置你的仓库设置
 
-Before you run a build, the Expo GitHub App needs to know where to find the source code for your project. If your Expo
-project source code is in the root of your repository, then you don't need to do anything. If your
-Expo project source code is in a subdirectory, then you'll need to configure "Base directory"
-settings for your repository on your project's [GitHub settings
-page](https://expo.dev/accounts/[account]/projects/[projectName]/github).
+在运行构建之前，Expo GitHub App 需要知道在哪里找到你项目的源代码。如果你的 Expo
+项目源代码位于仓库根目录，那么你无需做任何操作。如果你的
+Expo 项目源代码位于子目录中，那么你需要在项目的[GitHub 设置
+页面](https://expo.dev/accounts/[account]/projects/[projectName]/github)为你的仓库配置“Base directory”
+设置。
 
 <ContentSpotlight
-  alt="The base directory input on the Expo project GitHub settings page"
+  alt="Expo 项目 GitHub 设置页面上的 base directory 输入框"
   src="/static/images/eas-build/build-from-github/specify-base-directory.png"
 />
 
-## Trigger a build from GitHub
+## 从 GitHub 触发构建
 
-Once you have configured your app for GitHub, you can trigger a build from GitHub by using the UI on your project's build list page or by labels on your GitHub PRs.
+当你为 GitHub 配置好应用后，你可以使用项目构建列表页面上的 UI 或通过 GitHub PR 上的标签来从 GitHub 触发构建。
 
-### Build using the Expo website
+### 使用 Expo 网站构建
 
-Visit your project's [build list
-page](https://expo.dev/accounts/[account]/projects/[projectName]/builds) and click the "Build from
-GitHub" button. You'll be prompted to select a Git ref (branch/commit/tag), a platform to build
-for, and the build profile to apply to it.
+访问你项目的[构建列表
+页面](https://expo.dev/accounts/[account]/projects/[projectName]/builds)，然后点击“Build from
+GitHub”按钮。系统会提示你选择一个 Git ref（branch/commit/tag）、要构建的
+平台，以及要应用的构建配置文件。
 
-You can also specify a base directory for this specific build. That will not change the global
-settings for this project.
+你也可以为这次特定构建指定一个 base directory。这不会更改该项目的全局
+设置。
 
 <ContentSpotlight
-  alt="The build from GitHub UI on the Expo project builds list page"
+  alt="Expo 项目构建列表页面上的 GitHub 构建界面"
   src="/static/images/eas-build/build-from-github/github-build-ui.png"
   className="max-w-[480px]"
 />
 
-### Build using GitHub PR labels
+### 使用 GitHub PR 标签构建
 
-You can trigger a build from a GitHub PR by adding a label to the PR. The label must be in the form
-of `eas-build-[platform]:[profile]` where `[platform]` is either `android`, `ios`, or `all` and
-`[profile]` is the name of a build profile specified in your **eas.json** file. If you don't specify
-a build platform, it will default to `all`. If you don't specify
-a build profile, it will default to `production`.
+你可以通过给 GitHub PR 添加标签来触发构建。标签必须采用
+`eas-build-[platform]:[profile]` 的形式，其中 `[platform]` 可以是 `android`、`ios` 或 `all`，而
+`[profile]` 是你在 **eas.json** 文件中指定的构建配置文件名称。如果你不指定
+构建平台，默认值为 `all`。如果你不指定
+构建配置文件，默认值为 `production`。
 
-For example, if
-you want to trigger a production build for Android, add the label `eas-build-android` to the PR.
+例如，如果
+你想触发一个 Android 的生产构建，请给 PR 添加标签 `eas-build-android`。
 
 <ContentSpotlight
-  alt="A PR with the eas-build label and live status checks"
+  alt="带有 eas-build 标签和实时状态检查的 PR"
   src="/static/images/eas-build/build-from-github/eas-build-label.png"
 />
 
-The build will be triggered for the latest commit on the PR's base branch. You can view the status
-of the build in the PR's checks. A link to the build will be available in the check's details.
+构建将针对 PR 基础分支上的最新提交触发。你可以在 PR 的 checks 中查看
+构建状态。构建链接会显示在该 check 的详情中。
 
 <ContentSpotlight
-  alt="EAS Build check details on a GitHub PR"
+  alt="GitHub PR 上的 EAS Build check 详情"
   src="/static/images/eas-build/build-from-github/gh-check-details.png"
 />
 
-### Build automatically when code is pushed to your GitHub repository
+### 当代码推送到你的 GitHub 仓库时自动构建
 
-You can take your build automation further by automatically building your Expo project when you push code to GitHub.
+你可以进一步实现构建自动化，当你向 GitHub 推送代码时自动构建你的 Expo 项目。
 
-#### Using EAS Workflows
+#### 使用 EAS Workflows
 
-EAS Workflows is a service from Expo that allows you to run builds, and many other types of jobs, on EAS. You can use EAS Workflows to automate your development and release processes, like creating development builds or automatically building and submitting to the app stores.
+EAS Workflows 是 Expo 提供的一项服务，允许你在 EAS 上运行构建以及许多其他类型的作业。你可以使用 EAS Workflows 来自动化开发和发布流程，例如创建开发构建或自动构建并提交到应用商店。
 
-To create a build with EAS Workflows, start by adding the following code in **.eas/workflows/build.yml**:
+要使用 EAS Workflows 创建构建，请先在 **.eas/workflows/build.yml** 中添加以下代码：
 
 ```yaml .eas/workflows/build.yml
 name: Build
@@ -171,128 +171,125 @@ jobs:
       platform: ios
 ```
 
-When a commit is pushed to the main branch, this workflow will create Android and iOS builds. You can learn how to modify this workflow and sequence other types of jobs in the [EAS Workflows documentation](/eas/workflows/get-started).
+当提交推送到 main 分支时，此工作流会创建 Android 和 iOS 构建。你可以在[EAS Workflows 文档](/eas/workflows/get-started)中了解如何修改此工作流以及串联其他类型的作业。
 
-#### Set up build triggers
+#### 设置构建触发器
 
-> **warning** **[Deprecated](/more/release-statuses/#deprecated):** This feature is deprecated and disabled for new projects. We recommend using [EAS Workflows](/eas/workflows/get-started/) instead.
+> **warning** **[已弃用](/more/release-statuses/#deprecated)：** 此功能已弃用，并对新项目禁用。我们建议改用 [EAS Workflows](/eas/workflows/get-started/)。
 
-<Collapsible summary="Learn how to set up build triggers">
+<Collapsible summary="了解如何设置构建触发器">
 
-You can set up build triggers to configure when EAS builds your app from GitHub. We allow you to build when pushing to a branch, pull request, and Git tag.
+你可以设置构建触发器，来配置 EAS 何时从 GitHub 构建你的应用。我们支持在推送到分支、pull request 和 Git tag 时构建。
 
-Open your Expo project in the dashboard. To create a build trigger, scroll down to the **Build
-triggers** section of the project GitHub settings page and click **New Build Trigger**.
+在控制台中打开你的 Expo 项目。要创建构建触发器，请滚动到项目 GitHub 设置页面的 **Build
+triggers** 部分，然后点击 **New Build Trigger**。
 
 <ContentSpotlight
-  alt="The build triggers section on the Expo project GitHub settings page"
+  alt="Expo 项目 GitHub 设置页面上的 build triggers 部分"
   src="/static/images/eas-build/build-from-github/empty-build-triggers-table.png"
 />
 
-When you click **New Build Trigger**, you will be presented with a form to configure how this build should run.
+当你点击 **New Build Trigger** 时，会显示一个表单，用于配置此构建应如何运行。
 
-These patterns can include wildcards represented by asterisks (`*`), which can match any character and number of characters inside the pattern. For example, `releases/*` can match `releases/`, `release/1234`, `release/genesis`, and so on. If you specify the pattern as a sole asterisk (`*`), all branches/tags will be matched.
+这些模式可以包含由星号（`*`）表示的通配符，它们可以匹配模式中的任意字符和任意数量的字符。例如，`releases/*` 可以匹配 `releases/`、`release/1234`、`release/genesis` 等。如果你将模式仅指定为一个星号（`*`），则会匹配所有分支/标签。
 
 <ContentSpotlight
-  alt="The default state of the new build trigger form"
+  alt="新建构建触发器表单的默认状态"
   src="/static/images/eas-build/build-from-github/empty-build-trigger-form.png"
   className="max-w-[480px]"
 />
 
-You can also configure triggers for specific platforms and build profiles. If you select multiple
-platforms, a separate trigger will be made for each.
+你也可以为特定的平台和构建配置文件配置触发器。如果你选择多个
+平台，则会为每个平台分别创建一个触发器。
 
 <ContentSpotlight
-  alt="A filled-out version of the new build trigger form"
+  alt="已填写的新建构建触发器表单"
   src="/static/images/eas-build/build-from-github/filled-build-trigger-form.png"
   className="max-w-[480px]"
 />
 
 <ContentSpotlight
-  alt="The build triggers section on the Expo project GitHub settings page filled with build triggers"
+  alt="Expo 项目 GitHub 设置页面上的 build triggers 部分，已填入构建触发器"
   src="/static/images/eas-build/build-from-github/filled-build-triggers-table.png"
 />
 
-When you push to a branch or tag, you can find the builds by looking at a commit's **Checks** section.
+当你推送到某个分支或标签时，你可以通过查看某个提交的 **Checks** 部分找到构建。
 
 <ContentSpotlight
-  alt="The GitHub checks section on a branch commit"
+  alt="分支提交上的 GitHub checks 部分"
   src="/static/images/eas-build/build-from-github/builds-executed-automatically-on-branch.png"
   className="max-w-[600px]"
 />
 
 <ContentSpotlight
-  alt="The GitHub checks section on a tag commit"
+  alt="标签提交上的 GitHub checks 部分"
   src="/static/images/eas-build/build-from-github/tag-triggered-build.png"
 />
 
-For pull requests, you can configure a **target branch pattern**. This is the destination branch of the pull request you want to build. The same rules apply for wildcards here as well.
+对于 pull request，你可以配置一个 **target branch pattern**。这指的是你希望构建的 pull request 的目标分支。这里同样适用相同的通配符规则。
 
 <ContentSpotlight
-  alt="The build trigger form for pull request"
+  alt="pull request 的构建触发表单"
   src="/static/images/eas-build/build-from-github/pull-request-trigger-form.png"
   className="max-w-[480px]"
 />
 
-When you push to a pull request with a source and target branch matching this trigger, you'll find
-these builds in the checks section of the pull request:
+当你推送到一个源分支和目标分支都匹配此触发器的 pull request 时，你会在该 pull request 的 checks 部分找到这些构建：
 
 <ContentSpotlight
-  alt="The GitHub checks section on a pull request"
+  alt="pull request 上的 GitHub checks 部分"
   src="/static/images/eas-build/build-from-github/pull-request-triggered-build.png"
 />
 
-> **Note:** To trigger builds from a pull request, the pull request's author must be a collaborator
-> on the GitHub repository. If you want to build pull requests from external contributors, [apply a PR Label](#build-using-github-pr-labels).
+> **注意：** 要从 pull request 触发构建，pull request 的作者必须是该 GitHub 仓库的协作者。若你想构建来自外部贡献者的 pull request， [应用 PR 标签](#build-using-github-pr-labels)。
 
-#### Manage build triggers
+#### 管理构建触发器
 
-On your project's GitHub settings page in the EAS dashboard, you can click the options button to the right of
-a build trigger row to disable, edit, or delete the trigger.
+在 EAS 仪表板中你的项目 GitHub 设置页面上，你可以点击某个构建触发器行右侧的选项按钮来禁用、编辑或删除该触发器。
 
 <ContentSpotlight
-  alt="The options button on the build trigger row"
+  alt="构建触发器行上的选项按钮"
   src="/static/images/eas-build/build-from-github/edit-trigger-option.png"
   className="max-w-[320px]"
 />
 
-You can also run a GitHub build with the parameters from the trigger manually. This will not count toward your automatic build trigger record.
+你也可以使用触发器中的参数手动运行一次 GitHub 构建。这不会计入你的自动构建触发器记录。
 
-#### Automatic app stores submission with EAS Submit
+#### 使用 EAS Submit 自动提交到应用商店
 
-Once your build completes, you can automatically submit your app to the app stores using EAS Submit. This feature streamlines the process, reducing the manual steps required to publish your app.
+当你的构建完成后，你可以使用 EAS Submit 自动将应用提交到应用商店。此功能简化了流程，减少了发布应用所需的手动步骤。
 
-To enable automatic submission, you need to configure your build triggers to include submission as part of the build process. Here's how you can set it up:
+要启用自动提交，你需要将提交功能配置到构建触发器中，使其成为构建流程的一部分。设置方法如下：
 
-- Navigate to your project's GitHub settings page on the EAS dashboard.
-- Find the build trigger you want to modify, and click the options button.
-- Select **Edit trigger** and in the dialog that appears, check the option **Submit to store after build**.
+- 在 EAS 仪表板中进入你项目的 GitHub 设置页面。
+- 找到你想修改的构建触发器，然后点击选项按钮。
+- 选择 **Edit trigger**，在弹出的对话框中勾选 **Submit to store after build** 选项。
 
 <ContentSpotlight
-  alt="The EAS Submit form fields on the trigger edit form"
+  alt="触发器编辑表单中的 EAS Submit 表单字段"
   src="/static/images/eas-build/build-from-github/eas-submit-form-fields.png"
   className="max-w-[640px]"
 />
 
-- Save your changes.
+- 保存更改。
 
 <ContentSpotlight
-  alt="An enabled build trigger with automatic submission enabled"
+  alt="已启用自动提交的构建触发器"
   src="/static/images/eas-build/build-from-github/auto-submit-trigger-column.png"
   className="max-w-[400px]"
 />
 
-Once enabled, every time a build is triggered from this configuration, it will automatically be submitted to the app stores you have configured in your **eas.json** under the `submit` field.
+启用后，每次根据此配置触发构建时，系统都会自动将其提交到你在 **eas.json** 的 `submit` 字段下配置的应用商店。
 
-> **Note:** Ensure that your **eas.json** is properly configured for submission, including
-> specifying the correct app store's credentials and submission profile. For more information, see
-> the [EAS Submit](/submit/eas-json/).
+> **注意：** 请确保你的 **eas.json** 已正确配置用于提交，包括
+> 指定正确的应用商店凭据和提交配置文件。更多信息请参阅
+> [EAS Submit](/submit/eas-json/)。
 
 </Collapsible>
 
-### Troubleshooting
+### 故障排查
 
-- When things go wrong, we will comment on the commit we attempted to build with some error information.
-- Double check everything in the [Prerequisites](#prerequisites) section is true when trying to build.
-- Confirm that your base directory is accurate if you're using a monorepo setup.
-- Is your build profile correct? If a matching profile can't be found in **eas.json**, the build will not dispatch.
+- 当出现问题时，我们会在尝试构建的提交上留下评论，并附上一些错误信息。
+- 在尝试构建时，请再次确认[前提条件](#prerequisites)部分中的所有内容都已满足。
+- 如果你使用的是 monorepo 配置，请确认你的 base directory 是否正确。
+- 你的构建配置文件是否正确？如果在 **eas.json** 中找不到匹配的配置文件，构建将不会分发。

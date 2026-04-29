@@ -1,106 +1,106 @@
 ---
-title: What you need to know about notifications
-sidebar_title: About notification types
-description: Learn about notification types and their behavior before you get started.
+title: 你需要了解的通知
+sidebar_title: 关于通知类型
+description: 在开始之前，了解通知类型及其行为。
 ---
 
-Notifications are alerts that inform users of new information or events, even when the app isn't actively in use. They have a large surface area and differences across platforms can make implementing notifications intimidating.
+通知是向用户传达新信息或事件的提醒，即使应用当前并未 सक्रिय使用。通知的适用范围很广，不同平台之间的差异也会让实现通知变得令人望而生畏。
 
-Whether you are starting with notifications or have existing knowledge, this document explains the different types of notification and their behaviors.
+无论你是刚开始接触通知，还是已经有一定了解，本文都会解释不同类型通知及其行为。
 
-Expo's notification support builds on top of the native functionality provided by Android and iOS. The same concepts and behaviors from native platforms apply to Expo apps. If you are unsure about a specific notification feature, see each platform's [official documentation](#external-references).
+Expo 的通知支持建立在 Android 和 iOS 提供的原生功能之上。原生平台中的相同概念和行为同样适用于 Expo 应用。如果你不确定某个具体的通知功能，请参阅各个平台的 [官方文档](#external-references)。
 
-## Remote and Local notifications
+## 远程通知和本地通知
 
-1. **Push Notifications**: (also known as "remote notifications") Notifications that are sent to a user's device from a remote server.
-2. **Local Notifications**: (also known as "in-app notifications") Notifications that are created and displayed from within the app. Since many of the APIs that create these notifications will create them at a particular time, these may also sometimes be called "scheduled notifications".
+1. **推送通知**：（也称为“远程通知”）从远程服务器发送到用户设备的通知。
+2. **本地通知**：（也称为“应用内通知”）在应用内部创建并显示的通知。由于许多创建这些通知的 API 会在特定时间创建它们，因此它们有时也被称为“定时通知”。
 
-`expo-notifications` supports both push and local notifications. You must use a [development build](/develop/development-builds/introduction/) to use push notifications since the capability is not built into Expo Go.
+`expo-notifications` 同时支持推送通知和本地通知。由于该能力并未内置到 Expo Go 中，你必须使用 [开发构建](/develop/development-builds/introduction/) 才能使用推送通知。
 
-See [in-app notifications](/versions/latest/sdk/notifications/#present-a-local-in-app-notification-to-the-user) on how to create and display a local notification. The rest of this guide focuses on push notifications.
+有关如何创建并显示本地通知，请参见 [应用内通知](/versions/latest/sdk/notifications/#present-a-local-in-app-notification-to-the-user)。本指南的其余部分聚焦于推送通知。
 
-## Push Notification delivery
+## 推送通知的送达
 
-When a push notification arrives to your app, its behavior depends on the app's state and the type of notification. Let's clarify the terminology:
+当推送通知到达你的应用时，其行为取决于应用状态和通知类型。先来明确一下术语：
 
-### Application states
+### 应用状态
 
-- **Foreground**: The app is actively running in the foreground. Its interface is currently being displayed on the screen.
-- **Background**: The app is running in the background, "minimized". Its interface is not currently being displayed on the screen.
-- **Terminated**: The app was "killed", usually by a swipe-away gesture in the app switcher. On Android, if the user force-stops the app from device settings, it must be manually reopened for notifications to start working (this is a limitation of Android).
+- **前台**：应用正在前台 सक्रिय运行。其界面当前显示在屏幕上。
+- **后台**：应用在后台运行，处于“最小化”状态。其界面当前未显示在屏幕上。
+- **已终止**：应用已被“杀死”，通常是通过应用切换器中的滑走手势。在 Android 上，如果用户在设备设置中强制停止应用，它必须被手动重新打开后，通知才会开始生效（这是 Android 的限制）。
 
-### Push Notification behaviors
+### 推送通知行为
 
-For any kind of notification, when the app is in the foreground, the app is in control of how an incoming notification is handled. The app may present it directly, show some custom in-app UI, or even ignore it (this is controlled by [`NotificationHandler`](/versions/latest/sdk/notifications/#setnotificationhandlerhandler)). When the app is not in the foreground, the behavior depends on the type of notification.
+对于任何类型的通知，当应用处于前台时，应用可以控制传入通知的处理方式。应用可以直接展示它，显示某些自定义应用内 UI，或者甚至忽略它（这由 [`NotificationHandler`](/versions/latest/sdk/notifications/#setnotificationhandlerhandler) 控制）。当应用不在前台时，行为取决于通知类型。
 
-The table below summarizes what happens when a push notification is delivered to the device:
+下表总结了推送通知送达设备时会发生什么：
 
-| Notification Type                                                                                                                                                                                                       | App in Foreground                                                                                                                                                                                        | App in Background                                                                      | App Terminated                                                                         |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [Notification Message](/push-notifications/what-you-need-to-know/#notification-message) and [Notification Message with data payload](/push-notifications/what-you-need-to-know/#notification-message-with-data-payload) | delivery runs [`NotificationReceivedListener`](/versions/latest/sdk/notifications/#addnotificationreceivedlistenerlistener) and [JS task](/versions/latest/sdk/notifications/#registertaskasynctaskname) | OS shows notification                                                                  | OS shows notification                                                                  |
-| [Headless Background Notification](/push-notifications/what-you-need-to-know/#headless-background-notifications)                                                                                                        | delivery runs [`NotificationReceivedListener`](/versions/latest/sdk/notifications/#addnotificationreceivedlistenerlistener) and [JS task](/versions/latest/sdk/notifications/#registertaskasynctaskname) | delivery runs [JS task](/versions/latest/sdk/notifications/#registertaskasynctaskname) | delivery runs [JS task](/versions/latest/sdk/notifications/#registertaskasynctaskname) |
+| 通知类型                                                                                                                                                                                                       | 应用在前台时                                                                                                                                                                                        | 应用在后台时                                                                      | 应用已终止时                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [通知消息](/push-notifications/what-you-need-to-know/#notification-message) 和 [带数据负载的通知消息](/push-notifications/what-you-need-to-know/#notification-message-with-data-payload) | 送达会运行 [`NotificationReceivedListener`](/versions/latest/sdk/notifications/#addnotificationreceivedlistenerlistener) 和 [JS 任务](/versions/latest/sdk/notifications/#registertaskasynctaskname) | OS 显示通知                                                                      | OS 显示通知                                                                          |
+| [无头后台通知](/push-notifications/what-you-need-to-know/#headless-background-notifications)                                                                                                                | 送达会运行 [`NotificationReceivedListener`](/versions/latest/sdk/notifications/#addnotificationreceivedlistenerlistener) 和 [JS 任务](/versions/latest/sdk/notifications/#registertaskasynctaskname) | 送达会运行 [JS 任务](/versions/latest/sdk/notifications/#registertaskasynctaskname) | 送达会运行 [JS 任务](/versions/latest/sdk/notifications/#registertaskasynctaskname) |
 
-For the cases when the user interacts with the notification (for example, by pressing an action button), the following handlers are made available to you.
+当用户与通知交互时（例如按下某个操作按钮），以下处理器会对你可用。
 
-| App state  | iOS Listener(s) triggered              | Android Listener(s) triggered                                                                                       |
-| ---------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Foreground | `NotificationResponseReceivedListener` | `NotificationResponseReceivedListener`                                                                              |
-| Background | `NotificationResponseReceivedListener` | `NotificationResponseReceivedListener` and [JS task](/versions/latest/sdk/notifications/#registertaskasynctaskname) |
-| Terminated | `NotificationResponseReceivedListener` | [JS task](/versions/latest/sdk/notifications/#registertaskasynctaskname)                                            |
+| 应用状态  | 触发的 iOS 监听器              | 触发的 Android 监听器                                                                                       |
+| ---------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 前台      | `NotificationResponseReceivedListener` | `NotificationResponseReceivedListener`                                                                              |
+| 后台      | `NotificationResponseReceivedListener` | `NotificationResponseReceivedListener` 和 [JS 任务](/versions/latest/sdk/notifications/#registertaskasynctaskname) |
+| 已终止    | `NotificationResponseReceivedListener` | [JS 任务](/versions/latest/sdk/notifications/#registertaskasynctaskname)                                            |
 
-In the table above, whenever `NotificationResponseReceivedListener` is triggered, the `useLastNotificationResponse` return value also changes.
+在上表中，每当触发 `NotificationResponseReceivedListener` 时，`useLastNotificationResponse` 的返回值也会随之变化。
 
-> **info** When the app is not running or has been killed and is launched by tapping a notification, register `NotificationResponseReceivedListener` as early as possible (at module top-level) on iOS. To handle the initial notification response after the app starts, we recommend also checking `useLastNotificationResponse` or `getLastNotificationResponse` during startup rather than relying on the listener alone. This is also the recommended approach for action buttons that bring the app to the foreground.
+> **info** 当应用未运行或已被杀死，并且通过点击通知启动时，请尽早在 iOS 上注册 `NotificationResponseReceivedListener`（在模块顶层）。为了在应用启动后处理初始通知响应，我们建议在启动期间同时检查 `useLastNotificationResponse` 或 `getLastNotificationResponse`，而不是仅依赖监听器。这同样也是让应用进入前台的操作按钮的推荐做法。
 
-## Push Notification types
+## 推送通知类型
 
-### Notification Message
+### 通知消息
 
-A Notification Message is a notification that specifies presentational information, such as a title or body text.
+通知消息是一种指定展示信息的通知，例如标题或正文文本。
 
-- On Android, this corresponds to a push notification request that contains [`AndroidNotification`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification)
-- On iOS, this corresponds to a push notification request that contains [`aps.alert` dictionary](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Create-the-JSON-payload) and the `apns-push-type` header set to `alert`.
+- 在 Android 上，这对应于包含 [`AndroidNotification`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification) 的推送通知请求
+- 在 iOS 上，这对应于包含 [`aps.alert` 字典](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Create-the-JSON-payload) 且 `apns-push-type` 头设置为 `alert` 的推送通知请求。
 
-When you use the Expo Push Service, and specify `title`, `subtitle`, `body`, `icon`, or `channelId`, the resulting push notification request is a Notification Message.
+当你使用 Expo Push Service，并指定 `title`、`subtitle`、`body`、`icon` 或 `channelId` 时，生成的推送通知请求就是通知消息。
 
 [//]: # 'TODO vonovak clarify what fields make a notification to be considered a Notification Message'
 
-The typical use case for a Notification Message is to have it presented to the user immediately without any extra processing being done.
+通知消息的典型用途是让它立即展示给用户，而无需额外处理。
 
-### Notification Message with data payload
+### 带数据负载的通知消息
 
-This is an Android-only term ([see the official docs](https://firebase.google.com/docs/cloud-messaging/customize-messages/set-message-type#data-messages)) where a push notification request contains both `data` field and a `notification` field.
+这是一个仅适用于 Android 的术语（[参见官方文档](https://firebase.google.com/docs/cloud-messaging/customize-messages/set-message-type#data-messages)），指推送通知请求同时包含 `data` 字段和 `notification` 字段。
 
-On iOS, extra data may be part of a regular Notification Message request. Apple doesn't distinguish between Notification Message which does and does not carry data.
+在 iOS 上，额外数据可以作为常规通知消息请求的一部分。Apple 不区分带数据和不带数据的通知消息。
 
-### Headless Background Notifications
+### 无头后台通知
 
-Headless Notification is a remote notification that doesn't directly specify presentational information such as the title or body text. With the exception below\*, headless notifications are not presented to users. Instead, they carry data (JSON) which is processed by a JavaScript task defined in your app via [`registerTaskAsync`](/versions/latest/sdk/notifications/#registertaskasynctaskname). The task may perform arbitrary logic. For example, write to `AsyncStorage`, make an api request, or present a local notification whose content is taken from the push notification's data.
+无头通知是一种远程通知，它不直接指定标题或正文文本等展示信息。除了下面的例外\*之外，无头通知不会展示给用户。相反，它们携带的数据（JSON）会由应用中通过 [`registerTaskAsync`](/versions/latest/sdk/notifications/#registertaskasynctaskname) 定义的 JavaScript 任务进行处理。该任务可以执行任意逻辑。例如，写入 `AsyncStorage`、发起 api 请求，或基于推送通知的数据展示一个本地通知。
 
-> **info** We use the term "Headless Background Notification" to refer to the [Data Message](https://firebase.google.com/docs/cloud-messaging/customize-messages/set-message-type#data-messages) on Android and the [background notification](https://developer.apple.com/documentation/usernotifications/pushing-background-updates-to-your-app#Create-a-background-notification) on iOS. Their key similarities are that both of these notification types allow sending only JSON data, and background processing by the app.
+> **info** 我们使用“无头后台通知”这一术语来指代 Android 上的 [数据消息](https://firebase.google.com/docs/cloud-messaging/customize-messages/set-message-type#data-messages) 和 iOS 上的 [后台通知](https://developer.apple.com/documentation/usernotifications/pushing-background-updates-to-your-app#Create-a-background-notification)。它们的关键相似点是：这两种通知类型都只允许发送 JSON 数据，并由应用进行后台处理。
 
-Headless Background Notifications have the ability to run custom JavaScript in response to a notification _even when the app is terminated_. This is powerful but comes with a limitation: even when the notification is delivered to the device, the OS does not guarantee its delivery to your app. This may happen due to a variety of reasons, such as when [Doze mode](https://developer.android.com/training/monitoring-device-state/doze-standby) is enabled on Android, or when you send too many background notifications &mdash; Apple recommends not to [send more than two or three per hour](https://developer.apple.com/documentation/usernotifications/pushing-background-updates-to-your-app#overview).
+无头后台通知即使在应用已终止时，也能在收到通知后运行自定义 JavaScript。这很强大，但也有一个限制：即使通知已经送达设备，OS 也不能保证它一定送达到你的应用。这可能由多种原因导致，例如在 Android 上启用了 [Doze 模式](https://developer.android.com/training/monitoring-device-state/doze-standby)，或者你发送了过多的后台通知——Apple 建议不要 [每小时发送超过两到三条](https://developer.apple.com/documentation/usernotifications/pushing-background-updates-to-your-app#overview)。
 
-When you use the Expo Push Service, and specify only `data` and `_contentAvailable: true` (and other non-interactive fields such as `ttl`), the resulting push notification request produces a Headless Background Notification.
+当你使用 Expo Push Service，并且只指定 `data` 和 `_contentAvailable: true`（以及其他非交互字段，例如 `ttl`）时，生成的推送通知请求会产生无头后台通知。
 
 [//]: # 'TODO vonovak clarify how setting priority behaves here, because apns-priority field should be 5 on iOS but can be specified on Android'
 
-> To use Headless Background Notifications on iOS, you have to [configure](/versions/latest/sdk/notifications/#background-notification-configuration) them first.
+> 要在 iOS 上使用无头后台通知，你必须先对其进行 [配置](/versions/latest/sdk/notifications/#background-notification-configuration)。
 
-The rule of thumb is to prefer a regular Notification Message if you don't require running JavaScript in the background.
+如果你不需要在后台运行 JavaScript，那么经验法则是优先使用常规的通知消息。
 
-\* The exception is when you specify `title` or `message` inside of [`data`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidConfig). In that case, `expo-notifications` package automatically presents the headless notification on Android, but not on iOS. We plan to make this behavior more consistent across platforms in a future release.
+\* 例外情况是，当你在 [`data`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidConfig) 中指定 `title` 或 `message` 时。在这种情况下，`expo-notifications` 包会自动在 Android 上展示无头通知，但在 iOS 上不会。我们计划在未来的版本中使这种行为在各个平台上更加一致。
 
-### Data-only notifications
+### 仅数据通知
 
-Android has a concept of [Data Messages](https://firebase.google.com/docs/cloud-messaging/customize-messages/set-message-type#data-messages). iOS does not have exactly the same concept, but a close equivalent is [Headless Background Notifications](#headless-background-notifications).
+Android 有 [数据消息](https://firebase.google.com/docs/cloud-messaging/customize-messages/set-message-type#data-messages) 的概念。iOS 并没有完全相同的概念，但一个接近的等价物是 [无头后台通知](#headless-background-notifications)。
 
-You may also come across the term "silent notification", which is yet another name for notifications that don't present anything to the user &mdash; we describe these as [Headless Background Notifications](#headless-background-notifications).
+你也可能会遇到“静默通知”这个术语，它是另一种指代不会向用户展示任何内容的通知的名称——我们将其描述为 [无头后台通知](#headless-background-notifications)。
 
-## External references
+## 外部参考
 
-This is a non-exhaustive list of official resources for push notifications on Android and iOS:
+以下是 Android 和 iOS 推送通知官方资源的不完整列表：
 
-- [Android - Firebase Cloud Messaging message types](https://firebase.google.com/docs/cloud-messaging/customize-messages/set-message-type)
-- [iOS - Generating a remote notification](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification)
-- [iOS - Pushing background updates to your app](https://developer.apple.com/documentation/usernotifications/pushing-background-updates-to-your-app)
+- [Android - Firebase Cloud Messaging 消息类型](https://firebase.google.com/docs/cloud-messaging/customize-messages/set-message-type)
+- [iOS - 生成远程通知](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification)
+- [iOS - 向你的应用推送后台更新](https://developer.apple.com/documentation/usernotifications/pushing-background-updates-to-your-app)

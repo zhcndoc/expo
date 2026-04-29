@@ -1,89 +1,89 @@
 ---
 title: Android build process
-description: Learn how an Android project is built on EAS Build.
+description: 了解 Android 项目如何在 EAS Build 上构建。
 ---
 
-This page describes the process of building Android projects with EAS Build. You may want to read this if you are interested in the implementation details of the build service.
+此页面描述了使用 EAS Build 构建 Android 项目的过程。如果你对构建服务的实现细节感兴趣，可以阅读这篇文章。
 
 ## Build process
 
-Let's take a closer look at the steps for building Android projects with EAS Build. We'll first run some steps on your local machine to prepare the project, and then we'll build the project on a remote service.
+让我们更详细地了解使用 EAS Build 构建 Android 项目的各个步骤。我们会先在你的本地机器上运行一些步骤来准备项目，然后再在远程服务上构建项目。
 
 ### Local steps
 
-The first phase happens on your computer. EAS CLI is in charge of completing the following steps:
+第一阶段发生在你的电脑上。EAS CLI 负责完成以下步骤：
 
-1. If `cli.requireCommit` is set to `true` in **eas.json**, check if the git index is clean - this means that there aren't any uncommitted changes. If it's not clean, EAS CLI will provide an option to commit local changes for you or abort the build process.
-1. Prepare the credentials needed for the build unless `builds.android.PROFILE_NAME.withoutCredentials` is set to `true`.
-   - Depending on the value of `builds.android.PROFILE_NAME.credentialsSource`, the credentials are obtained from either the local **credentials.json** file or from the EAS servers. If the `remote` mode is selected but no credentials exist yet, you're prompted to generate a new keystore.
+1. 如果在 **eas.json** 中将 `cli.requireCommit` 设置为 `true`，则检查 git index 是否干净 - 这意味着没有未提交的更改。如果不干净，EAS CLI 会提供一个选项，让你提交本地更改，或者中止构建过程。
+1. 准备构建所需的凭据，除非 `builds.android.PROFILE_NAME.withoutCredentials` 被设置为 `true`。
+   - 根据 `builds.android.PROFILE_NAME.credentialsSource` 的值，凭据将从本地 **credentials.json** 文件或 EAS 服务器中获取。如果选择了 `remote` 模式但尚未存在任何凭据，则会提示你生成新的 keystore。
 
-1. Create a tarball containing a copy of the repository. Actual behavior depends on the [VCS workflow](https://expo.fyi/eas-vcs-workflow) you are using.
-1. Upload the project tarball to a private Google Cloud Storage (GCS) bucket and send the build request to EAS Build.
+1. 创建一个包含仓库副本的 tarball。实际行为取决于你所使用的 [VCS workflow](https://expo.fyi/eas-vcs-workflow)。
+1. 将项目 tarball 上传到一个私有的 Google Cloud Storage（GCS）bucket，并将构建请求发送到 EAS Build。
 
 ### Remote steps
 
-Next, this is what happens when EAS Build picks up your request:
+接下来，这是 EAS Build 接收到你的请求后发生的事情：
 
-1. Create a new Docker container for the build.
-   - Every build gets its own fresh container with all build tools installed there (Java JDK, Android SDK, NDK, and so on).
+1. 为构建创建一个新的 Docker 容器。
+   - 每次构建都会获得自己全新的容器，其中安装了所有构建工具（Java JDK、Android SDK、NDK 等）。
 
-1. Download the project tarball from a private GCS bucket and unpack it.
-1. [Create **.npmrc**](/build-reference/private-npm-packages) if `NPM_TOKEN` is set.
-1. Run the `eas-build-pre-install` script from **package.json** if defined.
-1. Run `npm install` in the project root (or `yarn install` if `yarn.lock` exists).
-1. Run `npx expo-doctor` to diagnose potential issues with your project configuration.
-1. Additional step for **managed** projects: Run `npx expo prebuild` to convert the project to a bare one. This step will use the versioned Expo CLI.
-1. Restore a previously saved cache identified by the `cache.key` value in the [build profile](/build/eas-json).
-1. Run the `eas-build-post-install` script from **package.json** if defined.
-1. Restore the keystore (if it was included in the build request).
-1. Inject the signing [configuration into **build.gradle**](#configuring-gradle).
-1. Run `./gradlew COMMAND` in the **android** directory inside your project.
-   - `COMMAND` is the command defined in your **eas.json** at `builds.android.PROFILE_NAME.gradleCommand`. It defaults to `:app:bundleRelease` which produces the AAB (Android App Bundle).
+1. 从私有 GCS bucket 下载项目 tarball 并解压。
+1. 如果设置了 `NPM_TOKEN`，则[创建 **.npmrc**](/build-reference/private-npm-packages)。
+1. 如果 **package.json** 中定义了 `eas-build-pre-install` 脚本，则运行它。
+1. 在项目根目录中运行 `npm install`（如果存在 `yarn.lock`，则运行 `yarn install`）。
+1. 运行 `npx expo-doctor` 来诊断项目配置中的潜在问题。
+1. **managed** 项目的额外步骤：运行 `npx expo prebuild` 将项目转换为 bare 项目。此步骤将使用版本化的 Expo CLI。
+1. 恢复之前保存的缓存，该缓存由 [构建配置](/build/eas-json) 中的 `cache.key` 值标识。
+1. 如果 **package.json** 中定义了 `eas-build-post-install` 脚本，则运行它。
+1. 恢复 keystore（如果它包含在构建请求中）。
+1. 将签名[配置注入到 **build.gradle** 中](#configuring-gradle)。
+1. 在项目内的 **android** 目录中运行 `./gradlew COMMAND`。
+   - `COMMAND` 是你在 **eas.json** 中 `builds.android.PROFILE_NAME.gradleCommand` 定义的命令。其默认值为 `:app:bundleRelease`，会生成 AAB（Android App Bundle）。
 
-1. **Deprecated:** Run the `eas-build-pre-upload-artifacts` script from **package.json** if defined.
-1. Store a cache of files and directories defined in the [build profile](/build/eas-json/). Subsequent builds will restore this cache.
-1. Upload the application archive to GCS.
-   - The artifact path can be configured in **eas.json** at `builds.android.PROFILE_NAME.applicationArchivePath`. It defaults to `android/app/build/outputs/**/*.{apk,aab}`. We're using [glob patterns](https://github.com/isaacs/node-glob#glob-primer) for pattern matching.
+1. **已弃用：** 如果 **package.json** 中定义了 `eas-build-pre-upload-artifacts` 脚本，则运行它。
+1. 存储 [构建配置](/build/eas-json/) 中定义的文件和目录缓存。后续构建将恢复此缓存。
+1. 将应用归档文件上传到 GCS。
+   - 归档文件路径可以在 **eas.json** 中通过 `builds.android.PROFILE_NAME.applicationArchivePath` 进行配置。其默认值为 `android/app/build/outputs/**/*.{apk,aab}`。我们使用 [glob patterns](https://github.com/isaacs/node-glob#glob-primer) 进行模式匹配。
 
-1. If the build was successful: run the `eas-build-on-success` script from **package.json** if defined.
-1. If the build failed: run the `eas-build-on-error` script from **package.json** if defined.
-1. Run the `eas-build-on-complete` script from **package.json** if defined. The `EAS_BUILD_STATUS` env variable is set to either `finished` or `errored`.
-1. Upload the build artifacts archive to a private GCS bucket if `buildArtifactPaths` is specified in the build profile.
+1. 如果构建成功：如果 **package.json** 中定义了 `eas-build-on-success` 脚本，则运行它。
+1. 如果构建失败：如果 **package.json** 中定义了 `eas-build-on-error` 脚本，则运行它。
+1. 如果 **package.json** 中定义了 `eas-build-on-complete` 脚本，则运行它。`EAS_BUILD_STATUS` 环境变量会被设置为 `finished` 或 `errored`。
+1. 如果在构建配置中指定了 `buildArtifactPaths`，则将构建产物归档文件上传到一个私有 GCS bucket。
 
 ## Project auto-configuration
 
-Every time you want to build a new Android app binary, we validate that the project is set up correctly so we can seamlessly run the build process on our servers. This mainly applies to bare projects, but similar steps are run when building managed projects.
+每次你想构建一个新的 Android 应用二进制文件时，我们都会验证项目是否已正确设置，以便我们可以在服务器上无缝运行构建过程。这主要适用于 bare 项目，但在构建 managed 项目时也会运行类似的步骤。
 
 ### Android keystore
 
-Android requires you to sign your application with a certificate. That certificate is stored in your keystore. The Google Play Store identifies applications based on the certificate. This means that if you lose your keystore, you may not be able to update your application in the store. However, with [Play App Signing](https://developer.android.com/studio/publish/app-signing#app-signing-google-play), you can mitigate the risk of losing your keystore.
+Android 要求你使用证书对应用进行签名。该证书存储在你的 keystore 中。Google Play 商店会根据证书来识别应用。这意味着，如果你丢失了 keystore，可能就无法在商店中更新你的应用。不过，借助 [Play App Signing](https://developer.android.com/studio/publish/app-signing#app-signing-google-play)，你可以降低丢失 keystore 的风险。
 
-Your application's keystore should be kept private. **Under no circumstances should you check it in to your repository.** Debug keystores are the only exception because we don't use them for uploading apps to the Google Play Store.
+你的应用 keystore 应妥善保密。**在任何情况下都不应将其提交到你的仓库中。** Debug keystore 是唯一的例外，因为我们不会使用它们将应用上传到 Google Play 商店。
 
 ### Configuring Gradle
 
-Your app binary needs to be signed with a keystore. Since we're building the project on a remote server, we had to come up with a way to provide Gradle with credentials which aren't, for security reasons, checked in to your repository. In one of the remote steps, we inject the signing configuration into your **build.gradle**. EAS Build creates the **android/app/eas-build.gradle** file with the following contents:
+你的应用二进制文件需要使用 keystore 进行签名。由于我们是在远程服务器上构建项目，因此我们必须想出一种方式，为 Gradle 提供凭据；出于安全原因，这些凭据不会提交到你的仓库中。在远程步骤之一中，我们会将签名配置注入到你的 **build.gradle** 中。EAS Build 创建 **android/app/eas-build.gradle** 文件，其内容如下：
 
 {/* prettier-ignore */}
 ```groovy android/app/eas-build.gradle
-// Build integration with EAS
+// 与 EAS 的构建集成
 
 import java.nio.file.Paths
 
 android {
   signingConfigs {
     release {
-      // This is necessary to avoid needing the user to define a release signing config manually
-      // If no release config is defined, and this is not present, build for assembleRelease will crash
+      // 这是必要的，这样就不需要用户手动定义 release 签名配置
+      // 如果未定义 release 配置，并且这里不存在它，assembleRelease 的构建将会崩溃
     }
   }
 
   buildTypes {
     release {
-      // This is necessary to avoid needing the user to define a release build type manually
+      // 这是必要的，这样就不需要用户手动定义 release 构建类型
     }
     debug {
-      // This is necessary to avoid needing the user to define a debug build type manually
+      // 这是必要的，这样就不需要用户手动定义 debug 构建类型
     }
   }
 }
@@ -103,8 +103,8 @@ tasks.whenTaskAdded {
     if (credentials.android.keystore.containsKey("keyPassword")) {
       keyPassword credentials.android.keystore.keyPassword
     } else {
-      // key password is required by Gradle, but PKCS keystores don't have one
-      // using the keystore password seems to satisfy the requirement
+      // key 密码是 Gradle 所必需的，但 PKCS keystore 没有
+      // 使用 keystore 密码似乎可以满足这一要求
       keyPassword credentials.android.keystore.keystorePassword
     }
   }
@@ -120,9 +120,9 @@ tasks.whenTaskAdded {
 
 ```
 
-The most important part is the `release` signing config. It's configured to read the keystore and passwords from the **credentials.json** file at the project root. Even though you're not required to create this file on your own, it's created and populated with your credentials by EAS Build before running the build.
+最重要的部分是 `release` 签名配置。它配置为从项目根目录下的 **credentials.json** 文件中读取 keystore 和密码。尽管你不需要自己创建这个文件，但在构建运行之前，EAS Build 会为你创建并填充好你的凭据。
 
-This file is imported in **android/app/build.gradle** like this:
+这个文件会像这样在 **android/app/build.gradle** 中导入：
 
 ```groovy android/app/build.gradle
 // ...

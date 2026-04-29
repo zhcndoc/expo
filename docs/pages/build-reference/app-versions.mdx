@@ -1,58 +1,58 @@
 ---
-title: App version management
-description: Learn about different version types and how to manage them remotely or locally.
+title: 应用版本管理
+description: 了解不同的版本类型，以及如何远程或本地管理它们。
 hasVideoLink: true
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-Android and iOS each expose two values to identify the version of an app: the version visible in stores (user-facing version) and the version visible only to developers (developer-facing build version). This guide explains how you can manage those versions remotely or locally.
+Android 和 iOS 都各自提供两个值来标识应用的版本：商店中可见的版本（面向用户的版本）和仅开发者可见的版本（面向开发者的构建版本）。本指南将说明如何远程或本地管理这些版本。
 
 <VideoBoxLink
   videoId="Gk7RHDWsLsQ"
-  title="Automatic App Version Management"
-  description="In this Expo feature focus video you'll learn about automatic app version management in Expo EAS Build."
+  title="自动应用版本管理"
+  description="在这段 Expo feature focus 视频中，你将了解 Expo EAS Build 中的自动应用版本管理。"
 />
 
-## App versions
+## 应用版本
 
-In Expo projects, the following properties can be used to define app versions in the [app config](/workflow/configuration/) file.
+在 Expo 项目中，以下属性可用于在 [app config](/workflow/configuration/) 文件中定义应用版本。
 
-| Property                                                          | Description                                                                                                                                                                                    |
+| 属性                                                          | 描述                                                                                                                                                                                    |
 | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`version` ](/versions/latest/config/app/#version)                | The user-facing version visible in stores. On Android, it represents `versionName` name in **android/app/build.gradle**. On iOS, it represents `CFBundleShortVersionString` in **Info.plist**. |
-| [`android.versionCode`](/versions/latest/config/app/#versioncode) | The developer-facing build version for Android. It represents `versionCode` in **android/app/build.gradle**.                                                                                   |
-| [`ios.buildNumber`](/versions/latest/config/app/#buildnumber)     | The developer-facing build version for iOS. It represents `CFBundleVersion` in **Info.plist**.                                                                                                 |
+| [`version` ](/versions/latest/config/app/#version)                | 商店中可见的面向用户版本。在 Android 上，它表示 **android/app/build.gradle** 中的 `versionName` 名称。在 iOS 上，它表示 **Info.plist** 中的 `CFBundleShortVersionString`。 |
+| [`android.versionCode`](/versions/latest/config/app/#versioncode) | Android 的面向开发者构建版本。它表示 **android/app/build.gradle** 中的 `versionCode`。                                                                                   |
+| [`ios.buildNumber`](/versions/latest/config/app/#buildnumber)     | iOS 的面向开发者构建版本。它表示 **Info.plist** 中的 `CFBundleVersion`。                                                                                                 |
 
-### Using app versions in your app
+### 在应用中使用应用版本
 
-To show the user-facing version inside your app, you can use [`Application.nativeApplicationVersion`](/versions/latest/sdk/application/#applicationnativeapplicationversion) from the `expo-application` library.
+要在应用内显示面向用户的版本，你可以使用 `expo-application` 库中的 [`Application.nativeApplicationVersion`](/versions/latest/sdk/application/#applicationnativeapplicationversion)。
 
-To show the developer-facing build version inside your app, you can use [`Application.nativeBuildVersion`](/versions/latest/sdk/application/#applicationnativebuildversion) from the `expo-application` library.
+要在应用内显示面向开发者的构建版本，你可以使用 `expo-application` 库中的 [`Application.nativeBuildVersion`](/versions/latest/sdk/application/#applicationnativebuildversion)。
 
-## Recommended workflow
+## 推荐工作流
 
-### User-facing version
+### 面向用户的版本
 
-When you are doing a production release, the user-facing version should be explicitly set and updated by you. You can update the `version` property in app config when production build is submitted to the app stores. This also applies if your project uses `expo-updates` with an automatic runtime version policy. This marks the beginning of a new development cycle for a new version of your app. Learn more about [deployment patterns](/eas-update/deployment-patterns).
+在进行生产发布时，面向用户的版本应由你显式设置并更新。当生产构建提交到应用商店时，你可以在 app config 中更新 `version` 属性。如果你的项目使用了带有自动运行时版本策略的 `expo-updates`，这也同样适用。这标志着你开始了新版本应用的新开发周期。了解更多 [部署模式](/eas-update/deployment-patterns)。
 
-### Developer-facing build version
+### 面向开发者的构建版本
 
-For developer-facing build version, you can set them to auto increment on every build. This will help you avoid making manual changes to the project every time you upload a new archive on Play Store testing channels or TestFlight. One common cause for app store rejections is submitting a build with a duplicate version number. It happens when a developer forgets to increment the developer-facing build version number before creating a new build.
+对于面向开发者的构建版本，你可以设置为在每次构建时自动递增。这将帮助你避免在每次向 Play Store 测试渠道或 TestFlight 上传新的归档时都手动修改项目。应用商店拒绝应用的一个常见原因是提交了版本号重复的构建。这通常发生在开发者在创建新构建前忘记递增面向开发者的构建版本号时。
 
-EAS Build can help manage developer-facing build versions automatically by incrementing these versions for you if you opt into using the [`remote` version source](#remote-version-source), which is the recommended behavior. Optionally, you can choose to use a `local` app version source, which means you control versions manually in their respective config files.
+如果你选择使用 [`remote` 版本源](#remote-version-source)，EAS Build 可以通过为你递增这些版本来自动管理面向开发者的构建版本；这是推荐的行为。你也可以选择使用 `local` 应用版本源，这意味着你需要在各自的配置文件中手动控制版本。
 
-## Remote version source
+## 远程版本源
 
-> **info** The `remote` version source is the recommended behavior from EAS CLI version `12.0.0`.
+> **info** `remote` 版本源是 EAS CLI 版本 `12.0.0` 起推荐的行为。
 
-EAS servers can store and manage your app's developer-facing build version (`android.versionCode` and `ios.buildNumber`) remotely. To enable it, you need to set `cli.appVersionSource` to `remote` in **eas.json**. Then, under the `production` build profile, you can set the `autoIncrement` property to `true`.
+EAS 服务器可以远程存储并管理你应用的面向开发者构建版本（`android.versionCode` 和 `ios.buildNumber`）。要启用它，你需要在 **eas.json** 中将 `cli.appVersionSource` 设置为 `remote`。然后，在 `production` 构建配置下，你可以将 `autoIncrement` 属性设置为 `true`。
 
 ```json eas.json
 {
   "cli": {
-    /* @info The app version source is set to <CODE>remote</CODE> to store and manage the version of your app. */
+    /* @info 应用版本源设置为 <CODE>remote</CODE>，用于存储和管理你应用的版本。 */
     "appVersionSource": "remote"
     /* @end */
   },
@@ -66,7 +66,7 @@ EAS servers can store and manage your app's developer-facing build version (`and
       /* @end */
     },
     "production": {
-      /* @info The <CODE>autoIncrement</CODE> property is set to <CODE>true</CODE> to automatically increment the <CODE>android.versionCode</CODE> and <CODE>ios.buildNumber</CODE> values. */
+      /* @info <CODE>autoIncrement</CODE> 属性设置为 <CODE>true</CODE>，以自动递增 <CODE>android.versionCode</CODE> 和 <CODE>ios.buildNumber</CODE> 的值。 */
       "autoIncrement": true
       /* @end */
     }
@@ -75,52 +75,52 @@ EAS servers can store and manage your app's developer-facing build version (`and
 }
 ```
 
-The remote version is initialized with the value from the local project. For example, if you have `android.versionCode` set to `1` in app config, when you create a new build using the remote version source, it will auto increment to `2`. However, if you do not have build versions set in your app config, the remote version will initialize with `1` when the first build is created.
+远程版本会使用本地项目中的值初始化。例如，如果你在 app config 中将 `android.versionCode` 设置为 `1`，当你使用远程版本源创建新构建时，它会自动递增到 `2`。不过，如果你的 app config 中没有设置构建版本，那么在创建第一个构建时，远程版本会初始化为 `1`。
 
-When the `remote` version property is enabled inside **eas.json**, the build version values stored in app config are ignored and not updated when the version is incremented remotely. The remote version source values are set on the native project when running a build, which is considered the source of truth for these values. You can safely remove these values from your app config.
+当 **eas.json** 中启用 `remote` 版本属性时，存储在 app config 中的构建版本值会被忽略，并且在版本通过远程递增时不会更新。远程版本源的值会在构建运行时设置到原生项目中，这被视为这些值的唯一来源。你可以安全地从 app config 中移除这些值。
 
-### Syncing already defined versions to remote
+### 将已定义的版本同步到远程
 
-There are different scenarios where you already have versions set up for your project and want to increment from those versions when you create a new EAS Build. However, these existing versions might not be synced remotely with EAS. Some of these scenarios are:
+在某些场景下，你已经为项目设置了版本，并且希望在创建新的 EAS Build 时基于这些版本递增。不过，这些现有版本可能尚未与 EAS 远程同步。这些场景包括：
 
-- You have already published your app in the app stores and want to continue using the same version numbers.
-- EAS CLI is not able to detect what version the app is on.
-- For any other reason, you have versions explicitly set, such as inside your app config.
+- 你已经将应用发布到应用商店，并希望继续使用相同的版本号。
+- EAS CLI 无法检测应用当前所处的版本。
+- 由于其他原因，你已经显式设置了版本，例如在 app config 中。
 
-In these scenarios, you can sync the current version to EAS Build using the EAS CLI using the following steps:
+在这些场景中，你可以通过以下步骤使用 EAS CLI 将当前版本同步到 EAS Build：
 
-- In the terminal window, run the following command:
+- 在终端窗口中运行以下命令：
 
   <Terminal cmd={['$ eas build:version:set']} />
 
-- Select the platform (Android or iOS) when prompted.
-- When prompted **Do you want to set app version source to remote now?**, select **yes**. This will set the `cli.appVersionSource` to `remote` in **eas.json**.
-- When prompted **What version would you like to initialize it with?**, enter the last version number that you have set in the app stores.
+- 在提示时选择平台（Android 或 iOS）。
+- 当提示 **Do you want to set app version source to remote now?** 时，选择 **yes**。这将把 **eas.json** 中的 `cli.appVersionSource` 设置为 `remote`。
+- 当提示 **What version would you like to initialize it with?** 时，输入你在应用商店中设置的最后一个版本号。
 
-After these steps, the app versions will be synced to EAS Build remotely. You can now set `build.production.autoIncrement` to `true` in **eas.json**. When you create a new production build, the `versionCode` and `buildNumber` will be automatically incremented.
+完成这些步骤后，应用版本将远程同步到 EAS Build。现在你可以在 **eas.json** 中将 `build.production.autoIncrement` 设置为 `true`。当你创建新的生产构建时，`versionCode` 和 `buildNumber` 会自动递增。
 
-### Syncing versions from remote to local
+### 将版本从远程同步到本地
 
-To build your project locally in Android Studio or Xcode using the same version stored remotely on EAS, update your local project with the remote versions using the following command:
+如果你想在 Android Studio 或 Xcode 中使用与 EAS 远程存储的相同版本在本地构建项目，可以使用以下命令将本地项目更新为远程版本：
 
 <Terminal cmd={['$ eas build:version:sync']} />
 
-### Limitations
+### 限制
 
-- `eas build:version:sync` command on Android does not support bare projects with multiple flavors. However, the rest of the remote versioning functionality should work with all projects.
-- `autoIncrement` does not support the `version` option.
-- It's not supported if you are using EAS Update and runtime policy set to `"runtimeVersion": { "policy": "nativeVersion" }`. For similar behavior, use the `"appVersion"` policy instead.
+- Android 上的 `eas build:version:sync` 命令不支持具有多个 flavor 的裸项目。不过，远程版本控制的其余功能应适用于所有项目。
+- `autoIncrement` 不支持 `version` 选项。
+- 如果你正在使用 EAS Update 且运行时策略设置为 `"runtimeVersion": { "policy": "nativeVersion" }`，则不受支持。若要获得类似行为，请改用 `"appVersion"` 策略。
 
-## Local version source
+## 本地版本源
 
-You can configure your project so that the source of truth for project versions is the local project source code itself. To do this, set `cli.appVersionSource` to `local` in your **eas.json**.
+你可以将项目配置为以本地项目源代码本身作为项目版本的唯一来源。为此，请在 **eas.json** 中将 `cli.appVersionSource` 设置为 `local`。
 
-With this setup, EAS reads app version values and builds projects as they are. It doesn't write to the project. You can also enable auto incrementing versions locally by setting the `autoIncrement` option on a build profile.
+采用这种设置后，EAS 会读取应用版本值并按原样构建项目。它不会将内容写回项目。你也可以通过在构建配置中设置 `autoIncrement` 选项来启用本地自动递增版本。
 
 ```json eas.json
 {
   "cli": {
-    /* @info The app version source is set to <CODE>local</CODE> for you to manage the version of your app manually. */
+    /* @info 应用版本源设置为 <CODE>local</CODE>，由你手动管理应用版本。 */
     "appVersionSource": "local"
     /* @end */
   },
@@ -134,7 +134,7 @@ With this setup, EAS reads app version values and builds projects as they are. I
       /* @end */
     },
     "production": {
-      /* @info The <CODE>autoIncrement</CODE> property is set to <CODE>true</CODE> to automatically increment the <CODE>android.versionCode</CODE> and <CODE>ios.buildNumber</CODE> values. */
+      /* @info <CODE>autoIncrement</CODE> 属性设置为 <CODE>true</CODE>，以自动递增 <CODE>android.versionCode</CODE> 和 <CODE>ios.buildNumber</CODE> 的值。 */
       "autoIncrement": true
       /* @end */
     }
@@ -143,9 +143,9 @@ With this setup, EAS reads app version values and builds projects as they are. I
 }
 ```
 
-In the case of [existing React Native projects](/bare/overview/), the values in native code take precedence. The libraries `expo-constants` and `expo-updates` read values from the app config file. If you rely on version values from a manifest, you should keep them in sync with native code. Keeping these values in sync is especially important if you are using EAS Update with the runtime policy set to `"runtimeVersion": { "policy": "nativeVersion" }`, because mismatched versions may result in the delivery of updates to the wrong version of an application. We recommend using [`expo-application`](/versions/latest/sdk/application/#constants) to read the version instead of depending on values from app config.
+对于[现有的 React Native 项目](/bare/overview/)，原生代码中的值优先。`expo-constants` 和 `expo-updates` 库会读取 app config 文件中的值。如果你依赖来自 manifest 的版本值，你应该让它们与原生代码保持同步。如果你正在使用 EAS Update 且运行时策略设置为 `"runtimeVersion": { "policy": "nativeVersion" }`，那么保持这些值同步尤其重要，因为版本不匹配可能会导致更新被发送到应用的错误版本。我们建议使用 [`expo-application`](/versions/latest/sdk/application/#constants) 来读取版本，而不是依赖 app config 中的值。
 
-### Limitations
+### 限制
 
-- With `autoIncrement`, you need to commit your changes on every build if you want the version change to persist. This can be difficult to coordinate when building on CI.
-- For existing React Native projects with Gradle configuration that supports multiple flavors, EAS CLI is not able to read or modify the version, so `autoIncrement` option is not supported, and versions will not be listed in the build details page on [expo.dev](https://expo.dev).
+- 使用 `autoIncrement` 时，如果你希望版本更改持久化，每次构建后都需要提交更改。在 CI 上构建时，这可能很难协调。
+- 对于支持多个 flavor 的 Gradle 配置的现有 React Native 项目，EAS CLI 无法读取或修改版本，因此不支持 `autoIncrement` 选项，并且版本不会显示在 [expo.dev](https://expo.dev) 上的构建详情页面中。

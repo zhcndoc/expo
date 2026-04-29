@@ -1,49 +1,49 @@
 ---
-title: Error handling
-description: Learn how to handle unmatched routes and errors in your app when using Expo Router.
+title: 错误处理
+description: 了解在使用 Expo Router 时，如何在应用中处理未匹配的路由和错误。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-This guide specifies how to handle unmatched routes and errors in your app when using Expo Router.
+本指南说明了在使用 Expo Router 时，如何处理应用中的未匹配路由和错误。
 
-## Unmatched routes
+## 未匹配的路由
 
 <ContentSpotlight
-  alt="An example of unmatched routes displayed on all platforms."
+  alt="在所有平台上显示未匹配路由的示例。"
   src="/static/images/expo-router/unmatched.png"
   className="max-w-[720px]"
 />
 
-Native apps don't have a server so there are technically no 404s. However, if you're implementing a router universally, then it makes sense to handle missing routes. This is done automatically for each app, but you can also customize it.
+原生应用没有服务器，因此从技术上讲并不存在 404。不过，如果你正在通用地实现一个路由器，那么处理缺失路由就很有意义。这会为每个应用自动完成，但你也可以自定义它。
 
 ```tsx src/app/+not-found.tsx
 import { Unmatched } from 'expo-router';
 export default Unmatched;
 ```
 
-This will render the default `Unmatched`. You can export any component you want to render instead. We recommend having a link to `/` so users can navigate back to the home screen.
+这将渲染默认的 `Unmatched`。你也可以导出任何你想要渲染的组件来替代它。我们建议提供一个指向 `/` 的链接，这样用户就可以返回主页。
 
-### Route priority
+### 路由优先级
 
-On web, files are served in the following order:
+在 Web 上，文件按以下顺序提供：
 
-1. Static files in the **public** directory.
-2. Standard and dynamic routes in the app directory.
-3. [API routes](/router/web/api-routes) in the app directory.
-4. Not-found routes will be served last with a 404 status code.
+1. **public** 目录中的静态文件。
+2. app 目录中的标准路由和动态路由。
+3. app 目录中的 [API 路由](/router/web/api-routes)。
+4. 未找到路由将最后被提供，并返回 404 状态码。
 
-## Error handling
+## 错误处理
 
-Expo Router enables fine-tuned error handling to enable a more opinionated data-loading strategy in the future.
+Expo Router 支持精细化的错误处理，以便在未来启用更具约束性的 डेटा 加载策略。
 
 <ContentSpotlight
-  alt="Using ErrorBoundary in Expo Router to catch errors in a route component."
+  alt="在 Expo Router 中使用 ErrorBoundary 捕获路由组件中的错误。"
   src="/static/images/expo-router/error-boundaries.png"
   className="max-w-[720px]"
 />
 
-You can export a nested [`ErrorBoundary`](/versions/latest/sdk/router/#errorboundary) component from any route to intercept and format component-level errors using [React Error Boundaries](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary):
+你可以从任意路由中导出一个嵌套的 [`ErrorBoundary`](/versions/latest/sdk/router/#errorboundary) 组件，以便使用 [React 错误边界](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary) 拦截并格式化组件级错误：
 
 {/* prettier-ignore */}
 ```tsx src/app/home.tsx
@@ -56,7 +56,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   return (
     <View style={{ flex: 1, backgroundColor: "red" }}>
       <Text>{error.message}</Text>
-      <Text onPress={retry}>Try Again?</Text>
+      <Text onPress={retry}>再试一次？</Text>
     </View>
   );
 }
@@ -64,7 +64,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
 export default function Page() { ... }
 ```
 
-When you export an `ErrorBoundary` the route will be wrapped with a React Error Boundary effectively:
+当你导出一个 `ErrorBoundary` 时，该路由将被 React 错误边界包装，效果如下：
 
 ```tsx Virtual
 function Route({ ErrorBoundary, Component }) {
@@ -76,8 +76,8 @@ function Route({ ErrorBoundary, Component }) {
 }
 ```
 
-When `ErrorBoundary` is not present, the error will be thrown to the nearest parent's `ErrorBoundary` and accepts [`error`](/versions/latest/sdk/router/#error) and [`retry`](/versions/latest/sdk/router/#retry) props.
+当 `ErrorBoundary` 不存在时，错误将抛给最近的父级 `ErrorBoundary`，并接受 [`error`](/versions/latest/sdk/router/#error) 和 [`retry`](/versions/latest/sdk/router/#retry) 属性。
 
-### Work in progress
+### 进行中
 
-React Native LogBox needs to be presented less aggressively to develop with errors. Currently, it shows for `console.error` and `console.warn`. However, it should ideally only show for uncaught errors.
+React Native LogBox 需要以不那么激进的方式呈现，以便在出现错误时进行开发。目前，它会针对 `console.error` 和 `console.warn` 显示。不过，理想情况下它只应对未捕获的错误显示。

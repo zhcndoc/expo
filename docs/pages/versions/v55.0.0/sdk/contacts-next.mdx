@@ -1,6 +1,6 @@
 ---
-title: Contacts (next)
-description: A library that provides access to the phone's system contacts.
+title: 联系人（next）
+description: 一个提供访问手机系统联系人的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-contacts'
 packageName: 'expo-contacts'
 iconUrl: '/static/images/packages/expo-contacts.png'
@@ -18,16 +18,16 @@ import {
   ConfigPluginProperties,
 } from '~/ui/components/ConfigSection';
 
-`expo-contacts` provides access to the device's system contacts, allowing you to get contact information as well as add, edit, or remove contacts.
-On iOS, contacts have a multi-layered grouping system that you can also access through this API.
+`expo-contacts` 提供对设备系统联系人的访问，允许你获取联系人信息，以及添加、编辑或移除联系人。
+在 iOS 上，联系人具有多层级的分组系统，你也可以通过此 API 访问它。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Configuration in app config
+## 在 app 配置中进行配置
 
-You can configure `expo-contacts` using its built-in [config plugin](/config-plugins/introduction/) if you use config plugins in your project ([Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)). The plugin allows you to configure various properties that cannot be set at runtime and require building a new app binary to take effect. If your app does **not** use CNG, then you'll need to manually configure the library.
+如果你在项目中使用配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-contacts` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置各种无法在运行时设置、且需要构建新的应用二进制文件后才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
 
 <ConfigPluginExample>
 
@@ -38,7 +38,7 @@ You can configure `expo-contacts` using its built-in [config plugin](/config-plu
       [
         "expo-contacts",
         {
-          "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts."
+          "contactsPermission": "允许 $(PRODUCT_NAME) 访问你的联系人。"
         }
       ]
     ]
@@ -53,35 +53,35 @@ You can configure `expo-contacts` using its built-in [config plugin](/config-plu
     {
       name: 'contactsPermission',
       platform: 'ios',
-      description: 'A string to set the [`NSContactsUsageDescription`](#ios) permission message.',
-      default: '"Allow $(PRODUCT_NAME) to access your contacts"',
+      description: '用于设置 [`NSContactsUsageDescription`](#ios) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的联系人"',
     },
   ]}
 />
 
 <ConfigReactNative>
 
-If you're not using Continuous Native Generation ([CNG](/workflow/continuous-native-generation/)) (you're using native **android** and **ios** projects manually), then you need to configure following permissions in your native projects:
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)）（而是手动使用原生 **android** 和 **ios** 项目），那么你需要在原生项目中配置以下权限：
 
-- For Android, add `android.permission.READ_CONTACTS` and `android.permission.WRITE_CONTACTS` permissions to your project's **android/app/src/main/AndroidManifest.xml**:
+- 对于 Android，请将 `android.permission.READ_CONTACTS` 和 `android.permission.WRITE_CONTACTS` 权限添加到项目的 **android/app/src/main/AndroidManifest.xml** 中：
 
   ```xml
   <uses-permission android:name="android.permission.READ_CONTACTS" />
   <uses-permission android:name="android.permission.WRITE_CONTACTS" />
   ```
 
-- For iOS, add the `NSContactsUsageDescription` key to your project's **ios/[app]/Info.plist**:
+- 对于 iOS，请将 `NSContactsUsageDescription` 键添加到项目的 **ios/[app]/Info.plist** 中：
 
   ```xml
   <key>NSContactsUsageDescription</key>
-  <string>Allow $(PRODUCT_NAME) to access your contacts</string>
+  <string>允许 $(PRODUCT_NAME) 访问你的联系人</string>
   ```
 
 </ConfigReactNative>
 
-## Usage
+## 用法
 
-<Collapsible summary="Contacts Manipulations">
+<Collapsible summary="联系人操作">
 
 ```tsx Contacts Manipulations
 const contact = await Contact.create({ givenName: 'John', familyName: 'Doe' });
@@ -94,7 +94,7 @@ await contact.addPhone({ label: 'work', number: '+12345678912' });
 // { givenName: "Andrew", familyName: "Doe", phones: [{label: "work", number: "+12345678912"}]}
 
 const phones = await contact.getPhones();
-// Changes only the defined fields, leaves the rest unchanged
+// 仅更改已定义的字段，其余保持不变
 await contact.patch({ phones: [...phones, { label: 'home', number: '+98765432198' }] });
 /*
 {
@@ -107,14 +107,14 @@ await contact.patch({ phones: [...phones, { label: 'home', number: '+98765432198
 }
 */
 
-// Replaces all fields with the ones defined in the object
+// 使用对象中定义的字段替换所有字段
 await contact.update({ givenName: 'John', familyName: 'Doe' });
 // { givenName: "John", familyName: "Doe"}
 ```
 
 </Collapsible>
 
-<Collapsible summary="Retrieving contacts">
+<Collapsible summary="获取联系人">
 
 ```tsx Retrieving contacts
 const contactDetails = await Contact.getAllDetails([ContactField.FULL_NAME, ContactField.PHONES], {
@@ -123,7 +123,7 @@ const contactDetails = await Contact.getAllDetails([ContactField.FULL_NAME, Cont
   sortOrder: ContactsSortOrder.GivenName,
 });
 
-// Contact instance can be created from fetched details
+// 可以根据获取到的详情创建 Contact 实例
 const contacts = contactDetails.map(item => new Contact(item.id));
 
 const contactsFromGetAll = await Contact.getAll({
@@ -135,7 +135,7 @@ const contactsFromGetAll = await Contact.getAll({
 
 </Collapsible>
 
-<Collapsible summary="Contacts infinite scroll example">
+<Collapsible summary="联系人无限滚动示例">
 
 ```tsx Contacts infinite scroll example
 import { Contact, ContactField, PartialContactDetails } from 'expo-contacts/next';
@@ -169,7 +169,7 @@ export default function InfiniteContacts() {
         renderItem={({ item }) => (
           <View style={{ padding: 10, borderBottomWidth: 1, borderColor: '#ccc' }}>
             <Text>{item.fullName}</Text>
-            <Text>{item.phones[0]?.number ?? 'No phone number'}</Text>
+            <Text>{item.phones[0]?.number ?? '没有电话号码'}</Text>
           </View>
         )}
       />
@@ -180,7 +180,7 @@ export default function InfiniteContacts() {
 
 </Collapsible>
 
-<Collapsible summary="Edit contact form example">
+<Collapsible summary="编辑联系人表单示例">
 
 ```tsx Edit contact form example
 import { Contact, ContactField, ContactPatch } from 'expo-contacts/next';
@@ -202,7 +202,7 @@ export default function ContactForm() {
   }, []);
 
   if (!contactPatch && contact) {
-    return <Text style={{ marginTop: 50 }}>Loading details...</Text>;
+    return <Text style={{ marginTop: 50 }}>正在加载详情...</Text>;
   }
 
   const handleChangeName = (text: string) =>
@@ -229,29 +229,29 @@ export default function ContactForm() {
     if (contact) {
       await contact.patch(contactPatch);
     }
-    Alert.alert('Contact patched successfully');
+    Alert.alert('联系人已成功打补丁');
   };
 
   if (!contact) {
-    return <Text style={{ marginTop: 50 }}>Loading...</Text>;
+    return <Text style={{ marginTop: 50 }}>正在加载...</Text>;
   }
 
   return (
     <ScrollView style={{ padding: 20, paddingTop: 60 }}>
-      <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>Edit ID: {contact.id}</Text>
+      <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>编辑 ID: {contact.id}</Text>
 
-      <Text>Name:</Text>
+      <Text>姓名：</Text>
       <TextInput
         style={{ borderWidth: 1, padding: 5, marginBottom: 10 }}
         value={contactPatch.givenName || ''}
         onChangeText={handleChangeName}
       />
 
-      <Text>Phones:</Text>
+      <Text>电话：</Text>
       {contactPatch.phones?.map((phone, index) => (
         <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
           <Text style={{ flex: 1 }}>{phone.number}</Text>
-          <Button title="Remove" onPress={() => handleRemovePhone(index)} />
+          <Button title="移除" onPress={() => handleRemovePhone(index)} />
         </View>
       ))}
 
@@ -260,12 +260,12 @@ export default function ContactForm() {
           style={{ borderWidth: 1, flex: 1, padding: 5, marginRight: 5 }}
           value={newPhoneInput}
           onChangeText={setNewPhoneInput}
-          placeholder="New phone..."
+          placeholder="新电话号码..."
         />
-        <Button title="Add" onPress={handleAddPhone} />
+        <Button title="添加" onPress={handleAddPhone} />
       </View>
 
-      <Button title="PATCH CONTACT" onPress={handlePatch} />
+      <Button title="PATCH 联系人" onPress={handlePatch} />
     </ScrollView>
   );
 }
@@ -281,16 +281,16 @@ import { Contact } from 'expo-contacts/next';
 
 <APISection packageName="expo-contacts-next" apiName="Contacts (next)" />
 
-## Permissions
+## 权限
 
 ### Android
 
-This library automatically adds `READ_CONTACTS` and `WRITE_CONTACTS` permissions to your app:
+此库会自动向你的应用添加 `READ_CONTACTS` 和 `WRITE_CONTACTS` 权限：
 
 <AndroidPermissions permissions={['READ_CONTACTS', 'WRITE_CONTACTS']} />
 
 ### iOS
 
-The following usage description keys are used by this library:
+此库使用以下用途说明键：
 
 <IOSPermissions permissions={['NSContactsUsageDescription']} />

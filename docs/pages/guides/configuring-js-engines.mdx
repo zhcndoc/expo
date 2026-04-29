@@ -1,20 +1,20 @@
 ---
-title: Configure JS engines
-description: A guide on configuring JS engines for both Android and iOS in an Expo project.
+title: 配置 JS 引擎
+description: 一份关于在 Expo 项目中为 Android 和 iOS 配置 JS 引擎的指南。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-JavaScript engines execute your application code and provide various features such as memory management, optimization, and error handling. By default, Expo projects use [Hermes](https://hermesengine.dev/) as the JavaScript engine. Switching to other engines, such as JSC or V8, for Android and iOS platforms is possible. However, not for the web because the JavaScript engine is included in the web browser.
+JavaScript 引擎执行你的应用代码，并提供诸如内存管理、优化和错误处理等各种功能。默认情况下，Expo 项目使用 [Hermes](https://hermesengine.dev/) 作为 JavaScript 引擎。也可以在 Android 和 iOS 平台上切换到其他引擎，例如 JSC 或 V8。不过，Web 端不行，因为 JavaScript 引擎已包含在 Web 浏览器中。
 
-## Configuring the `jsEngine` through app config
+## 通过 app 配置配置 `jsEngine`
 
-> **warning** Changing the JS engine is unavailable in Expo Go from SDK 52 (only the Hermes engine is available). A [development build](/develop/development-builds/introduction/) is required to use this customization.
+> **warning** 从 SDK 52 开始，Expo Go 中无法更改 JS 引擎（仅可使用 Hermes 引擎）。使用此自定义功能需要一个 [开发构建](/develop/development-builds/introduction/)。
 
-We recommend Hermes because it is purpose built and optimized for React Native apps, and it has the best debugging experience. If you are familiar with the tradeoffs of different JavaScript engines and would like to change away from Hermes, the [`jsEngine`](/versions/latest/config/app/#jsengine) field inside [app config](/workflow/configuration/) allows you to specify the JavaScript engine for your app. The default value is `hermes`.
+我们推荐 Hermes，因为它是专为 React Native 应用设计并优化的，而且它提供了最佳的调试体验。如果你熟悉不同 JavaScript 引擎之间的权衡，并且希望不再使用 Hermes，那么 [app 配置](/workflow/configuration/) 中的 [`jsEngine`](/versions/latest/config/app/#jsengine) 字段允许你为应用指定 JavaScript 引擎。默认值是 `hermes`。
 
-If you want to use JSC instead, set the `jsEngine` field in the app config:
+如果你想改用 JSC，请在 app 配置中设置 `jsEngine` 字段：
 
 ```json app.json
 {
@@ -24,31 +24,31 @@ If you want to use JSC instead, set the `jsEngine` field in the app config:
 }
 ```
 
-<Collapsible summary="Usage in bare React Native projects">
+<Collapsible summary="在裸 React Native 项目中的用法">
 
-To change the JavaScript engine in a bare React Native project, update the `expo.jsEngine` value in **android/gradle.properties** and **ios/Podfile.properties.json**.
+要在裸 React Native 项目中更改 JavaScript 引擎，请更新 **android/gradle.properties** 和 **ios/Podfile.properties.json** 中的 `expo.jsEngine` 值。
 
 </Collapsible>
 
-It's important to highlight that changing the JS engine will require you to recompile development builds with `eas build` to work properly.
+需要强调的是，更改 JS 引擎后，你需要使用 `eas build` 重新编译开发构建，才能正常工作。
 
-## Using the V8 engine
+## 使用 V8 引擎
 
-To use the V8 engine, you need to install [`react-native-v8`](https://github.com/Kudo/react-native-v8), an opt-in package that adds V8 runtime support for React Native. You can install it by running the following command:
+要使用 V8 引擎，你需要安装 [`react-native-v8`](https://github.com/Kudo/react-native-v8)，这是一个可选安装的软件包，为 React Native 增加 V8 运行时支持。你可以通过运行以下命令来安装它：
 
 <Terminal cmd={['$ npx expo install react-native-v8 v8-android-jit']} />
 
-Make sure to remove the `jsEngine` field from the app config.
+请确保从 app 配置中移除 `jsEngine` 字段。
 
-<Collapsible summary="Usage with Expo Prebuild">
+<Collapsible summary="与 Expo Prebuild 一起使用">
 
-Run `npx expo prebuild -p android --clean` after the installation to prebuild again.
+安装后运行 `npx expo prebuild -p android --clean`，以重新进行 prebuild。
 
 </Collapsible>
 
-## Switch JavaScript engine on a specific platform
+## 在特定平台上切换 JavaScript 引擎
 
-To use a different engine on one specific platform, you can set the `"jsEngine"` value at the top level and then override it with a different value under the `"android"` or `"ios"` key. The value specified for the platform will take precedence over the common field.
+如果要在某个特定平台上使用不同的引擎，可以在顶层设置 `"jsEngine"` 值，然后在 `"android"` 或 `"ios"` 键下用不同的值覆盖它。平台中指定的值将优先于通用字段。
 
 {/* prettier-ignore */}
 ```json app.json
@@ -56,7 +56,7 @@ To use a different engine on one specific platform, you can set the `"jsEngine"`
   "expo": {
     "jsEngine": "hermes",
     "ios": {
-      /* @info jsEngine inside platform section will take precedence over the common field */
+      /* @info 平台部分中的 jsEngine 将优先于通用字段 */
       "jsEngine": "jsc"
       /* @end */
     }

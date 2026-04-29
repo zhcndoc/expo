@@ -5,20 +5,23 @@ type HeadProps = PropsWithChildren<{ title?: string; description?: string; canon
 
 const BASE_OG_URL = 'https://og.expo.dev/?theme=docs';
 
-const BASE_TITLE = 'Expo Documentation';
-const BASE_DESCRIPTION = `Expo is an open-source platform for making universal native apps for Android, iOS, and the web with JavaScript and React.`;
+const BASE_TITLE = 'Expo 中文文档';
+const BASE_DESCRIPTION = `Expo 是一个开源平台，可用 JavaScript 和 React 为 Android、iOS 以及 Web 构建通用原生应用。`;
 
 const DocumentationHead = ({ title, description, canonicalUrl, children }: HeadProps) => {
   const OGImageURL = `${BASE_OG_URL}&title=${encodeURIComponent(title ?? BASE_TITLE)}&description=${encodeURIComponent(description ?? BASE_DESCRIPTION)}`;
 
   return (
     <NextHead>
-      <title>{title ? `${title} - ${BASE_TITLE}` : BASE_TITLE}</title>
+      <title>{title ? `${title} - ${BASE_TITLE}` : 'Expo 中文文档 - 基于 React Native 的跨平台应用开发框架'}</title>
       <meta charSet="utf-8" />
       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="icon" type="image/png" href="/static/images/favicon.ico" sizes="32x32" />
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+      {/* oxlint-disable-next-line nextjs/next-script-for-ga */}
+      <script async src="https://www.zhcndoc.com/js/common.js" />
 
       <meta name="description" content={description === '' ? BASE_DESCRIPTION : description} />
       <meta property="og:title" content={title} />
@@ -26,7 +29,7 @@ const DocumentationHead = ({ title, description, canonicalUrl, children }: HeadP
       <meta property="og:image" content={OGImageURL} />
       <meta property="og:image:url" content={OGImageURL} />
       <meta property="og:image:secure_url" content={OGImageURL} />
-      <meta property="og:locale" content="en_US" />
+      <meta property="og:locale" content="zh_CN" />
       <meta property="og:site_name" content={BASE_TITLE} />
       <meta
         property="og:description"

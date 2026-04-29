@@ -1,42 +1,42 @@
 ---
-title: '"Application has not been registered" error'
-description: Learn about what the Application has not been registered error means and how to resolve it in an Expo or React Native app.
+title: '"应用尚未注册" 错误'
+description: 了解 “应用尚未注册” 错误的含义，以及如何在 Expo 或 React Native 应用中解决它。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-When developing an Expo or React Native app, it's common to run into an error that looks like:
+在开发 Expo 或 React Native 应用时，你经常会遇到如下错误：
 
 <Terminal
   cmd={[
     'Application "main" has not been registered.',
-    '# Or',
+    '# 或',
     'Invariant Violation: "main" has not been registered.',
   ]}
 />
 
-In this particular error, `"main"` can be any string.
+在这个特定的错误中，`"main"` 可以是任意字符串。
 
-## What this error means
+## 这个错误的含义
 
-### An exception may be preventing your app from registering itself
+### 某个异常可能阻止了你的应用完成注册
 
-The most common cause of this error is that there is an exception thrown in your application before it's able to register itself. When a React Native application loads, there are two steps:
+这个错误最常见的原因是：你的应用在能够完成自注册之前，就抛出了一个异常。React Native 应用加载时，会经历两个步骤：
 
-1. Load the JavaScript code, and if everything is successful, then your application will be registered. If there is any exception when loading the bundle then execution will be aborted and it will never reach the part where your application is registered.
-2. Run the registered application. If loading the code failed, then the application won't be registered and you will see the error that is the subject of this page.
+1. 加载 JavaScript 代码，如果一切成功，那么你的应用就会被注册。如果在加载 bundle 时出现任何异常，执行就会中止，并且永远不会走到应用注册的那部分。
+2. 运行已注册的应用。如果代码加载失败，那么应用就不会被注册，你就会看到本页所讨论的这个错误。
 
-If you're in this situation, the error message you're seeing is a [red herring](https://en.wikipedia.org/wiki/Red_herring), it's distracting you from the real error that led to the application not being registered.
+如果你正处于这种情况，那么你看到的这个错误信息其实是一个[红鲱鱼](https://en.wikipedia.org/wiki/Red_herring)，它让你分心，忽略了导致应用未能注册的真正错误。
 
-Look at your logs before this error message to see what may have caused it. A frequent cause is multiple versions of a native module dependency that registers itself as a view &mdash; for example [this Stack Overflow thread](https://stackoverflow.com/questions/67543844/invariant-violation-main-has-not-been-registered-while-running-react-native-a/67550379) where the poster has multiple versions of `react-native-safe-area-context` in their dependencies.
+查看这个错误信息之前的日志，看看是什么导致了它。一个常见原因是：某个会自注册为视图的原生模块依赖存在多个版本——例如 [这个 Stack Overflow 讨论](https://stackoverflow.com/questions/67543844/invariant-violation-main-has-not-been-registered-while-running-react-native-a/67550379) 中，发帖者的依赖里有多个版本的 `react-native-safe-area-context`。
 
-### Your app root component may not be registered
+### 你的应用根组件可能没有被注册
 
-Another possibility is that there is a mismatch between the `AppKey` being provided to [`AppRegistry.registerComponent`](https://reactnative.dev/docs/appregistry#registercomponent), and the `AppKey` being registered on the native iOS or Android side.
+另一种可能是，传递给 [`AppRegistry.registerComponent`](https://reactnative.dev/docs/appregistry#registercomponent) 的 `AppKey`，与原生 iOS 或 Android 端注册的 `AppKey` 不匹配。
 
-In managed projects, the default behavior is to use "main" as the `AppKey`. This is handled for you automatically, and as long as you don't change the `"main"` field in your **package.json** from the default value then this will just work. If you want to customize the app entry point, see [registerRootComponent](/versions/latest/sdk/expo/#registerrootcomponentcomponent) API reference.
+在托管项目中，默认行为是使用 `"main"` 作为 `AppKey`。这会自动为你处理，只要你没有把 **package.json** 中的 `"main"` 字段从默认值改掉，就一切正常。如果你想自定义应用入口点，请查看 [registerRootComponent](/versions/latest/sdk/expo/#registerrootcomponentcomponent) API 参考。
 
-In projects with native code, you will see something like this in your **index.js** by default:
+在带有原生代码的项目中，你默认会在 **index.js** 里看到类似这样的内容：
 
 ```js
 import { registerRootComponent } from 'expo';
@@ -44,7 +44,7 @@ import App from './App';
 registerRootComponent(App);
 ```
 
-where `registerRootComponent` is implemented as:
+其中 `registerRootComponent` 的实现如下：
 
 ```js
 function registerRootComponent(component) {
@@ -52,13 +52,13 @@ function registerRootComponent(component) {
 }
 ```
 
-And on the native side, in **AppDelegate.m** you should see:
+而在原生端，在 **AppDelegate.m** 中你应该会看到：
 
 ```objectivec
 RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge moduleName:@"main" initialProperties:nil];
 ```
 
-and in **MainActivity.java**:
+以及在 **MainActivity.java** 中：
 
 ```java
 @Override
@@ -67,11 +67,11 @@ protected String getMainComponentName() {
 }
 ```
 
-By default, "main" is consistently used throughout the project. If you're running into this error, something has likely changed and these values no longer coincide. Ensure that the names you are registering on the JavaScript side are the ones expected on the native side (if you're using Expo's `registerRootComponent` function, that would be "main").
+默认情况下，整个项目中都会一致地使用 `"main"`。如果你遇到了这个错误，很可能是某些地方发生了变化，导致这些值不再一致。请确保你在 JavaScript 端注册的名称，正是原生端所期望的名称（如果你使用的是 Expo 的 `registerRootComponent` 函数，那就应该是 `"main"`）。
 
-## Other considerations
+## 其他注意事项
 
-This error can also occur in a few other scenarios, but it's less predictable and the fixes would be more specific to your project. For example, some other cases are:
+这个错误在另外一些场景下也可能出现，不过这些情况更难预测，而且修复方式会更依赖于你的项目。例如，还有以下几种情况：
 
-- You're connecting to the wrong project's local development server. Try closing out other Expo CLI or React Native community CLI processes (find them with `ps -A | grep "expo\|react-native"`).
-- If this error is only occurring in your production app, then try running the app locally in production mode with `npx expo start --no-dev --minify` to find the source of the error.
+- 你连接到了错误项目的本地开发服务器。尝试关闭其他 Expo CLI 或 React Native 社区 CLI 进程（可使用 `ps -A | grep "expo\|react-native"` 查找它们）。
+- 如果这个错误只在生产应用中出现，那么尝试在本地以生产模式运行应用：`npx expo start --no-dev --minify`，以查找错误来源。

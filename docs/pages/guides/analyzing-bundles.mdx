@@ -1,7 +1,7 @@
 ---
-title: Analyzing JavaScript bundles with Expo Atlas and Lighthouse
-sidebar_title: Analyzing JavaScript bundles
-description: Learn about improving the production JavaScript bundle size of Expo apps and websites with Expo Atlas and Lighthouse.
+title: 使用 Expo Atlas 和 Lighthouse 分析 JavaScript bundle
+sidebar_title: 分析 JavaScript bundle
+description: 了解如何使用 Expo Atlas 和 Lighthouse 提升 Expo 应用和网站的生产环境 JavaScript bundle 大小。
 searchRank: 90
 searchPosition: 1
 ---
@@ -10,66 +10,66 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-Bundle performance varies for different platforms. For example, web browsers don't support precompiled bytecode, so the JavaScript bundle size is important for improving startup time and performance. The smaller the bundle, the faster it can be downloaded and parsed.
+不同平台的打包性能各不相同。例如，Web 浏览器不支持预编译字节码，因此 JavaScript 包的大小对于提升启动时间和性能很重要。包越小，下载和解析就越快。
 
-## Analyzing bundle size with Expo Atlas
+## 使用 Expo Atlas 分析包大小
 
-<ContentSpotlight alt="Expo Atlas overview page." src="/static/images/atlas/atlas-overview.avif" />
+<ContentSpotlight alt="Expo Atlas 概览页面。" src="/static/images/atlas/atlas-overview.avif" />
 
-The libraries used in a project influence the size of the production JavaScript bundle. You can use [Expo Atlas](https://github.com/expo/expo-atlas#readme) to visualize the production bundle and identify which libraries contribute to the bundle size.
+项目中使用的库会影响生产环境 JavaScript 包的大小。你可以使用 [Expo Atlas](https://github.com/expo/expo-atlas#readme) 来可视化生产包，并找出哪些库对包大小有贡献。
 
-### Using Atlas with `npx expo start`
+### 在 `npx expo start` 中使用 Atlas
 
-You can use Expo Atlas with the local development server. This method allows Atlas to update whenever you change any code in your project.
+你可以在本地开发服务器中使用 Expo Atlas。这种方法允许在你修改项目中的任何代码时，Atlas 自动更新。
 
-Once your app is running using the local development server on Android, iOS, and/or web, you can open Atlas through the [dev tools plugin menu](/debugging/devtools-plugins/#using-a-dev-tools-plugin) using <kbd>shift</kbd> + <kbd>m</kbd>.
+一旦你的应用在 Android、iOS 和/或 web 上通过本地开发服务器运行起来，你就可以使用 <kbd>shift</kbd> + <kbd>m</kbd>，通过 [开发工具插件菜单](/debugging/devtools-plugins/#using-a-dev-tools-plugin) 打开 Atlas。
 
 <Terminal
-  cmd={['# Start the local development server with Atlas', '$ EXPO_ATLAS=true npx expo start']}
+  cmd={['# 使用 Atlas 启动本地开发服务器', '$ EXPO_ATLAS=true npx expo start']}
 />
 
-#### Changing development mode to production
+#### 将开发模式切换为生产模式
 
-By default, Expo starts the local development server in [development mode](/workflow/development-mode/#development-mode). Development mode disables some optimizations that are enabled in [production mode](/workflow/development-mode/#production-mode). You can also start the local development server in production mode to get a more accurate representation of the production bundle size:
+默认情况下，Expo 会以 [开发模式](/workflow/development-mode/#development-mode) 启动本地开发服务器。开发模式会禁用 [生产模式](/workflow/development-mode/#production-mode) 中启用的一些优化。你也可以在生产模式下启动本地开发服务器，以便更准确地反映生产包大小：
 
 <Terminal
   cmd={[
-    '# Run the local development server in production mode',
+    '# 以生产模式运行本地开发服务器',
     '$ EXPO_ATLAS=true npx expo start --no-dev',
   ]}
 />
 
-### Using Expo Atlas with `npx expo export`
+### 将 Expo Atlas 与 `npx expo export` 一起使用
 
-You can also use Expo Atlas when generating a production bundle for your app or EAS Update. Atlas generates a **.expo/atlas.jsonl** file during export, which you can share and open without having access to the project.
+在为你的应用或 EAS Update 生成生产包时，你也可以使用 Expo Atlas。Atlas 会在导出期间生成一个 **.expo/atlas.jsonl** 文件，你可以在没有访问项目的情况下共享并打开它。
 
 <Terminal
   cmd={[
-    '# Export your app for all platforms',
+    '# 为所有平台导出你的应用',
     '$ EXPO_ATLAS=true npx expo export',
     '',
-    '# Open the generated Expo Atlas file',
+    '# 打开生成的 Expo Atlas 文件',
     '$ npx expo-atlas .expo/atlas.jsonl',
   ]}
 />
 
-You can also specify the platforms you want to analyze using the `--platform` option. Expo Atlas will gather the data for the exported platforms only.
+你也可以使用 `--platform` 选项指定要分析的平台。Expo Atlas 只会收集已导出平台的数据。
 
-### Analyzing transformed modules
+### 分析转换后的模块
 
-<ContentSpotlight alt="Expo Atlas module page." src="/static/images/atlas/atlas-module.avif" />
+<ContentSpotlight alt="Expo Atlas 模块页面。" src="/static/images/atlas/atlas-module.avif" />
 
-Inside Atlas, you can hold <kbd>⌘ Cmd</kbd> and click on a graph node to see the transformed module details. This feature helps you understand how a module is transformed by Babel, which modules it imports, and which modules imported it. This can be used to trace the origin of a module across the dependency graph.
+在 Atlas 中，你可以按住 <kbd>⌘ Cmd</kbd> 并点击图中的节点，查看转换后的模块详情。此功能可帮助你了解模块是如何被 Babel 转换的，它导入了哪些模块，以及哪些模块导入了它。你可以借此沿着依赖图追踪模块的来源。
 
-## Analyzing bundle size with source-map-explorer
+## 使用 source-map-explorer 分析包大小
 
-> Alternative method for **SDK 50 and earlier**.
+> **SDK 50 及更早版本** 的替代方法。
 
-If you are using SDK 50 or below, you can use the [`source-map-explorer`](https://www.npmjs.com/package/source-map-explorer) library to visualize and analyze the production JavaScript bundle.
+如果你使用的是 SDK 50 或更低版本，可以使用 [`source-map-explorer`](https://www.npmjs.com/package/source-map-explorer) 库来可视化并分析生产环境 JavaScript 包。
 
 <Step label="1">
 
-To use source map explorer, run the following command to install it:
+要使用 source map explorer，请运行以下命令进行安装：
 
 <Terminal cmd={['$ npm i --save-dev source-map-explorer']} />
 
@@ -77,7 +77,7 @@ To use source map explorer, run the following command to install it:
 
 <Step label="2">
 
-Add a script to **package.json** to run it. You might have to adjust the input path depending on the platform or SDK you are using. For brevity, the following example assumes the project is Expo SDK 50 and does not use Expo Router `server` output.
+在 **package.json** 中添加一个脚本来运行它。根据你使用的平台或 SDK，你可能需要调整输入路径。为简洁起见，以下示例假设项目使用的是 Expo SDK 50，并且不使用 Expo Router `server` 输出。
 
 ```json package.json
 {
@@ -89,7 +89,7 @@ Add a script to **package.json** to run it. You might have to adjust the input p
 }
 ```
 
-If you are using the SDK 50 `server` output for web, then use the following to map web bundles:
+如果你使用的是 SDK 50 的 web `server` 输出，那么请使用以下命令来映射 web 包：
 
 <Terminal
   cmd={[
@@ -97,59 +97,59 @@ If you are using the SDK 50 `server` output for web, then use the following to m
   ]}
 />
 
-Web bundles are output to the **dist/client** subdirectory to prevent exposing server code to the client.
+Web 包会输出到 **dist/client** 子目录，以防止将服务器代码暴露给客户端。
 
 </Step>
 
 <Step label="3">
 
-Export your production JavaScript bundle and include the `--source-maps` flag so that the source map explorer can read the source maps. For native apps using Hermes, you can use the `--no-bytecode` option to disable bytecode generation.
+导出你的生产环境 JavaScript 包，并包含 `--source-maps` 标志，这样 source map explorer 就可以读取 source map。对于使用 Hermes 的原生应用，你可以使用 `--no-bytecode` 选项来禁用字节码生成。
 
 <Terminal
   cmd={[
     '$ npx expo export --source-maps --platform web',
     '',
-    '# Native apps using Hermes can disable bytecode for analyzing the JavaScript bundle.',
+    '# 使用 Hermes 的原生应用可以禁用字节码，以便分析 JavaScript 包。',
     '$ npx expo export --source-maps --platform ios --no-bytecode',
   ]}
 />
 
-This command shows the JavaScript bundle and source map paths in the output. In the next step, you will pass these paths to the source map explorer.
+此命令会在输出中显示 JavaScript 包和 source map 的路径。在下一步中，你将把这些路径传递给 source map explorer。
 
-> Avoid publishing source maps to production as they can cause both security issues and performance issues (a browser will download the large maps).
+> 避免将 source map 发布到生产环境，因为它们可能同时带来安全问题和性能问题（浏览器会下载很大的映射文件）。
 
 </Step>
 
 <Step label="4">
 
-Run the script to analyze your bundle:
+运行脚本来分析你的包：
 
 <Terminal cmd={['$ npm run analyze:web']} />
 
-On running this command, you might see the following error:
+运行该命令时，你可能会看到以下错误：
 
 ```text
-You must provide the URL of lib/mappings.wasm by calling SourceMapConsumer.initialize({ 'lib/mappings.wasm': ... }) before using SourceMapConsumer
+你必须通过调用 SourceMapConsumer.initialize({ 'lib/mappings.wasm': ... }) 来提供 lib/mappings.wasm 的 URL，然后才能使用 SourceMapConsumer
 ```
 
-This is probably due to a [known issue](https://github.com/danvk/source-map-explorer/issues/247) in `source-map-explorer` in Node.js 18 and above. To resolve this, set the environment variable `NODE_OPTIONS=--no-experimental-fetch` before running the analyze script.
+这很可能是由于 `source-map-explorer` 在 Node.js 18 及以上版本中的一个[已知问题](https://github.com/danvk/source-map-explorer/issues/247)。要解决此问题，请在运行 analyze 脚本之前设置环境变量 `NODE_OPTIONS=--no-experimental-fetch`。
 
 </Step>
 
-You might encounter a warning such as `Unable to map 809/13787 bytes (5.87%)`. This occurs because source maps often exclude bundler runtime definitions (for example, `__d(() => {}, [])`). This value is consistent and not a reason for concern.
+你可能会遇到类似 `Unable to map 809/13787 bytes (5.87%)` 的警告。这是因为 source map 通常会排除打包器运行时代码定义（例如，`__d(() => {}, [])`）。这个数值是恒定的，不必担心。
 
 ## Lighthouse
 
-Lighthouse is a great way to see how fast, accessible, and performant your website is. You can test your project with the **Audit** tab in Chrome, or with the [Lighthouse CLI](https://github.com/GoogleChrome/lighthouse#using-the-node-cli).
+Lighthouse 是了解你的网站速度、可访问性和性能表现的绝佳方式。你可以在 Chrome 的 **Audit** 选项卡中测试你的项目，或者使用 [Lighthouse CLI](https://github.com/GoogleChrome/lighthouse#using-the-node-cli)。
 
-After creating a production build with `npx expo export -p web` and serving it (using either `npx serve dist`, or production deployment, or custom server), run Lighthouse with the URL your site is hosted at.
+在使用 `npx expo export -p web` 创建生产构建并将其托管后（可使用 `npx serve dist`、生产部署或自定义服务器），通过网站托管的 URL 运行 Lighthouse。
 
 <Terminal
   cmd={[
-    '# Install the lighthouse CLI',
+    '# 安装 lighthouse CLI',
     '$ npm install -g lighthouse',
     '',
-    '# Run the lighthouse CLI for your site',
+    '# 为你的网站运行 lighthouse CLI',
     '$ npx lighthouse <url> --view',
   ]}
 />

@@ -1,15 +1,15 @@
 ---
-title: Screen tracking for analytics
-description: Learn how to enable screen tracking for analytic when using Expo Router.
+title: 用于分析的屏幕跟踪
+description: 了解在使用 Expo Router 时如何启用分析的屏幕跟踪。
 hideTOC: true
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 
-Unlike React Navigation, Expo Router always has access to a URL. This means screen tracking is as easy as the web.
+与 React Navigation 不同，Expo Router 始终可以访问 URL。这意味着屏幕跟踪和 Web 一样简单。
 
-1. Create a higher-order component that observes the currently selected URL
-2. Track the URL in your analytics provider
+1. 创建一个高阶组件，用于观察当前选中的 URL
+2. 在你的分析提供商中跟踪该 URL
 
 <FileTree files={['src/app/_layout.tsx']} />
 
@@ -21,18 +21,18 @@ export default function Layout() {
   const pathname = usePathname();
   const params = useGlobalSearchParams();
 
-  // Track the location in your analytics provider here.
+  // 在你的分析提供商中跟踪此处的位置。
   useEffect(() => {
     analytics.track({ pathname, params });
   }, [pathname, params]);
 
-  // Export all the children routes in the most basic way.
+  // 以最基本的方式导出所有子路由。
   return <Slot />;
 }
 ```
 
-Now when the user changes routes, the analytics provider will be notified.
+现在，当用户切换路由时，分析提供商将收到通知。
 
-## Migrating from React Navigation
+## 从 React Navigation 迁移
 
-React Navigation's [screen tracking guide](https://reactnavigation.org/docs/screen-tracking/) cannot make the same assumptions about the navigation state that Expo Router can. As a result, the implementation requires the use of `onReady` and `onStateChange` callbacks. Avoid using these methods if possible as the root `<NavigationContainer />` is not directly exposed and allows cascading in Expo Router.
+React Navigation 的[屏幕跟踪指南](https://reactnavigation.org/docs/screen-tracking/)无法像 Expo Router 那样对导航状态做出相同的假设。因此，实现需要使用 `onReady` 和 `onStateChange` 回调。尽可能避免使用这些方法，因为根 `<NavigationContainer />` 并不会直接暴露，并且在 Expo Router 中支持级联。

@@ -1,7 +1,7 @@
 ---
-title: Using React DOM in Expo native apps
-sidebar_title: DOM components
-description: Learn about rendering React DOM components in Expo native apps using the 'use dom' directive.
+title: 在 Expo 原生应用中使用 React DOM
+sidebar_title: DOM 组件
+description: 了解如何在 Expo 原生应用中使用 'use dom' 指令渲染 React DOM 组件。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
@@ -9,39 +9,39 @@ import { FAQ } from '~/ui/components/FAQ';
 import { Terminal } from '~/ui/components/Snippet';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-Expo offers a novel approach to work with modern web code directly in a native app via the `'use dom'` directive. This enables incremental migration for an entire website to a universal app by moving on a per-component basis.
+Expo 提供了一种新颖的方式，通过 `'use dom'` 指令直接在原生应用中使用现代 Web 代码。这使得可以通过按组件逐步迁移，将整个网站增量式地迁移为统一应用。
 
-While the Expo native runtime generally does not support elements like `<div>` or `<img>`, there may be instances where you need to quickly incorporate web components. In such cases, DOM components provide a useful solution.
+虽然 Expo 原生运行时通常不支持 `<div>` 或 `<img>` 之类的元素，但在某些情况下，你可能需要快速集成 Web 组件。在这种情况下，DOM 组件提供了一个有用的解决方案。
 
-## Prerequisites
+## 前提条件
 
-<Collapsible summary="Your project must use Expo CLI and extend the Expo Metro Config">
+<Collapsible summary="你的项目必须使用 Expo CLI 并扩展 Expo Metro Config">
 
-If you already run your project with `npx expo [command]` (for example, if you created it with `npx create-expo-app`), then you're all set, and you can skip this step.
+如果你已经使用 `npx expo [command]` 运行项目（例如，你是通过 `npx create-expo-app` 创建的），那么你已经准备好了，可以跳过这一步。
 
-If you don't have the `expo` package in your project yet, then install it by running the command below and [opt in to using Expo CLI and Metro Config](/bare/installing-expo-modules/#configure-expo-cli-for-bundling-on-android-and-ios):
+如果你的项目中还没有 `expo` 包，那么请运行下面的命令安装它，并[选择使用 Expo CLI 和 Metro Config](/bare/installing-expo-modules/#configure-expo-cli-for-bundling-on-android-and-ios)：
 
 <Terminal cmd={['$ npx install-expo-modules@latest']} />
 
-If the command fails, refer to the [Installing Expo modules](/bare/installing-expo-modules/#manual-installation) guide.
+如果命令失败，请参考 [安装 Expo 模块](/bare/installing-expo-modules/#manual-installation) 指南。
 
 </Collapsible>
 
-<Collapsible summary="Expo Metro Runtime, React DOM, and React Native Web">
+<Collapsible summary="Expo Metro Runtime、React DOM 和 React Native Web">
 
-If you are using Expo Router and Expo Web, you can skip this step. Otherwise, install the following packages:
+如果你正在使用 Expo Router 和 Expo Web，可以跳过这一步。否则，请安装以下包：
 
 <Terminal cmd={['$ npx expo install @expo/metro-runtime react-dom react-native-web']} />
 
 </Collapsible>
 
-## Usage
+## 用法
 
-Install `react-native-webview` in your project:
+在你的项目中安装 `react-native-webview`：
 
 <Terminal cmd={['$ npx expo install react-native-webview']} />
 
-To render a React component to the DOM, add the `'use dom'` directive to the top of the web component file:
+要将 React 组件渲染到 DOM，请在 Web 组件文件顶部添加 `'use dom'` 指令：
 
 ```tsx my-component.tsx (web)
 'use dom';
@@ -49,41 +49,41 @@ To render a React component to the DOM, add the `'use dom'` directive to the top
 export default function DOMComponent({ name }: { name: string }) {
   return (
     <div>
-      <h1>Hello, {name}</h1>
+      <h1>你好，{name}</h1>
     </div>
   );
 }
 ```
 
-Inside the native component file, import the web component to use it:
+在原生组件文件中，导入该 Web 组件以使用它：
 
 ```tsx App.tsx (native)
 import DOMComponent from './my-component.tsx';
 
 export default function App() {
   return (
-    // This is a DOM component. It re-exports a wrapped `react-native-webview` behind the scenes.
+    // 这是一个 DOM 组件。它在底层重新导出了一个包装过的 `react-native-webview`。
     <DOMComponent name="Europa" />
   );
 }
 ```
 
-## Features
+## 特性
 
-- Shared bundler config across web, native, and DOM components.
-- React, TypeScript, CSS, and all other Metro features are enabled in DOM components.
-- Logging in the terminal and Safari/Chrome debugging.
-- Fast Refresh and HMR.
-- Embedded exports for offline support.
-- Assets are unified across web and native.
-- DOM component bundles can be introspected in [Expo Atlas](/guides/analyzing-bundles/#analyzing-bundle-size-with-atlas) for debugging.
-- Access to all web functionality without needing a native rebuild.
-- Runtime error overlay in development.
-- Supports Expo Go.
+- Web、原生和 DOM 组件共享同一套 bundler 配置。
+- DOM 组件中启用了 React、TypeScript、CSS 以及所有其他 Metro 特性。
+- 可在终端以及 Safari/Chrome 中进行日志记录和调试。
+- Fast Refresh 和 HMR。
+- 为离线支持提供嵌入式导出。
+- 资源在 Web 和原生之间统一。
+- DOM 组件 bundle 可在 [Expo Atlas](/guides/analyzing-bundles/#analyzing-bundle-size-with-atlas) 中进行检查以便调试。
+- 无需原生重新构建即可访问所有 Web 功能。
+- 开发环境下的运行时错误覆盖层。
+- 支持 Expo Go。
 
-## WebView props
+## WebView 属性
 
-To pass props to the underlying native **WebView**, use the `dom` prop on the component. This prop is built into every DOM component and accepts an object with any [`WebView` props](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md) that you would like to change.
+要将属性传递给底层原生 **WebView**，请在组件上使用 `dom` 属性。这个属性内置于每个 DOM 组件中，并接受一个对象，其中可以包含你想要修改的任意 [`WebView` 属性](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md)。
 
 ```tsx App.tsx (native)
 import DOMComponent from './my-component';
@@ -99,7 +99,7 @@ export default function App() {
 }
 ```
 
-On your DOM component, add the `dom` prop so it is recognized in TypeScript:
+在你的 DOM 组件中，添加 `dom` 属性以便 TypeScript 能识别它：
 
 ```tsx my-component.tsx (web)
 'use dom';
@@ -107,15 +107,15 @@ On your DOM component, add the `dom` prop so it is recognized in TypeScript:
 export default function DOMComponent({}: { dom: import('expo/dom').DOMProps }) {
   return (
     <div>
-      <h1>Hello, world!</h1>
+      <h1>你好，世界！</h1>
     </div>
   );
 }
 ```
 
-## Marshalled props
+## 序列化属性
 
-You can send data to the DOM component through serializable props (`number`, `string`, `boolean`, `null`, `undefined`, `Array`, `Object`). For example, inside a native component file, you can pass a prop to the DOM component:
+你可以通过可序列化属性（`number`、`string`、`boolean`、`null`、`undefined`、`Array`、`Object`）将数据发送到 DOM 组件。例如，在原生组件文件中，你可以向 DOM 组件传递一个属性：
 
 ```tsx App.tsx (native)
 import DOMComponent from './my-component';
@@ -125,21 +125,21 @@ export default function App() {
 }
 ```
 
-Inside the web component file, you can receive the prop as shown in the example below:
+在 Web 组件文件中，你可以像下面的示例那样接收该属性：
 
 ```tsx my-component.tsx (web)
 'use dom';
 
 export default function DOMComponent({ hello }: { hello: string }) {
-  return <p>Hello, {hello}</p>;
+  return <p>你好，{hello}</p>;
 }
 ```
 
-Props are sent over an asynchronous bridge so they are not updated synchronously. They are passed as props to the React root component, which means they re-render the entire React tree.
+属性通过异步桥接发送，因此不会同步更新。它们作为属性传递给 React 根组件，这意味着它们会导致整个 React 树重新渲染。
 
-## Native actions
+## 原生动作
 
-You can send type-safe native functions to DOM components by passing asynchronous functions as top-level props to the DOM component:
+你可以通过将异步函数作为 DOM 组件的顶层属性传递，向 DOM 组件发送类型安全的原生函数：
 
 ```tsx App.tsx (native)
 import DomComponent from './my-component';
@@ -148,7 +148,7 @@ export default function App() {
   return (
     <DomComponent
       hello={(data: string) => {
-        console.log('Hello', data);
+        console.log('你好', data);
       }}
     />
   );
@@ -159,15 +159,15 @@ export default function App() {
 'use dom';
 
 export default function MyComponent({ hello }: { hello: (data: string) => Promise<void> }) {
-  return <p onClick={() => hello('world')}>Click me</p>;
+  return <p onClick={() => hello('world')}>点我</p>;
 }
 ```
 
-> You cannot pass functions as nested props to DOM components. They must be top-level props.
+> 你不能将函数作为嵌套属性传递给 DOM 组件。它们必须是顶层属性。
 
-Native actions are always asynchronous and accept only serializable arguments (meaning no functions) because the data is sent over a bridge to the DOM component's JavaScript engine.
+原生动作始终是异步的，并且只接受可序列化的参数（也就是说不能是函数），因为数据会通过桥接发送到 DOM 组件的 JavaScript 引擎。
 
-Native actions can return serializable data to the DOM component, which is useful for getting data back from the native side.
+原生动作可以向 DOM 组件返回可序列化数据，这对于从原生侧获取数据很有用。
 
 ```tsx
 getDeviceName(): Promise<string> {
@@ -175,13 +175,13 @@ getDeviceName(): Promise<string> {
 }
 ```
 
-Think of these functions like React Server Functions, but instead of residing on the server, they live locally in the native app and communicate with the DOM component. This approach provides a powerful way to add truly native functionality to your DOM components.
+你可以把这些函数看作 React Server Functions，只不过它们不是存在于服务器上，而是本地运行在原生应用中，并与 DOM 组件通信。这种方式为向 DOM 组件添加真正的原生功能提供了强大的手段。
 
-## Passing refs
+## 传递 refs
 
-> **important** This is in [alpha](/more/release-statuses/#alpha) and may change in the future.
+> **重要** 这项功能目前处于 [alpha](/more/release-statuses/#alpha) 阶段，未来可能会发生变化。
 
-You can use the `useDOMImperativeHandle` hook inside a DOM component to accept ref calls from the native side. This hook is similar to React's [`useImperativeHandle`](https://react.dev/reference/react/useImperativeHandle) hook, but it does not need a ref object to be passed to it.
+你可以在 DOM 组件内部使用 `useDOMImperativeHandle` 钩子，从而接受来自原生侧的 ref 调用。这个钩子类似于 React 的 [`useImperativeHandle`](https://react.dev/reference/react/useImperativeHandle) 钩子，但它不需要传入 ref 对象。
 
 ```tsx App.tsx (native)
 import { useRef } from 'react';
@@ -196,7 +196,7 @@ export default function App() {
     <View style={{ flex: 1 }}>
       <MyComponent ref={ref} />
       <Button
-        title="focus"
+        title="聚焦"
         onPress={() => {
           ref.current?.focus();
         }}
@@ -208,9 +208,9 @@ export default function App() {
 
 <Tabs>
 
-<Tab label="SDK 53 and later">
+<Tab label="SDK 53 及更高版本">
 
-Expo SDK 53 and later use React 19. This means that the `ref` prop is passed to the component as a prop, and you can use it directly in the component.
+Expo SDK 53 及更高版本使用 React 19。这意味着 `ref` 属性会作为属性传递给组件，你可以在组件中直接使用它。
 
 ```tsx my-component.tsx (web)
 'use dom';
@@ -244,9 +244,9 @@ export default function MyComponent(props: {
 
 </Tab>
 
-<Tab label="SDK 52 and earlier">
+<Tab label="SDK 52 及更早版本">
 
-In Expo SDK 52 and earlier (React 18), use the legacy `forwardRef` function to access the `ref` handle.
+在 Expo SDK 52 及更早版本（React 18）中，请使用旧版 `forwardRef` 函数来访问 `ref` 句柄。
 
 ```tsx my-component.tsx (web)
 'use dom';
@@ -279,37 +279,37 @@ export default forwardRef<MyRef, object>(function MyComponent(props, ref) {
 
 </Tabs>
 
-React is meant to have a unilateral data flow, so the concept of using callbacks to go back up the tree is not idiomatic. Expect the behavior to be flakey and possibly phased out in the future with newer versions of React. The preferred way to send data back up the tree is to use native actions, which update the state and then pass it back to the DOM component.
+React 旨在实现单向数据流，因此使用回调函数向上层树传递数据并不符合其惯用模式。请预期这种行为可能不稳定，并且在未来 React 的新版本中可能会被逐步移除。将数据返回到上层树的首选方式是使用原生动作，它会更新状态，然后再将其传回 DOM 组件。
 
-## Feature detection
+## 特性检测
 
-Since DOM components are used to run websites, you might need extra qualifiers to better support certain libraries. You can detect if a component is running in a DOM component with the following code:
+由于 DOM 组件用于运行网站，你可能需要额外的限定条件来更好地支持某些库。你可以使用以下代码检测某个组件是否在 DOM 组件中运行：
 
 ```ts
 import { IS_DOM } from 'expo/dom';
 ```
 
-While `process.env.EXPO_OS` will always be web in a DOM component, you can detect the _top_ platform with `process.env.EXPO_DOM_HOST_OS`. This will be either `ios`, `android`, depending on the OS of the top-most native platform, and `undefined` on web.
+虽然在 DOM 组件中 `process.env.EXPO_OS` 始终会是 web，但你可以使用 `process.env.EXPO_DOM_HOST_OS` 来检测 _顶层_ 平台。它要么是 `ios`、`android`，取决于最上层原生平台的操作系统；在 web 上则为 `undefined`。
 
-## Public assets
+## 公共资源
 
-> **important** **Warning:** This is in [alpha](/more/release-statuses/#alpha) and may change in the future. Public assets are not supported in EAS Update. Use `require()` to load local assets instead.
+> **重要** **警告：** 这项功能目前处于 [alpha](/more/release-statuses/#alpha) 阶段，未来可能会发生变化。EAS Update 不支持公共资源。请改用 `require()` 来加载本地资源。
 
-The contents of the root **public** directory are copied to the native app's binary to support the use of public assets in DOM components. Since these public assets will be served from the local filesystem, use the `process.env.EXPO_BASE_URL` prefix to reference the correct path. For example:
+根目录下 **public** 目录的内容会被复制到原生应用的二进制文件中，以支持在 DOM 组件中使用公共资源。由于这些公共资源将从本地文件系统提供，请使用 `process.env.EXPO_BASE_URL` 前缀来引用正确的路径。例如：
 
 ```tsx
 <img src={`${process.env.EXPO_BASE_URL}img.png`} />
 ```
 
-## Debugging
+## 调试
 
-By default, all `console.log` methods are extended in WebViews to forward logs to the terminal. This makes it fast and easy to see what's happening in your DOM components.
+默认情况下，WebView 中所有 `console.log` 方法都会被扩展，以便将日志转发到终端。这样就可以快速而轻松地查看 DOM 组件中正在发生的事情。
 
-Expo also enables WebView inspection and debugging when bundling in development mode. You can open **Safari** > **Develop** > **Simulator** > **MyComponent.tsx** to see the WebView's console and inspect elements.
+Expo 还会在开发模式打包时启用 WebView 检查和调试。你可以打开 **Safari** > **Develop** > **Simulator** > **MyComponent.tsx** 来查看 WebView 的控制台并检查元素。
 
-## Manual WebViews
+## 手动 WebView
 
-You can create a manual WebView using the `WebView` component from `react-native-webview`. This can be useful for rendering websites from a remote server.
+你可以使用 `react-native-webview` 中的 `WebView` 组件创建一个手动 WebView。这对于从远程服务器渲染网站很有用。
 
 ```tsx App.tsx (native)
 import { WebView } from 'react-native-webview';
@@ -319,9 +319,9 @@ export default function App() {
 }
 ```
 
-## Routing
+## 路由
 
-Expo Router APIs such as `<Link />`, and `useRouter` can be used in DOM components to navigate between routes.
+Expo Router API，例如 `<Link />` 和 `useRouter`，可以在 DOM 组件中用于在路由之间导航。
 
 ```tsx my-component.tsx (web)
 'use dom';
@@ -330,14 +330,14 @@ import Link from 'expo-router/link';
 export default function DOMComponent() {
   return (
     <div>
-      <h1>Hello, world!</h1>
-      <Link href="/about">About</Link>
+      <h1>你好，世界！</h1>
+      <Link href="/about">关于</Link>
     </div>
   );
 }
 ```
 
-APIs that synchronously return routing info such as `useLocalSearchParams()`, `useGlobalSearchParams()`, `usePathname()`, `useSegments()`, `useRootNavigation()`, and `useRootNavigationState()` are not automatically supported. Instead, read these values outside of DOM components and supply them as props.
+像 `useLocalSearchParams()`、`useGlobalSearchParams()`、`usePathname()`、`useSegments()`、`useRootNavigation()` 和 `useRootNavigationState()` 这类会同步返回路由信息的 API 不会自动受到支持。相反，请在 DOM 组件外部读取这些值，并将它们作为 props 传入。
 
 ```tsx App.tsx (native)
 import DOMComponent from './my-component';
@@ -349,19 +349,19 @@ export default function App() {
 }
 ```
 
-The `router.canGoBack()` and `router.canDismiss()` functions are also unsupported and require manual marshalling, this ensures no extraneous render cycles are triggered.
+`router.canGoBack()` 和 `router.canDismiss()` 函数也不受支持，并且需要手动编组，这可确保不会触发多余的渲染循环。
 
-Avoid using standard web `<a />` anchor elements for navigation as these will change the DOM component origin in a way that users may not be able to navigate back from. Prefer launching `WebBrowser`s if you want to present external websites.
+避免使用标准网页 `<a />` 锚点元素进行导航，因为这会以一种用户可能无法返回的方式更改 DOM 组件的来源。若你想展示外部网站，优先使用启动 `WebBrowser` 的方式。
 
-Since DOM components cannot render native children, layout routes (`_layout`) can never be DOM components. You can render DOM components from layout routes to create headers, backgrounds, and more, but the layout route itself should always be native.
+由于 DOM 组件不能渲染原生子组件，布局路由（`_layout`）永远不能是 DOM 组件。你可以从布局路由中渲染 DOM 组件来创建头部、背景等内容，但布局路由本身应始终保持为原生。
 
-## Measuring DOM components
+## 测量 DOM 组件
 
-You may want to measure the size of a DOM component and report it back to the native side (for example, native scrolling). This can be done using a `matchContents` prop or a manual native action:
+你可能希望测量 DOM 组件的尺寸，并将其回传给原生端（例如，用于原生滚动）。这可以通过 `matchContents` prop 或手动原生操作来实现：
 
-### Automatically with `matchContents` prop
+### 通过 `matchContents` prop 自动测量
 
-You can use the `dom={{ matchContents: true }}` prop to measure the size of the DOM component automatically and resize the native view. This is particularly useful for certain layouts where the DOM component must have an intrinsic size in order to be displayed, such as when the component is centered within a parent view:
+你可以使用 `dom={{ matchContents: true }}` prop 自动测量 DOM 组件的尺寸并调整原生视图大小。这对于某些布局特别有用，因为 DOM 组件必须具有固有尺寸才能显示，例如当组件居中于父视图中时：
 
 ```tsx App.tsx (native)
 import DOMComponent from './my-component';
@@ -371,9 +371,9 @@ export default function Route() {
 }
 ```
 
-### Manually by specifying a size
+### 通过指定尺寸手动设置
 
-You can also manually provide a size by passing it to the `WebView` `style` prop via the `dom` prop:
+你也可以通过 `dom` prop 将尺寸传递给 `WebView` 的 `style` prop 来手动提供尺寸：
 
 ```tsx App.tsx (native)
 import DOMComponent from './my-component';
@@ -389,9 +389,9 @@ export default function Route() {
 }
 ```
 
-### Observing changes in size
+### 观察尺寸变化
 
-If you would like to report changes in the size of the DOM component back to the native side, you can add a native action to your DOM component that is called whenever the size is changed:
+如果你希望将 DOM 组件尺寸的变化回传给原生端，可以向 DOM 组件添加一个原生操作，每当尺寸发生变化时就会被调用：
 
 ```tsx my-component.tsx (web)
 'use dom';
@@ -400,7 +400,7 @@ import { useEffect } from 'react';
 
 function useSize(callback: (size: { width: number; height: number }) => void) {
   useEffect(() => {
-    // Observe window size changes
+    // 监听窗口尺寸变化
     const observer = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
@@ -433,7 +433,7 @@ export default function DOMComponent({
 }
 ```
 
-Then update your native code to set the size in state whenever the DOM component reports a change in size:
+然后更新你的原生代码，以便在 DOM 组件报告尺寸变化时，将尺寸设置到状态中：
 
 ```tsx App.tsx (native)
 import DOMComponent from '@/components/my-component';
@@ -467,78 +467,78 @@ export default function App() {
 }
 ```
 
-## Architecture
+## 架构
 
-Built-in DOM support only renders websites as single-page applications (no SSR or SSG). This is because search engine optimization and indexing are unnecessary for embedded JS code.
+内置的 DOM 支持仅将网站渲染为单页应用程序（没有 SSR 或 SSG）。这是因为搜索引擎优化和索引对嵌入式 JS 代码并不必要。
 
-When a module is marked with `'use dom'`, it is replaced with a proxy reference imported at runtime. This feature is primarily achieved through a series of bundler and CLI techniques.
+当一个模块被标记为 `'use dom'` 时，它会在运行时被一个代理引用替换。此特性主要通过一系列打包器和 CLI 技术实现。
 
-If desired, you can still use a WebView with the standard approach by passing raw HTML to a `WebView` component.
+如果需要，你仍然可以通过将原始 HTML 传递给 `WebView` 组件，使用标准方式来使用 WebView。
 
-DOM components rendered within websites or other DOM components will behave as regular components, and the `dom` prop will be ignored. This is because web content is passed directly through and not wrapped in an `iframe`.
+在网站或其他 DOM 组件中渲染的 DOM 组件将表现为普通组件，且 `dom` prop 会被忽略。这是因为 Web 内容是直接透传的，而不是包裹在 `iframe` 中。
 
-Overall, this system shares many similarities with Expo's React Server Components implementation.
+总体而言，这套系统与 Expo 的 React Server Components 实现有许多相似之处。
 
-## Considerations
+## 注意事项
 
-We recommend building truly native apps using universal primitives such as `View`, `Image`, and `Text`. DOM components only support standard JavaScript, which is slower to parse and start up than optimized Hermes bytecode.
+我们建议使用 `View`、`Image` 和 `Text` 等通用原语构建真正的原生应用。DOM 组件仅支持标准 JavaScript，其解析和启动速度比经过优化的 Hermes 字节码更慢。
 
-Data can be sent between DOM components and native components only through an asynchronous JSON transport system. Avoid relying on data across JS engines and deep linking to nested URLs in DOM components, as they do not currently support full reconciliation with Expo Router.
+数据只能通过异步 JSON 传输系统在 DOM 组件和原生组件之间传递。避免依赖跨 JS 引擎的数据，以及在 DOM 组件中深度链接到嵌套 URL，因为它们目前不支持与 Expo Router 的完整协调。
 
-While DOM components are not exclusive to Expo Router, they are developed and tested against Expo Router apps to provide the best experience when used with Expo Router.
+虽然 DOM 组件并不专属于 Expo Router，但它们是针对 Expo Router 应用开发和测试的，以便在与 Expo Router 一起使用时提供最佳体验。
 
-If you have a global state for sharing data, it will not be accessible across JS engines.
+如果你有用于共享数据的全局状态，它将无法跨 JS 引擎访问。
 
-While native modules in the Expo SDK can be optimized to support DOM components, this optimization has not been implemented yet. Use native actions and props to share native functionality with DOM components.
+虽然 Expo SDK 中的原生模块可以被优化以支持 DOM 组件，但这一优化目前尚未实现。请使用原生操作和 props 与 DOM 组件共享原生功能。
 
-DOM components and websites in general are less optimal than native views but there are some reasonable uses for them. For example, the web is conceptually the best way to render rich-text and markdown. The web also has very good WebGL support, with the caveat that devices in low-power mode will often throttle web frame rates to preserve battery.
+与原生视图相比，DOM 组件和网站整体上并不那么理想，但它们仍有一些合理用途。例如，Web 在概念上是渲染富文本和 markdown 的最佳方式。Web 对 WebGL 的支持也非常好，不过在低电量模式下，设备通常会限制网页帧率以节省电量。
 
-Many large apps also use some web content for auxiliary routes such as blog posts, rich-text (for example, long-form posts on X), settings pages, help pages, and other less frequently visited parts of the app.
+许多大型应用也会为辅助路由使用一些 Web 内容，例如博客文章、富文本（例如 X 上的长文）、设置页面、帮助页面，以及应用中其他访问频率较低的部分。
 
-## Server Components
+## 服务端组件
 
-DOM components currently only render as single-page applications and don't support static rendering or React Server Components (RSC). When the project uses React Server Components, `'use dom'` will work the same as `'use client'` regardless of the platform. RSC Payloads can be passed as properties to DOM components. However, they cannot be hydrated correctly on native platforms as they'll be rendered for a native runtime.
+DOM 组件目前仅渲染为单页应用程序，不支持静态渲染或 React Server Components（RSC）。当项目使用 React Server Components 时，无论平台如何，`'use dom'` 的行为都将与 `'use client'` 相同。RSC Payload 可以作为属性传递给 DOM 组件。不过，它们无法在原生平台上被正确 hydrate，因为它们会为原生运行时进行渲染。
 
-## Limitations
+## 限制
 
-- Unlike server components, you cannot pass `children` to DOM components.
-- DOM components are standalone and do not automatically share data between different instances.
-- You cannot add native views to DOM components. While you can attempt to float native views over DOM components, this approach results in a suboptimal user experience.
-- Function props cannot return values synchronously. They must be asynchronous.
-- DOM components can currently only be embedded and do not support OTA updates. This functionality may be added in the future as part of React Server Components.
+- 与服务端组件不同，你不能将 `children` 传递给 DOM 组件。
+- DOM 组件是独立的，不会在不同实例之间自动共享数据。
+- 你不能向 DOM 组件添加原生视图。虽然你可以尝试将原生视图浮在 DOM 组件之上，但这种方式会导致较差的用户体验。
+- 函数 props 不能同步返回值。它们必须是异步的。
+- DOM 组件目前只能作为嵌入内容，且不支持 OTA 更新。此功能未来可能会作为 React Server Components 的一部分加入。
 
-Ultimately, universal architecture is the most exciting kind. Expo CLI's extensive universal tooling is the only reason we can even offer a feature as intricate and valuable as this one.
+最终，通用架构才是最令人兴奋的类型。Expo CLI 广泛的通用工具链正是我们能够提供如此复杂而有价值功能的唯一原因。
 
-While DOM components help with migration and moving quickly, we recommend using truly native views whenever possible.
+尽管 DOM 组件有助于迁移和快速推进，但我们仍建议尽可能使用真正的原生视图。
 
-## Common questions
+## 常见问题
 
 <FAQ>
 
-<Collapsible summary="How to obtain a Secure Context in DOM components?">
+<Collapsible summary="如何在 DOM 组件中获得安全上下文？">
 
-Some Web APIs require a [Secure Context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) function correctly. For example, the [Clipboard API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API) is only available in secure contexts. A secure context means that remote resources must be served over HTTPS. [Learn more about features restricted to secure contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts/features_restricted_to_secure_contexts).
+某些 Web API 需要 [安全上下文](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) 才能正常工作。例如，[Clipboard API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API) 仅在安全上下文中可用。安全上下文意味着远程资源必须通过 HTTPS 提供。[了解更多受安全上下文限制的功能](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts/features_restricted_to_secure_contexts)。
 
-To ensure your DOM components run within a secure context, follow these guidelines:
+为了确保你的 DOM 组件运行在安全上下文中，请遵循以下指南：
 
-- **Release builds**: DOM components served using the `file://` scheme are provided a secure context by default.
-- **Debug builds**: When using development servers (which default to the `http://` protocol), you can use [tunneling](/more/expo-cli/#tunneling) to serve DOM components over HTTPS.
+- **发布构建**：使用 `file://` 方案提供的 DOM 组件默认会获得安全上下文。
+- **调试构建**：在使用开发服务器时（默认使用 `http://` 协议），你可以使用 [隧道](/more/expo-cli/#tunneling) 通过 HTTPS 提供 DOM 组件。
 
-**Example commands to tunnel DOM components over HTTPS:**
+**通过 HTTPS 隧道传输 DOM 组件的示例命令：**
 
 <Terminal
   cmd={[
-    '# Install expo-dev-client to enable connection to the remote development server:',
+    '# 安装 expo-dev-client 以启用连接到远程开发服务器：',
     '$ npx expo install expo-dev-client',
     '',
-    '# Run the app on Android:',
+    '# 在 Android 上运行应用：',
     '$ npx expo run:android',
-    '# Press Ctrl + C to stop the server',
+    '# 按 Ctrl + C 停止服务器',
     '$ npx expo start --tunnel -d -a',
     '',
-    '# Run the app on iOS:',
+    '# 在 iOS 上运行应用：',
     '$ npx expo run:ios',
-    '# Press Ctrl + C to stop the server',
+    '# 按 Ctrl + C 停止服务器',
     '$ npx expo start --tunnel -d -i',
   ]}
 />

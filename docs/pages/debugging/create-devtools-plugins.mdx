@@ -1,53 +1,53 @@
 ---
-title: Create a dev tools plugin
-description: Learn how to create a dev tools plugin to enhance your development experience.
+title: 创建一个开发者工具插件
+description: 了解如何创建一个开发者工具插件，以增强您的开发体验。
 ---
 
 import { PaddedAPIBox } from '~/components/plugins/PaddedAPIBox';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **info** **Tip:** Check out the [Expo DevTools Plugins](https://github.com/expo/dev-plugins) for complete examples.
+> **info** **提示：** 查看 [Expo DevTools Plugins](https://github.com/expo/dev-plugins) 获取完整示例。
 
-You can create a dev tools plugin, whether that's for inspecting aspects of a common framework or library or something specific to your custom code. This guide will walk you through creating a dev tools plugin.
+你可以创建一个开发工具插件，无论是用于检查常见框架或库的某些方面，还是用于你自定义代码中的特定内容。本指南将引导你完成创建开发工具插件的过程。
 
-## What is a dev tools plugin?
+## 什么是开发工具插件？
 
-A dev tools plugin runs in your web browser in your local development environment and connects to your Expo app.
+开发工具插件会在本地开发环境中的网页浏览器里运行，并连接到你的 Expo 应用。
 
-A plugin consists of three key elements:
+一个插件由三个关键元素组成：
 
-- An Expo app to display the dev tools web user interface.
-- An **expo-module.config.json** for Expo CLI recognition.
-- Calls to `expo/devtools` API for the app to communicate back and forth with the dev tool's web interface.
+- 一个 Expo 应用，用于显示开发工具的 Web 用户界面。
+- 一个 **expo-module.config.json**，供 Expo CLI 识别。
+- 对 `expo/devtools` API 的调用，用于让应用与开发工具的 Web 界面双向通信。
 
-Plugins can be distributed on npm or included inside your app's monorepo. They typically export a single hook that can be used in your app's root component to initiate two-way communication with the web interface when your app is running in debug mode.
+插件可以通过 npm 分发，也可以包含在你的应用 monorepo 中。它们通常会导出一个单独的 hook，你可以在应用的根组件中使用它，在应用以调试模式运行时与 Web 界面建立双向通信。
 
 <Step label="1">
-## Create a plugin
+## 创建插件
 
-### Create a new plugin project
+### 创建一个新的插件项目
 
-`create-dev-plugin` will set up a new plugin project for you. Run the following command to create a new plugin project:
+`create-dev-plugin` 会为你搭建一个新的插件项目。运行以下命令来创建一个新的插件项目：
 
 <Terminal cmd={['$ npx create-dev-plugin@latest']} />
 
-`create-dev-plugin` will prompt you for the name of your plugin, a description, and the name of the hook that will be used by consumers of your plugin.
+`create-dev-plugin` 会提示你输入插件名称、描述，以及供插件使用者调用的 hook 名称。
 
-The plugin project will contain the following directories:
+插件项目将包含以下目录：
 
-- **src** - this exports the hook that will be used inside the consuming app to connect it to the plugin.
-- **webui** - this contains the web user interface for the plugin.
+- **src** - 这里导出会在消费应用中使用的 hook，用于将其连接到插件。
+- **webui** - 这里包含该插件的 Web 用户界面。
 
-### Customize a plugin's functionality
+### 自定义插件功能
 
-The template includes a simple example of sending and receiving messages between the plugin and the app. `useDevToolsPluginClient`, imported from `expo/devtools`, provides functionality for sending and receiving messages between the plugin and the app.
+该模板包含一个在插件和应用之间发送与接收消息的简单示例。`useDevToolsPluginClient` 从 `expo/devtools` 导入，提供在插件和应用之间发送与接收消息的功能。
 
-The client object returned by `useDevToolsPluginClient` includes:
+`useDevToolsPluginClient` 返回的客户端对象包含：
 
 <PaddedAPIBox header="addMessageListener">
 
-Listens for a message matching the typed string and invokes the callback with the message data.
+监听与指定字符串匹配的消息，并使用消息数据调用回调函数。
 
 ```jsx
 const client = useDevToolsPluginClient('my-devtools-plugin');
@@ -60,7 +60,7 @@ client.addMessageListener('ping', data => {
 
 <PaddedAPIBox header="sendMessage">
 
-Listens for a message matching the typed string and invokes the callback with the message data.
+监听与指定字符串匹配的消息，并使用消息数据调用回调函数。
 
 ```jsx
 const client = useDevToolsPluginClient('my-devtools-plugin');
@@ -69,7 +69,7 @@ client?.sendMessage('ping', { from: 'web' });
 
 </PaddedAPIBox>
 
-Edit the Expo app inside the **webui** directory to customize the user interface that displays diagnostic information from your app or triggers test scenarios:
+编辑 **webui** 目录中的 Expo 应用，以自定义显示来自你应用的诊断信息或触发测试场景的用户界面：
 
 ```tsx webui/App.tsx
 import { useDevToolsPluginClient, type EventSubscription } from 'expo/devtools';
@@ -96,7 +96,7 @@ export default function App() {
 }
 ```
 
-Edit the hook in the **src** directory to customize what diagnostic information is sent to the plugin or how the app should respond to any messages from the web user interface:
+编辑 **src** 目录中的 hook，以自定义发送给插件的诊断信息，或应用应如何响应来自 Web 用户界面的任何消息：
 
 ```tsx src/useMyDevToolsPlugin.ts
 import { useDevToolsPluginClient } from 'expo/devtools';
@@ -114,7 +114,7 @@ export function useMyDevToolsPlugin() {
 }
 ```
 
-If you update the hook to return functions that will be called by the app, you will also need to update **src/index.ts** so it exports no-op functions when the app is not running in debug mode:
+如果你更新 hook 让它返回会被应用调用的函数，你还需要更新 **src/index.ts**，以便在应用未以调试模式运行时导出空操作函数：
 
 ```diff src/index.ts
 if (process.env.NODE_ENV !== 'production') {
@@ -130,9 +130,9 @@ if (process.env.NODE_ENV !== 'production') {
 
 <Step label="2">
 
-## Test a plugin
+## 测试插件
 
-Since the plugin web UI is an Expo app, you can test it just like you would any other Expo app, with `npx expo start`, except that you will run it in the browser only. The template includes a convenience command to run the plugin in local development mode:
+由于插件的 Web UI 是一个 Expo 应用，你可以像测试其他 Expo 应用一样使用 `npx expo start` 来测试它，只不过你将仅在浏览器中运行它。模板包含一个便捷命令，可在本地开发模式下运行该插件：
 
 <Terminal cmd={['$ npm run web:dev']} />
 
@@ -140,21 +140,21 @@ Since the plugin web UI is an Expo app, you can test it just like you would any 
 
 <Step label="3">
 
-## Build a plugin for distribution
+## 构建用于分发的插件
 
-To prepare your plugin for distribution or use within your monorepo, you will need to build the plugin with the following command:
+要为插件的分发或在 monorepo 中使用做准备，你需要使用以下命令构建插件：
 
 <Terminal cmd={['$ npm run build:all']} />
 
-This command will build the hook code into the **build** directory, and the web user interface into the **dist** directory.
+该命令会将 hook 代码构建到 **build** 目录中，并将 Web 用户界面构建到 **dist** 目录中。
 
 </Step>
 
 <Step label="4">
 
-## Use the plugin
+## 使用插件
 
-Import the plugin's hook into your app's root component and call it to connect your app to the plugin:
+将插件的 hook 导入到你应用的根组件中并调用它，以将应用连接到插件：
 
 ```jsx App.js
 import { useMyDevToolsPlugin } from 'my-devtools-plugin';

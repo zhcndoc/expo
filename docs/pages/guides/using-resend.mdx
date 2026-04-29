@@ -1,64 +1,64 @@
 ---
-title: Using Resend
-description: Learn how to integrate Resend in your Expo and React Native app to programmatically send emails with Expo Router's API Routes.
+title: 使用 Resend
+description: 了解如何在 Expo 和 React Native 应用中集成 Resend，以通过 Expo Router 的 API 路由以编程方式发送电子邮件。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-[Resend](https://resend.com/) is an email API platform designed for developers. It allows you to send, receive, and manage emails programmatically through an API. You can use it to send transactional emails for use cases like newsletters, marketing emails, and more. The API also allows you to set up webhooks for email events, manage domains for deliverability, and receive emails via webhooks.
+[Resend](https://resend.com/) 是一个面向开发者的电子邮件 API 平台。它允许你通过 API 以编程方式发送、接收和管理电子邮件。你可以用它发送用于新闻通讯、营销邮件等场景的事务性邮件。该 API 还允许你为邮件事件设置 webhooks、管理用于送达率的域名，以及通过 webhooks 接收邮件。
 
-This guide demonstrates the **essential steps to integrate Resend with your Expo and React Native project**.
+本指南演示了将 **Resend 与 Expo 和 React Native 项目集成的基本步骤**。
 
 <VideoBoxLink
   videoId="8sPD8SNcUFA"
-  title="How to send emails with Resend from your Expo app"
-  description="Integrate Resend with Expo Router API routes to send emails programmatically and deploy to EAS Hosting."
+  title="如何使用 Resend 从你的 Expo 应用发送电子邮件"
+  description="将 Resend 与 Expo Router API 路由集成，以编程方式发送电子邮件并部署到 EAS Hosting。"
 />
 
-## Prerequisites
+## 前提条件
 
-Before you get started, you need to have the following:
+在开始之前，你需要具备以下内容：
 
-- A project using [Expo Router](/router/installation/)
-- An [Expo account](https://expo.dev/signup) to deploy the API route using EAS Hosting
-- EAS CLI installed globally (`npm install -g eas-cli`)
-- A [Resend account](https://resend.com/)
+- 一个使用 [Expo Router](/router/installation/) 的项目
+- 一个 [Expo 账户](https://expo.dev/signup)，用于使用 EAS Hosting 部署 API 路由
+- 全局安装的 EAS CLI（`npm install -g eas-cli`）
+- 一个 [Resend 账户](https://resend.com/)
 
 <Step label="1">
 
-## Create a Resend API key
+## 创建 Resend API 密钥
 
-Go to the [Resend dashboard](https://resend.com/api-keys) > **API Keys** and click on **Create API Key** to generate an API key.
+前往 [Resend 控制台](https://resend.com/api-keys) > **API Keys**，然后点击 **Create API Key** 生成一个 API 密钥。
 
-Once you have generated the API key, save it to **.env.local** file in your Expo project:
+生成 API 密钥后，将其保存到 Expo 项目的 **.env.local** 文件中：
 
 ```shell .env.local
 RESEND_API_KEY=YOUR_RESEND_API_KEY
 ```
 
-> **Note:** Do not commit **.env.local** file to your Version Control System (VCS) like Git. The API key is sensitive and should not be exposed to the public. You must add the file to your **.gitignore** file to ignore it.
+> **注意：** 不要将 **.env.local** 文件提交到你的版本控制系统（VCS），例如 Git。API 密钥是敏感信息，不应公开暴露。你必须将该文件添加到 **.gitignore** 文件中以忽略它。
 
 </Step>
 
 <Step label="2">
 
-## Install Resend SDK
+## 安装 Resend SDK
 
-In your Expo project, install the Resend SDK using the following command:
+在你的 Expo 项目中，使用以下命令安装 Resend SDK：
 
 <Terminal cmd={['$ npx expo install resend']} />
 
-The resend SDK library is a server-only library. It allows you to send emails from the server-side code of your app. Since this guide uses [API Routes](/router/web/api-routes/) to handle email submissions, you need to install the resend as part of your Expo project.
+resend SDK 库是一个仅限服务器端使用的库。它允许你从应用的服务器端代码发送电子邮件。由于本指南使用 [API Routes](/router/web/api-routes/) 来处理邮件提交，因此你需要将 resend 作为 Expo 项目的一部分进行安装。
 
 </Step>
 
 <Step label="3">
 
-## Enable and create an API route
+## 启用并创建 API 路由
 
-To enable using API Routes in your Expo project, you need to set the web.output to server in your [app config](/workflow/configuration/) file:
+要在你的 Expo 项目中启用 API Routes，你需要在 [app 配置](/workflow/configuration/) 文件中将 web.output 设置为 server：
 
 ```json app.json
 {
@@ -68,7 +68,7 @@ To enable using API Routes in your Expo project, you need to set the web.output 
 }
 ```
 
-Then, [create an API route](/router/web/api-routes/#create-an-api-route) to handle email submissions. Inside the **src/app** directory, create a new file called **api/audience+api.ts**. The `+api.ts` extension is used by Expo Router to identify the file as an API Route. To test the integration, you can add the minimal code below to send an email to a recipient using Resend SDK:
+然后，[创建一个 API 路由](/router/web/api-routes/#create-an-api-route) 来处理邮件提交。在 **src/app** 目录中，创建一个名为 **api/audience+api.ts** 的新文件。`+api.ts` 扩展名由 Expo Router 用于将该文件识别为 API Route。为了测试集成，你可以添加下面这段最小代码，使用 Resend SDK 向收件人发送邮件：
 
 ```tsx src/app/api/audience+api.ts
 import { Resend } from 'resend';
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
 
   await resend.contacts.create({
     email: email,
-    // Provide dynamic values on your own
+    // 自行提供动态值
     firstName: 'Steve',
     lastName: 'Wozniak',
     unsubscribed: false,
@@ -95,32 +95,32 @@ export async function POST(request: Request) {
 }
 ```
 
-In the above code snippet, the `POST` [request function](/router/web/api-routes/#request-body) is executed when the `/api/audience` route is matched. The function receives a `Request` object as an argument, which contains the HTTP request body. Then, the function extracts the `email` from the request body and sends it to the Resend API to add it to the audience.
+在上面的代码片段中，当匹配到 `/api/audience` 路由时，会执行 `POST` [request function](/router/web/api-routes/#request-body)。该函数接收一个 `Request` 对象作为参数，其中包含 HTTP 请求体。然后，函数从请求体中提取 `email`，并将其发送到 Resend API 以将其添加到 audience 中。
 
 </Step>
 
 <Step label="4">
 
-## Add a base URL
+## 添加基础 URL
 
-To make the API route accessible from your Expo app, you need to add the base URL as an environment variable in your Expo project. Add the following code to your **.env.local** file:
+为了让 Expo 应用能够访问该 API 路由，你需要在 Expo 项目中将基础 URL 添加为环境变量。将以下代码添加到你的 **.env.local** 文件中：
 
 ```shell .env.local
-EXPO_PUBLIC_BASE_URL=https://example-resend.expo.app # Deployed URL via EAS Hosting
-EXPO_PUBLIC_BASE_URL_LOCAL=http://localhost:8081 # Only required for testing locally
+EXPO_PUBLIC_BASE_URL=https://example-resend.expo.app # 通过 EAS Hosting 部署后的 URL
+EXPO_PUBLIC_BASE_URL_LOCAL=http://localhost:8081 # 仅在本地测试时需要
 ```
 
-To test Resend integration locally, you can use `EXPO_PUBLIC_BASE_URL_LOCAL` to point to your local development server, whose URL is provided when you run `npx expo start`. Later in this guide, when you deploy your app to EAS Hosting, ensure to update the `EXPO_PUBLIC_BASE_URL` to the deployed URL.
+要在本地测试 Resend 集成，你可以使用 `EXPO_PUBLIC_BASE_URL_LOCAL` 指向本地开发服务器，其 URL 会在你运行 `npx expo start` 时提供。在本指南后面，当你将应用部署到 EAS Hosting 时，请确保将 `EXPO_PUBLIC_BASE_URL` 更新为部署后的 URL。
 
-Note that only variables prefixed with `EXPO_PUBLIC_` can be used in the frontend code, so you can have the above as well as the Resend API key in the same **.env** file, but the `RESEND_API_KEY` will only be accessible from the server-side code (that is, files ending with **+api**).
+请注意，只有以前缀 `EXPO_PUBLIC_` 开头的变量才能在前端代码中使用，因此你可以将上述内容以及 Resend API 密钥放在同一个 **.env** 文件中，但 `RESEND_API_KEY` 只能在服务器端代码中访问（也就是以 **+api** 结尾的文件）。
 
 </Step>
 
 <Step label="5">
 
-## Add a form to your Expo project
+## 在你的 Expo 项目中添加表单
 
-The following example code shows a simple form to collect email addresses from app users. In a real-world scenario, you would want to add validation and error handling to the form. For example, the following code is added to the **src/app/index.tsx** file:
+下面的示例代码展示了一个用于收集应用用户邮箱地址的简单表单。在实际场景中，你会希望为表单添加校验和错误处理。例如，以下代码添加到 **src/app/index.tsx** 文件中：
 
 ```tsx src/app/index.tsx
 import { useRef, useState } from 'react';
@@ -132,7 +132,7 @@ export default function Index() {
 
   const handleSubmit = async () => {
     if (!email) {
-      alert('Email is required.');
+      alert('Email 是必填项。');
       return;
     }
 
@@ -142,24 +142,24 @@ export default function Index() {
 
     try {
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL_LOCAL}/api/audience`, // Switch to `EXPO_PUBLIC_BASE_URL` after deploying to EAS Hosting
+        `${process.env.EXPO_PUBLIC_BASE_URL_LOCAL}/api/audience`, // 部署到 EAS Hosting 后切换为 `EXPO_PUBLIC_BASE_URL`
         {
           method: 'POST',
           body: JSON.stringify({ email }),
         }
       );
 
-      // You can handle other response validations here.
+      // 你可以在这里处理其他响应校验。
 
       await response.json();
 
-      Alert.alert('Success', 'Email sent successfully.', [
+      Alert.alert('成功', '邮件发送成功。', [
         {
-          text: 'Continue',
+          text: '继续',
         },
       ]);
     } catch (error) {
-      alert('Something went wrong.');
+      alert('出错了。');
       console.error(error);
     }
   };
@@ -167,7 +167,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <TextInput
-        placeholder="Email"
+        placeholder="邮箱"
         value={email}
         onChangeText={setEmail}
         ref={inputRef}
@@ -176,7 +176,7 @@ export default function Index() {
         style={styles.input}
       />
       <Pressable style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Send email</Text>
+        <Text style={styles.buttonText}>发送邮件</Text>
       </Pressable>
     </View>
   );
@@ -214,27 +214,27 @@ const styles = StyleSheet.create({
 
 <Step label="6">
 
-## Deploy the API route to EAS Hosting
+## 将 API 路由部署到 EAS Hosting
 
-To make the API route (`/api/audience`) accessible from a URL, you can deploy it to [EAS Hosting](/eas/hosting/get-started/).
+为了让 API 路由（`/api/audience`）可通过 URL 访问，你可以将其部署到 [EAS Hosting](/eas/hosting/get-started/)。
 
-1. Run the following command to export the web and API assets. The exported files are saved inside a **dist** directory and the API route file is part of this directory:
+1. 运行以下命令导出 web 和 API 资源。导出的文件会保存在 **dist** 目录中，API 路由文件也是该目录的一部分：
 
 <Terminal cmd={['$ npx expo export --platform web']} />
 
-2. Run the following to create a production deployment via EAS Hosting:
+2. 运行以下命令通过 EAS Hosting 创建生产部署：
 
 <Terminal cmd={['$ eas deploy --prod']} />
 
-The `eas deploy --prod` command will:
+`eas deploy --prod` 命令将会：
 
-- Automatically create an EAS project if you haven't already
-- Prompt you to choose the preview URL for your project. Ensure that this URL is the same as the value of `EXPO_PUBLIC_BASE_URL` in your **.env.local** file. This will make the API route accessible from your Expo app while deployed in production
+- 如果你还没有 EAS 项目，会自动创建一个
+- 提示你为项目选择预览 URL。请确保该 URL 与你 **.env.local** 文件中的 `EXPO_PUBLIC_BASE_URL` 值相同。这将使 API 路由在生产部署后仍可从你的 Expo 应用中访问
 
-> **Note:** Before deployment, you need to use the `EXPO_PUBLIC_BASE_URL` as your hosted domain in your form screen (**src/app/index.tsx**).
+> **注意：** 在部署之前，你需要在表单页面（**src/app/index.tsx**）中使用 `EXPO_PUBLIC_BASE_URL` 作为你的托管域名。
 
 </Step>
 
-## Learn more about Resend
+## 了解更多关于 Resend
 
-For more information about Resend's API and usage, see [Resend's official documentation](https://resend.com/docs/introduction).
+有关 Resend 的 API 和用法的更多信息，请参阅 [Resend 官方文档](https://resend.com/docs/introduction)。

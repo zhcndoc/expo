@@ -1,30 +1,30 @@
 ---
-title: Singular stack routes
-description: Learn how to enforce singular routes.
+title: 单一栈路由
+description: 了解如何强制使用单一路由。
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 
-> **warning** Singular routes are currently flagged as `dangerouslySingular` due to an upstream issue with `react-native-screens`. Expo is working with Software Mansion to resolve the issue.
+> **警告** 由于 `react-native-screens` 的一个上游问题，当前单一路由会被标记为 `dangerouslySingular`。Expo 正在与 Software Mansion 合作解决该问题。
 
-While a `Stack` normally operates with `push`/`pop` actions, in advanced scenarios you may wish to enforce a singular version of a screen in the stack. When enabled, any time a new screen is pushed the history will be scanned and any matching screens will be removed to ensure only a singular version exists.
+虽然 `Stack` 通常通过 `push`/`pop` 操作运行，但在高级场景中，你可能希望在堆栈中强制某个屏幕只能有单一版本。启用后，每次推入新屏幕时，都会扫描历史记录并移除任何匹配的屏幕，以确保只存在一个单一版本。
 
-## Options
+## 选项
 
-There are two options for conditions:
+条件有两个选项：
 
-- `true`: Use the default singular function
-- `Function`: Specify your own singular function
+- `true`：使用默认的单一函数
+- `Function`：指定你自己的单一函数
 
-The default singular function returns the screen's pathname without search params or the hash.
+默认的单一函数会返回屏幕的 pathname，不包含查询参数或 hash。
 
-The singular identifier function has the signature of `(routeName: string, params: Record<string, string | string[]>) => string | undefined`.
+单一标识符函数的签名为 `(routeName: string, params: Record<string, string | string[]>) => string | undefined`。
 
-## Assigning singular on the navigator
+## 在 navigator 上设置单一
 
 <FileTree files={['app/_layout.tsx', 'app/index.tsx', 'app/[profile].tsx']} />
 
-Using the above example app, you can create a singular constraint to ensure that each `[profile]` page is unique.
+使用上面的示例应用，你可以创建一个单一约束，以确保每个 `[profile]` 页面都是唯一的。
 
 ```tsx app/_layout.tsx
 export default function () {
@@ -36,30 +36,30 @@ export default function () {
 }
 ```
 
-If you now navigate to `/profile-2` and your history is:
+如果你现在导航到 `/profile-2`，并且你的历史记录是：
 
 - `/profile-1`
 - `/profile-2`
 - `/profile-3`
 
-The new history will push the new route, but also remove any previous entries:
+新的历史记录会推入新路由，同时也会移除任何之前的条目：
 
 - `/profile-1`
 - `/profile-3`
 - `/profile-2`
 
-## Creating singular links
+## 创建单一路由链接
 
-`dangerouslySingular` can also be added to the `<Link />` component to create links that enforce singular routes.
+`dangerouslySingular` 也可以添加到 `<Link />` 组件中，以创建强制单一路由的链接。
 
 ```tsx
 <Link href="/unique-link" dangerouslySingular />
 <Link href="/unique-link" dangerouslySingular={(name) => name === 'unique-link' ? name : undefined} />
 ```
 
-## Using the imperative API
+## 使用命令式 API
 
-The imperative API also accepts a `dangerouslySingular` option.
+命令式 API 也接受 `dangerouslySingular` 选项。
 
 ```tsx
 router.navigate('/unique-link', { dangerouslySingular: true });
@@ -73,16 +73,16 @@ router.push('/unique-link', {
 });
 ```
 
-## Navigate vs push
+## navigate vs push
 
-The `navigate` and `push` events apply the singular constraint differently.
+`navigate` 和 `push` 事件以不同方式应用单一约束。
 
-- _navigate_: Only applies the constraint if the current route is changed
-- _push_: Always applies the constraint
+- _navigate_：只有在当前路由发生变化时才应用该约束
+- _push_：总是应用该约束
 
 <FileTree files={['app/_layout.tsx', 'app/index.tsx', 'app/[profile].tsx']} />
 
-Using the app structure above, if you have the history of:
+使用上面的应用结构，如果你的历史记录是：
 
 - `/profile-1`
 - `/profile-2`
@@ -90,15 +90,15 @@ Using the app structure above, if you have the history of:
 - `/profile-3`
 - `/profile-2`
 
-If you navigate to `/profile-2`, the singular constraint will not be applied as the current route is the target route when using `navigate`. However, if you push `/profile-2`, the singular constraint will be applied.
+如果你导航到 `/profile-2`，由于使用 `navigate` 时当前路由已经是目标路由，因此不会应用单一约束。然而，如果你 push 到 `/profile-2`，则会应用单一约束。
 
 ```tsx
-// Will NOT apply the singular constraint as the current route is the target route
+// 当当前路由就是目标路由时，不会应用单一约束
 router.navigate("/profile-2", {
   dangerouslySingular: (_, { profile } => profile === 'profile-2' ? profile : undefined )
 })
 
-// Will apply the singular constraint
+// 将会应用单一约束
 router.push("/profile-2", {
   dangerouslySingular: (_, { profile } => profile === 'profile-2' ? profile : undefined )
 })

@@ -1,26 +1,26 @@
 ---
-title: Configuring EAS Metadata
+title: 配置 EAS 元数据
 sidebar_title: store.config.json
-description: Learn about different ways to configure EAS Metadata.
+description: 了解配置 EAS 元数据的不同方式。
 ---
 
 import { CodeBlocksTable } from '~/components/plugins/CodeBlocksTable';
 
-> **important** **EAS Metadata** is in [beta](/more/release-statuses/#beta) and subject to breaking changes.
+> **重要** **EAS 元数据** 处于 [beta](/more/release-statuses/#beta) 阶段，且可能会发生破坏性变更。
 
-EAS Metadata is configured by a **store.config.json** file at the _root of your project_.
+EAS 元数据通过位于项目 _根目录_ 的 **store.config.json** 文件进行配置。
 
-You can configure the path or name of the store config file with the **eas.json** [`metadataPath`](/eas/json/#metadatapath) property.
-Besides the default JSON format, EAS Metadata also supports more dynamic config using JavaScript files.
+你可以使用 **eas.json** 的 [`metadataPath`](/eas/json/#metadatapath) 属性来配置商店配置文件的路径或名称。
+除了默认的 JSON 格式外，EAS 元数据还支持使用 JavaScript 文件来提供更动态的配置。
 
-## Static store config
+## 静态商店配置
 
-The default store config type for EAS Metadata is a simple JSON file.
-The code snippet below shows an example store config with basic App Store information written in English (U.S.).
+EAS 元数据的默认商店配置类型是一个简单的 JSON 文件。
+下面的代码片段展示了一个示例商店配置，其中包含用英文（美国）编写的基础 App Store 信息。
 
-You can find all configuration options in the [store config schema](/eas/metadata/schema/).
+你可以在 [store config schema](/eas/metadata/schema/) 中找到所有配置选项。
 
-> If you have the [VS Code Expo Tools extension](https://github.com/expo/vscode-expo#readme) installed, you get auto-complete, suggestions, and warnings for **store.config.json** files.
+> 如果你安装了 [VS Code Expo Tools 扩展](https://github.com/expo/vscode-expo#readme)，你会在 **store.config.json** 文件中获得自动补全、建议和警告。
 
 ```json store.config.json
 {
@@ -41,18 +41,18 @@ You can find all configuration options in the [store config schema](/eas/metadat
 }
 ```
 
-## Dynamic store config
+## 动态商店配置
 
-At times, Metadata properties can benefit from dynamic values. For example, the Metadata **copyright notice** should contain the current year. This can be automated with EAS Metadata.
+有时，元数据属性可以受益于动态值。例如，元数据的 **版权声明** 应该包含当前年份。这可以通过 EAS 元数据自动完成。
 
-To generate content dynamically, start by creating a JavaScript config file **store.config.js**. Then, use the [`metadataPath`](/eas/json/#metadatapath) property in the **eas.json** file to pick the JS config file.
+要动态生成内容，首先创建一个 JavaScript 配置文件 **store.config.js**。然后，在 **eas.json** 文件中使用 [`metadataPath`](/eas/json/#metadatapath) 属性来选择该 JS 配置文件。
 
-> `eas metadata:pull` can't update dynamic store config files. Instead, it creates a JSON file with the same name as the configured file. You can import the JSON file to reuse the data from `eas metadata:pull`.
+> `eas metadata:pull` 不能更新动态商店配置文件。相反，它会创建一个与所配置文件同名的 JSON 文件。你可以导入该 JSON 文件，以复用 `eas metadata:pull` 的数据。
 
 <CodeBlocksTable tabs={['store.config.js', 'eas.json']}>
 
 ```js
-// Use the data from `eas metadata:pull`
+// 使用来自 `eas metadata:pull` 的数据
 const config = require('./store.config.json');
 
 const year = new Date().getFullYear();
@@ -75,18 +75,18 @@ module.exports = config;
 
 </CodeBlocksTable>
 
-## Store config with external content
+## 使用外部内容的商店配置
 
-When using external services for localizations, you have to fetch external content.
-EAS Metadata supports synchronous and asynchronous functions exported from dynamic store config files.
-The function results are awaited before validating and syncing with the stores.
+在使用外部服务进行本地化时，你必须获取外部内容。
+EAS 元数据支持从动态商店配置文件中导出同步和异步函数。
+在验证并与商店同步之前，会先等待这些函数的结果。
 
-> The **store.config.js** function is evaluated in Node.js. If you need special values, like secrets, use environment variables.
+> **store.config.js** 函数会在 Node.js 中执行。如果你需要特殊值，比如密钥，请使用环境变量。
 
 <CodeBlocksTable tabs={['store.config.js', 'eas.json']}>
 
 ```js
-// Use the data from `eas metadata:pull`
+// 使用来自 `eas metadata:pull` 的数据
 const config = require('./store.config.json');
 
 module.exports = async () => {

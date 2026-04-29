@@ -1,7 +1,7 @@
 ---
-title: Using Model Context Protocol (MCP) with Expo
-sidebar_title: MCP Server
-description: A guide on integrating Model Context Protocol with Expo projects to enhance AI model capabilities.
+title: 使用 Model Context Protocol（MCP）与 Expo
+sidebar_title: MCP 服务器
+description: 一份关于将 Model Context Protocol 与 Expo 项目集成以增强 AI 模型能力的指南。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -13,116 +13,116 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-> **info** Expo MCP Server requires an [EAS paid plan](https://expo.dev/pricing).
+> **info** Expo MCP Server 需要 [EAS 付费计划](https://expo.dev/pricing)。
 
-[Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is a standard protocol that allows AI models to integrate with external data sources, providing enhanced context for more precise responses. It enables AI-assisted tools like agents to understand your development environment more deeply, allowing them to provide better assistance with your codebase.
+[模型上下文协议（MCP）](https://modelcontextprotocol.io/) 是一种标准协议，允许 AI 模型与外部数据源集成，从而提供更丰富的上下文，以获得更精确的响应。它使代理等 AI 辅助工具能够更深入地理解你的开发环境，从而更好地帮助你的代码库。
 
-Expo MCP Server is a remote MCP server hosted by Expo that integrates with popular AI-assisted tools such as Claude Code, Cursor, VS Code, and others, enabling them to interact directly with your Expo projects.
+Expo MCP Server 是由 Expo 托管的远程 MCP 服务器，可与 Claude Code、Cursor、VS Code 等常见的 AI 辅助工具集成，使它们能够直接与你的 Expo 项目交互。
 
 <VideoBoxLink
   videoId="dp9dpIgDxZQ"
-  title="Introducing Expo MCP Server: for accurate, context-aware AI responses"
-  description="Enhance your AI-assisted tools for building apps with Expo."
+  title="介绍 Expo MCP Server：用于准确、具备上下文感知的 AI 响应"
+  description="增强你用于使用 Expo 构建应用的 AI 辅助工具。"
 />
 
-## What does Expo MCP Server do?
+## Expo MCP Server 能做什么？
 
-Expo MCP Server teaches your AI-assisted tools about the Expo SDK and lets them interact with mobile simulators and the React Native DevTools. These are some examples of the tasks Expo MCP Server enhances:
+Expo MCP Server 会让你的 AI 辅助工具了解 Expo SDK，并允许它们与移动模拟器以及 React Native DevTools 交互。以下是 Expo MCP Server 能增强的一些任务示例：
 
-**Learn about developing with Expo.** Your AI-assisted tools can fetch the latest official Expo documentation on demand and use it to reply to prompts like:
+**了解 Expo 开发。** 你的 AI 辅助工具可以按需获取最新的官方 Expo 文档，并用它来回复如下提示：
 
-- "How do I use Expo Router?"
-- "Search the Expo docs for implementing deep linking"
-- "Read the Expo Router docs page"
-- "What is Expo CNG?"
+- "我该如何使用 Expo Router？"
+- "搜索 Expo 文档，了解如何实现深度链接"
+- "阅读 Expo Router 文档页面"
+- "什么是 Expo CNG？"
 
-**Manage dependencies.** Expo MCP Server guides you toward installing our recommended packages and uses `npx expo install` to install known, compatible versions.
+**管理依赖。** Expo MCP Server 会引导你安装我们推荐的包，并使用 `npx expo install` 来安装已知兼容的版本。
 
-- "Add SQLite with basic CRUD operations"
-- "Install `expo-camera` and show me how to take photos"
-- "Add `expo-notifications` for push notifications"
+- "添加带基本 CRUD 操作的 SQLite"
+- "安装 `expo-camera` 并告诉我如何拍照"
+- "添加 `expo-notifications` 用于推送通知"
 
-**Manage builds and workflows.** Expo MCP Server can trigger and monitor EAS builds, run workflows, and pull crash data from TestFlight:
+**管理构建和工作流。** Expo MCP Server 可以触发并监控 EAS 构建、运行工作流，并从 TestFlight 拉取崩溃数据：
 
-- "Investigate why my most recent iOS build on EAS failed"
-- "Identify any patterns in recent failing workflows"
-- "Create a workflow that runs Maestro tests"
-- "Show me recent TestFlight crashes"
-- "Show TestFlight feedback for my app"
+- "调查我最近一次 iOS EAS 构建为什么失败了"
+- "识别最近失败的工作流中的任何模式"
+- "创建一个运行 Maestro 测试的工作流"
+- "显示我最近的 TestFlight 崩溃"
+- "显示我应用的 TestFlight 反馈"
 
-**Automate visual verification and testing.** Multimodal AI-assisted tools can screenshot and interact with your running app in a simulator. Expo MCP Server includes local capabilities enabled by adding the `expo-mcp` package to your project's dependencies.
+**自动化视觉验证和测试。** 多模态 AI 辅助工具可以截取屏幕截图，并与你在模拟器中运行的应用交互。通过将 `expo-mcp` 包添加到项目依赖中，Expo MCP Server 还包括本地能力。
 
-- "Add a blue circle view and make sure it renders correctly"
-- "Add a button and tap it to verify the interaction works"
-- "Add a counter button that increments on tap and verify the state updates correctly"
+- "添加一个蓝色圆形视图并确保它正确渲染"
+- "添加一个按钮并点击它以验证交互是否正常工作"
+- "添加一个计数按钮，点击时递增，并验证状态更新是否正确"
 
-Your AI-assisted tools can autonomously write the code, capture screenshots to verify the UI is correct, test interactions, and fix issues they find.
+你的 AI 辅助工具可以自主编写代码、截取屏幕截图以验证 UI 是否正确、测试交互，并修复它们发现的问题。
 
-The complete table of [MCP capabilities](#available-mcp-capabilities) documents the tools and prompts Expo MCP Server provides to AI-assisted tools.
+完整的 [MCP 能力](#available-mcp-capabilities) 表列出了 Expo MCP Server 为 AI 辅助工具提供的工具和提示词。
 
-## Prerequisites
+## 前提条件
 
-Before using Expo MCP Server, ensure you have:
+在使用 Expo MCP Server 之前，请确保你具备：
 
-- An Expo account with an EAS paid plan
-- An Expo project created either with `npx create-expo-app@latest --template default@sdk-55` or has the latest `expo` package version installed
-- AI-assisted tools with remote MCP server support (Claude Code, Cursor, VS Code, and so on)
+- 一个已开通 EAS 付费计划的 Expo 账户
+- 一个 Expo 项目，该项目要么使用 `npx create-expo-app@latest --template default@sdk-55` 创建，要么已安装最新版本的 `expo` 包
+- 支持远程 MCP 服务器的 AI 辅助工具（Claude Code、Cursor、VS Code 等）
 
-## Installation and setup
+## 安装与设置
 
 <Step label="1">
 
-### Install Expo MCP Server
+### 安装 Expo MCP Server
 
-Expo MCP Server supports integration with various AI-assisted tools. Use the general settings below or expand your specific tool for detailed instructions:
+Expo MCP Server 支持与各种 AI 辅助工具集成。请使用下面的通用设置，或展开你的特定工具以查看详细说明：
 
-- **Server type**: Streamable HTTP
-- **URL**: `https://mcp.expo.dev/mcp`
-- **Authentication**: OAuth
+- **服务器类型**：Streamable HTTP
+- **URL**：`https://mcp.expo.dev/mcp`
+- **认证**：OAuth
 
-<Collapsible summary="Claude Code setup">
+<Collapsible summary="Claude Code 设置">
 
 <Terminal cmd={['$ claude mcp add --transport http expo-mcp https://mcp.expo.dev/mcp']} />
 
-After installation, run `/mcp` in your Claude Code session to authenticate.
+安装后，在 Claude Code 会话中运行 `/mcp` 以进行身份验证。
 
 </Collapsible>
 
-<Collapsible summary="Cursor setup">
+<Collapsible summary="Cursor 设置">
 
-Click the following link to install the MCP server for Cursor:
+点击以下链接为 Cursor 安装 MCP 服务器：
 
 <a href="cursor://anysphere.cursor-deeplink/mcp/install?name=expo-mcp&config=eyJ1cmwiOiJodHRwczovL21jcC5leHBvLmRldi9tY3AifQ%3D%3D">
   <img
     src="https://cursor.com/deeplink/mcp-install-light.svg"
-    alt="Install MCP Server"
+    alt="安装 MCP Server"
     className="hidden max-w-48 dark:block"
   />
   <img
     src="https://cursor.com/deeplink/mcp-install-dark.svg"
-    alt="Install MCP Server"
+    alt="安装 MCP Server"
     className="block max-w-48 dark:hidden"
   />
 </a>
 
 </Collapsible>
 
-<Collapsible summary="VS Code setup">
+<Collapsible summary="VS Code 设置">
 
-1. Open Command Palette (<kbd>Cmd ⌘</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> or <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>)
-2. Run **MCP: Add Server**
-3. Select **HTTP**
-4. Enter the server details:
-   - **URL**: `https://mcp.expo.dev/mcp`
-   - **Name**: expo-mcp
+1. 打开命令面板（<kbd>Cmd ⌘</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> 或 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>）
+2. 运行 **MCP: Add Server**
+3. 选择 **HTTP**
+4. 输入服务器详细信息：
+   - **URL**：`https://mcp.expo.dev/mcp`
+   - **Name**：expo-mcp
 
 </Collapsible>
 
-<Collapsible summary="Codex setup">
+<Collapsible summary="Codex 设置">
 
 <Terminal cmd={['$ codex mcp add expo-mcp --url https://mcp.expo.dev/mcp']} />
 
-The above command adds the MCP server to your Codex configuration file and prompts you to authenticate with your Expo account.
+上面的命令会将 MCP 服务器添加到你的 Codex 配置文件中，并提示你使用 Expo 账户进行身份验证。
 
 </Collapsible>
 
@@ -130,96 +130,96 @@ The above command adds the MCP server to your Codex configuration file and promp
 
 <Step label="2">
 
-### Authenticate with Expo
+### 使用 Expo 进行身份验证
 
-After installing the MCP server, you'll need to authenticate using one of two methods:
+安装 MCP 服务器后，你需要使用以下两种方法之一进行身份验证：
 
-#### Access token (recommended)
+#### 访问令牌（推荐）
 
-Generate a **Personal access token** from your Expo account and use it during the OAuth flow.
+从你的 Expo 账户生成一个 **个人访问令牌**，并在 OAuth 流程中使用它。
 
-- To generate an access token, open [Access tokens](https://expo.dev/accounts/[account]/settings/access-tokens) settings page in EAS dashboard.
-- Under **Personal access tokens**, click **Create token**. Copy the token and use it during the OAuth flow.
+- 要生成访问令牌，请在 EAS 仪表板中打开 [访问令牌](https://expo.dev/accounts/[account]/settings/access-tokens) 设置页面。
+- 在 **Personal access tokens** 下，点击 **Create token**。复制该令牌并在 OAuth 流程中使用它。
 
-#### Credentials
+#### 凭据
 
-Use your Expo account username and password. In this case, the server will generate an access token automatically.
+使用你的 Expo 账户用户名和密码。在这种情况下，服务器会自动生成一个访问令牌。
 
 </Step>
 
 <Step label="3">
 
-### Set up local capabilities (Recommended)
+### 设置本地能力（推荐）
 
-> **info** Local capabilities are only available in **SDK 54 and later**.
+> **info** 本地能力仅在 **SDK 54 及更高版本** 中可用。
 
-For the full MCP experience with advanced features like taking screenshots from your iOS Simulator, opening DevTools, and automation capabilities, set up a local Expo development server:
+为了获得完整的 MCP 体验，并使用从你的 iOS 模拟器截图、打开 DevTools 和自动化功能等高级特性，请设置本地 Expo 开发服务器：
 
 <Terminal
   cmd={[
     '$ cd /path/to/your-project',
     '',
-    '# Install the expo-mcp package',
+    '# 安装 expo-mcp 包',
     '$ npx expo install expo-mcp --dev',
     '',
-    '# Ensure you are logged in to Expo CLI with the same account as the one used to',
-    '# authenticate with the MCP server',
+    '# 确保你已使用与用于',
+    '# 通过 MCP 服务器认证的同一 Expo 账户登录 Expo CLI',
     '$ npx expo whoami || npx expo login',
     '',
-    '# Start the dev server with MCP capabilities',
+    '# 使用 MCP 能力启动开发服务器',
     '$ EXPO_UNSTABLE_MCP_SERVER=1 npx expo start',
   ]}
 />
 
-> **important** Whenever you start or stop the development server, you need to **reconnect or restart** your MCP server connection in your AI-assisted tool to ensure the AI-assisted tool gets refreshed capabilities.
+> **important** 每当你启动或停止开发服务器时，都需要在你的 AI 辅助工具中**重新连接或重新启动** MCP 服务器连接，以确保 AI 辅助工具获得更新后的能力。
 
 </Step>
 
-## Server capabilities versus local capabilities
+## 服务器能力与本地能力
 
-Expo MCP Server provides two types of capabilities depending on your setup:
+Expo MCP Server 根据你的设置提供两种类型的能力：
 
-### Server capabilities
+### 服务器能力
 
-Server capabilities are available with just the remote MCP server connection, without needing to set up a local development server. The **search_documentation** tool is an example of a server capability.
+服务器能力仅通过远程 MCP 服务器连接即可使用，无需设置本地开发服务器。**search_documentation** 工具就是服务器能力的一个示例。
 
-### Local capabilities
+### 本地能力
 
-Local capabilities require a local Expo development server to be running and provide advanced features that interact with your local development environment:
+本地能力需要运行本地 Expo 开发服务器，并提供可与本地开发环境交互的高级功能：
 
-- **Automation tools**: Take screenshots, tap views, find elements by testID
-- **Development tools**: Open React Native DevTools
-- **Project analysis**: Generate `expo-router` sitemap
+- **自动化工具**：截取屏幕截图、点击视图、按 testID 查找元素
+- **开发工具**：打开 React Native DevTools
+- **项目分析**：生成 `expo-router` 站点地图
 
-These capabilities enable more sophisticated workflows like automated testing, visual verification, and deeper project introspection. To use local capabilities, you will need to follow the [Set up local capabilities](#set-up-local-capabilities-recommended) section above.
+这些能力可实现更复杂的工作流，例如自动化测试、视觉验证以及更深入的项目检查。要使用本地能力，你需要按照上面的 [设置本地能力（推荐）](#set-up-local-capabilities-recommended) 部分进行操作。
 
-## Available MCP capabilities
+## 可用的 MCP 能力
 
-> **info** The MCP capabilities are subject to change from the `expo-mcp` package updates or MCP server changes. The following list is a reference and may not be up to date.
+> **info** MCP 能力可能会随着 `expo-mcp` 包更新或 MCP 服务器变更而发生变化。以下列表仅供参考，可能不是最新版本。
 
-### Tools
+### 工具
 
 <ExpoMCPToolsTable />
 
-### Prompts
+### 提示词
 
-If your AI-assisted tool supports [MCP prompts](https://modelcontextprotocol.io/specification/2025-06-18/server/prompts), you may see additional menu options, such as [slash commands in Claude Code](https://code.claude.com/docs/en/mcp):
+如果你的 AI 辅助工具支持 [MCP 提示词](https://modelcontextprotocol.io/specification/2025-06-18/server/prompts)，你可能会看到额外的菜单选项，例如 [Claude Code 中的斜杠命令](https://code.claude.com/docs/en/mcp)：
 
 <ExpoMCPPromptsTable />
 
-## Limitations
+## 限制
 
-The current implementation has the following limitations:
+当前实现有以下限制：
 
-- Only supports a **single development server** connection at a time
-- iOS support for local capabilities is limited to simulators only (physical devices not yet supported)
-- iOS support for local capabilities is only available on macOS hosts.
+- 仅支持一次连接一个**开发服务器**
+- 本地能力的 iOS 支持仅限于模拟器（尚不支持实体设备）
+- 本地能力的 iOS 支持仅在 macOS 主机上可用
 
-## Additional resources
+## 其他资源
 
 <BoxLink
-  title="Model Context Protocol Documentation"
+  title="模型上下文协议文档"
   Icon={BookOpen02Icon}
-  description="Learn more about the MCP specification and protocol details."
+  description="了解更多关于 MCP 规范和协议细节。"
   href="https://modelcontextprotocol.io/"
 />

@@ -1,134 +1,134 @@
 ---
-title: iOS capabilities
-description: Learn about built-in iOS capabilities supported in EAS Build and how to enable or disable them.
+title: iOS 能力
+description: 了解 EAS Build 支持的内置 iOS 能力，以及如何启用或禁用它们。
 ---
 
 import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
-When you make a change to your iOS entitlements, this change needs to be updated remotely on Apple's servers before making a production build. EAS Build automatically synchronizes capabilities on the Apple Developer Console with your local entitlements configuration when you run `eas build`. Capabilities are web services provided by Apple, think of them like AWS or Firebase services.
+当你对 iOS entitlements 进行更改时，在生成生产构建之前，这些更改需要先远程更新到 Apple 的服务器上。EAS Build 会在你运行 `eas build` 时，自动将 Apple Developer Console 上的 capabilities 与你的本地 entitlements 配置同步。Capabilities 是 Apple 提供的网络服务，可以把它们理解为 AWS 或 Firebase 这类服务。
 
-> This feature can be disabled with `EXPO_NO_CAPABILITY_SYNC=1 eas build`
+> 可通过 `EXPO_NO_CAPABILITY_SYNC=1 eas build` 禁用此功能
 
 ## Entitlements
 
-In an Expo app, the entitlements are read from the introspected app config. To edit them, see the [`ios.entitlements`](/versions/latest/config/app/#entitlements) field in your app config file. You can see your introspected config by running `npx expo config --type introspect` in your project and then look for the `ios.entitlements` object for the results.
+在 Expo 应用中，entitlements 会从 introspected app config 中读取。要编辑它们，请查看你的 app config 文件中的 [`ios.entitlements`](/versions/latest/config/app/#entitlements) 字段。你可以在项目中运行 `npx expo config --type introspect` 来查看 introspected config，然后在结果中查找 `ios.entitlements` 对象。
 
-In a bare React Native app, the entitlements are read from your **ios/\*\*/\*.entitlements** file.
+在裸 React Native 应用中，entitlements 会从你的 **ios/\*\*/\*.entitlements** 文件中读取。
 
-## Enabling
+## 启用
 
-If a supported entitlement is present in the entitlements file, then running `eas build` will enable it on Apple Developer Console. If the capability is already enabled, then EAS Build will skip it.
+如果 entitlements 文件中存在受支持的 entitlement，那么运行 `eas build` 时会在 Apple Developer Console 上启用它。如果该 capability 已经启用，EAS Build 会跳过它。
 
-## Disabling
+## 禁用
 
-If a capability is enabled for your app remotely, but not present in the native entitlements file, then running `eas build` will automatically disable it.
+如果某个 capability 已在远程为你的应用启用，但 native entitlements 文件中不存在它，那么运行 `eas build` 时会自动将其禁用。
 
-## Supported capabilities
+## 支持的 capabilities
 
-EAS Build will only enable capabilities that it has built-in support for, any unsupported entitlements must be manually enabled via [Apple Developer Console][apple-dev-console].
+EAS Build 只会启用它内置支持的 capabilities，任何不受支持的 entitlements 都必须通过 [Apple Developer Console][apple-dev-console] 手动启用。
 
-| Support     | Capability                                        | Entitlement string                                                                                               |
-| ----------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| <YesIcon /> | Access Wi-Fi Information                          | `com.apple.developer.networking.wifi-info`                                                                       |
+| 支持       | Capability                                        | Entitlement string                                                                                               |
+| ---------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| <YesIcon /> | 访问 Wi-Fi 信息                                   | `com.apple.developer.networking.wifi-info`                                                                       |
 | <YesIcon /> | App Attest                                        | `com.apple.developer.devicecheck.appattest-environment`                                                          |
 | <YesIcon /> | App Groups                                        | `com.apple.security.application-groups`                                                                          |
 | <YesIcon /> | Apple Pay Later Merchandising                     | `com.apple.developer.pay-later-merchandising`                                                                    |
-| <YesIcon /> | Apple Pay Payment Processing                      | `com.apple.developer.in-app-payments`                                                                            |
-| <YesIcon /> | Associated Domains                                | `com.apple.developer.associated-domains`                                                                         |
+| <YesIcon /> | Apple Pay 支付处理                                | `com.apple.developer.in-app-payments`                                                                            |
+| <YesIcon /> | 关联域名                                          | `com.apple.developer.associated-domains`                                                                         |
 | <YesIcon /> | AutoFill Credential Provider                      | `com.apple.developer.authentication-services.autofill-credential-provider`                                       |
 | <YesIcon /> | ClassKit                                          | `com.apple.developer.ClassKit-environment`                                                                       |
-| <YesIcon /> | Communicates with Drivers                         | `com.apple.developer.driverkit.communicates-with-drivers`                                                        |
-| <YesIcon /> | Communication Notifications                       | `com.apple.developer.usernotifications.communication`                                                            |
-| <YesIcon /> | Custom Network Protocol                           | `com.apple.developer.networking.custom-protocol`                                                                 |
-| <YesIcon /> | Data Protection                                   | `com.apple.developer.default-data-protection`                                                                    |
-| <YesIcon /> | DriverKit Allow Third Party UserClients           | `com.apple.developer.driverkit.allow-third-party-userclients`                                                    |
-| <YesIcon /> | DriverKit Family Audio (development)              | `com.apple.developer.driverkit.family.audio`                                                                     |
-| <YesIcon /> | DriverKit Family HID Device (development)         | `com.apple.developer.driverkit.family.hid.device`                                                                |
-| <YesIcon /> | DriverKit Family HID EventService (development)   | `com.apple.developer.driverkit.family.hid.eventservice`                                                          |
-| <YesIcon /> | DriverKit Family Networking (development)         | `com.apple.developer.driverkit.family.networking`                                                                |
-| <YesIcon /> | DriverKit Family SCSIController (development)     | `com.apple.developer.driverkit.family.scsicontroller`                                                            |
-| <YesIcon /> | DriverKit Family Serial (development)             | `com.apple.developer.driverkit.family.serial`                                                                    |
-| <YesIcon /> | DriverKit Transport HID (development)             | `com.apple.developer.driverkit.transport.hid`                                                                    |
-| <YesIcon /> | DriverKit USB Transport (development)             | `com.apple.developer.driverkit.transport.usb`                                                                    |
-| <YesIcon /> | DriverKit for Development                         | `com.apple.developer.driverkit`                                                                                  |
-| <YesIcon /> | Extended Virtual Address Space                    | `com.apple.developer.kernel.extended-virtual-addressing`                                                         |
+| <YesIcon /> | 与驱动程序通信                                     | `com.apple.developer.driverkit.communicates-with-drivers`                                                        |
+| <YesIcon /> | 通知式通信                                          | `com.apple.developer.usernotifications.communication`                                                            |
+| <YesIcon /> | 自定义网络协议                                     | `com.apple.developer.networking.custom-protocol`                                                                 |
+| <YesIcon /> | 数据保护                                          | `com.apple.developer.default-data-protection`                                                                    |
+| <YesIcon /> | DriverKit 允许第三方 UserClients                | `com.apple.developer.driverkit.allow-third-party-userclients`                                                    |
+| <YesIcon /> | DriverKit Audio 家族（development）              | `com.apple.developer.driverkit.family.audio`                                                                     |
+| <YesIcon /> | DriverKit HID Device 家族（development）         | `com.apple.developer.driverkit.family.hid.device`                                                                |
+| <YesIcon /> | DriverKit HID EventService 家族（development）   | `com.apple.developer.driverkit.family.hid.eventservice`                                                          |
+| <YesIcon /> | DriverKit Networking 家族（development）         | `com.apple.developer.driverkit.family.networking`                                                                |
+| <YesIcon /> | DriverKit SCSIController 家族（development）     | `com.apple.developer.driverkit.family.scsicontroller`                                                            |
+| <YesIcon /> | DriverKit Serial 家族（development）             | `com.apple.developer.driverkit.family.serial`                                                                    |
+| <YesIcon /> | DriverKit Transport HID（development）           | `com.apple.developer.driverkit.transport.hid`                                                                    |
+| <YesIcon /> | DriverKit USB Transport（development）           | `com.apple.developer.driverkit.transport.usb`                                                                    |
+| <YesIcon /> | 用于开发的 DriverKit                            | `com.apple.developer.driverkit`                                                                                  |
+| <YesIcon /> | 扩展虚拟地址空间                                 | `com.apple.developer.kernel.extended-virtual-addressing`                                                         |
 | <YesIcon /> | Family Controls                                   | `com.apple.developer.family-controls`                                                                            |
-| <YesIcon /> | FileProvider TestingMode                          | `com.apple.developer.fileprovider.testing-mode`                                                                  |
-| <YesIcon /> | Fonts                                             | `com.apple.developer.user-fonts`                                                                                 |
-| <YesIcon /> | Group Activities                                  | `com.apple.developer.group-session`                                                                              |
+| <YesIcon /> | FileProvider 测试模式                             | `com.apple.developer.fileprovider.testing-mode`                                                                  |
+| <YesIcon /> | 字体                                              | `com.apple.developer.user-fonts`                                                                                 |
+| <YesIcon /> | 群组活动                                          | `com.apple.developer.group-session`                                                                              |
 | <YesIcon /> | HealthKit                                         | `com.apple.developer.healthkit`                                                                                  |
 | <YesIcon /> | HomeKit                                           | `com.apple.developer.homekit`                                                                                    |
-| <YesIcon /> | Hotspot                                           | `com.apple.developer.networking.HotspotConfiguration`                                                            |
-| <YesIcon /> | Increased Memory Limit                            | `com.apple.developer.kernel.increased-memory-limit`                                                              |
-| <YesIcon /> | Inter-App Audio                                   | `inter-app-audio`                                                                                                |
+| <YesIcon /> | 热点                                              | `com.apple.developer.networking.HotspotConfiguration`                                                            |
+| <YesIcon /> | 增加内存限制                                      | `com.apple.developer.kernel.increased-memory-limit`                                                              |
+| <YesIcon /> | 应用间音频                                        | `inter-app-audio`                                                                                                |
 | <YesIcon /> | Journaling Suggestions                            | `com.apple.developer.journal.allow`                                                                              |
-| <YesIcon /> | Low Latency HLS                                   | `com.apple.developer.low-latency-streaming`                                                                      |
-| <YesIcon /> | MDM Managed Associated Domains                    | `com.apple.developer.associated-domains.mdm-managed`                                                             |
-| <YesIcon /> | Managed App Installation UI                       | `com.apple.developer.managed-app-distribution.install-ui`                                                        |
-| <YesIcon /> | Maps                                              | `com.apple.developer.maps`                                                                                       |
-| <YesIcon /> | Matter Allow Setup Payload                        | `com.apple.developer.matter.allow-setup-payload`                                                                 |
-| <YesIcon /> | Media Device Discovery                            | `com.apple.developer.media-device-discovery-extension`                                                           |
-| <YesIcon /> | Messages Collaboration                            | `com.apple.developer.shared-with-you.collaboration`                                                              |
+| <YesIcon /> | 低延迟 HLS                                        | `com.apple.developer.low-latency-streaming`                                                                      |
+| <YesIcon /> | MDM 管理的关联域名                                | `com.apple.developer.associated-domains.mdm-managed`                                                             |
+| <YesIcon /> | 托管应用安装 UI                                   | `com.apple.developer.managed-app-distribution.install-ui`                                                        |
+| <YesIcon /> | 地图                                              | `com.apple.developer.maps`                                                                                       |
+| <YesIcon /> | Matter 允许设置负载                               | `com.apple.developer.matter.allow-setup-payload`                                                                 |
+| <YesIcon /> | 媒体设备发现                                      | `com.apple.developer.media-device-discovery-extension`                                                           |
+| <YesIcon /> | Messages 协作                                     | `com.apple.developer.shared-with-you.collaboration`                                                              |
 | <YesIcon /> | Multipath                                         | `com.apple.developer.networking.multipath`                                                                       |
-| <YesIcon /> | NFC Tag Reading                                   | `com.apple.developer.nfc.readersession.formats`                                                                  |
-| <YesIcon /> | Network Extensions                                | `com.apple.developer.networking.networkextension`                                                                |
-| <YesIcon /> | 5G Network Slicing                                | `com.apple.developer.networking.slicing.appcategory` or `com.apple.developer.networking.slicing.trafficcategory` |
-| <YesIcon /> | On Demand Install Capable for App Clip Extensions | `com.apple.developer.on-demand-install-capable`                                                                  |
+| <YesIcon /> | NFC 标签读取                                      | `com.apple.developer.nfc.readersession.formats`                                                                  |
+| <YesIcon /> | 网络扩展                                          | `com.apple.developer.networking.networkextension`                                                                |
+| <YesIcon /> | 5G 网络切片                                       | `com.apple.developer.networking.slicing.appcategory` or `com.apple.developer.networking.slicing.trafficcategory` |
+| <YesIcon /> | App Clip 扩展的按需安装能力                      | `com.apple.developer.on-demand-install-capable`                                                                  |
 | <YesIcon /> | Personal VPN                                      | `com.apple.developer.networking.vpn.api`                                                                         |
-| <YesIcon /> | Push Notifications                                | `aps-environment`                                                                                                |
-| <YesIcon /> | Push to Talk                                      | `com.apple.developer.push-to-talk`                                                                               |
-| <YesIcon /> | Recalibrate Estimates                             | `com.apple.developer.healthkit.recalibrate-estimates`                                                            |
-| <YesIcon /> | Sensitive Content Analysis                        | `com.apple.developer.sensitivecontentanalysis.client`                                                            |
-| <YesIcon /> | Shallow Depth and Pressure                        | `com.apple.developer.submerged-shallow-depth-and-pressure`                                                       |
-| <YesIcon /> | Shared with You                                   | `com.apple.developer.shared-with-you`                                                                            |
-| <YesIcon /> | Sign In with Apple                                | `com.apple.developer.applesignin`                                                                                |
+| <YesIcon /> | 推送通知                                          | `aps-environment`                                                                                                |
+| <YesIcon /> | 按住说话                                          | `com.apple.developer.push-to-talk`                                                                               |
+| <YesIcon /> | 重新校准估算                                      | `com.apple.developer.healthkit.recalibrate-estimates`                                                            |
+| <YesIcon /> | 敏感内容分析                                      | `com.apple.developer.sensitivecontentanalysis.client`                                                            |
+| <YesIcon /> | 浅水与压力                                        | `com.apple.developer.submerged-shallow-depth-and-pressure`                                                       |
+| <YesIcon /> | 与你共享                                          | `com.apple.developer.shared-with-you`                                                                            |
+| <YesIcon /> | 使用 Apple 登录                                  | `com.apple.developer.applesignin`                                                                                |
 | <YesIcon /> | SiriKit                                           | `com.apple.developer.siri`                                                                                       |
-| <YesIcon /> | System Extension                                  | `com.apple.developer.system-extension.install`                                                                   |
-| <YesIcon /> | Tap to Pay on iPhone                              | `com.apple.developer.proximity-reader.payment.acceptance`                                                        |
-| <YesIcon /> | Tap to Present ID on iPhone (Display Only)        | `com.apple.developer.proximity-reader.identity.display`                                                          |
-| <YesIcon /> | TV Services                                       | `com.apple.developer.user-management`                                                                            |
-| <YesIcon /> | Time Sensitive Notifications                      | `com.apple.developer.usernotifications.time-sensitive`                                                           |
+| <YesIcon /> | 系统扩展                                          | `com.apple.developer.system-extension.install`                                                                   |
+| <YesIcon /> | 在 iPhone 上轻点支付                              | `com.apple.developer.proximity-reader.payment.acceptance`                                                        |
+| <YesIcon /> | 在 iPhone 上轻点出示 ID（仅显示）                | `com.apple.developer.proximity-reader.identity.display`                                                          |
+| <YesIcon /> | TV 服务                                           | `com.apple.developer.user-management`                                                                            |
+| <YesIcon /> | 时间敏感通知                                      | `com.apple.developer.usernotifications.time-sensitive`                                                           |
 | <YesIcon /> | Wallet                                            | `com.apple.developer.pass-type-identifiers`                                                                      |
 | <YesIcon /> | WeatherKit                                        | `com.apple.developer.weatherkit`                                                                                 |
-| <YesIcon /> | Wireless Accessory Configuration                  | `com.apple.external-accessory.wireless-configuration`                                                            |
+| <YesIcon /> | 无线配件配置                                      | `com.apple.external-accessory.wireless-configuration`                                                            |
 | <YesIcon /> | iCloud                                            | `com.apple.developer.icloud-container-identifiers`                                                               |
-| <NoIcon />  | HLS Interstitial Previews                         | Unknown                                                                                                          |
+| <NoIcon />  | HLS 插播预览                                      | Unknown                                                                                                          |
 
-The unsupported capabilities either don't support iOS, or they don't have a corresponding entitlement value. Here is a list of all of the [official Apple capabilities](https://developer.apple.com/help/account/reference/supported-capabilities-ios).
+不受支持的 capabilities 要么不支持 iOS，要么没有对应的 entitlement 值。以下是所有 [Apple 官方 capabilities](https://developer.apple.com/help/account/reference/supported-capabilities-ios) 的列表。
 
-## Capability identifiers
+## 能力标识符
 
-Merchant IDs, App Groups, and CloudKit Containers can all be automatically registered and assigned to your app. These assignments require Apple cookies authentication (running locally) as the official App Store Connect API does not support these operations.
+商家 ID、App 组和 CloudKit 容器都可以自动注册并分配给你的应用。这些分配需要 Apple cookies 身份验证（在本地运行），因为官方的 App Store Connect API 不支持这些操作。
 
-## Debugging iOS capabilities
+## iOS 能力调试
 
-You can run `EXPO_DEBUG=1 eas build` to get more detailed logs regarding the capability syncing.
+你可以运行 `EXPO_DEBUG=1 eas build` 来获取有关能力同步的更详细日志。
 
-If you have trouble using this feature, you can disable it with the environment variable `EXPO_NO_CAPABILITY_SYNC=1`.
+如果你在使用此功能时遇到问题，可以通过环境变量 `EXPO_NO_CAPABILITY_SYNC=1` 将其禁用。
 
-To see all of the currently enabled capabilities, visit [Apple Developer Console][apple-dev-console], and find the bundle identifier matching your app, if you click on it you should see a list of all the currently enabled capabilities.
+要查看当前已启用的所有能力，请访问 [Apple Developer Console][apple-dev-console]，并找到与你的应用匹配的 bundle identifier；如果你点击它，应该会看到当前所有已启用能力的列表。
 
-## Manual setup
+## 手动设置
 
-There are two ways to manually enable Apple capabilities, both systems will require any existing Apple provisioning profiles to be regenerated.
+有两种方式可以手动启用 Apple 能力，这两种方式都需要重新生成任何现有的 Apple provisioning profiles。
 
 ### Xcode
 
-> Preferred method for projects that do **not** use [Expo Prebuild](/more/glossary-of-terms/#prebuild) to continuously generate the native **android** and **ios** directories.
+> 适用于**不**使用 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 持续生成本地 **android** 和 **ios** 目录的项目的首选方法。
 
-1. Open the **ios** directory in Xcode with `xed ios`. If you don't have an **ios** directory, run `npx expo prebuild -p ios` to generate one.
-2. Then follow the steps mentioned in [Add a capability][apple-enable-capability].
+1. 使用 `xed ios` 在 Xcode 中打开 **ios** 目录。如果你没有 **ios** 目录，请运行 `npx expo prebuild -p ios` 来生成一个。
+2. 然后按照 [添加能力][apple-enable-capability] 中提到的步骤进行操作。
 
 ### Apple Developer Console
 
-First step is to add the respective key/value pairs to your **ios/[app]/[app].entitlements** (or more specific entitlements file for multi-target apps). You can refer to [Supported Capabilities](#supported-capabilities) to determine which entitlements keys should be added.
+第一步是在你的 **ios/[app]/[app].entitlements** 中添加相应的键值对（对于多目标应用，则添加到更具体的 entitlements 文件中）。你可以参考 [支持的能力](#supported-capabilities) 来确定应添加哪些 entitlements 键。
 
-1. Log into [Apple Developer Console][apple-dev-console]. Click on "Certificates, IDs & Profiles", then navigate to "Identifiers" page.
-2. Choose the bundle identifier that matches your app's bundle identifier.
-3. Scroll down and enable a capability, some capabilities may require extra setup.
-4. Scroll to the top and press "Save". You will see a dialog that says "Modify App Capabilities", press "Confirm" to continue. You will need to regenerate any provisioning profiles that use this bundle identifier before they'll be valid for building a code signed production **.ipa**.
+1. 登录 [Apple Developer Console][apple-dev-console]。点击 "Certificates, IDs & Profiles"，然后进入 "Identifiers" 页面。
+2. 选择与你的应用 bundle identifier 匹配的 bundle identifier。
+3. 向下滚动并启用某项能力，某些能力可能需要额外设置。
+4. 滚动到顶部并点击 "Save"。你会看到一个写着 "Modify App Capabilities" 的对话框，点击 "Confirm" 继续。你需要重新生成任何使用此 bundle identifier 的 provisioning profiles，之后它们才会在构建已签名代码的生产 **.ipa** 时有效。
 
-If adding capabilities process has not been done correctly then your iOS native build will fail with an error similar to:
+如果添加能力的过程没有正确完成，那么你的 iOS 原生构建将会失败，并出现类似如下的错误：
 
 ```text
 ❌  error: Provisioning profile "*[expo] app.bacon.hello AppStore ..." doesn't support the Associated Domains capability.

@@ -1,23 +1,23 @@
 ---
-title: Platform-specific extensions and module
-description: Learn how to switch modules based on the platform in Expo Router using platform-specific extensions and Platform module from React Native.
+title: 特定于平台的扩展和模块
+description: 学习如何在 Expo Router 中使用特定于平台的扩展以及来自 React Native 的 Platform 模块，根据平台切换模块。
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 
-While building your app, you may want to show specific content based on the current platform. Platform-specific extensions and `Platform` module can make the experience more native to a given platform. The following sections describe the ways you can achieve this with Expo Router.
+在构建应用时，你可能希望根据当前平台显示特定内容。平台特定扩展和 `Platform` 模块可以让在某个平台上的体验更接近原生。以下各节介绍了如何使用 Expo Router 实现这一点。
 
-## Platform-specific extensions
+## 平台特定扩展
 
-> **warning** Platform-specific extensions were added in Expo Router `3.5.x`. If you are using an older version of the library, follow instructions from [Platform-specific modules](#platform-module).
+> **警告** 平台特定扩展是在 Expo Router `3.5.x` 中添加的。如果你使用的是该库的较旧版本，请遵循 [平台特定模块](#platform-module) 中的说明。
 
-There are two ways to use platform-specific extensions:
+使用平台特定扩展有两种方式：
 
-### Within src/app directory
+### 在 src/app 目录内
 
-Metro bundler's platform-specific extensions (for example, **.android.tsx**, **.ios.tsx**, **.native.tsx**, or **.web.tsx**) are supported in the **src/app** directory only if a **non-platform version** also exists. This ensures that routes are universal across platforms for deep linking.
+Metro bundler 的平台特定扩展（例如 **.android.tsx**、**.ios.tsx**、**.native.tsx** 或 **.web.tsx**）仅在 **src/app** 目录中受支持，前提是同时存在一个**非平台版本**。这可以确保路由在各个平台上都是通用的，以便进行深度链接。
 
-Consider the following project structure:
+考虑以下项目结构：
 
 <FileTree
   files={[
@@ -29,17 +29,17 @@ Consider the following project structure:
   ]}
 />
 
-In the above file structure:
+在上述文件结构中：
 
-- **\_layout.web.tsx** file is used as a layout on the web and **\_layout.tsx** is used on all other platforms.
-- **index.tsx** file is used as the home page for all platforms.
-- **about.web.tsx** file is used as the about page for the web, and the **about.tsx** file is used on all other platforms.
+- **\_layout.web.tsx** 文件在 web 上作为布局使用，而 **\_layout.tsx** 文件在所有其他平台上使用。
+- **index.tsx** 文件在所有平台上用作首页。
+- **about.web.tsx** 文件在 web 上用作关于页面，而 **about.tsx** 文件在所有其他平台上使用。
 
-### Outside src/app directory
+### 在 src/app 目录外
 
-You can create platform-specific files with extensions (for example, **.android.tsx**, **.ios.tsx**, **.native.tsx**, or **.web.tsx**) outside the **src/app** directory and use them from within the **src/app** directory.
+你可以在 **src/app** 目录之外创建带有平台特定扩展名的文件（例如 **.android.tsx**、**.ios.tsx**、**.native.tsx** 或 **.web.tsx**），并在 **src/app** 目录内使用它们。
 
-Consider the following project structure:
+考虑以下项目结构：
 
 <FileTree
   files={[
@@ -52,15 +52,15 @@ Consider the following project structure:
   ]}
 />
 
-In the above file structure, the designs require you to build different `about` screens for each platform. In that case, you can create a component for each platform in the **src/components** directory using platform extensions. When imported, Metro will ensure the correct component version is used based on the current platform. You can then re-export the component as a screen in the **src/app** directory.
+在上述文件结构中，设计要求你为每个平台构建不同的 `about` 界面。在这种情况下，你可以在 **src/components** 目录中使用平台扩展为每个平台创建一个组件。导入时，Metro 会确保根据当前平台使用正确的组件版本。然后，你可以将该组件重新导出为 **src/app** 目录中的一个屏幕。
 
 ```tsx src/app/about.tsx
 export { default } from '@/components/about';
 ```
 
-## Platform module
+## 平台模块
 
-You can use the [`Platform`](https://reactnative.dev/docs/platform-specific-code#platform-module) module from React Native to detect the current platform and render the appropriate content based on the result. For example, you can render a `Tabs` layout on native and a custom layout on the web.
+你可以使用 React Native 的 [`Platform`](https://reactnative.dev/docs/platform-specific-code#platform-module) 模块来检测当前平台，并根据结果渲染相应的内容。例如，你可以在原生平台上渲染 `Tabs` 布局，而在 web 上渲染自定义布局。
 
 ```tsx src/app/_layout.tsx
 import { Platform } from 'react-native';
@@ -68,22 +68,22 @@ import { Link, Slot, Tabs } from 'expo-router';
 
 export default function Layout() {
   if (Platform.OS === 'web') {
-    // Use a basic custom layout on web.
+    // 在 web 上使用一个基础的自定义布局。
     return (
       <div style={{ flex: 1 }}>
         <header>
-          <Link href="/">Home</Link>
-          <Link href="/settings">Settings</Link>
+          <Link href="/">首页</Link>
+          <Link href="/settings">设置</Link>
         </header>
         <Slot />
       </div>
     );
   }
-  // Use a native bottom tabs layout on native platforms.
+  // 在原生平台上使用原生底部标签布局。
   return (
     <Tabs>
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+      <Tabs.Screen name="index" options={{ title: '首页' }} />
+      <Tabs.Screen name="settings" options={{ title: '设置' }} />
     </Tabs>
   );
 }

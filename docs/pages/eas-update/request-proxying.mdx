@@ -1,27 +1,27 @@
 ---
-title: Request proxying
-description: Proxy requests to the EAS Update server through your own server.
+title: 请求代理
+description: 通过你自己的服务器将请求代理到 EAS Update 服务器。
 hideTOC: true
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-EAS Update supports request proxying, which allows you to proxy requests to the EAS Update server through your own server. This can be useful for various reasons, such as adding custom headers, logging requests, or implementing additional security or request IP anonymization measures.
+EAS Update 支持请求代理，这允许你通过自己的服务器代理到 EAS Update 服务器的请求。这在多种情况下都很有用，例如添加自定义请求头、记录请求，或者实现额外的安全措施或请求 IP 匿名化措施。
 
-## Enabling request proxying
+## 启用请求代理
 
-1. Create two proxy servers that will handle the requests:
-   - One for the update asset requests (JavaScript bundles, images, and so on).
-     - This must forward requests to `assets.eascdn.net`, the EAS Update asset server.
-     - This must pass-through all URL contents (path, query parameters, and so on).
-     - This must forward all request headers that:
-       - start with `expo-` or `eas-`, or
-       - are exactly `authorization` or `a-im`.
-   - One for the update manifest requests.
-     - This must forward requests to `u.expo.dev`, the EAS Update server.
-     - This must pass-through all URL contents (path, query parameters, and so on).
-     - This must pass-through all headers prefixed with `expo-` or `eas-`.
-1. Add the following fields to your **eas.json** configuration file, replacing the placeholders with your actual proxy server URLs:
+1. 创建两个用于处理请求的代理服务器：
+   - 一个用于更新资源请求（JavaScript bundle、图片等）。
+     - 这必须将请求转发到 `assets.eascdn.net`，即 EAS Update 资源服务器。
+     - 这必须透传所有 URL 内容（路径、查询参数等）。
+     - 这必须转发所有以下请求头：
+       - 以 `expo-` 或 `eas-` 开头，或
+       - 完全等于 `authorization` 或 `a-im`。
+   - 一个用于更新 manifest 请求。
+     - 这必须将请求转发到 `u.expo.dev`，即 EAS Update 服务器。
+     - 这必须透传所有 URL 内容（路径、查询参数等）。
+     - 这必须透传所有以 `expo-` 或 `eas-` 为前缀的请求头。
+1. 将以下字段添加到你的 **eas.json** 配置文件中，并将占位符替换为你的实际代理服务器 URL：
 
    {/* prettier-ignore */}
    ```json eas.json
@@ -34,10 +34,10 @@ EAS Update supports request proxying, which allows you to proxy requests to the 
    }
    ```
 
-1. Run the following command to apply the changes:
+1. 运行以下命令以应用更改：
    <Terminal cmd={['$ eas update:configure']} />
-1. Publish an update to test the proxying:
+1. 发布一个更新来测试代理：
    <Terminal cmd={['$ eas update']} />
-1. Verify by navigating to the update group on the [EAS Update dashboard](https://expo.dev/accounts/[account]/projects/[project]/updates) and clicking "View Metadata" for one of the platforms.
-   - **manifest.json** should show the overridden `manifestHostOverride`.
-   - Other assets should show the overridden `assetHostOverride`.
+1. 通过导航到 [EAS Update dashboard](https://expo.dev/accounts/[account]/projects/[project]/updates) 上的更新组，并为其中一个平台点击“View Metadata”来进行验证。
+   - **manifest.json** 应显示被覆盖后的 `manifestHostOverride`。
+   - 其他资源应显示被覆盖后的 `assetHostOverride`。

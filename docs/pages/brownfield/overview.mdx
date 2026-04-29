@@ -1,78 +1,78 @@
 ---
-title: Integrating Expo tools into existing native apps
-sidebar_title: Overview
+title: 将 Expo 工具集成到现有原生应用中
+sidebar_title: 概述
 hideTOC: true
-description: An overview of how you can integrate Expo tools into existing native apps ("brownfield" apps).
+description: 关于如何将 Expo 工具集成到现有原生应用（“brownfield” 应用）中的概述。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 
-An existing native app that was built using another technology, whose main entry point is _not_ a React Native view, is commonly referred to as a "brownfield" app. For example, if your app was built using UIKit and Swift, and you want to use React Native for a single screen then that is considered an "existing native app" and "brownfield".
+使用另一种技术构建的现有原生应用，其主入口点 _不是_ React Native 视图，通常被称为“brownfield”应用。例如，如果你的应用是使用 UIKit 和 Swift 构建的，并且你想仅对一个屏幕使用 React Native，那么这就被视为“现有原生应用”和“brownfield”。
 
-In contrast, "greenfield" apps are created using Expo or React Native from the start or where React Native is the entry point and where all other UI branches off from.
+相比之下，“greenfield”应用是从一开始就使用 Expo 或 React Native 创建的，或者 React Native 本身就是入口点，而所有其他 UI 都从这里分支出去。
 
-By these definitions, if you have an "existing native app" for Android or iOS and you want to learn how to use Expo and React Native in your project (perhaps on a single screen or even a single feature), then this guide is for you.
+按照这些定义，如果你有一个面向 Android 或 iOS 的“现有原生应用”，并且你想了解如何在项目中使用 Expo 和 React Native（也许只是在单个屏幕，甚至单个功能中），那么本指南就是为你准备的。
 
-## Compatibility with existing native apps
+## 与现有原生应用的兼容性
 
-> **info** Support for integrating Expo modules into existing native projects is in [alpha](/more/release-statuses/#alpha). If you encounter issues, [create an issue on GitHub](https://github.com/expo/expo/issues). Not all features of the tools and services below will be available when used in the context of an existing native app.
+> **info** 将 Expo 模块集成到现有原生项目中的支持处于 [alpha](/more/release-statuses/#alpha) 阶段。如果你遇到问题，请 [在 GitHub 上创建 issue](https://github.com/expo/expo/issues)。当在现有原生应用的上下文中使用时，下方工具和服务并非所有功能都可用。
 
-Expo is primarily built with greenfield apps in mind, but we are increasingly investing in brownfield scenarios. Not all Expo tools and services are compatible with existing native projects yet. Additionally, comprehensive documentation for brownfield integrations may not yet available, and you may need to adapt other related documentation to your context.
+Expo 主要是为 greenfield 应用构建的，但我们正在越来越多地投入到 brownfield 场景中。并非所有 Expo 工具和服务目前都与现有原生项目兼容。此外，针对 brownfield 集成的完整文档可能尚未提供，你可能需要根据你的上下文调整其他相关文档。
 
-| Tool/Service                                                                                         | Supports brownfield? |
+| 工具/服务                                                                                         | 支持 brownfield？ |
 | ---------------------------------------------------------------------------------------------------- | -------------------- |
-| [Expo SDK](/versions/latest/) - an extended standard library for React Native                        | Yes                  |
-| [Expo Modules API](/modules/overview/) - build native extensions using an idiomatic Swift/Kotlin API | Yes                  |
-| [Expo Router](/router/introduction/) - file-based routing and navigation                             | Yes                  |
-| [Expo CLI](/more/expo-cli/) - tools to run and develop your app from your terminal                   | Yes                  |
-| [Expo Dev Client](/versions/latest/sdk/dev-client/) - adds in-app developer tooling to Debug builds  | No                   |
-| [EAS Build](/build/introduction/) - a CI/CD service built specifically for Expo/React Native         | Yes                  |
-| [EAS Submit](/submit/introduction/) - a hosted service that uploads your app to stores               | Yes                  |
-| [EAS Update](/eas-update/introduction/) - instant updates of your app JavaScript and assets          | Yes                  |
+| [Expo SDK](/versions/latest/) - React Native 的扩展标准库                        | 是                  |
+| [Expo Modules API](/modules/overview/) - 使用符合习惯的 Swift/Kotlin API 构建原生扩展 | 是                  |
+| [Expo Router](/router/introduction/) - 基于文件的路由和导航                             | 是                  |
+| [Expo CLI](/more/expo-cli/) - 用于从终端运行和开发应用的工具                   | 是                  |
+| [Expo Dev Client](/versions/latest/sdk/dev-client/) - 为 Debug 构建添加应用内开发者工具  | 否                   |
+| [EAS Build](/build/introduction/) - 专为 Expo/React Native 构建的 CI/CD 服务         | 是                  |
+| [EAS Submit](/submit/introduction/) - 将应用上传到商店的托管服务               | 是                  |
+| [EAS Update](/eas-update/introduction/) - 应用 JavaScript 和资源的即时更新          | 是                  |
 
-## Integrated vs Isolated approaches
+## 集成式与隔离式方案
 
-When you integrate React Native into an existing native app, you can choose between two main approaches: integrated and isolated. The best approach for you will depend on your project's structure, your team's workflow, and your long-term goals.
+当你将 React Native 集成到现有原生应用中时，你可以在两种主要方案之间进行选择：集成式和隔离式。最适合你的方案取决于项目结构、团队工作流程以及长期目标。
 
-### Integrated approach
+### 集成式方案
 
-In the integrated approach, your React Native code lives inside your existing native project. This allows for a tight coupling between your React Native and native code.
+在集成式方案中，你的 React Native 代码位于现有原生项目内部。这使 React Native 代码与原生代码之间能够紧密耦合。
 
-For example, you might add your existing Android or iOS native projects to a subdirectory of the React Native project. This is a common setup for projects that started with React Native and added native code later, but it can also be used for existing native apps. If you can't use the standard `android` and `ios` subdirectories for your native projects, you can configure a custom root folder for your React Native code, with a simple monorepo setup.
+例如，你可以将现有的 Android 或 iOS 原生项目添加到 React Native 项目的一个子目录中。这对于最初使用 React Native 开始、后来又添加原生代码的项目来说是常见配置，但它也可以用于现有原生应用。如果你的原生项目不能使用标准的 `android` 和 `ios` 子目录，你可以通过一个简单的 monorepo 设置，为 React Native 代码配置一个自定义根目录。
 
-**Choose this approach if:**
+**如果符合以下情况，请选择此方案：**
 
-- You need to frequently iterate on both native and React Native code together.
-- You have a single team that manages both native and React Native development.
-- Your project structure allows for adding a React Native project directly.
+- 你需要频繁地同时迭代原生代码和 React Native 代码。
+- 你有一个同时负责原生开发和 React Native 开发的单一团队。
+- 你的项目结构允许直接添加一个 React Native 项目。
 
-### Isolated approach
+### 隔离式方案
 
-In the isolated approach, your React Native code is developed and maintained separately from your native project, and it can be maintained in a separate repository or in a monorepo.
+在隔离式方案中，你的 React Native 代码与原生项目分开开发和维护，并且可以维护在独立仓库中，或放在一个 monorepo 中。
 
-With this approach, you package your React Native app as a native library (using AAR for Android and XCFramework for iOS). Then, you integrate this library into your native app just like any other native dependency.
+采用这种方案时，你会将 React Native 应用打包为一个原生库（Android 使用 AAR，iOS 使用 XCFramework）。然后，你像集成任何其他原生依赖一样，将这个库集成到你的原生应用中。
 
-This separation simplifies the workflow for native developers, as they don't need to set up a Node.js environment, or deal with React Native's build dependencies. They can just consume the React Native part of the app as a pre-built artifact.
+这种分离简化了原生开发者的工作流程，因为他们不需要设置 Node.js 环境，也不需要处理 React Native 的构建依赖。他们只需将应用中 React Native 部分作为一个预构建产物来使用即可。
 
-**Choose this approach if:**
+**如果符合以下情况，请选择此方案：**
 
-- You have separate teams for native and React Native development.
-- You want to minimize the impact of adding React Native on your existing native build process.
-- You prefer to treat the React Native part of your app as a self-contained module.
+- 你有独立的原生团队和 React Native 团队。
+- 你希望尽量减少为现有原生构建流程引入 React Native 所带来的影响。
+- 你更倾向于将应用中的 React Native 部分视为一个自包含模块。
 
-## Next steps
+## 下一步
 
 <BoxLink
-  title="Isolated approach: Package Expo as a native library"
-  description="Build your React Native code as AAR/ XCFramework artifacts and integrate them into any native app."
+  title="隔离式方案：将 Expo 打包为原生库"
+  description="将你的 React Native 代码构建为 AAR/ XCFramework 产物，并将它们集成到任何原生应用中。"
   href="/brownfield/isolated-approach/"
   Icon={BookOpen02Icon}
 />
 <BoxLink
-  title="Integrated approach: Add Expo directly to your native project"
-  description="Configure your existing native project to use React Native and Expo directly."
+  title="集成式方案：将 Expo 直接添加到你的原生项目中"
+  description="配置你现有的原生项目，直接使用 React Native 和 Expo。"
   href="/brownfield/integrated-approach/"
   Icon={BookOpen02Icon}
 />

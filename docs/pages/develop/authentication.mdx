@@ -1,7 +1,7 @@
 ---
-title: Authentication in Expo and React Native apps
-description: Learn about setting up authentication in your Expo project.
-sidebar_title: Authentication
+title: Expo 和 React Native 应用中的身份验证
+description: 了解如何在你的 Expo 项目中设置身份验证。
+sidebar_title: 身份验证
 hasVideoLink: true
 ---
 
@@ -13,125 +13,125 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-Authentication is a critical part of 90 to 95 percent of modern apps. This guide explains common methods, patterns, and solutions to help you implement authentication in your Expo app.
+认证是现代应用中 90% 到 95% 都离不开的关键部分。本指南将介绍常见的方法、模式和解决方案，帮助你在 Expo 应用中实现认证。
 
-> **info** **TL;DR**: Auth is hard. If you want to skip the complexity, jump to the [Auth solutions](/#auth-solutions) section for ready-made solutions. Otherwise, keep reading.
+> **info** **TL;DR**：认证很难。如果你想跳过复杂性，直接跳到 [Auth solutions](/#auth-solutions) 部分查看现成方案。否则，请继续阅读。
 
-Implementing authentication involves more than writing client-side code. You'll need to manage server requests, password flows, third-party providers like Google or Apple, email handling, and OAuth standards. It can get complex quickly.
+实现认证不仅仅是编写客户端代码。你还需要管理服务器请求、密码流程、Google 或 Apple 等第三方提供商、邮件处理以及 OAuth 标准。事情很快就会变得复杂起来。
 
-There are several types of authentication methods. Some are simple and effective, while others offer a better user experience but require more work. Let's look at the most common approaches and how you can implement them.
+认证方法有很多种。有些简单且有效，而另一些能提供更好的用户体验，但需要更多工作。让我们看看最常见的方法，以及你可以如何实现它们。
 
 ## Navigation auth flow
 
-Let's start with the basics: any authentication system needs to separate **public screens** (such as login or signup) from **protected screens** (such as home or profile). At the navigation level, it comes down to a simple check: is the user authenticated?
+先从基础开始：任何认证系统都需要将 **public screens**（例如登录或注册）与 **protected screens**（例如首页或个人资料）区分开来。在导航层面，这归结为一个简单的判断：用户是否已认证？
 
-To begin, you can simulate this using a hardcoded boolean value, like `isAuthenticated = true`, and build your navigation logic around it. Once everything is working, you can plug in your real authentication flow.
+一开始，你可以用一个硬编码的布尔值来模拟，比如 `isAuthenticated = true`，并围绕它构建你的导航逻辑。等一切都正常工作后，再接入真实的认证流程。
 
 <Collapsible summary="Using Expo Router">
 
-Expo Router v5 introduced [protected routes](/router/advanced/protected), which prevent users from accessing certain screens unless they are authenticated. This feature works well for client-side navigation and simplifies your setup.
+Expo Router v5 引入了 [protected routes](/router/advanced/protected)，它可以防止用户在未认证的情况下访问某些屏幕。这个功能非常适合客户端导航，并能简化你的设置。
 
-If you're using an older version of Expo Router, you can use [redirects](/router/advanced/authentication-rewrites) instead. Redirects provide the same result but require a bit more manual configuration. They are still supported in Expo Router v5 for backward compatibility.
+如果你使用的是较旧版本的 Expo Router，也可以改用 [redirects](/router/advanced/authentication-rewrites)。重定向能提供相同的结果，但需要更多手动配置。为了向后兼容，它们在 Expo Router v5 中仍然受支持。
 
 <VideoBoxLink
   videoId="zHZjJDTTHJg"
   title="Expo Router Protected Routes"
-  description="Learn how to implement an authentication flow with Expo Router"
+  description="了解如何使用 Expo Router 实现认证流程"
 />
 
 </Collapsible>
 
 <Collapsible summary="Using React Navigation">
 
-If you're using React Navigation, they offer a helpful [authentication flow guide](https://reactnavigation.org/docs/auth-flow/) that explains how to structure your navigation logic. It includes examples for both [static](https://reactnavigation.org/docs/auth-flow/?config=static#how-it-will-work) and [dynamic](https://reactnavigation.org/docs/auth-flow/?config=dynamic#how-it-will-work) approaches based on the user's authentication state.
+如果你使用的是 React Navigation，它们提供了一份有用的 [authentication flow guide](https://reactnavigation.org/docs/auth-flow/)，说明如何组织你的导航逻辑。其中包括基于用户认证状态的 [static](https://reactnavigation.org/docs/auth-flow/?config=static#how-it-will-work) 和 [dynamic](https://reactnavigation.org/docs/auth-flow/?config=dynamic#how-it-will-work) 两种实现方式示例。
 
 </Collapsible>
 
-Both Expo Router and React Navigation give you flexible tools to implement protected navigation based on whether the user is logged in.
+Expo Router 和 React Navigation 都为你提供了灵活的工具，可根据用户是否登录来实现受保护的导航。
 
 ## Email and password
 
-Email and password is a popular option when adding authentication to your app.
+电子邮件和密码是为应用添加认证时很受欢迎的一种方式。
 
-To make this flow user-friendly, you also need to implement forgot password and reset password functionality so users who lose access to their accounts can recover them.
+为了让这个流程更友好，你还需要实现忘记密码和重置密码功能，这样失去账户访问权限的用户就可以找回账户。
 
-If you want a quicker solution, several services offer built-in email and password authentication, including [Clerk](/#clerk), [Supabase](/#supabase), [Cognito](/#cognito), [Firebase](/#firebase-auth), and [Better Auth](/#better-auth). Most of these have generous free tiers, but it is a good idea to evaluate pricing if your app grows quickly.
+如果你想要更快的方案，许多服务都内置了电子邮件和密码认证，包括 [Clerk](/#clerk)、[Supabase](/#supabase)、[Cognito](/#cognito)、[Firebase](/#firebase-auth) 和 [Better Auth](/#better-auth)。其中大多数都有相当宽松的免费额度，但如果你的应用增长很快，最好还是评估一下价格。
 
-The biggest advantage of these services is their ease of integration. They usually offer clear documentation, starter kits, and prebuilt components that save you time.
+这些服务最大的优势在于集成简单。它们通常提供清晰的文档、入门模板和预构建组件，帮你节省时间。
 
 <Collapsible summary="Security checklist (OWASP) and store-review gotchas">
 
-If you're building this flow yourself, be sure to review the [Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-cheat-sheet) by OWASP. It outlines best practices for password length, encryption, recovery, secure storage, and more.
+如果你打算自己构建这个流程，请务必查看 OWASP 的 [Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-cheat-sheet)。它概述了密码长度、加密、恢复、安全存储等方面的最佳实践。
 
-> **info** Adding email and password authentication is usually enough to pass App Store and Play Store review. You can submit your app with this method first. If you include "Sign in with Google," Apple may reject your app unless you also support "Sign in with Apple." The same rule applies in reverse on Google Play.
+> **info** 添加电子邮件和密码认证通常已经足够通过 App Store 和 Play Store 审核。你可以先用这种方式提交应用。如果你加入了“使用 Google 登录”，Apple 可能会拒绝你的应用，除非你同时支持“使用 Apple 登录”。在 Google Play 上则适用相反的规则。
 
 </Collapsible>
 
 <BoxLink
   title="Better Auth Example"
-  description="An example demonstrating email and password authentication with Better Auth."
+  description="一个演示使用 Better Auth 进行电子邮件和密码认证的示例。"
   href="https://github.com/expo/examples/tree/master/with-better-auth"
   Icon={GithubIcon}
 />
 
 ## Passwordless login
 
-Passwordless login removes the need for users to create or remember a password. Instead, they provide their email address or phone number during registration. Your app then sends a [magic link](https://auth0.com/docs/authenticate/passwordless/authentication-methods/email-magic-link#classic-login-flow-with-magic-links) or [one-time passcode (OTP)](https://en.wikipedia.org/wiki/One-time_password) to their inbox or device. This is a smoother experience for most users and reduces friction during onboarding.
+无密码登录让用户不必创建或记住密码。相反，他们在注册时提供电子邮件地址或电话号码。然后你的应用会向他们的收件箱或设备发送 [magic link](https://auth0.com/docs/authenticate/passwordless/authentication-methods/email-magic-link#classic-login-flow-with-magic-links) 或 [one-time passcode (OTP)](https://en.wikipedia.org/wiki/One-time_password)。这对大多数用户来说体验更流畅，也降低了入门门槛。
 
 <Collapsible summary="Magic Links">
 
-With magic links, the user receives an email containing a link that redirects them back into your app. If everything works correctly, the session is verified and established.
+使用 magic link 时，用户会收到一封包含链接的电子邮件，该链接会将他们重定向回你的应用。如果一切正常，session 就会被验证并建立。
 
-A key detail here is [deep linking](/linking/into-your-app). Since users leave the app to check their email, the link must open your app and route them to the correct screen. If deep linking fails, the session cannot be validated, and the login flow breaks.
+这里的一个关键点是 [deep linking](/linking/into-your-app)。由于用户会离开应用去查看邮件，这个链接必须能打开你的应用并将他们路由到正确的屏幕。如果深度链接失败，session 就无法验证，登录流程也会中断。
 
-If you're using Expo Router deep linking is handled automatically (for most cases). You usually don't need to configure anything extra to make magic links work properly, which makes this approach even easier to adopt. See [Linking into your app](/linking/into-your-app) to learn more.
+如果你使用的是 Expo Router，深度链接会自动处理（大多数情况下）。你通常不需要额外配置就能让 magic link 正常工作，这让这种方式更容易采用。查看更多请参见 [Linking into your app](/linking/into-your-app)。
 
-[React Navigation](https://reactnavigation.org/) also supports deep linking, but you will need to configure it manually. See its [Deep Linking guide](https://reactnavigation.org/docs/deep-linking/) for more details.
+[React Navigation](https://reactnavigation.org/) 也支持深度链接，但你需要手动配置。更多细节请参见其 [Deep Linking guide](https://reactnavigation.org/docs/deep-linking/)。
 
 </Collapsible>
 
 <Collapsible summary="One-Time Passcodes (OTP)">
 
-An alternative to magic links is sending a one-time passcode by email or SMS. Instead of clicking a link, the user copies the code and manually returns to the app to enter it. This must happen within a specific time window before the code expires.
+除了 magic link，另一种方案是通过电子邮件或短信发送一次性验证码。用户不再点击链接，而是复制验证码并手动返回应用中输入。这个过程必须在验证码过期前的特定时间窗口内完成。
 
-There's no deep linking involved here. The user stays in control of the flow and must return to the app themselves.
+这里不涉及深度链接。用户自行掌控流程，并且必须自己回到应用中。
 
-Fortunately, newer versions of Android and iOS automatically detect passcodes in incoming messages. This enables autofill suggestions above the keyboard, allowing users to enter the code with a single tap. When this works, the experience is seamless.
+幸运的是，新版 Android 和 iOS 会自动识别来消息中的验证码。这会在键盘上方提供自动填充建议，让用户只需轻点一下就能输入验证码。当这个功能生效时，体验会非常顺畅。
 
 </Collapsible>
 
-> **info** Magic links and passcodes are both valid authentication methods for Google Play Store and Apple App Store reviews. You can submit your app with either of these methods as the only option and get approved, even before adding social or OAuth login options.
+> **info** Magic link 和验证码都是 Google Play Store 和 Apple App Store 审核认可的有效认证方式。你可以仅使用其中一种方式提交应用并获得批准，甚至在添加社交登录或 OAuth 登录选项之前也可以。
 
 ## OAuth 2.0
 
-To let your users log in using their existing accounts from services like Google, Apple, GitHub, and more, you can use OAuth 2.0.
+如果你想让用户使用他们在 Google、Apple、GitHub 等服务中的现有账户登录，可以使用 OAuth 2.0。
 
-[OAuth 2.0](https://oauth.net/2) is a widely used, secure protocol that allows your app to access user information from another service, without needing to handle passwords. It allows your users to log in with a single tap, which saves time, builds trust, and removes the need to manage passwords.
+[OAuth 2.0](https://oauth.net/2) 是一种广泛使用且安全的协议，它允许你的应用访问来自其他服务的用户信息，而无需处理密码。它让用户只需轻点一下即可登录，从而节省时间、建立信任，并省去了管理密码的需要。
 
-> **info** OAuth flows can be complex. If you're looking for a simple integration, most providers offer SDKs and services that handle everything for you. You can learn more about these in the [Auth solutions](#auth-solutions) section.
+> **info** OAuth 流程可能很复杂。如果你想要一个简单的集成，大多数提供商都提供 SDK 和服务来帮你处理一切。你可以在 [Auth solutions](#auth-solutions) 部分了解更多。
 
-If you are looking for full control or want to understand how OAuth works under the hood, the following sections show how to implement a complete OAuth flow yourself using Expo.
+如果你希望拥有完全控制权，或者想了解 OAuth 底层是如何工作的，下面的章节将展示如何使用 Expo 自行实现完整的 OAuth 流程。
 
 ### How OAuth works
 
-OAuth works by introducing an authorization server that acts as a secure middleman. Instead of giving your app their password, users log in through this server and approve access to specific data (like their name or email). The server then issues a temporary code, which your app can exchange for a secure access token.
+OAuth 的工作方式是引入一个充当安全中介的授权服务器。用户不会把密码交给你的应用，而是通过这个服务器登录并批准对特定数据（比如姓名或邮箱）的访问。然后服务器会发出一个临时代码，你的应用可以用它换取安全的访问令牌。
 
 <ContentSpotlight
   src="/static/images/develop/authentication/oauth-flow.avif"
-  caption="In this diagram, 'client' simply refers to the application and does not imply any specific implementation details, such as whether it runs on a server, desktop, mobile device, or other platform."
+  caption="在这张图中，'client' 仅指应用程序，并不暗示任何具体实现细节，例如它是否运行在服务器、桌面、移动设备或其他平台上。"
 />
 
-Once you understand this pattern, you can apply it to any provider. The setup for Google, Apple, or GitHub will follow the same general steps.
+一旦你理解了这种模式，就可以将其应用到任何提供商。Google、Apple 或 GitHub 的设置都将遵循相同的大致步骤。
 
 ### Custom OAuth with Expo API Routes
 
-The previous diagram shows a high-level overview of the OAuth flow. However, the preferred method for a client to obtain an authorization grant from the user is to use an authorization server as an intermediary, which is exactly what you can build using Expo API Routes.
+前面的图展示了 OAuth 流程的高层概览。不过，客户端从用户那里获取授权授权的首选方式，是使用授权服务器作为中介，而这正是你可以通过 Expo API Routes 构建的内容。
 
-The following diagram illustrates this flow in more detail:
+下图会更详细地说明这个流程：
 
 <ContentSpotlight src="/static/images/develop/authentication/api-routes-oauth-flow.avif" />
 
-Expo lets you implement the entire OAuth flow directly in your app using:
+Expo 允许你直接在应用中使用以下方式实现完整的 OAuth 流程：
 
 <BoxLink title="Expo Router" href="/router/introduction" Icon={BookOpen02Icon} />
 
@@ -139,156 +139,156 @@ Expo lets you implement the entire OAuth flow directly in your app using:
 
 <BoxLink title="Expo AuthSession" href="/versions/latest/sdk/auth-session" Icon={BookOpen02Icon} />
 
-Some providers offer native APIs to handle the sign-in flow directly within the app. Google offers a native Sign in with Google experience on Android. If you're looking for a native implementation, see the [Google authentication guide](/guides/google-authentication). Apple provides Sign in with Apple, which uses a native bottom sheet and Face ID on iOS. See [`expo-apple-authentication`](/versions/latest/sdk/apple-authentication) reference.
+有些提供商提供原生 API，可以直接在应用内处理登录流程。Google 在 Android 上提供原生的“使用 Google 登录”体验。如果你想要原生实现，请参见 [Google authentication guide](/guides/google-authentication)。Apple 提供 Sign in with Apple，它在 iOS 上使用原生底部弹窗和 Face ID。请参见 [`expo-apple-authentication`](/versions/latest/sdk/apple-authentication) 参考文档。
 
-The following setup gives you full control over the login experience across Android, iOS, and web.
+下面的设置可以让你在 Android、iOS 和 web 上完全控制登录体验。
 
 <Collapsible summary="What are Expo API Routes?">
 
-[Expo Router API Routes](/router/web/api-routes) allow you to write server-side logic directly inside your Expo app. You can define functions that handle requests just like an Express or Next.js backend, no need for an external server.
+[Expo Router API Routes](/router/web/api-routes) 允许你直接在 Expo 应用中编写服务端逻辑。你可以像使用 Express 或 Next.js 后端那样定义处理请求的函数，而无需外部服务器。
 
-This makes it easy to securely handle sensitive parts of the auth flow, like the [authorization code exchange](https://www.oauth.com/oauth2-servers/pkce/authorization-code-exchange), directly within your app. Since these routes run on the server, you can safely manage secrets, issue JWTs, and validate tokens.
+这使得在应用内部安全地处理认证流程中的敏感部分变得很容易，比如 [authorization code exchange](https://www.oauth.com/oauth2-servers/pkce/authorization-code-exchange)。由于这些路由运行在服务器上，你可以安全地管理密钥、签发 JWT，并验证令牌。
 
-> **info** You're essentially building a lightweight custom auth server scoped to your own application, all using your Expo project.
+> **info** 你本质上是在用自己的 Expo 项目构建一个轻量级、只服务于你应用的自定义认证服务器。
 
 </Collapsible>
 
 <Collapsible summary="What is Expo AuthSession?">
 
-[Expo AuthSession](/versions/latest/sdk/auth-session) is a client-side package that helps you open a web browser or native modal to start the OAuth login flow. It handles redirection, parses the authorization response, and brings the user back into your app.
+[Expo AuthSession](/versions/latest/sdk/auth-session) 是一个客户端包，帮助你打开网页浏览器或原生模态框来启动 OAuth 登录流程。它会处理重定向、解析授权响应，并将用户带回你的应用。
 
-It's the tool that kicks off the flow and talks to your API Route after the user authorizes access. See [Authentication with OAuth or OpenID providers](/guides/authentication/) for more information.
+它是启动流程并在用户授权后与 API Route 通信的工具。更多信息请参见 [Authentication with OAuth or OpenID providers](/guides/authentication/)。
 
 </Collapsible>
 
-This setup lets you:
+这个设置让你可以：
 
-- Start the login flow using AuthSession
-- Receive the auth code in your API Route
-- Exchange the code for a token securely
-- Generate a custom JWT with your own logic
-- Return that token to the client
-- Store sessions using cookies (Web) or JWTs (Native)
-- Deploy instantly using EAS Hosting (free to start)
+- 使用 AuthSession 启动登录流程
+- 在你的 API Route 中接收 auth code
+- 安全地将代码兑换为 token
+- 使用你自己的逻辑生成自定义 JWT
+- 将该 token 返回给客户端
+- 使用 cookie（Web）或 JWT（Native）存储 session
+- 通过 EAS Hosting 立即部署（免费起步）
 
-The following tutorials cover implementing OAuth on Android, iOS, and web, including how to create and verify custom JWTs, manage sessions, and protect API routes. If you're new to this flow, we recommend starting with the Google tutorial.
+下面的教程介绍了如何在 Android、iOS 和 web 上实现 OAuth，包括如何创建和验证自定义 JWT、管理 session，以及保护 API 路由。如果你是第一次接触这个流程，建议从 Google 教程开始。
 
 <VideoBoxLink
   videoId="V2YdhR1hVNw"
   title="Google Sign-In with Expo OAuth"
-  description="Learn how to implement Google Sign-In with Expo Router API Routes"
+  description="了解如何使用 Expo Router API Routes 实现 Google 登录"
 />
 <br />
 <VideoBoxLink
   videoId="tqxTijhYhp8"
   title="Sign in with Apple using Expo"
-  description="Learn how to implement Sign in with Apple"
+  description="了解如何实现使用 Apple 登录"
 />
 
 <br />
 
 <Collapsible summary="Managing sessions after OAuth">
 
-Handling the OAuth flow securely is just the beginning. Once the user is authenticated, you need to think about how to store, restore, and validate their session.
+安全地处理 OAuth 流程只是开始。用户认证完成后，你还需要考虑如何存储、恢复和验证他们的 session。
 
-This includes:
+这包括：
 
-- Storing the session securely on the client
-- Restoring it when the app restarts
-- Protecting your API routes so only authenticated users can access them
+- 在客户端安全地存储 session
+- 在应用重启时恢复 session
+- 保护你的 API 路由，以便只有已认证用户才能访问
 
-Traditionally, [cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies#what_cookies_are_used_for) are used to store sessions on the web, while [JSON Web Tokens (JWTs)](https://en.wikipedia.org/wiki/JSON_Web_Token) are common in native applications.
+传统上，web 会使用 [cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies#what_cookies_are_used_for) 来存储 session，而 [JSON Web Tokens (JWTs)](https://en.wikipedia.org/wiki/JSON_Web_Token) 则常见于原生应用。
 
-The above tutorials demonstrate exactly how to handle this. After receiving the ID token from a provider like Google or Apple, you generate a custom JWT on the server using Expo API Routes.
+上面的教程已经准确演示了如何处理这一切。在从 Google 或 Apple 之类的提供商收到 ID token 后，你会使用 Expo API Routes 在服务器上生成一个自定义 JWT。
 
-This gives you full control over the session, including:
+这让你可以完全控制 session，包括：
 
-- Structuring the payload using consistent fields across providers
-- Customizing expiration times
-- Signing the token with a secret key so your server can verify it later
+- 使用跨提供商一致的字段来构造载荷
+- 自定义过期时间
+- 使用密钥对 token 签名，以便服务器之后能够验证它
 
-Once the token is created:
+一旦 token 创建完成：
 
-- For Android and iOS apps, you can store it securely using [`expo-secure-store`](/versions/latest/sdk/securestore/)
-- For web apps, you can set it as a secure cookie to maintain the session
+- 对于 Android 和 iOS 应用，你可以使用 [`expo-secure-store`](/versions/latest/sdk/securestore/) 安全存储它
+- 对于 web 应用，你可以将其设置为安全 cookie 以维持 session
 
-On every request, the token is sent back to your server, where you verify the signature and check the expiration. If everything checks out, you continue processing the request.
+在每次请求中，token 都会被发送回你的服务器，服务器会验证签名并检查过期时间。如果一切通过，继续处理该请求。
 
-This session model keeps your backend stateless, scalable, and secure, and works consistently across platforms.
+这种 session 模型让你的后端保持无状态、可扩展且安全，并且能在不同平台间保持一致地工作。
 
-All of this is covered in the video tutorials linked above, including:
+以上所有内容都在上面链接的视频教程中有涵盖，包括：
 
-- Generating and verifying custom JWTs
-- Handling session storage with Secure Store and cookies
-- Protecting API routes with authentication logic
+- 生成和验证自定义 JWT
+- 使用 Secure Store 和 cookies 处理 session 存储
+- 使用认证逻辑保护 API 路由
 
 </Collapsible>
 
-## Auth solutions
+## 身份验证方案
 
-If you prefer not to build a full authentication system from scratch, several services offer built-in solutions with first-class support for Expo. Here are some of the most popular options:
+如果你不想从零开始构建完整的身份验证系统，许多服务都提供了内置解决方案，并且对 Expo 提供一流支持。以下是一些最受欢迎的选项：
 
 <Collapsible summary="Better Auth">
 
-[BetterAuth](https://www.better-auth.com/docs/integrations/expo) is a modern, open-source authentication provider built for developers. It integrates smoothly with Expo, and they offer a guide that shows how to use it with [Expo API Routes](https://www.better-auth.com/docs/integrations/expo) for full control. It works well with any provider and deploys easily with EAS Hosting.
+[BetterAuth](https://www.better-auth.com/docs/integrations/expo) 是一个现代的、开源的身份验证提供商，专为开发者打造。它与 Expo 集成顺畅，并且他们提供了一份指南，展示如何将其与 [Expo API Routes](https://www.better-auth.com/docs/integrations/expo) 一起使用，以获得完全控制。它适用于任何提供商，并且可以通过 EAS Hosting 轻松部署。
 
 </Collapsible>
 
 <Collapsible summary="Clerk">
 
-[Clerk](https://clerk.com/expo-authentication) is a powerful, full-featured authentication service with excellent Expo support. It includes email/password, passcodes, magic links, OAuth providers, and even passkeys. They also offer a native Expo module that handles much of the integration for you.
+[Clerk](https://clerk.com/expo-authentication) 是一项强大且功能全面的身份验证服务，对 Expo 的支持非常出色。它包含电子邮件/密码、验证码、魔法链接、OAuth 提供商，甚至通行密钥。他们还提供了一个原生 Expo 模块，可为你处理大部分集成工作。
 
 </Collapsible>
 
 <Collapsible summary="Supabase">
 
-[Supabase](https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native) provides a full backend platform, including a built-in authentication service that works with any OAuth provider. It integrates well with Expo apps and also includes support for email, magic links, and more.
+[Supabase](https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native) 提供了一个完整的后端平台，包括一个内置的身份验证服务，可与任何 OAuth 提供商配合使用。它与 Expo 应用集成良好，还支持电子邮件、魔法链接等功能。
 
 </Collapsible>
 
 <Collapsible summary="Cognito">
 
-[AWS Cognito](https://medium.com/@juliuscecilia33/aws-cognito-and-react-native-bf23ef7fea23) is Amazon's solution for managing user pools and identity. It connects seamlessly with other AWS services and can be integrated into Expo apps using AWS Amplify. It does require more configuration, but it's robust and scalable.
+[AWS Cognito](https://medium.com/@juliuscecilia33/aws-cognito-and-react-native-bf23ef7fea23) 是 Amazon 用于管理用户池和身份的解决方案。它可以与其他 AWS 服务无缝连接，并可使用 AWS Amplify 集成到 Expo 应用中。它确实需要更多配置，但它很稳健且可扩展。
 
 </Collapsible>
 
 <Collapsible summary="Firebase Auth">
 
-[Firebase Authentication](https://rnfirebase.io/auth/usage) is Google's auth platform and supports email, magic links, and OAuth providers. It works with React Native through [`react-native-firebase`](https://github.com/invertase/react-native-firebase), which is compatible with Expo development builds.
+[Firebase Authentication](https://rnfirebase.io/auth/usage) 是 Google 的身份验证平台，支持电子邮件、魔法链接和 OAuth 提供商。它通过 [`react-native-firebase`](https://github.com/invertase/react-native-firebase) 与 React Native 配合使用，而该库与 Expo 开发构建兼容。
 
 </Collapsible>
 
-## Modern methods
+## 现代方法
 
-Once you have a working authentication system in place, you can improve the user experience by adding optional but powerful enhancements like biometrics and passkeys. These features add convenience, trust, and speed to your login flows.
+一旦你拥有了可用的身份验证系统，就可以通过添加可选但强大的增强功能来改善用户体验，例如生物识别和通行密钥。这些功能为你的登录流程增加了便利性、信任感和速度。
 
 <Collapsible summary="Biometrics">
 
-Biometrics like Face ID and Touch ID can be used to unlock the app or confirm identity after a valid session is established. These are not authentication methods on their own, but act as a local gate that makes re-authentication faster and more secure.
+Face ID 和 Touch ID 之类的生物识别技术可用于在建立有效会话后解锁应用或确认身份。它们本身不是身份验证方法，而是作为一个本地门禁，使重新认证更快、更安全。
 
-React Native provides access to biometric APIs through libraries like [`expo-local-authentication`](/versions/latest/sdk/local-authentication) or [`react-native-biometrics`](https://github.com/SelfLender/react-native-biometrics).
+React Native 通过 [`expo-local-authentication`](/versions/latest/sdk/local-authentication) 或 [`react-native-biometrics`](https://github.com/SelfLender/react-native-biometrics) 等库提供对生物识别 API 的访问。
 
 </Collapsible>
 
 <Collapsible summary="Passkeys">
 
-[Passkeys](https://safety.google/authentication/passkey) are a new, passwordless way to log in to apps and websites. Backed by Apple, Google, and Microsoft, they use platform-level cryptography and biometrics to authenticate users without passwords.
+[Passkeys](https://safety.google/authentication/passkey) 是一种新的、无需密码的登录应用和网站方式。在 Apple、Google 和 Microsoft 的支持下，它们使用平台级加密和生物识别技术，在无需密码的情况下验证用户身份。
 
-Passkeys offer a seamless and secure experience, but they require a user to already be authenticated before registering one. They also require extra configuration if you're not using a provider that handles them for you.
+Passkeys 提供了无缝且安全的体验，但它们要求用户在注册之前已经通过身份验证。如果你没有使用能为你处理它们的提供商，也需要额外配置。
 
-- React Native passkey support: [`react-native-passkeys`](https://github.com/peterferguson/react-native-passkeys)
-- Native passkey support with Clerk: [Clerk Passkeys for Expo](https://clerk.com/docs/references/expo/passkeys)
+- React Native 通行密钥支持：[`react-native-passkeys`](https://github.com/peterferguson/react-native-passkeys)
+- 使用 Clerk 的原生通行密钥支持：[Clerk Passkeys for Expo](https://clerk.com/docs/references/expo/passkeys)
 
 </Collapsible>
 
-## Recommendations
+## 建议
 
-This guide covers a lot of ground, from basic email and password flows to fully custom OAuth implementations, session management, and modern methods like biometrics and passkeys. Not all of these need to be implemented at once.
+本指南涵盖了很多内容，从基础的电子邮件和密码流程，到完全自定义的 OAuth 实现、会话管理，以及生物识别和通行密钥等现代方法。并不需要一次性实现所有这些功能。
 
-In many cases, starting simple is the best approach. Shipping your app with something like email authentication using a magic link or one-time passcode is often more than enough to get through the App Store review process and start collecting feedback from real users.
+在许多情况下，从简单开始是最佳方案。用类似电子邮件身份验证的方式发布你的应用，例如使用魔法链接或一次性验证码，通常已经足以通过 App Store 审核流程，并开始收集真实用户的反馈。
 
-That said, if you're building an app where you expect high traffic from day one or need to support sign-in across platforms with minimal friction, investing in a more complete authentication flow early on can make a big difference. It can help improve user onboarding, trust, and retention right from the start.
+话虽如此，如果你正在构建一个预计从第一天起就会有高流量，或者需要以尽可能低的摩擦支持跨平台登录的应用，那么尽早投资一个更完整的身份验证流程可以带来很大差异。它可以从一开始就帮助改善用户引导、信任和留存。
 
-Modern solutions like OAuth, biometrics, and passkeys are not required, but they can be excellent additions once your core system is in place.
+像 OAuth、生物识别和通行密钥这样的现代解决方案并非必需，但一旦你的核心系统就位，它们可以成为很好的补充。
 
-The key is to build authentication that fits your current needs, while staying flexible enough to grow with your product.
+关键在于构建一个符合你当前需求的身份验证系统，同时保持足够的灵活性，以便随着产品发展而扩展。

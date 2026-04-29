@@ -1,6 +1,6 @@
 ---
-title: FileSystem (legacy)
-description: A library that provides access to the local file system on the device.
+title: 文件系统（旧版）
+description: 一个提供访问设备本地文件系统的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-file-system/src/legacy'
 packageName: 'expo-file-system'
 iconUrl: '/static/images/packages/expo-file-system.png'
@@ -14,30 +14,29 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { SnackInline } from '~/ui/components/Snippet';
 
-> **important** The `legacy` version of the FileSystem API is included in the `expo-file-system` library. It can be used alongside the modern API for backward compatibility reasons.
+> **重要** `FileSystem` API 的 `legacy` 版本包含在 `expo-file-system` 库中。出于向后兼容的原因，它可以与现代 API 一起使用。
 
-`expo-file-system` provides access to a file system stored locally on the device. It is also capable of uploading and downloading files from network URLs.
+`expo-file-system` 提供对存储在设备本地的文件系统的访问。它还能够从网络 URL 上传和下载文件。
 
-<Collapsible summary="Diagram explaining how expo-file-system interacts with different resources">
+<Collapsible summary="图示说明 expo-file-system 如何与不同资源交互">
   <ContentSpotlight
-    alt="Diagram of the various pieces of expo-file-system and how they interact with different resources"
+    alt="expo-file-system 各个部分及其如何与不同资源交互的示意图"
     src="/static/images/sdk/file-system/file-system-diagram.png"
     containerClassName="bg-palette-white"
   />
 </Collapsible>
 
-<Collapsible summary="How expo-file-system works differently inside of the Expo Go app">
-  Within Expo Go, each project has a separate file system scope and has no access to the file system
-  of other projects.
+<Collapsible summary="在 Expo Go 应用内部，expo-file-system 的工作方式有何不同">
+  在 Expo Go 中，每个项目都有各自独立的文件系统作用域，并且无法访问其他项目的文件系统。
 </Collapsible>
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Usage
+## 用法
 
-### Downloading files
+### 下载文件
 
 ```js Component.js
 const callback = downloadProgress => {
@@ -56,14 +55,14 @@ const downloadResumable = FileSystem.createDownloadResumable(
 
 try {
   const { uri } = await downloadResumable.downloadAsync();
-  console.log('Finished downloading to ', uri);
+  console.log('已完成下载到 ', uri);
 } catch (e) {
   console.error(e);
 }
 
 try {
   await downloadResumable.pauseAsync();
-  console.log('Paused download operation, saving for future retrieval');
+  console.log('已暂停下载操作，保存以供将来恢复');
   AsyncStorage.setItem('pausedDownload', JSON.stringify(downloadResumable.savable()));
 } catch (e) {
   console.error(e);
@@ -71,12 +70,12 @@ try {
 
 try {
   const { uri } = await downloadResumable.resumeAsync();
-  console.log('Finished downloading to ', uri);
+  console.log('已完成下载到 ', uri);
 } catch (e) {
   console.error(e);
 }
 
-//To resume a download across app restarts, assuming the DownloadResumable.savable() object was stored:
+//要在应用重启后恢复下载，假设 DownloadResumable.savable() 对象已被存储：
 const downloadSnapshotJson = await AsyncStorage.getItem('pausedDownload');
 const downloadSnapshot = JSON.parse(downloadSnapshotJson);
 const downloadResumable = new FileSystem.DownloadResumable(
@@ -89,16 +88,16 @@ const downloadResumable = new FileSystem.DownloadResumable(
 
 try {
   const { uri } = await downloadResumable.resumeAsync();
-  console.log('Finished downloading to ', uri);
+  console.log('已完成下载到 ', uri);
 } catch (e) {
   console.error(e);
 }
 ```
 
-### Managing Giphy's
+### 管理 Giphy
 
 <SnackInline
-  label="Giphy example"
+  label="Giphy 示例"
   templateId="filesystem/App"
   dependencies={['expo-file-system']}
   files={{
@@ -114,29 +113,29 @@ const gifDir = FileSystem.cacheDirectory + 'giphy/';
 const gifFileUri = (gifId: string) => gifDir + `gif_${gifId}_200.gif`;
 const gifUrl = (gifId: string) => `https://media1.giphy.com/media/${gifId}/200.gif`;
 
-// Checks if gif directory exists. If not, creates it
+// 检查 gif 目录是否存在。如果不存在，则创建它
 async function ensureDirExists() {
   const dirInfo = await FileSystem.getInfoAsync(gifDir);
   if (!dirInfo.exists) {
-    console.log("Gif directory doesn't exist, creating…");
+    console.log("Gif 目录不存在，正在创建…");
     await FileSystem.makeDirectoryAsync(gifDir, { intermediates: true });
   }
 }
 
-// Downloads all gifs specified as array of IDs
+// 下载所有指定为 ID 数组的 gifs
 export async function addMultipleGifs(gifIds: string[]) {
   try {
     await ensureDirExists();
 
-    console.log('Downloading', gifIds.length, 'gif files…');
+    console.log('正在下载', gifIds.length, '个 gif 文件…');
     await Promise.all(gifIds.map(id => FileSystem.downloadAsync(gifUrl(id), gifFileUri(id))));
   } catch (e) {
-    console.error("Couldn't download gif files:", e);
+    console.error("无法下载 gif 文件：", e);
   }
 }
 
-// Returns URI to our local gif file
-// If our gif doesn't exist locally, it downloads it
+// 返回本地 gif 文件的 URI
+// 如果本地不存在该 gif，则会下载它
 export async function getSingleGif(gifId: string) {
   await ensureDirExists();
 
@@ -144,30 +143,30 @@ export async function getSingleGif(gifId: string) {
   const fileInfo = await FileSystem.getInfoAsync(fileUri);
 
   if (!fileInfo.exists) {
-    console.log("Gif isn't cached locally. Downloading…");
+    console.log("Gif 未缓存在本地。正在下载…");
     await FileSystem.downloadAsync(gifUrl(gifId), fileUri);
   }
 
   return fileUri;
 }
 
-// Exports shareable URI - it can be shared outside your app
+// 导出可共享的 URI - 它可以在应用外部共享
 export async function getGifContentUri(gifId: string) {
   return FileSystem.getContentUriAsync(await getSingleGif(gifId));
 }
 
-// Deletes whole giphy directory with all its content
+// 删除整个 giphy 目录及其所有内容
 export async function deleteAllGifs() {
-  console.log('Deleting all GIF files…');
+  console.log('正在删除所有 GIF 文件…');
   await FileSystem.deleteAsync(gifDir);
 }
 ```
 
 </SnackInline>
 
-### Server: handling multipart requests
+### 服务端：处理 multipart 请求
 
-The simple server in Node.js, which can save uploaded images to disk:
+Node.js 中的简单服务器，可以将上传的图片保存到磁盘：
 
 ```js index.js
 const express = require('express');
@@ -176,21 +175,21 @@ const fs = require('fs');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
-// This method will save the binary content of the request as a file.
+// 此方法会将请求的二进制内容保存为文件。
 app.patch('/binary-upload', (req, res) => {
   req.pipe(fs.createWriteStream('./uploads/image' + Date.now() + '.png'));
   res.end('OK');
 });
 
-// This method will save a "photo" field from the request as a file.
+// 此方法会将请求中的 "photo" 字段保存为文件。
 app.patch('/multipart-upload', upload.single('photo'), (req, res) => {
-  // You can access other HTTP parameters. They are located in the body object.
+  // 你可以访问其他 HTTP 参数。它们位于 body 对象中。
   console.log(req.body);
   res.end('OK');
 });
 
 app.listen(3000, () => {
-  console.log('Working on port 3000');
+  console.log('运行在端口 3000');
 });
 ```
 
@@ -200,54 +199,54 @@ app.listen(3000, () => {
 import * as FileSystem from 'expo-file-system/legacy';
 ```
 
-### Directories
+### 目录
 
-The API takes `file://` URIs pointing to local files on the device to identify files. Each app only has read and write access to locations under the following directories:
+该 API 使用指向设备上本地文件的 `file://` URI 来标识文件。每个应用只有对以下目录下的位置具有读写权限：
 
 - [`FileSystem.documentDirectory`](#documentdirectory)
 - [`FileSystem.cacheDirectory`](#cachedirectory)
 
-So, for example, the URI to a file named `'myFile'` under `'myDirectory'` in the app's user documents directory would be `FileSystem.documentDirectory + 'myDirectory/myFile'`.
+例如，应用用户文档目录中 `'myDirectory'` 下名为 `'myFile'` 的文件，其 URI 将是 `FileSystem.documentDirectory + 'myDirectory/myFile'`。
 
-Expo APIs that create files generally operate within these directories. This includes `Audio` recordings, `Camera` photos, `ImagePicker` results, `SQLite` databases and `takeSnapShotAsync()` results. This allows their use with the `FileSystem` API.
+用于创建文件的 Expo API 通常在这些目录中运行。这包括 `Audio` 录音、`Camera` 照片、`ImagePicker` 结果、`SQLite` 数据库以及 `takeSnapShotAsync()` 的结果。这使它们能够与 `FileSystem` API 一起使用。
 
-Some `FileSystem` functions are able to read from (but not write to) other locations.
+某些 `FileSystem` 函数能够从其他位置读取（但不能写入）文件。
 
 ### SAF URI
 
-A SAF URI is a URI that is compatible with the Storage Access Framework. It should look like this `content://com.android.externalstorage.*`.
-The easiest way to obtain such URI is by [`requestDirectoryPermissionsAsync`](#requestdirectorypermissionsasyncinitialfileurl) method.
+SAF URI 是与 Storage Access Framework 兼容的 URI。它应当类似于这样：`content://com.android.externalstorage.*`。
+获取此类 URI 最简单的方法是通过 [`requestDirectoryPermissionsAsync`](#requestdirectorypermissionsasyncinitialfileurl) 方法。
 
 <APISection packageName="expo-file-system-legacy" apiName="FileSystem Legacy" />
 
-## Supported URI schemes
+## 支持的 URI scheme
 
-In this table, you can see what type of URI can be handled by each method. For example, if you have an URI, which begins with `content://`, you cannot use `FileSystem.readAsStringAsync()`, but you can use `FileSystem.copyAsync()` which supports this scheme.
+在此表中，你可以看到每种方法可以处理哪种类型的 URI。例如，如果你有一个以 `content://` 开头的 URI，就不能使用 `FileSystem.readAsStringAsync()`，但可以使用支持该 scheme 的 `FileSystem.copyAsync()`。
 
-| Method name               | Android                                                                                                                              | iOS                                                                                             |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `getInfoAsync`            | `file:///`,<br/>`content://`,<br/>`asset://`,<br/>no scheme                                                                          | `file://`,<br/>`ph://`,<br/>`assets-library://`                                                 |
-| `readAsStringAsync`       | `file:///`,<br/>`asset://`,<br/>[SAF URI](#saf-uri)                                                                                  | `file://`                                                                                       |
-| `writeAsStringAsync`      | `file:///`,<br/>[SAF URI](#saf-uri)                                                                                                  | `file://`                                                                                       |
-| `deleteAsync`             | `file:///`,<br/>[SAF URI](#saf-uri)                                                                                                  | `file://`                                                                                       |
-| `moveAsync`               | Source:<br/>`file:///`,<br/>[SAF URI](#saf-uri)<br/><br/>Destination:<br/>`file://`                                                  | Source:<br/>`file://`<br/><br/>Destination:<br/>`file://`                                       |
-| `copyAsync`               | Source:<br/>`file:///`,<br/>`content://`,<br/>`asset://`,<br/>[SAF URI](#saf-uri),<br/>no scheme<br/><br/>Destination:<br/>`file://` | Source:<br/>`file://`,<br/>`ph://`,<br/>`assets-library://`<br/><br/>Destination:<br/>`file://` |
-| `makeDirectoryAsync`      | `file:///`                                                                                                                           | `file://`                                                                                       |
-| `readDirectoryAsync`      | `file:///`                                                                                                                           | `file://`                                                                                       |
-| `downloadAsync`           | Source:<br/>`http://`,<br/>`https://`<br/><br/>Destination:<br/>`file:///`                                                           | Source:<br/>`http://`,<br/>`https://`<br/><br/>Destination:<br/>`file://`                       |
-| `uploadAsync`             | Source:<br/>`file:///`<br/><br/>Destination:<br/>`http://`<br/>`https://`                                                            | Source:<br/>`file://`<br/><br/>Destination:<br/>`http://`<br/>`https://`                        |
-| `createDownloadResumable` | Source:<br/>`http://`,<br/>`https://`<br/><br/>Destination:<br/>`file:///`                                                           | Source:<br/>`http://`,<br/>`https://`<br/><br/>Destination:<br/>`file://`                       |
+| 方法名称                   | Android                                                                                                                              | iOS                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `getInfoAsync`            | `file:///`,<br/>`content://`,<br/>`asset://`,<br/>无 scheme                                                                          | `file://`,<br/>`ph://`,<br/>`assets-library://`                                                 |
+| `readAsStringAsync`        | `file:///`,<br/>`asset://`,<br/>[SAF URI](#saf-uri)                                                                                  | `file://`                                                                                       |
+| `writeAsStringAsync`       | `file:///`,<br/>[SAF URI](#saf-uri)                                                                                                  | `file://`                                                                                       |
+| `deleteAsync`              | `file:///`,<br/>[SAF URI](#saf-uri)                                                                                                  | `file://`                                                                                       |
+| `moveAsync`                | 来源：<br/>`file:///`,<br/>[SAF URI](#saf-uri)<br/><br/>目标：<br/>`file://`                                                        | 来源：<br/>`file://`<br/><br/>目标：<br/>`file://`                                             |
+| `copyAsync`                | 来源：<br/>`file:///`,<br/>`content://`,<br/>`asset://`,<br/>[SAF URI](#saf-uri),<br/>无 scheme<br/><br/>目标：<br/>`file://`       | 来源：<br/>`file://`,<br/>`ph://`,<br/>`assets-library://`<br/><br/>目标：<br/>`file://`        |
+| `makeDirectoryAsync`       | `file:///`                                                                                                                           | `file://`                                                                                       |
+| `readDirectoryAsync`       | `file:///`                                                                                                                           | `file://`                                                                                       |
+| `downloadAsync`            | 来源：<br/>`http://`,<br/>`https://`<br/><br/>目标：<br/>`file:///`                                                                   | 来源：<br/>`http://`,<br/>`https://`<br/><br/>目标：<br/>`file://`                               |
+| `uploadAsync`              | 来源：<br/>`file:///`<br/><br/>目标：<br/>`http://`<br/>`https://`                                                                    | 来源：<br/>`file://`<br/><br/>目标：<br/>`http://`<br/>`https://`                                |
+| `createDownloadResumable`  | 来源：<br/>`http://`,<br/>`https://`<br/><br/>目标：<br/>`file:///`                                                                   | 来源：<br/>`http://`,<br/>`https://`<br/><br/>目标：<br/>`file://`                               |
 
-> On Android **no scheme** defaults to a bundled resource.
+> 在 Android 上，**无 scheme** 默认表示一个捆绑资源。
 
-## Permissions
+## 权限
 
 ### Android
 
-The following permissions are added automatically through this library's **AndroidManifest.xml**.
+以下权限会通过此库的 **AndroidManifest.xml** 自动添加。
 
 <AndroidPermissions permissions={['READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE', 'INTERNET']} />
 
 ### iOS
 
-_No permissions required_.
+_不需要权限_。

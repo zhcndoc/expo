@@ -1,7 +1,7 @@
 ---
-title: EAS Update Debugging
-sidebar_title: Debugging
-description: Learn how to use basic debugging techniques to fix an update issue.
+title: EAS 更新调试
+sidebar_title: 调试
+description: 了解如何使用基本调试技术来修复更新问题。
 hasVideoLink: true
 ---
 
@@ -9,35 +9,35 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-This guide shows how to verify our configuration so that we can find the source of problems like an app not showing a published update. It's important to tell the current state of our app at any given time, so EAS Update was built with this in mind. Once we know which updates are running on which builds, we can make changes so that our apps are in the state we expect.
+本指南展示了如何验证我们的配置，以便我们能够找到诸如应用未显示已发布更新之类问题的来源。重要的是在任何给定时间都能说明我们应用的当前状态，因此 EAS Update 正是基于这一点构建的。一旦我们知道哪些更新正在哪些构建上运行，我们就可以进行更改，使我们的应用处于我们期望的状态。
 
 <VideoBoxLink
   videoId="m9PLTr3t3S4"
-  title="How to debug EAS Update"
-  description="In this Expo debugging tutorial, you'll learn how to debug a situation where your build isn't getting an update."
+  title="如何调试 EAS Update"
+  description="在这个 Expo 调试教程中，你将学习如何调试构建未获取到更新的情况。"
 />
 
 <br />
 
-> If we are not using EAS Build, our Deployments page will be empty. Follow the guide on [debugging configuration without EAS Build](/eas-update/debug/#configuration-without-eas-build) instead.
+> 如果我们没有使用 EAS Build，我们的 Deployments 页面将是空的。请改为遵循 [不使用 EAS Build 时调试配置的指南](/eas-update/debug/#configuration-without-eas-build)。
 
-## Go to the Deployments page
+## 前往 Deployments 页面
 
-The EAS website has a [Deployments page](https://expo.dev/accounts/[account]/projects/[project]/deployments) that shows the current state of our app. The term _deployment_ refers to a group of builds and their corresponding updates. If we've made builds and updates with EAS, we can see our project's status on the website in the Deployments tab.
+EAS 网站有一个 [Deployments 页面](https://expo.dev/accounts/[account]/projects/[project]/deployments)，用于显示我们应用的当前状态。术语 _deployment_ 指的是一组构建及其对应更新的集合。如果我们使用 EAS 创建了构建和更新，就可以在 Deployments 选项卡中看到我们项目的状态。
 
 <ContentSpotlight
-  alt="Deployments tab"
+  alt="Deployments 选项卡"
   src="/static/images/eas-update/deployments-website-tab.png"
   className="max-w-[240px]"
 />
 
-## Common problems
+## 常见问题
 
-The following section describes common problems and how to fix them. Below is a diagram of how EAS Update works and the spots that are useful to inspect when finding the root cause of an issue. In the following sections, we'll inspect and verify these spots and more.
+以下部分描述了常见问题以及如何修复它们。下面是一张 EAS Update 工作方式的示意图，以及在查找问题根因时有用的检查点。在接下来的章节中，我们将检查并验证这些位置以及更多内容。
 
-<ContentSpotlight alt="Map of debugging spots" src="/static/images/eas-update/debug-map.png" />
+<ContentSpotlight alt="调试点地图" src="/static/images/eas-update/debug-map.png" />
 
-### Unexpected channel
+### 意外的 channel
 
 <ContentSpotlight
   alt="Deployment has unexpected channel"
@@ -45,9 +45,9 @@ The following section describes common problems and how to fix them. Below is a 
   className="max-w-[600px]"
 />
 
-If the deployment channel is unexpected, it means our build was not built with the correct channel. To fix this, [configure our channel](#configure-channel) and rebuild our app.
+如果 deployment 的 channel 不符合预期，这意味着我们的构建不是使用正确的 channel 构建的。要修复此问题，请[配置我们的 channel](#configure-channel)并重新构建应用。
 
-### Unexpected runtime version
+### 意外的 runtime version
 
 <ContentSpotlight
   alt="Deployment has unexpected runtime version"
@@ -55,9 +55,9 @@ If the deployment channel is unexpected, it means our build was not built with t
   className="max-w-[600px]"
 />
 
-If the deployment runtime version is unexpected, it means our build was not built with the correct runtime version. To fix this, [configure our runtime version](#configure-runtime-version) and rebuild our app.
+如果 deployment 的 runtime version 不符合预期，这意味着我们的构建不是使用正确的 runtime version 构建的。要修复此问题，请[配置我们的 runtime version](#configure-runtime-version)并重新构建应用。
 
-### Unexpected branch
+### 意外的 branch
 
 <ContentSpotlight
   alt="Deployment has unexpected branch"
@@ -65,9 +65,9 @@ If the deployment runtime version is unexpected, it means our build was not buil
   className="max-w-[600px]"
 />
 
-If the deployment has an unexpected branch, we need to [map our channel to the correct branch](#map-channel-to-branch).
+如果 deployment 关联到了不符合预期的 branch，我们需要[将我们的 channel 映射到正确的 branch](#map-channel-to-branch)。
 
-### Missing updates
+### 缺少更新
 
 <ContentSpotlight
   alt="Deployment has no updates"
@@ -75,9 +75,9 @@ If the deployment has an unexpected branch, we need to [map our channel to the c
   className="max-w-[600px]"
 />
 
-The displayed deployment does not have any updates. To fix this, [publish an update to the branch](#publish-update). If an update was already published, check the [Updates page](https://expo.dev/accounts/[account]/projects/[project]/updates) to make sure it matches the runtime version of our build.
+所显示的 deployment 没有任何更新。要修复此问题，请[向该 branch 发布更新](#publish-update)。如果更新已经发布，请检查 [Updates 页面](https://expo.dev/accounts/[account]/projects/[project]/updates)，确保它与我们构建的 runtime version 匹配。
 
-### Missing branch
+### 缺少 branch
 
 <ContentSpotlight
   alt="Deployment has no branch"
@@ -85,44 +85,44 @@ The displayed deployment does not have any updates. To fix this, [publish an upd
   className="max-w-[600px]"
 />
 
-The displayed deployment has the correct channel, but it is not linked to a branch. To fix this, [map the channel to the correct branch](#map-channel-to-branch).
+所显示的 deployment 具有正确的 channel，但未链接到任何 branch。要修复此问题，请[将 channel 映射到正确的 branch](#map-channel-to-branch)。
 
-### Missing deployment
+### 缺少 deployment
 
-If our deployment is not displayed, it means our build is not configured properly for EAS Update. To fix this, [configure our channel](#configure-channel), [configure our runtime version](#configure-runtime-version) and verify our [general configuration](/eas-update/debug/#verifying-app-configuration). We'll need to rebuild our app after making these changes.
+如果我们的 deployment 没有显示出来，这意味着我们的构建没有为 EAS Update 正确配置。要修复此问题，请[配置我们的 channel](#configure-channel)、[配置我们的 runtime version](#configure-runtime-version)，并验证我们的[通用配置](/eas-update/debug/#verifying-app-configuration)。在进行这些更改后，我们需要重新构建应用。
 
-### Automatic roll back when an update crashes
+### 更新崩溃时自动回滚
 
-If everything looks correct on the Deployments page, but your app still shows the previous update or the code embedded with the build, your new update's code may be crashing. This can happen when this new update crashes before the root component renders after the app downloads and applies the new update.
+如果 Deployments 页面上一切看起来都正确，但你的应用仍然显示之前的更新或构建中嵌入的代码，那么新更新中的代码可能发生了崩溃。这种情况可能发生在应用下载并应用新更新后，新更新在根组件渲染之前崩溃。
 
-EAS Update is designed to automatically roll back to the previous update if it detects that a new update crashed shortly after launch. See [how EAS Update detects crashes and rolls back to a previous working version](/eas-update/error-recovery/#explaining-the-error-recovery-flow) for more information.
+EAS Update 的设计是在检测到新更新在启动后不久崩溃时，自动回滚到上一个更新。有关更多信息，请参见[EAS Update 如何检测崩溃并回滚到之前的可用版本](/eas-update/error-recovery/#explaining-the-error-recovery-flow)。
 
-To diagnose the error causing the update crash:
+要诊断导致更新崩溃的错误：
 
-- See the [Troubleshooting guide on runtime issues](/debugging/runtime-issues/) to apply a strategy to identify the error.
-- After identifying the error, publish a new update that fixes the crash to resolve the issue.
+- 查看 [运行时问题排查指南](/debugging/runtime-issues/)，以应用一种识别错误的策略。
+- 在识别出错误后，发布一个修复了崩溃的新更新来解决该问题。
 
-A common reason a new update does not work but embedded code does is due to a missing environment variable. See [how environment variables work with EAS Update](/eas/environment-variables/usage/#using-environment-variables-with-eas-update) for more information.
+新更新不工作但嵌入代码可以工作的一个常见原因是缺少环境变量。有关更多信息，请参见[环境变量如何与 EAS Update 配合使用](/eas/environment-variables/usage/#using-environment-variables-with-eas-update)。
 
-### Failed to load all assets
+### 无法加载所有资源
 
-If your users are seeing a "Failed to load all assets" error, it means that the app was able to download the manifest but could not download all of the assets required for the update to run. An asset will need to be downloaded if it is not present in the original build. Common reasons for error are:
+如果你的用户看到“Failed to load all assets”错误，这意味着应用能够下载 manifest，但无法下载更新运行所需的所有资源。如果某个资源不在原始构建中，就需要下载它。常见原因包括：
 
-- Many large assets were added to the update, and the app is unable to download them all due to network issues.
-- The user has poor internet connection.
-- The user is in a country that blocks or throttles Cloudflare IP addresses, which are used by EAS Update to serve assets.
+- 向更新中添加了许多大型资源，而应用由于网络问题无法全部下载。
+- 用户的互联网连接较差。
+- 用户所在国家/地区会屏蔽或限制 Cloudflare IP 地址，而 EAS Update 使用这些地址来提供资源。
 
-To diagnose the asset loading issue:
+要诊断资源加载问题：
 
-- Verify which assets are downloaded by users and their sizes by inspecting the [asset list](/eas-update/debug/#viewing-all-assets-included-in-an-update).
-- Reproduce the issue on your own device and examine the `expo-updates` [logs entries](/versions/latest/sdk/updates/#updatesreadlogentriesasyncmaxage) surfaced from the native layer.
-- If you've logged this error in a service like Sentry, inspect the IP address of the user that encountered the error and verify it is not in a country known to block or throttle Cloudflare IP addresses.
+- 通过检查 [资源列表](/eas-update/debug/#viewing-all-assets-included-in-an-update)，验证用户下载了哪些资源以及它们的大小。
+- 在你自己的设备上重现该问题，并检查从原生层暴露出来的 `expo-updates` [日志条目](/versions/latest/sdk/updates/#updatesreadlogentriesasyncmaxage)。
+- 如果你已在 Sentry 等服务中记录了此错误，请检查遇到错误的用户的 IP 地址，并确认其不在已知会屏蔽或限制 Cloudflare IP 地址的国家/地区。
 
-## Solutions
+## 解决方案
 
-### Configure channel
+### 配置 channel
 
-To verify that a build has a specific channel, make sure our build profile in **eas.json** has a channel property:
+要验证某个构建具有特定的 channel，请确保 **eas.json** 中的构建配置文件包含 `channel` 属性：
 
 ```json eas.json
 {
@@ -138,11 +138,11 @@ To verify that a build has a specific channel, make sure our build profile in **
 }
 ```
 
-Then, we can run a command like `eas build --profile preview` to create a build with a channel named "preview".
+然后，我们可以运行类似 `eas build --profile preview` 的命令来创建一个名为 "preview" 的 channel 的构建。
 
-### Configure runtime version
+### 配置 runtime version
 
-To verify our runtime version, we make sure our app config (**app.json**/**app.config.js**) has a `runtimeVersion` property:
+要验证我们的 runtime version，请确保我们的应用配置（**app.json**/**app.config.js**）包含 `runtimeVersion` 属性：
 
 ```json app.json
 {
@@ -154,74 +154,74 @@ To verify our runtime version, we make sure our app config (**app.json**/**app.c
 }
 ```
 
-By default, it is `{ "policy": "appVersion" }`, but we can change our runtime to [use a different policy or a specific version](/eas-update/runtime-versions). Then, we can run a command like `eas build --profile preview` to create a build with the runtime version we expect.
+默认情况下，它是 `{ "policy": "appVersion" }`，但我们可以将运行时改为[使用不同的策略或特定版本](/eas-update/runtime-versions)。然后，我们可以运行类似 `eas build --profile preview` 的命令来创建一个具有我们期望的 runtime version 的构建。
 
-### Map channel to branch
+### 将 channel 映射到 branch
 
-If the channel is not mapped to the branch we expect, we can change the link with:
+如果 channel 没有映射到我们期望的 branch，我们可以使用以下命令更改关联：
 
 <Terminal
   cmd={[
     '# eas channel:edit [channel-name] --branch [branch-name]',
     '',
-    '# Example',
+    '# 示例',
     '$ eas channel:edit production --branch release-1.0',
   ]}
 />
 
-If our branch is not listed, we can create a new branch with `eas branch:create`.
+如果我们的 branch 没有列出，我们可以使用 `eas branch:create` 创建一个新的 branch。
 
-### Publish update
+### 发布更新
 
-To create and publish an update, we can run the following command:
+要创建并发布更新，我们可以运行以下命令：
 
 <Terminal cmd={['$ eas update']} />
 
-After publishing, the output will display the branch and the runtime version. This information can help us verify that we're creating an update with the configuration we expect.
+发布后，输出将显示 branch 和 runtime version。这些信息可以帮助我们验证我们创建的更新是否符合预期配置。
 
-## General strategies
+## 通用策略
 
-Try these strategies before using the more specific ones mentioned in this guide.
+在使用本指南中提到的更具体方法之前，请先尝试这些策略。
 
-### Use `expo-dev-client`
+### 使用 `expo-dev-client`
 
-Create a [development version of our build](/eas-update/expo-dev-client). It will help us preview published updates inside a problematic build.
+创建一个[开发版构建](/eas-update/expo-dev-client)。它将帮助我们在有问题的构建中预览已发布的更新。
 
-### In-app debugging
+### 应用内调试
 
-The `expo-updates` library exports a variety of functions to interact with updates once the app is already running. In certain cases, making a call to fetch an update and seeing an error message can help us narrow down the root cause. We can make a simulator build of the project and manually check to see if updates are available or if there are errors when fetching updates.
+`expo-updates` 库导出了一系列函数，用于在应用已运行后与更新交互。在某些情况下，调用获取更新并查看错误信息，可以帮助我们缩小问题根因范围。我们可以为项目制作一个模拟器构建，并手动检查是否有可用更新，或者在获取更新时是否出现错误。
 
-- Print the [Update.Constants](/versions/latest/sdk/updates/#constants) to verify our configuration.
-- [Examine log entries](/versions/latest/sdk/updates/#updatesreadlogentriesasyncmaxage) surfaced from the native layer.
-- Fetch and [load updates manually](/versions/latest/sdk/updates/#check-for-updates-manually).
+- 打印 [Update.Constants](/versions/latest/sdk/updates/#constants) 以验证我们的配置。
+- [检查日志条目](/versions/latest/sdk/updates/#updatesreadlogentriesasyncmaxage)，这些条目从原生层暴露出来。
+- 手动获取并[加载更新](/versions/latest/sdk/updates/#check-for-updates-manually)。
 
-## Configuration issues
+## 配置问题
 
-Our app is still not receiving the expected update despite following the [basic guide](/eas-update/debug).
+尽管遵循了[基础指南](/eas-update/debug)，我们的应用仍然没有收到预期的更新。
 
-### `expo-updates` configuration
+### `expo-updates` 配置
 
-The `expo-updates` library runs inside an end-user's app and makes requests to an update server to get the latest update.
+`expo-updates` 库运行在最终用户的应用中，并向更新服务器发送请求以获取最新更新。
 
-#### Verifying app configuration
+#### 验证应用配置
 
-When we set up EAS Update, we likely ran `eas update:configure` to configure expo-updates to work with EAS Update. This command makes changes to our app config (**app.json**/**app.config.js**). Here are the fields we'd expect to see:
+当我们设置 EAS Update 时，很可能运行了 `eas update:configure` 来配置 expo-updates 以配合 EAS Update 工作。此命令会修改我们的应用配置（**app.json**/**app.config.js**）。以下是我们期望看到的字段：
 
-- `runtimeVersion` should be set. By default, it is `{ "policy": "appVersion" }`. If our project has **android** and **ios** directories, we'll have to set the `runtimeVersion` manually.
-- `updates.url` should be a value like `https://u.expo.dev/your-project-id`, where `your-project-id` matches the ID of our project. We can see this ID on [our website](https://expo.dev/accounts/[account]/projects/[project]).
-- `updates.enabled` should not be `false`. It's `true` by default if it is not specified.
+- `runtimeVersion` 应该已设置。默认情况下，它是 `{ "policy": "appVersion" }`。如果我们的项目有 **android** 和 **ios** 目录，我们就必须手动设置 `runtimeVersion`。
+- `updates.url` 应该是类似 `https://u.expo.dev/your-project-id` 的值，其中 `your-project-id` 与我们项目的 ID 对应。我们可以在[我们的网站](https://expo.dev/accounts/[account]/projects/[project])上看到这个 ID。
+- `updates.enabled` 不应为 `false`。如果未指定，默认值为 `true`。
 
-Finally, make sure that `expo-updates` is included in **package.json**. If it's not, run:
+最后，确保 **package.json** 中包含 `expo-updates`。如果没有，请运行：
 
 <Terminal cmd={['$ npx expo install expo-updates']} />
 
-#### Inspecting expo-updates configuration after prebuild
+#### 在 prebuild 之后检查 expo-updates 配置
 
-Whenever we run `eas build`, the `npx expo prebuild` command is run on our project on EAS servers to unpack the **android** and **ios** directories that contain native files. This makes it so EAS Build can build any project, whether it includes the native files or not.
+每当我们运行 `eas build` 时，EAS 服务器都会在我们的项目上运行 `npx expo prebuild` 命令，以解包包含原生文件的 **android** 和 **ios** 目录。这样 EAS Build 就可以构建任何项目，无论它是否包含原生文件。
 
-If our project does not have **android** or **ios** directories, we can make commit any existing changes, then run `npx expo prebuild` to inspect the project state that EAS Build will act on. After running this, look for the following files: **android/app/src/main/AndroidManifest.xml** and **ios/your-project-name/Supporting/Expo.plist**.
+如果我们的项目没有 **android** 或 **ios** 目录，我们可以先提交任何现有更改，然后运行 `npx expo prebuild` 来检查 EAS Build 将要作用的项目状态。运行后，请查找以下文件：**android/app/src/main/AndroidManifest.xml** 和 **ios/your-project-name/Supporting/Expo.plist**。
 
-In each, we expect to see configuration for the EAS Update URL and the runtime version. Here are the properties we'd expect to see in each file:
+在这两个文件中，我们都期望看到 EAS Update URL 和 runtime version 的配置。以下是我们期望在每个文件中看到的属性：
 
 ```xml AndroidManifest.xml
 <!-- @hide ... --><!-- @end -->
@@ -239,91 +239,91 @@ In each, we expect to see configuration for the EAS Update URL and the runtime v
 <!-- @hide ... --><!-- @end -->
 ```
 
-### Configuration without EAS Build
+### 不使用 EAS Build 时的配置
 
-If we aren't using EAS Build, this section will walk through debugging the state of EAS Update in our project. We'll need to look at multiple spots in the system. Below is a diagram of how EAS Update works and the spots that are useful to inspect when finding the root cause of an issue. In the sections following, we'll inspect and verify these spots and more.
+如果我们没有使用 EAS Build，本节将指导我们调试项目中 EAS Update 的状态。我们需要查看系统中的多个位置。下面是一张 EAS Update 工作方式的示意图，以及在查找问题根因时有用的检查点。在接下来的章节中，我们将检查并验证这些位置以及更多内容。
 
-<ContentSpotlight alt="Map of debugging spots" src="/static/images/eas-update/debug-map.png" />
+<ContentSpotlight alt="调试点地图" src="/static/images/eas-update/debug-map.png" />
 
-#### Verify build configuration
+#### 验证构建配置
 
-Follow the [Building Locally guide](/eas-update/standalone-service/) to configure our app's channel and runtime version. We'll also need to make sure our [general configuration](/eas-update/debug/#expo-updates-configuration) is correct.
+请遵循[本地构建指南](/eas-update/standalone-service/)来配置应用的 channel 和 runtime version。我们还需要确保我们的[通用配置](/eas-update/debug/#expo-updates-configuration)正确无误。
 
-#### Verify the channel
+#### 验证 channel
 
-Builds have a property named `channel`, which EAS Update uses to link to a branch. A channel is often given to multiple platform-specific builds. For instance, we might have an Android build and an iOS build, both with a channel named `"production"`.
+构建具有一个名为 `channel` 的属性，EAS Update 使用它来链接到 branch。一个 channel 通常会分配给多个特定平台的构建。例如，我们可能有一个 Android 构建和一个 iOS 构建，它们的 channel 都名为 `"production"`。
 
-Once a build has a channel name, we can make sure that EAS servers know about it by checking the [Channels page](https://expo.dev/accounts/[account]/projects/[project]/channels).
+一旦构建有了 channel 名称，我们就可以通过检查 [Channels 页面](https://expo.dev/accounts/[account]/projects/[project]/channels)来确保 EAS 服务器知道它。
 
-We'd expect the page to display the same channel name that our build has. If it's not there, we can create the channel on EAS servers with:
+我们期望该页面显示与我们的构建相同的 channel 名称。如果那里没有，我们可以在 EAS 服务器上创建该 channel，使用：
 
 {/* prettier-ignore */}
 <Terminal
   cmd={[
     '# eas channel:create [channel-name]',
     '',
-    '# Example',
+    '# 示例',
     '$ eas channel:create production',
   ]}
 />
 
-#### Verify the channel/branch mapping
+#### 验证 channel/branch 映射
 
-There is a link that is defined by the developer between a channel and a branch. When a channel and branch are linked, an app with a channel will get the most recent compatible update on the linked branch.
+开发者会在 channel 和 branch 之间定义一个链接。当 channel 和 branch 关联后，带有该 channel 的应用会从关联的 branch 获取最新的兼容更新。
 
-The [Channels page](https://expo.dev/accounts/[account]/projects/[project]/channels) will display the channel to branch mapping if it exists.
+[Channels 页面](https://expo.dev/accounts/[account]/projects/[project]/channels) 会在映射存在时显示 channel 到 branch 的映射关系。
 
 <ContentSpotlight
-  alt="Linked branches on the Channels page"
+  alt="Channels 页面上的已关联 branches"
   src="/static/images/eas-update/channels-linked-branches.png"
   className="max-w-[400px]"
 />
 
-If the channel is not linked to the branch we expect, we can change the link with:
+如果 channel 没有链接到我们期望的 branch，可以使用以下命令更改链接：
 
 <Terminal
   cmd={[
     '# eas channel:edit [channel-name] --branch [branch-name]',
     '',
-    '# Example',
+    '# 示例',
     '$ eas channel:edit production --branch release-1.0',
   ]}
 />
 
-#### Verify the update
+#### 验证 update
 
-Every branch contains a list of updates. When a build makes a call for an update, we find the channel of the build, then the branch linked to that channel. Once the branch is found, EAS will return the most recent compatible update on that branch. A build and an update are compatible when they share the same runtime version and platform.
+每个 branch 都包含一个 update 列表。当构建请求一个 update 时，我们会先找到该构建的 channel，然后找到该 channel 关联的 branch。一旦找到 branch，EAS 就会返回该 branch 上最新的兼容 update。当构建和 update 具有相同的 runtime version 和 platform 时，它们就是兼容的。
 
-To inspect which updates are on a branch, we can go to the [Branches page](https://expo.dev/accounts/[account]/projects/[project]/branches) and choose our branch of interest.
+要查看某个 branch 上有哪些 update，可以前往 [Branches 页面](https://expo.dev/accounts/[account]/projects/[project]/branches) 并选择我们感兴趣的 branch。
 
-The Branch Detail page will show us a list of updates and their runtime versions and platforms. From this list, we should be able to figure out which update should apply to a given build, by matching the build's runtime version and platform to update's runtime version and platform. The most recent update that is compatible will be available for a build to download and execute.
+Branch Detail 页面会显示一个 update 列表及其 runtime version 和 platform。根据这个列表，我们应该能够通过将构建的 runtime version 和 platform 与 update 的 runtime version 和 platform 进行匹配，来判断某个构建应应用哪个 update。最新的兼容 update 将可供构建下载并执行。
 
 <ContentSpotlight
-  alt="List of updates on the Branch Detail page"
+  alt="Branch Detail 页面上的 update 列表"
   src="/static/images/eas-update/branch-update-list.png"
   className="max-w-[800px]"
 />
 
-## Debugging EAS Update
+## 调试 EAS Update
 
-After verifying `expo-updates` and EAS Update configurations, we can move on to debugging how our project is interacting with updates.
+在验证 `expo-updates` 和 EAS Update 配置之后，我们可以继续调试项目与 updates 的交互方式。
 
-### In-app debugging
+### 应用内调试
 
-The `expo-updates` library exports a variety of functions to interact with updates once the app is already running. In certain cases, making a call to fetch an update and seeing an error message can help us narrow down the root cause. We can make a simulator build of the project and manually check to see if updates are available or if there are errors when fetching updates. See the code example to [check for updates manually](/versions/latest/sdk/updates/#use-expo-updates-with-a-custom-server).
+`expo-updates` 库导出了一系列函数，用于在应用已经运行时与 updates 交互。在某些情况下，发起一次获取 update 的请求并查看错误信息，可以帮助我们缩小根本原因的范围。我们可以为项目制作一个模拟器构建，并手动检查是否有可用 updates，或者在获取 updates 时是否出现错误。有关代码示例，请参阅[手动检查更新](/versions/latest/sdk/updates/#use-expo-updates-with-a-custom-server)。
 
-### Inspecting a build manually
+### 手动检查构建
 
-When building a project into an app, there can be multiple steps that alter the output of `npx expo prebuild`. After making a build, it is possible to open the build's contents and inspect native files to see its final configuration.
+将项目构建为应用时，可能会有多个步骤会改变 `npx expo prebuild` 的输出。完成构建后，可以打开构建产物并检查原生文件，以查看其最终配置。
 
-Here are the steps for inspecting an iOS Simulator build on macOS:
+以下是在 macOS 上检查 iOS Simulator 构建的步骤：
 
-1. Create an iOS Simulator build of the app using EAS Build. This is done by adding `"ios": { "simulator": true }` to a build profile.
-2. Once the build is finished, download the result and unzip it.
-3. Then, right click on the app and select "Show Package Contents".
-4. From there, we can inspect the **Expo.plist** file.
+1. 使用 EAS Build 创建应用的 iOS Simulator 构建。这可以通过在构建配置中添加 `"ios": { "simulator": true }` 来完成。
+2. 构建完成后，下载结果并解压。
+3. 然后右键单击应用并选择“显示包内容”。
+4. 接着，我们可以检查 **Expo.plist** 文件。
 
-Inside the **Expo.plist** file, we expect to see the following configurations:
+在 **Expo.plist** 文件中，我们期望看到以下配置：
 
 ```xml Expo.plist
 <!-- @hide ... --><!-- @end -->
@@ -339,75 +339,75 @@ Inside the **Expo.plist** file, we expect to see the following configurations:
 <!-- @hide ... --><!-- @end -->
 ```
 
-### Inspecting manifests manually
+### 手动检查 manifest
 
-When an update is published with EAS Update, we create a manifest that end-user app's request. The manifest has information like which assets and versions are needed for an update to load. We can inspect the manifest by going to a specific URL in a browser or by using `curl`.
+当使用 EAS Update 发布 update 时，我们会创建一个 manifest，供终端用户应用请求。manifest 中包含诸如加载 update 所需的资产和版本等信息。我们可以通过浏览器访问特定 URL，或者使用 `curl` 来检查 manifest。
 
-Inside our project's app config (**app.json**/**app.config.json**), the URL we can GET is under `updates.url`.
+在我们项目的 app config（**app.json**/**app.config.json**）中，可以通过 `updates.url` 找到可 GET 的 URL。
 
-This `url` is EAS' "https://u.expo.dev" domain, followed by the project's ID on EAS servers. If we go to the URL directly, we'll see an error about missing a header. We can view a manifest by adding three query parameters to the URL: `runtime-version`, `channel-name`, and `platform`. If we published an update with a runtime version of `1.0.0`, a channel of `production` and a platform of `android`, the full URL we could visit would be similar to this:
+这个 `url` 是 EAS 的 `https://u.expo.dev` 域名，后面跟着 EAS 服务器上该项目的 ID。如果直接访问这个 URL，会看到一个缺少 header 的错误。我们可以通过向 URL 添加三个查询参数来查看 manifest：`runtime-version`、`channel-name` 和 `platform`。如果我们发布了一个 runtime version 为 `1.0.0`、channel 为 `production`、platform 为 `android` 的 update，那么可访问的完整 URL 会类似于这样：
 
 ```text
 https://u.expo.dev/your-project-id?runtime-version=1.0.0&channel-name=production&platform=android
 ```
 
-### Viewing network requests
+### 查看网络请求
 
-Another way to identify the root cause of an issue is to look at the network requests that the app is making to EAS servers, then viewing the responses. We recommend using a program like [Proxyman](https://proxyman.com/) or [Charles Proxy](https://www.charlesproxy.com/) to watch network requests from our app.
+识别问题根本原因的另一种方式是查看应用向 EAS 服务器发出的网络请求，然后查看响应。我们建议使用 [Proxyman](https://proxyman.com/) 或 [Charles Proxy](https://www.charlesproxy.com/) 之类的工具来监视应用的网络请求。
 
-With either program, we'll need to follow their instructions for installing an SSL certificate, so that the program can decode HTTPS requests. Once that's set up in a simulator or on an actual device, we can open our app and watch requests.
+无论使用哪种工具，我们都需要按照其说明安装 SSL 证书，以便该工具能够解码 HTTPS 请求。一旦在模拟器或真机上完成设置，我们就可以打开应用并查看请求。
 
-The requests we're interested in are from https://u.expo.dev and https://assets.eascdn.net. Responses from https://u.expo.dev will contain an update manifest, which specifies which assets the app will need to fetch to run the update. Responses from https://assets.eascdn.net will contain assets, like images, font files, and so on, that are required for the update to run.
+我们关注的请求来自 https://u.expo.dev 和 https://assets.eascdn.net。来自 https://u.expo.dev 的响应会包含 update manifest，其中指定了应用运行该 update 需要获取哪些资产。来自 https://assets.eascdn.net 的响应会包含资产，例如图片、字体文件等，这些都是运行该 update 所必需的。
 
-When inspecting the request to https://u.expo.dev, we can look for the following request headers:
+在检查对 https://u.expo.dev 的请求时，我们可以查看以下请求头：
 
-- `Expo-Runtime-Version`: this should make the runtime version we made our build and update with.
-- `expo-channel-name`: this should be the channel name specified in the **eas.json** build profile.
-- `Expo-Platform`: this should be either "android" or "ios".
+- `Expo-Runtime-Version`：这应该与我们制作构建和 update 时使用的 runtime version 一致。
+- `expo-channel-name`：这应该是 **eas.json** 构建配置中指定的 channel 名称。
+- `Expo-Platform`：这应该是 `"android"` 或 `"ios"`。
 
-As for all requests, we expect to see either `200` response codes, or `304` if nothing has changed.
+对于所有请求，我们期望看到 `200` 响应码；如果没有任何变化，则期望看到 `304`。
 
-Below is a screenshot showing the request of a successful update manifest request:
+下面是一张显示成功获取 update manifest 的请求截图：
 
 <ContentSpotlight
-  alt="Successful manifest request"
+  alt="成功的 manifest 请求"
   src="/static/images/eas-update/network-request.png"
 />
 
-## Runtime issues
+## 运行时问题
 
-We are able to load the expected update but our project is displaying unexpected behavior.
+我们能够加载到预期的 update，但项目显示了意外的行为。
 
-### Debugging of native code while loading the app through expo-updates
+### 通过 expo-updates 加载应用时调试原生代码
 
-By default, we need to make a release build for `expo-updates` to be enabled and to load updates rather than reading from a development server. This is because debug builds behave like normal React Native project debug builds.
+默认情况下，我们需要制作 release 构建，才能启用 `expo-updates` 并加载 updates，而不是从开发服务器读取。这是因为 debug 构建的行为与普通 React Native 项目的 debug 构建相同。
 
-To make it easier to test and debug native code in an environment that is closer to production, follow the steps below to create a debug build of the app with `expo-updates` enabled.
+为了更方便地在更接近生产环境的场景中测试和调试原生代码，请按照以下步骤创建启用了 `expo-updates` 的应用 debug 构建。
 
-We also provide a [step-by-step guide to try out EAS Update quickly](/eas-update/standalone-service/) in a local development environment using Android Studio or Xcode, with either release or debug builds of the app.
+我们还提供了一个[逐步指南，帮助快速试用 EAS Update](/eas-update/standalone-service/)，可在本地开发环境中使用 Android Studio 或 Xcode，通过 release 或 debug 构建来完成。
 
-#### Android local builds
+#### Android 本地构建
 
-- Set the debug environment variable: `export EX_UPDATES_NATIVE_DEBUG=1`
-- [Ensure the desired channel is set in your **AndroidManifest.xml**](/eas-update/getting-started/#configure-the-update-channel)
-- Execute a [debug build](/debugging/runtime-issues/#native-debugging) of the app with Android Studio or from the command line.
+- 设置调试环境变量：`export EX_UPDATES_NATIVE_DEBUG=1`
+- [确保在 **AndroidManifest.xml** 中设置了所需的 channel](/eas-update/getting-started/#configure-the-update-channel)
+- 使用 Android Studio 或命令行执行应用的[debug 构建](/debugging/runtime-issues/#native-debugging)。
 
-#### iOS local builds
+#### iOS 本地构建
 
-- Set the debug environment variable: `export EX_UPDATES_NATIVE_DEBUG=1`
-- Reinstall pods with `npx pod-install`. The `expo-updates` podspec now detects this environment variable, and makes changes so that the debug code that would normally load from the Metro packager is bypassed, and the app is built with the EXUpdates bundle and other dependencies needed to load updates from EAS.
-- [Ensure the desired channel is set in our **Expo.plist**](/eas-update/getting-started/#configure-the-update-channel)
-- Modify the application Xcode project file to force bundling of the application JavaScript for both release and debug builds:
+- 设置调试环境变量：`export EX_UPDATES_NATIVE_DEBUG=1`
+- 重新安装 pods：`npx pod-install`。现在 `expo-updates` 的 podspec 会检测这个环境变量，并进行相应修改，从而绕过通常会从 Metro packager 加载的调试代码，并使用 EXUpdates bundle 及其他从 EAS 加载 updates 所需的依赖来构建应用。
+- [确保在我们的 **Expo.plist** 中设置了所需的 channel](/eas-update/getting-started/#configure-the-update-channel)
+- 修改应用的 Xcode 项目文件，强制在 release 和 debug 构建中都打包应用的 JavaScript：
   <Terminal
     cmd={[
       "$ sed -i '' 's/SKIP_BUNDLING/FORCE_BUNDLING/g;' ios/<project name>.xcodeproj/project.pbxproj",
     ]}
   />
-- Execute a [debug build](/debugging/runtime-issues/#native-debugging) of the app with Xcode or from the command line.
+- 使用 Xcode 或命令行执行应用的[debug 构建](/debugging/runtime-issues/#native-debugging)。
 
 #### EAS Build
 
-Alternatively, we can use EAS to create a debug build where `expo-updates` is enabled. The environment variable is set in **eas.json**, as shown in the example below:
+或者，我们也可以使用 EAS 创建一个启用了 `expo-updates` 的 debug 构建。环境变量在 **eas.json** 中设置，如下例所示：
 
 ```json eas.json
 {
@@ -431,70 +431,70 @@ Alternatively, we can use EAS to create a debug build where `expo-updates` is en
 }
 ```
 
-## Publishing issues
+## 发布问题
 
-We are not able to publish an update, or parts of our update are not being published as expected.
+我们无法发布 update，或者 update 的某些部分没有按预期发布。
 
-### Inspecting the latest update locally
+### 在本地检查最新 update
 
-When we publish an update with EAS Update, it creates a **/dist** directory in the root of our project locally, which includes the assets that were uploaded as a part of the update.
+当我们使用 EAS Update 发布 update 时，它会在本地项目根目录下创建一个 **/dist** 目录，其中包含作为该 update 一部分上传的资产。
 
-<ContentSpotlight alt="Dist directory" src="/static/images/eas-update/dist.png" />
+<ContentSpotlight alt="Dist 目录" src="/static/images/eas-update/dist.png" />
 
-### Viewing all assets included in an update
+### 查看 update 中包含的所有资产
 
-It may be helpful to see which assets are included in our update bundle. We can see a list of named assets from the [Updates Detail](https://expo.dev/accounts/[account]/projects/[project]/updates) page:
+查看 update bundle 中包含哪些资产可能会有帮助。我们可以在 [Updates Detail](https://expo.dev/accounts/[account]/projects/[project]/updates) 页面中查看命名资产列表：
 
-<ContentSpotlight alt="Asset list" src="/static/images/eas-update/asset-list.png" />
+<ContentSpotlight alt="资产列表" src="/static/images/eas-update/asset-list.png" />
 
-Or run locally:
+或者在本地运行：
 
 <Terminal cmd={['$ npx expo export']} />
 
-## Mitigation steps
+## 缓解步骤
 
-Once we've found the root cause of the issue, there are various mitigation steps we might want to take. One of the most common problems is pushing an update that has a bug inside it. When this happens, we can re-publish a previous update to resolve the issue.
+一旦我们找到问题的根本原因，就可以考虑采取各种缓解步骤。最常见的问题之一是发布了一个包含 bug 的 update。发生这种情况时，我们可以重新发布之前的 update 来解决问题。
 
-### Re-publishing a previous update
+### 重新发布之前的 update
 
-The fastest way to "undo" a bad publish is to re-publish a known good update. Imagine we have a branch with two updates:
+“撤销”一次有问题发布的最快方法，是重新发布一个已知正常的 update。假设我们有一个包含两个 update 的 branch：
 
 <Terminal
   cmd={[
     'branch: "production"',
     'updates: [',
-    '  update 2 (id: xyz2) "fixes typo"     // bad update',
-    '  update 1 (id: abc1) "updates color"  // good update',
+    '  update 2 (id: xyz2) "修复拼写错误"     // 有问题的 update',
+    '  update 1 (id: abc1) "更新颜色"        // 正常的 update',
     ']',
   ]}
 />
 
-If "update 2" turned out to be a bad update, we can re-publish "update 1" with a command like this:
+如果“update 2”被证明是有问题的 update，我们可以使用如下命令重新发布“update 1”：
 
 <Terminal
   cmd={[
     '# eas update:republish --group [update-group-id]',
     '# eas update:republish --branch [branch-name]',
     '',
-    '# Example',
+    '# 示例',
     '$ eas update:republish --group abc1',
     '$ eas update:republish --branch production',
   ]}
 />
 
-The example command above would result in a branch that now appears like this:
+上面的示例命令会使 branch 变成如下状态：
 
 <Terminal
   cmd={[
     'branch: "production"',
     'updates: [',
-    '  update 3 (id: def3) "updates color"  // re-publish of update 1 (id: abc1)',
-    '  update 2 (id: xyz2) "fixes typo"     // bad update',
-    '  update 1 (id: abc1) "updates color"  // good update',
+    '  update 3 (id: def3) "更新颜色"        // 重新发布 update 1 (id: abc1)',
+    '  update 2 (id: xyz2) "修复拼写错误"     // 有问题的 update',
+    '  update 1 (id: abc1) "更新颜色"        // 正常的 update',
     ']',
   ]}
 />
 
-Since "update 3" is now the most recent update on the "production" branch, all users who query for an update in the future will receive "update 3" instead of the bad update, "update 2".
+由于“update 3”现在是“production” branch 上最新的 update，今后所有查询 update 的用户都会收到“update 3”，而不是有问题的 update“update 2”。
 
-While this will prevent all new users from seeing the bad update, users who've already received the bad update will run it until they can download the latest update. Since mobile networks are not always able to download the most recent update, sometimes users may run a bad update for a long time. When viewing error logs for our app, it's normal to see a lingering long tail of errors as our users' apps get the most recent update or build. We'll know we solved the bug when we see the error rate decline dramatically; however, it likely will not disappear completely if we have a diverse user base across many locations and mobile networks.
+虽然这可以防止所有新用户看到有问题的 update，但已经收到该有问题 update 的用户会继续运行它，直到他们能够下载最新的 update。由于移动网络并不总是能够下载最新的 update，因此有时用户可能会长时间运行一个有问题的 update。在查看应用的错误日志时，如果用户的应用正在获取最新的 update 或构建，出现持续存在的长尾错误是正常的。当我们看到错误率显著下降时，就知道我们已经解决了这个 bug；不过，如果我们的用户分布在许多地区和移动网络上，那么错误率很可能不会完全消失。

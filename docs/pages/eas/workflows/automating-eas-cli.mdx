@@ -1,6 +1,6 @@
 ---
-title: Automating EAS CLI commands
-description: Learn how to automate sequences of EAS CLI commands with EAS Workflows.
+title: 自动化 EAS CLI 命令
+description: 了解如何使用 EAS Workflows 自动执行一系列 EAS CLI 命令。
 ---
 
 import { Dataflow03Icon } from '@expo/styleguide-icons/outline/Dataflow03Icon';
@@ -8,27 +8,27 @@ import { Dataflow03Icon } from '@expo/styleguide-icons/outline/Dataflow03Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 
-If you're using EAS CLI to build, submit, and update your app, you can automate sequences of commands with EAS Workflows. EAS Workflows can build, submit, and update your app, while also running other jobs like Maestro tests, unit tests, custom scripts, and more.
+如果你正在使用 EAS CLI 来构建、提交和更新你的应用，你可以借助 EAS Workflows 自动化执行一系列命令。EAS Workflows 可以构建、提交和更新你的应用，同时还可以运行其他任务，例如 Maestro 测试、单元测试、自定义脚本等。
 
-Below you'll find how to set up your project to use EAS Workflows, followed by common examples of EAS CLI commands and how you can run them using EAS Workflows.
+下面你将看到如何设置项目以使用 EAS Workflows，随后是常见的 EAS CLI 命令示例，以及如何使用 EAS Workflows 来运行它们。
 
-## Configure your project
+## 配置你的项目
 
-EAS Workflows optionally supports a GitHub repository that's linked to your EAS project to run. This guide assumes a GitHub repository is linked, and shows how to trigger workflows when pushing to specific branches on GitHub. You can link a GitHub repo to your EAS project with the following steps:
+EAS Workflows 可选择支持一个与你的 EAS 项目关联的 GitHub 仓库来运行。本指南假设已经关联了一个 GitHub 仓库，并展示了如何在向 GitHub 上的特定分支推送时触发工作流。你可以通过以下步骤将 GitHub 仓库关联到你的 EAS 项目：
 
-- Navigate to your project's [GitHub settings](https://expo.dev/accounts/%5Baccount%5D/projects/%5BprojectName%5D/github).
-- Follow the UI to install the GitHub app.
-- Select the GitHub repository that matches the Expo project and connect it.
+- 前往你项目的 [GitHub 设置](https://expo.dev/accounts/%5Baccount%5D/projects/%5BprojectName%5D/github)。
+- 按照界面提示安装 GitHub 应用。
+- 选择与 Expo 项目匹配的 GitHub 仓库并连接它。
 
-## Creating builds
+## 创建构建
 
-You can make a build of your project using EAS CLI with the `eas build` command. To make an iOS build with the `production` build profile, you could run the following EAS CLI command:
+你可以使用 EAS CLI 的 `eas build` 命令来构建你的项目。要使用 `production` 构建配置文件创建一个 iOS 构建，你可以运行以下 EAS CLI 命令：
 
 <Terminal cmd={['$ eas build --platform ios --profile production']} />
 
-To write this command as a workflow, create a workflow file named **.eas/workflows/build-ios-production.yml** at the root of your project.
+要将此命令写成工作流，请在项目根目录下创建一个名为 **.eas/workflows/build-ios-production.yml** 的工作流文件。
 
-Inside **build-ios-production.yml**, you can use the following workflow to kick off a job that creates an iOS build with the `production` build profile.
+在 **build-ios-production.yml** 中，你可以使用以下工作流来启动一个创建使用 `production` 构建配置文件的 iOS 构建的任务。
 
 ```yaml .eas/workflows/build-ios-production.yml
 name: iOS production build
@@ -46,21 +46,21 @@ jobs:
       profile: production
 ```
 
-Once you have this workflow file, you can kick it off by pushing a commit to the `main` branch, or by running the following EAS CLI command:
+一旦你有了这个工作流文件，你可以通过向 `main` 分支推送提交来启动它，或者运行以下 EAS CLI 命令：
 
 <Terminal cmd={['$ eas workflow:run build-ios-production.yml']} />
 
-You can provide parameters to make Android builds or use other build profiles. Learn more about build job parameters with the [build job documentation](/eas/workflows/syntax/#build).
+你可以提供参数来创建 Android 构建，或者使用其他构建配置文件。有关构建任务参数的更多信息，请参阅 [构建任务文档](/eas/workflows/syntax/#build)。
 
-## Submitting builds
+## 提交构建
 
-You can submit your app to the app stores using EAS CLI with the `eas submit` command. To submit an iOS app, you could run the following EAS CLI command:
+你可以使用 EAS CLI 的 `eas submit` 命令将你的应用提交到应用商店。要提交一个 iOS 应用，你可以运行以下 EAS CLI 命令：
 
 <Terminal cmd={['$ eas submit --platform ios']} />
 
-To write this command as a workflow, create a workflow file named **.eas/workflows/submit-ios.yml** at the root of your project.
+要将此命令写成工作流，请在项目根目录下创建一个名为 **.eas/workflows/submit-ios.yml** 的工作流文件。
 
-Inside **submit-ios.yml**, you can use the following workflow to kick off a job that submits an iOS app.
+在 **submit-ios.yml** 中，你可以使用以下工作流来启动一个提交 iOS 应用的任务。
 
 ```yaml .eas/workflows/submit-ios.yml
 name: Submit iOS app
@@ -77,21 +77,21 @@ jobs:
       platform: ios
 ```
 
-Once you have this workflow file, you can kick it off by pushing a commit to the `main` branch, or by running the following EAS CLI command:
+一旦你有了这个工作流文件，你可以通过向 `main` 分支推送提交来启动它，或者运行以下 EAS CLI 命令：
 
 <Terminal cmd={['$ eas workflow:run submit-ios.yml']} />
 
-You can provide parameters to submit other platforms or use other submit profiles. Learn more about submit job parameters with the [submit job documentation](/eas/workflows/syntax/#submit).
+你可以提供参数来提交其他平台，或者使用其他提交配置文件。有关提交任务参数的更多信息，请参阅 [提交任务文档](/eas/workflows/syntax/#submit)。
 
-## Publishing updates
+## 发布更新
 
-You can update your app using EAS CLI with the `eas update` command. To update your app, you could run the following EAS CLI command:
+你可以使用 EAS CLI 的 `eas update` 命令来更新你的应用。要更新你的应用，你可以运行以下 EAS CLI 命令：
 
 <Terminal cmd={['$ eas update --auto']} />
 
-To write this command as a workflow, create a workflow file named **.eas/workflows/publish-update.yml** at the root of your project.
+要将此命令写成工作流，请在项目根目录下创建一个名为 **.eas/workflows/publish-update.yml** 的工作流文件。
 
-Inside **publish-update.yml**, you can use the following workflow to kick off a job that sends and over-the-air update.
+在 **publish-update.yml** 中，你可以使用以下工作流来启动一个发送空中更新的任务。
 
 ```yaml .eas/workflows/publish-update.yml
 name: Publish update
@@ -108,19 +108,19 @@ jobs:
       branch: ${{ github.ref_name || 'test'}}
 ```
 
-Once you have this workflow file, you can kick it off by pushing a commit to any branch, or by running the following EAS CLI command:
+一旦你有了这个工作流文件，你可以通过向任意分支推送提交来启动它，或者运行以下 EAS CLI 命令：
 
 <Terminal cmd={['$ eas workflow:run publish-update.yml']} />
 
-You can provide parameters to update specific branches or channels, and configure the update's message. Learn more about update job parameters with the [update job documentation](/eas/workflows/syntax/#update).
+你可以提供参数来更新特定分支或频道，并配置更新消息。有关更新任务参数的更多信息，请参阅 [更新任务文档](/eas/workflows/syntax/#update)。
 
-## Next step
+## 下一步
 
-Workflows are a powerful way to automate your development and release processes. Learn how to create development builds, publish preview updates, and create production builds with the workflows examples guide:
+工作流是自动化开发和发布流程的强大方式。通过工作流示例指南了解如何创建开发构建、发布预览更新以及创建生产构建：
 
 <BoxLink
   href="/eas/workflows/examples/introduction"
-  title="Workflow examples"
-  description="Learn how to use workflows to create development builds, publish preview updates, and create production builds."
+  title="工作流示例"
+  description="了解如何使用工作流创建开发构建、发布预览更新以及创建生产构建。"
   Icon={Dataflow03Icon}
 />

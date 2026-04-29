@@ -1,45 +1,45 @@
 ---
-title: Using Next.js with Expo for Web
-sidebar_title: Using Next.js
-description: A guide for integrating Next.js with Expo for the web.
+title: 将 Next.js 与 Expo 一起用于 Web
+sidebar_title: 使用 Next.js
+description: 将 Next.js 与 Expo 集成用于 Web 的指南。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **warning** Using Next.js is not an official part of Expo's universal app development workflow.
+> **警告** 使用 Next.js 并不是 Expo 通用应用开发工作流的官方组成部分。
 
-[Next.js](https://nextjs.org/) is a React framework that provides simple page-based routing as well as server-side rendering. To use Next.js with the Expo SDK, we recommend using [`@expo/next-adapter`](https://github.com/expo/expo-cli/tree/main/packages/next-adapter) library to handle the configuration.
+[Next.js](https://nextjs.org/) 是一个 React 框架，提供了简单的基于页面的路由以及服务端渲染。要将 Next.js 与 Expo SDK 一起使用，我们建议使用 [`@expo/next-adapter`](https://github.com/expo/expo-cli/tree/main/packages/next-adapter) 库来处理配置。
 
-Using Expo with Next.js means you can share some of your existing components and APIs across your mobile and web app. Next.js has its own CLI that you'll need to use when developing for the web platform, so **you'll need to start your web projects with the Next.js CLI and not with `npx expo start`**.
+将 Expo 与 Next.js 结合使用意味着你可以在移动端和 Web 应用之间共享你现有的一些组件和 API。Next.js 有自己的 CLI，你在开发 Web 平台时需要使用它，所以**你需要使用 Next.js CLI 启动 Web 项目，而不是使用 `npx expo start`**。
 
-> Next.js can only be used with Expo for web as there is no support for Server-Side Rendering (SSR) for native apps.
+> Next.js 只能与 Expo 的 Web 端一起使用，因为原生应用不支持服务端渲染（SSR）。
 
-## Automatic setup
+## 自动设置
 
-To quickly get started, create a new project using [with-nextjs](https://github.com/expo/examples/tree/master/with-nextjs) template:
+要快速开始，请使用 [with-nextjs](https://github.com/expo/examples/tree/master/with-nextjs) 模板创建一个新项目：
 
 <Terminal cmd={['$ npx create-expo-app -e with-nextjs']} />
 
-- **Native**: `npx expo start` &mdash; start the Expo project
-- **Web**: `npx next dev` &mdash; start the Next.js project
+- **原生**：`npx expo start` &mdash; 启动 Expo 项目
+- **Web**：`npx next dev` &mdash; 启动 Next.js 项目
 
-## Manual setup
+## 手动设置
 
-### Install dependencies
+### 安装依赖
 
-Ensure you have `expo`, `next`, `@expo/next-adapter` installed in your project:
+确保你的项目中已安装 `expo`、`next`、`@expo/next-adapter`：
 
 <Terminal cmd={['$ yarn add expo next @expo/next-adapter']} />
 
-### Transpilation
+### 转译
 
-Configure Next.js to transform language features:
+配置 Next.js 以转换语言特性：
 
-<Collapsible summary={<>Next.js with swc. (Recommended)</>}>
+<Collapsible summary={<>带 swc 的 Next.js。（推荐）</>}>
 
-Using Next.js with SWC is recommended. You can configure the [**babel.config.js**](/versions/latest/config/babel/) to only account for native:
+推荐使用带 SWC 的 Next.js。你可以配置 [**babel.config.js**](/versions/latest/config/babel/) 只针对原生端：
 
 ```js babel.config.js
 module.exports = function (api) {
@@ -50,7 +50,7 @@ module.exports = function (api) {
 };
 ```
 
-You will also have to [force Next.js to use SWC](https://nextjs.org/docs/messages/swc-disabled) by adding the following to your **next.config.js**:
+你还需要通过在 **next.config.js** 中添加以下内容来[强制 Next.js 使用 SWC](https://nextjs.org/docs/messages/swc-disabled)：
 
 ```js next.config.js
 module.exports = {
@@ -62,20 +62,20 @@ module.exports = {
 
 </Collapsible>
 
-<Collapsible summary={<>Next.js with Babel. (Not recommended)</>}>
+<Collapsible summary={<>带 Babel 的 Next.js。（不推荐）</>}>
 
-Adjust your **babel.config.js** to conditionally add `next/babel` when bundling with webpack for web:
+调整你的 **babel.config.js**，在使用 webpack 为 Web 打包时有条件地添加 `next/babel`：
 
 ```js babel.config.js
 module.exports = function (api) {
-  // Detect web usage (this may change in the future if Next.js changes the loader)
+  // 检测 Web 的使用情况（如果 Next.js 更改了加载器，这一点将来可能会变化）
   const isWeb = api.caller(
     caller =>
       caller && (caller.name === 'babel-loader' || caller.name === 'next-babel-turbo-loader')
   );
   return {
     presets: [
-      // Only use next in the browser, it'll break your native project
+      // 仅在浏览器中使用 next，它会破坏你的原生项目
       isWeb && require('next/babel'),
       'babel-preset-expo',
     ].filter(Boolean),
@@ -85,26 +85,26 @@ module.exports = function (api) {
 
 </Collapsible>
 
-### Next.js configuration
+### Next.js 配置
 
-Add the following to your **next.config.js**:
+将以下内容添加到你的 **next.config.js**：
 
 ```js next.config.js
 const { withExpo } = require('@expo/next-adapter');
 
 module.exports = withExpo({
-  // transpilePackages is a Next.js +13.1 feature.
-  // older versions can use next-transpile-modules
+  // transpilePackages 是 Next.js +13.1 的功能。
+  // 较旧版本可以使用 next-transpile-modules
   transpilePackages: [
     'react-native',
     'react-native-web',
     'expo',
-    // Add more React Native/Expo packages here...
+    // 在这里添加更多 React Native/Expo 包...
   ],
 });
 ```
 
-The fully qualified Next.js config may look like:
+完整的 Next.js 配置可能如下所示：
 
 ```js next.config.js
 const { withExpo } = require('@expo/next-adapter');
@@ -117,7 +117,7 @@ const nextConfig = withExpo({
     'react-native',
     'react-native-web',
     'expo',
-    // Add more React Native/Expo packages here...
+    // 在这里添加更多 React Native/Expo 包...
   ],
   experimental: {
     forceSwcTransforms: true,
@@ -127,20 +127,19 @@ const nextConfig = withExpo({
 module.exports = nextConfig;
 ```
 
-### React Native Web styling
+### React Native Web 样式
 
-The package `react-native-web` builds on the assumption of reset CSS styles. Here's how you reset styles in Next.js using the **pages** directory.
+`react-native-web` 包建立在重置 CSS 样式的假设之上。以下是在 Next.js 中使用 **pages** 目录重置样式的方法。
 
 ```jsx pages/_document.js
 import { Children } from 'react';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import { AppRegistry } from 'react-native';
 
-// Follows the setup for react-native-web:
+// 遵循 react-native-web 的设置：
 // https://necolas.github.io/react-native-web/docs/setup/#root-element
-// Plus additional React Native scroll and text parity styles for various
-// browsers.
-// Force Next-generated DOM elements to fill their parent's height
+// 另外还为各种浏览器添加了额外的 React Native 滚动和文本一致性样式。
+// 强制 Next 生成的 DOM 元素填满其父元素的高度
 const style = `
 html, body, #__next {
   -webkit-overflow-scrolling: touch;
@@ -155,7 +154,7 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 body {
-  /* Allows you to scroll below the viewport; default value is visible */
+  /* 允许你滚动到视口下方；默认值是 visible */
   overflow-y: auto;
   overscroll-behavior-y: none;
   text-rendering: optimizeLegibility;
@@ -206,9 +205,9 @@ export default function App({ Component, pageProps }) {
 }
 ```
 
-## Transpiling modules
+## 模块转译
 
-By default, modules in the React Native ecosystem are not transpiled to run in web browsers. React Native relies on advanced caching in Metro to reload quickly. Next.js uses webpack, which does not have the same level of caching, so no node modules are transpiled by default. You will have to manually mark every module you want to transpile with the `transpilePackages` option in **next.config.js**:
+默认情况下，React Native 生态系统中的模块不会被转译以在 Web 浏览器中运行。React Native 依赖 Metro 中的高级缓存来快速重新加载。Next.js 使用 webpack，它没有相同级别的缓存，因此默认不会转译任何 node 模块。你需要在 **next.config.js** 中使用 `transpilePackages` 选项手动标记每个你想要转译的模块：
 
 ```js next.config.js
 const { withExpo } = require('@expo/next-adapter');
@@ -216,25 +215,25 @@ const { withExpo } = require('@expo/next-adapter');
 module.exports = withExpo({
   experimental: {
     transpilePackages: [
-      // NOTE: Even though `react-native` is never used in Next.js,
-      // you need to list `react-native` because `react-native-web`
-      // is aliased to `react-native`.
+      // 注意：即使 `react-native` 从未在 Next.js 中使用，
+      // 你也需要列出 `react-native`，因为 `react-native-web`
+      // 被映射到了 `react-native`。
       'react-native',
       'react-native-web',
       'expo',
-      // Add more React Native/Expo packages here...
+      // 在这里添加更多 React Native/Expo 包...
     ],
   },
 });
 ```
 
-## Deploy to Vercel
+## 部署到 Vercel
 
-This is Vercel's preferred method for deploying Next.js projects to production.
+这是 Vercel 推荐的将 Next.js 项目部署到生产环境的方法。
 
 <Step label="1">
 
-Add a `build` script to your **package.json**:
+将 `build` 脚本添加到你的 **package.json**：
 
 ```json package.json
 {
@@ -248,7 +247,7 @@ Add a `build` script to your **package.json**:
 
 <Step label="2">
 
-Install the Vercel CLI:
+安装 Vercel CLI：
 
 <Terminal cmd={['$ npm i -g vercel']} />
 
@@ -256,30 +255,30 @@ Install the Vercel CLI:
 
 <Step label="3">
 
-Deploy to Vercel:
+部署到 Vercel：
 
 <Terminal cmd={['$ vercel']} />
 
 </Step>
 
-## Limitations or differences compared to the default Expo for Web
+## 与默认的 Expo for Web 相比的限制或差异
 
-Using Next.js for the web means you will be bundling with the Next.js webpack config. This will lead to some core differences in how you develop your app vs your website.
+在 Web 端使用 Next.js 意味着你将使用 Next.js 的 webpack 配置进行打包。这会导致你的应用与网站在开发方式上存在一些核心差异。
 
-- Expo Next.js adapter does not support the experimental **app** directory.
-- For file-based routing on native, we recommend using [Expo Router](https://github.com/expo/router).
+- Expo Next.js 适配器不支持实验性的 **app** 目录。
+- 对于原生端的基于文件的路由，我们建议使用 [Expo Router](https://github.com/expo/router)。
 
-## Contributing
+## 贡献
 
-If you would like to help make Next.js support in Expo better, feel free to open a PR or submit an issue:
+如果你想帮助改进 Expo 对 Next.js 的支持，欢迎提交 PR 或 issue：
 
 - [@expo/next-adapter](https://github.com/expo/expo-cli/tree/main/packages/next-adapter)
 
-## Troubleshooting
+## 故障排查
 
-### Cannot use import statement outside a module
+### 无法在模块外部使用 import 语句
 
-Figure out which module has the import statement and add it to the `transpilePackages` option in **next.config.js**:
+找出哪个模块包含 import 语句，并将其添加到 **next.config.js** 中的 `transpilePackages` 选项：
 
 ```js next.config.js
 const { withExpo } = require('@expo/next-adapter');
@@ -290,7 +289,7 @@ module.exports = withExpo({
       'react-native',
       'react-native-web',
       'expo',
-      // Add the failing package here, and restart the server...
+      // 在这里添加失败的包，并重启服务器...
     ],
   },
 });

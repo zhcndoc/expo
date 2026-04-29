@@ -1,36 +1,36 @@
 ---
-title: Release channels
+title: 发布渠道
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-> This doc was archived in August 2022 and will not receive any further updates. To learn more about why release channels were deprecated, [see our blog post on EAS Update](https://blog.expo.dev/eas-update-preview-progress-f504a30066fc#:~:text=Traditionally%2C%20Expo%20developers,need%20more%20control). Instead, we recommend using [EAS Update](/eas-update/introduction).
+> 本文档已于 2022 年 8 月归档，且不会再收到任何进一步更新。要了解为何发布通道已被弃用，[请参阅我们关于 EAS Update 的博文](https://blog.expo.dev/eas-update-preview-progress-f504a30066fc#:~:text=Traditionally%2C%20Expo%20developers,need%20more%20control)。我们建议改为使用 [EAS Update](/eas-update/introduction)。
 
-## Introduction
+## 简介
 
-Use release channels in Expo to send out different versions of your application to your users by giving them a URL or configuring your standalone app. You should use release channels if:
+在 Expo 中使用发布通道，可以通过向用户提供一个 URL 或配置你的独立应用，来向他们推送应用的不同版本。如果你有以下情况，应使用发布通道：
 
-- You have an app in production and need a testing environment.
-- You have multiple versions of your app.
+- 你有一个已上线的应用，并且需要一个测试环境。
+- 你有多个版本的应用。
 
-## Publish with release channels
+## 使用发布通道发布
 
-Publish your update on a release channel by running:
+通过运行以下命令，在某个发布通道上发布你的更新：
 
 <Terminal
   cmd={[
-    '# Publish to release channel <your-channel>',
+    '# 发布到发布通道 <your-channel>',
     '$ expo publish --release-channel <your-channel>',
   ]}
 />
 
-Your team can see this release channel in the Expo Go app with a parameterized URL `https://exp.host/@username/yourApp?release-channel=<your-release-channel>`. If you do not specify a release channel, you will publish to the `default` channel.
+你的团队可以在 Expo Go 应用中看到这个发布通道，方式是使用带参数的 URL `https://exp.host/@username/yourApp?release-channel=<your-release-channel>`。如果你不指定发布通道，你将发布到 `default` 通道。
 
-A release channel name can only contain lowercase letters, numbers and special characters `.`, `_` and `-`.
+发布通道名称只能包含小写字母、数字以及特殊字符 `.`, `_` 和 `-`。
 
-## Build with release channels
+## 使用发布通道构建
 
-Set your release channel in the build profile in **eas.json**:
+在 **eas.json** 中的构建配置里设置你的发布通道：
 
 ```json
 {
@@ -42,21 +42,21 @@ Set your release channel in the build profile in **eas.json**:
 }
 ```
 
-Then, build your standalone app by running `eas build --profile <your-build-profile>` with the EAS CLI. The binary produced will only pull releases published under the specified release channel. If you do not specify a release channel, your binary will pull releases from the `default` release channel.
+然后，使用 EAS CLI 运行 `eas build --profile <your-build-profile>` 来构建你的独立应用。生成的二进制文件只会拉取在指定发布通道下发布的版本。如果你不指定发布通道，你的二进制文件将从 `default` 发布通道拉取版本。
 
-## Access channel from code
+## 从代码中访问通道
 
-You can access the release channel your update is published under with the `Updates.releaseChannel` field from [expo-updates](/versions/latest/sdk/updates/).
+你可以通过 [expo-updates](/versions/latest/sdk/updates/) 中的 `Updates.releaseChannel` 字段访问更新所发布到的发布通道。
 
-> In development in Expo Go, `Updates.releaseChannel` is always `'default'`.
+> 在 Expo Go 的开发环境中，`Updates.releaseChannel` 始终为 `'default'`。
 
-## Example workflow
+## 示例工作流
 
-Consider a situation where you have a Staging stack for testing on Expo Go, and a Production stack for pushing through TestFlight, then promoting to the App Store.
+假设你有一个用于在 Expo Go 中测试的 Staging 栈，以及一个用于通过 TestFlight 发布并最终推进到 App Store 的 Production 栈。
 
-On the staging stack, run `expo publish --release-channel staging`. Your test users can see the staging version of your app by specifying the release channel in the query parameter of the URL (ie)`https://exp.host/@username/yourApp?release-channel=staging`, then opening the URL in their web browser, and finally scanning the QR code with the Expo Go app. Alternatively, they can open that URL directly on their mobile device.
+在 staging 栈上，运行 `expo publish --release-channel staging`。你的测试用户可以通过在 URL 的查询参数中指定发布通道（即）`https://exp.host/@username/yourApp?release-channel=staging` 来查看应用的 staging 版本，然后在他们的网页浏览器中打开该 URL，最后使用 Expo Go 应用扫描二维码。或者，他们也可以直接在移动设备上打开该 URL。
 
-On the production stack, release v1 of your app by running `expo publish --release-channel prod-v1`. You can build this version of your app into a standalone ipa by running `eas build --platform ios --profile prod` with `releaseChannel` set to `prod-v1` in the `prod` build profile in **eas.json**:
+在 production 栈上，通过运行 `expo publish --release-channel prod-v1` 发布你的应用 v1。你可以通过运行 `eas build --platform ios --profile prod`，并在 **eas.json** 中 `prod` 构建配置里将 `releaseChannel` 设置为 `prod-v1`，将这个版本构建为一个独立 ipa：
 
 ```json
 {
@@ -71,57 +71,57 @@ On the production stack, release v1 of your app by running `expo publish --relea
 }
 ```
 
-You can push updates to your app by publishing to the `prod-v1` release channel. The standalone app will update with the most recent compatible version of your app on the `prod-v1` release channel.
+你可以通过发布到 `prod-v1` 发布通道来向你的应用推送更新。独立应用会使用 `prod-v1` 发布通道上最新的兼容版本进行更新。
 
-If you have a new version that you don't want v1 users getting, release v2 of your app by running `expo publish --release-channel prod-v2`, setting the `releaseChannel` in your `prod` build profile to `prod-v2`, and building again with `eas build --platform ios --profile prod`. Only users with the `prod-v2` ipa will pull releases from that release channel.
+如果你有一个新版本，不想让 v1 用户收到，可以通过运行 `expo publish --release-channel prod-v2` 发布应用 v2，将你的 `prod` 构建配置中的 `releaseChannel` 设置为 `prod-v2`，然后再次运行 `eas build --platform ios --profile prod` 进行构建。只有带有 `prod-v2` ipa 的用户才会从该发布通道拉取版本。
 
-You can continue updating v1 of your app with `expo publish --release-channel prod-v1`, and users who haven't updated to the latest `prod-v2` ipa in the Apple App Store will continue receiving the latest `prod-v1` releases.
+你可以继续使用 `expo publish --release-channel prod-v1` 更新你应用的 v1 版本，而那些尚未在 Apple App Store 中更新到最新 `prod-v2` ipa 的用户，将继续收到最新的 `prod-v1` 发布内容。
 
-## Using release channels in the bare workflow
+## 在裸工作流中使用发布通道
 
-You can edit the native project's release channel by modifying the `EXUpdatesReleaseChannel` key in **Expo.plist** (iOS) or the `releaseChannel` meta-data tag value in **AndroidManifest.xml** (Android). [Read this guide](/archive/classic-updates/updating-your-app/) for more information on configuring updates in a bare app.
+你可以通过修改 **Expo.plist**（iOS）中的 `EXUpdatesReleaseChannel` 键，或 **AndroidManifest.xml**（Android）中的 `releaseChannel` meta-data 标签值，来编辑原生项目的发布通道。[阅读本指南](/archive/classic-updates/updating-your-app/) 了解更多关于在裸应用中配置更新的信息。
 
-## Using release channels for Environment Variable configuration
+## 使用发布通道进行环境变量配置
 
-Environment variables don't exist explicitly, but you can utilize release channels to make that happen!
+环境变量并不会显式存在，但你可以利用发布通道来实现这一点！
 
-Say you have a workflow of releasing builds like this:
+假设你有如下发布构建的工作流：
 
 <Terminal
   cmd={[
-    '# Publish to release channel prod-v1',
+    '# 发布到发布通道 prod-v1',
     'expo publish --release-channel prod-v1',
     '',
-    '# Publish to release channel prod-v2',
+    '# 发布到发布通道 prod-v2',
     'expo publish --release-channel prod-v2',
     '',
-    '# Publish to release channel prod-v3',
+    '# 发布到发布通道 prod-v3',
     'expo publish --release-channel prod-v3',
     '',
     '',
-    '# Publish to release channel staging-v1',
+    '# 发布到发布通道 staging-v1',
     'expo publish --release-channel staging-v1',
     '',
-    '# Publish to release channel staging-v2',
+    '# 发布到发布通道 staging-v2',
     'expo publish --release-channel staging-v2',
   ]}
 />
 
-You can create a function that looks for the specific release and adjust your app's behavior accordingly:
+你可以创建一个函数来查找特定发布并相应地调整应用行为：
 
 ```js
 import * as Updates from 'expo-updates';
 
 function getEnvironment() {
   if (Updates.releaseChannel.startsWith('prod')) {
-    // matches prod-v1, prod-v2, prod-v3
-    return { envName: 'PRODUCTION', dbUrl: 'ccc', apiKey: 'ddd' }; // prod env settings
+    // 匹配 prod-v1、prod-v2、prod-v3
+    return { envName: 'PRODUCTION', dbUrl: 'ccc', apiKey: 'ddd' }; // 生产环境设置
   } else if (Updates.releaseChannel.startsWith('staging')) {
-    // matches staging-v1, staging-v2
-    return { envName: 'STAGING', dbUrl: 'eee', apiKey: 'fff' }; // stage env settings
+    // 匹配 staging-v1、staging-v2
+    return { envName: 'STAGING', dbUrl: 'eee', apiKey: 'fff' }; // 预发布环境设置
   } else {
-    // assume any other release channel is development
-    return { envName: 'DEVELOPMENT', dbUrl: 'aaa', apiKey: 'bbb' }; // dev env settings
+    // 假定任何其他发布通道都是开发环境
+    return { envName: 'DEVELOPMENT', dbUrl: 'aaa', apiKey: 'bbb' }; // 开发环境设置
   }
 }
 ```

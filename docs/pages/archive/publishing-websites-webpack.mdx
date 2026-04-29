@@ -1,45 +1,45 @@
 ---
-title: Publish websites with Webpack
-description: Different ways to publish the Expo web app with third-party services with webpack.
+title: 使用 Webpack 发布网站
+description: 使用 webpack 借助第三方服务发布 Expo Web 应用的不同方式。
 ---
 
 import { NoIcon } from '~/ui/components/DocIcons';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **warning** **[Deprecated](/more/release-statuses/#deprecated)**: In SDK 50 and later, publishing with `webpack` is deprecated in favor of `metro`. Learn more in [migrating from Webpack to Expo Router](/router/migrate/from-expo-webpack).
+> **警告** **[已弃用](/more/release-statuses/#deprecated)**：在 SDK 50 及更高版本中，使用 `webpack` 发布已被弃用，建议改用 `metro`。了解更多，请参阅 [从 Webpack 迁移到 Expo Router](/router/migrate/from-expo-webpack)。
 
-A web app created using Expo can be served locally for testing out the production behavior. Once the testing phase checks out, you can choose from a variety of third-party services to host it.
+使用 Expo 创建的 Web 应用可以在本地提供服务，以测试生产环境行为。一旦测试阶段通过，你可以选择各种第三方服务来托管它。
 
-| Bundler   | Expo Router | API Routes | Description                                                                                   |
-| --------- | ----------- | ---------- | --------------------------------------------------------------------------------------------- |
-| `webpack` | <NoIcon />  | <NoIcon /> | Outputs a Single Page Application (SPA) with a single **index.html** in the output directory. |
+| Bundler   | Expo Router | API Routes | 描述                                                                                       |
+| --------- | ----------- | ---------- | ------------------------------------------------------------------------------------------ |
+| `webpack` | <NoIcon />  | <NoIcon /> | 输出一个单页应用（SPA），输出目录中只有一个 **index.html** 文件。 |
 
-## Create a web build
+## 创建 Web 构建
 
-Creating a web build of the project is the first step to publishing a web app. Whether you want to serve it locally or host it on a third-party service, you have to export all JavaScript and assets of a project. This is known as a static bundle. It can be exported by running the following command:
+为项目创建 Web 构建是发布 Web 应用的第一步。无论你是想在本地提供服务，还是想托管到第三方服务，你都必须导出项目的所有 JavaScript 和资源文件。这被称为静态包。你可以通过运行以下命令来导出：
 
-Run the webpack export command to compile the project for web:
+运行 webpack 导出命令，将项目编译为 Web：
 
 <Terminal cmd={['$ npx expo export:web']} />
 
-The resulting project files are in the **web-build** directory. Any files inside the **web** directory are also copied to the **web-build** directory.
+生成的项目文件位于 **web-build** 目录中。**web** 目录中的任何文件也会被复制到 **web-build** 目录中。
 
-If you make changes to your project, rebuild it for production. Do not edit the **web-build** directory directly.
+如果你对项目进行了更改，请重新构建以用于生产环境。不要直接编辑 **web-build** 目录。
 
-## Serve locally
+## 在本地提供服务
 
-Use [Serve CLI](https://www.npmjs.com/package/serve) to quickly test locally how your website will be hosted in production. Run the following command to serve the static bundle:
+使用 [Serve CLI](https://www.npmjs.com/package/serve) 可以快速在本地测试你的网站在生产环境中的托管方式。运行以下命令来提供静态包服务：
 
-Run the following command to serve the single-page application:
+运行以下命令来为单页应用提供服务：
 
 <Terminal cmd={['$ npx serve web-build --single']} />
 
-Open [`http://localhost:5000`](http://localhost:5000) to see your project in action. This method is **HTTP only**, so permissions, camera, location, and many other things won't work.
+打开 [`http://localhost:5000`](http://localhost:5000) 查看你的项目运行情况。此方法仅支持 **HTTP**，因此权限、摄像头、位置以及许多其他功能都无法使用。
 
-## Server a sub-directory
+## 在子目录中提供服务
 
-If you want to serve your site in a sub-directory, add its path to your **package.json** as shown below:
+如果你想在子目录中托管你的网站，请将其路径添加到你的 **package.json** 中，如下所示：
 
 ```json package.json
 {
@@ -47,17 +47,17 @@ If you want to serve your site in a sub-directory, add its path to your **packag
 }
 ```
 
-## Hosting on third-party services
+## 在第三方服务上托管
 
 ### Netlify
 
-[Netlify](https://www.netlify.com/) is a mostly-unopinionated platform for deploying web apps. This has the highest compatibility with Expo web apps as it makes few assumptions about the framework.
+[Netlify](https://www.netlify.com/) 是一个大多不做强假设的 Web 应用部署平台。由于它对框架几乎不作假设，因此与 Expo Web 应用具有最高的兼容性。
 
-#### Manual deployment with the Netlify CDN
+#### 使用 Netlify CDN 手动部署
 
 <Step label="1">
 
-Install the Netlify CLI by running the following command:
+通过运行以下命令安装 Netlify CLI：
 
 <Terminal cmd={['$ npm install -g netlify-cli']} />
 
@@ -65,51 +65,51 @@ Install the Netlify CLI by running the following command:
 
 <Step label="2">
 
-Configure redirects for single-page applications.
+为单页应用配置重定向。
 
-If your app implements any navigation, you'll need to configure Netlify to redirect requests to the single **web-build/index.html** file. This can be done in Netlify by creating a **./public/\_redirects** file and redirecting all requests to **/index.html**.
+如果你的应用实现了任何导航，你需要配置 Netlify 将请求重定向到单个 **web-build/index.html** 文件。这可以通过在 Netlify 中创建 **./public/\_redirects** 文件，并将所有请求重定向到 **/index.html** 来完成。
 
-Navigate inside the **web-build** directory and run the following command to create **\_redirects** file with following rule:
+进入 **web-build** 目录并运行以下命令，以使用以下规则创建 **\_redirects** 文件：
 
 ```bash web/_redirects
 /*    /index.html   200
 ```
 
-If you modify this file, you must rebuild your project with `npx expo export:web` to have it safely copied into the **web-build** directory.
+如果你修改了此文件，必须使用 `npx expo export:web` 重新构建项目，才能安全地将其复制到 **web-build** 目录中。
 
 </Step>
 
 <Step label="3">
 
-Deploy the web build directory by running the following command:
+运行以下命令部署 Web 构建目录：
 
 <Terminal cmd={['$ netlify deploy --dir web-build']} />
 
-You will see a URL that you can use to view your project online.
+你会看到一个可用于在线查看项目的 URL。
 
 </Step>
 
-#### Continuous delivery
+#### 持续交付
 
-Netlify can also build and deploy when you push to git or open a new pull request:
+当你推送到 git 或打开新的拉取请求时，Netlify 也可以自动构建并部署：
 
-- [Start a new Netlify project](https://app.netlify.com/signup).
-- Pick your Git hosting service and select your repository.
-- Click **Build your site**.
+- [开始一个新的 Netlify 项目](https://app.netlify.com/signup)。
+- 选择你的 Git 托管服务并选择你的仓库。
+- 点击 **构建你的网站**。
 
 ### Vercel
 
-[Vercel](https://vercel.com/) has a single-command deployment flow.
+[Vercel](https://vercel.com/) 提供单命令部署流程。
 
 <Step label="1">
 
-Install the [Vercel CLI](https://vercel.com/docs/cli).
+安装 [Vercel CLI](https://vercel.com/docs/cli)。
 
 <Terminal cmd={['$ npm install -g vercel@latest']} />
 
 </Step>
 <Step label="2">
-  Configure redirects for single-page applications. Create a **vercel.json** file at the root of your app and add the following:
+  为单页应用配置重定向。在应用根目录创建一个 **vercel.json** 文件，并添加以下内容：
 
 ```json vercel.json
 {
@@ -130,63 +130,63 @@ Install the [Vercel CLI](https://vercel.com/docs/cli).
 </Step>
 
 <Step label="3">
-  Deploy the website.
+  部署网站。
 
 {' '}
 
 <Terminal cmd={['$ vercel']} />
 
-You will now see a URL that you can use to view your project online. Paste that URL into your browser when the build is complete, and see your deployed app.
+现在你会看到一个可用于在线查看项目的 URL。构建完成后，将该 URL 粘贴到浏览器中，即可查看你已部署的应用。
 
 </Step>
 
 ### AWS Amplify Console
 
-The [AWS Amplify Console](https://console.amplify.aws) provides a Git-based workflow for continuously deploying and hosting full-stack serverless web apps. Amplify deploys your PWA from a repository instead of your computer, so you must use a GitHub repository. Before starting, [create a new repo on GitHub](https://github.com/new).
+[AWS Amplify Console](https://console.amplify.aws) 提供基于 Git 的工作流，用于持续部署和托管全栈无服务器 Web 应用。Amplify 是从仓库而不是你的电脑中部署你的 PWA，因此你必须使用 GitHub 仓库。开始之前，请先在 GitHub 上[创建一个新仓库](https://github.com/new)。
 
 <Step label="1">
 
-Add the [**amplify-explicit.yml**](https://github.com/expo/amplify-demo/blob/master/amplify-explicit.yml) file to the root of your repository. Ensure you have removed the generated **dist** directory from the **.gitignore** file and committed those changes.
+将 [**amplify-explicit.yml**](https://github.com/expo/amplify-demo/blob/master/amplify-explicit.yml) 文件添加到仓库根目录。确保你已从 **.gitignore** 文件中移除生成的 **dist** 目录，并提交这些更改。
 
 </Step>
 
 <Step label="2">
 
-Push your local Expo project to a GitHub repository. If you have not pushed to GitHub yet, follow [GitHub's guide to add an existing project to GitHub](https://docs.github.com/en/get-started/importing-your-projects-to-github/importing-source-code-to-github/adding-locally-hosted-code-to-github).
+将本地 Expo 项目推送到 GitHub 仓库。如果你还没有推送到 GitHub，请按照 [GitHub 关于将现有项目添加到 GitHub 的指南](https://docs.github.com/en/get-started/importing-your-projects-to-github/importing-source-code-to-github/adding-locally-hosted-code-to-github)。
 
 </Step>
 
 <Step label="3">
 
-Login to the [Amplify Console](https://console.aws.amazon.com/amplify/home) and select an existing app or create a new app. Grant Amplify permission to read from your GitHub account or the organization that owns your repo.
+登录 [Amplify Console](https://console.aws.amazon.com/amplify/home)，并选择一个现有应用或创建一个新应用。授予 Amplify 权限，以便从你的 GitHub 账户或拥有你仓库的组织中读取内容。
 
 </Step>
 
 <Step label="4">
 
-Add your repo, select the branch, and select **Connecting a monorepo?** to enter the path to your app's **dist** directory and choose **Next**.
+添加你的仓库，选择分支，然后选择 **Connecting a monorepo?**，输入你的应用 **dist** 目录的路径，并选择 **Next**。
 
-The Amplify Console will detect the **amplify.yml** file in your project. Select **Allow AWS Amplify to automatically deploy all files hosted in your project root directory** and choose **Next**.
+Amplify Console 将检测到你项目中的 **amplify.yml** 文件。选择 **Allow AWS Amplify to automatically deploy all files hosted in your project root directory**，然后选择 **Next**。
 
 </Step>
 
 <Step label="5">
 
-Review your settings and choose **Save and deploy**. Your app will now be deployed to a `https://branchname.xxxxxx.amplifyapp.com` URL. You can now visit your web app, deploy another branch, or add a unified backend environment across your Expo mobile and web apps.
+检查你的设置并选择 **Save and deploy**。你的应用现在将部署到一个 `https://branchname.xxxxxx.amplifyapp.com` URL。你现在可以访问你的 Web 应用、部署另一个分支，或在你的 Expo 移动端和 Web 应用之间添加统一的后端环境。
 
-Follow the steps in the **Learn how to get the most out of Amplify Hosting** drop-down to **Add a custom domain with a free SSL certificate** and more information.
+按照 **Learn how to get the most out of Amplify Hosting** 下拉菜单中的步骤，**Add a custom domain with a free SSL certificate**，以及获取更多信息。
 
 </Step>
 
 ### GitHub Pages
 
-[GitHub Pages](https://pages.github.com/) allows you to publish a website directly from a GitHub repository.
+[GitHub Pages](https://pages.github.com/) 允许你直接从 GitHub 仓库发布网站。
 
 <Step label="1">
 
-Start by initializing a new git repository in your project. If this is already done, skip this step.
+首先在你的项目中初始化一个新的 git 仓库。如果这一步已经完成，请跳过。
 
-If not then you'll want to run the following command in your project's root directory:
+如果没有，你需要在项目根目录中运行以下命令：
 
 <Terminal cmd={['$ git init']} />
 
@@ -194,17 +194,17 @@ If not then you'll want to run the following command in your project's root dire
 
 <Step label="2">
 
-Add the GitHub repository as a `remote` in your local git repository.
+将 GitHub 仓库作为 `remote` 添加到你的本地 git 仓库中。
 
 <Terminal cmd={['$ git remote add origin https://github.com/username/expo-gh-pages.git']} />
 
-Running the above command makes git know to which repository you want to push your source code. It also makes the `gh-pages` package (installed in the next step) know where you want to deploy your app.
+运行上述命令后，git 就知道你要将源代码推送到哪个仓库。它也会让 `gh-pages` 包（在下一步安装）知道你要将应用部署到哪里。
 
 </Step>
 
 <Step label="3">
 
-Install the `gh-pages` package as a `dev-dependency` in your project:
+在你的项目中将 `gh-pages` 包作为 `dev-dependency` 安装：
 
 <Terminal cmd={['$ yarn add -D gh-pages']} />
 
@@ -212,9 +212,9 @@ Install the `gh-pages` package as a `dev-dependency` in your project:
 
 <Step label="4">
 
-Configure your project's **package.json** for web hosting. Start by adding a `homepage` property. Set its value to the string `http://{username on GitHub}.github.io/{repo-name}`.
+为 Web 托管配置项目的 **package.json**。首先添加一个 `homepage` 属性。将其值设为字符串 `http://{username on GitHub}.github.io/{repo-name}`。
 
-For example, if a GitHub username is called `dev` and the GitHub repository is `expo-gh-pages`, the following will be the value of the `homepage` property:
+例如，如果 GitHub 用户名为 `dev`，GitHub 仓库为 `expo-gh-pages`，则 `homepage` 属性的值如下：
 
 {/* prettier-ignore */}
 ```json package.json
@@ -223,7 +223,7 @@ For example, if a GitHub username is called `dev` and the GitHub repository is `
 }
 ```
 
-In the same file, modify the `scripts` property by adding `predeploy` and `deploy` properties. Each has its own value as shown:
+在同一个文件中，通过添加 `predeploy` 和 `deploy` 属性来修改 `scripts` 属性。每个属性的值如下所示：
 
 {/* prettier-ignore */}
 ```json package.json
@@ -238,29 +238,29 @@ In the same file, modify the `scripts` property by adding `predeploy` and `deplo
 
 <Step label="5">
 
-To generate a production build of your app, and deploy it to GitHub Pages, run the following command:
+要生成应用的生产构建并将其部署到 GitHub Pages，请运行以下命令：
 
 <Terminal cmd={['$ yarn deploy']} />
 
-Your web app is now available at the URL you set as `homepage` in your **package.json**.
+你的 Web 应用现在可在你在 **package.json** 中设置为 `homepage` 的 URL 上访问。
 
-> When you publish code to your repository, for example: `gh-pages`, it will create and push the code to a branch in your repo. This branch will have your build code, however, not your development source code.
+> 当你将代码发布到你的仓库时，例如：`gh-pages`，它会将代码创建并推送到你仓库中的一个分支。这个分支会包含你的构建代码，但不包含你的开发源代码。
 
 </Step>
 
 ### Firebase hosting
 
-[Firebase Hosting](https://console.firebase.google.com/) is production-grade web content hosting for web projects.
+[Firebase Hosting](https://console.firebase.google.com/) 是面向 Web 项目的生产级 Web 内容托管服务。
 
 <Step label="1">
 
-Create a firebase project with the [Firebase Console](https://console.firebase.google.com) and install the Firebase CLI by following these [instructions](https://firebase.google.com/docs/hosting).
+使用 [Firebase Console](https://console.firebase.google.com) 创建一个 firebase 项目，并按照这些 [说明](https://firebase.google.com/docs/hosting)安装 Firebase CLI。
 
 </Step>
 
 <Step label="2">
 
-Using the CLI, login to your Firebase account by running the command:
+使用 CLI，通过运行以下命令登录你的 Firebase 账户：
 
 <Terminal cmd={['$ firebase login']} />
 
@@ -268,19 +268,19 @@ Using the CLI, login to your Firebase account by running the command:
 
 <Step label="3">
 
-Then, initialize your firebase project to host by running the command:
+然后，通过运行以下命令初始化你的 firebase 项目以进行托管：
 
 <Terminal cmd={['$ firebase init']} />
 
-The settings will depend on how you built your Expo website:
+设置将取决于你如何构建 Expo 网站：
 
-When asked about the public path, make sure to specify the **web-build** directory. Also, when prompted **Configure as a single-page app (rewrite all urls to /index.html)**, select **Yes**.
+当询问 public path 时，务必指定 **web-build** 目录。另外，在提示 **Configure as a single-page app (rewrite all urls to /index.html)** 时，选择 **Yes**。
 
 </Step>
 
 <Step label="4">
 
-In the existing `scripts` property of **package.json**, add `predeploy` and `deploy` properties. Each has the following values:
+在 **package.json** 现有的 `scripts` 属性中，添加 `predeploy` 和 `deploy` 属性。每个属性的值如下：
 
 {/* prettier-ignore */}
 ```json package.json
@@ -295,13 +295,13 @@ In the existing `scripts` property of **package.json**, add `predeploy` and `dep
 
 <Step label="5">
 
-To deploy, run the following command:
+要部署，请运行以下命令：
 
 <Terminal cmd={['$ npm run deploy-hosting']} />
 
-Open the URL from the console output to check your deployment, for example: `https://project-name.firebaseapp.com`.
+打开控制台输出中的 URL 来检查你的部署，例如：`https://project-name.firebaseapp.com`。
 
-In case you want to change the header for hosting add the following config for `hosting` section in **firebase.json**:
+如果你想更改托管的 header，请在 **firebase.json** 的 `hosting` 部分添加以下配置：
 
 {/* prettier-ignore */}
 ```json firebase.json

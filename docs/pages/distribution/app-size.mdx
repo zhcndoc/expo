@@ -1,6 +1,6 @@
 ---
-title: Understanding app size
-description: Learn about how to determine what the actual size of your app will be when distributed to users, and how to get insights into your app size and optimize it.
+title: 了解应用大小
+description: 了解如何确定应用在分发给用户时的实际大小，以及如何深入了解应用大小并进行优化。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -8,110 +8,110 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
 
-A common concern for developers is how much space their app takes up on the app store. This guide will help you:
+开发者常见的一个担忧是，他们的应用在应用商店中会占用多少空间。本指南将帮助你：
 
-- Understand what different build artifacts are used for
-- Figure out the actual size of your app when distributed to users
-- Get insights into your app size and optimize it
+- 了解不同构建产物的用途
+- 弄清楚你的应用在分发给用户时的实际大小
+- 获取关于应用体积的洞察并对其进行优化
 
-## Why is my app so big?
+## 为什么我的应用这么大？
 
-**It probably isn't, actually!** When examining the resulting artifact of a release build for an app, it's common for developers who are unfamiliar with native Android and iOS development to be surprised by the file size &mdash; it's usually much larger than they would expect for an app if they were to download it from an app store. **This is not the actual size of your app, which will be distributed on app stores!** When people talk about app sizes, they mean the size of the app that they will download to their device, not the size that will be uploaded to app stores or shared in development and testing.
+**实际上，它可能并没有那么大！** 在查看应用发布构建生成的产物时，不熟悉原生 Android 和 iOS 开发的开发者通常会对文件大小感到惊讶 &mdash; 如果把它从应用商店下载下来，这个大小通常会比他们预期的应用体积大得多。**这并不是你的应用在应用商店中分发时的实际大小！** 当人们谈论应用大小时，他们指的是将下载到设备上的应用大小，而不是上传到应用商店或用于开发和测试共享的大小。
 
-There are various types of build artifacts that serve different purposes, and they are almost all larger than what users will see when they download your app from a store. This is because these builds are not optimized to target specific devices like they would when downloading from a store, but rather they typically include all of the code and resources that your app needs to run on a wide range of devices.
+有多种不同类型的构建产物，它们各自有不同的用途，而且几乎都比用户从商店下载应用时看到的要大。这是因为这些构建并没有像从商店下载时那样针对特定设备进行优化，而通常会包含应用在各种设备上运行所需的全部代码和资源。
 
-## Android apps
+## Android 应用
 
 {/* todo: add info about minimum size of Android app on store */}
 
-There are two types of Android build artifacts that you will interact with: APKs and AABs.
+你将会接触到两种 Android 构建产物：APK 和 AAB。
 
-### `.apk` (Android Package)
+### `.apk`（Android 包）
 
-When you build an APK with Gradle in a React Native project, the default behavior is to create a universal binary, which contains all the resources for all the different device types that your app supports. For example, it includes asset for every screen size, every CPU architecture, and every language, even though a single device will only need one of each. This means you can share this one file with anybody to install directly to their device, perhaps with [Orbit](https://expo.dev/orbit) or `adb` directly, and that will work.
+当你在 React Native 项目中使用 Gradle 构建 APK 时，默认行为是创建一个通用二进制文件，其中包含你的应用所支持的所有不同设备类型的全部资源。例如，它会包含每种屏幕尺寸、每种 CPU 架构以及每种语言的资源，尽管单个设备实际上只需要其中每一种的一项。这意味着你可以将这个文件直接分享给任何人，让他们直接安装到自己的设备上，比如通过 [Orbit](https://expo.dev/orbit) 或直接使用 `adb`，这样都可以正常工作。
 
-Of course, if you're running an incredibly popular app store that serves millions of users, you don't want to send the same 50 MB file to every single user, especially if they're only going to use a fraction of the resources in the APK. This is why the Google Play Store and other app stores have a feature called "App Bundles" (Android) that allows you to upload a single binary and then the store will generate a custom binary for each user based on their device's needs.
+当然，如果你运营的是一个服务数百万用户、极其受欢迎的应用商店，你不会想把同一个 50 MB 的文件发送给每一位用户，尤其是他们实际上只会用到 APK 中一小部分资源。这就是为什么 Google Play 商店和其他应用商店提供了一个叫做“App Bundles”（Android）的功能，它允许你上传单个二进制文件，然后商店会根据每个用户设备的需求生成定制化的二进制文件。
 
-### `.aab` (Android App Bundle)
+### `.aab`（Android App Bundle）
 
-On Android, all new apps submitted to the Play Store must be built as an [Android App Bundle (.aab)](https://developer.android.com/platform/technology/app-bundle). Once you have submitted the binaries to their respective stores, you will be able to see the download size for various device types.
+在 Android 上，所有提交到 Play 商店的新应用都必须构建为 [Android App Bundle (.aab)](https://developer.android.com/platform/technology/app-bundle)。当你将二进制文件提交到各自的商店后，你就可以看到不同设备类型对应的下载大小。
 
-### Determining Android app download and install size
+### 确定 Android 应用的下载大小和安装大小
 
-Typically, what app developers care about the "download size" on the Play Store (what the users see in the store listing when they go to download the app). This will be the size of the APK that Google Play generates from your AAB, which is tailored to the user's device.
+通常，应用开发者关心的是 Play 商店里的“下载大小”（也就是用户去下载应用时在商店列表中看到的大小）。这将是 Google Play 根据你的 AAB 生成的、并针对用户设备定制的 APK 大小。
 
-The only truly accurate way to see what your final app size will be shipped to users is to upload your app to the stores and download it on a physical device. Google Play also provides a reliable estimate for the expected download size on your developer dashboard. You can find this under the **App size** page in **Android vitals** on the [Google Play Developer Console](https://play.google.com/console/). For more information, see [Optimize your app’s size and stay within Google Play app size limits](https://support.google.com/googleplay/android-developer/answer/9859372?hl=en).
+唯一真正准确地查看最终应用会以多大体积交付给用户的方法，是将应用上传到商店并在实体设备上下载。Google Play 也会在你的开发者控制台中提供一个可靠的预估下载大小。你可以在 [Google Play Developer Console](https://play.google.com/console/) 的 **Android vitals** 中的 **App size** 页面找到它。更多信息请参见 [Optimize your app’s size and stay within Google Play app size limits](https://support.google.com/googleplay/android-developer/answer/9859372?hl=en)。
 
-<Collapsible summary="Why did my APK size increase after upgrading to React Native 0.73 and above?">
+<Collapsible summary="为什么在升级到 React Native 0.73 及以上后，我的 APK 体积增加了？">
 
-React Native 0.73 bumped the Android `minSdkVersion` to `23`. This had the side effect of changing the default value of [`extractNativeLibs`](https://developer.android.com/guide/topics/manifest/application-element#extractNativeLibs`) to `false`.
+React Native 0.73 将 Android 的 `minSdkVersion` 提升到了 `23`。这带来的副作用是将 [`extractNativeLibs`](https://developer.android.com/guide/topics/manifest/application-element#extractNativeLibs`) 的默认值改为了 `false`。
 
-> If set to `false`, your native libraries are stored uncompressed in the APK. Although your APK might be larger, your application loads faster because the libraries load directly from the APK at runtime.
+> 如果设置为 `false`，你的原生库会以未压缩的形式存储在 APK 中。虽然你的 APK 可能会更大，但你的应用加载会更快，因为这些库会在运行时直接从 APK 中加载。
 
-The following table shows that while the APK size increased, which may slightly impact download time for testers with [internal distribution](/build/internal-distribution/), the Google Play Store size remained the same.
+下表显示，虽然 APK 体积增加了，这可能会略微影响使用 [内部分发](/build/internal-distribution/) 的测试人员的下载时间，但 Google Play 商店中的大小保持不变。
 
-| SDK | APK (debug variant) | APK (release variant) | AAB     | Google Play |
-| --- | ------------------- | --------------------- | ------- | ----------- |
-| 49  | 66 MB               | 27.6 MB               | 28.2 MB | 11.7 MB     |
-| 50  | 168.1 MB            | 62.1 MB               | 27.4 MB | 11.7 MB     |
+| SDK | APK（调试变体） | APK（发布变体） | AAB     | Google Play |
+| --- | ---------------- | ---------------- | ------- | ----------- |
+| 49  | 66 MB            | 27.6 MB          | 28.2 MB | 11.7 MB     |
+| 50  | 168.1 MB         | 62.1 MB          | 27.4 MB | 11.7 MB     |
 
-If you would like to revert to the previous behavior, you can set `useLegacyPackaging` to `true` in your **gradle.properties** or by using [`expo-build-properties`](/versions/latest/sdk/build-properties/).
+如果你想恢复到之前的行为，可以在 **gradle.properties** 中将 `useLegacyPackaging` 设置为 `true`，或者使用 [`expo-build-properties`](/versions/latest/sdk/build-properties/)。
 
 </Collapsible>
 
-## iOS apps
+## iOS 应用
 
-The download size on the App Store of a minimal React Native app (created using the blank template) [is just under 4 MB](https://x.com/aleqsio/status/1844045829973344457).
+一个最小化 React Native 应用（使用空白模板创建）在 App Store 上的下载大小[略低于 4 MB](https://x.com/aleqsio/status/1844045829973344457)。
 
-There are two types of iOS build artifacts that you will interact with: APPs and IPAs.
+你将会接触到两种 iOS 构建产物：APP 和 IPA。
 
-### `.app` (iOS application bundle)
+### `.app`（iOS 应用程序包）
 
-This is the actual application bundle for your app. When you download and install a build of your app into an iOS Simulator, you are downloading the `.app` bundle. These can either target specific architectures or be universal binaries. The size of your `.app` doesn't necessarily tell you too much about what the download size of your app will be on the store. You can't install a `.app` file directly to a physical iOS device.
+这是你的应用实际的程序包。当你将应用构建版本下载并安装到 iOS 模拟器时，你下载的就是 `.app` 程序包。它们可以针对特定架构，也可以是通用二进制文件。`.app` 的大小并不能真正说明你的应用在商店中的下载大小。你不能直接将 `.app` 文件安装到实体 iOS 设备上。
 
-### `.ipa` (iOS App Store Package)
+### `.ipa`（iOS App Store 包）
 
-IPA files are [ZIP](https://en.wikipedia.org/wiki/ZIP) files that include the `.app` bundle and other resources that are needed to run the app on an iOS device. They are used for various types of distribution, including App Store, Ad Hoc, Enterprise, and TestFlight.
+IPA 文件是包含 `.app` 程序包以及在 iOS 设备上运行应用所需其他资源的 [ZIP](https://en.wikipedia.org/wiki/ZIP) 文件。它们用于多种分发方式，包括 App Store、Ad Hoc、Enterprise 和 TestFlight。
 
-They include security and code signing information, such as the provisioning profile and entitlements. The App Store will process the IPA file and split it into smaller binaries for each device type, so the size of the IPA also does not represent the download size of your app.
+它们包含安全和代码签名信息，例如 provisioning profile 和 entitlements。App Store 会处理 IPA 文件，并将其拆分为适用于每种设备类型的更小二进制文件，因此 IPA 的大小也不能代表你应用的下载大小。
 
-### Determining iOS app download and install size
+### 确定 iOS 应用的下载大小和安装大小
 
-Typically, app developers care about the "download size" on the App Store (what the users see in the store listing when they go to download the app). This will be the size of the split IPA generated by the store from your universal IPA.
+通常，应用开发者关心的是 App Store 里的“下载大小”（也就是用户去下载应用时在商店列表中看到的大小）。这将是商店根据你的通用 IPA 生成的拆分后 IPA 的大小。
 
-The only truly accurate way to see what your final app size will be shipped to users is to upload your app to the App Store and download it on a physical device. You can get accurate estimates from TestFlight: on [App Store Connect](https://appstoreconnect.apple.com/), navigate to TestFlight and select your build by clicking on the build number, then switch to the **Build Metadata** tab and click **App File Sizes**. You will see a list of estimated download and install sizes depending on the device type. Actually install sizes may also vary slightly depending on the iOS version of the device.
+唯一真正准确地查看最终应用会以多大体积交付给用户的方法，是将应用上传到 App Store 并在实体设备上下载。你可以从 TestFlight 获取准确的估算：在 [App Store Connect](https://appstoreconnect.apple.com/) 中，进入 TestFlight，点击构建版本号选择你的构建，然后切换到 **Build Metadata** 选项卡并点击 **App File Sizes**。你会看到根据设备类型而定的预估下载大小和安装大小列表。实际安装大小也可能会因设备的 iOS 版本不同而略有差异。
 
-## Optimizing app size
+## 优化应用大小
 
-As you add features to your app, you will add code, libraries, and assets, which may increase its size. If app size is important to you and your users, you may want to routinely review the size and optimize it. The following sections will help you understand what you can do to optimize several aspects of your app.
+随着你为应用添加功能，你会增加代码、库和资源，这可能会使其体积变大。如果应用大小对你和你的用户很重要，那么你可能需要定期检查大小并进行优化。以下部分将帮助你了解可以做些什么来优化应用的多个方面。
 
-### Static assets
+### 静态资源
 
-One of the most common sources of app size bloat is assets, such as fonts, icons, images, videos, and sounds. These can come from the assets that you import directly into your code, as well as JavaScript and native libraries. You won't be able to get a complete picture by reviewing your app assets directory.
+应用体积膨胀最常见的来源之一是资源，例如字体、图标、图片、视频和声音。这些资源既可能来自你直接在代码中导入的资源，也可能来自 JavaScript 和原生库。仅仅查看应用的 assets 目录，你无法获得完整的情况。
 
-Start by examining a build artifact to determine what assets are included in it.
+首先检查一个构建产物，以确定其中包含了哪些资源。
 
-- For Android, you can use [Android APK Analyzer](https://developer.android.com/studio/debug/apk-analyzer) or [apktool](https://apktool.org/) to inspect the contents of your app
-- For iOS, rename an IPA file from `app.ipa` to `app.zip` and extract it to examine the contents, using the macOS utility `assetutil` to inspect **Assets.car**.
+- 对于 Android，你可以使用 [Android APK Analyzer](https://developer.android.com/studio/debug/apk-analyzer) 或 [apktool](https://apktool.org/) 来检查应用内容
+- 对于 iOS，将 `app.ipa` 重命名为 `app.zip` 并解压，以检查其内容，使用 macOS 工具 `assetutil` 来检查 **Assets.car**。
 
-### JavaScript bundle size
+### JavaScript 包大小
 
-To analyze JavaScript bundles, [use Expo Atlas](/guides/analyzing-bundles/). You may find libraries that you thought were very small actually have a large impact on the bundle, or that you forgot to remove a library after you stopped using it, and so on.
+要分析 JavaScript 包，请[使用 Expo Atlas](/guides/analyzing-bundles/)。你可能会发现一些你原本以为很小的库实际上对包体积影响很大，或者你在停止使用某个库后忘记将其移除，等等。
 
-### Platform-specific optimizations
+### 平台特定优化
 
-Independent of React Native and Expo, you can optimize your app for Android and iOS by using the following tools:
+无论 React Native 和 Expo 如何，你都可以通过使用以下工具来优化 Android 和 iOS 应用：
 
 <BoxLink
-  title="Android Developers: Reduce your app size"
-  description="Advice directly from Google about reducing your Android app size."
+  title="Android Developers：减小应用大小"
+  description="来自 Google 关于减小 Android 应用体积的直接建议。"
   Icon={BookOpen02Icon}
   href="https://developer.android.com/topic/performance/reduce-apk-size"
 />
 
 <BoxLink
-  title="Apple Developer: Reducing your app's size"
-  description="Advice directly from Apple about reducing your iOS app size."
+  title="Apple Developer：减小你的应用大小"
+  description="来自 Apple 关于减小 iOS 应用体积的建议。"
   Icon={BookOpen02Icon}
   href="https://developer.apple.com/documentation/xcode/reducing-your-app-s-size"
 />

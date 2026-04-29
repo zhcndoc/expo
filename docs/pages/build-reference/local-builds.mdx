@@ -1,7 +1,7 @@
 ---
-title: Run EAS Build locally with local flag
-sidebar_title: Run EAS Build locally
-description: Learn how to use EAS Build locally on your machine or a custom infrastructure using the --local flag.
+title: 使用本地标志在本地运行 EAS Build
+sidebar_title: 在本地运行 EAS Build
+description: 了解如何使用 --local 标志在你的机器或自定义基础设施上本地使用 EAS Build。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -9,69 +9,69 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 
-You can run the same build process that is typically run on the EAS Build servers directly on your machine by using the `eas build --local` flag. This is a useful way to debug build failures that are happening on your cloud builds, which you may not be able to reproduce without running the same set of steps.
+你可以通过使用 `eas build --local` 标志，在本机上直接运行通常在 EAS Build 服务器上执行的相同构建流程。这是一种很有用的方式，可以调试云端构建中出现的失败问题；如果不运行相同的一组步骤，你可能无法复现这些问题。
 
 <Terminal
-  cmd={['$ eas build --platform android --local', '# or', '$ eas build --platform ios --local']}
+  cmd={['$ eas build --platform android --local', '# 或者', '$ eas build --platform ios --local']}
 />
 
-## Prerequisites
+## 先决条件
 
-You need to be authenticated with Expo:
+你需要已通过 Expo 进行身份验证：
 
-- Run `eas login`
-- Alternatively, set `EXPO_TOKEN` [using token-based authentication](/accounts/programmatic-access)
+- 运行 `eas login`
+- 或者，使用 [基于令牌的身份验证](/accounts/programmatic-access) 设置 `EXPO_TOKEN`
 
-## Use cases for local builds
+## 本地构建的使用场景
 
-- [Debugging](#use-local-builds-for-debugging) build failures on EAS servers.
-- Company policies that restrict the use of third-party CI/CD services. With local builds, the entire process runs on your infrastructure and the only communication with EAS servers is:
-  - to make sure project `@account/slug` exists
-  - if you are using managed credentials to download them
+- [调试](#use-local-builds-for-debugging) EAS 服务器上的构建失败。
+- 限制使用第三方 CI/CD 服务的公司政策。使用本地构建时，整个流程都在你的基础设施上运行，与 EAS 服务器的唯一通信是：
+  - 确认项目 `@account/slug` 存在
+  - 如果你使用托管凭据，则下载这些凭据
 
-## Use local builds for debugging
+## 使用本地构建进行调试
 
-If you encounter build failures on EAS servers and you're unable to determine the cause from inspecting the logs, you may find it helpful to debug the issue locally. To simplify that process we support several environment variables to configure the local build process.
+如果你在 EAS 服务器上遇到构建失败，并且无法通过查看日志确定原因，那么在本地调试该问题可能会有所帮助。为了简化这一过程，我们支持若干环境变量来配置本地构建流程。
 
-- `EAS_LOCAL_BUILD_SKIP_CLEANUP=1` - Set this to disable cleaning up the working directory after the build process is finished.
-- `EAS_LOCAL_BUILD_WORKINGDIR` - Specify the working directory for the build process, by default it's somewhere (it's platform dependent) in **/tmp** directory.
-- `EAS_LOCAL_BUILD_ARTIFACTS_DIR` - The directory where artifacts are copied after a successful build. By default, these files are copied to the current directory, which may be undesirable if you are running many consecutive builds.
+- `EAS_LOCAL_BUILD_SKIP_CLEANUP=1` - 将其设置为禁用在构建流程完成后清理工作目录。
+- `EAS_LOCAL_BUILD_WORKINGDIR` - 指定构建流程的工作目录，默认情况下它位于 **/tmp** 目录中的某个位置（具体位置取决于平台）。
+- `EAS_LOCAL_BUILD_ARTIFACTS_DIR` - 构建成功后构件被复制到的目录。默认情况下，这些文件会被复制到当前目录；如果你连续运行很多次构建，这可能并不理想。
 
-If you use `EAS_LOCAL_BUILD_SKIP_CLEANUP` and `EAS_LOCAL_BUILD_WORKINGDIR` for iOS builds you should be able to inspect the contents of the `logs` subdirectory of the working directory to read your Xcode logs.
+如果你在 iOS 构建中使用 `EAS_LOCAL_BUILD_SKIP_CLEANUP` 和 `EAS_LOCAL_BUILD_WORKINGDIR`，你应该能够检查工作目录中 `logs` 子目录的内容，以读取你的 Xcode 日志。
 
-## Limitations
+## 限制
 
-Some of the options available for cloud builds are not available locally. Limitations you should be aware of:
+云端构建可用的一些选项在本地不可用。你需要注意以下限制：
 
-- You can only build for a specific platform (option `all` is disabled).
-- Customizing versions of software is not supported, fields `node`, `yarn`, `fastlane`, `cocoapods`, `ndk`, `image` in **eas.json** are ignored.
-- Caching is not supported.
-- EAS environment variables with ["Secret" visibility](/eas/environment-variables/#visibility-settings-for-environment-variables) are not supported (set them in your local environment instead).
-- You are responsible for making sure that the environment has all the necessary tools installed:
+- 你只能为特定平台构建（`all` 选项被禁用）。
+- 不支持自定义软件版本，**eas.json** 中的 `node`、`yarn`、`fastlane`、`cocoapods`、`ndk`、`image` 字段会被忽略。
+- 不支持缓存。
+- 不支持带有 ["Secret" 可见性](/eas/environment-variables/#visibility-settings-for-environment-variables) 的 EAS 环境变量（请改为在本地环境中设置它们）。
+- 你需要自行确保环境中已安装所有必要工具：
   - Node.js/Yarn/npm
-  - fastlane (iOS only)
-  - CocoaPods (iOS only)
-  - Android SDK and NDK
-- On Windows, you can use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) for local EAS Builds. However, we do not officially test against this platform and do not support Windows for local builds (macOS and Linux are supported).
+  - fastlane（仅限 iOS）
+  - CocoaPods（仅限 iOS）
+  - Android SDK 和 NDK
+- 在 Windows 上，你可以使用 [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) 进行本地 EAS Builds。不过，我们并未正式测试该平台，也不支持 Windows 用于本地构建（支持 macOS 和 Linux）。
 
-## App compilation for development and production builds locally
+## 在本地编译开发版和生产版应用
 
-To compile your app locally for development with Expo CLI, use `npx expo run:android` or `npx expo run:ios` commands instead. If you use [Continuous Native Generation](/workflow/continuous-native-generation), you can also run [prebuild](/more/glossary-of-terms/#prebuild) to generate your **android** and **ios** directories and then proceed to open the projects in the respective IDEs and build them like any native project. For more details, see:
+要使用 Expo CLI 在本地编译你的开发应用，请改用 `npx expo run:android` 或 `npx expo run:ios` 命令。如果你使用 [Continuous Native Generation](/workflow/continuous-native-generation)，你也可以运行 [prebuild](/more/glossary-of-terms/#prebuild) 来生成你的 **android** 和 **ios** 目录，然后继续在相应的 IDE 中打开这些项目，并像构建任何原生项目一样构建它们。更多详情请参见：
 
 <BoxLink
-  title="Local app development"
+  title="本地应用开发"
   Icon={BookOpen02Icon}
-  description="Learn how to compile and build your Expo app locally."
+  description="了解如何在本地编译和构建你的 Expo 应用。"
   href="/guides/local-app-development/"
 />
 
-To create a production build locally, you need Android Studio and Xcode installed on your computer. See the following guide for more information:
+要在本地创建生产构建，你的计算机上需要安装 Android Studio 和 Xcode。更多信息请参见以下指南：
 
 <BoxLink
-  title="Create a production build locally"
+  title="在本地创建生产构建"
   Icon={BookOpen02Icon}
-  description="Learn how to create a production build for your Expo app locally on your computer."
+  description="了解如何在你的计算机上为 Expo 应用在本地创建生产构建。"
   href="/guides/local-app-production/"
 />
 
-With any of the above approaches, you'll be following procedures which are different from creating a build on the cloud with EAS Build &mdash; that is what the `eas build --local` flag is for.
+无论采用以上哪种方式，你遵循的流程都不同于使用 EAS Build 在云端创建构建——这正是 `eas build --local` 标志的用途。

@@ -1,48 +1,48 @@
 ---
-title: Deploy updates
-sidebar_title: Deploy updates
-description: Learn a simple but powerful process for safely deploying updates to your users.
+title: 部署更新
+sidebar_title: 部署更新
+description: 了解一种简单但强大的流程，可安全地将更新部署给你的用户。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 
-When you have an app with multiple binary versions in production (this is common &mdash; users do not always stay up to date with your latest store release), it's important to understand what code is running on which versions and to be able to specifically target a particular version with a hotfix.
+当你的应用在生产环境中有多个二进制版本时（这很常见——用户并不总会保持在你最新的商店发布版本上），了解哪些代码运行在哪些版本上，并且能够针对特定版本发布热修复，是非常重要的。
 
-EAS Update provides "channels", "branches", and "runtime versions" to help you determine which app version to target, to help you with bookkeeping to understand the state of your deployments, and to support a variety of [deployment patterns](/eas-update/deployment-patterns/).
+EAS Update 提供了“渠道”、“分支”和“运行时版本”，帮助你确定要针对哪个应用版本，也帮助你进行记录管理以了解各个部署的状态，并支持多种[部署模式](/eas-update/deployment-patterns/)。
 
-<Collapsible summary="What if my preferred release process isn't supported by EAS Update?">
+<Collapsible summary="如果我偏好的发布流程不受 EAS Update 支持怎么办？">
 
-Release management is a large topic in software engineering, and everyone has a slightly different take on how they would like to do it. EAS Update is designed to support [a variety of different workflows](/eas-update/deployment-patterns/), but this guide will focus on the simplest workflow that works for most apps. That said, there are some other workflows that may not work within the constraints of the EAS Update service. For example, each binary version must always point to a single channel, and you cannot dynamically update the channel.
+发布管理是软件工程中的一个大话题，每个人对于如何进行发布都有略微不同的看法。EAS Update 的设计目标是支持[多种不同的工作流](/eas-update/deployment-patterns/)，但本指南将聚焦于最适合大多数应用的最简单工作流。也就是说，还有一些其他工作流可能无法满足 EAS Update 服务的约束。例如，每个二进制版本必须始终指向单一渠道，并且你不能动态更新渠道。
 
-As an escape hatch, you can host your own update service that is compatible with the [Expo Updates Protocol](/technical-specs/expo-updates-1/) and point your `expo-updates` configuration to that service instead. The only concepts relevant to update selection that exist on the protocol level are "Runtime Version" and "Platform", and you are free to create your own concepts on top of those in the same way we built channels and branches. [Learn more about creating a custom expo-updates server](https://github.com/expo/custom-expo-updates-server).
-
-</Collapsible>
-
-## A simple release process
-
-In this guide, we'll describe a simple but powerful release process that uses **channels** and **runtime versions**, and mostly ignores _branches_. This gives most of the benefits of EAS Update with a minimal amount of conceptual overhead. You can evolve this process to suit your needs as they arise, or move to [other deployment patterns](/eas-update/deployment-patterns/).
-
-<Collapsible summary="Why ignore branches in this release process?">
-
-The most simple way to use EAS Update is to ignore the concept of "branches" and focus on "channels". Branches will still exist, but you will not have to interact with them directly to manage deployments. You can keep your channels pointed at a branch with the same name as the channel and think of them as a singular concept.
-
-EAS Update branches were meant to map to Git branches and enable teams to publish changes from a Git branch directly to an EAS Update branch of the same name. This can be helpful for [previewing updates](/eas-update/preview/), but for many apps, this level of integration with Git is not required. Often, developers are only interested in being able to release hotfixes to a staging or production version of their app manually, and can run `eas update --channel staging` or `eas update --channel production`, when needed rather than managing branches to accomplish the same result.
+作为一种兜底方案，你可以自己托管一个与[Expo Updates Protocol](/technical-specs/expo-updates-1/) 兼容的更新服务，然后将你的 `expo-updates` 配置指向该服务。协议层面与更新选择相关的唯一概念是“运行时版本”和“平台”，你可以像我们构建渠道和分支那样，在这些概念之上自由创建自己的概念。[了解更多关于创建自定义 expo-updates 服务器的信息](https://github.com/expo/custom-expo-updates-server)。
 
 </Collapsible>
 
-## Configuring your project
+## 一个简单的发布流程
 
-Channels will indicate which environment the update targets (such as "production" or "staging"), and runtime versions will indicate the app version that the update will target (such as "1.0.0" or "1.0.1").
+在本指南中，我们将描述一种简单但强大的发布流程，它使用 **渠道** 和 **运行时版本**，并且大多忽略 _分支_。这以最少的概念负担带来了 EAS Update 的大部分优势。随着需求的出现，你可以逐步演进这个流程以适应你的需要，或者转向[其他部署模式](/eas-update/deployment-patterns/)。
 
-### Channel configuration
+<Collapsible summary="为什么在这个发布流程中忽略分支？">
 
-Run `eas update:configure` in your project if you haven't already.
+使用 EAS Update 最简单的方式是忽略“分支”的概念，专注于“渠道”。分支仍然会存在，但你不需要直接与它们交互来管理部署。你可以让你的渠道指向一个与渠道同名的分支，并将它们视为一个单一概念。
 
-**If you use EAS Build**, the default configuration that will be applied by the configure command, which is almost what we want to use here: each profile will point to a channel of the same name, so our production release of our app will point to the "production" channel. We only need to add a "staging" profile that points to the "staging" channel.
+EAS Update 分支原本是为了映射 Git 分支而设计的，从而使团队能够直接将 Git 分支中的更改发布到同名的 EAS Update 分支。这对于[预览更新](/eas-update/preview/)可能很有帮助，但对于许多应用来说，与 Git 的这种集成程度并不是必需的。通常，开发者只关心能够手动向应用的 staging 或 production 版本发布热修复，并且在需要时可以运行 `eas update --channel staging` 或 `eas update --channel production`，而不是通过管理分支来实现相同的结果。
 
-<Collapsible summary="Example eas.json configuration">
+</Collapsible>
 
-The following configuration is approximately what `eas update:configure` will generate for you if you haven't already configured your project.
+## 配置你的项目
+
+渠道将指示更新针对哪个环境（例如“production”或“staging”），而运行时版本将指示更新将针对哪个应用版本（例如“1.0.0”或“1.0.1”）。
+
+### 渠道配置
+
+如果你还没有这样做，请在你的项目中运行 `eas update:configure`。
+
+**如果你使用 EAS Build**，配置命令将应用默认配置，这几乎正是我们在这里想要使用的：每个配置文件都会指向同名渠道，因此我们应用的生产发布将指向“production”渠道。我们只需要添加一个指向“staging”渠道的“staging”配置文件。
+
+<Collapsible summary="eas.json 配置示例">
+
+如果你还没有配置项目，下面的配置大致就是 `eas update:configure` 将为你生成的内容。
 
 ```json
 {
@@ -63,13 +63,13 @@ The following configuration is approximately what `eas update:configure` will ge
 
 </Collapsible>
 
-**If you do not use EAS Build**, you will need to modify the channel used in your [native project configuration](/eas-update/getting-started/#configure-the-update-channel). When you release to production, ensure you update the channel name in native config to "production", and when you release to staging, ensure you update the channel name in native config to "preview". It's worth noting that using EAS Build with EAS Update helps you get the best out of the product, but it is not required.
+**如果你不使用 EAS Build**，你需要修改 [原生项目配置](/eas-update/getting-started/#configure-the-update-channel) 中使用的渠道。当你发布到生产环境时，确保将原生配置中的渠道名称更新为“production”；当你发布到 staging 时，确保将原生配置中的渠道名称更新为“preview”。值得注意的是，使用 EAS Build 配合 EAS Update 能帮助你充分发挥该产品的优势，但这并不是必需的。
 
-### Runtime version configuration
+### 运行时版本配置
 
-By default, `eas update:configure` will set `"runtimeVersion": { "policy": "appVersion" }` in your app config. This is the recommended configuration, it will ensure that the runtime version of your app is always the same as the app version, and you have a unique runtime version to target for every release of your app. In this case, the app version refers to the native version of your app that users will see on the app store, and it does not include the build number or version code. For example: `"1.0.0"` will be used as the runtime version, and not `"1.0.0(1)"` (where `1` is the build number or version code).
+默认情况下，`eas update:configure` 会在你的应用配置中设置 `"runtimeVersion": { "policy": "appVersion" }`。这是推荐的配置，它将确保你的应用运行时版本始终与应用版本相同，并且你为应用的每次发布都有一个唯一的运行时版本可供针对。在这种情况下，应用版本指的是用户会在应用商店中看到的应用原生版本，不包括构建号或版本代码。例如：`"1.0.0"` 将被用作运行时版本，而不是 `"1.0.0(1)"`（其中 `1` 是构建号或版本代码）。
 
-<Collapsible summary="Example app.json configuration">
+<Collapsible summary="app.json 配置示例">
 
 ```json
 {
@@ -83,65 +83,65 @@ By default, `eas update:configure` will set `"runtimeVersion": { "policy": "appV
 
 </Collapsible>
 
-<Collapsible summary="What about the fingerprint runtime version policy?">
+<Collapsible summary="那 fingerprint 运行时版本策略呢？">
 
-We hope that this will be the future of runtime version policies, but for now, we recommend using the `"appVersion"` policy. The `"fingerprint"` policy is experimental and not yet widely recommended.
-
-</Collapsible>
-
-## Deploying previews
-
-You can preview updates in your internal distribution release builds or in development builds. Using internal distribution instead of deploying to a store beta track reduces the friction of distributing the app to internal testers, and is suitable for cases where you want to, for example, share a build on every pull request or an early concept that you're working on.
-
-### Internal distribution release builds
-
-As explained above, preview builds will point to the "preview" channel. If you want multiple versions of the preview app distributed internally at any given time, you can change the channel name based on the feature name. For example, you might set your channel on your build to "preview-feature-a" when working on feature A, and then set it to "preview-feature-b" when working on feature B.
-
-### Preview in development builds
-
-Development builds can load updates from any channel, provided the runtime version is compatible. Learn more about this in [Previewing updates](/eas-update/preview/).
-
-## Deploying to staging
-
-Run `eas update --channel staging` to publish an update to staging. This will make your hotfix immediately available to users of staging builds with the targeted runtime version.
-
-Your staging environment will be Google Play Beta or TestFlight &mdash; the "beta track" on respective app stores. You may alternatively use internal distribution, but deploying to a store beta track is generally recommended when you are staging code for a production release since users are able to access it without any knowledge of internal processes for distributing the app (while using internal distribution would require users to download the app from an expo.dev URL).
-
-A common practice for creating staging builds is to always create one whenever you upload a production build to a store. This allows you to have a staging build with an identical runtime to the production build, which you can use to test your updates before rolling them out to production. With EAS Build, this means running `eas build --profile staging --auto-submit` every time you run `eas build --profile production --auto-submit`.
-
-## Deploying to production
-
-Run `eas update --channel production` to bundle and push a new update to production. This will make your hotfix immediately available to production build users with the same runtime version.
-
-**If you have already published the fix to staging and verified it there**, ensure that you are republishing from the same commit.
-
-For this release process we recommend using identical environment variables and code signing configuration on staging as on production, to ensure that updates verified in staging work exactly the same in production. If do this, then you can `eas update:republish --destination-channel production` to promote the update rather than generating a new one. This will ensure the exact same bundle that you tested in staging is used in production.
-
-Run `eas update --channel production` to publish an update to production. This will make your hotfix immediately available to users of production builds with the same runtime version.
-
-### Runtime versions
-
-When creating a new production build, we recommend incrementing your [app version](/build-reference/app-versions/#app-versions) to ensure it has a unique runtime version for each release of your app.
-
-### Gradually rolling out updates
-
-You can use [per-update rollouts](/eas-update/rollouts/#per-update-rollouts) to deploy updates gradually to an increasing percentage of users. For example: `eas update --rollout-percentage 10` will roll out the update to 10% of users, and you can use `eas update:edit` to edit the rollout percentage later. Learn more in [Rollouts](/eas-update/rollouts/).
-
-<Collapsible summary="What other types of rollouts are available?">
-
-Another type of rollout is called "branch-based rollouts". These require a deployment strategy focused around update branches, which we are not using in this guide and are not required for most use cases.
-
-The distinction between per-update rollouts and branch-based rollouts is that per-update rollouts operate on a single update (update with ID `123` will be rolled out to 10% of users on the `production` channel/branch), whereas branch-based rollouts will roll out switching over to a different branch (which is a stream of updates) (branch `hotfix-123` will be rolled out to 10% of users on the `production` channel, and `hotfix-123` can point to update ID `123` or `124`).
+我们希望这将成为未来的运行时版本策略，但目前我们推荐使用 `"appVersion"` 策略。`"fingerprint"` 策略仍处于实验阶段，尚未被广泛推荐。
 
 </Collapsible>
 
-### Rolling back to a previous update version
+## 部署预览
 
-If you've mistakenly published an update to any of your environments, you can run `eas update:rollback` initiate a rollback to a previous update.
+你可以在内部发布构建或开发构建中预览更新。使用内部发布而不是部署到商店测试通道，可以降低将应用分发给内部测试者的阻力，并适用于例如你希望在每个拉取请求中共享一个构建，或者共享你正在开发的早期概念等场景。
 
-Learn more in [Rollbacks](/eas-update/rollbacks/).
+### 内部发布构建
 
-## Next steps
+如上所述，预览构建将指向“preview”渠道。如果你希望在任意时刻内部分发多个预览应用版本，你可以根据功能名称更改渠道名称。例如，在开发功能 A 时，你可以将构建的渠道设置为“preview-feature-a”，在开发功能 B 时，则设置为“preview-feature-b”。
 
-- [Learn more about the Persistent staging release process](/eas-update/deployment-patterns/#persistent-staging-flow), which is very similar to what is described here.
-- [Explore using preview updates in development builds](/eas-update/preview/).
+### 在开发构建中预览
+
+只要运行时版本兼容，开发构建可以从任何渠道加载更新。了解更多请参见[预览更新](/eas-update/preview/)。
+
+## 部署到 staging
+
+运行 `eas update --channel staging` 将更新发布到 staging。这会让你的热修复立即对具有目标运行时版本的 staging 构建用户可用。
+
+你的 staging 环境将是 Google Play Beta 或 TestFlight &mdash; 即相应应用商店中的“beta 通道”。你也可以使用内部发布，但当你为生产发布准备代码时，通常更推荐将其部署到商店测试通道，因为用户无需了解应用分发的内部流程即可访问它（而使用内部发布则要求用户从 expo.dev URL 下载应用）。
+
+创建 staging 构建的一种常见做法是，每当你将生产构建上传到商店时，都同时创建一个 staging 构建。这样你就可以拥有一个与生产构建运行时完全相同的 staging 构建，并在将更新推向生产之前用它来测试更新。使用 EAS Build 时，这意味着每次运行 `eas build --profile production --auto-submit` 时，都运行一次 `eas build --profile staging --auto-submit`。
+
+## 部署到生产环境
+
+运行 `eas update --channel production` 将打包并推送一个新的更新到生产环境。这会让你的热修复立即对具有相同运行时版本的生产构建用户可用。
+
+**如果你已经将修复发布到 staging 并在那里验证通过**，请确保你是从同一个提交重新发布的。
+
+对于这个发布流程，我们建议在 staging 和 production 上使用相同的环境变量和代码签名配置，以确保在 staging 中验证通过的更新在 production 中表现完全一致。如果这样做，那么你可以使用 `eas update:republish --destination-channel production` 来提升该更新，而不是生成一个新的更新。这将确保你在 staging 中测试过的完全相同的 bundle 被用于生产环境。
+
+运行 `eas update --channel production` 将更新发布到生产环境。这会让你的热修复立即对具有相同运行时版本的生产构建用户可用。
+
+### 运行时版本
+
+在创建新的生产构建时，我们建议递增你的[应用版本](/build-reference/app-versions/#app-versions)，以确保每次应用发布都拥有唯一的运行时版本。
+
+### 逐步推出更新
+
+你可以使用[按更新逐步推出](/eas-update/rollouts/#per-update-rollouts)将更新逐步部署给越来越多的用户。例如：`eas update --rollout-percentage 10` 会将更新推送给 10% 的用户，你也可以稍后使用 `eas update:edit` 来编辑推出百分比。了解更多请参见[逐步推出](/eas-update/rollouts/)。
+
+<Collapsible summary="还有哪些类型的逐步推出可用？">
+
+另一种逐步推出类型称为“基于分支的逐步推出”。这需要一种围绕更新分支的部署策略，而我们在本指南中并未使用这种策略，也不是大多数用例所必需的。
+
+按更新逐步推出与基于分支的逐步推出之间的区别在于，按更新逐步推出作用于单个更新（ID 为 `123` 的更新将被推送给 `production` 渠道/分支上 10% 的用户），而基于分支的逐步推出则会逐步切换到另一个分支（这是一个更新流）（`hotfix-123` 分支会被推送给 `production` 渠道上 10% 的用户，而 `hotfix-123` 可以指向更新 ID `123` 或 `124`）。
+
+</Collapsible>
+
+### 回滚到之前的更新版本
+
+如果你不小心向任何环境发布了更新，可以运行 `eas update:rollback` 发起回滚到之前的更新。
+
+了解更多请参见[回滚](/eas-update/rollbacks/)。
+
+## 下一步
+
+- [了解更多关于持久化预发布发布流程](/eas-update/deployment-patterns/#persistent-staging-flow)，这与此处所述非常相似。
+- [探索在开发构建中使用预览更新](/eas-update/preview/)。

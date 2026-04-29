@@ -1,30 +1,30 @@
 ---
-title: Handle incoming notifications
-description: Learn how to respond to a notification received by your app and take action based on the event.
+title: 处理传入通知
+description: 了解如何响应应用收到的通知，并根据事件采取操作。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { CODE } from '~/ui/components/Text';
 
-The [`expo-notifications`](/versions/latest/sdk/notifications) library contains event listeners that handle how your app responds when receiving a notification.
+The [`expo-notifications`](/versions/latest/sdk/notifications) 库包含事件监听器，用于处理你的应用在收到通知时的响应方式。
 
-## Notification event listeners
+## 通知事件监听器
 
-The [`addNotificationReceivedListener`](/versions/latest/sdk/notifications/#addnotificationreceivedlistenerlistener) and [`addNotificationResponseReceivedListener`](/versions/latest/sdk/notifications/#addnotificationresponsereceivedlistenerlistener) event listeners receive an object when a notification is received or interacted with.
+[`addNotificationReceivedListener`](/versions/latest/sdk/notifications/#addnotificationreceivedlistenerlistener) 和 [`addNotificationResponseReceivedListener`](/versions/latest/sdk/notifications/#addnotificationresponsereceivedlistenerlistener) 事件监听器在收到通知或与通知交互时会接收一个对象。
 
-These listeners allow you to add behavior when notifications are received while your app is open and foregrounded and when your app is backgrounded or closed and the user taps on the notification.
+这些监听器允许你在应用打开并处于前台时收到通知，以及应用处于后台或已关闭且用户点击通知时添加相应行为。
 
 ```js
 useEffect(() => {
   registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
 
-  /* @info This listener is fired whenever a notification is received while the app is foregrounded. */
+  /* @info 只要应用处于前台并收到通知，就会触发此监听器。 */
   const notificationListener = Notifications.addNotificationReceivedListener(notification => {
     console.log(notification);
   });
   /* @end */
 
-  /* @info This listener is fired whenever a user taps on or interacts with a notification (works when an app is foregrounded, backgrounded, or killed). */
+  /* @info 只要用户点击通知或与通知交互，就会触发此监听器（当应用处于前台、后台或被终止时都有效）。 */
   const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
     console.log(response);
   });
@@ -37,9 +37,9 @@ useEffect(() => {
 }, []);
 ```
 
-<Collapsible summary={<>Android notification object example from <CODE>addNotificationReceivedListener</CODE></>}>
+<Collapsible summary={<>来自 <CODE>addNotificationReceivedListener</CODE> 的 Android 通知对象示例</>}>
 
-Sample of the `notification` object received by the callback function when using `Notifications.addNotificationReceivedListener`:
+使用 `Notifications.addNotificationReceivedListener` 时，回调函数接收到的 `notification` 对象示例如下：
 
 ```json
 // console.log(notification);
@@ -61,7 +61,7 @@ Sample of the `notification` object received by the callback function when using
           "title": "Chat App",
           "ticker": null,
           "eventTime": null,
-          "body": "New message from John Doe",
+          "body": "来自 John Doe 的新消息",
           "titleLocalizationKey": null,
           "notificationPriority": null,
           "icon": null,
@@ -78,7 +78,7 @@ Sample of the `notification` object received by the callback function when using
         },
         "data": {
           "channelId": "default",
-          "message": "New message from John Doe",
+          "message": "来自 John Doe 的新消息",
           "title": "Chat App",
           "body": "{\"senderId\":\"user123\",\"senderName\":\"John Doe\",\"messageId\":\"msg789\",\"conversationId\":\"conversation-456\",\"messageType\":\"text\",\"timestamp\":1724766427}",
           "scopeKey": "@betoatexpo/expo-notifications-app",
@@ -102,7 +102,7 @@ Sample of the `notification` object received by the callback function when using
       "badge": null,
       "sticky": false,
       "sound": "default",
-      "body": "New message from John Doe",
+      "body": "来自 John Doe 的新消息",
       "subtitle": null,
       "data": {
         "senderId": "user123",
@@ -119,7 +119,7 @@ Sample of the `notification` object received by the callback function when using
 }
 ```
 
-You can directly access the notification custom data by logging the `notification.request.content.data` object:
+你可以通过打印 `notification.request.content.data` 对象，直接访问通知的自定义数据：
 
 ```json
 // console.log(notification.request.content.data);
@@ -135,9 +135,9 @@ You can directly access the notification custom data by logging the `notificatio
 
 </Collapsible>
 
-<Collapsible summary={<>iOS notification object example from <CODE>addNotificationReceivedListener</CODE></>}>
+<Collapsible summary={<>来自 <CODE>addNotificationReceivedListener</CODE> 的 iOS 通知对象示例</>}>
 
-Sample of the `notification` object received by the callback function when using `Notifications.addNotificationReceivedListener`:
+使用 `Notifications.addNotificationReceivedListener` 时，回调函数接收到的 `notification` 对象示例如下：
 
 ```json
 // console.log(notification);
@@ -155,10 +155,10 @@ Sample of the `notification` object received by the callback function when using
           "category": "",
           "badge": 1,
           "alert": {
-            "subtitle": "Hey there! How's your day going?",
+            "subtitle": "嘿，你好！你今天过得怎么样？",
             "title": "Chat App",
             "launch-image": "",
-            "body": "New message from John Doe"
+            "body": "来自 John Doe 的新消息"
           },
           "sound": "default"
         },
@@ -174,11 +174,11 @@ Sample of the `notification` object received by the callback function when using
     },
     "identifier": "3AEB849E-9059-4D09-BC3B-9A0B104CF062",
     "content": {
-      "body": "New message from John Doe",
+      "body": "来自 John Doe 的新消息",
       "sound": "default",
       "launchImageName": "",
       "badge": 1,
-      "subtitle": "Hey there! How's your day going?",
+      "subtitle": "嘿，你好！你今天过得怎么样？",
       "title": "Chat App",
       "data": {
         "conversationId": "conversation-456",
@@ -201,7 +201,7 @@ Sample of the `notification` object received by the callback function when using
 }
 ```
 
-You can directly access the notification custom data by logging the `notification.request.content.data` object:
+你可以通过打印 `notification.request.content.data` 对象，直接访问通知的自定义数据：
 
 ```json
 // console.log(notification.request.content.data);
@@ -217,11 +217,11 @@ You can directly access the notification custom data by logging the `notificatio
 
 </Collapsible>
 
-For more information on these objects, see [`Notification`](/versions/latest/sdk/notifications/#notification) documentation.
+有关这些对象的更多信息，请参阅 [`Notification`](/versions/latest/sdk/notifications/#notification) 文档。
 
-## Foreground notification behavior
+## 前台通知行为
 
-To handle the behavior when notifications are received when your app is **foregrounded**, use [`Notifications.setNotificationHandler`](/versions/latest/sdk/notifications/#handling-incoming-notifications-when-the-app-is) with the `handleNotification()` callback to set the following options:
+要处理应用处于**前台**时收到通知的行为，请使用 [`Notifications.setNotificationHandler`](/versions/latest/sdk/notifications/#handling-incoming-notifications-when-the-app-is) 和 `handleNotification()` 回调来设置以下选项：
 
 - `shouldPlaySound`
 - `shouldSetBadge`
@@ -239,6 +239,6 @@ Notifications.setNotificationHandler({
 });
 ```
 
-## Closed notification behavior
+## 关闭状态下的通知行为
 
-On Android, users can set certain OS-level settings, usually revolving around performance and battery optimization, that can prevent notifications from being delivered when the app is closed. For example, one such setting is the **Deep Clear** option on OnePlus devices using Android 9 and lower versions.
+在 Android 上，用户可以设置某些操作系统级别的选项，这些选项通常与性能和电池优化有关，可能会导致应用关闭时无法接收到通知。例如，OnePlus 设备在 Android 9 及更低版本上使用的 **Deep Clear** 选项就是其中一种设置。

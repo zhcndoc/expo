@@ -1,7 +1,7 @@
 ---
-title: Common navigation patterns in Expo Router
-description: Apply Expo Router basics to real-life navigation patterns you could use in your app.
-sidebar_title: Common patterns
+title: Expo Router 中常见的导航模式
+description: 将 Expo Router 基础知识应用于你可以在应用中使用的实际导航模式。
+sidebar_title: 常见模式
 searchRank: 8
 ---
 
@@ -11,26 +11,26 @@ import { Lock01Icon } from '@expo/styleguide-icons/outline/Lock01Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { FileTree } from '~/ui/components/FileTree';
 
-Now that you know the basics of how files and directories are named and arranged in Expo Router, let's apply that knowledge, looking at some real-life navigation patterns you might use in your app.
+既然你已经了解了 Expo Router 中文件和目录的命名与排列基础，现在让我们把这些知识应用到一些你可能会在应用中使用的真实导航模式上。
 
-## Stacks inside tabs: nested navigators
+## 选项卡中的堆栈：嵌套导航器
 
-If the typical starting point for your app is a set of tabs, but one or more tabs may have more than one screen associated with it, nesting a stack navigator inside of a tab is often the way to go. This pattern often results in intuitive URLs and scales well to desktop web apps, where the primary tabs are often always visible.
+如果你的应用通常从一组选项卡开始，但其中一个或多个选项卡可能关联不止一个屏幕，那么在选项卡内部嵌套一个堆栈导航器通常是一个不错的选择。这种模式往往会生成直观的 URL，并且在桌面 Web 应用中也很适用，因为主选项卡通常始终可见。
 
-Consider the following navigation tree:
+请考虑以下导航树：
 
 <FileTree
   files={[
     ['src/app/(tabs)/\_layout.tsx'],
-    ['src/app/(tabs)/index.tsx', 'single page tab'],
-    ['src/app/(tabs)/feed/\_layout.tsx', 'tab with a stack inside'],
+    ['src/app/(tabs)/index.tsx', '单页选项卡'],
+    ['src/app/(tabs)/feed/\_layout.tsx', '内部包含堆栈的选项卡'],
     ['src/app/(tabs)/feed/index.tsx'],
     ['src/app/(tabs)/feed/[postId].tsx'],
-    ['src/app/(tabs)/settings.tsx', 'single page tab'],
+    ['src/app/(tabs)/settings.tsx', '单页选项卡'],
   ]}
 />
 
-In the **src/app/(tabs)/\_layout.tsx** file, return a `Tabs` component:
+在 **src/app/(tabs)/\_layout.tsx** 文件中，返回一个 `Tabs` 组件：
 
 {/* prettier-ignore */}
 ```tsx src/app/(tabs)/_layout.tsx
@@ -38,23 +38,23 @@ import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
   return (
-    /* @info Each navigator adds it's own header, so you will likely want to hide the header in the outer navigator. */
+    /* @info 每个导航器都会添加自己的标题栏，因此你通常会想在外层导航器中隐藏标题栏。 */
     <Tabs screenOptions={{ headerShown: false }}>
     /* @end */
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="feed" options={{ title: 'Feed' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+      <Tabs.Screen name="index" options={{ title: '首页' }} />
+      <Tabs.Screen name="feed" options={{ title: '动态' }} />
+      <Tabs.Screen name="settings" options={{ title: '设置' }} />
     </Tabs>
   );
 }
 ```
 
-In the **src/app/(tabs)/feed/\_layout.tsx** file, return a `Stack` component:
+在 **src/app/(tabs)/feed/\_layout.tsx** 文件中，返回一个 `Stack` 组件：
 
 ```tsx src/app/(tabs)/feed/_layout.tsx
 import { Stack } from 'expo-router';
 
-/* @info Setting <CODE>initialRouteName</CODE> ensures that direct links deep into the stack still push the index route onto the stack first. */
+/* @info 设置 <CODE>initialRouteName</CODE> 可确保直接深度链接进入堆栈时，仍会先将 index 路由压入堆栈。 */
 export const unstable_settings = {
   initialRouteName: 'index',
 };
@@ -65,59 +65,59 @@ export default function FeedLayout() {
 }
 ```
 
-Now, within the **src/app/(tabs)/feed** directory, you can have `Link` components that point to different posts (for example, `/feed/123`). Those links will push the `feed/[postId]` route onto the stack, leaving the tab navigator visible.
+现在，在 **src/app/(tabs)/feed** 目录中，你可以使用指向不同帖子（例如 `/feed/123`）的 `Link` 组件。这些链接会将 `feed/[postId]` 路由压入堆栈，同时保留底部标签导航器可见。
 
-You can also navigate from any other tab to a post in the feed tab with the same URL. Use `withAnchor` in conjunction with `initialRouteName` to ensure that the `feed/index` route is always the first screen in the stack:
+你也可以从任何其他标签页使用同样的 URL 导航到 feed 标签页中的帖子。将 `withAnchor` 与 `initialRouteName` 结合使用，以确保 `feed/index` 路由始终是堆栈中的第一个屏幕：
 
 ```tsx src/app/(tabs)/feed/index.tsx
 <Link href="/feed/123" withAnchor>
-  Go to post
+  前往帖子
 </Link>
 ```
 
-You can also nest tabs inside of an outer stack navigator. That is often more useful for displaying modals over the tabs.
+你也可以在外层 stack 导航器中嵌套 tabs。这样通常更适合在 tabs 之上显示模态框。
 
 <BoxLink
-  title="Nested navigators"
-  description="Learn more about how to use nested navigators in your Expo Router app."
+  title="嵌套导航器"
+  description="了解如何在你的 Expo Router 应用中使用嵌套导航器。"
   href="/router/advanced/nesting-navigators/"
   Icon={BookOpen02Icon}
 />
 
-## Different tabs per platform: platform-specific tabs
+## 每个平台不同的标签页：平台特定标签页
 
-When building a cross-platform app, you may want to use [native tabs](/router/advanced/native-tabs/) on Android and iOS for a platform-native look and feel, while using [custom tabs](/router/advanced/custom-tabs/) on web for full control over styling. You can achieve this using [platform-specific file extensions](/router/advanced/platform-specific-modules/).
+在构建跨平台应用时，你可能希望在 Android 和 iOS 上使用 [native tabs](/router/advanced/native-tabs/) 以获得平台原生的外观和体验，而在 web 上使用 [custom tabs](/router/advanced/custom-tabs/) 来完全控制样式。你可以使用 [平台特定文件扩展名](/router/advanced/platform-specific-modules/) 来实现这一点。
 
 <FileTree
   files={[
-    ['src/app/\_layout.tsx', 'imports AppTabs'],
+    ['src/app/\_layout.tsx', '导入 AppTabs'],
     ['src/app/index.tsx'],
     ['src/app/feed.tsx'],
     ['src/app/profile.tsx'],
-    ['src/components/app-tabs.native.tsx', 'AppTabs (native tabs) for Android and iOS'],
-    ['src/components/app-tabs.tsx', 'AppTabs (custom tabs) for web'],
+    ['src/components/app-tabs.native.tsx', '适用于 Android 和 iOS 的 AppTabs（native tabs）'],
+    ['src/components/app-tabs.tsx', '适用于 web 的 AppTabs（custom tabs）'],
   ]}
 />
 
-The root layout renders an `AppTabs` component. Expo's module resolution automatically picks **app-tabs.native.tsx** on Android and iOS, and **app-tabs.tsx** on web, allowing each platform to use a tab implementation suited to its conventions.
+根布局会渲染一个 `AppTabs` 组件。Expo 的模块解析会在 Android 和 iOS 上自动选择 **app-tabs.native.tsx**，并在 web 上选择 **app-tabs.tsx**，从而让每个平台都能使用符合其习惯的标签页实现。
 
-For a complete example of this pattern with code, see [Platform-specific tabs](/router/basics/navigation-layouts/#platform-specific-tabs) in the Layout guide.
+有关此模式的完整代码示例，请参见布局指南中的 [平台特定标签页](/router/basics/navigation-layouts/#platform-specific-tabs)。
 
-## One screen, two tabs: sharing routes
+## 一个屏幕，两个标签页：共享路由
 
-Route groups can be used to share a single screen between two different tabs. Consider a navigation tree that has a Feed tab and a Search tab, and they both share pages for viewing a user profile:
+路由组可用于在两个不同的标签页之间共享同一个屏幕。考虑一个导航树，它有一个 Feed 标签页和一个 Search 标签页，并且它们都共享用于查看用户资料的页面：
 
 <FileTree
   files={[
     ['src/app/(tabs)/\_layout.tsx'],
-    ['src/app/(tabs)/(feed)/index.tsx', 'default route'],
+    ['src/app/(tabs)/(feed)/index.tsx', '默认路由'],
     ['src/app/(tabs)/(search)/search.tsx'],
-    ['src/app/(tabs)/(feed,search)/\_layout.tsx', 'layout shared between the two tabs'],
-    ['src/app/(tabs)/(feed,search)/users/[username].tsx', 'shared user profile page'],
+    ['src/app/(tabs)/(feed,search)/\_layout.tsx', '两个标签页共享的布局'],
+    ['src/app/(tabs)/(feed,search)/users/[username].tsx', '共享的用户资料页面'],
   ]}
 />
 
-Each of the tabs is put in a group so you can define a third directory that shares routes between two groups (**src/app/(tabs)/(feed,search)/**). Even with the extra layer, **src/app/(tabs)/(feed)/index.tsx** is still the nearest index, so it will be the default route.
+每个标签页都放在一个组中，因此你可以定义一个第三个目录来在两个组之间共享路由（**src/app/(tabs)/(feed,search)**）。即使多了一层，**src/app/(tabs)/(feed)/index.tsx** 仍然是最近的 index，因此它会成为默认路由。
 
 ```tsx src/app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
@@ -125,14 +125,14 @@ import { Tabs } from 'expo-router';
 export default function TabLayout() {
   return (
     <Tabs>
-      <Tabs.Screen name="(feed)" options={{ title: 'Feed' }} />
-      <Tabs.Screen name="(search)" options={{ title: 'Search' }} />
+      <Tabs.Screen name="(feed)" options={{ title: '动态' }} />
+      <Tabs.Screen name="(search)" options={{ title: '搜索' }} />
     </Tabs>
   );
 }
 ```
 
-Both the `(feed)` and `(search)` route groups contain stacks, so they can also share a single layout:
+`(feed)` 和 `(search)` 路由组都包含 stack，因此它们也可以共享同一个布局：
 
 ```tsx src/app/(tabs)/(feed,search)/_layout.tsx
 import { Stack } from 'expo-router';
@@ -142,39 +142,39 @@ export default function SharedLayout() {
 }
 ```
 
-It's also possible for shared groups to only contain the shared pages, with each distinct group having its own layout file.
+共享组也可以只包含共享页面，而每个不同的组拥有自己的布局文件。
 
-Now, both tabs can navigate to `/users/evanbacon` and see the same user profile page.
+现在，两个标签页都可以导航到 `/users/evanbacon` 并看到相同的用户资料页面。
 
-When you're already focused on a tab and navigating to a user, you will stay in that current tab's group. But when deep-linking directly to a user profile page from outside the app, Expo Router has to pick one of the two groups, so it will pick the first group alphabetically. Therefore, deep-linking to `/users/evanbacon` will show the user profile in the Feed tab.
+当你已经聚焦在某个标签页上并导航到某个用户时，你会停留在当前标签页的组中。但当你从应用外部直接深度链接到用户资料页面时，Expo Router 必须在两个组中选择一个，因此它会按字母顺序选择第一个组。因此，深度链接到 `/users/evanbacon` 会在 Feed 标签页中显示该用户资料。
 
 <BoxLink
-  title="Shared routes"
-  description="Learn more about how distinct routes can share the same URL in Expo Router."
+  title="共享路由"
+  description="了解 Expo Router 中不同的路由如何共享相同的 URL。"
   href="/router/advanced/shared-routes/"
   Icon={BookOpen02Icon}
 />
 
-## Authenticated users only: protected routes
+## 仅限已认证用户：受保护路由
 
-For mobile apps requiring authentication, you will likely have a set of routes that should only be accessible to authenticated users.
+对于需要身份验证的移动应用，你很可能会有一组只能被已认证用户访问的路由。
 
-For example, consider the following navigation tree in which you have a bottom tabs layout, a sign-in page, a create account page, and a modal that should only be visible to authenticated users:
+例如，考虑下面这个导航树，其中包含一个底部标签布局、一个登录页面、一个创建账号页面，以及一个仅对已认证用户可见的模态框：
 
 <FileTree
   files={[
-    ['src/app/\_layout.tsx', 'Root layout'],
+    ['src/app/\_layout.tsx', '根布局'],
     ['src/app/(tabs)/\_layout.tsx'],
     [
       'src/app/(tabs)/index.tsx',
       <span>
-        Protected <Lock01Icon className="mb-1 inline" />
+        受保护 <Lock01Icon className="mb-1 inline" />
       </span>,
     ],
     [
       'src/app/(tabs)/settings.tsx',
       <span>
-        Protected <Lock01Icon className="mb-1 inline" />
+        受保护 <Lock01Icon className="mb-1 inline" />
       </span>,
     ],
     ['src/app/sign-in.tsx'],
@@ -182,13 +182,13 @@ For example, consider the following navigation tree in which you have a bottom t
     [
       'src/app/modal.tsx',
       <span>
-        Protected <Lock01Icon className="mb-1 inline" />
+        受保护 <Lock01Icon className="mb-1 inline" />
       </span>,
     ],
   ]}
 />
 
-When your app is first launched, the router will try to open the root index, **src/app/(tabs)/index.tsx**. If you wrap this screen in a `Stack.Protected` with the `guard={false}`, the screen will become inaccessible and the next available screen will be opened instead. In this example, the `sign-in` screen will be opened, since it is the next available route.
+当你的应用首次启动时，路由器会尝试打开根 index，也就是 **src/app/(tabs)/index.tsx**。如果你将这个屏幕包裹在带有 `guard={false}` 的 `Stack.Protected` 中，该屏幕就会变得不可访问，随后会打开下一个可用屏幕。在这个例子中，由于 `sign-in` 屏幕是下一个可用路由，因此它会被打开。
 
 ```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -213,11 +213,11 @@ export default function RootLayout() {
 }
 ```
 
-This way, you can fetch your auth state from a store and show the appropriate screens. If the auth state changes, the layout will re-render, so if `isLoggedIn` changes from `false` to `true`, the app will automatically navigate to the root of the `(tabs)` group.
+这样，你就可以从 store 中获取认证状态并显示相应的屏幕。如果认证状态发生变化，布局会重新渲染，因此如果 `isLoggedIn` 从 `false` 变为 `true`，应用会自动导航到 `(tabs)` 组的根页面。
 
-Another benefit of protected routes is that they are checked even if you deep link into a page directly. For example, if an unauthenticated user deep links into the modal screen above, they will be redirected to the sign-in page.
+受保护路由的另一个好处是，即使你直接深度链接到某个页面，它们也会被检查。例如，如果未认证用户直接深度链接到上面的模态框屏幕，他们会被重定向到登录页面。
 
-Protected routes can also be used to conditionally show bottom tabs. In this example, the `vip` tab will only be shown to authenticated users who are VIP members:
+受保护路由也可以用于有条件地显示底部标签页。在这个例子中，`vip` 标签页只会向已认证且是 VIP 会员的用户显示：
 
 ```tsx src/app/(tabs)/_layout.tsx
 import { Stack } from 'expo-router';
@@ -241,17 +241,17 @@ export default function TabsLayout() {
 ```
 
 <BoxLink
-  title="Expo Router authentication"
-  description="Follow an in-depth guide for implementing authentication using protected routes."
+  title="Expo Router 身份验证"
+  description="按照一份深入指南，使用受保护路由来实现身份验证。"
   href="/router/advanced/authentication/"
   Icon={BookOpen02Icon}
 />
 
-## Sometimes the best route isn't a route at all
+## 有时，最好的路由根本不是路由
 
-Separating your navigation states into distinct routes is meant to serve you and your app. Sometimes the best pattern for the job will not involve navigating to another route at all. Since layout files are just React components, you can use them to display all sorts of UI around, besides, or instead of a navigator.
+将你的导航状态拆分为不同的路由，是为了服务于你和你的应用。有时，最适合该任务的模式并不涉及跳转到另一个路由。由于布局文件本身就是 React 组件，因此你可以用它们来展示导航器周围、旁边或替代导航器的各种 UI。
 
-Thinking back to authentication, the protected route setup works great if the user should simply not be able to visit certain pages without logging in. But what about when unauthenticated users can browse an app in read-only mode? In that case, you might want to show a login modal over the app, rather than redirecting the user to a login page:
+回到身份验证这个话题，如果用户没有登录就不能访问某些页面，那么受保护路由的配置就非常适合。但如果未认证用户可以只读浏览应用呢？在这种情况下，你可能希望在应用上方显示一个登录模态框，而不是将用户重定向到登录页面：
 
 ```tsx src/app/(logged-in)/_layout.tsx
 import { Modal } from 'react-native';
@@ -259,20 +259,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 
 export default function Layout() {
-  const isAuthenticated = /* check for valid auth token / session */
+  const isAuthenticated = /* 检查有效的 auth token / session */
 
   return (
     <SafeAreaView>
       <Stack />
-      <Modal visible={!isAuthenticated}>{/* login UX */}</Modal>
+      <Modal visible={!isAuthenticated}>{/* 登录 UX */}</Modal>
     </SafeAreaView>
   );
 }
 ```
 
 <BoxLink
-  title="Modals in Expo Router"
-  description="Learn multiple patterns for displaying modals in Expo Router, including using a modal inside of a layout file."
+  title="Expo Router 中的模态框"
+  description="学习在 Expo Router 中显示模态框的多种模式，包括在布局文件中使用模态框。"
   href="/router/advanced/modals/"
   Icon={BookOpen02Icon}
 />

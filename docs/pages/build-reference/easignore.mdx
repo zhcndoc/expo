@@ -1,66 +1,66 @@
 ---
-title: Ignore files via .easignore
-description: Learn how to configure EAS to ignore unnecessary files during the build process.
+title: 通过 .easignore 忽略文件
+description: 了解如何配置 EAS 在构建过程中忽略不必要的文件。
 hideTOC: true
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-A **.easignore** file defines which files [EAS](https://expo.dev/eas) should ignore when uploading your project to the [EAS Build](/build/introduction) servers.
+一个 **.easignore** 文件用于定义 [EAS](https://expo.dev/eas) 在将你的项目上传到 [EAS Build](/build/introduction) 服务器时应忽略哪些文件。
 
-> **info** Ignoring unnecessary files can help reduce your app's archive size and upload time.
+> **info** 忽略不必要的文件可以帮助减少应用程序归档大小和上传时间。
 
-By default, the [EAS CLI](/build/setup/#install-the-latest-eas-cli) refers to the [**.gitignore**](https://git-scm.com/docs/gitignore) file (if it exists) to determine which files to ignore. If you create a **.easignore** file, the EAS CLI prioritizes it over the **.gitignore** file. When creating a **.easignore** file, include all files and directories from your **.gitignore** file and add additional files you want to ignore.
+默认情况下，[EAS CLI](/build/setup/#install-the-latest-eas-cli) 会参考 [**.gitignore**](https://git-scm.com/docs/gitignore) 文件（如果存在）来确定要忽略哪些文件。如果你创建了 **.easignore** 文件，EAS CLI 会优先使用它而不是 **.gitignore** 文件。创建 **.easignore** 文件时，请包含 **.gitignore** 文件中的所有文件和目录，并添加你想要额外忽略的文件。
 
 <Step label="1">
 
-Create a **.easignore** file in the root of your project.
+在项目根目录下创建一个 **.easignore** 文件。
 
 </Step>
 
 <Step label="2">
 
-Copy the content of the **.gitignore** file into the **.easignore** file. Then, add any files that are unnecessary for the build process.
+将 **.gitignore** 文件的内容复制到 **.easignore** 文件中。然后，添加任何构建过程中不需要的文件。
 
 ```bash .easignore
-# Copy everything from your .gitignore file here
+# 将你 .gitignore 文件中的所有内容复制到这里
 
-# Ignore files and directories that EAS Build doesn't need to build your app
+# 忽略 EAS Build 构建你的应用不需要的文件和目录
 /docs
 
-# Ignore native directories (if you are using EAS Build)
+# 忽略原生目录（如果你正在使用 EAS Build）
 /android
 /ios
 
-# Ignore test coverage reports
+# 忽略测试覆盖率报告
 /coverage
 ```
 
-If your project does not contain **android** and **ios** directories, [EAS Build will run Prebuild](/workflow/continuous-native-generation/#usage-with-eas-build) to generate these native directories before compilation.
+如果你的项目不包含 **android** 和 **ios** 目录，[EAS Build 将运行 Prebuild](/workflow/continuous-native-generation/#usage-with-eas-build) 以在编译前生成这些原生目录。
 
 </Step>
 
 <Step label="3">
 
-Save the file and trigger a new build.
+保存文件并触发新的构建。
 
 <Terminal cmd={['$ eas build --platform ios --profile development']} />
 
 </Step>
 
-You've successfully configured your **.easignore** file.
+你已成功配置 **.easignore** 文件。
 
-## Adding files to your project upload with .easignore
+## 使用 .easignore 将文件添加到你的项目上传中
 
-In addition to ignoring additional files beyond what is in your gitignore file, you can also use the **.easignore** file to include files with your EAS Build upload that are not committed to source control. This is useful if you have custom scripts that generate temporary files needed for your build process just before the build. To upload a file not in source control to EAS Build, add it to the **.easignore** file with a `!` prefix, along with the rest of your **.gitignore** contents. The `!` prefixed file should be last, so it takes precedence over any prior rules that would ignore it.
+除了忽略 **gitignore** 文件中已有内容之外，你还可以使用 **.easignore** 文件将不在源代码管理中的文件包含到 EAS Build 上传中。如果你有自定义脚本，会在构建前刚刚生成构建过程所需的临时文件，这会很有用。要将不在源代码管理中的文件上传到 EAS Build，请在 **.easignore** 文件中为其添加 `!` 前缀，并保留其余 **.gitignore** 内容。带 `!` 前缀的文件应放在最后，这样它会优先于任何先前会忽略它的规则。
 
 ```bash .easignore
-# Copy everything from your .gitignore file here
+# 将你 .gitignore 文件中的所有内容复制到这里
 
 /android
 /ios
 
-# Include a file not in source control
+# 包含一个不在源代码管理中的文件
 !temp_file.json
 ```

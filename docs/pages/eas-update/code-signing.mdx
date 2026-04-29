@@ -1,23 +1,23 @@
 ---
-title: End-to-end code signing with EAS Update
-description: Learn how code signing and key rotation work in EAS Update.
-sidebar_title: Code signing
+title: 使用 EAS Update 的端到端代码签名
+description: 了解代码签名和密钥轮换在 EAS Update 中的工作原理。
+sidebar_title: 代码签名
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **info** EAS Update Code Signing is only available to accounts subscribed to the EAS Production or Enterprise plans. [Learn more](https://expo.dev/pricing).
+> **info** EAS Update 代码签名仅对订阅了 EAS Production 或 Enterprise 方案的账户可用。[了解更多](https://expo.dev/pricing)。
 
-The `expo-updates` library supports end-to-end code signing using [public-key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography). Code signing allows developers to cryptographically sign their updates with their own keys. The signatures are then verified on the client before the update is applied, which ensures ISPs, CDNs, cloud providers, and even EAS itself cannot tamper with updates run by apps.
+`expo-updates` 库支持使用[公钥密码学](https://en.wikipedia.org/wiki/Public-key_cryptography)进行端到端代码签名。代码签名允许开发者使用自己的密钥对更新进行加密签名。随后会在客户端应用更新之前验证这些签名，这确保了 ISP、CDN、云服务提供商，甚至 EAS 本身都无法篡改由应用运行的更新。
 
-The following steps will guide you through the process of generating a private key and corresponding certificate, configuring your project to use code signing, and publishing a signed update for your app.
+以下步骤将引导你完成生成私钥及对应证书、配置项目以使用代码签名，以及为应用发布已签名更新的过程。
 
 <Step label="1">
-## Generate a private key and corresponding certificate
+## 生成私钥及对应证书
 
-In this step, we will generate a key pair and corresponding code signing certificate for your app. Specify a directory outside of your source control for the `--key-output-directory` flag to ensure the generated private key isn't accidentally added to source control.
+在这一步中，我们将为你的应用生成一对密钥和对应的代码签名证书。请为 `--key-output-directory` 参数指定一个位于源代码管理之外的目录，以确保生成的私钥不会意外被加入源代码管理。
 
 <Terminal
   cmd={[
@@ -30,24 +30,24 @@ In this step, we will generate a key pair and corresponding code signing certifi
   cmdCopy='npx expo-updates codesigning:generate --key-output-directory ../keys --certificate-output-directory certs --certificate-validity-duration-years 10 --certificate-common-name "Your Organization Name"'
 />
 
-This command generated a key pair along with a code signing certificate to be included in the app:
+此命令会生成一对密钥以及一个要包含在应用中的代码签名证书：
 
-- `../keys/private-key.pem`: the private key of the key pair.
-- `../keys/public-key.pem`: the public key of the key pair.
-- `certs/certificate.pem`: the code signing certificate configured to be valid for 10 years. This file should be added to source control (if applicable).
+- `../keys/private-key.pem`：该密钥对的私钥。
+- `../keys/public-key.pem`：该密钥对的公钥。
+- `certs/certificate.pem`：配置为有效期 10 年的代码签名证书。此文件应加入源代码管理（如果适用）。
 
-- The generated private key must be kept private and secure. The command above suggests generating and storing these keys in a directory outside of your source control to ensure they are not accidentally checked into source control. We recommend storing the private key in the same way you would store other sensitive information (KMS, password manager, and so on), and how you store it will vary the steps needed to publish an update in step (3).
-- The public key may be stored alongside the private key, but isn't sensitive.
-- The certificate should be included in the project (checked into source control). It contains the public key and a method for verifying code signatures. When a signed update is downloaded, the update's signature is verified using this certificate.
-- The certificate validity duration is a setting that may vary based on the security needs of your app.
-  - A shorter validity duration will require [key rotation](#key-rotation) more frequently but is considered better practice since a compromised private key will have a sooner expiration which limits exposure.
-  - Shorter validity durations add overhead to your app's release process as the key must be rotated more frequently. Binaries with expired certificates won't apply new updates.
-  - For example, Expo sets this value to 20 years for the public Expo Go app, but only 1 year for internal apps with binaries that are distributed more frequently. We plan to rotate our keys every 10 years.
+- 生成的私钥必须妥善保密并安全存放。上面的命令建议在源代码管理之外的目录中生成并存储这些密钥，以确保它们不会被意外提交到源代码管理中。我们建议以与你存储其他敏感信息相同的方式（KMS、密码管理器等）存储私钥，而你如何存储它将会影响你在第 (3) 步发布更新所需的步骤。
+- 公钥可以与私钥一起存放，但它并不敏感。
+- 证书应包含在项目中（提交到源代码管理）。它包含公钥以及用于验证代码签名的方法。当下载已签名更新时，会使用此证书验证更新的签名。
+- 证书有效期是一个可根据应用安全需求而变化的设置。
+  - 较短的有效期会要求更频繁地进行[key rotation](#key-rotation)，但通常被认为是更好的做法，因为一旦私钥泄露，其过期时间会更早，从而限制影响范围。
+  - 较短的有效期会增加应用发布流程的开销，因为密钥需要更频繁地轮换。证书过期的二进制文件将无法应用新的更新。
+  - 例如，Expo 将此值为公开的 Expo Go 应用设置为 20 年，但对于更频繁分发二进制文件的内部应用则仅设置为 1 年。我们计划每 10 年轮换一次密钥。
 
 </Step>
 
 <Step label="2">
-## Configure your project to use code signing
+## 配置你的项目以使用代码签名
 
 <Terminal
   cmdCopy="npx expo-updates codesigning:configure --certificate-input-directory certs --key-input-directory ../keys"
@@ -60,11 +60,11 @@ This command generated a key pair along with a code signing certificate to be in
 
 <br />
 
-**If you are using Continuous Native Generation (CNG) to generate your native projects**, then the **app.json** configuration generated by the `npx expo-updates codesigning configure` command is all that you need. The changes will be applied to the native projects the next time they are generated.
+**如果你正在使用 Continuous Native Generation (CNG) 来生成原生项目**，那么 `npx expo-updates codesigning configure` 命令生成的 **app.json** 配置就是你所需要的全部内容。相关更改会在下次生成原生项目时应用到这些项目中。
 
-<Collapsible summary="Configure code signing in app.json">
+<Collapsible summary="在 app.json 中配置代码签名">
 
-After running the above command, your **app.json** will include additional configuration for code signing:
+运行上述命令后，你的 **app.json** 将包含额外的代码签名配置：
 
 ```json app.json
 {
@@ -84,13 +84,13 @@ After running the above command, your **app.json** will include additional confi
 
 <br />
 
-**If you are not using Continuous Native Generation (CNG) to generate your native projects**, then you will need to configure code signing in your app **AndroidManifest.xml** and/or **Expo.plist** files.
+**如果你没有使用 Continuous Native Generation (CNG) 来生成原生项目**，那么你需要在应用的 **AndroidManifest.xml** 和/或 **Expo.plist** 文件中配置代码签名。
 
-<Collapsible summary="Configure code signing in an Android native project">
+<Collapsible summary="在 Android 原生项目中配置代码签名">
 
-You will need to add two fields to the `<application>` element in **android/app/src/main/AndroidManifest.xml**
+你需要在 **android/app/src/main/AndroidManifest.xml** 中的 `<application>` 元素添加两个字段。
 
-Before doing that, we need to generate an XML-escaped version of your certificate. You can either copy the contents of **certs/certificate.pem** and replace all of the `\r` characters with `&#xD;` and `\n` with `&#xA;` manually, or run the following script to do that for you:
+在此之前，我们需要先生成证书的 XML 转义版本。你可以手动复制 **certs/certificate.pem** 的内容，并将所有 `\r` 字符替换为 `&#xD;`，将 `\n` 替换为 `&#xA;`，也可以运行以下脚本来自动完成：
 
 <Terminal
   cmdCopy={`node -e "console.log(require('fs').readFileSync('./certs/certificate.pem', 'utf8').replace(/\\r/g, '&#xD;').replace(/\\n/g, '&#xA;'));"`}
@@ -100,12 +100,12 @@ Before doing that, we need to generate an XML-escaped version of your certificat
   ]}
 />
 
-Now add the following two fields, and replace the `android:value` for the `expo.modules.updates.CODE_SIGNING_CERTIFICATE` field with the XML-escaped certificate. You do not need to modify the value for `expo.modules.updates.CODE_SIGNING_METADATA` entry.
+现在添加以下两个字段，并将 `expo.modules.updates.CODE_SIGNING_CERTIFICATE` 字段的 `android:value` 替换为 XML 转义后的证书。你不需要修改 `expo.modules.updates.CODE_SIGNING_METADATA` 条目的值。
 
 ```xml android/app/src/main/AndroidManifest.xml
 <meta-data
   android:name="expo.modules.updates.CODE_SIGNING_CERTIFICATE"
-  android:value="(insert XML-escaped certificate here)"
+  android:value="(在此处插入 XML 转义后的证书)"
   />
 <meta-data
   android:name="expo.modules.updates.CODE_SIGNING_METADATA"
@@ -115,11 +115,11 @@ Now add the following two fields, and replace the `android:value` for the `expo.
 
 </Collapsible>
 
-<Collapsible summary="Configure code signing in an iOS native project">
+<Collapsible summary="在 iOS 原生项目中配置代码签名">
 
-You will need to add two fields to the `<dict>` element in **ios/project-name/Supporting/Expo.plist**.
+你需要在 **ios/project-name/Supporting/Expo.plist** 中的 `<dict>` 元素添加两个字段。
 
-Before doing that, we need to generate an XML-escaped version of your certificate. You can either copy the contents of **certs/certificate.pem** and replace all of the `\r` characters with `&#xD;`, or run the following script to do that for you:
+在此之前，我们需要先生成证书的 XML 转义版本。你可以手动复制 **certs/certificate.pem** 的内容，并将所有 `\r` 字符替换为 `&#xD;`，也可以运行以下脚本来自动完成：
 
 <Terminal
   cmdCopy={`node -e "console.log(require('fs').readFileSync('./certs/certificate.pem', 'utf8').replace(/\\r/g, '&#xD;'));"`}
@@ -129,13 +129,13 @@ Before doing that, we need to generate an XML-escaped version of your certificat
   ]}
 />
 
-Now add the following two fields, and replace the certificate value with the XML-escaped certificate. You do not need to update the `EXUpdatesCodeSigningMetadata` field.
+现在添加以下两个字段，并将证书值替换为 XML 转义后的证书。你不需要更新 `EXUpdatesCodeSigningMetadata` 字段。
 
 ```xml ios/project-name/Supporting/Expo.plist
     <key>EXUpdatesCodeSigningCertificate</key>
     <string>-----BEGIN CERTIFICATE-----&#xD;
-(insert XML-escaped certificate, it should look something like this)&#xD;
-(spanning multiple lines with \r escaped but \n not escaped)&#xD;
+(插入 XML 转义后的证书，它看起来应该类似这样)&#xD;
+(跨越多行，\r 已转义但 \n 未转义)&#xD;
 +-----END CERTIFICATE-----&#xD;
 </string>
     <key>EXUpdatesCodeSigningMetadata</key>
@@ -151,47 +151,47 @@ Now add the following two fields, and replace the certificate value with the XML
 
 <br />
 
-With code signing configured, create a new build with a new runtime version. The code signing certificate will be embedded in this new build.
+配置好代码签名后，使用新的 runtime version 创建一个新构建。代码签名证书将被嵌入到这个新构建中。
 
 </Step>
 
 <Step label="3">
-## Publish a signed update for your app
+## 为你的应用发布已签名更新
 
 <Terminal cmd={['$ eas update --private-key-path ../keys/private-key.pem']} />
 
-During an EAS Update publish using `eas update`, the EAS CLI automatically detects that code signing is configured for your app. It then verifies the integrity of the update and creates a digital signature using your private key. This process is performed locally so that your private key never leaves your machine. The generated signature is automatically sent to EAS to store alongside the update.
+在使用 `eas update` 发布 EAS Update 期间，EAS CLI 会自动检测你的应用是否已配置代码签名。随后它会验证更新的完整性，并使用你的私钥创建数字签名。此过程在本地执行，因此你的私钥永远不会离开你的机器。生成的签名会自动发送给 EAS，以便与更新一同存储。
 
 </Step>
 
 <Step label="4">
-## Verify that the update is loaded
+## 验证更新已加载
 
-Download the update on the client (this step is done automatically by the library). The build from step (2) that is configured for code signing checks if there is a new update available. The server responds with the update published in step (3) and its generated signature. After being downloaded but before being applied, the update is verified against the embedded certificate and included signature. The update is applied if the certificate and signature are valid, and rejected otherwise.
+在客户端上下载该更新（这一步由库自动完成）。在第 (2) 步中配置了代码签名的构建会检查是否有可用的新更新。服务器会返回第 (3) 步发布的更新及其生成的签名。更新在下载后、应用前，会使用嵌入的证书和包含的签名进行验证。如果证书和签名有效，则应用该更新；否则会被拒绝。
 
 </Step>
 
-## Additional information
+## 其他信息
 
-### Key rotation
+### 密钥轮换
 
-Key rotation is the process by which the key pair used for signing updates is changed. This is most commonly done in a few cases:
+密钥轮换是指更改用于签名更新的密钥对。最常见于以下几种情况：
 
-- Key expiration. In step (1) from the section above, we set `certificate-validity-duration-years` to 10 years (though it can be configured to any value). This means that after 10 years, updates signed with the private key corresponding to the certificate will no longer be applied after being downloaded by the app. Updates downloaded before the expiration of their signing certificate will continue to function normally. Rotating keys well before the certificate expires helps to preempt any potential key expiration issues and helps to guarantee all users are using the new certificate before the old certificate expires.
-- Private key compromise. If the private key used to sign updates is accidentally exposed to the public, it can no longer be considered secure and therefore the integrity of updates signed with it can no longer be guaranteed. For example, a malicious actor could craft a malicious update and sign it with the leaked private key.
-- Key rotation for security best practices. It is best practice to rotate keys periodically to ensure that a system is resilient to manual key rotation in response to one of the other reasons above.
+- 密钥过期。在上文第 (1) 步中，我们将 `certificate-validity-duration-years` 设置为 10 年（尽管它可以配置为任意值）。这意味着 10 年后，使用与证书对应的私钥签名的更新，在被应用下载后将不再被应用。在证书过期之前下载的更新将继续正常运行。在证书过期前提前轮换密钥，有助于预先避免任何潜在的证书过期问题，并有助于确保所有用户在旧证书过期前都已使用新证书。
+- 私钥泄露。如果用于签名更新的私钥意外暴露给公众，那么它将不再能被视为安全，因此用它签名的更新的完整性也无法再得到保证。例如，恶意行为者可能构造一个恶意更新并使用泄露的私钥对其签名。
+- 为安全最佳实践而进行的密钥轮换。定期轮换密钥是最佳实践，以确保系统能够在面对上述其他原因之一时，具备手动轮换密钥的韧性。
 
-In any of these cases, the procedure is similar:
+在任何这些情况下，流程都类似：
 
-1. Back up the old keys and certificate that were generated in step (1) above.
-2. Generate a new key by following the steps above starting from step (1). To assist in debugging, you may wish to change the `keyid` of the new key by modifying the `updates.codeSigningMetadata.keyid` field in your app config (**app.json**).
-3. The code signing certificate is part of the app's runtime, so a new runtime version should be set for builds using this certificate to ensure that only updates signed with the new key run in the new build.
-4. Publish signed updates using the new key by following step (3) above.
+1. 备份上面第 (1) 步生成的旧密钥和证书。
+2. 按照上述步骤从第 (1) 步开始生成新密钥。为了便于调试，你可能希望通过修改应用配置（**app.json**）中的 `updates.codeSigningMetadata.keyid` 字段来更改新密钥的 `keyid`。
+3. 代码签名证书属于应用的 runtime，因此使用此证书的构建应设置新的 runtime version，以确保新构建中只运行使用新密钥签名的更新。
+4. 按照上面的第 (3) 步，使用新密钥发布已签名更新。
 
-### Removing code signing
+### 移除代码签名
 
-The process of removing code signing from an app is similar to [key rotation](#key-rotation) and can be thought of as a key rotation to a `null` key.
+从应用中移除代码签名的过程与[key rotation](#key-rotation)类似，可以将其视为将密钥轮换到一个 `null` 密钥。
 
-1. Backup the old key and certificate that were generated in step (1) above.
-2. Remove the `updates.codeSigningMetadata` field from your app config (**app.json**).
-3. The new certificate-less app is a new distinct runtime, so a new runtime version should be set for builds to ensure that only unsigned updates run in the new build.
+1. 备份上面第 (1) 步生成的旧密钥和证书。
+2. 从应用配置（**app.json**）中移除 `updates.codeSigningMetadata` 字段。
+3. 不含证书的新应用是一个新的独立 runtime，因此应为构建设置新的 runtime version，以确保新构建中只运行未签名的更新。

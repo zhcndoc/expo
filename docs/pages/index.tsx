@@ -16,7 +16,7 @@ function Home() {
     <DocumentationPage
       hideTOC
       hideFromSearch
-      description="Build one JavaScript/TypeScript project that runs natively on all your users' devices.">
+      description="构建一个 JavaScript/TypeScript 项目，让用户的所有设备都能原生运行。">
       <div className="h-0">
         <DevicesImageMasks />
       </div>

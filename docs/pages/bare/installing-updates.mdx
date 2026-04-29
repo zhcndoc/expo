@@ -1,51 +1,51 @@
 ---
-title: Install expo-updates in an existing React Native project
-sidebar_title: Install expo-updates
-description: Learn how to install and configure expo-updates in your existing React Native project.
+title: 在现有的 React Native 项目中安装 expo-updates
+sidebar_title: 安装 expo-updates
+description: 了解如何在现有的 React Native 项目中安装和配置 expo-updates。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal, DiffBlock } from '~/ui/components/Snippet';
 
-`expo-updates` is a library that enables your app to manage remote updates to your application code. It communicates with the configured remote update service to get information about available updates. This guide explains how to set up a bare React Native project for use with [EAS Update](/eas-update/introduction), a hosted remote update service that includes tools to simplify installation and configuration of the `expo-updates` library.
+`expo-updates` 是一个库，可让你的应用管理应用代码的远程更新。它会与已配置的远程更新服务通信，以获取可用更新的信息。本指南说明如何为裸 React Native 项目配置，以便与 [EAS Update](/eas-update/introduction) 一起使用；EAS Update 是一个托管的远程更新服务，提供工具来简化 `expo-updates` 库的安装和配置。
 
-<Collapsible summary="Do you use Continuous Native Generation (CNG) in your project?">
+<Collapsible summary="你在项目中使用 Continuous Native Generation（CNG）吗？">
 
-You may be reading the wrong guide. To use `expo-updates` in a project that uses [CNG](/workflow/continuous-native-generation/), see [EAS Update "Get started"](/eas-update/getting-started/).
+你可能在查看错误的指南。要在使用 [CNG](/workflow/continuous-native-generation/) 的项目中使用 `expo-updates`，请参阅 [EAS Update “Get started”](/eas-update/getting-started/)。
 
 </Collapsible>
 
-## Prerequisites
+## 先决条件
 
-**The `expo` package must be installed and configured.** If you created your project with `npx @react-native-community/cli@latest init` and do not have any other Expo libraries installed, you will need to [install Expo modules](/bare/installing-expo-modules) before proceeding.
+**必须安装并配置 `expo` 包。** 如果你使用 `npx @react-native-community/cli@latest init` 创建项目，并且没有安装任何其他 Expo 库，那么在继续之前，你需要先[安装 Expo modules](/bare/installing-expo-modules)。
 
-## Installation
+## 安装
 
-To get started, install `expo-updates`:
+开始之前，先安装 `expo-updates`：
 
 <Terminal cmd={['$ npx expo install expo-updates']} />
 
-Then, install pods for iOS:
+然后，安装 iOS 的 pods：
 
 <Terminal cmd={['$ npx pod-install']} />
 
-## Configuring expo-updates library
+## 配置 expo-updates 库
 
-Apply the changes from the diffs from the following sections to configure `expo-updates` in your project.
+按照以下各节中的 diff 进行相应更改，以便在项目中配置 `expo-updates`。
 
-### JavaScript and JSON
+### JavaScript 和 JSON
 
-Run `eas update:configure` to set the `updates` URL and `projectId` in **app.json**.
+运行 `eas update:configure`，在 **app.json** 中设置 `updates` URL 和 `projectId`。
 
 <Terminal cmd={['$ eas update:configure']} />
 
-Modify the `expo` section of **app.json**. If you created your project using `npx @react-native-community/cli@latest init`, you will need to add the following changes including the [`updates` URL](/versions/latest/config/app/#url).
+修改 **app.json** 的 `expo` 部分。如果你是使用 `npx @react-native-community/cli@latest init` 创建的项目，则需要添加以下更改，包括 [`updates` URL](/versions/latest/config/app/#url)。
 
-> The example `updates` URL and `projectId` shown below are used with EAS Update. The EAS CLI sets this URL correctly for the EAS Update service when running `eas update:configure`.
+> 下方示例中的 `updates` URL 和 `projectId` 适用于 EAS Update。运行 `eas update:configure` 时，EAS CLI 会为 EAS Update 服务正确设置此 URL。
 
 <DiffBlock source="/static/diffs/expo-updates-app-json.diff" />
 
-If you want to set up a [custom `expo-updates` server](https://github.com/expo/custom-expo-updates-server) instead, add your URL to `updates.url` in **app.json**.
+如果你想改为设置一个[自定义 `expo-updates` 服务器](https://github.com/expo/custom-expo-updates-server)，请在 **app.json** 中将你的 URL 添加到 `updates.url`。
 
 <DiffBlock
   raw={`diff --git a/app.json b/app.json
@@ -67,25 +67,25 @@ index 0000000..1111111 100644
 
 ### Android
 
-Modify **android/app/build.gradle** to check for the JS engine configuration (JSC or Hermes) in Expo files:
+修改 **android/app/build.gradle**，以检查 Expo 文件中的 JS 引擎配置（JSC 或 Hermes）：
 
 <DiffBlock source="/static/diffs/expo-updates-android-build-gradle.diff" />
 
-Modify **android/app/src/main/AndroidManifest.xml** to add the `expo-updates` configuration XML so that it matches the contents of **app.json**:
+修改 **android/app/src/main/AndroidManifest.xml**，添加 `expo-updates` 配置 XML，使其与 **app.json** 的内容一致：
 
 <DiffBlock source="/static/diffs/expo-updates-android-manifest.diff" />
 
-If using the updates server URL (a custom non-HTTPS update server running on the same machine), you will need to modify **android/app/src/main/AndroidManifest.xml** to add the update server URL and enable `usesCleartextTraffic`:
+如果使用更新服务器 URL（在同一台机器上运行的自定义非 HTTPS 更新服务器），你需要修改 **android/app/src/main/AndroidManifest.xml**，添加更新服务器 URL 并启用 `usesCleartextTraffic`：
 
 <DiffBlock source="/static/diffs/expo-updates-android-manifest-cleartext.diff" />
 
-Add the Expo runtime version string key to **android/app/src/main/res/values/strings.xml**:
+将 Expo 运行时版本字符串键添加到 **android/app/src/main/res/values/strings.xml**：
 
 <DiffBlock source="/static/diffs/expo-updates-strings-xml.diff" />
 
 ### iOS
 
-Add the file **Podfile.properties.json** to the **ios** directory:
+将文件 **Podfile.properties.json** 添加到 **ios** 目录：
 
 ```json ios/Podfile.properties.json
 {
@@ -93,11 +93,11 @@ Add the file **Podfile.properties.json** to the **ios** directory:
 }
 ```
 
-Modify **ios/Podfile** to check for the JS engine configuration (JSC or Hermes) in Expo files:
+修改 **ios/Podfile**，以检查 Expo 文件中的 JS 引擎配置（JSC 或 Hermes）：
 
 <DiffBlock source="/static/diffs/expo-updates-ios-podfile.diff" />
 
-Using Xcode, add **Expo.plist** file to **ios/your-project/Supporting** with the following content to match the contents of **app.json**:
+使用 Xcode，将 **Expo.plist** 文件添加到 **ios/your-project/Supporting**，内容如下，以与 **app.json** 的内容保持一致：
 
 ```xml Expo.plist
 <?xml version="1.0" encoding="UTF-8"?>
@@ -118,9 +118,9 @@ Using Xcode, add **Expo.plist** file to **ios/your-project/Supporting** with the
 </plist>
 ```
 
-## Next steps
+## 后续步骤
 
-- To start using EAS Update with EAS Build, see the EAS Update [Get started](/eas-update/getting-started/).
-- See [`expo-updates` API reference](/versions/latest/sdk/updates/) for more information on how to use the library.
-- See how to use [EAS Update with a local build directly](/eas-update/standalone-service/).
-- It is also possible to use `expo-updates` with a custom server that implements the [Expo Updates protocol](/technical-specs/expo-updates-1/). See [`custom-expo-updates-server` README](https://github.com/expo/custom-expo-updates-server#readme).
+- 要开始将 EAS Update 与 EAS Build 一起使用，请参阅 EAS Update 的 [Get started](/eas-update/getting-started/)。
+- 有关如何使用该库的更多信息，请参阅 [`expo-updates` API reference](/versions/latest/sdk/updates/)。
+- 了解如何直接在本地构建中使用 [EAS Update with a local build directly](/eas-update/standalone-service/)。
+- 你也可以将 `expo-updates` 与实现了 [Expo Updates protocol](/technical-specs/expo-updates-1/) 的自定义服务器一起使用。请参阅 [`custom-expo-updates-server` README](https://github.com/expo/custom-expo-updates-server#readme)。

@@ -14,8 +14,8 @@ export function Talks() {
     <>
       <div className="mt-3 flex items-center gap-2">
         <Header
-          title="Watch our latest talks"
-          description="Explore our team's presentations. Stay informed and gain expertise."
+          title="观看最新演讲"
+          description="浏览我们团队的演讲内容，保持了解并持续提升。"
           className="mt-0"
         />
         <Button
@@ -23,7 +23,7 @@ export function Talks() {
           className="ml-auto"
           rightSlot={<ArrowRightIcon />}
           href="/additional-resources/#talks">
-          See more talks
+          查看更多演讲
         </Button>
       </div>
       <TalkGridWrapper>
@@ -67,7 +67,7 @@ export function TalkGridCell({
       openInNewTab
       href={link ?? `https://www.youtube.com/watch?v=${videoId}`}
       className={mergeClasses(
-        'border-default bg-default relative flex h-full min-h-[266px] flex-col justify-between overflow-hidden rounded-lg border shadow-xs transition',
+        'border-default bg-default relative flex h-full min-h-66.5 flex-col justify-between overflow-hidden rounded-lg border shadow-xs transition',
         '[&_h2]:my-0! [&_h3]:mt-0!',
         'hocus:shadow-sm',
         className
@@ -76,15 +76,11 @@ export function TalkGridCell({
       <div>
         <div
           style={{
-            backgroundImage: `url(${
-              thumbnail
-                ? `/static/thumbnails/${thumbnail}`
-                : `https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`
-            })`,
+            backgroundImage: `url(${thumbnail ? `/static/thumbnails/${thumbnail}` : `https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`})`,
           }}
-          className="border-b-default max-sm-gutters:h-[168px] h-[138px] border-b bg-cover bg-center"
+          className="border-b-default max-sm-gutters:h-42 h-34.5 border-b bg-cover bg-center"
         />
-        <div className="bg-default flex min-h-[30px] items-start justify-between gap-1 px-4 py-3">
+        <div className="bg-default flex min-h-7.5 items-start justify-between gap-1 px-4 py-3">
           <LABEL className="block leading-normal">{title}</LABEL>
           <ArrowUpRightIcon className="icon-sm text-icon-secondary mt-1 shrink-0" />
         </div>

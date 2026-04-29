@@ -1,78 +1,78 @@
 ---
-title: Troubleshooting Proxies
-sidebar_title: Proxies
-description: Learn about troubleshooting proxies with a set of recommended tools.
+title: 代理故障排查
+sidebar_title: 代理
+description: 了解如何使用一组推荐工具来排查代理问题。
 ---
 
-## macOS proxy configuration (Sierra)
+## macOS 代理配置（Sierra）
 
-> If anything goes wrong, you can revert to the "Automatic Proxy settings" in System Network Preferences using Automatic Proxy Configuration `your-corporate-proxy-uri:port-number/proxy.pac`.
+> 如果出现任何问题，你可以在系统网络偏好设置中，使用自动代理配置 `your-corporate-proxy-uri:port-number/proxy.pac` 回退到“自动代理设置”。
 
-### Overview
+### 概述
 
-To run this in the local iOS Simulator while on your corporate Wi-Fi network, a local proxy manager is required. You can use a local proxy application such as [Charles](http://charlesproxy.com).
+要在连接公司 Wi-Fi 网络时，在本地 iOS 模拟器中运行此项，需要一个本地代理管理器。你可以使用诸如 [Charles](http://charlesproxy.com) 这样的本地代理应用。
 
-#### Open macOS network preferences
+#### 打开 macOS 网络偏好设置
 
-1. Open `System Preferences` for your Mac (Apple Menu > System Preferences).
-2. Go to Network.
-3. Be sure your `Location` is set to your proxy network, and not "Automatic".
-4. With Wi-Fi selected on the left and/or ethernet connection, click `Advanced...` on the bottom right side of the window.
+1. 为你的 Mac 打开 `系统偏好设置`（Apple 菜单 > 系统偏好设置）。
+2. 进入 网络。
+3. 确保你的 `位置` 设置为你的代理网络，而不是“自动”。
+4. 左侧选中 Wi-Fi 和/或以太网连接后，点击窗口右下角的 `高级...`。
 
-#### Configure proxy address
+#### 配置代理地址
 
-1. Disable/uncheck "Automatic Proxy Configuration" if it is set.
-2. Check "Web Proxy (HTTP)" and set "Web Proxy Server" to 127.0.0.1 : 8888
-3. Check "Secure Web Proxy (HTTPS)" and set "Secure Web Proxy Server" to 127.0.0.1 : 8888
+1. 如果已设置，禁用/取消勾选“自动代理配置”。
+2. 勾选“网页代理 (HTTP)”，并将“网页代理服务器”设置为 127.0.0.1 : 8888
+3. 勾选“安全网页代理 (HTTPS)”，并将“安全网页代理服务器”设置为 127.0.0.1 : 8888
 
-### Configure `Charles`
+### 配置 `Charles`
 
-1. Open Charles
-2. If it asks, don't allow it to manage your macOS Network Configuration, the previous steps do that. (If you change Charles port, update the previous step to the correct port instead of default 8888)
-3. In the menu of Charles go to `Proxy > External Proxy Settings`, check `Use external proxy servers`
-4. Check `Web Proxy (HTTP)`, and enter `your-corporate-proxy-uri:port-number`
-5. Check `Proxy server requires a password`
+1. 打开 Charles
+2. 如果它询问你，不要允许它管理你的 macOS 网络配置，前面的步骤已经完成了这件事。（如果你更改了 Charles 端口，请将前面的步骤更新为正确的端口，而不是默认的 8888）
+3. 在 Charles 的菜单中进入 `Proxy > External Proxy Settings`，勾选 `Use external proxy servers`
+4. 勾选 `Web Proxy (HTTP)`，并输入 `your-corporate-proxy-uri:port-number`
+5. 勾选 `Proxy server requires a password`
 6. Domain: YOUR DOMAIN,
    Username: YOUR USERNAME
    Password: YOUR PASSWORD
-7. Same for Secure Web Proxy (HTTPS). _Be sure to fill in the same proxy, username, and password address_ fields.
-8. In the text area for `Bypass external proxies for the following hosts:` enter:
+7. Secure Web Proxy (HTTPS) 也同样设置。_请确保填写相同的代理、用户名和密码地址_字段。
+8. 在 `Bypass external proxies for the following hosts:` 的文本区域中输入：
 
    ```text
    localhost
    *.local
    ```
 
-   You may need to include your mail server or other corporate network addresses.
+   你可能还需要包含你的邮件服务器或其他公司网络地址。
 
-9. Check "Always bypass external proxies for localhost"
+9. 勾选“Always bypass external proxies for localhost”
 
-### iOS Simulator configuration
+### iOS 模拟器配置
 
-If you have an existing iOS Simulator custom setup going that is not working, "Simulator > Reset Content and Settings" from the menu.
+如果你已经有一个正在使用但无法正常工作的 iOS 模拟器自定义配置，请从菜单中选择“Simulator > Reset Content and Settings”。
 
-If you have the Simulator open still, quit it.
+如果模拟器仍然打开，请退出它。
 
-Now, in Charles under the "Help" menu > Install Charles Root Certificate, and then again for Install Charles Root Certificate in iOS Simulators
+现在，在 Charles 的“Help”菜单中选择 > Install Charles Root Certificate，然后再为 iOS Simulators 执行一次 Install Charles Root Certificate
 
-> **Technical note:** This whole process is required because the iOS Simulator is served a bum proxy certificate instead of the actual certificate, and doesn't allow it, for https://exp.host/ which is required to run Expo. <br /> **Also note:** Configure applications that need internet access, such as Spotify, to use http://localhost:8888 as your proxy. Some apps, such as Chrome and Firefox, you can configure in the settings to use your "System Network Preferences" which will use Charles : 8888, or no proxy, depending on how you have your "Location" set in the Apple menu/network preferences. If you are set to "Automatic" no proxy is used, if it is set to "your proxy network" the proxy is used and Charles will need to be running.
+> **技术说明：** 之所以需要整个过程，是因为 iOS 模拟器拿到的是一个错误的代理证书，而不是实际证书，并且不允许它用于 https://exp.host/，而 Expo 的运行需要这个地址。 <br /> **另请注意：** 将需要互联网访问的应用（例如 Spotify）配置为使用 http://localhost:8888 作为代理。一些应用（如 Chrome 和 Firefox）可以在设置中配置为使用“系统网络偏好设置”，这将根据你在 Apple 菜单/网络偏好设置中设置的“位置”使用 Charles : 8888，或者不使用代理。如果你设置为“自动”，则不使用代理；如果设置为“your proxy network”，则会使用代理，并且 Charles 需要正在运行。
 
-## Command line application proxy configuration
+## 命令行应用代理配置
 
-npm, git, Brew, Curl, and any other command line applications need proxy access too.
+npm、git、Brew、Curl 以及任何其他命令行应用也需要代理访问。
 
-#### For npm
+#### 对于 npm
 
-Open `~/.npmrc` and set:
+打开 `~/.npmrc` 并设置：
 
 ```ini .npmrc
 http_proxy=http://localhost:8888
 https_proxy=http://localhost:8888
 ```
 
-### For git
+### 对于 git
 
-Open `~/.gitconfig` and set
+打开 `~/.gitconfig` 并设置
 
 ```ini .gitconfig
 [http]
@@ -81,9 +81,9 @@ Open `~/.gitconfig` and set
   proxy = http://localhost:8888
 ```
 
-### For command line applications
+### 对于命令行应用
 
-Depending on your shell, and config, Open `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc` or wherever you set your shell variables and set:
+根据你的 shell 和配置，打开 `~/.bashrc`、`~/.bash_profile`、`~/.zshrc`，或者你设置 shell 变量的其他位置，并设置：
 
 ```bash
 export HTTP_PROXY="http://localhost:8888"
@@ -94,4 +94,4 @@ export HTTPS_PROXY="http://localhost:8888"
 export https_proxy="http://localhost:8888"
 ```
 
-> If you switch your network location back to "Automatic" to use npm or git, you will need to comment these lines out using a `#` before the line you wish to disable. You could alternatively use a command-line proxy manager if you prefer.
+> 如果你将网络位置切回“自动”以使用 npm 或 git，你需要在想要禁用的行前面添加 `#` 将这些行注释掉。或者，如果你愿意，也可以使用命令行代理管理器。

@@ -1,7 +1,7 @@
 ---
-title: Configure EAS Submit with eas.json
-sidebar_title: Configure with eas.json
-description: Learn how to configure your project for EAS Submit with eas.json.
+title: 使用 eas.json 配置 EAS Submit
+sidebar_title: 使用 eas.json 配置
+description: 了解如何使用 eas.json 为 EAS Submit 配置你的项目。
 ---
 
 import { EasSubmitIcon } from '@expo/styleguide-icons/custom/EasSubmitIcon';
@@ -9,13 +9,13 @@ import { EasSubmitIcon } from '@expo/styleguide-icons/custom/EasSubmitIcon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 
-**eas.json** is the configuration file for EAS CLI and services. It is generated when the [`eas build:configure` command](/build/setup/#configure-the-project) runs for the first time in your project and is located next to **package.json** at the root of your project. Even though **eas.json** is not mandatory for using EAS Submit, it makes your life easier if you need to switch between different configurations.
+**eas.json** 是 EAS CLI 和服务的配置文件。它会在你的项目中首次运行 [`eas build:configure` 命令](/build/setup/#configure-the-project) 时生成，并位于项目根目录中 **package.json** 的旁边。尽管使用 EAS Submit 并非必须提供 **eas.json**，但如果你需要在不同配置之间切换，它会让事情变得更轻松。
 
 ## Production profile
 
-Running `eas submit` without specifying a profile name will use the `production` profile if it is already defined in **eas.json** to configure the submission. If no values exist in the `production` profile, EAS CLI will prompt you to provide the values interactively.
+如果运行 `eas submit` 时不指定 profile 名称，并且 **eas.json** 中已定义 `production` profile，则会使用 `production` profile 来配置提交。如果 `production` profile 中没有任何值，EAS CLI 会提示你以交互方式提供这些值。
 
-The `production` profile shown below is required to run Android and iOS submissions in a CI/CD process, like with [EAS Workflows](/eas/workflows/introduction/):
+下面展示的 `production` profile 是在 CI/CD 流程中运行 Android 和 iOS 提交所必需的，例如使用 [EAS Workflows](/eas/workflows/introduction/)：
 
 ```json eas.json
 {
@@ -35,36 +35,36 @@ The `production` profile shown below is required to run Android and iOS submissi
 }
 ```
 
-Learn more about the values you can set with the [Android specific options](/eas/json/#android-specific-options-1) and the [iOS specific options](/eas/json/#ios-specific-options-1). You can also learn how to submit to the [Apple App Store](/submit/ios) and the [Google Play Store](/submit/android).
+了解更多关于你可以设置的值，请参阅 [Android specific options](/eas/json/#android-specific-options-1) 和 [iOS specific options](/eas/json/#ios-specific-options-1)。你也可以了解如何提交到 [Apple App Store](/submit/ios) 和 [Google Play Store](/submit/android)。
 
 ## Multiple profiles
 
-The JSON object under `submit` can contain multiple submit profiles. Each profile under `submit` can have an arbitrary name as shown in the example below:
+`submit` 下的 JSON 对象可以包含多个 submit profile。`submit` 下的每个 profile 都可以拥有任意名称，如下方示例所示：
 
 {/* prettier-ignore */}
 ```json eas.json
 {
   "cli": {
-    "version": /* @info Required EAS CLI version range. */"SEMVER_RANGE"/* @end */,
-    "requireCommit": /* @info If true, ensures that all changes are committed before a build. Defaults to false. */boolean/* @end */
+    "version": /* @info 必需的 EAS CLI 版本范围。 */"SEMVER_RANGE"/* @end */,
+    "requireCommit": /* @info 如果为 true，则确保在构建之前已提交所有更改。默认值为 false。 */boolean/* @end */
   },
   "build": {
-    // EAS Build configuration
+    // EAS Build 配置
     /* @hide ... */ /* @end */
   },
   "submit": {
-    /* @info any arbitrary name - used as an identifier */"SUBMIT_PROFILE_NAME_1"/* @end */: {
+    /* @info 任意名称 - 用作标识符 */"SUBMIT_PROFILE_NAME_1"/* @end */: {
       "android": {
-        /* @info Android-specific configuration */...ANDROID_OPTIONS/* @end */
+        /* @info Android 特定配置 */...ANDROID_OPTIONS/* @end */
       },
       "ios": {
-        /* @info iOS-specific configuration */...IOS_OPTIONS/* @end */
+        /* @info iOS 特定配置 */...IOS_OPTIONS/* @end */
       }
     },
-    /* @info any arbitrary name - used as an identifier */"SUBMIT_PROFILE_NAME_2"/* @end */: {
+    /* @info 任意名称 - 用作标识符 */"SUBMIT_PROFILE_NAME_2"/* @end */: {
       "extends": "SUBMIT_PROFILE_NAME_1",
       "android": {
-        /* @info Android-specific configuration */...ANDROID_OPTIONS/* @end */
+        /* @info Android 特定配置 */...ANDROID_OPTIONS/* @end */
       }
     },
     /* @hide ... */ /* @end */
@@ -72,31 +72,31 @@ The JSON object under `submit` can contain multiple submit profiles. Each profil
 }
 ```
 
-When you select a build for submission, it chooses the profile that is used for the selected build. If the profile does not exist, it selects the default `production` profile.
+当你选择一个用于提交的构建时，它会选择该构建所使用的配置文件。如果该配置文件不存在，则会选择默认的 `production` 配置文件。
 
-You can also use EAS CLI to pick up another `submit` profile by specifying it with a parameter, for example:
+你也可以通过指定参数来使用 EAS CLI 选择另一个 `submit` 配置文件，例如：
 
 <Terminal
   cmd={[
-    '# Replace the <profile-name> with a submit profile from the eas.json',
+    '# 将 <profile-name> 替换为 eas.json 中的一个 submit 配置文件',
     '$ eas submit --platform ios --profile <profile-name>',
   ]}
   cmdCopy="eas submit --platform ios --profile"
 />
 
-## Share configuration between `submit` profiles
+## 在 `submit` 配置文件之间共享配置
 
-A `submit` profile can extend another profile using the `extends` key.
+`submit` 配置文件可以使用 `extends` 键扩展另一个配置文件。
 
-For example, in the `preview` profile you may have `"extends": "production"`. This makes the `preview` profile inherit the configuration of the `production` profile.
+例如，在 `preview` 配置文件中，你可能有 `"extends": "production"`。这会使 `preview` 配置文件继承 `production` 配置文件的配置。
 
-You can keep chaining profile extensions up to the depth of 5 as long as you avoid making circular dependencies.
+只要避免创建循环依赖，你可以继续链式扩展配置文件，最多可达 5 层深度。
 
-## Next step
+## 下一步
 
 <BoxLink
   title="EAS Submit schema reference"
-  description="Learn about available properties  for EAS Submit to configure and override their default behavior from within your project."
+  description="了解可用于 EAS Submit 的属性，以及如何在项目中配置它们并覆盖其默认行为。"
   href="/eas/json/#eas-submit"
   Icon={EasSubmitIcon}
 />

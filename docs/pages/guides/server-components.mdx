@@ -1,7 +1,7 @@
 ---
-title: Using React Server Components in Expo Router apps
+title: 在 Expo Router 应用中使用 React Server Components
 sidebar_title: React Server Components
-description: Learn about rendering React components on the server in Expo.
+description: 了解在 Expo 中于服务器端渲染 React 组件。
 ---
 
 import { Cloud01Icon } from '@expo/styleguide-icons/outline/Cloud01Icon';
@@ -9,31 +9,31 @@ import { Cloud01Icon } from '@expo/styleguide-icons/outline/Cloud01Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 
-> [Experimentally](/more/release-statuses/#experimental) available in **SDK 52 and later**. This is a [beta](/more/release-statuses/#beta) release and subject to breaking changes.
+> [实验性](/more/release-statuses/#experimental) 可用，适用于 **SDK 52 及更高版本**。这是一个 [beta](/more/release-statuses/#beta) 版本，可能会发生破坏性变更。
 
-React Server Components enable a number of exciting capabilities, including:
+React Server Components 支持许多令人兴奋的能力，包括：
 
-- Data fetching with async components and React Suspense.
-- Working with secrets and server-side APIs.
-- Server-side rendering (SSR) for SEO and performance.
-- Build-time rendering to remove unused JS code.
+- 使用异步组件和 React Suspense 进行数据获取。
+- 使用密钥和服务端 API。
+- 用于 SEO 和性能的服务端渲染（SSR）。
+- 构建时渲染，以移除未使用的 JS 代码。
 
-Expo Router enables support for [React Server Components](https://react.dev/reference/rsc/server-components) on all platforms. This is an early [preview](/more/release-statuses/#preview) of a feature that will be enabled by default in Expo Router.
+Expo Router 在所有平台上都支持 [React Server Components](https://react.dev/reference/rsc/server-components)。这是该功能的早期 [预览](/more/release-statuses/#preview)，未来将会在 Expo Router 中默认启用。
 
-## Prerequisites
+## 前置条件
 
-Your project must use Expo Router and React Native new architecture (default from SDK 52).
+你的项目必须使用 Expo Router 和 React Native 新架构（从 SDK 52 开始默认启用）。
 
-## Usage
+## 用法
 
-To use React Server Components in your Expo app, you need to:
+要在 Expo 应用中使用 React Server Components，你需要：
 
-1. Install the required RSC dependency
+1. 安装所需的 RSC 依赖
 
    <Terminal cmd={['$ npx expo install react-server-dom-webpack']} />
 
-2. Ensure the entry module is `expo-router/entry` (default) in **package.json**.
-3. Enable the flag in the project app config:
+2. 确保入口模块在 **package.json** 中是 `expo-router/entry`（默认）。
+3. 在项目 app 配置中启用该标志：
 
 ```json app.json
 {
@@ -45,8 +45,8 @@ To use React Server Components in your Expo app, you need to:
 }
 ```
 
-4. Ensure `"origin"` is not set to a boolean value anywhere in your app config.
-5. Create an initial route **app/index.tsx**:
+4. 确保你的 app 配置中的任何位置都没有将 `"origin"` 设置为布尔值。
+5. 创建一个初始路由 **app/index.tsx**：
 
 ```tsx app/index.tsx (Client Component)
 /// <reference types="react/canary" />
@@ -59,7 +59,7 @@ export default function Index() {
   return (
     <React.Suspense
       fallback={
-        // The view that will render while the Server Function is awaiting data.
+        // 在 Server Function 等待数据期间将渲染的视图。
         <ActivityIndicator />
       }>
       {renderInfo({ name: 'World' })}
@@ -68,7 +68,7 @@ export default function Index() {
 }
 ```
 
-4. Create a Server Function **actions/render-info.tsx**:
+4. 创建一个 Server Function **actions/render-info.tsx**：
 
 ```tsx actions/render-info.tsx (Server Function)
 'use server';
@@ -76,20 +76,20 @@ export default function Index() {
 import { Text } from 'react-native';
 
 export default async function renderInfo({ name }) {
-  // Securely fetch data from an API, and read environment variables...
+  // 安全地从 API 获取数据，并读取环境变量...
   return <Text>Hello, {name}!</Text>;
 }
 ```
 
-The views return value of the Server Function is a React Server Component payload that will be streamed to the client.
+Server Function 的视图返回值是一个 React Server Component payload，它将被流式传输到客户端。
 
-> `web.output` must be `single` in the app config during the developer preview. Support for more output modes is coming soon.
+> 在开发者预览期间，app 配置中的 `web.output` 必须为 `single`。更多输出模式的支持即将推出。
 
 ## Server Components
 
-Server Components run in the server, meaning they can access server APIs and Node.js built-ins (when running locally). They can also use async components.
+Server Components 在服务端运行，这意味着它们可以访问服务端 API 和 Node.js 内置模块（在本地运行时）。它们也可以使用异步组件。
 
-Consider the following component which fetches data and renders it:
+考虑下面这个会获取数据并渲染它的组件：
 
 ```tsx components/pokemon.tsx
 import 'server-only';
@@ -112,18 +112,18 @@ export async function Pokemon() {
 }
 ```
 
-To render this as a server component, you'll need to return it from a Server Function.
+要将其作为 server component 渲染，你需要从一个 Server Function 中返回它。
 
-### Key points
+### 重点
 
-- You cannot use hooks like `useState`, `useEffect`, or `useContext` in Server Components.
-- You cannot use browser or native APIs in Server Components.
-- `"use server"` is not meant to mark a file as a server component. It's used to mark a file as having React Server Functions exported from it.
-- Server components have access to all environment variables as they run securely off the client.
+- 你不能在 Server Components 中使用 `useState`、`useEffect` 或 `useContext` 之类的 hooks。
+- 你不能在 Server Components 中使用浏览器或原生 API。
+- `"use server"` 并不意味着将文件标记为 server component。它用于标记文件中导出了 React Server Functions。
+- Server components 可以访问所有环境变量，因为它们在客户端之外安全运行。
 
 ## Client Components
 
-Since Server Components cannot access native APIs or React Context, you can create a Client Component to use these features. They are created by marking files with the `"use client"` directive at the top.
+由于 Server Components 不能访问原生 API 或 React Context，你可以创建一个 Client Component 来使用这些特性。它们通过在文件顶部添加 `"use client"` 指令来创建。
 
 ```tsx components/button.tsx
 'use client';
@@ -134,17 +134,17 @@ export default function Button({ title }) {
 }
 ```
 
-This module can be imported and used in a Server Function or Server Component.
+这个模块可以在 Server Function 或 Server Component 中导入并使用。
 
-### Key point
+### 重点
 
-You cannot pass functions as props to Server Components. You can only pass serializable data.
+你不能向 Server Components 传递函数作为 props。你只能传递可序列化的数据。
 
 ## React Server Functions
 
-Server Functions are functions that run on the server and can be called from Client Components. Think of them like fully-typed API routes that are easier to write.
+Server Functions 是在服务器上运行，并且可以从 Client Components 中调用的函数。可以把它们看作更易编写的、完全类型化的 API 路由。
 
-They must always be an async function and are marked with `"use server"` at the top of the function.
+它们必须始终是一个 async 函数，并且在函数顶部用 `"use server"` 标记。
 
 ```tsx app/index.tsx
 export default function Index() {
@@ -153,7 +153,7 @@ export default function Index() {
       title="Press me"
       onPress={async () => {
         'use server';
-        // This code runs on the server.
+        // 这段代码在服务器上运行。
         console.log('Button pressed');
         return '...';
       }}
@@ -162,7 +162,7 @@ export default function Index() {
 }
 ```
 
-You can create a Client Component to invoke the Server Function:
+你可以创建一个 Client Component 来调用这个 Server Function：
 
 ```tsx components/button.tsx
 'use client';
@@ -173,7 +173,7 @@ export default function Button({ title, onPress }) {
 }
 ```
 
-Server Functions can also be defined in a standalone file (with `"use server"` at the top) and imported from Client Components:
+Server Functions 也可以定义在一个独立文件中（在顶部带有 `"use server"`），然后从 Client Components 中导入：
 
 ```tsx components/server-actions.tsx
 'use server';
@@ -183,7 +183,7 @@ export async function callAction() {
 }
 ```
 
-These can be used in a Client Component:
+它们可以在 Client Component 中这样使用：
 
 ```tsx components/button.tsx
 import { Text } from 'react-native';
@@ -194,23 +194,23 @@ export default function Button({ title }) {
 }
 ```
 
-### Key points
+### 重点
 
-- You can only pass serializable data to Server Functions as arguments.
-- Server Functions can only return serializable data.
-- Server Functions run on the server and are a good place to put logic that should not be exposed to the client.
-- Server Functions currently cannot be used inside of DOM components
+- 作为参数传给 Server Functions 时，你只能传递可序列化的数据。
+- Server Functions 只能返回可序列化的数据。
+- Server Functions 在服务器上运行，是放置那些不应暴露给客户端的逻辑的好地方。
+- Server Functions 目前不能在 DOM 组件内部使用
 
-### Rendering in Server Functions
+### 在 Server Functions 中渲染
 
-React Server Functions in Expo Router can render React components on the server and stream back an **RSC payload** (a custom JSON-like format that's maintained by the React team) for rendering on the client. This is similar to server-side rendering (SSR) on the web.
+Expo Router 中的 React Server Functions 可以在服务器上渲染 React 组件，并将一个 **RSC payload**（由 React 团队维护的一种自定义 JSON 风格格式）流式返回，用于在客户端渲染。这类似于 Web 上的服务端渲染（SSR）。
 
-For example, the following Server Function will render some text:
+例如，下面的 Server Function 会渲染一些文本：
 
 ```tsx components/server-actions.tsx
 'use server';
 
-// Optional: Import "server-only" for sanity.
+// 可选：出于保险起见，导入 "server-only"。
 import 'server-only';
 
 import { View, Image, Text } from 'react-native';
@@ -222,19 +222,19 @@ export async function renderProfile({
   username: string;
   accessToken: string;
 }) {
-  // NOTE: Rate limits, GDPR, and other server-side operations can be done here.
+  // 注意：这里可以进行限流、GDPR 和其他服务端操作。
 
-  // Fetch some data securely from an API.
+  // 安全地从 API 获取一些数据。
   const { name, image } = await fetch(`https://api.example.com/profile/${username}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      // Use secret environment variables securely as this code will live on the server.
-      // The EXPO_PUBLIC_ prefix is not required here.
+      // 由于这段代码会运行在服务器上，请安全地使用机密环境变量。
+      // 这里不需要 EXPO_PUBLIC_ 前缀。
       'X-Secret': process.env.SECRET,
     },
   }).then(res => res.json());
 
-  // Render
+  // 渲染
   return (
     <View>
       <Image source={{ uri: image }} />
@@ -244,7 +244,7 @@ export async function renderProfile({
 }
 ```
 
-This Server Function can be invoked from a Client Component and the contents will be streamed back to the client:
+这个 Server Function 可以从 Client Component 中调用，内容将流式返回到客户端：
 
 ```tsx components/profile.tsx
 'use client';
@@ -255,7 +255,7 @@ import { Text } from 'react-native';
 
 import { renderProfile } from '@/components/server-actions';
 
-// Loading state that renders while data is being fetched.
+// 在数据获取期间渲染的加载状态。
 function Fallback() {
   return <Text>Loading...</Text>;
 }
@@ -264,40 +264,40 @@ export default function Profile() {
   const { username } = useLocalSearchParams();
   const { accessToken } = useCustomAuthProvider();
 
-  // Call the Server Function with the username and access token.
+  // 使用用户名和访问令牌调用 Server Function。
   const profile = React.useMemo(
     () => renderProfile({ username, accessToken }),
     [username, accessToken]
   );
 
-  // Render the profile asynchronously with React Suspense and a custom loading state.
+  // 使用 React Suspense 和自定义加载状态异步渲染 profile。
   return <React.Suspense fallback={<Fallback />}>{profile}</React.Suspense>;
 }
 ```
 
-## Library compatibility
+## 库兼容性
 
-Not all libraries are optimized for React Server Components yet. You can use the `"use client"` directive to mark a file as a Client Component and use it in a Server Component. This can be used to temporarily workaround compatibility issues.
+并非所有库都已针对 React Server Components 进行优化。你可以使用 `"use client"` 指令将文件标记为 Client Component，并在 Server Component 中使用它。这可以用来临时规避兼容性问题。
 
-For example, consider a library `react-native-unoptimized` that does not ship with `"use client"` directives yet. You can workaround this by creating a module and re-exporting each module:
+例如，考虑一个还没有附带 `"use client"` 指令的库 `react-native-unoptimized`。你可以通过创建一个模块并逐个重新导出这些模块来规避：
 
 ```tsx lib/react-native-unoptimized.tsx
-// This directive opts the module into client-side rendering.
+// 该指令将此模块设为客户端渲染。
 'use client';
 
-// Re-exporting the imports from the library.
+// 从库中重新导出这些导入。
 export { One, Two, Three } from 'react-native-unoptimized';
 ```
 
-Avoid using `export * from '...'` as this breaks some of the internals of interopting between the server and client.
+避免使用 `export * from '...'`，因为这会破坏 server 和 client 之间互操作的一些内部机制。
 
-Modules marked with `"use client"` cannot be dot-accessed from Server Components. This means operations like `StyleSheet.create` or `Platform.OS` will not work on the server without further optimization in the `react-native` package.
+在 Server Components 中，带有 `"use client"` 的模块不能通过点语法访问。这意味着像 `StyleSheet.create` 或 `Platform.OS` 这样的操作在没有 `react-native` 包中进一步优化的情况下将无法在服务器上工作。
 
 ## Suspense
 
-You can stream back partial UI from the server while waiting for data to load by using React Suspense.
+你可以使用 React Suspense，在等待数据加载时从服务器流式返回部分 UI。
 
-In the following example, a `Loading...` text is returned instantly on the client, and when the `<MediumTask>` finishes rendering one second later, it will replace the text with `Medium task done!`. The `<ExpensiveTask>` will take three seconds to load, and when it finishes, it will replace the text with `Expensive task done!`.
+在下面的示例中，客户端会立即返回 `Loading...` 文本，而当 `<MediumTask>` 在一秒后完成渲染时，它会将文本替换为 `Medium task done!`。`<ExpensiveTask>` 需要三秒才能加载，完成后会将文本替换为 `Expensive task done!`。
 
 ```tsx app/index.tsx (Client Component)
 import { Suspense } from 'react';
@@ -325,32 +325,32 @@ export async function renderTasks() {
 }
 
 async function MediumTask() {
-  // Wait one second before resolving.
+  // 等待一秒后再解析。
   await new Promise(resolve => setTimeout(resolve, 1000));
   return <Text>Medium task done!</Text>;
 }
 
 async function ExpensiveTask() {
-  // Wait three seconds before resolving.
+  // 等待三秒后再解析。
   await new Promise(resolve => setTimeout(resolve, 3000));
   return <Text>Expensive task done!</Text>;
 }
 ```
 
-If you remove the `Suspense` wrapper around `<ExpensiveTask>`, you'll see that the `Loading...` waits for both components to finish rendering before updating the UI. This enables you to control the loading state incrementally. Sometimes, it makes sense to wait for everything to load at once (most of the time), while other times, it is beneficial to stream back UI as soon as you have (like the text response in ChatGPT).
+如果你移除 `<ExpensiveTask>` 外层的 `Suspense` 包裹，你会发现 `Loading...` 会等待这两个组件都渲染完成后才更新 UI。这使你能够逐步控制加载状态。有时候，一次性等待所有内容加载完成是有意义的（大多数情况下），而在其他时候，只要有内容就尽快流式返回 UI 会更有帮助（比如 ChatGPT 中的文本响应）。
 
-## Secrets
+## 密钥
 
-Server Components can access secrets and server-side APIs. You can use the `process.env` object to access environment variables. You can ensure a module never runs on the client by importing the `server-only` module in your project.
+Server Components 可以访问密钥和服务端 API。你可以使用 `process.env` 对象来访问环境变量。你可以在项目中导入 `server-only` 模块，以确保某个模块永远不会在客户端运行。
 
 ```tsx actions/renderData.tsx
-// This will assert if the module runs on the client.
+// 如果该模块在客户端运行，这里会抛出断言。
 import 'server-only';
 
 import { Text } from 'react-native';
 
 export async function renderData() {
-  // This code only runs on the server.
+  // 这段代码只会在服务器上运行。
   const data = await fetch('https://my-endpoint/', {
     headers: {
       Authorization: `Bearer ${process.env.SECRET}`,
@@ -362,29 +362,29 @@ export async function renderData() {
 }
 ```
 
-You can define the secret in your **.env** file:
+你可以在 **.env** 文件中定义密钥：
 
 ```text .env
 SECRET=123
 ```
 
-> You do not need to restart the dev server to update environment variables. They are automatically reloaded on every request.
+> 你无需重启开发服务器即可更新环境变量。它们会在每次请求时自动重新加载。
 
-## Platform detection
+## 平台检测
 
-To detect which platform your code is bundled for, use the `process.env.EXPO_OS` environment variable. For example, `process.env.EXPO_OS === 'ios'`. Prefer this to `Platform.OS` as `react-native` is not fully optimized for React Server Components yet and won't work as expected.
+要检测你的代码被打包到哪个平台，请使用 `process.env.EXPO_OS` 环境变量。例如，`process.env.EXPO_OS === 'ios'`。相比 `Platform.OS`，更推荐使用它，因为 `react-native` 目前还没有为 React Server Components 做完全优化，并且可能无法按预期工作。
 
-You can detect if code is running on the server by performing a `typeof window === 'undefined'` check. This will always return `true` on client devices and `false` on the server.
+你可以通过执行 `typeof window === 'undefined'` 检查来判断代码是否在服务器上运行。这在客户端设备上总会返回 `true`，在服务器上返回 `false`。
 
-## Testing with jest
+## 使用 jest 进行测试
 
-Library authors can test their modules support Server Components by using `jest-expo`. Learn more in the [Testing React Server Components](/guides/testing-rsc) guide.
+库作者可以使用 `jest-expo` 测试他们的模块是否支持 Server Components。更多信息请参阅 [Testing React Server Components](/guides/testing-rsc) 指南。
 
-## Metadata
+## 元数据
 
-React Server Components are a feature of React 19. To enable them, Expo CLI automatically uses a special canary build of React on all platforms. In the future, it will be removed when React 19 is enabled by default in React Native.
+React Server Components 是 React 19 的一项特性。为了启用它们，Expo CLI 会在所有平台上自动使用 React 的特殊 canary 构建版本。未来，当 React Native 默认启用 React 19 时，它将被移除。
 
-As a result, you can use React 19 features such as placing `<meta>` tags anywhere in your app (web-only).
+因此，你可以使用 React 19 的功能，例如在应用中的任意位置放置 `<meta>` 标签（仅限 web）。
 
 ```tsx app/index.tsx
 export default function Index() {
@@ -392,7 +392,7 @@ export default function Index() {
     <>
       {process.env.EXPO_OS === 'web' && (
         <>
-          <meta name="description" content="Hello, world!" />
+          <meta name="description" content="你好，世界！" />
           <meta property="og:image" content="/og-image.png" />
         </>
       )}
@@ -402,11 +402,11 @@ export default function Index() {
 }
 ```
 
-You can use this instead of the `Head` component from `expo-router/head`, but it only works on web for now.
+你可以用它来替代 `expo-router/head` 中的 `Head` 组件，但目前它仅在 web 上可用。
 
-## Request headers
+## 请求头
 
-You can access the request headers used to make the request to the Server Component using the `expo-router/rsc/headers` module.
+你可以使用 `expo-router/rsc/headers` 模块访问用于向 Server Component 发起请求时所使用的请求头。
 
 ```tsx actions/renderHome.tsx
 import { unstable_headers } from 'expo-router/rsc/headers';
@@ -418,20 +418,20 @@ export async function renderHome() {
 }
 ```
 
-The `unstable_headers` function returns a promise that resolves to a read-only `Headers` object.
+`unstable_headers` 函数返回一个 promise，该 promise 会解析为一个只读的 `Headers` 对象。
 
-### Key points
+### 要点
 
-- This API cannot be used with build-time rendering (`render: 'static'`) because the headers dynamically change based on the request. In the future, this API will assert if the output mode is `static`.
-- `unstable_headers` is server-only and cannot be used on the client.
+- 该 API 不能与构建时渲染（`render: 'static'`）一起使用，因为请求头会根据请求动态变化。未来，如果输出模式为 `static`，该 API 将会抛出断言。
+- `unstable_headers` 仅限服务器端使用，不能在客户端使用。
 
-## Full React Server Components mode
+## 完整 React Server Components 模式
 
-> **important** This mode is [experimental](/more/release-statuses/#experimental).
+> **重要** 该模式处于 [实验阶段](/more/release-statuses/#experimental)。
 
-Enabling full React Server Components support allows you to leverage even more features. In this mode, the default rendering mode for routes is server components instead of client components. It is still in development, as the Router and React Navigation need to be rewritten to support concurrency.
+启用完整的 React Server Components 支持后，你可以利用更多功能。在此模式下，路由的默认渲染模式是 Server Components，而不是 Client Components。它仍在开发中，因为路由器和 React Navigation 需要重写以支持并发。
 
-To enable full Server Components mode, you need to enable the `reactServerComponentRoutes` flag in the app config:
+要启用完整的 Server Components 模式，你需要在 app 配置中启用 `reactServerComponentRoutes` 标志：
 
 ```json app.json
 {
@@ -444,16 +444,16 @@ To enable full Server Components mode, you need to enable the `reactServerCompon
 }
 ```
 
-With this enabled, all routes will render as Server Components by default. In the future this will reduce server/client waterfalls and enable build-time rendering to provide better offline support.
+启用后，所有路由默认都会以 Server Components 的形式渲染。未来，这将减少服务端/客户端之间的瀑布式请求，并启用构建时渲染以提供更好的离线支持。
 
-- There is currently no stack routing. The custom layouts, `Stack`, `Tabs`, and `Drawer`, do not support Server Components yet.
-- Most `Link` component props are not supported yet.
+- 目前没有栈式路由。自定义布局、`Stack`、`Tabs` 和 `Drawer` 目前都还不支持 Server Components。
+- 大多数 `Link` 组件属性目前也不支持。
 
-### Reloading Server Components
+### 重新加载 Server Components
 
-> This is limited to full React Server Components mode.
+> 这仅限于完整 React Server Components 模式。
 
-Server Components are reloaded on every request in development. This means that you can make changes to your server components and see them reflected immediately in the client runtime. You may want to manually trigger a reload event programmatically to refetch data or re-render the component. This can be done using the `router.reload()` function from the `useRouter` hook.
+Server Components 会在开发环境中于每次请求时重新加载。这意味着你可以修改服务器组件，并在客户端运行时中立即看到这些改动反映出来。你可能希望通过程序方式手动触发一次重新加载事件，以便重新获取数据或重新渲染组件。可以通过 `useRouter` 钩子中的 `router.reload()` 函数来实现。
 
 ```tsx components/button.tsx
 'use client';
@@ -465,60 +465,60 @@ export function Button() {
   return (
     <Text
       onPress={() => {
-        // Reload the current route.
+        // 重新加载当前路由。
         router.reload();
       }}>
-      Reload current route
+      重新加载当前路由
     </Text>
   );
 }
 ```
 
-If the route was rendered at build-time, it will not be re-rendered on the client. This is because the rendering code is not included in the production server.
+如果该路由是在构建时渲染的，那么它不会在客户端重新渲染。这是因为渲染代码并未包含在生产服务器中。
 
-### Build-time rendering
+### 构建时渲染
 
-> This is limited to full React Server Components mode.
+> 这仅限于完整 React Server Components 模式。
 
-Expo Router supports two different modes of rendering Server Components: build-time rendering and request-time rendering. These modes can be indicated on a per-route basis by using the `unstable_settings` export:
+Expo Router 支持两种不同的 Server Components 渲染模式：构建时渲染和请求时渲染。可以通过使用 `unstable_settings` 导出，在每个路由的基础上指定这些模式：
 
 ```tsx app/index.tsx
 import { Text, View } from 'react-native';
 
 export const unstable_settings = {
-  // This component will be rendered at build-time and never re-rendered in production.
+  // 该组件将在构建时渲染，并且在生产环境中永远不会重新渲染。
   render: 'static',
 };
 
 export default function Index() {
   return (
     <View>
-      <Text>Hello, world!</Text>
+      <Text>你好，世界！</Text>
     </View>
   );
 }
 ```
 
-- `render: 'static'` will render the component at build-time and never re-render it in production. This is similar to how classic static site generators work.
-- `render: 'dynamic'` will render the component at request-time and re-render it on every request. This is similar to how server-side rendering works.
+- `render: 'static'` 会在构建时渲染该组件，并且在生产环境中永远不会重新渲染它。这类似于传统静态站点生成器的工作方式。
+- `render: 'dynamic'` 会在请求时渲染该组件，并在每次请求时重新渲染它。这类似于服务端渲染的工作方式。
 
-If you want client-side rendering, move your data fetching to a Client Component and control the rendering locally.
+如果你想要客户端渲染，请将数据获取移动到 Client Component，并在本地控制渲染。
 
-Routes marked with `static` output will be rendered at build-time and embedded in the native binary. This enables rendering routes without making a server request (because the server request was made when the app was downloaded).
+标记为 `static` 输出的路由会在构建时渲染，并嵌入到原生二进制文件中。这使得无需向服务器发起请求即可渲染路由（因为服务器请求已在应用被下载时完成）。
 
-The current default is `dynamic` rendering. In the future, we'll change the caching and optimizations to be smarter and more automatic.
+当前默认值是 `dynamic` 渲染。未来，我们会让缓存和优化变得更智能、更自动化。
 
-You can generate static pages at build-time with the `generateStaticParams` function. This is useful for components that must only run at build-time and not on the server.
+你可以使用 `generateStaticParams` 函数在构建时生成静态页面。这对于只能在构建时运行而不能在服务器上运行的组件很有用。
 
 ```tsx app/shapes/[shape].tsx
 import { Text } from 'react-native';
 
-// Adding `unstable_settings.render: 'static'` will prevent this component from running on the server.
+// 添加 `unstable_settings.render: 'static'` 将阻止此组件在服务器上运行。
 export const unstable_settings = {
   render: 'static',
 };
 
-// This function will generate static pages for each shape.
+// 该函数将为每种形状生成静态页面。
 export async function generateStaticParams() {
   return [{ shape: 'square' }];
 }
@@ -530,61 +530,61 @@ export default function ShapeRoute({ shape }) {
 
 ### CSS
 
-> This is limited to full React Server Components mode.
+> 这仅限于完整 React Server Components 模式。
 
-Expo Router supports importing global CSS and CSS modules in Server Components.
+Expo Router 支持在 Server Components 中导入全局 CSS 和 CSS 模块。
 
 ```tsx app/index.tsx
 import './styles.css';
 import styles from './styles.module.css';
 
 export default function Index() {
-  return <div className={styles.container}>Hello, world!</div>;
+  return <div className={styles.container}>你好，世界！</div>;
 }
 ```
 
-The CSS will be hoisted into the client bundle from the server.
+CSS 会从服务器提升到客户端 bundle 中。
 
-## Deployment
+## 部署
 
-> Universal React Server Components are still in [beta](/more/release-statuses/#beta).
+> 通用 React Server Components 仍处于 [beta](/more/release-statuses/#beta) 阶段。
 
 ### Web
 
-First, build the web project:
+首先，构建 web 项目：
 
 <Terminal cmd={['$ npx expo export -p web']} />
 
-Then you can host it locally with `npx expo serve` or deploy it to the cloud:
+然后你可以使用 `npx expo serve` 在本地托管它，或者将其部署到云端：
 
 <BoxLink
-  title="Deploy instantly with EAS"
-  description="EAS Hosting is the best way to deploy your Expo API routes and servers."
+  title="使用 EAS 立即部署"
+  description="EAS Hosting 是部署你的 Expo API 路由和服务器的最佳方式。"
   href="/eas/hosting/get-started"
   Icon={Cloud01Icon}
 />
 
-### Native
+### 原生
 
-You can deploy your native React Server Components by following the server deployment guide:
+你可以按照服务器部署指南来部署你的原生 React Server Components：
 
 <BoxLink
-  title="Deploy native servers to EAS"
-  description="Deploy and link versioned servers to your production native apps."
+  title="将原生服务器部署到 EAS"
+  description="将版本化服务器部署并关联到你的生产原生应用。"
   href="/router/web/api-routes#native-deployment"
   Icon={Cloud01Icon}
 />
 
-## Known limitations
+## 已知限制
 
-> This is a very early technical preview that we're actively developing.
+> 这是一个非常早期的技术预览版，我们正在积极开发中。
 
-- Expo Snack does not support bundling Server Components.
-- EAS Update does not work with Server Components yet.
-- DOM components cannot use React Server Functions in production yet.
-- Production deployment is limited and not recommended yet.
-- Server Rendering RSC payloads to HTML is not supported yet. This means static and server output doesn't fully work yet.
-- [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) is only partially supported in full React Server Components mode.
-- HTML `form` integration with Server Functions is not supported yet (this partially works automatically, but data is not encrypted).
-- `StyleSheet.create` and `Platform.OS` are not supported on native. Use standard objects for styles and `process.env.EXPO_OS` for platform detection.
-- React Server Functions that invoke other Server Functions are not supported on Hermes due to a limitation in the Hermes runtime. This may be resolved with Static Hermes.
+- Expo Snack 不支持打包 Server Components。
+- EAS Update 目前还不能与 Server Components 一起使用。
+- DOM 组件目前还不能在生产环境中使用 React Server Functions。
+- 生产部署的限制较多，目前还不推荐使用。
+- 将 RSC payload 进行服务端渲染并输出为 HTML 目前还不支持。这意味着静态输出和服务器输出目前都还不能完全正常工作。
+- [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) 在完整 React Server Components 模式下仅获得部分支持。
+- HTML `form` 与 Server Functions 的集成目前不支持（虽然这部分会自动工作，但数据不会被加密）。
+- `StyleSheet.create` 和 `Platform.OS` 在原生平台上不受支持。样式请使用标准对象，平台检测请使用 `process.env.EXPO_OS`。
+- 在 Hermes 运行时存在限制，因此在 Hermes 上不支持调用其他 Server Functions 的 React Server Functions。这个问题可能会通过 Static Hermes 得到解决。

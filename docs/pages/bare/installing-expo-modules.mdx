@@ -1,7 +1,7 @@
 ---
-title: Install Expo modules in an existing React Native project
-sidebar_title: Install Expo modules
-description: Learn how to prepare your existing React Native project to install and use any Expo module.
+title: 在现有 React Native 项目中安装 Expo 模块
+sidebar_title: 安装 Expo 模块
+description: 了解如何准备你的现有 React Native 项目，以安装和使用任何 Expo 模块。
 ---
 
 import InstallSection from '~/components/plugins/InstallSection';
@@ -9,89 +9,85 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 import { DiffBlock } from '~/ui/components/Snippet';
 
-To use Expo modules in your app, you will need to install and configure the `expo` package.
+要在你的应用中使用 Expo 模块，你需要安装并配置 `expo` 包。
 
-The `expo` package has a small footprint; it includes only a minimal set of packages that are needed in nearly every app and the module and autolinking infrastructure that other Expo SDK packages are built with. Once the `expo` package is installed and configured in your project, you can use `npx expo install` to add any other Expo module from the SDK.
+`expo` 包体积很小；它只包含几乎每个应用都需要的一小组基础包，以及其他 Expo SDK 包所依赖的模块和自动链接基础设施。只要 `expo` 包已在你的项目中安装并配置好，你就可以使用 `npx expo install` 来添加 SDK 中的任何其他 Expo 模块。
 
-Depending on how you [initialized the project](/bare/overview/), there are two ways you can install the Expo modules: [automatically](#automatic-installation) or [manually](#manual-installation).
+根据你[初始化项目](/bare/overview/)的方式不同，你可以通过两种方式安装 Expo 模块：[自动](#automatic-installation)或[手动](#manual-installation)。
 
-## Automatic installation
+## 自动安装
 
-To install and use Expo modules, the easiest way to get up and running is with the `install-expo-modules` command.
+要安装并使用 Expo 模块，最简单的上手方式是使用 `install-expo-modules` 命令。
 
 <InstallSection
   packageName="expo"
   cmd={[
-    '# Install and configure the expo package automatically',
+    '# 自动安装并配置 expo 包',
     '$ npx install-expo-modules@latest',
   ]}
   hideBareInstructions
 />
 
-- <YesIcon small /> **When the command succeeds**, you will be able to add any Expo module in your
-  app! Proceed to [Usage](#usage) for more information.
+- <YesIcon small /> **当命令成功执行时**，你就可以在应用中添加任意 Expo 模块了！更多信息请继续查看[用法](#usage)。
 
-- <NoIcon small /> **If the command fails**, follow the manual installation instructions. Updating
-  code programmatically can be tricky, and if your project deviates significantly from a default
-  React Native project, then you need to perform manual installation and adapt the instructions here
-  to your codebase.
+- <NoIcon small /> **如果命令失败**，请按照手动安装说明进行操作。以编程方式更新代码可能比较棘手，如果你的项目与默认的 React Native 项目有较大差异，那么你需要执行手动安装，并将此处的说明适配到你的代码库中。
 
-## Manual installation
+## 手动安装
 
-The following instructions apply to installing the latest version of Expo modules in React Native 0.83. For previous versions, check the [native upgrade helper](/bare/upgrade) to see how these files are customized.
+以下说明适用于在 React Native 0.83 中安装最新版 Expo 模块。对于更早的版本，请查看[native upgrade helper](/bare/upgrade)以了解这些文件是如何定制的。
 
 <InstallSection packageName="expo" cmd={['$ npm install expo']} hideBareInstructions />
 
-Once installation is complete, apply the changes from the following diffs to configure Expo modules in your project. This is expected to take about five minutes, and you may need to adapt it slightly depending on how customized your project is.
+安装完成后，请根据下面的差异内容对项目进行相应修改，以在你的项目中配置 Expo 模块。这预计需要大约五分钟，并且根据你的项目定制程度，可能需要稍作调整。
 
-### Configuration for Android
+### Android 配置
 
 <DiffBlock source="/static/diffs/expo-android.diff" />
 
-### Configuration for iOS
+### iOS 配置
 
 <DiffBlock source="/static/diffs/expo-ios.diff" />
 
-Optionally, you can also add additional delegate methods to your **AppDelegate.swift**. Some libraries may require them, so unless you have a good reason to leave them out, it is recommended to add them. [See delegate methods in AppDelegate.swift](https://github.com/expo/expo/blob/sdk-54/templates/expo-template-bare-minimum/ios/HelloWorld/AppDelegate.swift#L24-L42).
+你也可以选择在 **AppDelegate.swift** 中添加额外的 delegate 方法。有些库可能需要它们，因此除非你有充分理由不添加，否则建议添加。[查看 AppDelegate.swift 中的 delegate 方法](https://github.com/expo/expo/blob/sdk-54/templates/expo-template-bare-minimum/ios/HelloWorld/AppDelegate.swift#L24-L42)。
 
-Save all of your changes and update your iOS Deployment Target in Xcode to <code>iOS 15.1</code>:
+保存所有更改，并在 Xcode 中将 iOS Deployment Target 更新为 <code>iOS 15.1</code>：
 
-- Open **your-project-name.xcworkspace** in Xcode, select your project in the left sidebar.
-- Select **Targets** > **your-project-name** > **Build Settings** > **iOS Deployment Target** and set it to <code>iOS 15.1</code>.
+- 在 Xcode 中打开 **your-project-name.xcworkspace**，在左侧边栏中选择你的项目。
+- 选择 **Targets** > **your-project-name** > **Build Settings** > **iOS Deployment Target**，并将其设置为 <code>iOS 15.1</code>。
 
-The last step is to install the project's CocoaPods again to pull in Expo modules that are detected by `use_expo_modules!` directive that we added to the **Podfile**:
+最后一步是重新安装项目的 CocoaPods，以引入我们在 **Podfile** 中添加的 `use_expo_modules!` 指令所检测到的 Expo 模块：
 
 <InstallSection
   packageName="expo"
   cmd={[
-    '# Install pods',
+    '# 安装 pods',
     '$ npx pod-install',
     '',
-    '# Alternatively, the run command will install them for you',
+    '# 或者，运行命令也会为你安装它们',
     '$ npx expo run:ios',
   ]}
   hideBareInstructions
 />
 
-### Configure Expo CLI for bundling on Android and iOS
+### 配置 Expo CLI 以在 Android 和 iOS 上进行打包
 
-We recommend using Expo CLI and related tooling configurations to bundle your app JavaScript code and assets. This adds support for using the `"main"` field in **package.json** to use [Expo Router](/router/introduction/) library. Not using Expo CLI for bundling may result in unexpected behavior. [Learn more about Expo CLI](/bare/using-expo-cli/).
+我们建议使用 Expo CLI 及相关工具配置来打包应用的 JavaScript 代码和资源文件。这样会增加对在 **package.json** 中使用 `"main"` 字段并使用 [Expo Router](/router/introduction/) 库的支持。未使用 Expo CLI 进行打包可能会导致意外行为。[了解更多关于 Expo CLI 的信息](/bare/using-expo-cli/)。
 
-<Collapsible summary="Use babel-preset-expo in your babel.config.js">
+<Collapsible summary="在 babel.config.js 中使用 babel-preset-expo">
   <DiffBlock source="/static/diffs/babel-config.diff" />
 </Collapsible>
 
-<Collapsible summary="Extend expo/metro-config in your metro.config.js">
+<Collapsible summary="在 metro.config.js 中扩展 expo/metro-config">
   <DiffBlock source="/static/diffs/metro-config.diff" />
 </Collapsible>
 
-<Collapsible summary="Configure Android project to bundle with Expo CLI">
+<Collapsible summary="配置 Android 项目以使用 Expo CLI 打包">
   <DiffBlock source="/static/diffs/expo-cli-android.diff" />
 </Collapsible>
 
-<Collapsible summary="Configure iOS project to bundle with Expo CLI">
+<Collapsible summary="配置 iOS 项目以使用 Expo CLI 打包">
 
-Replace the shell script under **Build Phases** > **Bundle React Native code and images** in Xcode with the following:
+将 Xcode 中 **Build Phases** > **Bundle React Native code and images** 下的 shell 脚本替换为以下内容：
 
 ```sh /bin/sh
 if [[ -f "$PODS_ROOT/../.xcode.env" ]]; then
@@ -101,30 +97,30 @@ if [[ -f "$PODS_ROOT/../.xcode.env.local" ]]; then
   source "$PODS_ROOT/../.xcode.env.local"
 fi
 
-# The project root by default is one level up from the ios directory
+# 默认情况下，项目根目录比 ios 目录上一级
 export PROJECT_ROOT="$PROJECT_DIR"/..
 
 if [[ "$CONFIGURATION" = *Debug* ]]; then
   export SKIP_BUNDLING=1
 fi
 if [[ -z "$ENTRY_FILE" ]]; then
-  # Set the entry JS file using the bundler's entry resolution.
+  # 使用打包器的入口解析来设置入口 JS 文件。
   export ENTRY_FILE="$("$NODE_BINARY" -e "require('expo/scripts/resolveAppEntry')" "$PROJECT_ROOT" ios relative | tail -n 1)"
 fi
 
 if [[ -z "$CLI_PATH" ]]; then
-  # Use Expo CLI
+  # 使用 Expo CLI
   export CLI_PATH="$("$NODE_BINARY" --print "require.resolve('@expo/cli')")"
 fi
 if [[ -z "$BUNDLE_COMMAND" ]]; then
-  # Default Expo CLI command for bundling
+  # Expo CLI 默认的打包命令
   export BUNDLE_COMMAND="export:embed"
 fi
 
 `"$NODE_BINARY" --print "require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'"`
 ```
 
-And add support the `"main"` field in **package.json** by making the following change to **AppDelegate.swift**:
+并通过对 **AppDelegate.swift** 做如下修改来支持 **package.json** 中的 `"main"` 字段：
 
 <DiffBlock
   raw={`diff --git a/ios/AppDelegate.swift b/ios/AppDelegate.swift
@@ -144,39 +140,39 @@ index 0000000..1111111 100644
 
 </Collapsible>
 
-## Usage
+## 用法
 
-### Verifying installation
+### 验证安装
 
-You can verify that the installation was successful by logging a value from [`expo-constants`](/versions/latest/sdk/constants).
+你可以通过从 [`expo-constants`](/versions/latest/sdk/constants) 记录一个值来验证安装是否成功。
 
-- Run `npx expo install expo-constants`
-- Then, run `npx expo run` and modify your app JavaScript code to add the following:
+- 运行 `npx expo install expo-constants`
+- 然后，运行 `npx expo run` 并修改你的应用 JavaScript 代码，添加以下内容：
 
 ```js
 import Constants from 'expo-constants';
 console.log(Constants.systemFonts);
 ```
 
-### Using Expo SDK packages
+### 使用 Expo SDK 包
 
-Once the `expo` package is installed and configured in your project, you can use `npx expo install` to add any other Expo module from the SDK. See [Using Libraries](/workflow/using-libraries) for more information.
+一旦 `expo` 包已在你的项目中安装并配置好，你就可以使用 `npx expo install` 来添加 SDK 中的任何其他 Expo 模块。更多信息请参阅[使用库](/workflow/using-libraries)。
 
-### Expo modules included in the `expo` package
+### `expo` 包中包含的 Expo 模块
 
-The following Expo modules are brought in as dependencies of the `expo` package:
+以下 Expo 模块作为 `expo` 包的依赖被引入：
 
-- [`expo-asset`](/versions/latest/sdk/asset) - A JavaScript-only package that builds around `expo-file-system` and provides a common foundation for assets across all Expo modules.
-- [`expo-constants`](/versions/latest/sdk/constants) - Provides access to the manifest.
-- [`expo-file-system`](/versions/latest/sdk/filesystem) - Interact with the device file system. Used by `expo-asset` and many other Expo modules. Commonly used directly by developers in application code.
-- [`expo-font`](/versions/latest/sdk/font) - Load fonts at runtime. This module is optional and can be safely removed, however; it is recommended if you use `expo-dev-client` for development and it is required by `@expo/vector-icons`.
-- [`expo-keep-awake`](/versions/latest/sdk/keep-awake) - Prevents your device from going to sleep while developing your app. This module is optional and can be safely removed.
+- [`expo-asset`](/versions/latest/sdk/asset) - 一个仅包含 JavaScript 的包，围绕 `expo-file-system` 构建，并为所有 Expo 模块中的资源提供通用基础。
+- [`expo-constants`](/versions/latest/sdk/constants) - 提供对 manifest 的访问。
+- [`expo-file-system`](/versions/latest/sdk/filesystem) - 与设备文件系统交互。被 `expo-asset` 和许多其他 Expo 模块使用。开发者通常也会在应用代码中直接使用它。
+- [`expo-font`](/versions/latest/sdk/font) - 在运行时加载字体。该模块是可选的，并且可以安全移除；不过，如果你在开发中使用 `expo-dev-client`，则建议保留它，并且 `@expo/vector-icons` 也需要它。
+- [`expo-keep-awake`](/versions/latest/sdk/keep-awake) - 在开发你的应用时防止设备进入睡眠状态。该模块是可选的，并且可以安全移除。
 
-To exclude any of these modules, refer to the following guide on [excluding modules from autolinking](#excluding-specific-modules-from-autolinking).
+要排除这些模块中的任何一个，请参阅以下关于[从自动链接中排除模块](#excluding-specific-modules-from-autolinking)的指南。
 
-### Excluding specific modules from autolinking
+### 从自动链接中排除特定模块
 
-If you need to exclude native code from Expo modules you are not using, but were installed by other dependencies, you can use the [`expo.autolinking.exclude`](/modules/autolinking/#exclude) property in **package.json**:
+如果你需要排除你没有使用、但由其他依赖安装进来的 Expo 模块中的原生代码，你可以在 **package.json** 中使用 [`expo.autolinking.exclude`](/modules/autolinking/#exclude) 属性：
 
 ```json package.json
 {

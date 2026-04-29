@@ -1,40 +1,40 @@
 ---
 title: Webhooks
-description: Learn how to configure webhooks to get alerts on EAS Build and Submit completion.
+description: 了解如何配置 webhooks，以便在 EAS Build 和 Submit 完成时接收提醒。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-EAS can alert you as soon as your build or submission is completed via a webhook. Webhooks need to be configured per project. For example, if you want to be alerted for both `@johndoe/awesomeApp` and `@johndoe/coolApp`, in each directory, run the command:
+EAS 可以通过 webhook 在你的构建或提交完成后立即向你发出提醒。Webhook 需要按项目分别配置。例如，如果你想同时为 `@johndoe/awesomeApp` 和 `@johndoe/coolApp` 接收提醒，请在各自目录中运行以下命令：
 
 <Terminal cmd={['$ eas webhook:create']} />
 
-After running it, you'll be prompted to choose the webhook event type (unless you provide the `--event BUILD|SUBMIT` parameter). Next, provide the webhook URL (or specify it with the `--url` flag) that handles HTTP POST requests. Additionally, you'll have to input a webhook signing secret, if you have not already provided it with the `--secret` flag. It must be at least 16 characters long, and it will be used to calculate the signature of the request body which we send as the value of the `expo-signature` HTTP header. You can use the [signature to verify a webhook request](#webhook-server) is genuine.
+运行后，系统会提示你选择 webhook 事件类型（除非你提供了 `--event BUILD|SUBMIT` 参数）。接下来，提供用于处理 HTTP POST 请求的 webhook URL（或者使用 `--url` 标志指定）。此外，如果你还没有通过 `--secret` 标志提供 webhook 签名密钥，则还需要输入它。它必须至少 16 个字符长，并将用于计算请求体的签名；我们会将其作为 `expo-signature` HTTP 标头的值发送。你可以使用 [签名来验证 webhook 请求](#webhook-server) 是否真实有效。
 
-EAS calls your webhook using an HTTP POST request. All the data is passed in the request body. EAS sends the data as a JSON object. If the webhook responds with an HTTP status code outside of the 200-399 range, delivery will be attempted a few more times with exponential back-off.
+EAS 会使用 HTTP POST 请求调用你的 webhook。所有数据都在请求体中传递。EAS 以 JSON 对象的形式发送这些数据。如果 webhook 返回的 HTTP 状态码不在 200-399 范围内，将会以指数退避的方式再尝试发送几次。
 
-Additionally, we send an `expo-signature` HTTP header with the hash signature of the payload. You can use this signature to verify the authenticity of the request. The signature is a hex-encoded HMAC-SHA1 digest of the request body, using your webhook secret as the HMAC key.
+此外，我们会发送一个带有负载哈希签名的 `expo-signature` HTTP 标头。你可以使用这个签名来验证请求的真实性。该签名是请求体的 hex 编码 HMAC-SHA1 摘要，使用你的 webhook 密钥作为 HMAC 密钥。
 
-> If you want to test the above webhook locally, you can use a service such as [ngrok](https://ngrok.com/docs) to forward `localhost:8080` via a tunnel and make it publicly accessible with the URL `ngrok` gives you.
+> 如果你想在本地测试上述 webhook，可以使用 [ngrok](https://ngrok.com/docs) 之类的服务，通过隧道转发 `localhost:8080`，并使用 `ngrok` 提供的 URL 使其可公开访问。
 
-You can always change your webhook URL and/or webhook secret by running command:
+你始终可以通过运行以下命令来更改 webhook URL 和/或 webhook 密钥：
 
 <Terminal cmd={['$ eas webhook:update --id WEBHOOK_ID']} />
 
-You can find the webhook ID by running the command:
+你可以通过运行以下命令找到 webhook ID：
 
 <Terminal cmd={['$ eas webhook:list']} />
 
-If you want us to stop sending requests to your webhook, run the command below and choose the webhook from the list:
+如果你想让我们停止向你的 webhook 发送请求，请运行下面的命令并从列表中选择该 webhook：
 
 <Terminal cmd={['$ eas webhook:delete']} />
 
-## Webhook payload
+## Webhook 负载
 
-<Collapsible summary="Build webhook payload">
+<Collapsible summary="构建 webhook 负载">
 
-The build webhook payload may look as the example below:
+构建 webhook 负载可能如下所示：
 
 ```json
 {
@@ -42,14 +42,14 @@ The build webhook payload may look as the example below:
   "accountName": "dsokal",
   "projectName": "example",
   "buildDetailsPageUrl": "https://expo.dev/accounts/dsokal/projects/example/builds/147a3212-49fd-446f-b4e3-a6519acf264a",
-  "parentBuildId": "75ac0be7-0d90-46d5-80ec-9423fa0aaa6b", // available for build retries
+  "parentBuildId": "75ac0be7-0d90-46d5-80ec-9423fa0aaa6b", // 构建重试时可用
   "appId": "bc0a82de-65a5-4497-ad86-54ff1f53edf7",
   "initiatingUserId": "d1041496-1a59-423a-8caf-479bb978203a",
-  "cancelingUserId": null, // available for canceled builds
-  "platform": "android", // or "ios"
-  "status": "errored", // or: "finished", "canceled"
+  "cancelingUserId": null, // 取消的构建可用
+  "platform": "android", // 或 "ios"
+  "status": "errored", // 或："finished"、"canceled"
   "artifacts": {
-    "buildUrl": "https://expo.dev/artifacts/eas/wyodu9tua2ZuKKiaJ1Nbkn.aab", // available for successful builds
+    "buildUrl": "https://expo.dev/artifacts/eas/wyodu9tua2ZuKKiaJ1Nbkn.aab", // 成功构建时可用
     "logsS3KeyPrefix": "production/f9609423-5072-4ea2-a0a5-c345eedf2c2a"
   },
   "metadata": {
@@ -66,8 +66,8 @@ The build webhook payload may look as the example below:
     "gitCommitHash": "564b61ebdd403d28b5dc616a12ce160b91585b5b",
     "gitCommitMessage": "Add home screen",
     "runtimeVersion": "1.0.2",
-    "channel": "default", // available for EAS Update
-    "releaseChannel": "default", // available for legacy updates
+    "channel": "default", // EAS Update 可用
+    "releaseChannel": "default", // 旧版更新可用
     "reactNativeVersion": "0.60.0",
     "trackingContext": {
       "platform": "android",
@@ -80,7 +80,7 @@ The build webhook payload may look as the example below:
     },
     "credentialsSource": "remote",
     "isGitWorkingTreeDirty": false,
-    "message": "release build", // message attached to the build
+    "message": "release build", // 附加到构建的消息
     "runFromCI": false
   },
   "metrics": {
@@ -94,7 +94,7 @@ The build webhook payload may look as the example below:
     "totalNetworkEgressBytes": 355352,
     "totalNetworkIngressBytes": 78781667
   },
-  // available for failed builds
+  // 失败构建可用
   "error": {
     "message": "Unknown error. Please see logs.",
     "errorCode": "UNKNOWN_ERROR"
@@ -106,18 +106,18 @@ The build webhook payload may look as the example below:
   "completedAt": "2021-11-24T09:57:42.715Z",
   "updatedAt": "2021-11-24T09:57:42.715Z",
   "expirationDate": "2021-12-24T09:53:01.155Z",
-  "priority": "high", // or: "normal", "low"
+  "priority": "high", // 或："normal"、"low"
   "resourceClass": "android-n2-1.3-12",
   "actualResourceClass": "android-n2-1.3-12",
-  "maxRetryTimeMinutes": 3600 // max retry time for failed/canceled builds
+  "maxRetryTimeMinutes": 3600 // 失败/取消的构建最大重试时间
 }
 ```
 
 </Collapsible>
 
-<Collapsible summary="Submit webhook payload">
+<Collapsible summary="提交 webhook 负载">
 
-The submit webhook payload may look as the example below:
+提交 webhook 负载可能如下所示：
 
 ```json
 {
@@ -125,16 +125,16 @@ The submit webhook payload may look as the example below:
   "accountName": "dsokal",
   "projectName": "example",
   "submissionDetailsPageUrl": "https://expo.dev/accounts/dsokal/projects/example/builds/0374430d-7776-44ad-be7d-8513629adc54",
-  "parentSubmissionId": "75ac0be7-0d90-46d5-80ec-9423fa0aaa6b", // available for submission retries
+  "parentSubmissionId": "75ac0be7-0d90-46d5-80ec-9423fa0aaa6b", // 提交重试时可用
   "appId": "23c0e405-d282-4399-b280-5689c3e1ea85",
   "archiveUrl": "http://archive.url/abc.apk",
   "initiatingUserId": "7bee4c21-3eaa-4011-a0fd-3678b6537f47",
-  "cancelingUserId": null, // available for canceled submissions
-  "turtleBuildId": "8c84111e-6d39-449c-9895-071d85fd3e61", // available when submitting a build from EAS
-  "platform": "android", // or "ios"
-  "status": "errored", // or: "finished", "canceled"
+  "cancelingUserId": null, // 取消的提交可用
+  "turtleBuildId": "8c84111e-6d39-449c-9895-071d85fd3e61", // 从 EAS 提交构建时可用
+  "platform": "android", // 或 "ios"
+  "status": "errored", // 或："finished"、"canceled"
   "submissionInfo": {
-    // available for failed submissions
+    // 失败的提交可用
     "error": {
       "message": "Android version code needs to be updated",
       "errorCode": "SUBMISSION_SERVICE_ANDROID_OLD_VERSION_CODE_ERROR"
@@ -144,15 +144,15 @@ The submit webhook payload may look as the example below:
   "createdAt": "2021-11-24T10:15:32.822Z",
   "updatedAt": "2021-11-24T10:17:32.822Z",
   "completedAt": "2021-11-24T10:17:32.822Z",
-  "maxRetryTimeMinutes": 3600 // max retry time for failed/canceled submissions
+  "maxRetryTimeMinutes": 3600 // 失败/取消的提交最大重试时间
 }
 ```
 
 </Collapsible>
 
-## Webhook server
+## Webhook 服务器
 
-Here's an example of how you can implement your server:
+下面是一个如何实现你的服务器的示例：
 
 ```js server.js
 const crypto = require('crypto');
@@ -164,14 +164,14 @@ const app = express();
 app.use(bodyParser.text({ type: '*/*' }));
 app.post('/webhook', (req, res) => {
   const expoSignature = req.headers['expo-signature'];
-  // process.env.SECRET_WEBHOOK_KEY has to match SECRET value set with `eas webhook:create` command
+  // process.env.SECRET_WEBHOOK_KEY 必须与 `eas webhook:create` 命令设置的 SECRET 值一致
   const hmac = crypto.createHmac('sha1', process.env.SECRET_WEBHOOK_KEY);
   hmac.update(req.body);
   const hash = `sha1=${hmac.digest('hex')}`;
   if (!safeCompare(expoSignature, hash)) {
     res.status(500).send("Signatures didn't match!");
   } else {
-    // Do something here.  For example, send a notification to Slack!
+    // 在这里做一些事情。例如，发送一个通知到 Slack！
     // console.log(req.body);
     res.send('OK!');
   }

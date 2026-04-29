@@ -49,7 +49,7 @@ export const NewsletterSignUp = () => {
         });
 
         if (!response.ok) {
-          setError('Failed to subscribe');
+          setError('订阅失败');
           return;
         }
 
@@ -57,7 +57,7 @@ export const NewsletterSignUp = () => {
         setEmail('');
         setUserSignedUp(true);
       } catch {
-        setError('Failed to subscribe');
+        setError('订阅失败');
       }
     }
   }
@@ -66,7 +66,7 @@ export const NewsletterSignUp = () => {
     <div className="max-md-gutters:max-w-full max-w-[350px] flex-1">
       <CALLOUT className="text-secondary flex items-center gap-2 font-medium" id="newsletter-label">
         <Mail01Icon className="text-icon-tertiary shrink-0" />
-        Sign up for the Expo Newsletter
+        订阅 Expo 新闻邮件
       </CALLOUT>
       <form
         className="relative"
@@ -75,7 +75,7 @@ export const NewsletterSignUp = () => {
           void signUpAsync();
         }}>
         {userSignedUp ? (
-          <LABEL className="my-2.5 flex h-12 items-center">Thank you for the sign up! 💙</LABEL>
+          <LABEL className="my-2.5 flex h-12 items-center">感谢订阅！💙</LABEL>
         ) : (
           <Input
             onChange={event => {
@@ -98,14 +98,14 @@ export const NewsletterSignUp = () => {
             className="absolute top-2 right-2.5 min-w-[68px]"
             disabled={userSignedUp || email.length === 0}
             onClick={signUpAsync}>
-            {userSignedUp ? 'Done!' : 'Sign Up'}
+            {userSignedUp ? '完成！' : '订阅'}
           </Button>
         ) : null}
       </form>
       <FOOTNOTE theme="tertiary">
-        Unsubscribe at any time. Read our{' '}
+        可随时取消订阅。阅读我们的{' '}
         <A href="https://expo.dev/privacy" openInNewTab>
-          privacy policy
+          隐私政策
         </A>
         .
       </FOOTNOTE>

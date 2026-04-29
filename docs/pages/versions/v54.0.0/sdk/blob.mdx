@@ -1,6 +1,6 @@
 ---
 title: Blob
-description: A web standards-compliant Blob implementation for React Native.
+description: 一个符合 Web 标准的 Blob 实现，适用于 React Native。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-54/packages/expo-blob'
 packageName: 'expo-blob'
 platforms: ['android', 'ios', 'web', 'expo-go']
@@ -10,96 +10,96 @@ isNew: true
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
 
-`expo-blob` provides a web standards-compliant Blob implementation for React Native that offers superior performance and works consistently across all platforms. It is more reliable compared to the implementation exported from `react-native`, unlike Blob from `react-native`, which has limitations with the `slice()` method and other Web API features.
+`expo-blob` 为 React Native 提供了一个符合 Web 标准的 Blob 实现，具有更优的性能，并且能在所有平台上一致地工作。与从 `react-native` 导出的实现相比，它更加可靠；不同于 `react-native` 中的 Blob，后者在 `slice()` 方法和其他 Web API 特性方面存在限制。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Usage
+## 用法
 
-### Basic blob creation
+### 基本 Blob 创建
 
 ```typescript
 import { Blob } from 'expo-blob';
 
-// Create an empty blob
+// 创建一个空的 blob
 const emptyBlob = new Blob();
 
-// Create a blob from text
+// 从文本创建一个 blob
 const textBlob = new Blob(['Hello, World!'], { type: 'text/plain' });
 
-// Create a blob from binary data
+// 从二进制数据创建一个 blob
 const binaryBlob = new Blob([new Uint8Array([1, 2, 3, 4])], {
   type: 'application/octet-stream',
 });
 
-// Create a blob from mixed content
+// 从混合内容创建一个 blob
 const mixedBlob = new Blob(
   [
     'Text content',
-    new Uint8Array([65, 66, 67]), // ABC in ASCII
+    new Uint8Array([65, 66, 67]), // ASCII 中的 ABC
     'More text',
   ],
   { type: 'text/plain' }
 );
 ```
 
-### Blob properties
+### Blob 属性
 
 ```typescript
 const blob = new Blob(['Hello, World!'], { type: 'text/plain' });
 
-console.log(blob.size); // 13 (bytes)
+console.log(blob.size); // 13（字节）
 console.log(blob.type); // "text/plain"
 ```
 
-### Reading blob content
+### 读取 blob 内容
 
 ```typescript
 const blob = new Blob(['Hello, World!'], { type: 'text/plain' });
 
-// Read as text
+// 读取为文本
 const text = await blob.text();
 console.log(text); // "Hello, World!"
 
-// Read as bytes
+// 读取为字节
 const bytes = await blob.bytes();
 console.log(bytes); // Uint8Array(13) [72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]
 
-// Read as ArrayBuffer
+// 读取为 ArrayBuffer
 const arrayBuffer = await blob.arrayBuffer();
 console.log(arrayBuffer); // ArrayBuffer(13)
 ```
 
-### Slicing blobs
+### 切片 blob
 
 ```typescript
 const blob = new Blob(['Hello, World!'], { type: 'text/plain' });
 
-// Slice from position 0 to 5
+// 从位置 0 切到 5
 const slice1 = blob.slice(0, 5);
 console.log(await slice1.text()); // "Hello"
 
-// Slice from position 7 to end
+// 从位置 7 切到末尾
 const slice2 = blob.slice(7);
 console.log(await slice2.text()); // "World!"
 
-// Slice with custom type
+// 使用自定义类型切片
 const slice3 = blob.slice(0, 5, 'text/html');
 console.log(slice3.type); // "text/html"
 ```
 
-### Streaming
+### 流式传输
 
 ```typescript
 const blob = new Blob(['Large content...'], { type: 'text/plain' });
 
-// Create a readable stream
+// 创建可读流
 const stream = blob.stream();
 const reader = stream.getReader();
 
-// Read chunks
+// 读取块
 while (true) {
   const { done, value } = await reader.read();
   if (done) break;

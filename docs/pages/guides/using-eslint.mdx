@@ -1,6 +1,6 @@
 ---
-title: Using ESLint and Prettier
-description: A guide on configuring ESLint and Prettier to format Expo apps.
+title: 使用 ESLint 和 Prettier
+description: 配置 ESLint 和 Prettier 以格式化 Expo 应用的指南。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -9,58 +9,58 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-[ESLint](https://eslint.org/) is a JavaScript linter that helps you find and fix errors in your code. It's a great tool to help you write better code and catch mistakes before they make it to production. In conjunction, you can use [Prettier](https://prettier.io/docs/en/), a code formatter that ensures all the code files follow a consistent styling.
+[ESLint](https://eslint.org/) 是一个 JavaScript 代码检查器，可帮助你查找并修复代码中的错误。它是一个很棒的工具，能帮助你编写更好的代码，并在问题进入生产环境之前捕获错误。结合使用时，你还可以使用 [Prettier](https://prettier.io/docs/en/)，这是一个代码格式化工具，可确保所有代码文件遵循一致的样式。
 
-This guide provides steps to set up and configure ESLint and Prettier.
+本指南提供了设置和配置 ESLint 与 Prettier 的步骤。
 
 ## ESLint
 
-### Setup
+### 设置
 
-> **info** **From SDK 53 onwards**, the default ESLint config file uses the [Flat config](https://eslint.org/blog/2022/08/new-config-system-part-2/) format. It also supports legacy config. **For SDK 52 and earlier**, the default ESLint config file uses legacy config and does not support Flat config.
+> **info** **从 SDK 53 开始**，默认的 ESLint 配置文件使用 [Flat config](https://eslint.org/blog/2022/08/new-config-system-part-2/) 格式。它也支持旧版配置。**对于 SDK 52 及更早版本**，默认的 ESLint 配置文件使用旧版配置，不支持 Flat config。
 
-To set up ESLint in your Expo project, you can use the Expo CLI to install the necessary dependencies. Running this command also creates a **eslint.config.js** file at the root of your project which extends configuration from [`eslint-config-expo`](https://github.com/expo/expo/tree/main/packages/eslint-config-expo).
+要在你的 Expo 项目中设置 ESLint，你可以使用 Expo CLI 安装所需的依赖项。运行此命令还会在项目根目录创建一个 **eslint.config.js** 文件，该文件会继承来自 [`eslint-config-expo`](https://github.com/expo/expo/tree/main/packages/eslint-config-expo) 的配置。
 
-<Terminal cmd={['# Install and configure ESLint', '$ npx expo lint']} />
+<Terminal cmd={['# 安装并配置 ESLint', '$ npx expo lint']} />
 
-### Usage
+### 用法
 
-> **info** **Recommended:** If you're using VS Code, install the [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) to lint your code as you type.
+> **info** **推荐：** 如果你使用的是 VS Code，请安装 [ESLint 扩展](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)，以便在你输入时对代码进行检查。
 
-You can lint your code manually from the command line with the `npx expo lint` script:
+你可以使用 `npx expo lint` 脚本从命令行手动检查代码：
 
 <Terminal
   cmd={[
-    '# After ESLint has been configured, run the command again to lint your code.',
+    '# 配置好 ESLint 后，再次运行该命令以检查你的代码。',
     '$ npx expo lint',
   ]}
 />
 
-Running the above command will run the `lint` script from **package.json**.
+运行上述命令会执行 **package.json** 中的 `lint` 脚本。
 
 <Terminal
   cmd={[
-    '# Example output for npx expo lint command',
+    '# npx expo lint 命令的示例输出',
     '',
     '/src/components/hello-wave.tsx',
-    '  22:6 warning React Hook useEffect has a missing dependency: "rotateAnimation".',
-    '       Either include it or remove the dependency array react-hooks/exhaustive-deps',
+    '  22:6 warning React Hook useEffect 缺少一个依赖项："rotateAnimation"。',
+    '       请将其包含在内，或移除依赖数组 react-hooks/exhaustive-deps',
     '',
     '✖ 1 problem (0 errors, 1 warning)',
   ]}
 />
 
-### Environment configuration
+### 环境配置
 
-ESLint is generally configured for a single environment. However, the source code is written in JavaScript in an Expo app that runs in multiple different environments. For example, the **app.config.js**, **metro.config.js**, **babel.config.js**, and **src/app/+html.tsx** files are run in a Node.js environment. It means they have access to the global `__dirname` variable and can use Node.js modules such as `path`. Standard Expo project files like **src/app/index.js** can be run in Hermes, Node.js, or the web browser.
+ESLint 通常是为单一环境配置的。但是，在 Expo 应用中，源代码是用 JavaScript 编写的，而应用会运行在多个不同环境中。例如，**app.config.js**、**metro.config.js**、**babel.config.js** 和 **src/app/+html.tsx** 文件会在 Node.js 环境中运行。这意味着它们可以访问全局的 `__dirname` 变量，并且可以使用诸如 `path` 之类的 Node.js 模块。像 **src/app/index.js** 这样的标准 Expo 项目文件可以在 Hermes、Node.js 或 Web 浏览器中运行。
 
-The approach to configure environment-specific globals differs between Flat config and legacy config:
+配置特定于环境的全局变量的方法在 Flat config 和旧版配置之间有所不同：
 
 <Tabs>
 
 <Tab label="Flat config">
 
-For Flat config, **metro.config.js** files already work with Node.js globals because of the built-in support in `eslint-config-expo`. For other configuration files that might need Node.js globals, use [`languageOptions.globals`](https://eslint.org/docs/latest/use/configure/language-options#predefined-global-variables) in your **eslint.config.js**:
+对于 Flat config，**metro.config.js** 文件已经可以使用 Node.js 全局变量，因为 `eslint-config-expo` 内置了支持。对于其他可能需要 Node.js 全局变量的配置文件，请在你的 **eslint.config.js** 中使用 [`languageOptions.globals`](https://eslint.org/docs/latest/use/configure/language-options#predefined-global-variables)：
 
 ```js eslint.config.js
 const { defineConfig, globalIgnores } = require('eslint/config');
@@ -78,7 +78,7 @@ module.exports = defineConfig([
 ]);
 ```
 
-For example, with this setup, you can now use Node.js globals in **babel.config.js**:
+例如，使用此配置后，你现在可以在 **babel.config.js** 中使用 Node.js 全局变量：
 
 ```js babel.config.js
 import path from 'path';
@@ -96,7 +96,7 @@ module.exports = function (api) {
 
 <Tab label="Legacy config">
 
-For legacy config, you can add the `eslint-env` comment to the top of a file to tell ESLint which environment the file is running in:
+对于旧版配置，你可以在文件顶部添加 `eslint-env` 注释，告诉 ESLint 该文件运行在哪个环境中：
 
 ```js metro.config.js
 /* eslint-env node */
@@ -104,7 +104,7 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(
-  /* @info This will no longer assert linting errors. */ __dirname /* @end */
+  /* @info 这将不再断言 lint 错误。 */ __dirname /* @end */
 );
 
 module.exports = config;
@@ -116,9 +116,9 @@ module.exports = config;
 
 ## Prettier
 
-### Installation
+### 安装
 
-To install Prettier in your project:
+要在你的项目中安装 Prettier：
 
 <Tabs>
 
@@ -140,13 +140,13 @@ To install Prettier in your project:
 
 </Tabs>
 
-### Setup
+### 设置
 
 <Tabs>
 
 <Tab label="Flat config">
 
-To integrate Prettier with ESLint, update your **eslint.config.js**:
+要将 Prettier 集成到 ESLint 中，请更新你的 **eslint.config.js**：
 
 ```js eslint.config.js
 const { defineConfig } = require('eslint/config');
@@ -166,7 +166,7 @@ module.exports = defineConfig([
 
 <Tab label="Legacy config">
 
-To integrate Prettier with ESlint, update your **.eslintrc.js**:
+要将 Prettier 集成到 ESlint 中，请更新你的 **.eslintrc.js**：
 
 ```js .eslintrc.js
 module.exports = {
@@ -179,45 +179,45 @@ module.exports = {
 };
 ```
 
-> **Note:** In the above configuration, you can use `"prettier/prettier": "warn"` if you prefer these formatting issues as warnings instead of errors.
+> **注意：** 在上述配置中，如果你更希望将这些格式问题视为警告而不是错误，可以使用 `"prettier/prettier": "warn"`。
 
 </Tab>
 
 </Tabs>
 
-Now, when you run `npx expo lint`, anything that is not aligned with Prettier formatting will be caught as an error.
+现在，当你运行 `npx expo lint` 时，任何与 Prettier 格式不一致的内容都会被捕获为错误。
 
-To customize Prettier settings, create a **.prettierrc** file at the root of your project and add your configuration.
+要自定义 Prettier 设置，请在项目根目录创建一个 **.prettierrc** 文件并添加你的配置。
 
 <BoxLink
-  title="Custom Prettier configuration"
-  description="Learn more about customizing Prettier configuration."
+  title="自定义 Prettier 配置"
+  description="了解更多关于自定义 Prettier 配置的信息。"
   href="https://github.com/expo/expo/tree/main/packages/eslint-config-universe#customizing-prettier"
   Icon={BookOpen02Icon}
 />
 
-## Troubleshooting
+## 故障排查
 
-### ESLint is not updating in VS Code
+### ESLint 在 VS Code 中没有更新
 
-If you're using VS Code, install the [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) to lint your code as you type. You can try restarting the ESLint server by running the command `ESLint: Restart ESLint Server` from the [command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette).
+如果你使用的是 VS Code，请安装 [ESLint 扩展](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)，以便在你输入时对代码进行检查。你可以通过在[命令面板](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette)中运行 `ESLint: Restart ESLint Server` 命令来尝试重启 ESLint 服务器。
 
-### ESLint is slow
+### ESLint 很慢
 
-ESLint can be slow to run on large projects. The easiest way to speed up the process is to lint fewer files. Add a **.eslintignore** file to your project root to ignore certain files and directories such as:
+在大型项目中，ESLint 的运行可能会很慢。加快流程最简单的方法是减少需要检查的文件数量。向项目根目录添加一个 **.eslintignore** 文件，以忽略某些文件和目录，例如：
 
 ```sh .eslintignore
-# @info Ignore the root <b>.expo</b> directory. #
+# @info 忽略根目录下的 <b>.expo</b> 目录。 #
 /.expo
 # @end #
 node_modules
 ```
 
-## Migration to Flat config
+## 迁移到 Flat config
 
-> **info** **Note:** Flat config is supported in Expo SDK 53 and later.
+> **info** **注意：** Expo SDK 53 及更高版本支持 Flat config。
 
-Upgrade ESLint and `eslint-config-expo`:
+升级 ESLint 和 `eslint-config-expo`：
 
 <Tabs>
 
@@ -235,8 +235,8 @@ Upgrade ESLint and `eslint-config-expo`:
 
 </Tabs>
 
-If you haven't customized your ESLint config at all, delete your **.eslintrc.js** and generate the new config with:
+如果你完全没有自定义过 ESLint 配置，请删除你的 **.eslintrc.js**，然后使用以下命令生成新的配置：
 
 <Terminal cmd={['$ npx expo lint']} />
 
-Alternatively, migrate your config based on the [ESLint's migration guide](https://eslint.org/docs/latest/use/configure/migration-guide). `npx expo lint` supports both legacy and flat config, so the new config will automatically be picked up by the CLI.
+或者，你也可以根据 [ESLint 迁移指南](https://eslint.org/docs/latest/use/configure/migration-guide) 迁移你的配置。`npx expo lint` 同时支持旧版配置和 Flat config，因此新的配置会被 CLI 自动识别。

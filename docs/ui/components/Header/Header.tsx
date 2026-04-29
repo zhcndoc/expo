@@ -30,7 +30,7 @@ export const Header = ({
     <>
       <header className="border-default bg-default relative z-10 mx-auto flex h-[60px] items-center justify-between gap-2 border-b p-0 px-4">
         <div className="flex items-center gap-8">
-          <Logo subgroup={isArchive ? 'Archive' : undefined} />
+          <Logo subgroup={isArchive ? '存档' : undefined} />
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -38,14 +38,14 @@ export const Header = ({
             theme="quaternary"
             className={mergeClasses('text-secondary px-2', 'max-sm-gutters:hidden')}
             href="https://expo.dev/blog">
-            Blog
+            博客
           </Button>
           <Button
             openInNewTab
             theme="quaternary"
             className={mergeClasses('text-secondary px-2', 'max-sm-gutters:hidden')}
             href="https://expo.dev/changelog">
-            Changelog
+            更新日志
           </Button>
           <Button
             openInNewTab
@@ -58,7 +58,14 @@ export const Header = ({
               </>
             }
             href="https://github.com/expo/expo">
-            Star Us on GitHub
+            GitHub
+          </Button>
+          <Button
+            openInNewTab
+            theme="quaternary"
+            className={mergeClasses('group text-secondary px-2', 'max-lg-gutters:hidden')}
+            href="https://www.zhcndoc.com">
+            简中文档
           </Button>
           <Button
             openInNewTab
@@ -95,7 +102,7 @@ export const Header = ({
             'max-lg-gutters:flex'
           )}>
           <div className="flex items-center">
-            <DEMI>Theme</DEMI>
+            <DEMI>主题</DEMI>
           </div>
           <div className="flex items-center">
             <ThemeSelector />

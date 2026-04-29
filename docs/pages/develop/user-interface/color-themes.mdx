@@ -1,23 +1,23 @@
 ---
-title: Color themes
-description: Learn how to support light and dark modes in your app.
+title: 颜色主题
+description: 了解如何在你的应用中支持亮色和暗色模式。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { SnackInline, Terminal } from '~/ui/components/Snippet';
 
-It's common for apps to support light and dark color schemes. Here is an example of how supporting both modes looks in an Expo project:
+应用程序通常支持浅色和深色配色方案。以下是在 Expo 项目中同时支持这两种模式的示例：
 
 <ContentSpotlight file="guides/color-schemes.mp4" />
 
-## Configuration
+## 配置
 
-> **info** For Android and iOS projects, additional configuration is required to support switching between light and dark mode. For web, no additional configuration is required.
+> **info** 对于 Android 和 iOS 项目，需要额外配置才能支持在浅色和深色模式之间切换。对于 web，不需要额外配置。
 
-To configure supported appearance styles, you can use the [`userInterfaceStyle`](/versions/latest/config/app/#userinterfacestyle) property in your project's [app config](/versions/latest/config/app). By default, this property is set to `automatic` when you create a new project with the [default template](/get-started/create-a-project/).
+要配置支持的外观样式，你可以在项目的 [app config](/versions/latest/config/app) 中使用 [`userInterfaceStyle`](/versions/latest/config/app/#userinterfacestyle) 属性。默认情况下，当你使用 [默认模板](/get-started/create-a-project/) 创建新项目时，此属性会设置为 `automatic`。
 
-Here is an example configuration:
+下面是一个配置示例：
 
 ```json app.json
 {
@@ -27,40 +27,40 @@ Here is an example configuration:
 }
 ```
 
-You can also configure `userInterfaceStyle` property for a specific platforms by setting either [`android.userInterfaceStyle`](/versions/latest/config/app/#userinterfacestyle-2) or [`ios.userInterfaceStyle`](/versions/latest/config/app/#userinterfacestyle-1) to the preferred value.
+你也可以通过将 [`android.userInterfaceStyle`](/versions/latest/config/app/#userinterfacestyle-2) 或 [`ios.userInterfaceStyle`](/versions/latest/config/app/#userinterfacestyle-1) 设置为首选值，来为特定平台配置 `userInterfaceStyle` 属性。
 
-> **info** The app will default to the `light` style if this property is absent.
+> **info** 如果缺少此属性，应用将默认使用 `light` 样式。
 
-When you are creating a development build, you have to install [`expo-system-ui`](/versions/latest/sdk/system-ui/#installation) to support the appearance styles for Android. Otherwise, the `userInterfaceStyle` property is ignored.
+当你创建开发构建时，必须安装 [`expo-system-ui`](/versions/latest/sdk/system-ui/#installation) 以支持 Android 的外观样式。否则，`userInterfaceStyle` 属性会被忽略。
 
 <Terminal cmd={['$ npx expo install expo-system-ui']} />
 
-If the project is misconfigured and doesn't have `expo-system-ui` installed, the following warning will be shown in the terminal:
+如果项目配置错误，并且没有安装 `expo-system-ui`，终端中会显示以下警告：
 
 <Terminal
   cmd={[
-    '» android: userInterfaceStyle: Install expo-system-ui in your project to enable this feature.',
+    '» android: userInterfaceStyle: 在你的项目中安装 expo-system-ui 以启用此功能。',
   ]}
 />
 
-You can also use the following command to check if the project is misconfigured:
+你也可以使用以下命令检查项目是否配置错误：
 
 <Terminal cmd={['$ npx expo config --type introspect']} />
 
-<Collapsible summary="Using bare React Native app?">
+<Collapsible summary="使用原生 React Native 应用？">
 
 #### Android
 
-Ensure that the `uiMode` flag is present on your `MainActivity` (and any other activities where this behavior is desired) in **AndroidManifest.xml**:
+确保在 **AndroidManifest.xml** 中的 `MainActivity`（以及任何其他需要此行为的 activity）上包含 `uiMode` 标志：
 
 ```xml
 <activity android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode">
 ```
 
-Implement the `onConfigurationChanged` method in **MainActivity.java**:
+在 **MainActivity.java** 中实现 `onConfigurationChanged` 方法：
 
 ```java
-/* @info Import the <CODE>Intent</CODE> and <CODE>Configuration</CODE> classes. */
+/* @info 导入 <CODE>Intent</CODE> 和 <CODE>Configuration</CODE> 类。 */
 import android.content.Intent;
 import android.content.res.Configuration;
 /* @end */
@@ -80,52 +80,52 @@ public class MainActivity extends ReactActivity {
 
 #### iOS
 
-You can configure supported styles with the [`UIUserInterfaceStyle`](https://developer.apple.com/documentation/bundleresources/information_property_list/uiuserinterfacestyle) key in your app **Info.plist**. Use `Automatic` to support both light and dark modes.
+你可以在应用的 **Info.plist** 中使用 [`UIUserInterfaceStyle`](https://developer.apple.com/documentation/bundleresources/information_property_list/uiuserinterfacestyle) 键来配置支持的样式。使用 `Automatic` 可同时支持浅色和深色模式。
 
 </Collapsible>
 
-### Supported appearance styles
+### 支持的外观样式
 
-The `userInterfaceStyle` property supports the following values:
+`userInterfaceStyle` 属性支持以下值：
 
-- `automatic`: Follow system appearance settings and notify about any change the user makes.
-- `light`: Restrict the app to support light theme only.
-- `dark`: Restrict the app to support dark theme only.
+- `automatic`：跟随系统外观设置，并在用户进行任何更改时通知。
+- `light`：将应用限制为仅支持浅色主题。
+- `dark`：将应用限制为仅支持深色主题。
 
-## Detect the color scheme
+## 检测配色方案
 
-To detect the color scheme in your project, use `Appearance` or `useColorScheme` from `react-native`:
+要在项目中检测配色方案，请使用 `react-native` 中的 `Appearance` 或 `useColorScheme`：
 
 ```tsx src/app/index.tsx
 import { Appearance, useColorScheme } from 'react-native';
 ```
 
-Then, you can use `useColorScheme()` hook as shown below:
+然后，你可以像下面这样使用 `useColorScheme()` 钩子：
 
 ```tsx src/app/index.tsx
 function MyComponent() {
   let colorScheme = useColorScheme();
 
   if (colorScheme === 'dark') {
-    // render some dark thing
+    // 渲染一些深色内容
   } else {
-    // render some light thing
+    // 渲染一些浅色内容
   }
 }
 ```
 
-In some cases, you will find it helpful to get the current color scheme imperatively with [`Appearance.getColorScheme()` or listen to changes with `Appearance.addChangeListener()`](https://reactnative.dev/docs/appearance).
+在某些情况下，你可能会发现通过 [`Appearance.getColorScheme()` 获取当前配色方案，或者使用 `Appearance.addChangeListener()` 监听变化](https://reactnative.dev/docs/appearance) 会很有帮助。
 
-## Additional information
+## 其他信息
 
-### Minimal example
+### 最小示例
 
 <SnackInline label="useColorScheme example" dependencies={['expo-status-bar']}>
 
 {/* prettier-ignore */}
 ```tsx
-import { Text, StyleSheet, View, /* @info Import <CODE>useColorScheme</CODE> from react-native */ useColorScheme /* @end */ } from 'react-native';
-/* @info Automatically switches bar style based on theme. */
+import { Text, StyleSheet, View, /* @info 从 react-native 导入 <CODE>useColorScheme</CODE> */ useColorScheme /* @end */ } from 'react-native';
+/* @info 会根据主题自动切换状态栏样式。 */
 import { StatusBar } from 'expo-status-bar';
 /* @end */
 
@@ -138,7 +138,7 @@ export default function App() {
 
   return (
     <View style={[styles.container, themeContainerStyle]}>
-      <Text style={[styles.text, themeTextStyle]}>Color scheme: {colorScheme}</Text>
+      <Text style={[styles.text, themeTextStyle]}>配色方案：{colorScheme}</Text>
       <StatusBar />
     </View>
   );
@@ -170,10 +170,10 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
-### Tips
+### 提示
 
-While you are developing your project, you can change your simulator's or device's appearance by using the following shortcuts:
+在开发项目时，你可以使用以下快捷键更改模拟器或设备的外观：
 
-- If using an Android Emulator, you can run `adb shell "cmd uimode night yes"` to enable dark mode, and `adb shell "cmd uimode night no"` to disable dark mode.
-- If using a physical Android device or an Android Emulator, you can toggle the system dark mode setting in the device's settings.
-- If working with an iOS emulator locally, you can use the <kbd>Cmd ⌘</kbd> + <kbd>Shift</kbd> + <kbd>a</kbd> shortcut to toggle between light and dark modes.
+- 如果使用 Android 模拟器，你可以运行 `adb shell "cmd uimode night yes"` 来启用深色模式，运行 `adb shell "cmd uimode night no"` 来禁用深色模式。
+- 如果使用实体 Android 设备或 Android 模拟器，你可以在设备设置中切换系统深色模式设置。
+- 如果在本地使用 iOS 模拟器，你可以使用 <kbd>Cmd ⌘</kbd> + <kbd>Shift</kbd> + <kbd>a</kbd> 快捷键在浅色和深色模式之间切换。

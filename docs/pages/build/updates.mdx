@@ -1,17 +1,17 @@
 ---
-title: Using EAS Update
-description: Learn how to use EAS Update with EAS Build.
+title: 使用 EAS Update
+description: 了解如何将 EAS Update 与 EAS Build 一起使用。
 ---
 
-EAS Build includes some special benefits for [`expo-updates`](/versions/latest/sdk/updates/) library. In particular, you can configure the [`channel`](/eas-update/how-it-works/#distributing-builds) property in **eas.json** and EAS Build will take care of updating it in your native project at build time.
+EAS Build 为 [`expo-updates`](/versions/latest/sdk/updates/) 库提供了一些特殊优势。特别是，你可以在 **eas.json** 中配置 [`channel`](/eas-update/how-it-works/#distributing-builds) 属性，EAS Build 会在构建时负责将其更新到你的原生项目中。
 
-This document covers concerns specific to using `expo-updates` library with EAS Build. For more general information about configuring the library with EAS Update, see [Getting started with EAS Update ](/eas-update/getting-started/).
+本文档涵盖了将 `expo-updates` 库与 EAS Build 一起使用时的特定问题。有关使用 EAS Update 配置该库的更一般信息，请参阅 [Getting started with EAS Update ](/eas-update/getting-started/)。
 
-## Setting the channel for a build profile
+## 为构建配置文件设置 channel
 
-Each [build profile](/build/eas-json/#build-profiles) can be assigned to a channel, so updates for builds produced for a given profile will pull only those releases that are published to its channel.
+每个 [build profile](/build/eas-json/#build-profiles) 都可以分配到一个 channel，因此，针对某个配置文件生成的构建更新只会拉取发布到其 channel 的这些版本。
 
-The following example demonstrates how you might use the `"production"` channel for production builds, and the `"staging"` channel for test builds distributed with [internal distribution](/build/internal-distribution/).
+以下示例展示了你可能如何将 `"production"` channel 用于生产构建，以及将 `"staging"` channel 用于通过 [internal distribution](/build/internal-distribution/) 分发的测试构建。
 
 ```json eas.json
 {
@@ -27,16 +27,16 @@ The following example demonstrates how you might use the `"production"` channel 
 }
 ```
 
-## Binary compatibility and runtime versions
+## 二进制兼容性和运行时版本
 
-Your native runtime may change on each build, depending on whether you modify the code in a way that changes the API contract with JavaScript. If you publish a JavaScript bundle to a binary with an incompatible native runtime (for example, a function that the JavaScript bundle expects to exist does not exist) then your app may not work as expected, or it may crash.
+你的原生运行时可能会在每次构建时发生变化，这取决于你是否以会改变与 JavaScript 的 API 协议的方式修改了代码。如果你将一个 JavaScript bundle 发布到一个不兼容原生运行时的二进制文件中（例如，JavaScript bundle 期望存在的某个函数不存在），那么你的应用可能无法按预期工作，或者可能会崩溃。
 
-We recommend using a different [runtime version](/eas-update/runtime-versions/) for each binary version of your app. Any time you change the native runtime (in managed apps, this happens when you add or remove a native library, or modify **app.json**), you should increment the runtime version.
+我们建议为你的应用的每个二进制版本使用不同的 [runtime version](/eas-update/runtime-versions/)。每当你更改原生运行时（在托管应用中，这通常发生在你添加或移除原生库，或修改 **app.json** 时），你都应该增加 runtime version。
 
-## Previewing updates in development builds
+## 在开发构建中预览更新
 
-Updates published with the `runtimeVersion` field can't be loaded in Expo Go. Instead, you should use [`expo-dev-client`](/versions/latest/sdk/dev-client/) to create a development build.
+使用 `runtimeVersion` 字段发布的更新无法在 Expo Go 中加载。相反，你应该使用 [`expo-dev-client`](/versions/latest/sdk/dev-client/) 来创建开发构建。
 
-## Environment variables and `eas update`
+## 环境变量和 `eas update`
 
-Environment variables set on the `env` field in build profiles are not available when you run `eas update`. Learn more about using [environment variables with EAS Update](/eas/environment-variables/usage/#using-environment-variables-with-eas-update).
+在构建配置文件的 `env` 字段中设置的环境变量，在运行 `eas update` 时不可用。了解更多关于在 EAS Update 中使用 [environment variables](/eas/environment-variables/usage/#using-environment-variables-with-eas-update) 的信息。

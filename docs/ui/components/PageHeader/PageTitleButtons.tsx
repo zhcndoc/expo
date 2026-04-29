@@ -27,11 +27,11 @@ export function PageTitleButtons({ packageName, sourceCodeUrl }: Props) {
           className="justify-center pr-2 pl-2.5"
           openInNewTab
           href={githubUrl(router.pathname)}
-          aria-label="Edit content of this page on GitHub">
+          aria-label="在 GitHub 上编辑此页内容">
           <div className="flex flex-row items-center gap-2">
             <Edit05Icon className="icon-sm text-icon-secondary" />
             <FOOTNOTE crawlable={false} theme="secondary">
-              Edit page
+              编辑页面
             </FOOTNOTE>
           </div>
         </Button>
@@ -46,7 +46,7 @@ export function PageTitleButtons({ packageName, sourceCodeUrl }: Props) {
                 label="GitHub"
                 Icon={GithubIcon}
                 href={sourceCodeUrl}
-                tooltip="View source code on GitHub"
+                tooltip="在 GitHub 上查看源代码"
               />
             </>
           )}
@@ -56,16 +56,16 @@ export function PageTitleButtons({ packageName, sourceCodeUrl }: Props) {
                 label="npm"
                 Icon={NpmIcon}
                 href={`https://www.npmjs.com/package/${packageName}`}
-                tooltip="View library in npm registry"
+                tooltip="在 npm 仓库中查看此库"
               />
             </>
           )}
           {sourceCodeUrl?.startsWith('https://github.com/expo/expo') && (
             <SdkPackageButton
-              label="Changelog"
+              label="更新日志"
               Icon={ClockRefreshIcon}
               href={`${sourceCodeUrl}/CHANGELOG.md`}
-              tooltip="View library changelog on GitHub"
+              tooltip="在 GitHub 上查看库的更新日志"
             />
           )}
         </span>

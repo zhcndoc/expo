@@ -1,6 +1,6 @@
 ---
 title: metro.config.js
-description: A reference of available configurations in Metro.
+description: Metro 中可用配置的参考。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -9,72 +9,72 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { FileTree } from '~/ui/components/FileTree';
 import { DiffBlock, Terminal } from '~/ui/components/Snippet';
 
-See more information about **metro.config.js** in the [customizing Metro guide](/guides/customizing-metro/).
+查看更多关于 **metro.config.js** 的信息，请参阅 [自定义 Metro 指南](/guides/customizing-metro/)。
 
-## Environment variables
+## 环境变量
 
-Expo CLI can load environment variables from **.env** files. Learn more about how to use environment variables in Expo CLI in the [environment variables guide](/guides/environment-variables/).
+Expo CLI 可以从 **.env** 文件中加载环境变量。有关如何在 Expo CLI 中使用环境变量的更多信息，请参阅 [环境变量指南](/guides/environment-variables/)。
 
-EAS CLI uses a different mechanism for environment variables, except when it invokes Expo CLI for compiling and bundling. Learn more about [environment variables in EAS](/build-reference/variables/).
+EAS CLI 使用一种不同的环境变量机制，但在它调用 Expo CLI 进行编译和打包时除外。了解更多关于 [EAS 中的环境变量](/build-reference/variables/)。
 
-If you are migrating an older project, then you should ignore local env files by adding the following to your **.gitignore**:
+如果你正在迁移一个较旧的项目，那么你应该通过在 **.gitignore** 中添加以下内容来忽略本地 env 文件：
 
 ```sh .gitignore
-# local env files
+# 本地 env 文件
 .env*.local
 ```
 
-### Disabling dotenv files
+### 禁用 dotenv 文件
 
-Dotenv file loading can be fully disabled in Expo CLI by enabling the `EXPO_NO_DOTENV` environment variable, before invoking any Expo CLI command.
+可以通过在调用任何 Expo CLI 命令之前启用 `EXPO_NO_DOTENV` 环境变量，来完全禁用 Expo CLI 加载 dotenv 文件。
 
 <Terminal
   cmd={[
-    '# All users can run cross-env, followed by the Expo CLI command',
+    '# 所有用户都可以运行 cross-env，然后接着运行 Expo CLI 命令',
     '$ npx cross-env EXPO_NO_DOTENV=1 expo start',
-    '# Alternatively, macOS and Linux users can define the environment variable, then run npx, followed by the Expo CLI command',
+    '# 或者，macOS 和 Linux 用户可以先定义环境变量，然后运行 npx，接着运行 Expo CLI 命令',
     '$ EXPO_NO_DOTENV=1 npx expo start',
   ]}
 />
 
-### Disabling `EXPO_PUBLIC_`-prefixed client environment variables
+### 禁用带有 `EXPO_PUBLIC_` 前缀的客户端环境变量
 
-Environment variables prefixed with `EXPO_PUBLIC_` will be exposed to the app at build-time. For example, `EXPO_PUBLIC_API_KEY` will be available as `process.env.EXPO_PUBLIC_API_KEY`.
+带有 `EXPO_PUBLIC_` 前缀的环境变量会在构建时暴露给应用。例如，`EXPO_PUBLIC_API_KEY` 将可通过 `process.env.EXPO_PUBLIC_API_KEY` 访问。
 
-Client environment variable inlining can be disabled with the environment variable `EXPO_NO_CLIENT_ENV_VARS=1`, this must be defined before any bundling is performed.
+可以使用环境变量 `EXPO_NO_CLIENT_ENV_VARS=1` 来禁用客户端环境变量内联，该变量必须在执行任何打包之前定义。
 
 <Terminal
   cmd={[
-    '# All users can run cross-env, followed by the Expo CLI command',
+    '# 所有用户都可以运行 cross-env，然后接着运行 Expo CLI 命令',
     '$ npx cross-env EXPO_NO_CLIENT_ENV_VARS=1 expo start',
-    '# Alternatively, macOS and Linux users can define the environment variable, then run npx, followed by the Expo CLI command',
+    '# 或者，macOS 和 Linux 用户可以先定义环境变量，然后运行 npx，接着运行 Expo CLI 命令',
     '$ EXPO_NO_CLIENT_ENV_VARS=1 npx expo start',
   ]}
 />
 
 ## CSS
 
-> **info** CSS support is under development and currently only works on web.
+> **info** CSS 支持仍在开发中，目前仅在 web 上可用。
 
-Expo supports CSS in your project. You can import CSS files from any component. CSS Modules are also supported.
+Expo 支持你项目中的 CSS。你可以从任意组件导入 CSS 文件。也支持 CSS Modules。
 
-CSS support is enabled by default. You can disable the feature by setting `isCSSEnabled` in the Metro config.
+默认已启用 CSS 支持。你可以通过在 Metro 配置中设置 `isCSSEnabled` 来禁用该功能。
 
 ```js metro.config.js
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname, {
-  // Disable CSS support.
+  // 禁用 CSS 支持。
   isCSSEnabled: false,
 });
 ```
 
-### Global CSS
+### 全局 CSS
 
-> **warning** Global styles are web-only, usage will cause your application to diverge visually on native.
+> **warning** 全局样式仅限 web，使用它会导致你的应用在原生平台上的视觉表现不一致。
 
-You can import a CSS file from any component. The CSS will be applied to the entire page.
+你可以从任意组件导入一个 CSS 文件。该 CSS 将应用于整个页面。
 
-Here, we'll define a global style for the class name `.container`:
+这里，我们为类名 `.container` 定义一个全局样式：
 
 ```css styles.css
 .container {
@@ -82,7 +82,7 @@ Here, we'll define a global style for the class name `.container`:
 }
 ```
 
-We can then use the class name in our component by importing the stylesheet and using `.container`:
+然后我们可以通过导入样式表并使用 `.container` 在组件中使用这个类名：
 
 ```jsx App.js|collapseHeight=470
 import './styles.css';
@@ -91,47 +91,47 @@ import { View } from 'react-native';
 export default function App() {
   return (
     <>
-      {/* Use `className` to assign the style with React DOM components. */}
-      <div className="container">Hello World</div>
+      {/* 使用 `className` 为 React DOM 组件分配样式。 */}
+      <div className="container">你好，世界</div>
 
-      {/* Use `style` with the following syntax to append class names in React Native for web. */}
+      {/* 使用以下语法在 React Native for web 中通过 `style` 追加类名。 */}
       <View
         style={{
           $$css: true,
           _: 'container',
         }}>
-        Hello World
+        你好，世界
       </View>
     </>
   );
 }
 ```
 
-You can also import stylesheets that are vendored in libraries, just like you would any node module:
+你也可以像导入任何 node 模块一样，导入库中打包好的样式表：
 
 ```js index.js
-// Applies the styles app-wide.
+// 将样式应用于整个应用。
 import 'emoji-mart/css/emoji-mart.css';
 ```
 
-- On native, all global stylesheets are automatically ignored.
-- Hot reloading is supported for global stylesheets, simply save the file and the changes will be applied.
+- 在原生平台上，所有全局样式表都会被自动忽略。
+- 全局样式表支持热重载，只需保存文件，修改就会生效。
 
 ### CSS Modules
 
-> **warning** CSS Modules for native are under development and currently only work on web.
+> **warning** 原生平台的 CSS Modules 仍在开发中，目前仅在 web 上可用。
 
-CSS Modules are a way to scope CSS to a specific component. This is useful for avoiding naming collisions and for ensuring that styles are only applied to the intended component.
+CSS Modules 是一种将 CSS 作用域限定到特定组件的方法。这对于避免命名冲突，以及确保样式只应用到目标组件很有用。
 
-In Expo, CSS Modules are defined by creating a file with the `.module.css` extension. The file can be imported from any component. The exported value is an object with the class names as keys and the web-only scoped names as the values. The import `unstable_styles` can be used to access `react-native-web`-safe styles.
+在 Expo 中，CSS Modules 通过创建一个扩展名为 `.module.css` 的文件来定义。该文件可以从任意组件中导入。导出的值是一个对象，键为类名，值为仅限 web 的作用域名称。可以使用 `unstable_styles` 导入来访问对 `react-native-web` 安全的样式。
 
-CSS Modules support platform extensions to allow you to define different styles for different platforms. For example, you can define a `module.ios.css` and `module.android.css` file to define styles for Android and iOS respectively. You'll need to import without the extension, for example:
+CSS Modules 支持平台扩展名，这样你就可以为不同平台定义不同样式。例如，你可以分别定义 `module.ios.css` 和 `module.android.css` 文件来为 Android 和 iOS 定义样式。你需要不带扩展名进行导入，例如：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/css-modules-import.diff" />
 
-Flipping the extension, for example, `App.ios.module.css` will not work and result in a universal module named `App.ios.module`.
+例如，把扩展名写成 `App.ios.module.css` 是行不通的，这会导致一个名为 `App.ios.module` 的通用模块。
 
-> You cannot pass styles to the `className` prop of a React Native or React Native for web component. Instead, you must use the `style` prop.
+> 你不能把样式传递给 React Native 或 React Native for web 组件的 `className` 属性。相反，你必须使用 `style` 属性。
 
 ```jsx App.js|collapseHeight=470
 import styles, { unstable_styles } from './App.module.css';
@@ -141,14 +141,14 @@ export default function Page() {
     <>
       <Text
         style={{
-          // This is how react-native-web class names are applied
+          // 这就是应用 react-native-web 类名的方式
           $$css: true,
           _: styles.text,
         }}>
         Hello World
       </Text>
       <Text style={unstable_styles.text}>Hello World</Text>
-      {/* Web-only usage: */}
+      {/* 仅限 web 的用法： */}
       <p className={styles.text}>Hello World</p>
     </>
   );
@@ -161,12 +161,12 @@ export default function Page() {
 }
 ```
 
-- On web, all CSS values are available. CSS is not processed or auto-prefixed like it is with the React Native Web `StyleSheet` API. You can use `postcss.config.js` to autoprefix your CSS.
-- CSS Modules use [lightningcss](https://github.com/parcel-bundler/lightningcss) under the hood, check [the issues](https://github.com/parcel-bundler/lightningcss/issues) for unsupported features.
+- 在 web 上，所有 CSS 值都可用。CSS 不会像 React Native Web 的 `StyleSheet` API 那样被处理或自动添加前缀。你可以使用 `postcss.config.js` 为你的 CSS 自动添加前缀。
+- CSS Modules 在底层使用 [lightningcss](https://github.com/parcel-bundler/lightningcss)，请查看 [issues](https://github.com/parcel-bundler/lightningcss/issues) 以了解不支持的功能。
 
 ### PostCSS
 
-[PostCSS](https://github.com/postcss/postcss) can be customized by adding a `postcss.config.json` file to the root of your project. This file should export a function that returns a PostCSS configuration object. For example:
+可以通过在项目根目录添加 `postcss.config.json` 文件来自定义 [PostCSS](https://github.com/postcss/postcss)。该文件应导出一个返回 PostCSS 配置对象的函数。例如：
 
 ```json postcss.config.json
 {
@@ -176,13 +176,13 @@ export default function Page() {
 }
 ```
 
-Both `postcss.config.json` and `postcss.config.js` are supported, but `postcss.config.json` enables better caching.
+`postcss.config.json` 和 `postcss.config.js` 都受支持，但 `postcss.config.json` 可实现更好的缓存。
 
-Expo CLI automatically handles CSS vendor prefixes with built-in support for [browserslist](https://browsersl.ist/). Avoid adding `autoprefixer` as this duplicates the functionality and slows down bundling.
+Expo CLI 会借助内置的 [browserslist](https://browsersl.ist/) 支持自动处理 CSS 厂商前缀。请避免添加 `autoprefixer`，因为这会重复实现相同功能并减慢打包速度。
 
-#### Resetting cache after updates
+#### 更新后重置缓存
 
-Changing the Post CSS or `browserslist` config will require you to clear the Metro cache:
+更改 Post CSS 或 `browserslist` 配置后，需要清除 Metro 缓存：
 
 <Terminal
   cmd={['$ npx expo start --clear', '$ npx expo export --clear']}
@@ -191,7 +191,7 @@ Changing the Post CSS or `browserslist` config will require you to clear the Met
 
 ### browserslist
 
-Expo has automatic [browserslist](https://browsersl.ist/) support via the Rust-based CSS parser. You can customize the CSS vendor prefixes and browser support by adding a **browserslist** field to your **package.json** file. For example:
+Expo 通过基于 Rust 的 CSS 解析器自动支持 [browserslist](https://browsersl.ist/)。你可以通过在 **package.json** 文件中添加 **browserslist** 字段来自定义 CSS 厂商前缀和浏览器支持。例如：
 
 ```json package.json
 {
@@ -201,51 +201,51 @@ Expo has automatic [browserslist](https://browsersl.ist/) support via the Rust-b
 
 ### SASS
 
-Expo Metro has _partial_ support for SCSS/SASS.
+Expo Metro 对 SCSS/SASS 提供 _部分_ 支持。
 
-To setup, install the `sass` package in your project:
+要进行设置，请在项目中安装 `sass` 包：
 
 <Terminal cmd={['$ yarn add -D sass']} />
 
-Then, ensure [CSS is setup](#css) in the **metro.config.js** file.
+然后，确保在 **metro.config.js** 文件中已完成 [CSS 设置](#css)。
 
-- When `sass` is installed, then modules without extensions will be resolved in the following order: `scss`, `sass`, `css`.
-- Only use the intended syntax with `sass` files.
-- Importing other files from inside a scss/sass file is not currently supported.
+- 安装了 `sass` 后，不带扩展名的模块将按以下顺序解析：`scss`、`sass`、`css`。
+- 仅对 `sass` 文件使用对应的语法。
+- 目前不支持从 scss/sass 文件内部导入其他文件。
 
 ### Tailwind
 
-> **info** Standard Tailwind CSS supports only web platform. For universal support, use a library such as [NativeWind](https://www.nativewind.dev/), which allows creating styled React Native components with Tailwind CSS.
+> **info** 标准 Tailwind CSS 仅支持 web 平台。若要实现通用支持，请使用诸如 [NativeWind](https://www.nativewind.dev/) 之类的库，它允许使用 Tailwind CSS 创建带样式的 React Native 组件。
 
 <BoxLink
   title="Tailwind CSS"
-  description="Learn how to configure and use Tailwind CSS in your Expo project."
+  description="了解如何在你的 Expo 项目中配置和使用 Tailwind CSS。"
   href="/guides/tailwind/"
   Icon={BookOpen02Icon}
 />
 
-## Extending the Babel transformer
+## 扩展 Babel 转换器
 
-Expo's Metro config uses a custom `transformer.babelTransformerPath` value to ensure `expo-babel-preset` is always used and web/Node.js environments are supported.
+Expo 的 Metro 配置使用自定义的 `transformer.babelTransformerPath` 值，以确保始终使用 `expo-babel-preset` 并支持 web/Node.js 环境。
 
-If you want to extend the Babel transformer, import the upstream transformer from `@expo/metro-config/babel-transformer` instead of `metro-react-native-babel-transformer`. For example:
+如果你想扩展 Babel 转换器，请从 `@expo/metro-config/babel-transformer` 导入上游转换器，而不是 `metro-react-native-babel-transformer`。例如：
 
 ```js metro.transformer.js
 const upstreamTransformer = require('@expo/metro-config/babel-transformer');
 
 module.exports.transform = async ({ src, filename, options }) => {
-  // Do something custom for SVG files...
+  // 对 SVG 文件执行一些自定义操作...
   if (filename.endsWith('.svg')) {
     src = '...';
   }
-  // Pass the source through the upstream Expo transformer.
+  // 将源代码传递给上游 Expo 转换器。
   return upstreamTransformer.transform({ src, filename, options });
 };
 ```
 
-## Custom resolving
+## 自定义解析
 
-Expo CLI extends the default Metro resolver to add features like Web, Server, and tsconfig aliases support. You can similarly customize the default resolution behavior of Metro by chaining the `config.resolver.resolveRequest` function.
+Expo CLI 扩展了默认的 Metro 解析器，以添加诸如 Web、Server 和 tsconfig 别名支持等功能。你也可以通过链式调用 `config.resolver.resolveRequest` 函数，类似地自定义 Metro 的默认解析行为。
 
 ```tsx metro.config.js|collapseHeight=470
 const { getDefaultConfig } = require('expo/metro-config');
@@ -255,26 +255,26 @@ const config = getDefaultConfig(__dirname);
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName.startsWith('my-custom-resolver:')) {
-    // Logic to resolve the module name to a file path...
-    // NOTE: Throw an error if there is no resolution.
+    // 将模块名解析为文件路径的逻辑...
+    // 注意：如果无法解析，请抛出错误。
     return {
       filePath: 'path/to/file',
       type: 'sourceFile',
     };
   }
 
-  // Ensure you call the default resolver.
+  // 确保调用默认解析器。
   return context.resolveRequest(context, moduleName, platform);
 };
 
 module.exports = config;
 ```
 
-Unlike traditional bundlers, Metro shared the same resolver function across all platforms. As a result, you can mutate the resolution settings dynamically on each request with the `context` object.
+与传统打包器不同，Metro 在所有平台之间共享同一个解析函数。因此，你可以使用 `context` 对象在每次请求时动态修改解析设置。
 
-### Mocking modules
+### Mock 模块
 
-If you want a module to be empty for a given platform, you can return a `type: 'empty'` object from the resolver. The following example will cause `lodash` to be empty on web:
+如果你想让某个平台上的某个模块为空，可以从解析器返回一个 `type: 'empty'` 对象。下面的示例会使 web 上的 `lodash` 为空：
 
 ```ts metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
@@ -289,20 +289,20 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     };
   }
 
-  // Ensure you call the default resolver.
+  // 确保调用默认解析器。
   return context.resolveRequest(context, moduleName, platform);
 };
 
 module.exports = config;
 ```
 
-This technique is equivalent to using empty externals in Webpack or Vite, but with the added benefit of being able to target specific platforms.
+这种技术等同于在 Webpack 或 Vite 中使用空 externals，但额外的好处是可以针对特定平台。
 
-### Virtual modules
+### 虚拟模块
 
-Metro doesn't support virtual modules at the moment. One technique you can use to obtain similar behavior is to create a module in the `node_modules/.cache/...` directory and redirect the resolution to that file.
+Metro 目前不支持虚拟模块。一种可以实现类似行为的技术是，在 `node_modules/.cache/...` 目录中创建一个模块，并将解析重定向到该文件。
 
-The following example will create a module at `node_modules/.cache/virtual/virtual-module.js` and redirect the resolution of `virtual:my-module` to that file:
+下面的示例会在 `node_modules/.cache/virtual/virtual-module.js` 创建一个模块，并将 `virtual:my-module` 的解析重定向到该文件：
 
 ```ts metro.config.js
 const path = require('path');
@@ -315,7 +315,7 @@ const config = getDefaultConfig(__dirname);
 
 const virtualPath = path.resolve(__dirname, 'node_modules/.cache/virtual/virtual-module.js');
 
-// Create the virtual module in a generated directory...
+// 在生成目录中创建虚拟模块...
 fs.mkdirSync(path.dirname(virtualPath), { recursive: true });
 fs.writeFileSync(virtualPath, 'export default "Hello World";');
 
@@ -327,81 +327,81 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     };
   }
 
-  // Ensure you call the default resolver.
+  // 确保调用默认解析器。
   return context.resolveRequest(context, moduleName, platform);
 };
 
 module.exports = config;
 ```
 
-This can be used to emulate `externals` with custom imports. For example, if you want to redirect `require('expo')` to something custom like `SystemJS.require('expo')`, you can create a virtual module that exports `SystemJS.require('expo')` and redirect the resolution of `expo` to that file.
+这可用于通过自定义导入来模拟 `externals`。例如，如果你想将 `require('expo')` 重定向到诸如 `SystemJS.require('expo')` 之类的自定义内容，你可以创建一个导出 `SystemJS.require('expo')` 的虚拟模块，并将 `expo` 的解析重定向到该文件。
 
-## Custom transforming
+## 自定义转译
 
-> Transformations are heavily cached in Metro. If you update something, use the `--clear` flag to see updates. For example, `npx expo start --clear`.
+> 转换在 Metro 中会被大量缓存。如果你更新了某些内容，请使用 `--clear` 标志来查看更新。例如，`npx expo start --clear`。
 
-Metro doesn't have a very expressive plugin system for transforming files, instead opt to use the [**babel.config.js**](../config/babel/) and caller object to customize the transformation.
+Metro 并没有一个非常灵活的插件系统用于转换文件，因此改为使用 [**babel.config.js**](../config/babel/) 和 caller 对象来自定义转换。
 
 ```js babel.config.js
 module.exports = function (api) {
-  // Get the platform that Expo CLI is transforming for.
+  // 获取 Expo CLI 正在为其转换的平台。
   const platform = api.caller(caller => (caller ? caller.platform : 'ios'));
 
-  // Detect if the bundling operation is for Hermes engine or not, e.g. `'hermes'` | `undefined`.
+  // 检测打包操作是否为 Hermes 引擎，例如 `'hermes'` | `undefined`。
   const engine = api.caller(caller => (caller ? caller.engine : null));
 
-  // Is bundling for a server environment, e.g. API Routes.
+  // 是否正在为服务器环境打包，例如 API Routes。
   const isServer = api.caller(caller => (caller ? caller.isServer : false));
 
-  // Is bundling for development or production.
+  // 是否正在为开发或生产环境打包。
   const isDev = api.caller(caller =>
     caller
       ? caller.isDev
       : process.env.BABEL_ENV === 'development' || process.env.NODE_ENV === 'development'
   );
 
-  // Ensure the config is not cached otherwise the platform will not be updated.
+  // 确保配置不会被缓存，否则平台将不会更新。
   api.cache(false);
-  // You can alternatively provide a more robust CONFIG cache invalidation:
+  // 你也可以改为提供更健壮的 CONFIG 缓存失效机制：
   // api.cache.invalidate(() => platform);
 
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      // Add a plugin based on the platform...
+      // 根据平台添加插件...
       platform === 'web' && 'my-plugin',
 
-      // Ensure you filter out falsy values.
+      // 确保过滤掉假值。
     ].filter(Boolean),
   };
 };
 ```
 
-If the caller doesn't have `engine`, `platform`, `bundler`, and so on, then ensure you are using `@expo/metro-config/babel-transformer` for the transformer. If you're using a custom transformer then it may need to extend the Expo transformer.
+如果 caller 没有 `engine`、`platform`、`bundler` 等信息，那么请确保你在转换器中使用的是 `@expo/metro-config/babel-transformer`。如果你使用的是自定义转换器，那么它可能需要扩展 Expo 转换器。
 
-Always try to implement custom logic in the resolver if possible, caching is much simpler and easier to reason about. For example, if you need to remap an import, it's simpler and faster to resolve to a static file with the resolver than to parse all possible import methods and remap them with the transformer.
+如果可能，始终尝试在 resolver 中实现自定义逻辑，因为缓存会简单得多，也更容易推理。例如，如果你需要重映射一个导入，使用 resolver 解析到一个静态文件比解析所有可能的导入方式并用转换器重映射它们更简单也更快。
 
-Always use `babel-preset-expo` as the default Babel preset, this ensures the transformation is always compatible with Expo runtimes. `babel-preset-expo` uses all of the caller inputs internally to optimize for a given platform, engine, and environment.
+始终使用 `babel-preset-expo` 作为默认的 Babel preset，这可确保转换始终与 Expo 运行时兼容。`babel-preset-expo` 在内部使用所有 caller 输入，以便针对特定的平台、引擎和环境进行优化。
 
-## Node.js built-ins
+## Node.js 内置模块
 
-When bundling for a server environment, Expo's Metro config automatically supports externalizing Node.js built-in modules (`fs`, `path`, `node:crypto`, and more) based on the current Node.js version. If the CLI is bundling for a browser environment, then built-ins will first check if the module is installed locally, then fallback on an empty shim. For example, if you install `path` for use in the browser, this can be used, otherwise, the module will automatically be skipped.
+当为服务器环境打包时，Expo 的 Metro 配置会根据当前 Node.js 版本自动支持外部化 Node.js 内置模块（`fs`、`path`、`node:crypto` 等）。如果 CLI 正在为浏览器环境打包，则内置模块会先检查该模块是否已在本地安装，然后回退到一个空的 shim。例如，如果你安装了 `path` 以便在浏览器中使用，它就可以被使用；否则，该模块会自动被跳过。
 
-## Environment settings
+## 环境设置
 
-> **info** These environment variables will not be defined in test environments.
+> **info** 这些环境变量不会在测试环境中定义。
 
-Expo's Metro config injects build settings that can be used in the client bundle via environment variables. All variables will be inlined and cannot be used dynamically. For example, `process.env["EXPO_BASE_URL"]` won't work.
+Expo 的 Metro 配置会注入构建设置，这些设置可以通过环境变量在客户端 bundle 中使用。所有变量都会被内联，因此不能动态使用。例如，`process.env["EXPO_BASE_URL"]` 将不起作用。
 
-- `process.env.EXPO_BASE_URL` exposes the base URL defined in `experiments.baseUrl`. This is used in Expo Router to respect the production base URL for deployment.
+- `process.env.EXPO_BASE_URL` 暴露在 `experiments.baseUrl` 中定义的基础 URL。这在 Expo Router 中用于在部署时遵循生产环境的基础 URL。
 
-## Bundle splitting
+## Bundle 拆分
 
-Expo CLI automatically splits web bundles into multiple chunks based on async imports in production. This feature requires `@expo/metro-runtime` to be installed and imported somewhere in the entry bundle (available by default in Expo Router).
+Expo CLI 会在生产环境中根据异步导入自动将 web bundle 拆分为多个 chunk。此功能要求安装 `@expo/metro-runtime`，并在入口 bundle 的某处被导入（在 Expo Router 中默认可用）。
 
-Shared dependencies of async bundles are merged into a single chunk to reduce the number of requests. For example, if you have two async bundles that import `lodash`, then the library is merged into a single initial chunk.
+异步 bundle 的共享依赖会合并到单个 chunk 中，以减少请求数量。例如，如果你有两个异步 bundle 都导入了 `lodash`，那么该库会合并到一个初始 chunk 中。
 
-The chunk splitting heuristic cannot be customized. For example:
+chunk 拆分的启发式规则无法自定义。例如：
 
 <FileTree files={['math.js', 'index.js']} />
 
@@ -414,70 +414,70 @@ export function add(a, b) {
 ```js index.js
 import '@expo/metro-runtime';
 
-// This will be split into a separate chunk.
+// 这将被拆分到一个单独的 chunk 中。
 import('./math').then(math => {
   console.log(math.add(1, 2));
 });
 ```
 
-When you run `npx expo export -p web`, the bundles are split into multiple files, and the entry bundle is added to the main HTML file. `@expo/metro-runtime` adds the runtime code that loads and evaluates the async bundles.
+当你运行 `npx expo export -p web` 时，bundle 会被拆分为多个文件，并且入口 bundle 会被添加到主 HTML 文件中。`@expo/metro-runtime` 添加了用于加载并执行异步 bundle 的运行时代码。
 
 ## Source map debug ID
 
-If a bundle is exported with an external source map, a [**Debug ID**](https://sentry.engineering/blog/the-case-for-debug-ids) annotation will be added to the end of the file, along with a matching `debugId` in the source map for corresponding the files together. If no source maps are exported, or inline source maps are used then this annotation will not be added.
+如果某个 bundle 导出了外部 source map，则文件末尾会添加一个 [**Debug ID**](https://sentry.engineering/blog/the-case-for-debug-ids) 注解，并在对应的 source map 中添加匹配的 `debugId`，以便将这些文件关联起来。如果没有导出 source map，或者使用的是内联 source map，则不会添加此注解。
 
 ```js
-// <all source code>
+// <所有源代码>
 
-//# debugId=<deterministic chunk hash>
+//# debugId=<确定性的 chunk hash>
 ```
 
-The associated `*.js.map` or `*.hbc.map` source map will be a JSON file containing an equivalent `debugId` property. The `debugId` will be injected before hermes bytecode generation to ensure matching in all cases.
+相关的 `*.js.map` 或 `*.hbc.map` source map 将是一个 JSON 文件，其中包含等效的 `debugId` 属性。`debugId` 会在 hermes 字节码生成之前注入，以确保在所有情况下都能匹配。
 
-The `debugId` is a deterministic hash of the bundle's contents without the external bundle splitting references. This is the same value used to create a chunks filename but formatted as a UUID. For example, `431b98e2-c997-4975-a3d9-2987710abd44`.
+`debugId` 是 bundle 内容的确定性哈希值，不包含外部 bundle 拆分引用。这与用于创建 chunk 文件名的值相同，但格式化为 UUID。例如，`431b98e2-c997-4975-a3d9-2987710abd44`。
 
-`@expo/metro-config` injects `debugId` during `npx expo export` and `npx expo export:embed`. Any additional optimization steps in `npx expo export:embed` like Hermes bytecode generation will need to have the `debugId` injected manually.
+`@expo/metro-config` 会在 `npx expo export` 和 `npx expo export:embed` 期间注入 `debugId`。在 `npx expo export:embed` 中的任何额外优化步骤，例如 Hermes 字节码生成，都需要手动注入 `debugId`。
 
-## Metro require runtime
+## Metro require 运行时
 
-You can optionally enable a custom Metro `require` implementation with the environment variable `EXPO_USE_METRO_REQUIRE=1`. This runtime has the following features:
+你可以通过环境变量 `EXPO_USE_METRO_REQUIRE=1` 选择性启用自定义的 Metro `require` 实现。此运行时具有以下特性：
 
-- String module IDs that are human-readable and make missing module errors easier to follow.
-- Deterministic IDs that are the same between runs and across modules (required for React Server Components in development).
-- Removed support for legacy RAM bundles.
+- 使用字符串模块 ID，便于阅读，也让缺失模块错误更容易追踪。
+- 使用确定性 ID，在不同运行之间以及跨模块保持一致（开发环境中的 React Server Components 需要这一点）。
+- 移除了对旧版 RAM bundle 的支持。
 
-## Magic import comments
+## 魔法导入注释
 
-> Available from SDK 52 on all platforms.
+> 自 SDK 52 起在所有平台可用。
 
-Server environments such as Workers, and Node.js support import arbitrary files at runtime, so you may want to keep `import` syntax in-tact instead of using Metro's require system. You can opt-out dynamic imports with the `/* @metro-ignore */` comment in `import()` statements.
+诸如 Workers 和 Node.js 之类的服务器环境支持在运行时导入任意文件，因此你可能希望保持 `import` 语法不变，而不是使用 Metro 的 require 系统。你可以在 `import()` 语句中使用 `/* @metro-ignore */` 注释来选择不使用动态导入。
 
 ```js
-// Manually ensure `./my-module.js` is included in the correct spot relative to the module.
+// 手动确保 `./my-module.js` 被包含在相对于模块的正确位置。
 const myModule = await import(/* @metro-ignore */ './my-module.js');
 ```
 
-Expo CLI will skip the `./my-module.js` dependency and assume that the developer has manually added it to the output bundle. Internally, this is used for exporting custom server code that dynamically switches between files based on the request. Avoid using this syntax for native bundles since `import()` is generally not available in React Native with Hermes enabled.
+Expo CLI 会跳过 `./my-module.js` 依赖，并假定开发者已将其手动添加到输出 bundle 中。在内部，这用于导出自定义服务器代码，该代码会根据请求动态切换文件。避免在原生 bundle 中使用此语法，因为在启用 Hermes 的 React Native 中，`import()` 通常不可用。
 
-Many React libraries shipped the Webpack `/* webpackIgnore: true */` comment to achieve similar behavior. To bridge the gap, we've also added support for Webpack's comment but recommend using the Metro equivalent in your app.
+许多 React 库都带有 Webpack 的 `/* webpackIgnore: true */` 注释来实现类似行为。为了解决这一差异，我们也添加了对 Webpack 注释的支持，但建议在你的应用中使用 Metro 对应的写法。
 
-## ES Module resolution
+## ES 模块解析
 
-> This sections applies from SDK 53 on all platforms.
+> 此部分自 SDK 53 起适用于所有平台。
 
-Metro resolves ES Module `import` and CommonJS `require` with separate resolution strategies.
+Metro 对 ES Module 的 `import` 和 CommonJS 的 `require` 使用不同的解析策略。
 
-Previously, Metro applied the classic Node.js module resolution strategy (which matches Node.js versions before v12), with some additions to support ES Modules. In this resolution strategy, Metro resolves modules from `node_modules`, JS files, optionally while omitting extensions, such as `.js`, and uses `package.json` fields such as `main`, `module`, and `react-native`.
+此前，Metro 使用经典的 Node.js 模块解析策略（与 v12 之前的 Node.js 版本相匹配），并附加了一些对 ES Modules 的支持。在这种解析策略下，Metro 会从 `node_modules`、JS 文件中解析模块，可选择省略扩展名（例如 `.js`），并使用 `package.json` 中的 `main`、`module` 和 `react-native` 等字段。
 
-Now, with the modern ES Modules resolution strategy, Metro instead resolves modules from `node_modules`, then matches different `package.json` fields, such as `exports`, [a nested map of sub-paths a package exposes](https://nodejs.org/api/packages.html#conditional-exports), and `main`.
+现在，在现代 ES Modules 解析策略下，Metro 会先从 `node_modules` 解析模块，然后匹配不同的 `package.json` 字段，例如 `exports`、[包公开的子路径嵌套映射](https://nodejs.org/api/packages.html#conditional-exports) 和 `main`。
 
-Depending on how a package is imported, one of these two resolution strategies will be used. Typically, a file that is imported with `import` from a Node module (rather than `require`), will use the ES Modules resolution strategy, and fall back on regular classic Node.js resolution. A file that wasn't resolved with ES Modules resolution or has been imported with CommonJS `require` will use the classic resolution strategy.
+根据包的导入方式，这两种解析策略之一将被使用。通常，从 Node 模块中使用 `import`（而不是 `require`）导入的文件会使用 ES Modules 解析策略，并回退到常规的经典 Node.js 解析。未使用 ES Modules 解析，或者通过 CommonJS `require` 导入的文件将使用经典解析策略。
 
 ### `package.json:exports`
 
-When performing ES Modules resolution, Metro will look at the `package.json:exports` conditions map. This is a mapping of import subpaths and conditions to files in the Node module package.
+在执行 ES Modules 解析时，Metro 会查看 `package.json:exports` 条件映射。这是 Node 模块包中导入子路径和条件到文件的映射。
 
-For example, a package that always exposes an **index.js** file, and matches Metro's classic CommonJS module resolution, may specify a map with the `default` condition.
+例如，一个始终公开 **index.js** 文件，并且符合 Metro 经典 CommonJS 模块解析的包，可以使用 `default` 条件指定一个映射。
 
 ```json
 {
@@ -487,7 +487,7 @@ For example, a package that always exposes an **index.js** file, and matches Met
 }
 ```
 
-However, a package providing both a CommonJS and ES Modules entrypoint may provide a mapping with the `import` and `require` conditions.
+不过，同时提供 CommonJS 和 ES Modules 入口点的包，可以使用 `import` 和 `require` 条件提供一个映射。
 
 ```json
 {
@@ -498,13 +498,13 @@ However, a package providing both a CommonJS and ES Modules entrypoint may provi
 }
 ```
 
-By default, Metro will match different conditions depending on the platform and whether the resolution has started from a CommonJS `require` call, or an ES Modules `import` statement and will change the condition accordingly.
+默认情况下，Metro 会根据平台以及解析是从 CommonJS `require` 调用开始，还是从 ES Modules `import` 语句开始，来匹配不同的条件，并相应地更改条件。
 
-For native platforms, the condition `react-native` is added, for web exports, the `browser` condition is added, and for server exports (such as API routes or React Server functions), the `node`, `react-server`, and `workerd` conditions are added. These conditions aren't matched in the order they're defined in. Instead, they're matched against the order of properties in the `package.json:exports` map.
+对于原生平台，会添加 `react-native` 条件；对于 web 导出，会添加 `browser` 条件；对于服务器导出（例如 API routes 或 React Server functions），会添加 `node`、`react-server` 和 `workerd` 条件。这些条件的匹配顺序并不是按照其定义顺序，而是按照 `package.json:exports` 映射中的属性顺序来匹配。
 
-TypeScript performs ES Module resolution separately from Metro and will also respect `package.json:exports` maps, when its `compilerOptions.moduleResolution` configuration option has either been set to `"bundler"` (which matches Metro's behavior more closely) or to `"node16"` / `"nodenext"`. TypeScript will however also match the `types` condition. As such, types may not resolve properly when a package doesn't put the `types` condition first in its exports map.
+TypeScript 会独立于 Metro 执行 ES Module 解析，并且当其 `compilerOptions.moduleResolution` 配置选项设置为 `"bundler"`（这与 Metro 的行为更接近）或者 `"node16"` / `"nodenext"` 时，也会遵循 `package.json:exports` 映射。不过，TypeScript 也会匹配 `types` 条件。因此，当一个包没有把 `types` 条件放在其 exports 映射的最前面时，类型可能无法正确解析。
 
-Since an exports map may contain subpaths, a package import may not have to match a file in the package's modules folder any longer, but may be a "redirected" import. Importing `'package/submodule'` may match a different file than **node_modules/package/submodule.js** if it's specified in `package.json:exports`.
+由于 exports 映射可能包含子路径，包导入不再一定需要匹配包的 modules 文件夹中的某个文件，而可能是一个“重定向”的导入。如果在 `package.json:exports` 中指定了，导入 `'package/submodule'` 可能会匹配到与 **node_modules/package/submodule.js** 不同的文件。
 
 ```json
 {
@@ -515,7 +515,7 @@ Since an exports map may contain subpaths, a package import may not have to matc
 }
 ```
 
-If you're encountering packages that are incompatible or unprepared for the new ES Modules resolution strategy, you may be able to resolve problems by patching its `package.json` file and add or correct its `package.json:exports` conditions map. However, it's also possible to prevent Metro from using `package.json:exports` maps in its resolution by disabling the `unstable_enablePackageExports` option.
+如果你遇到与新的 ES Modules 解析策略不兼容或尚未准备好的包，你可以通过修补其 `package.json` 文件并添加或修正其 `package.json:exports` 条件映射来解决问题。不过，也可以通过禁用 `unstable_enablePackageExports` 选项，阻止 Metro 在解析时使用 `package.json:exports` 映射。
 
 ```js metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
@@ -528,13 +528,13 @@ config.resolver.unstable_enablePackageExports = false;
 module.exports = config;
 ```
 
-## Asset imports
+## 资源导入
 
-When assets are imported, a virtual module is created to represent the data required for importing the asset.
+当资源被导入时，会创建一个虚拟模块来表示导入该资源所需的数据。
 
-On native platforms, an asset will be a numeric ID: `1`, `2`, `3`, and so on, which can be looked up using `require("@react-native/assets-registry/registry").getAssetByID(<NUMBER>)`. On web and server platforms, the asset will change depending on the file type. If the file is an image, then the asset will be `{ uri: string, width?: number, height?: number }`, otherwise the asset will be a `string` representing the remote URL for the asset.
+在原生平台上，资源将是一个数字 ID：`1`、`2`、`3`，以此类推，可以通过 `require("@react-native/assets-registry/registry").getAssetByID(<NUMBER>)` 查找。在 web 和 server 平台上，资源会根据文件类型而变化。如果文件是图片，那么资源将是 `{ uri: string, width?: number, height?: number }`；否则，资源将是一个表示该资源远程 URL 的 `string`。
 
-The assets can be used as follows:
+资源可以按如下方式使用：
 
 ```jsx
 import { Image } from 'react-native';
@@ -546,7 +546,7 @@ function Demo() {
 }
 ```
 
-In API routes, you can always assume the type of the asset will not be a number:
+在 API 路由中，你始终可以假设资源的类型不会是数字：
 
 ```js
 import asset from './img.png';
@@ -554,9 +554,9 @@ import asset from './img.png';
 export async function GET(req: Request) {
   const ImageData = await fetch(
     new URL(
-      // Access the asset URI.
+      // 访问资源 URI。
       asset.uri,
-      // Append to the current request URL origin.
+      // 追加到当前请求 URL 的 origin。
       req.url
     )
   ).then(res => res.arrayBuffer());
@@ -571,33 +571,33 @@ export async function GET(req: Request) {
 
 ## Web workers
 
-> **important** This feature is in alpha and subject to breaking changes.
+> **important** 此功能处于 alpha 阶段，可能会有破坏性变更。
 
 ```ts
 new Worker(new URL('./worker', window.location.href));
 ```
 
-Expo Metro has experimental web worker support. This feature is currently web-only and does not work on native, usage on native will trigger an error "Property 'Worker' doesn't exist".
+Expo Metro 提供实验性的 web worker 支持。此功能目前仅支持 web，在原生平台上不可用，在原生平台上使用将触发错误 "Property 'Worker' doesn't exist"。
 
-Web workers can be used to offload work to a separate thread on web, allowing the main thread to remain responsive. This is useful for computationally expensive tasks, such as image processing, cryptography, or other tasks that would otherwise block the main thread.
+Web workers 可用于将工作卸载到 web 上的单独线程，让主线程保持响应。这对于计算开销较大的任务很有用，例如图像处理、加密或其他原本会阻塞主线程的任务。
 
-Workers can be generated inline using `Blob`, but sometimes you may want to leverage modern features like TypeScript or importing other modules.
+Worker 可以使用 `Blob` 以内联方式生成，但有时你可能希望利用 TypeScript 等现代特性，或导入其他模块。
 
-Web workers depend on Expo bundle splitting support, which means you need to either use Expo Router or install and import `@expo/metro-runtime`. You also cannot use the environment `EXPO_NO_METRO_LAZY=1` with web workers.
+Web workers 依赖于 Expo 的 bundle 拆分支持，这意味着你需要使用 Expo Router，或者安装并导入 `@expo/metro-runtime`。你也不能在使用 web workers 时设置环境变量 `EXPO_NO_METRO_LAZY=1`。
 
-Consider the following example of a worker that doubles a number:
+请看下面一个将数字加倍的 worker 示例：
 
 ```ts worker.ts
 self.onmessage = ({ data }) => {
-  const result = data * 2; // Example: double the number
+  const result = data * 2; // 示例：将数字加倍
   self.postMessage(result);
 };
 ```
 
-This worker file can be imported as a `Worker` in the main app:
+这个 worker 文件可以在主应用中作为 `Worker` 导入：
 
 ```ts
-// worker is of type `Worker`
+// worker 的类型为 `Worker`
 const worker = new Worker(new URL('./worker', window.location.href));
 
 worker.onmessage = ({ data }) => {
@@ -607,7 +607,7 @@ worker.onmessage = ({ data }) => {
 worker.postMessage(5);
 ```
 
-Behind the scenes, Expo CLI is generating code like this:
+在幕后，Expo CLI 正在生成如下代码：
 
 ```ts
 const worker = new Worker(
@@ -615,37 +615,37 @@ const worker = new Worker(
 );
 ```
 
-The generated bundle URL changes based on development/production to ensure the worker is loaded and bundled correctly. Unlike traditional bundle splitting, a worker file needs to contain its own copy of all modules and cannot depend on common modules in the main bundle.
+生成的 bundle URL 会根据开发/生产环境而变化，以确保 worker 被正确加载并打包。与传统的 bundle 拆分不同，worker 文件需要包含其自身的所有模块副本，并且不能依赖主 bundle 中的公共模块。
 
-The native API `Worker` is traditionally unavailable in React Native and not provided by the Expo SDK, so even though this bundling feature technically works for all platforms, it's only useful on web. You could theoretically write a native Expo module that polyfills the `Worker` API if you want to support native platforms too. Alternatively, you can use the "worklet" API in React Native Reanimated to offload work to a separate thread on native.
+原生 API `Worker` 传统上在 React Native 中不可用，并且 Expo SDK 也未提供，因此尽管这种打包功能在技术上适用于所有平台，但实际上只对 web 有用。如果你想让原生平台也支持它，理论上可以编写一个原生 Expo 模块来为 `Worker` API 提供 polyfill。或者，你也可以在 React Native Reanimated 中使用 "worklet" API，将工作卸载到原生上的单独线程。
 
-Alternatively, you can import Workers using the public path by first putting a transformed JS file in the **public** directory, then referencing it in the worker import with a variable:
+另外，你还可以通过公共路径导入 Workers：先将一个经过转换的 JS 文件放入 **public** 目录，然后在 worker 导入中使用变量引用它：
 
 ```ts
-// Will avoid the transform and use the public path directly.
+// 将避免转换，并直接使用公共路径。
 const worker = new Worker('/worker.js');
 
-// The variable breaks the transform causing the literal path to be used instead of the transformed path.
+// 该变量会破坏转换，从而使用字面路径而不是转换后的路径。
 const path = '/worker.js';
 
 const anotherWorker = new Worker(new URL(path, window.location.href));
 ```
 
-Using a variable in the `Worker` constructor is not supported for bundling. To inspect the internal URL, you may use the internal syntax `require.unstable_resolveWorker('./path/to/worker.js')` to get the URL fragment.
+在 `Worker` 构造函数中使用变量不支持打包。若要检查内部 URL，可以使用内部语法 `require.unstable_resolveWorker('./path/to/worker.js')` 来获取 URL 片段。
 
-## Bare workflow setup
+## Bare workflow 设置
 
-> This guide is versioned and will need to be revisited when upgrading/downgrading Expo. Alternatively, use [Expo Prebuild](/more/glossary-of-terms/#prebuild) for fully automated setup.
+> 本指南是按版本编写的，在升级/降级 Expo 时需要重新检查。或者，使用 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 进行全自动设置。
 
-Projects that don't use [Expo Prebuild](/more/glossary-of-terms/#prebuild) must configure native files to ensure the Expo Metro config is always used to bundle the project.
+不使用 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 的项目必须配置原生文件，以确保始终使用 Expo Metro 配置来打包项目。
 
 {/* If this isn't done, then features like [aliases](/guides/typescript/#path-aliases-optional), [absolute imports](/guides/typescript/#absolute-imports-optional), asset hashing, and more will not work. */}
 
-These modifications are meant to replace `npx react-native bundle` and `npx react-native start` with `npx expo export:embed` and `npx expo start` respectively.
+这些修改旨在分别用 `npx expo export:embed` 和 `npx expo start` 替换 `npx react-native bundle` 和 `npx react-native start`。
 
 ### metro.config.js
 
-Ensure the **metro.config.js** extends `expo/metro-config`:
+确保 **metro.config.js** 继承自 `expo/metro-config`：
 
 ```js metro.config.js
 const { getDefaultConfig } = require('expo/metro-config');
@@ -657,48 +657,48 @@ module.exports = config;
 
 ### `android/app/build.gradle`
 
-The Android **app/build.gradle** must be configured to use Expo CLI for production bundling. Modify the `react` config object:
+Android 的 **app/build.gradle** 必须配置为在生产打包时使用 Expo CLI。修改 `react` 配置对象：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/android-use-expo-cli-bundling.diff" />
 
 ### `ios/<Project>.xcodeproj/project.pbxproj`
 
-In your **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** file, replace the following scripts:
+在你的 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换以下脚本：
 
-#### "Start Packager" script
+#### "Start Packager" 脚本
 
-Remove the **"Start Packager"** script. The dev server must be started with `npx expo` before/after running the app.
+移除 **"Start Packager"** 脚本。开发服务器必须在运行应用前/后使用 `npx expo` 启动。
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-remove-start-packager.diff" />
 
-#### "Bundle React Native code and images" script
+#### "Bundle React Native code and images" 脚本
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script.diff" />
 
-Alternatively, in the Xcode project, select the **"Bundle React Native code and images"** build phase and add the following modifications:
+或者，在 Xcode 项目中，选择 **"Bundle React Native code and images"** 构建阶段，并添加以下修改：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script-inline.diff" />
 
-> You can set `CLI_PATH`, `BUNDLE_COMMAND`, and `ENTRY_FILE` environment variables to overwrite these defaults.
+> 你可以设置 `CLI_PATH`、`BUNDLE_COMMAND` 和 `ENTRY_FILE` 环境变量来覆盖这些默认值。
 
-### Custom entry file
+### 自定义入口文件
 
-By default, React Native only supports using a root `index.js` file as the entry file (or platform-specific variation like `index.ios.js`). Expo projects allow using any entry file, but this requires addition bare setup.
+默认情况下，React Native 仅支持使用根目录下的 `index.js` 文件作为入口文件（或平台特定变体，如 `index.ios.js`）。Expo 项目允许使用任意入口文件，但这需要额外的裸工作流配置。
 
-#### Development
+#### 开发环境
 
-Development mode entry files can be enabled by using the [`expo-dev-client`](../sdk/dev-client/) package. Alternatively you can add the following configuration:
+可以通过使用 [`expo-dev-client`](../sdk/dev-client/) 包来启用开发模式入口文件。或者，你也可以添加以下配置：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-appdelegate-entry.diff" />
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/android-mainapplication-entry.diff" />
 
-#### Production
+#### 生产环境
 
-In your **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** file, replace the **"Bundle React Native code and images"** script to set `$ENTRY_FILE` according using Metro:
+在你的 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换 **"Bundle React Native code and images"** 脚本，以使用 Metro 按照 `$ENTRY_FILE` 进行设置：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script.diff" />
 
-The Android **app/build.gradle** must be configured to use Metro module resolution to find the root entry file. Modify the `react` config object:
+Android 的 **app/build.gradle** 必须配置为使用 Metro 模块解析来查找根入口文件。修改 `react` 配置对象：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/android-entry-file.diff" />

@@ -1,7 +1,7 @@
 ---
-title: Migrate from React Native CLI to Expo CLI
-sidebar_title: Migrate to Expo CLI
-description: Learn how to migrate from React Native CLI (@react-native-community/cli) to Expo CLI for any React Native project.
+title: 从 React Native CLI 迁移到 Expo CLI
+sidebar_title: 迁移到 Expo CLI
+description: 了解如何将任何 React Native 项目从 React Native CLI（@react-native-community/cli）迁移到 Expo CLI。
 ---
 
 import { DocsLogo, RouterLogo } from '@expo/styleguide';
@@ -13,70 +13,69 @@ import { FAQ } from '~/ui/components/FAQ';
 import { Terminal } from '~/ui/components/Snippet';
 import { DEMI } from '~/ui/components/Text';
 
-To migrate from React Native CLI (`npx @react-native-community/cli@latest init`) to Expo CLI, you'll need to install the `expo` package, which includes the Expo Modules API and Expo CLI. This guide covers the installation step, the benefits of using Expo CLI, and how to compile and run your project after migrating to Expo CLI.
+要从 React Native CLI（`npx @react-native-community/cli@latest init`）迁移到 Expo CLI，你需要安装 `expo` 包，其中包含 Expo Modules API 和 Expo CLI。本指南涵盖安装步骤、使用 Expo CLI 的优势，以及迁移到 Expo CLI 后如何编译和运行你的项目。
 
-It is strongly recommended to use Expo CLI when using other Expo tools. It is required for many tools, such as EAS Update, Expo Router, and expo-dev-client, and other features may not work as well without it.
+强烈建议在使用其他 Expo 工具时使用 Expo CLI。许多工具都需要它，例如 EAS Update、Expo Router 和 expo-dev-client；如果没有它，其他功能也可能无法正常工作。
 
-## Install the `expo` package
+## 安装 `expo` 包
 
-In most cases, executing the following command in a project directory to install the package is all you need to do:
+在大多数情况下，只需在项目目录中执行以下命令来安装该包即可：
 
 <Terminal cmd={['$ npx install-expo-modules@latest']} />
 
-For a detailed installation guide, see [Install Expo modules](/bare/installing-expo-modules).
+有关详细的安装指南，请参阅[安装 Expo 模块](/bare/installing-expo-modules)。
 
-> **info** After installing the `expo` package, you'll need to configure your project to use Expo CLI. This includes setting up Metro config, Babel preset, and native project configurations. See the [Configure Expo CLI for bundling on Android and iOS](/bare/installing-expo-modules/#configure-expo-cli-for-bundling-on-android-and-ios) section for the complete setup instructions.
+> **info** 安装 `expo` 包后，你需要配置项目以使用 Expo CLI。这包括设置 Metro 配置、Babel 预设以及原生项目配置。完整设置说明请参阅[为 Android 和 iOS 打包配置 Expo CLI](/bare/installing-expo-modules/#configure-expo-cli-for-bundling-on-android-and-ios)部分。
 
-## Why Expo CLI instead of React Native CLI
+## 为什么使用 Expo CLI 而不是 React Native CLI
 
-Expo CLI commands provide several benefits over the similar commands in `@react-native-community/cli`, which includes:
+与 `@react-native-community/cli` 中类似的命令相比，Expo CLI 命令提供了多项优势，包括：
 
-- Instant access to Hermes debugger with <kbd>j</kbd> keystroke.
-- The debugger ships with [React Native DevTools](/debugging/tools/#debugging-with-react-native-devtools).
-- [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) support with [`expo prebuild`](/more/glossary-of-terms/#prebuild) for upgrades, white-labeling, easy third-party package setup, and better maintainability of the codebase (by reducing the surface area).
-- Support for file-based routing with [`expo-router`](/router/introduction/).
-  - [Async bundling](/router/web/async-routes) in development.
-- Built-in [environment variable support](/guides/environment-variables) and **.env** file integration.
-- View native logs directly in the terminal alongside JavaScript logs.
-- Improved native build log formatting using Expo CLI's `xcpretty`-style tool built specifically for React Native apps. For example, when compiling a Pod, you can see which Node module included it.
-- [First-class TypeScript support](/guides/typescript).
-- Support for **tsconfig.json** aliases with `paths` and `baseUrl` [built-in to Metro](/guides/typescript/#path-aliases-optional).
-- [Web support](/guides/customizing-metro/#adding-web-support-to-metro) with Metro. Fully typed for React Native Web.
-- Modern [CSS support](/versions/latest/config/metro#css) with Tailwind, PostCSS, CSS Modules, SASS, and more.
-- Static site generation with Expo Router and Metro web.
-- Out of the box [support for monorepos](/guides/monorepos).
-- Support for Expo tooling such as [`expo-dev-client`](/develop/development-builds/introduction), the [Expo Updates protocol](/technical-specs/expo-updates-1) and [EAS Update](/eas-update/introduction).
-- Automated `pod install` execution when using `npx expo run:ios`.
-- `npx expo install` selects compatible dependency versions for well-known packages.
-- Automatic port detection when running `npx expo run:[android|ios]` and `npx expo start`. If another app is running on the default port, a different port is used.
-- Android or iOS device launch selection shortcuts using <kbd>Shift</kbd> + <kbd>a</kbd> or <kbd>Shift</kbd> + <kbd>i</kbd> from the interactive prompt.
-- Built-in support for serving your app over an [ngrok tunnel](/develop/development-builds/development-workflows/#tunnel-urls).
-- Develop on any port with any entry JavaScript file.
+- 按下 <kbd>j</kbd> 即可立即使用 Hermes 调试器。
+- 调试器自带 [React Native DevTools](/debugging/tools/#debugging-with-react-native-devtools)。
+- 支持使用 [`expo prebuild`](/more/glossary-of-terms/#prebuild) 进行 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 用于升级、白标化、轻松设置第三方包，以及通过减少代码表面积来提高代码库可维护性。
+- 支持通过 [`expo-router`](/router/introduction/) 进行基于文件的路由。
+  - 开发环境中的 [异步打包](/router/web/async-routes)。
+- 内置 [环境变量支持](/guides/environment-variables) 和 **.env** 文件集成。
+- 可直接在终端中查看原生日志，与 JavaScript 日志并列显示。
+- 使用 Expo CLI 专为 React Native 应用构建的 `xcpretty` 风格工具后，原生构建日志格式更佳。例如，在编译 Pod 时，你可以看到它是由哪个 Node 模块引入的。
+- [一流的 TypeScript 支持](/guides/typescript)。
+- 内置支持 **tsconfig.json** 别名中的 `paths` 和 `baseUrl`，[已集成到 Metro 中](/guides/typescript/#path-aliases-optional)。
+- 通过 Metro 支持 [Web 支持](/guides/customizing-metro/#adding-web-support-to-metro)。对 React Native Web 提供完整类型支持。
+- 支持现代 [CSS](/versions/latest/config/metro#css)，包括 Tailwind、PostCSS、CSS Modules、SASS 等。
+- 使用 Expo Router 和 Metro web 进行静态站点生成。
+- 开箱即用地[支持 monorepo](/guides/monorepos)。
+- 支持 Expo 工具，例如 [`expo-dev-client`](/develop/development-builds/introduction)、[Expo Updates 协议](/technical-specs/expo-updates-1) 和 [EAS Update](/eas-update/introduction)。
+- 使用 `npx expo run:ios` 时会自动执行 `pod install`。
+- `npx expo install` 会为知名包选择兼容的依赖版本。
+- 运行 `npx expo run:[android|ios]` 和 `npx expo start` 时会自动检测端口。如果默认端口上已有其他应用在运行，则会使用其他端口。
+- 在交互式提示中使用 <kbd>Shift</kbd> + <kbd>a</kbd> 或 <kbd>Shift</kbd> + <kbd>i</kbd> 可快速选择启动 Android 或 iOS 设备。
+- 内置通过 [ngrok 隧道](/develop/development-builds/development-workflows/#tunnel-urls) 提供你的应用。
+- 可使用任意入口 JavaScript 文件在任意端口上进行开发。
 
-We recommend Expo CLI for most React Native projects that target Android, iOS, and/or web. It does not yet have built-in support for the most popular out-of-tree platforms, such as
-Windows and macOS. If building for these platforms, you can utilize Expo CLI for the supported platforms and `@react-native-community/cli` for the others.
+对于大多数面向 Android、iOS 和/或 Web 的 React Native 项目，我们推荐使用 Expo CLI。它目前尚未内置支持最常见的树外平台，例如 Windows 和 macOS。如果你要为这些平台构建，可以对受支持的平台使用 Expo CLI，而对其他平台使用 `@react-native-community/cli`。
 
-## Compile and run your app
+## 编译并运行你的应用
 
-After installing the `expo` package, you can use the following commands which are alternatives to `npx react-native run-android` and `npx react-native run-ios`:
+安装 `expo` 包后，你可以使用以下命令，它们可替代 `npx react-native run-android` 和 `npx react-native run-ios`：
 
 <Terminal
-  cmd={['# for Android', '$ npx expo run:android', '', '# for iOS', '$ npx expo run:ios']}
+  cmd={['# 针对 Android', '$ npx expo run:android', '', '# 针对 iOS', '$ npx expo run:ios']}
 />
 
-When building your project, you can choose a device or simulator by using the `--device` flag. This also applies to any iOS device that is connected to your computer.
+构建项目时，你可以使用 `--device` 标志选择设备或模拟器。这同样适用于任何连接到电脑的 iOS 设备。
 
-## Start the bundler independently
+## 独立启动打包器
 
-`npx expo run:[android|ios]` automatically starts the bundler/development server. If you want to independently start the bundler with `npx expo start` command, pass the `--no-bundler` to the `npx expo run:[android|ios]` command.
+`npx expo run:[android|ios]` 会自动启动打包器/开发服务器。如果你希望使用 `npx expo start` 命令独立启动打包器，可以在 `npx expo run:[android|ios]` 命令中传入 `--no-bundler`。
 
-## Common questions
+## 常见问题
 
 <FAQ>
 
-<Collapsible summary="Can I use Expo CLI without installing the Expo Modules API?">
+<Collapsible summary="我可以在不安装 Expo Modules API 的情况下使用 Expo CLI 吗？">
 
-Expo Modules API is also installed when you install the `expo` package with `npx install-expo-modules`. If you want to try out Expo CLI for now without installing Expo Modules API, install the `expo` package with `npm install` and then configure the **react-native.config.js** to exclude the package from autolinking:
+安装 `expo` 包时，`npx install-expo-modules` 也会安装 Expo Modules API。如果你现在想先试用 Expo CLI，而不安装 Expo Modules API，可以使用 `npm install` 安装 `expo` 包，然后配置 **react-native.config.js**，将该包排除在自动链接之外：
 
 ```js react-native.config.js
 module.exports = {
@@ -92,53 +91,53 @@ module.exports = {
 };
 ```
 
-> **Note:** Without Expo API Modules installed, certain features such as `expo-dev-client` or `expo-router` are unavailable.
+> **注意：** 如果未安装 Expo API Modules，某些功能（例如 `expo-dev-client` 或 `expo-router`）将不可用。
 
 </Collapsible>
 
-<Collapsible summary="Can I use prebuild for out-of-tree platforms, such as macOS or Windows?">
+<Collapsible summary="我可以将 prebuild 用于树外平台，例如 macOS 或 Windows 吗？">
 
-Yes! Refer to the [Customized Prebuild Example repository](https://github.com/byCedric/custom-prebuild-example) for more information.
+可以！更多信息请参阅 [Customized Prebuild Example 仓库](https://github.com/byCedric/custom-prebuild-example)。
 
 </Collapsible>
 
 </FAQ>
 
-## Next steps
+## 下一步
 
-Now, with the `expo` package installed and configured in your project, you can start using all features from Expo CLI and SDK. Here are some recommended next steps to dive deep:
+现在，`expo` 包已经安装并在你的项目中配置完成，你就可以开始使用 Expo CLI 和 SDK 的所有功能了。以下是一些建议的后续步骤，帮助你深入了解：
 
 <BoxLink
-  title="Expo CLI Reference"
-  description="Learn more about the commands and flags available in Expo CLI."
+  title="Expo CLI 参考"
+  description="了解 Expo CLI 中可用的命令和参数。"
   href="/more/expo-cli"
   Icon={BookOpen02Icon}
 />
 <BoxLink
-  title="Customizing Metro"
-  description="Learn how to customize the Metro bundler configuration for your project."
+  title="自定义 Metro"
+  description="了解如何为你的项目自定义 Metro 打包器配置。"
   href="/guides/customizing-metro"
   Icon={BookOpen02Icon}
 />
 <BoxLink
-  title="Adopt Prebuild"
+  title="采用 Prebuild"
   description={
     <>
-      Automate your native directories using the <DEMI>app.json</DEMI>.
+      使用 <DEMI>app.json</DEMI> 自动管理你的原生目录。
     </>
   }
   href="/guides/adopting-prebuild"
   Icon={BookOpen02Icon}
 />
 <BoxLink
-  title="Use Expo SDK"
-  description="Try out libraries from the Expo SDK in your app."
+  title="使用 Expo SDK"
+  description="在你的应用中试用 Expo SDK 中的库。"
   href="/versions/"
   Icon={DocsLogo}
 />
 <BoxLink
   title="Expo Router"
-  description="Expo Router brings the best routing concepts from the web to native Android and iOS apps."
+  description="Expo Router 将 Web 上最优秀的路由理念带到原生 Android 和 iOS 应用中。"
   href="/router/introduction/"
   Icon={RouterLogo}
 />

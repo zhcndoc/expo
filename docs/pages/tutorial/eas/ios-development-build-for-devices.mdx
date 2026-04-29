@@ -1,7 +1,7 @@
 ---
-title: Create and run a cloud build for iOS device
-sidebar_title: iOS development build for devices
-description: Learn how to configure a development build for iOS devices using EAS Build.
+title: 为 iOS 设备创建并运行云构建
+sidebar_title: 面向设备的 iOS 开发构建
+description: 了解如何使用 EAS Build 为 iOS 设备配置开发构建。
 hasVideoLink: true
 ---
 
@@ -12,126 +12,126 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-In this chapter, we'll create a development build that can run on an iOS device with EAS Build.
+在本章中，我们将创建一个可以通过 EAS Build 在 iOS 设备上运行的开发构建。
 
-Development builds for iOS devices are generated in the **.ipa** format, which is standard for iOS app installations.
+iOS 设备的开发构建采用 **.ipa** 格式生成，这是 iOS 应用安装的标准格式。
 
 <VideoBoxLink
   videoId="HbfWU7_o4cU"
-  title="Watch: Creating a development build for iOS physical device"
-  description="Learn how to build and run a development build on a physical iOS device using EAS Build, including setting up code signing."
+  title="观看：为 iOS 实体设备创建开发构建"
+  description="了解如何使用 EAS Build 在实体 iOS 设备上构建并运行开发构建，包括设置代码签名。"
 />
 
 ---
 
-## Prerequisites
+## 前提条件
 
-Before we begin, ensure you have:
+在开始之前，请确保你已具备：
 
-- **Apple Developer Account:** This is required to access [necessary credentials](/app-signing/app-credentials/#ios) for signing our app, as each build needs to be signed to verify that the app comes from a trusted source. EAS Build helps manage these credentials.
-- **Developer Mode activated on iOS 16 and higher:** Installing development builds on your device requires Developer Mode to be enabled. If this is your first time or if it's currently disabled, see these instructions to [activate Developer Mode](/guides/ios-developer-mode/).
+- **Apple Developer Account：** 这是访问用于为应用签名的 [必要凭据](/app-signing/app-credentials/#ios) 的前提，因为每个构建都需要签名以验证应用来自可信来源。EAS Build 有助于管理这些凭据。
+- **在 iOS 16 及更高版本上启用开发者模式：** 在设备上安装开发构建需要启用 Developer Mode。如果这是你第一次使用，或者当前处于禁用状态，请参阅这些说明以[启用开发者模式](/guides/ios-developer-mode/)。
 
-## Provisioning profile
+## 配置文件
 
-To initiate development on an iOS device, we have to:
+要在 iOS 设备上开始开发，我们需要：
 
-- Register the device by creating a new [provisioning profile](/app-signing/app-credentials/#provisioning-profiles).
-- Download and install this profile onto the device.
+- 通过创建新的 [配置文件](/app-signing/app-credentials/#provisioning-profiles) 来注册设备。
+- 将此配置文件下载并安装到设备上。
 
 <Step label="1">
 
-### Register an iOS device
+### 注册 iOS 设备
 
-With EAS CLI, run the command to register a new Apple device:
+使用 EAS CLI，运行命令来注册新的 Apple 设备：
 
 <Terminal cmd={['$ eas device:create']} />
 
-This command prompts us with the following questions:
+此命令会提示我们回答以下问题：
 
-- **You're inside the project directory. Would you like to use the** **your-account-name** **account?** Press <kbd>Y</kbd>.
-- **Apple ID.** For this step, enter your Apple ID. It will then log in to our Apple Developer account. Follow the steps in the terminal window.
-- **How would you like to register your devices?** Select **Website** that generates a registration URL that can be opened on the iOS device.
+- **You're inside the project directory. Would you like to use the** **your-account-name** **account?** 按 <kbd>Y</kbd>。
+- **Apple ID.** 在这一步中，输入你的 Apple ID。随后它会登录到我们的 Apple Developer account。请按照终端窗口中的步骤操作。
+- **How would you like to register your devices?** 选择 **Website**，这会生成一个可在 iOS 设备上打开的注册链接。
 
-> **info** **Tip**: If you or your team have multiple devices, you can share the provisioning profile link with those devices for downloading and installing the profile.
+> **info** **提示**：如果你或你的团队有多台设备，可以将配置文件链接分享给这些设备，以便下载并安装该配置文件。
 
 </Step>
 
 <Step label="2">
 
-### Download and install profile
+### 下载并安装配置文件
 
-On a device's web browser, open the link provided in the previous step and tap the **Download Profile button**.
+在设备的浏览器中，打开上一步提供的链接，并点击 **Download Profile button**。
 
 <ContentSpotlight
-  alt="Download the provisioning profile"
+  alt="下载配置文件"
   src="/static/images/tutorial/eas/ios-ad-hoc-01.jpg"
   className="max-w-[240px]"
 />
 
-Open the **Settings** app, which prompts us to register our device.
+打开 **Settings** 应用，这会提示我们注册设备。
 
 <ContentSpotlight
-  alt="Install the provisioning profile"
+  alt="安装配置文件"
   src="/static/images/tutorial/eas/ios-ad-hoc-02.jpg"
   className="max-w-[240px]"
 />
 
-Tap **Install** to register the iOS device.
+点击 **Install** 来注册 iOS 设备。
 
 <ContentSpotlight
-  alt="Provisioning profile installed successfully"
+  alt="配置文件安装成功"
   src="/static/images/tutorial/eas/ios-ad-hoc-03.jpg"
   className="max-w-[240px]"
 />
 
-After the provisioning profile is installed, our device redirects us back to the web browser, displaying a success message indicating the completion of the process.
+配置文件安装完成后，我们的设备会跳回网页浏览器，并显示一条成功消息，表示该过程已完成。
 
 </Step>
 
-## Development build for iOS device
+## iOS 设备的开发构建
 
 <Step label="1">
 
-### Create
+### 创建
 
-To create a development build on an iOS device, make sure that under the `build.development` profile:
+要在 iOS 设备上创建开发构建，请确保在 `build.development` 配置下：
 
-- The `developmentClient` is set to `true` in **eas.json**, which is done by the default configuration.
-- Then, run the `eas build` command with `ios` as the platform and `development` as the build profile:
+- 在 **eas.json** 中将 `developmentClient` 设置为 `true`，默认配置已经完成了这一点。
+- 然后运行 `eas build` 命令，指定 `ios` 作为平台，`development` 作为构建配置：
 
 <Terminal cmd={['$ eas build --platform ios --profile development']} />
 
-> **info** **Tip**: Next time you run `eas build` command, you can also use `-p` to specify the platform. It is short for `--platform`.
+> **info** **提示**：下次运行 `eas build` 命令时，你也可以使用 `-p` 来指定平台。它是 `--platform` 的简写。
 
-This command prompts us with the following questions when we create the build for the first time:
+当我们第一次创建构建时，此命令会提示我们回答以下问题：
 
-- **What would you like your iOS bundle identifier to be?** Press <kbd>return</kbd> to select the default value provided for this prompt. This will add [`ios.bundleIdentifier`](/versions/latest/config/app/#package) in **app.json** if it isn't already defined.
-- **Do you want to log in to your Apple account?**. Since we are creating a development build for the first time, it will ask us to **Generate a new Apple Distribution Certificate**. Press <kbd>Y</kbd> both times.
-- **Select a device for ad hoc build**. This is the key part, which is why we had to register a provisioning profile before. We can select one or all of our registered devices here and then press return to install that build on those devices later.
+- **What would you like your iOS bundle identifier to be?** 按 <kbd>return</kbd> 选择此提示提供的默认值。如果尚未定义，这将把 [`ios.bundleIdentifier`](/versions/latest/config/app/#package) 添加到 **app.json** 中。
+- **Do you want to log in to your Apple account?**。由于我们是第一次创建开发构建，它会要求我们 **Generate a new Apple Distribution Certificate**。两次都按 <kbd>Y</kbd>。
+- **Select a device for ad hoc build**。这就是关键步骤，因此我们之前必须先注册配置文件。我们可以在这里选择一个或全部已注册设备，然后按回车，之后便可以将该构建安装到这些设备上。
 
-> **info** **Only if you have skipped [iOS Simulator chapter](/tutorial/eas/ios-development-build-for-simulators/):** You'll be prompted **iOS app only uses standard/exempt encryption?** Press <kbd>Y</kbd> to select the default value provided for this prompt. Since our app doesn't use encryption, it sets `ITSAppUsesNonExemptEncryption` in the **Info.plist** file to `NO` and manages the compliance check for the same when you are releasing your app to TestFlight/Apple App Store. When you are releasing your own app, and it uses encryption, you can select `N` to skip this prompt next time.
+> **info** **仅当你跳过了 [iOS 模拟器章节](/tutorial/eas/ios-development-build-for-simulators/) 时：** 系统会提示 **iOS app only uses standard/exempt encryption?** 按 <kbd>Y</kbd> 以选择此提示提供的默认值。由于我们的应用不使用加密，它会将 **Info.plist** 文件中的 `ITSAppUsesNonExemptEncryption` 设置为 `NO`，并在你将应用发布到 TestFlight/Apple App Store 时负责处理相应的合规检查。当你发布自己的应用且它使用加密时，下一次可以选择 `N` 以跳过此提示。
 
-After responding, the build will queue up, and we can track its progress via a provided link by the EAS CLI in the EAS dashboard:
+回答完后，构建将进入队列，我们可以通过 EAS CLI 提供的链接在 EAS 仪表盘中跟踪其进度：
 
 <ContentSpotlight
-  alt="iOS preview build details and progress in EAS dashboard"
+  alt="EAS 仪表盘中的 iOS 预览构建详情和进度"
   src="/static/images/tutorial/eas/ios-build.png"
   className="max-w-[800px]"
 />
 
-<Collapsible summary="What does a build details page contain?">
+<Collapsible summary="构建详情页面包含什么？">
 
-The build details page displays the build type, profile, Expo SDK version, app version, build number, last commit hash, and the identity of the developer or account owner who initiated the build.
+构建详情页面会显示构建类型、配置、Expo SDK 版本、应用版本、构建号、最后一次提交哈希，以及发起构建的开发者或账户所有者身份。
 
-In the above image, the current status of the **Build artifact** shows that the build is in progress. Upon completion, this section will offer an option to download the build. The **Logs** outlines every step taken during the iOS build process on EAS Build. For the sake of brevity, we won't explore each step in detail here. To learn more, see [iOS build process](/build-reference/ios-builds/).
+在上图中，**Build artifact** 的当前状态显示构建正在进行中。完成后，此部分将提供下载构建的选项。**Logs** 会概述 EAS Build 上 iOS 构建过程中执行的每一步。为了简洁起见，这里我们不会逐步展开每一步。要了解更多，请参阅 [iOS 构建过程](/build-reference/ios-builds/)。
 
 </Collapsible>
 
-<Collapsible summary="What is iOS bundle identifier?">
+<Collapsible summary="什么是 iOS bundle identifier？">
 
-The `ios.bundleIdentifier` is a unique name of our app. If we publish our app right now, the Apple App Store will use this property and its value to identify our app on the store.
+`ios.bundleIdentifier` 是我们应用的唯一名称。如果我们现在发布应用，Apple App Store 会使用这个属性及其值来在商店中识别我们的应用。
 
-This notation is defined as `host.owner.app-name`. For example, our example app has `com.owner.stickersmash` where `com.owner` is the domain and `stickersmash` is our app name.
+这种命名格式定义为 `host.owner.app-name`。例如，我们的示例应用使用的是 `com.owner.stickersmash`，其中 `com.owner` 是域名，`stickersmash` 是我们的应用名称。
 
 </Collapsible>
 
@@ -139,46 +139,46 @@ This notation is defined as `host.owner.app-name`. For example, our example app 
 
 <Step label="2">
 
-### Install
+### 安装
 
-Once the build finishes, the Build artifact section gets updated, indicating that the build is complete:
+构建完成后，Build artifact 部分会更新，表示构建已完成：
 
 <ContentSpotlight
-  alt="Build artifact gives the option to download development build for iOS devices and emulators"
+  alt="Build artifact 可提供为 iOS 设备和模拟器下载开发构建的选项"
   src="/static/images/tutorial/eas/ios-build-artifact.png"
 />
 
-This section provides the methods available for running the development build on an iOS device: Expo Orbit and Install button.
+这一部分提供了在 iOS 设备上运行开发构建的可用方法：Expo Orbit 和 Install 按钮。
 
-[Expo Orbit](https://expo.dev/orbit) allows for seamless installation of the development build on an iOS device. To use this method:
+[Expo Orbit](https://expo.dev/orbit) 可以让你在 iOS 设备上无缝安装开发构建。使用此方法：
 
-- Connect our iOS device to our developer machine using USB.
-- Open the Orbit menu bar app.
-- Select the **Device** in the Orbit app.
+- 使用 USB 将 iOS 设备连接到开发机器。
+- 打开 Orbit 菜单栏应用。
+- 在 Orbit 应用中选择 **Device**。
 
 <ContentSpotlight
-  alt="Open with Orbit button on EAS dashboard in Build artifact"
+  alt="EAS 仪表盘 Build artifact 中的 Open with Orbit 按钮"
   src="/static/images/tutorial/eas/ios-orbit.png"
   className="max-w-[300px]"
 />
 
-- On the EAS dashboard, under **Build artifact**, click the **Open with Orbit**.
+- 在 EAS 仪表盘中，位于 **Build artifact** 下，点击 **Open with Orbit**。
 
-After the build is installed, the Orbit app launches the development build on the device.
+构建安装完成后，Orbit 应用会在设备上启动该开发构建。
 
-<Collapsible summary="Alternate: Use the Install button and QR code">
+<Collapsible summary="替代方案：使用 Install 按钮和二维码">
 
-The **Install** button in the **Build artifact** section generates a QR code for easy installation:
+**Build artifact** 部分中的 **Install** 按钮会生成一个二维码，便于安装：
 
-- Click **Install** to display a popup with the QR code.
+- 点击 **Install**，显示包含二维码的弹窗。
 
 <ContentSpotlight
-  alt="Install button generates a QR code for easy installation on iOS devices and emulators"
+  alt="Install 按钮会生成一个二维码，便于在 iOS 设备和模拟器上轻松安装"
   src="/static/images/tutorial/eas/ios-qr-code.png"
   className="max-w-[480px]"
 />
 
-- Scan the QR code with our iOS device's camera to open and tap the link to download the development build on the device.
+- 使用 iOS 设备的相机扫描二维码，打开链接并点击以在设备上下载开发构建。
 
 </Collapsible>
 
@@ -186,45 +186,45 @@ The **Install** button in the **Build artifact** section generates a QR code for
 
 <Step label="3">
 
-### Run
+### 运行
 
-Start the development server by running the `npx expo start` command from the project directory:
+在项目目录中运行 `npx expo start` 命令，启动开发服务器：
 
 <Terminal cmd={['$ npx expo start']} />
 
-- On the device, tap the app icon to open the development build.
+- 在设备上，点击应用图标打开开发构建。
 
 <ContentSpotlight
-  alt="Development build's launcher UI on iOS device"
+  alt="iOS 设备上的开发构建启动器界面"
   src="/static/images/tutorial/eas/ios-dev-build-01.jpg"
   className="max-w-[240px]"
 />
 
-- Use the account syncing feature by ensuring we're logged into both the EAS CLI and development build. As we're already logged into the EAS CLI, the next step is to log in through the UI of your development build.
+- 通过确保我们同时登录了 EAS CLI 和开发构建，使用账户同步功能。既然我们已经登录了 EAS CLI，下一步就是通过开发构建的界面登录。
 
 <ContentSpotlight
-  alt="Modal to login to Expo account on iOS device"
+  alt="在 iOS 设备上登录 Expo 账户的弹窗"
   src="/static/images/tutorial/eas/ios-dev-build-02.jpg"
   className="max-w-[240px]"
 />
 
-- Tap **Fetch development servers** and select the server running from the list under Development servers.
+- 点击 **Fetch development servers**，并从 Development servers 下方的列表中选择正在运行的服务器。
 
 <ContentSpotlight
-  alt="Fetching development servers to connect"
+  alt="获取开发服务器以进行连接"
   src="/static/images/tutorial/eas/ios-dev-build-03.jpg"
   className="max-w-[240px]"
 />
 
 </Step>
 
-## Summary
+## 总结
 
 <ProgressTracker
   currentChapterIndex={3}
   name="EAS_TUTORIAL"
-  summary="We successfully used EAS Build to create and run development builds on iOS devices."
-  nextChapterDescription="In the next chapter, learn how to configure our app config to install multiple app variants on a single device."
-  nextChapterTitle="Configure multiple app variants"
+  summary="我们已成功使用 EAS Build 在 iOS 设备上创建并运行开发构建。"
+  nextChapterDescription="在下一章中，学习如何配置我们的应用配置，以便在单个设备上安装多个应用变体。"
+  nextChapterTitle="配置多个应用变体"
   nextChapterLink="/tutorial/eas/multiple-app-variants/"
 />

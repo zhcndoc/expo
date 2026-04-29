@@ -1,32 +1,32 @@
 ---
-title: Extending with SwiftUI
-sidebar_title: Extending with SwiftUI
-description: Learn how to create custom SwiftUI components and modifiers that integrate with Expo UI.
+title: 使用 SwiftUI 扩展
+sidebar_title: 使用 SwiftUI 扩展
+description: 了解如何创建可与 Expo UI 集成的自定义 SwiftUI 组件和修饰符。
 platforms: ['ios', 'tvos']
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-This guide explains how to create custom SwiftUI components and modifiers that integrate seamlessly with Expo UI.
+本指南说明如何创建可与 Expo UI 无缝集成的自定义 SwiftUI 组件和修饰符。
 
-## Prerequisites
+## 前提条件
 
-Before you begin, make sure you have:
+在开始之前，请确保你已具备以下条件：
 
-- `@expo/ui` installed in your project. See [Building SwiftUI apps with Expo UI](/guides/expo-ui-swift-ui/) for more information.
-- A [development build](/develop/development-builds/introduction/) of your app (Expo UI is not available in Expo Go)
-- Basic familiarity with [Expo Modules API](/modules/overview/) and [SwiftUI](https://developer.apple.com/swiftui/)
+- 项目中已安装 `@expo/ui`。有关更多信息，请参阅[使用 Expo UI 构建 SwiftUI 应用](/guides/expo-ui-swift-ui/)。
+- 你的应用有一个[开发构建](/develop/development-builds/introduction/)（Expo Go 中不可用 Expo UI）
+- 对 [Expo Modules API](/modules/overview/) 和 [SwiftUI](https://developer.apple.com/swiftui/) 有基本了解
 
 <Terminal cmd={['$ npx expo install @expo/ui']} />
 
-## Creating a custom component
+## 创建自定义组件
 
-### Project setup
+### 项目设置
 
 <Step label="1">
 
-Create a local Expo module in your project:
+在你的项目中创建一个本地 Expo 模块：
 
 <Terminal cmd={['$ npx create-expo-module@latest --local my-ui']} />
 
@@ -34,30 +34,30 @@ Create a local Expo module in your project:
 
 <Step label="2">
 
-Add `ExpoUI` as a dependency in your module's podspec file:
+在模块的 podspec 文件中将 `ExpoUI` 添加为依赖项：
 
 ```ruby my-ui/ios/MyUi.podspec
 Pod::Spec.new do |s|
   s.name           = 'MyUi'
   s.version        = '1.0.0'
-  s.summary        = 'Custom UI components extending Expo UI'
-  # ... other config
-  # Add ExpoUI dependency
+  s.summary        = '扩展 Expo UI 的自定义 UI 组件'
+  # ... 其他配置
+  # 添加 ExpoUI 依赖
   s.dependency 'ExpoUI'
-  # ... other config
+  # ... 其他配置
 end
 ```
 
 </Step>
 
-### Creating a SwiftUI view
+### 创建 SwiftUI 视图
 
 <Step label="3">
 
-Create your SwiftUI view with two parts:
+将你的 SwiftUI 视图分为两部分创建：
 
-1. **Props class**: Extends `UIBaseViewProps` from `ExpoUI` to get automatic support for the [`modifiers`](/versions/latest/sdk/ui/swift-ui/modifiers/) prop
-2. **View struct**: Conforms to `ExpoSwiftUI.View` protocol, which requires an `@ObservedObject` props property and a `body`
+1. **Props 类**：继承 `ExpoUI` 中的 `UIBaseViewProps`，以自动支持 [`modifiers`](/versions/latest/sdk/ui/swift-ui/modifiers/) 属性
+2. **View 结构体**：遵循 `ExpoSwiftUI.View` 协议，该协议要求提供一个 `@ObservedObject` props 属性和一个 `body`
 
 ```swift my-ui/ios/MyCustomView.swift
 import SwiftUI
@@ -75,7 +75,7 @@ struct MyCustomView: ExpoSwiftUI.View {
     VStack {
       Text(props.title)
         .font(.headline)
-      Children() // Renders React children
+      Children() // 渲染 React 子组件
     }
   }
 }
@@ -85,7 +85,7 @@ struct MyCustomView: ExpoSwiftUI.View {
 
 <Step label="4">
 
-Register the view in your module using `ExpoUIView`. This wraps your SwiftUI view with modifier support and makes it available to JavaScript:
+在模块中使用 `ExpoUIView` 注册该视图。这会为你的 SwiftUI 视图包装修饰符支持，并使其可供 JavaScript 使用：
 
 ```swift my-ui/ios/MyUiModule.swift
 import ExpoModulesCore
@@ -104,7 +104,7 @@ public class MyUiModule: Module {
 
 <Step label="5">
 
-Create a wrapper component that connects modifiers with event handling. The `createViewModifierEventListener` utility enables event-based modifiers like `onTapGesture` and `onAppear` to work with your custom view:
+创建一个包装组件，用于连接修饰符与事件处理。`createViewModifierEventListener` 工具可使 `onTapGesture` 和 `onAppear` 之类的基于事件的修饰符与你的自定义视图配合工作：
 
 ```tsx my-ui/src/MyCustomView.tsx
 import { requireNativeView } from 'expo';
@@ -131,9 +131,9 @@ export function MyCustomView({ modifiers, ...restProps }: MyCustomViewProps) {
 
 </Step>
 
-### Using your custom component
+### 使用你的自定义组件
 
-Your custom component now works with all `ExpoUI` built-in modifiers:
+你的自定义组件现在可与所有 `ExpoUI` 内置修饰符一起使用：
 
 ```tsx app/index.tsx
 import { Host, Text } from '@expo/ui/swift-ui';
@@ -146,24 +146,24 @@ export default function App() {
       <MyCustomView
         title="Hello World"
         modifiers={[padding({ all: 16 }), cornerRadius(12), background('#f0f0f0')]}>
-        <Text>Child content</Text>
+        <Text>子内容</Text>
       </MyCustomView>
     </Host>
   );
 }
 ```
 
-## Creating custom modifiers
+## 创建自定义修饰符
 
-You can also create custom modifiers that work with any Expo UI component.
+你还可以创建可与任何 Expo UI 组件配合使用的自定义修饰符。
 
-> **info** Modifiers are SwiftUI's way to configure views for styling, layout, behavior, and more. Learn more in Apple's [ViewModifier documentation](https://developer.apple.com/documentation/swiftui/viewmodifier).
+> **info** 修饰符是 SwiftUI 用来配置视图样式、布局、行为等内容的方式。更多信息请参阅 Apple 的 [ViewModifier 文档](https://developer.apple.com/documentation/swiftui/viewmodifier)。
 
-### Native modifier implementation
+### 原生修饰符实现
 
 <Step label="1">
 
-Create a modifier struct that conforms to `ViewModifier` and `Record`:
+创建一个符合 `ViewModifier` 和 `Record` 的修饰符结构体：
 
 ```swift my-ui/ios/CustomBorderModifier.swift
 import SwiftUI
@@ -189,7 +189,7 @@ struct CustomBorderModifier: ViewModifier, Record {
 
 <Step label="2">
 
-Register your modifier with `ViewModifierRegistry` in your module definition. Use `OnCreate` to register and `OnDestroy` to unregister to avoid race conditions with the SwiftUI render thread:
+在模块定义中使用 `ViewModifierRegistry` 注册你的修饰符。使用 `OnCreate` 进行注册、`OnDestroy` 进行注销，以避免与 SwiftUI 渲染线程发生竞态条件：
 
 ```swift my-ui/ios/MyUiModule.swift
 import ExpoModulesCore
@@ -216,11 +216,11 @@ public class MyUiModule: Module {
 
 </Step>
 
-### JavaScript modifier function
+### JavaScript 修饰符函数
 
 <Step label="3">
 
-Create a TypeScript function that generates the modifier config:
+创建一个生成修饰符配置的 TypeScript 函数：
 
 ```ts my-ui/src/modifiers.ts
 import { createModifier } from '@expo/ui/swift-ui/modifiers';
@@ -233,7 +233,7 @@ export const customBorder = (params: { color?: string; width?: number; cornerRad
 
 <Step label="4">
 
-Export the modifier from your module:
+从你的模块中导出该修饰符：
 
 ```ts my-ui/index.ts
 export { MyCustomView, type MyCustomViewProps } from './src/MyCustomView';
@@ -242,9 +242,9 @@ export { customBorder } from './src/modifiers';
 
 </Step>
 
-### Using custom modifiers
+### 使用自定义修饰符
 
-Your custom modifier works with any `ExpoUI` component:
+你的自定义修饰符可与任何 `ExpoUI` 组件一起使用：
 
 ```tsx app/index.tsx
 import { Host, Text, VStack } from '@expo/ui/swift-ui';
@@ -259,20 +259,20 @@ export default function App() {
           padding({ all: 20 }),
           customBorder({ color: '#FF6B35', width: 3, cornerRadius: 8 }),
         ]}>
-        <Text>This has a custom border!</Text>
+        <Text>这有一个自定义边框！</Text>
       </VStack>
     </Host>
   );
 }
 ```
 
-## Next steps
+## 后续步骤
 
-Congratulations! You've learned how to extend Expo UI with custom SwiftUI components and modifiers. Your custom components now integrate seamlessly with the built-in modifier system.
+恭喜！你已经学会了如何使用自定义 SwiftUI 组件和修饰符扩展 Expo UI。你的自定义组件现在可以与内置修饰符系统无缝集成。
 
-Here are some ideas for what to build next:
+接下来你可以考虑构建以下内容：
 
-- Use the [built-in SwiftUI components](/versions/latest/sdk/ui/swift-ui/) that come with Expo UI
-- Build custom modifiers for app-specific styling patterns
-- Wrap third-party SwiftUI libraries for use in React Native
-- Share your components as an npm package for others to use
+- 使用 Expo UI 自带的[内置 SwiftUI 组件](/versions/latest/sdk/ui/swift-ui/)
+- 为应用特定的样式模式构建自定义修饰符
+- 封装第三方 SwiftUI 库以在 React Native 中使用
+- 将你的组件作为 npm 包分享给他人使用

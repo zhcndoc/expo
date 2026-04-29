@@ -1,43 +1,43 @@
 ---
-title: Safe areas
-description: Learn how to add safe areas for screen components inside your Expo project.
+title: 安全区域
+description: 了解如何为 Expo 项目中的屏幕组件添加安全区域。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal, SnackInline } from '~/ui/components/Snippet';
 
-Creating a safe area ensures your app screen's content is positioned correctly. This means it doesn't get overlapped by notches, status bars, home indicators, and other interface elements that are part of the device's physical hardware or are controlled by the operating system. When the content gets overlapped, it gets concealed by these interface elements.
+创建安全区域可确保应用屏幕的内容被正确定位。这意味着它不会被刘海、状态栏、主屏幕指示器以及设备物理硬件或操作系统控制的其他界面元素遮挡。当内容被遮挡时，它会被这些界面元素覆盖。
 
-Here's an example of an app screen's content getting concealed by the status bar on Android. On iOS, the same content is concealed by rounded corners, notch, and the status bar.
+下面是一个应用屏幕内容在 Android 上被状态栏遮挡的示例。在 iOS 上，相同的内容会被圆角、刘海和状态栏遮挡。
 
 <ContentSpotlight
-  alt="Without defining a safe area, the content can be obscured by the device's interface elements."
+  alt="如果不定义安全区域，内容可能会被设备的界面元素遮挡。"
   src="/static/images/safe-area/without-safe-area.png"
   className="max-w-[480px]"
 />
 
-## Use `react-native-safe-area-context` library
+## 使用 `react-native-safe-area-context` 库
 
-[`react-native-safe-area-context`](https://github.com/AppAndFlow/react-native-safe-area-context) provides a flexible API for handling Android and iOS device's safe area insets. It also provides a `SafeAreaView` component that you can use instead of a [`<View>`](https://reactnative.dev/docs/view) to account for safe areas automatically in your screen components.
+[`react-native-safe-area-context`](https://github.com/AppAndFlow/react-native-safe-area-context) 为处理 Android 和 iOS 设备的安全区域边距提供了一个灵活的 API。它还提供了一个 `SafeAreaView` 组件，你可以用它来替代 [`<View>`](https://reactnative.dev/docs/view)，从而在屏幕组件中自动适配安全区域。
 
-Using the library, the result of the previous example changes as it displays the content inside a safe area, as shown below:
+使用该库后，前一个示例的结果会变化，因为它将内容显示在安全区域内，如下所示：
 
 <ContentSpotlight
-  alt="On using react-native-safe-area-context, the content is positioned within the safe area."
+  alt="使用 react-native-safe-area-context 后，内容会被定位在安全区域内。"
   src="/static/images/safe-area/with-safe-area.png"
   className="max-w-[480px]"
 />
 
-### Installation
+### 安装
 
-You can skip installing `react-native-safe-area-context` if you have created a project using [the default template](/get-started/create-a-project/). This library is installed as peer dependency for Expo Router library. Otherwise, install it by running the following command:
+如果你使用了[默认模板](/get-started/create-a-project/)创建项目，则可以跳过安装 `react-native-safe-area-context`。该库作为 Expo Router 库的 peer dependency 已经安装。否则，请运行以下命令进行安装：
 
 <Terminal cmd={['$ npx expo install react-native-safe-area-context']} />
 
-### Usage
+### 用法
 
-You can directly use [`SafeAreaView`](https://appandflow.github.io/react-native-safe-area-context/api/safe-area-view) to wrap the content of your screen's component. It is a regular `<View>` with the safe area insets applied as extra padding or margin.
+你可以直接使用 [`SafeAreaView`](https://appandflow.github.io/react-native-safe-area-context/api/safe-area-view) 来包裹屏幕组件的内容。它本质上是一个普通的 `<View>`，会将安全区域边距作为额外的 padding 或 margin 应用进去。
 
 ```tsx src/app/index.tsx
 import { Text } from 'react-native';
@@ -46,15 +46,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function HomeScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Text>Content is in safe area.</Text>
+      <Text>内容位于安全区域内。</Text>
     </SafeAreaView>
   );
 }
 ```
 
-<Collapsible summary="Using a different Expo template and don't have Expo Router installed?">
+<Collapsible summary="使用了不同的 Expo 模板且没有安装 Expo Router？">
 
-Import and add [`SafeAreaProvider`](https://appandflow.github.io/react-native-safe-area-context/api/safe-area-provider) to the root component file (such as **App.tsx**) before using `SafeAreaView` in your screen component.
+在屏幕组件中使用 `SafeAreaView` 之前，请先导入并将 [`SafeAreaProvider`](https://appandflow.github.io/react-native-safe-area-context/api/safe-area-provider) 添加到根组件文件中（例如 **App.tsx**）。
 
 ```tsx App.tsx
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -68,11 +68,11 @@ export default function App() {
 
 </Collapsible>
 
-## Alternate: `useSafeAreaInsets` hook
+## 另一种方式：`useSafeAreaInsets` 钩子
 
-Alternate to `SafeAreaView`, you can use [`useSafeAreaInsets`](https://appandflow.github.io/react-native-safe-area-context/api/use-safe-area-insets) hook in your screen component. It provides direct access to the safe area insets, allowing you to apply padding for each edge of the `<View>` using an inset from this hook.
+除了 `SafeAreaView` 之外，你还可以在屏幕组件中使用 [`useSafeAreaInsets`](https://appandflow.github.io/react-native-safe-area-context/api/use-safe-area-insets) 钩子。它可以直接访问安全区域边距，让你使用该钩子的 inset 为 `<View>` 的每个边应用 padding。
 
-The example below uses the `useSafeAreaInsets` hook. It applies top padding to a `<View>` using `insets.top`.
+下面的示例使用了 `useSafeAreaInsets` 钩子。它通过 `insets.top` 为 `<View>` 应用顶部 padding。
 
 ```tsx src/app/index.tsx
 import { Text, View } from 'react-native';
@@ -83,13 +83,13 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top }}>
-      <Text>Content is in safe area.</Text>
+      <Text>内容位于安全区域内。</Text>
     </View>
   );
 }
 ```
 
-The hook provides the insets in the following object:
+该钩子会以以下对象提供边距：
 
 ```ts
 {
@@ -100,13 +100,13 @@ The hook provides the insets in the following object:
 }
 ```
 
-## Additional information
+## 其他信息
 
-### Minimal example
+### 最小示例
 
-Below is a minimal working example that uses the `useSafeAreaInsets` hook to apply top padding to a view.
+下面是一个最小可运行示例，它使用 `useSafeAreaInsets` 钩子为视图应用顶部 padding。
 
-<SnackInline label="Using react-native-safe-area-context" dependencies={['react-native-safe-area-context']}>
+<SnackInline label="使用 react-native-safe-area-context" dependencies={['react-native-safe-area-context']}>
 
 ```tsx collapseHeight=320
 import { Text, View } from 'react-native';
@@ -116,7 +116,7 @@ function HomeScreen() {
   const insets = useSafeAreaInsets();
   return (
     <View style={{ flex: 1, paddingTop: insets.top }}>
-      <Text style={{ fontSize: 28 }}>Content is in safe area.</Text>
+      <Text style={{ fontSize: 28 }}>内容位于安全区域内。</Text>
     </View>
   );
 }
@@ -132,10 +132,10 @@ export default function App() {
 
 </SnackInline>
 
-### Usage with React Navigation
+### 与 React Navigation 一起使用
 
-By default, React Navigation supports safe areas and uses `react-native-safe-area-context` as a peer dependency. For more information, see the [React Navigation documentation](https://reactnavigation.org/docs/handling-safe-area/).
+默认情况下，React Navigation 支持安全区域，并将 `react-native-safe-area-context` 作为 peer dependency 使用。有关更多信息，请参阅 [React Navigation 文档](https://reactnavigation.org/docs/handling-safe-area/)。
 
-### Usage with web
+### 与 web 一起使用
 
-If you are targeting the web, set up `SafeAreaProvider` as described in the [usage section](#usage). If you are doing server-side rendering (SSR), see the [Web SSR section](https://appandflow.github.io/react-native-safe-area-context/optimizations#web-ssr) in the library's documentation.
+如果你的目标平台是 web，请按照[用法部分](#usage)所述设置 `SafeAreaProvider`。如果你正在进行服务端渲染（SSR），请参阅该库文档中的 [Web SSR 部分](https://appandflow.github.io/react-native-safe-area-context/optimizations#web-ssr)。

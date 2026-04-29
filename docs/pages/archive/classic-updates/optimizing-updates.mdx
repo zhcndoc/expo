@@ -1,64 +1,64 @@
 ---
-title: Optimizing Updates
+title: 优化更新
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-> This doc was archived in August 2022 and will not receive any further updates. Use EAS Update instead. [Learn more](/eas-update/introduction)
+> 本文档已于 2022 年 8 月归档，今后将不再接收任何更新。请改用 EAS Update。[了解更多](/eas-update/introduction)
 
-## What's in an update
+## 更新中包含什么
 
-An update for an Expo app comprises the JavaScript, manifest, images, and other assets that a compatible Expo client app, such as Expo Go and production apps, can download and run.
+Expo 应用的一个更新包括 JavaScript、manifest、图片以及其他资源，这些内容可由兼容的 Expo 客户端应用（例如 Expo Go 和生产环境应用）下载并运行。
 
-On Android and iOS, the standalone apps you submit to the app stores are examples of client apps that run your updates. On the web, the web browser is the client app that runs updates. In fact, on the web, Expo updates are just web applications.
+在 Android 和 iOS 上，你提交到应用商店的独立应用就是运行你的更新的客户端应用示例。在 Web 上，Web 浏览器就是运行更新的客户端应用。事实上，在 Web 上，Expo 更新本质上就是 Web 应用。
 
-Updates are embedded in standalone apps and subsequent updates are delivered over the internet after a standalone app has been built. Because downloading an update over the internet uses bandwidth and takes time, one of the most effective ways to optimize update delivery is to make it smaller. This guide covers some ways to reduce the sizes of your updates.
+更新会内置在独立应用中，而后续更新会在独立应用构建完成后通过互联网传送。由于通过互联网下载更新会消耗带宽并花费时间，因此优化更新交付最有效的方法之一就是让它更小。本指南介绍了一些减少更新体积的方法。
 
-### Estimating the size of an update
+### 估算更新的大小
 
-One way to estimate the size of an update is to run `expo export`, which exports an update for each platform, which can be self-hosted. The update includes a JSON manifest, a JavaScript bundle, and several assets like images and custom fonts.
+估算更新大小的一种方法是运行 `expo export`，它会为每个平台导出一个可自行托管的更新。该更新包括一个 JSON manifest、一个 JavaScript bundle，以及若干资源，例如图片和自定义字体。
 
-Exported updates contain uncompressed files, unless those file formats are intrinsically compressed, like JPEG and PNG. The size of an update embedded in a standalone app is typically the sum of the sizes of the update's files.
+导出的更新包含未压缩文件，除非这些文件格式本身就是压缩格式，例如 JPEG 和 PNG。嵌入在独立应用中的更新大小通常是该更新文件大小的总和。
 
-When updates are served through the updates service, they are compressed with gzip. To estimate the size of a manifest or JavaScript bundle when served through the updates service, run `gzip <file>`. Other files like JPEG images and MP3 audio files are already compressed by virtue of their file formats, and the CDN does not need to compress them further.
+当更新通过 updates service 提供时，会使用 gzip 进行压缩。要估算通过 updates service 提供的 manifest 或 JavaScript bundle 的大小，请运行 `gzip <file>`。其他文件，例如 JPEG 图片和 MP3 音频文件，由于其文件格式本身已经压缩，CDN 不需要再对它们进行进一步压缩。
 
-## Limits on the updates service
+## updates service 的限制
 
-The way to think about publishing an update to your Expo app is like publishing a new version of your website. In fact, when you publish an update to your Expo web app, you're publishing a new version of your site. Regardless of the underlying platform, Expo updates are downloaded by users running your app on Android, iOS, and the web and the smaller your update, the faster and more reliably your users will be able to download them and use up less of their data plans on cell connections.
+可以把向你的 Expo 应用发布更新理解为发布你网站的新版本。事实上，当你为 Expo Web 应用发布更新时，你发布的就是你站点的新版本。无论底层平台如何，用户都会在 Android、iOS 和 Web 上运行你的应用并下载 Expo 更新；而你的更新越小，用户就越能快速、稳定地下载它们，并且在蜂窝网络连接上消耗更少的数据流量。
 
-Expo's current updates service is designed to accommodate updates, which comprise JS code and assets, around 50 MiB. Many well-engineered production apps use far less than this, which contributes to better user experiences.
+Expo 当前的 updates service 设计用于容纳大约 50 MiB 的更新，这些更新由 JS 代码和资源组成。许多工程做得很好的生产应用远远小于这个大小，这有助于带来更好的用户体验。
 
-Below are a couple of general techniques that help reduce the size of updates. Many of them are also techniques to optimize websites since both Expo updates and websites are served over the web.
+下面是一些有助于减小更新体积的通用技术。其中很多也是优化网站的技术，因为 Expo 更新和网站都是通过 Web 提供的。
 
-### Optimize images
+### 优化图片
 
-Many images can be reduced by more than 30% in size if they haven't been previously optimized. One simple way to optimize images is to resize them to the dimensions your app actually uses; if your image dimensions are 4032x3024 but your app only needs to display a 400x300 image, downsizing your image with a good interpolation algorithm like bicubic sharpening will greatly reduce your image's size.
+如果很多图片之前没有经过优化，那么它们的体积通常可以减少 30% 以上。优化图片的一种简单方法是将其调整为应用实际使用的尺寸；如果你的图片尺寸是 4032x3024，但应用只需要显示一张 400x300 的图片，那么使用高质量插值算法（如 bicubic sharpening）缩小图片会大幅减小体积。
 
-Another way to optimize images is to re-encode them using an optimizer like [expo-optimize](https://github.com/expo/expo-cli/tree/main/packages/expo-optimize#-welcome-to-expo-optimize), which optimizes all compatible images in you Expo project:
+另一种优化图片的方法是使用类似 [expo-optimize](https://github.com/expo/expo-cli/tree/main/packages/expo-optimize#-welcome-to-expo-optimize) 的优化器重新编码，它会优化你 Expo 项目中所有兼容的图片：
 
 <Terminal
   cmd={['$ npm install -g sharp-cli', '$ npx expo-optimize <project-directory> [options]']}
 />
 
-There are many other image optimizers you may like to use like [jpegoptim](https://github.com/tjko/jpegoptim), [guetzli](https://github.com/google/guetzli), [pngcrush](https://pmt.sourceforge.io/pngcrush/), or [optipng](http://optipng.sourceforge.net/). [imagemin](https://github.com/imagemin/imagemin) is another program and JS library that supports plugins for various optimizers. There are also many online services that can optimize your images for you.
+你还可以使用许多其他图片优化工具，例如 [jpegoptim](https://github.com/tjko/jpegoptim)、[guetzli](https://github.com/google/guetzli)、[pngcrush](https://pmt.sourceforge.io/pngcrush/) 或 [optipng](http://optipng.sourceforge.net/)。[imagemin](https://github.com/imagemin/imagemin) 也是另一个支持多种优化器插件的程序和 JS 库。也有许多在线服务可以帮你优化图片。
 
-Some image optimizers are lossless. This means they re-encode your image to be smaller without any change, or loss, in the pixels that are displayed. When you need each pixel to be untouched from the original image, a lossless optimizer and a lossless image format like PNG is a good choice.
-Other image optimizers are lossy, which means the optimized image is different from the original image. Often, lossy optimizers are more efficient because they discard visual information that reduces file size while making the image look nearly the same to humans. Tools like `imagemagick` can use comparison algorithms like [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) to give a sense of how similar two images look. It's quite common for an optimized image that is over 95% similar to the original image to be far less than 95% of the original file size!
+有些图片优化器是无损的。这意味着它们会重新编码你的图片，使其更小，同时不会改变所显示像素中的任何内容，也不会造成任何信息损失。当你需要每个像素都与原始图片保持一致时，无损优化器和 PNG 这类无损图片格式是不错的选择。  
+另一些图片优化器是有损的，这意味着优化后的图片与原始图片不同。通常，有损优化器更高效，因为它们会丢弃一些视觉信息，从而减小文件大小，同时让图片对人眼看起来几乎相同。像 `imagemagick` 这样的工具可以使用 [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) 等比较算法来判断两张图片看起来有多相似。一个经过优化、与原图相似度超过 95% 的图片，其文件大小远低于原文件大小的 95% 是很常见的！
 
-### Reduce large dependencies
+### 减少大型依赖
 
-Large npm dependencies can contribute greatly to the size of your code in an update. While dependencies like `expo`, `react`, and several more packages are necessary and very useful, sometimes a dependency can be surprisingly large even if you use only one method from it, or you might have multiple versions of the same dependency in your JS bundle. [`react-native-bundle-visualizer`](https://github.com/IjzerenHein/react-native-bundle-visualizer) works for Expo apps as well as bare React Native apps and shows a detailed view of the files in your JS bundle.
+大型 npm 依赖会显著增加更新中代码的体积。虽然像 `expo`、`react` 以及其他一些包是必要且非常有用的，但有时某个依赖即使你只用到其中一个方法，它也可能大得惊人；或者你在 JS bundle 中可能包含了同一个依赖的多个版本。[`react-native-bundle-visualizer`](https://github.com/IjzerenHein/react-native-bundle-visualizer) 既适用于 Expo 应用，也适用于裸 React Native 应用，并且可以详细展示 JS bundle 中的文件。
 
-### Download files when needed
+### 在需要时下载文件
 
-Sometimes apps include files that they don't need right away when the app launches In these scenarios, you can upload these extra files to your own servers and reference the URLs from your application code via `fetch(url)` or `<Image source={{ uri: url }}>`, for example. By downloading these files on demand, you can move them out of the update and reduce its size.
+有时应用会包含一些在应用启动时并不需要立即使用的文件。在这种情况下，你可以把这些额外文件上传到自己的服务器，并在应用代码中通过 `fetch(url)` 或 `<Image source={{ uri: url }}>` 等方式引用这些 URL。通过按需下载这些文件，你可以把它们移出更新，从而减小更新体积。
 
-## Building your app on your own computer
+## 在自己的电脑上构建应用
 
-If you need to build an app with large assets, such as large embedded videos, a simple and practical solution is to use the bare workflow and compile the app using Android Studio and Xcode. You can either use your own computer or provision Linux and macOS VMs with a cloud provider on which to run the standard build toolchains for Android and iOS.
+如果你需要构建包含大型资源的应用，例如内嵌的大视频，一个简单而实用的解决方案是使用 bare workflow，并通过 Android Studio 和 Xcode 编译应用。你既可以使用自己的电脑，也可以在云服务提供商上配置 Linux 和 macOS VM，并在这些虚拟机上运行 Android 和 iOS 的标准构建工具链。
 
-With `expo-updates` you can also host updates on your own servers, which may support arbitrarily large files.
+使用 `expo-updates`，你还可以在自己的服务器上托管更新，这可以支持任意大的文件。
 
-## Self-hosting your updates
+## 自托管你的更新
 
-In addition to building your app on your own computer, you can host your updates on your own servers. Read more about [Hosting Updates on Your Servers](/archive/classic-updates/hosting-your-app/).
+除了在自己的电脑上构建应用之外，你还可以在自己的服务器上托管更新。更多内容请阅读[在你的服务器上托管更新](/archive/classic-updates/hosting-your-app/)。

@@ -1,7 +1,7 @@
 ---
-title: Configure a development build in cloud
-sidebar_title: Configure development build
-description: Learn how to configure a development build for a project using EAS Build.
+title: 在云端配置开发构建
+sidebar_title: 配置开发构建
+description: 了解如何使用 EAS Build 为项目配置开发构建。
 hasVideoLink: true
 ---
 
@@ -13,98 +13,98 @@ import { Step } from '~/ui/components/Step';
 import { CODE } from '~/ui/components/Text';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-In this chapter, we'll set up and configure a development build with EAS for our example app.
+在本章中，我们将为示例应用设置并配置一个使用 EAS 的开发构建。
 
 <VideoBoxLink
   videoId="uQCE9zl3dXU"
-  title="Watch: How to configure a development build"
-  description="Learn how to install expo-dev-client, configure build profiles in eas.json, and create your first development build with EAS Build."
+  title="观看：如何配置开发构建"
+  description="了解如何安装 expo-dev-client、在 eas.json 中配置构建配置文件，以及如何使用 EAS Build 创建你的第一个开发构建。"
 />
 
 ---
 
-## Understanding development builds
+## 了解开发构建
 
-Let's start by learning about what are development builds and why we need them.
+让我们先了解什么是开发构建，以及为什么我们需要它们。
 
-A [development build](/develop/development-builds/introduction/) is a debug version of our project. It is optimized for quick iterations when creating an app. It contains the [`expo-dev-client`](/versions/latest/sdk/dev-client/) library, which offers a robust and complete development environment. This setup allows us to integrate any native library or change code inside the [native directories](/workflow/overview/#android-and-ios-native-projects) as required.
+[开发构建](/develop/development-builds/introduction/) 是我们项目的调试版本。它针对在创建应用时进行快速迭代进行了优化。它包含 [`expo-dev-client`](/versions/latest/sdk/dev-client/) 库，提供了一个强大而完整的开发环境。这个设置使我们能够根据需要集成任何原生库，或修改 [原生目录](/workflow/overview/#android-and-ios-native-projects) 中的代码。
 
-### Key highlights
+### 关键亮点
 
-> **Note:** If you are familiar with [Expo Go](/get-started/set-up-your-environment/), think of a development build as a customizable version of Expo Go that is unique to the requirements of a project.
+> **注意：** 如果你熟悉 [Expo Go](/get-started/set-up-your-environment/)，可以将开发构建理解为一个可定制的 Expo Go 版本，它是专为项目需求而独特定制的。
 
-| Feature                           | Development Builds                                                                                                                             | Expo Go                                                                                              |
+| 功能                           | 开发构建                                                                                                                               | Expo Go                                                                                              |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Development phase**             | Offers web-like iteration speed for mobile app development.                                                                                    | Allows for quick iteration and testing of Expo SDK projects using the client app.                    |
-| **Collaboration**                 | Facilitates team testing with shared native runtime.                                                                                           | Easy project sharing via QR codes on a device.                                                       |
-| **Third-party libraries support** | Full support for any [third-party library](/workflow/using-libraries/#third-party-libraries), including those that require custom native code. | Limited to libraries within the Expo SDK, not suitable for custom native dependencies.               |
-| **Customization**                 | Extensive customization with [config plugins](/config-plugins/introduction/) and direct access to native code.                                 | Limited customization with a focus on Expo SDK capabilities without direct native code modification. |
-| **Intended use**                  | Ideal for full-fledged app development aimed at store deployment, offering a complete development environment and tools.                       | Ideal for learning, prototyping, and experimenting. Not recommended for production apps.             |
+| **开发阶段**             | 为移动应用开发提供类似 Web 的迭代速度。                                                                                    | 允许使用客户端应用对 Expo SDK 项目进行快速迭代和测试。                    |
+| **协作**                 | 通过共享原生运行时便于团队测试。                                                                                           | 可通过设备上的二维码轻松共享项目。                                                       |
+| **第三方库支持** | 完全支持任何[第三方库](/workflow/using-libraries/#third-party-libraries)，包括那些需要自定义原生代码的库。 | 仅限于 Expo SDK 内的库，不适合自定义原生依赖。               |
+| **自定义**                 | 通过 [配置插件](/config-plugins/introduction/) 和直接访问原生代码进行广泛自定义。                                 | 自定义能力有限，侧重于 Expo SDK 功能，不能直接修改原生代码。 |
+| **预期用途**                  | 适合面向上架商店的完整应用开发，提供完整的开发环境和工具。                       | 适合学习、原型设计和实验。不建议用于生产应用。             |
 
 <Step label="1">
 
-## Install expo-dev-client library
+## 安装 expo-dev-client 库
 
-To initialize our project for a development build, let's [`cd`](https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Understanding_client-side_tools/Command_line#basic_built-in_terminal_commands) inside our project directory and run the following command to install the library:
+要为开发构建初始化我们的项目，先在项目目录中 [`cd`](https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Understanding_client-side_tools/Command_line#basic_built-in_terminal_commands) 进去，然后运行以下命令来安装该库：
 
 <Terminal cmd={['$ npx expo install expo-dev-client']} />
 
-### Start the development server
+### 启动开发服务器
 
-Run the `npx expo start` to start the [development server](/get-started/start-developing/#start-a-development-server):
+运行 `npx expo start` 来启动 [开发服务器](/get-started/start-developing/#start-a-development-server)：
 
 <Terminal cmd={['$ npx expo start']} />
 
-This command starts the metro bundler. In the terminal window, we see the QR code followed by the `Metro waiting on...` and a manifest URL:
+该命令会启动 metro bundler。在终端窗口中，我们会看到二维码，随后是 `Metro waiting on...` 和一个 manifest URL：
 
 <ContentSpotlight
-  alt="Running development server"
+  alt="运行开发服务器"
   src="/static/images/tutorial/eas/development-server.png"
   className="max-w-[600px]"
 />
 
-Let's notice the changes installing the `expo-dev-client` library:
+让我们注意安装 `expo-dev-client` 库后的变化：
 
-- The manifest URL contains `expo-development-client` along with the app scheme
-- The development server now operates for a development build (instead of Expo Go).
+- manifest URL 中包含 `expo-development-client` 以及应用 scheme
+- 开发服务器现在是为开发构建运行的（而不是 Expo Go）。
 
-Since we do not have a development build installed on one of our devices or an emulator/simulator, we can't run our project yet.
+由于我们在任何设备或模拟器/仿真器上都还没有安装开发构建，所以目前还无法运行项目。
 
 </Step>
 
 <Step label="2">
 
-## Initialize a development build
+## 初始化开发构建
 
-### Install EAS CLI
+### 安装 EAS CLI
 
-We need to install the EAS Command Line Interface (CLI) tool as a global dependency on our local machine. Run the following command:
+我们需要在本地机器上将 EAS Command Line Interface（CLI）工具作为全局依赖安装。运行以下命令：
 
 <Terminal cmd={['$ npm install -g eas-cli']} />
 
-### Log in or sign up for an Expo account
+### 登录或注册 Expo 账户
 
-> If you have an Expo account and are signed in using Expo CLI, skip this step. If you don't have an Expo account, [sign up here](https://expo.dev/signup) and proceed with the login command described below.
+> 如果你已有 Expo 账户，并且已经使用 Expo CLI 登录，请跳过此步骤。如果你还没有 Expo 账户，请先[在此注册](https://expo.dev/signup)，然后继续执行下面描述的登录命令。
 
-To log in, run the following command:
+要登录，请运行以下命令：
 
 <Terminal cmd={['$ eas login']} />
 
-This command asks for our Expo account email or username and password to complete the login.
+该命令会要求我们输入 Expo 账户的邮箱或用户名以及密码来完成登录。
 
-### Initialize and link the project to EAS
+### 初始化并将项目链接到 EAS
 
-For any new project, the first step is to initialize and link it to the EAS servers. Run the following command:
+对于任何新项目，第一步都是初始化并将其链接到 EAS 服务器。运行以下命令：
 
 <Terminal cmd={['$ eas init']} />
 
-On running, this command:
+运行时，此命令会：
 
-- Requests verification of the account owner by entering our Expo account credentials and asks if we want to create a new EAS project:
+- 通过输入我们的 Expo 账户凭据来请求验证账户所有者身份，并询问我们是否要创建一个新的 EAS 项目：
 
 <Terminal
   cmd={[
-    '# Output after running eas init',
+    '# 运行 eas init 后的输出',
     '✔ Which account should own this project? > your-username',
     '✔ Would you like to create a project for @your-username/sticker-smash? … yes',
     '✔ Created @your-username/sticker-smash',
@@ -112,19 +112,19 @@ On running, this command:
   ]}
 />
 
-- Creates EAS project and provides a link to that project which we can open in the EAS dashboard:
+- 创建 EAS 项目，并提供该项目的链接，我们可以在 EAS 仪表板中打开它：
 
 <ContentSpotlight
-  alt="New project in EAS dashboard"
+  alt="EAS 仪表板中的新项目"
   src="/static/images/tutorial/eas/new-project.png"
 />
 
-- Generates a unique `projectId` and links this EAS project to the example app on our development machine.
-- Modifies **app.json** to include [`extra.eas.projectId`](/versions/latest/sdk/constants/#easconfig) and updates its value with the unique ID created.
+- 生成一个唯一的 `projectId`，并将该 EAS 项目链接到我们开发机器上的示例应用。
+- 修改 **app.json**，加入 [`extra.eas.projectId`](/versions/latest/sdk/constants/#easconfig)，并将其值更新为创建的唯一 ID。
 
-<Collapsible summary={<>What is <CODE>projectId</CODE> in app.json?</>}>
+<Collapsible summary={<>什么是 <CODE>app.json</CODE> 中的 <CODE>projectId</CODE>？</>}>
 
-When `eas init` runs, it associates a unique identifier for our project in **app.json** under `extra.eas.projectId`. The value of this property is used to identify our project on EAS servers.
+当 `eas init` 运行时，它会在 **app.json** 的 `extra.eas.projectId` 下为我们的项目关联一个唯一标识符。这个属性的值用于在 EAS 服务器上标识我们的项目。
 
 ```json
 {
@@ -142,16 +142,16 @@ When `eas init` runs, it associates a unique identifier for our project in **app
 
 <Step label="3">
 
-## Configure project for EAS Build
+## 为 EAS Build 配置项目
 
-To set up our project for EAS Build, run the following command:
+要为 EAS Build 设置我们的项目，请运行以下命令：
 
 <Terminal cmd={['$ eas build:configure']} />
 
-On running, this command:
+运行时，此命令会：
 
-- Prompts to select a platform: **Android**, **iOS**, or **All**. Since we are creating Android and iOS apps, let's select **All**.
-- Creates **eas.json** in the root of our project's directory with the following configuration:
+- 提示选择平台：**Android**、**iOS** 或 **All**。由于我们要创建 Android 和 iOS 应用，选择 **All**。
+- 在项目目录根目录创建 **eas.json**，其配置如下：
 
 ```json eas.json
 {
@@ -177,34 +177,34 @@ On running, this command:
 }
 ```
 
-This is the default configuration for **eas.json** in a new project. It does two things:
+这是新项目中 **eas.json** 的默认配置。它做了两件事：
 
-- Defines the current EAS CLI version.
-- Adds three [build profiles](/build/eas-json/#build-profiles): `development`, `preview`, and `production`.
+- 定义当前 EAS CLI 版本。
+- 添加三个[构建配置文件](/build/eas-json/#build-profiles)：`development`、`preview` 和 `production`。
 
 </Step>
 
-<Collapsible summary="Explore development profile further">
+<Collapsible summary="进一步了解 development 配置文件">
 
-**eas.json** is a collection of different build profiles. Each profile is tailored with distinct configurations to produce specific build types. These profiles can also include platform-specific settings for Android or iOS.
+**eas.json** 是不同构建配置文件的集合。每个配置文件都针对特定配置进行定制，以生成特定类型的构建。这些配置文件也可以包含 Android 或 iOS 的平台特定设置。
 
-Currently, our focus is on the `development` profile, which includes the following configuration:
+目前，我们关注的是 `development` 配置文件，它包含以下配置：
 
-- [`developmentClient`](/eas/json/#developmentclient): Enabled (`true`) for creating a debug build. It loads the app using the `expo-dev-client` library, which provides development tools and generates a build artifact for device or emulator/simulator installation and allows using the app for local development as it supports updating the JavaScript on the fly.
-- [`distribution`](/eas/json/#distribution): Configured as `internal` to indicate that we want to share the build internally (instead of uploading it on app stores).
+- [`developmentClient`](/eas/json/#developmentclient)：启用（`true`）以创建调试构建。它使用 `expo-dev-client` 库加载应用，该库提供开发工具，并生成可供设备或模拟器/仿真器安装的构建产物，同时由于它支持动态更新 JavaScript，因此允许用于本地开发。
+- [`distribution`](/eas/json/#distribution)：配置为 `internal`，表示我们希望在内部共享该构建（而不是上传到应用商店）。
 
-> **Note**: Builds offer extensive customization options, including platform-specific settings and the ability to extend configurations across different build profiles. Learn more about [customizing build profiles](/build/eas-json/#build-profiles).
+> **注意**：构建提供了广泛的自定义选项，包括平台特定设置，以及在不同构建配置文件之间扩展配置的能力。了解更多关于[自定义构建配置文件](/build/eas-json/#build-profiles)的信息。
 
 </Collapsible>
 
-## Summary
+## 总结
 
 <ProgressTracker
   currentChapterIndex={0}
   name="EAS_TUTORIAL"
   summary="
-We successfully used the EAS CLI to initialize, and configure our project, link it to EAS servers, and prepare a development build."
-  nextChapterDescription="In the next chapter, let's create a development build for Android, install it on a device and an emulator, and get it running with the development server."
-  nextChapterTitle="Create and run a cloud build for Android"
+我们成功使用 EAS CLI 初始化并配置了项目，将其链接到 EAS 服务器，并准备了一个开发构建。"
+  nextChapterDescription="在下一章中，我们将为 Android 创建一个开发构建，将其安装到设备和模拟器上，并使用开发服务器运行它。"
+  nextChapterTitle="为 Android 创建并运行云构建"
   nextChapterLink="/tutorial/eas/android-development-build/"
 />

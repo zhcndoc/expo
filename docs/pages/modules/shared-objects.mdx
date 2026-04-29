@@ -1,7 +1,7 @@
 ---
-title: Using shared objects
-sidebar_title: Shared objects
-description: Learn how to use a shared object from the Expo Modules API.
+title: 使用共享对象
+sidebar_title: 共享对象
+description: 了解如何使用 Expo Modules API 中的共享对象。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -10,49 +10,49 @@ import { CodeBlocksTable } from '~/components/plugins/CodeBlocksTable';
 import { PaddedAPIBox } from '~/components/plugins/PaddedAPIBox';
 import { BoxLink } from '~/ui/components/BoxLink';
 
-Shared objects let you expose long-lived native instances from Android and iOS to your app's JavaScript/TypeScript without giving control of their lifecycle. They can be used to keep heavy state objects, such as a decoded bitmap, alive across React components, rather than spinning up a new native instance every time a component mounts.
+Shared objects 让你可以将 Android 和 iOS 中长期存在的 native 实例暴露给应用的 JavaScript/TypeScript，而不需要让它们的生命周期控制权交给 JavaScript。它们可用于在 React 组件之间保留重量级状态对象，例如已解码的位图，而不是每次组件挂载时都创建一个新的 native 实例。
 
-In this guide, let's understand what a shared object is and how they are implemented in native platforms.
+在本指南中，我们将了解什么是 shared object，以及它们在 native 平台上是如何实现的。
 
-## What is a shared object?
+## 什么是 shared object？
 
-A shared object is a custom class that bridges a native instance from Android and/or iOS to your app's JavaScript/TypeScript code through an Expo module. On the native side in Kotlin and Swift, you declare the class by inheriting from `SharedObject` and expose it in your module definition using `Class()`. A shared object is deallocated automatically once neither JavaScript nor native holds a reference.
+shared object 是一种自定义类，它通过 Expo 模块将来自 Android 和/或 iOS 的 native 实例桥接到你应用的 JavaScript/TypeScript 代码中。在 Kotlin 和 Swift 的 native 侧，你通过继承 `SharedObject` 来声明该类，并在模块定义中使用 `Class()` 将其暴露出来。只要 JavaScript 和 native 任一方不再持有引用，shared object 就会自动释放。
 
-## Why use shared objects?
+## 为什么使用 shared object？
 
-Large media assets, like images, can exceed several megabytes once decoded into memory. Without shared objects, passing these assets between different parts of your app forces each part to reload from the disk every time and decode the same file multiple times. This can increase memory pressure, create an I/O bottleneck, drop frames, or cause battery drain.
+图像等大型媒体资源在解码到内存后，可能会超过数 MB。如果没有 shared object，在应用的不同部分之间传递这些资源会迫使每个部分每次都从磁盘重新加载，并多次解码同一个文件。这会增加内存压力，造成 I/O 瓶颈，导致掉帧，甚至引发电量消耗。
 
-Shared objects solve this by keeping a single native instance alive in memory while multiple JavaScript references point to it.
+Shared object 通过在内存中保留一个单一的 native 实例，同时让多个 JavaScript 引用指向它，来解决这个问题。
 
-## Example: Image manipulation without disk I/O
+## 示例：无需磁盘 I/O 的图像处理
 
-To understand shared objects, consider an example where you need to rotate and flip an image picked by the app user and then display that image in your app after manipulating it.
+为了理解 shared object，我们来看一个示例：你需要旋转并翻转用户在应用中选取的一张图片，然后在处理后将其显示在你的应用中。
 
-### Without shared objects
+### 不使用 shared object
 
-Historically, native modules were often written in a _stateless_ way, where each function operated independently without maintaining state between calls. If you wanted to perform two separate operations on the same object (such as an image file), you would load it from disk in both places and repeat the I/O operation each time.
+从历史上看，native 模块通常以 _无状态_ 的方式编写，也就是每个函数独立运行，不在调用之间维护状态。如果你想对同一个对象（例如图像文件）执行两个独立操作，你就需要在两个地方都从磁盘加载它，并在每次都重复 I/O 操作。
 
-Without shared objects, `ImagePicker` reads from a file URI such as `"file:///path/to/image.jpg"` and decodes the image into memory. The image manipulator module then reads the same URI and decodes the image into memory again. When the app user calls a transform method (for example, `rotate()`) to rotate the image, the module saves the rotated image to a new file. Finally, when the new URI is passed to the `Image` component, it decodes the image from disk again to render the image. This workflow results in two or more decode and disk read operations.
+如果没有 shared object，`ImagePicker` 会从类似 `"file:///path/to/image.jpg"` 这样的文件 URI 读取并将图片解码到内存中。随后图像处理模块再次读取同一个 URI，并把图片再次解码到内存中。当应用用户调用转换方法（例如 `rotate()`）来旋转图片时，该模块会把旋转后的图片保存到一个新文件中。最后，当新的 URI 传递给 `Image` 组件时，它会再次从磁盘解码图片以进行渲染。这个工作流会产生两次或更多次解码和磁盘读取操作。
 
-### With shared objects
+### 使用 shared object
 
-The same scenario becomes much more efficient with shared objects. `ImagePicker` reads the URI and decodes the image once into a shared object. When the app user calls a transform method (for example, `rotate()`), the module manipulates the in-memory bitmap without writing to the disk. If you need a file output, call an explicit save function (for example, `saveAsync` in an image manipulator), otherwise the transforms stay in memory only.
+使用 shared object 后，同样的场景会高效得多。`ImagePicker` 读取 URI，并将图片一次性解码到一个 shared object 中。当应用用户调用转换方法（例如 `rotate()`）时，模块会直接在内存中的位图上进行处理，而不会写入磁盘。如果你需要文件输出，可以调用一个显式的保存函数（例如图像处理器中的 `saveAsync`），否则转换只会保留在内存中。
 
-Finally, the shared object is passed to the `Image` component and this time the image is rendered from memory. The entire workflow requires just one disk read and one decode operation, with all transformations happening in memory.
+最后，shared object 会被传递给 `Image` 组件，这一次图片从内存中渲染。整个工作流只需要一次磁盘读取和一次解码操作，所有转换都在内存中完成。
 
-The performance gains are significant. By eliminating redundant disk I/O and decode operations, you keep only a single bitmap in memory instead of multiple copies. This reduces CPU usage, which helps preserve battery life, and lowers the risk of crashes from memory pressure.
+性能提升非常显著。通过消除重复的磁盘 I/O 和解码操作，你只保留了一份位图在内存中，而不是多份副本。这会降低 CPU 使用率，有助于延长电池续航，并减少因内存压力导致崩溃的风险。
 
-Shared objects also unlock a more convenient, object-oriented API shape. You can expose methods on a long-lived instance (for example, `rotate()`, `flipX()`, `renderAsync()`) and let callers chain operations on that stateful object, instead of exposing a flat set of stateless functions.
+Shared object 还带来了更方便的面向对象 API 形态。你可以在一个长期存在的实例上暴露方法（例如 `rotate()`, `flipX()`, `renderAsync()`），让调用方在这个有状态对象上链式调用操作，而不是暴露一组扁平的无状态函数。
 
-### Implementation with shared objects
+### 使用 shared object 的实现
 
-Now that you understand why shared objects are useful, let's look into a minimal implementation that demonstrates the core concepts of the previous example.
+既然你已经了解了 shared object 的用途，接下来我们来看一个最小实现，它演示了前面示例中的核心概念。
 
-The example creates a simple image manipulation module that loads an image from a file path, applies transforms (rotate and flip) in memory, and exposes a shared reference that other modules can consume.
+这个示例创建了一个简单的图像处理模块：它从文件路径加载图像，在内存中应用转换（旋转和翻转），并暴露一个可被其他模块消费的共享引用。
 
-### Android implementation
+### Android 实现
 
-In Android, you create a shared object from `SharedObject` class provided by `expo.modules.kotlin.sharedobjects.SharedObject`. This class manages the decoded bitmap and exposes methods to manipulate it. The implementation keeps only the current image in memory and applies transforms in place, so you allocate a new bitmap only when a transformation like rotation or flip produces one:
+在 Android 中，你可以从 `expo.modules.kotlin.sharedobjects.SharedObject` 提供的 `SharedObject` 类创建 shared object。这个类负责管理解码后的位图并暴露用于处理它的方法。该实现只在内存中保留当前图像，并就地应用转换，因此只有在旋转或翻转产生新位图时，你才会分配一个新的位图：
 
 ```kotlin
 import android.graphics.Bitmap
@@ -88,11 +88,11 @@ class SimpleImageContext(
 }
 ```
 
-The above example is quite similar to the iOS implementation. However, there is one difference on Android: the `sharedObjectDidRelease()` method. This lifecycle callback is invoked when JavaScript releases all references to the shared object, providing an opportunity to clean up native resources.
+上面的示例与 iOS 实现非常相似。不过，在 Android 上有一个不同之处：`sharedObjectDidRelease()` 方法。该生命周期回调会在 JavaScript 释放对 shared object 的所有引用时被调用，从而提供清理 native 资源的机会。
 
-When the result of this class is passed to another module, the `render` method returns an `ImageRef`, which is a specialized `SharedRef<Bitmap>` type that `expo-image` and other image-aware modules already understand.
+当这个类的结果传递给另一个模块时，`render` 方法会返回一个 `ImageRef`，它是一种专门的 `SharedRef<Bitmap>` 类型，`expo-image` 和其他了解图像的模块已经能够识别它。
 
-The module definition exposes an async function to create the context and a class definition to bind methods. The Expo Modules API uses a declarative syntax where you specify the module name, functions to create instances, and a class definition that maps methods to the shared object:
+模块定义会暴露一个用于创建上下文的异步函数，以及一个用于绑定方法的类定义。Expo Modules API 使用声明式语法，在其中你指定模块名称、创建实例的函数，以及将方法映射到 shared object 的类定义：
 
 ```kotlin
 import android.graphics.Bitmap
@@ -106,7 +106,7 @@ class SimpleImageModule : Module() {
 
     AsyncFunction("createContextAsync") { path: String ->
       val bitmap = BitmapFactory.decodeFile(path)
-        ?: throw Exceptions.IllegalArgument("Unable to decode image at $path")
+        ?: throw Exceptions.IllegalArgument("无法解码位于 $path 的图像")
       SimpleImageContext(runtimeContext, bitmap)
     }
 
@@ -119,11 +119,11 @@ class SimpleImageModule : Module() {
 }
 ```
 
-In the above example, `createContextAsync` function decodes the bitmap from the file path and returns a new `SimpleImageContext` instance. Once the context exists, the `rotate` and `flipX` functions run synchronously because they only manipulate in memory. The `renderAsync` function is marked async to signal that it might involve copying or preparing the bitmap for consumption by other modules.
+在上面的示例中，`createContextAsync` 函数会从文件路径解码位图并返回一个新的 `SimpleImageContext` 实例。一旦上下文存在，`rotate` 和 `flipX` 函数就会同步运行，因为它们只是在内存中进行处理。`renderAsync` 函数被标记为异步，是为了表明它可能涉及复制或准备位图以供其他模块使用。
 
-### iOS implementation
+### iOS 实现
 
-In iOS, you create a shared object by inheriting from `SharedObject` class provided by `ExpoModulesCore`. This class manages the decoded bitmap and exposes methods to manipulate it. The implementation keeps only the current image in memory and applies transforms in place:
+在 iOS 中，你可以通过继承 `ExpoModulesCore` 提供的 `SharedObject` 类创建 shared object。这个类负责管理解码后的位图并暴露用于处理它的方法。该实现只在内存中保留当前图像，并就地应用转换：
 
 ```swift
 import ExpoModulesCore
@@ -157,11 +157,11 @@ final class SimpleImageContext: SharedObject {
 }
 ```
 
-In the above example, `SimpleImageContext` reads an image file and keeps a single `UIImage` in memory. The `rotate` and `flipX` methods mutate the current image in memory without touching the disk.
+在上面的示例中，`SimpleImageContext` 读取图像文件，并在内存中保留单个 `UIImage`。`rotate` 和 `flipX` 方法会直接在内存中修改当前图像，而不会触碰磁盘。
 
-When the result of this class is passed to another module, the `render` method returns an `ImageRef`, which is a specialized `SharedRef<UIImage>` type that `expo-image` and other image-aware modules already understand.
+当这个类的结果传递给另一个模块时，`render` 方法会返回一个 `ImageRef`，它是一种专门的 `SharedRef<UIImage>` 类型，`expo-image` 和其他了解图像的模块已经能够识别它。
 
-Now, with the shared object class definition, you can expose it through your module definition. The Expo Modules API uses a declarative syntax where you specify the module name, functions to create instances, and a class definition that maps methods to the shared object:
+现在，有了 shared object 类定义之后，你可以通过模块定义将其暴露出去。Expo Modules API 使用声明式语法，在其中你指定模块名称、创建实例的函数，以及将方法映射到 shared object 的类定义：
 
 ```swift
 public final class SimpleImageModule: Module {
@@ -191,20 +191,20 @@ public final class SimpleImageModule: Module {
 }
 ```
 
-In the above example, the `createContextAsync` is an asynchronous function because loading and decoding an image from disk is an I/O operation. Once the context exists, the `rotate` and `flipX` functions run synchronously because they only manipulate in memory. The `renderAsync` function is marked async to signal that it might involve copying or preparing the bitmap for consumption by other modules, though in this simple example, it returns immediately.
+在上面的示例中，`createContextAsync` 是一个异步函数，因为从磁盘加载并解码图像属于 I/O 操作。一旦上下文存在，`rotate` 和 `flipX` 函数就会同步运行，因为它们只是在内存中进行处理。`renderAsync` 函数被标记为异步，是为了表明它可能涉及复制或准备位图以供其他模块使用，不过在这个简单示例中它会立即返回。
 
-### Using a shared object in your app
+### 在应用中使用 shared object
 
-You can now use the shared object in your app's JavaScript/TypeScript code to load the image from the path, create a context of the loaded image, chain in-memory transforms, render to get a shared reference, and then pass that reference to an `Image` component:
+现在，你可以在应用的 JavaScript/TypeScript 代码中使用 shared object：从路径加载图像，创建已加载图像的上下文，链式执行内存中的转换，渲染以获取共享引用，然后将该引用传递给 `Image` 组件：
 
 ```tsx
 import { useState } from 'react';
 import { Button } from 'react-native';
 import { Image } from 'expo-image';
 import type { SharedRef } from 'expo';
-import SimpleImageModule from 'simple-image-module'; // The native custom module
+import SimpleImageModule from 'simple-image-module'; // 原生自定义模块
 
-import { pickImageAsync } from './pickImage'; // The custom TypeScript function
+import { pickImageAsync } from './pickImage'; // 自定义 TypeScript 函数
 
 export function SharedImageExample() {
   const [context, setContext] = useState(null);
@@ -240,9 +240,9 @@ export function SharedImageExample() {
 }
 ```
 
-In the above example, the React component only consumes the native image transformed by the image manipulator context, which is already in memory and referenced by the shared object (`ImageRef`). As a result, the image view can display the image immediately on the next frame, and chained transforms never touch the file system.
+在上面的示例中，React 组件只消费由图像处理上下文转换后的 native 图像，而该图像已经在内存中，并由 shared object（`ImageRef`）引用。因此，图像视图可以在下一帧立即显示图片，而链式转换完全不会触碰文件系统。
 
-The JavaScript API picks an image using `ImagePicker`, which returns a standard file URI. This URI is handed to a custom native module to create a shared object in `SharedImageExample()`:
+JavaScript API 使用 `ImagePicker` 选择图片，它返回一个标准的文件 URI。这个 URI 会被传递给自定义 native 模块，以在 `SharedImageExample()` 中创建一个 shared object：
 
 ```tsx
 import * as ImagePicker from 'expo-image-picker';
@@ -257,42 +257,42 @@ export async function pickImageAsync() {
     return null;
   }
 
-  // At this point we still have a disk URI.
-  // The native module will lift it into a shared object.
+  // 此时我们仍然拥有一个磁盘 URI。
+  // native 模块会将其提升为 shared object。
   return result.assets[0].uri;
 }
 ```
 
-In the above example, `ImagePicker` doesn't need to know about shared objects. It returns what it should, which is a file path. Your native module is responsible for transforming that path into a shared object that other Expo modules can work with, such as `Image` from `expo-image`.
+在上面的示例中，`ImagePicker` 不需要了解 shared object。它返回它应该返回的内容，也就是一个文件路径。你的 native 模块负责把这个路径转换为一个 shared object，以便其他 Expo 模块可以使用，例如 `expo-image` 中的 `Image`。
 
-## Expo libraries that use shared objects
+## 使用共享对象的 Expo 库
 
-Some examples of [Expo SDK libraries](/versions/latest/) that use shared objects and their purpose:
+以下是一些使用共享对象的 [Expo SDK 库](/versions/latest/)及其用途示例：
 
-- `expo-image` library uses `SharedObject` to keep a decoded operation alive and the view component accepts `SharedRef<Bitmap>` on Android and `SharedRef<UIImage>` on iOS. This design allows images to be passed between modules without decoding it again. To explore more, see `expo-image` library's source code for [Android](https://github.com/expo/expo/tree/main/packages/expo-image/android/src/main/java/expo/modules/image) and [iOS](https://github.com/expo/expo/tree/main/packages/expo-image/ios).
-- `expo-image-manipulator` library demonstrates handling asynchronous operations, queuing multiple operations, and exposing a clean JavaScript API. To explore more, see `expo-image-manipulator` library's source code for [Android](https://github.com/expo/expo/tree/main/packages/expo-image-manipulator/android/src/main/java/expo/modules/imagemanipulator) and [iOS](https://github.com/expo/expo/tree/main/packages/expo-image-manipulator/ios).
-- `expo-sqlite` library uses shared objects to keep database, session, and statement handles across calls while coordinating access to the underlying database. To explore more, see `expo-sqlite` library's source code for [Android](https://github.com/expo/expo/tree/main/packages/expo-sqlite/android/src/main/java/expo/modules/sqlite) and [iOS](https://github.com/expo/expo/tree/main/packages/expo-sqlite/ios).
-- `expo/fetch` library uses shared objects to keep request and response lifecycles alive for streaming, cancellation, and redirect handling while presenting a JavaScript fetch-compatible API. To explore more, see `expo/fetch` library's source code for [Android](https://github.com/expo/expo/tree/main/packages/expo/android/src/main/java/expo/modules/fetch) and [iOS](https://github.com/expo/expo/tree/main/packages/expo/ios/Fetch).
+- `expo-image` 库使用 `SharedObject` 来保持已解码的操作存活，并且视图组件在 Android 上接受 `SharedRef<Bitmap>`、在 iOS 上接受 `SharedRef<UIImage>`。这种设计允许图像在模块之间传递，而无需再次解码。要了解更多，请查看 `expo-image` 库在 [Android](https://github.com/expo/expo/tree/main/packages/expo-image/android/src/main/java/expo/modules/image) 和 [iOS](https://github.com/expo/expo/tree/main/packages/expo-image/ios) 上的源代码。
+- `expo-image-manipulator` 库展示了如何处理异步操作、排队多个操作，以及提供简洁的 JavaScript API。要了解更多，请查看 `expo-image-manipulator` 库在 [Android](https://github.com/expo/expo/tree/main/packages/expo-image-manipulator/android/src/main/java/expo/modules/imagemanipulator) 和 [iOS](https://github.com/expo/expo/tree/main/packages/expo-image-manipulator/ios) 上的源代码。
+- `expo-sqlite` 库使用共享对象来在多次调用之间保持数据库、会话和语句句柄，同时协调对底层数据库的访问。要了解更多，请查看 `expo-sqlite` 库在 [Android](https://github.com/expo/expo/tree/main/packages/expo-sqlite/android/src/main/java/expo/modules/sqlite) 和 [iOS](https://github.com/expo/expo/tree/main/packages/expo-sqlite/ios) 上的源代码。
+- `expo/fetch` 库使用共享对象来保持请求和响应的生命周期，以支持流式传输、取消和重定向处理，同时提供一个兼容 JavaScript fetch 的 API。要了解更多，请查看 `expo/fetch` 库在 [Android](https://github.com/expo/expo/tree/main/packages/expo/android/src/main/java/expo/modules/fetch) 和 [iOS](https://github.com/expo/expo/tree/main/packages/expo/ios/Fetch) 上的源代码。
 
-## Performance benefits of shared objects
+## 共享对象的性能优势
 
-Using shared objects provides several performance improvements, such as:
+使用共享对象可带来多项性能改进，例如：
 
-- **Reduced disk I/O:** A single read operation instead of multiple reads across different modules or function calls
-- **Fewer decode operations:** Expensive decoding (such as JPEG/PNG to bitmap) happens once, not repeatedly
-- **Lower memory pressure:** One decode instance in memory instead of multiple copies
-- **Faster operations:** In-memory transformations are significantly faster than disk-based ones
-- **Avoid frame drops:** Less I/O blocking means smoother UI interactions
+- **减少磁盘 I/O：** 只进行一次读取操作，而不是在不同模块或函数调用之间进行多次读取
+- **更少的解码操作：** 昂贵的解码（例如将 JPEG/PNG 解码为位图）只发生一次，而不是重复进行
+- **更低的内存压力：** 内存中只有一个解码实例，而不是多个副本
+- **更快的操作：** 内存中的转换速度明显快于基于磁盘的转换
+- **避免掉帧：** 更少的 I/O 阻塞意味着更流畅的 UI 交互
 
-## Class definition DSL
+## 类定义 DSL
 
-When you expose a shared object using `Class()`, the class definition block accepts several DSL components beyond `Function` and `AsyncFunction`. These components let you define constructors, static methods, and properties directly on the class.
+当你使用 `Class()` 暴露一个共享对象时，类定义块除了 `Function` 和 `AsyncFunction` 之外，还接受若干 DSL 组件。这些组件允许你直接在类上定义构造函数、静态方法和属性。
 
-<PaddedAPIBox header="Constructor">
+<PaddedAPIBox header="构造函数">
 
-Defines a constructor that JavaScript code can use to create new instances of the shared object with `new ClassName(args)`. Without a `Constructor`, instances can only be created by native functions that return the shared object.
+定义一个构造函数，供 JavaScript 代码使用 `new ClassName(args)` 创建共享对象的新实例。如果没有 `Constructor`，实例只能通过返回共享对象的原生函数创建。
 
-The constructor receives arguments from JavaScript and must return an instance of the shared object class.
+构造函数接收来自 JavaScript 的参数，并且必须返回共享对象类的一个实例。
 
 <CodeBlocksTable>
 
@@ -316,9 +316,9 @@ Class(MySharedObject::class) {
 
 </PaddedAPIBox>
 
-<PaddedAPIBox header="StaticFunction">
+<PaddedAPIBox header="静态函数">
 
-Defines a synchronous function on the class prototype, callable from JavaScript as `ClassName.functionName()`. Unlike `Function`, a `StaticFunction` does not receive the instance as an argument.
+定义类原型上的一个同步函数，可在 JavaScript 中通过 `ClassName.functionName()` 调用。与 `Function` 不同，`StaticFunction` 不接收实例作为参数。
 
 <CodeBlocksTable>
 
@@ -338,9 +338,9 @@ StaticFunction("myStaticFunction") { ->
 
 </PaddedAPIBox>
 
-<PaddedAPIBox header="StaticAsyncFunction">
+<PaddedAPIBox header="静态异步函数">
 
-Defines an asynchronous function on the class itself, callable from JavaScript as `await ClassName.functionName()`. Returns a `Promise`. On Kotlin, you can use the `Coroutine` modifier for suspendable bodies.
+定义类本身上的一个异步函数，可在 JavaScript 中通过 `await ClassName.functionName()` 调用。返回一个 `Promise`。在 Kotlin 中，你可以使用 `Coroutine` 修饰符来编写可挂起的函数体。
 
 <CodeBlocksTable>
 
@@ -360,9 +360,9 @@ StaticAsyncFunction("myStaticAsyncFunction") { ->
 
 </PaddedAPIBox>
 
-<PaddedAPIBox header="Property">
+<PaddedAPIBox header="属性">
 
-Inside a `Class()` block, `Property` receives the class instance as a parameter, similar to how `Function` does. This lets you expose computed properties on shared object instances.
+在 `Class()` 块中，`Property` 会像 `Function` 一样将类实例作为参数接收。这使你可以在共享对象实例上暴露计算属性。
 
 <CodeBlocksTable>
 
@@ -403,21 +403,21 @@ Class(VideoPlayer::class) {
 ```js JavaScript
 const player = new VideoPlayer(source);
 
-// Read-only property
+// 只读属性
 console.log(player.isPlaying); // false
 
-// Read-write property
+// 可读写属性
 player.volume = 0.5;
 console.log(player.volume); // 0.5
 ```
 
 </PaddedAPIBox>
 
-## Additional resources
+## 其他资源
 
 <BoxLink
-  title="The real-world impact of Shared Objects in Expo Modules"
-  description="Shared Objects solve a lot of fundamental problems with Expo APIs and also unlock a whole new way to design object-oriented APIs."
+  title="Shared Objects 在 Expo Modules 中的真实影响"
+  description="Shared Objects 解决了 Expo API 中许多基础性问题，同时还开启了一种设计面向对象 API 的全新方式。"
   href="https://expo.dev/blog/the-real-world-impact-of-shared-objects"
   Icon={BookOpen02Icon}
 />

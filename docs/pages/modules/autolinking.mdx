@@ -1,51 +1,51 @@
 ---
-title: Autolinking
-description: Learn how to use Expo Autolinking to automatically link native dependencies in your Expo project.
+title: 自动链接
+description: 了解如何使用 Expo 自动链接在你的 Expo 项目中自动链接原生依赖。
 ---
 
 import { CodeBlocksTable } from '~/components/plugins/CodeBlocksTable';
 import { PaddedAPIBox } from '~/components/plugins/PaddedAPIBox';
 import { Terminal } from '~/ui/components/Snippet';
 
-Usually, when you're developing a native mobile app and want to install a third-party library, you're asked to add the dependency to the manifest files of your package managers (**build.gradle** on Android, **Podfile** for CocoaPods on iOS, **Package.swift** for SwiftPM on iOS).
-In Expo and React Native, you already do that with your **package.json** file by installing the package from the [npm](https://www.npmjs.com) registry. Since most of the React Native libraries come with some native (platform-specific) code,
-installing a library will require configuring even up to three different package managers!
+通常情况下，当你在开发原生移动应用并想安装第三方库时，系统会要求你将依赖添加到包管理器的清单文件中（Android 上是 **build.gradle**，iOS 上 CocoaPods 使用 **Podfile**，iOS 上 SwiftPM 使用 **Package.swift**）。
+在 Expo 和 React Native 中，你已经通过安装来自 [npm](https://www.npmjs.com) 仓库的包在 **package.json** 文件中完成了这一步。由于大多数 React Native 库都带有一些原生（平台相关）代码，
+安装一个库甚至需要配置多达三个不同的包管理器！
 
-Expo Autolinking is a mechanism that automates this process and reduces the library installation process to the minimum — usually just installing the package from `npm` and re-running `pod install`.
-The core implementation can be found in the [`expo-modules-autolinking`](https://github.com/expo/expo/tree/main/packages/expo-modules-autolinking) package and is divided into three parts:
+Expo Autolinking 是一种自动化这一过程的机制，它将库的安装流程简化到最少——通常只需从 `npm` 安装包并重新运行 `pod install`。
+其核心实现可以在 [`expo-modules-autolinking`](https://github.com/expo/expo/tree/main/packages/expo-modules-autolinking) 包中找到，并分为三部分：
 
-1. a CLI command with the module resolution algorithms
-2. code that integrates with the Gradle build system for Android
-3. code that integrates with CocoaPods for iOS
+1. 带有模块解析算法的 CLI 命令
+2. 与 Android 的 Gradle 构建系统集成的代码
+3. 与 iOS 的 CocoaPods 集成的代码
 
-Expo Autolinking links both Expo modules and React Native modules. To use the React Native community CLI autolinking instead, see [opting out of Expo Autolinking for React Native modules](#opting-out-of-expo-autolinking-for-react-native-modules) section.
+Expo Autolinking 同时链接 Expo 模块和 React Native 模块。若要改用 React Native 社区 CLI 的自动链接，请参见“[为 React Native 模块停用 Expo Autolinking](#opting-out-of-expo-autolinking-for-react-native-modules)”部分。
 
-## Linking behavior
+## 链接行为
 
-Expo Autolinking is integrated into the Gradle build system for Android and CocoaPods for iOS. When building your app, the Expo Autolinking CLI is called and searches for Expo and React Native modules to autolink.
+Expo Autolinking 集成到了 Android 的 Gradle 构建系统和 iOS 的 CocoaPods 中。在构建应用时，会调用 Expo Autolinking CLI，并搜索需要自动链接的 Expo 和 React Native 模块。
 
-This module resolution searches for candidate dependencies to autolink in four separate steps:
+此模块解析会分四个独立步骤搜索可自动链接的候选依赖项：
 
-1. For React Native modules only, it considers any `dependencies` in your project root's **react-native.config.js** that contain an explicit `root` path. This file is optional and doesn't exist in most Expo projects.
-2. It searches all directories specified in your autolinking configuration's `searchPaths` option.
-3. It searches local modules in the directory specified in your autolinking configuration's `nativeModulesDir` option, which defaults to `./modules/`.
-4. It resolves the dependencies of your app and any dependency or peer dependency recursively. This matches the [Node.js resolution algorithm](https://nodejs.org/api/modules.html#loading-from-node_modules-folders).
+1. 仅针对 React Native 模块，它会考虑项目根目录下 **react-native.config.js** 中任何包含显式 `root` 路径的 `dependencies`。该文件是可选的，在大多数 Expo 项目中并不存在。
+2. 它会搜索在自动链接配置的 `searchPaths` 选项中指定的所有目录。
+3. 它会在自动链接配置的 `nativeModulesDir` 选项指定的目录中搜索本地模块，该选项默认值为 `./modules/`。
+4. 它会递归解析你的应用及其任何依赖项或同级依赖项的依赖关系。这与 [Node.js 解析算法](https://nodejs.org/api/modules.html#loading-from-node_modules-folders)一致。
 
-The autolinked modules are automatically added to the build, which usually means that your app's dependencies that contain native (platform-specific) code are set up automatically.
+自动链接的模块会被自动添加到构建中，这通常意味着包含原生（平台相关）代码的应用依赖项会被自动配置好。
 
-## Configuration
+## 配置
 
-The behavior of the module resolution can be customized using some configuration options. These options can be defined in three different places, from the lowest to the highest precedence:
+模块解析的行为可以通过一些配置选项进行自定义。这些选项可以定义在三个不同位置，优先级从低到高依次为：
 
-- `expo.autolinking` config object in application's **package.json**
-- per platform overrides with `expo.autolinking.ios` and `expo.autolinking.android` objects
-- options provided to the CLI command, the `use_expo_modules!` method in the **Podfile** or `useExpoModules` function in the **settings.gradle**
+- 应用 **package.json** 中的 `expo.autolinking` 配置对象
+- 通过 `expo.autolinking.ios` 和 `expo.autolinking.android` 对象进行按平台覆盖
+- 传递给 CLI 命令、**Podfile** 中的 `use_expo_modules!` 方法或 **settings.gradle** 中的 `useExpoModules` 函数的选项
 
 <PaddedAPIBox header="searchPaths">
 
-A list of paths relative to the app's root directory that Expo Autolinking should search for modules to autolink.
-Useful when your project has a custom structure or you want to link local packages from directories different than **node_modules**.
-The paths you specify must still be structured like **node_modules** directories.
+相对于应用根目录的一组路径，Expo Autolinking 应当在这些路径中搜索要自动链接的模块。
+当你的项目具有自定义结构，或者你想从不同于 **node_modules** 的目录链接本地包时，这很有用。
+你指定的路径仍然必须是类似 **node_modules** 目录的结构。
 
 ```json package.json
 {
@@ -57,13 +57,13 @@ The paths you specify must still be structured like **node_modules** directories
 }
 ```
 
-> **info** Before **SDK 54**, this list defaulted to the your app's **node_modules** directory, and all **node_modules** directories above it in monorepos.
-> To opt back into to the old behavior, set this list to your app's **node_modules** directories, for example: `["../../node_modules", "./node_modules"]`.
+> **info** 在 **SDK 54** 之前，这个列表默认指向你的应用的 **node_modules** 目录，以及 monorepo 中位于其上方的所有 **node_modules** 目录。
+> 若要恢复旧行为，请将此列表设置为你的应用的 **node_modules** 目录，例如：`["../../node_modules", "./node_modules"]`。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="nativeModulesDir">
 
-A path relative to the app's root directory that Expo Autolinking should search for local modules to autolink. This option defaults to `"./modules"`. Changing this option is only useful if you need to change the path [for local Expo modules](/modules/get-started/).
+相对于应用根目录的一个路径，Expo Autolinking 应当在此处搜索要自动链接的本地模块。该选项默认值为 `"./modules"`。仅当你需要为[本地 Expo 模块](/modules/get-started/)更改路径时，修改此选项才有用。
 
 ```json package.json
 {
@@ -78,8 +78,8 @@ A path relative to the app's root directory that Expo Autolinking should search 
 </PaddedAPIBox>
 <PaddedAPIBox header="exclude">
 
-A list of package names to exclude from autolinking. This is useful if you don't want to link some packages that specific platforms aren't using to reduce the binary size.
-The following config in **package.json** will exclude `expo-random` and `third-party-expo-module` from autolinking on Android:
+要从自动链接中排除的包名列表。如果你不想链接某些特定平台不会使用的包，以减少二进制文件大小，这会很有用。
+以下 **package.json** 配置会在 Android 上将 `expo-random` 和 `third-party-expo-module` 排除在自动链接之外：
 
 ```json package.json
 {
@@ -93,7 +93,7 @@ The following config in **package.json** will exclude `expo-random` and `third-p
 }
 ```
 
-React Native modules can also be excluded by creating a **react-native.config.js** in the root directory of your project and setting the platform's configuration that the module should be excluded from to `null`. The following config will exclude `library-name` from autolinking on Android:
+React Native 模块也可以通过在项目根目录创建一个 **react-native.config.js** 文件，并将该模块应从其排除的平台配置设为 `null` 来排除。以下配置会在 Android 上将 `library-name` 排除在自动链接之外：
 
 ```js react-native.config.js
 module.exports = {
@@ -107,13 +107,13 @@ module.exports = {
 };
 ```
 
-> **info** Before **SDK 54**, the `exclude` option only applied to Expo modules and not React Native modules. React Native modules could only be excluded using a **react-native.config.js** file in the root directory of your project.
+> **info** 在 **SDK 54** 之前，`exclude` 选项只适用于 Expo 模块，而不适用于 React Native 模块。React Native 模块只能通过项目根目录中的 **react-native.config.js** 文件来排除。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="flags" platforms={["ios"]}>
 
-CocoaPods flags to pass to each autolinked pod. `inhibit_warnings` is likely the only flag most developers want to use, to inhibit Xcode warnings produced when compiling the autolinked modules.
-You can refer to the [CocoaPods Podfile documentation](https://guides.cocoapods.org/syntax/podfile.html#pod) for available flags.
+传递给每个自动链接 pod 的 CocoaPods 标志。`inhibit_warnings` 很可能是大多数开发者希望使用的唯一标志，用于抑制编译自动链接模块时产生的 Xcode 警告。
+可用标志请参考 [CocoaPods Podfile 文档](https://guides.cocoapods.org/syntax/podfile.html#pod)。
 
 <CodeBlocksTable tabs={['Podfile', 'package.json']}>
 
@@ -144,26 +144,25 @@ use_expo_modules!({
 </PaddedAPIBox>
 <PaddedAPIBox header="buildFromSource" platforms={["android"]}>
 
-A list of package names to opt out of prebuilt Expo modules. For complete reference, see [Prebuilt Expo Modules for Android](/guides/prebuilt-expo-modules/#selectively-opt-out).
+用于选择不使用预构建 Expo 模块的包名列表。完整参考请见 [Android 的预构建 Expo 模块](/guides/prebuilt-expo-modules/#selectively-opt-out)。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="legacy_shallowReactNativeLinking">
 
-When resolving your app's React Native modules, Expo Autolinking searches your app's dependencies, and those dependencies' dependencies recursively (matching the [Node.js resolution algorithm](https://nodejs.org/api/modules.html#loading-from-node_modules-folders)). Before **SDK 54**, Expo Autolinking didn't search dependencies recursively and only resolved your app's direct dependencies.
+在解析应用的 React Native 模块时，Expo Autolinking 会搜索应用的依赖项，以及这些依赖项的依赖项（与 [Node.js 解析算法](https://nodejs.org/api/modules.html#loading-from-node_modules-folders)一致）。在 **SDK 54** 之前，Expo Autolinking 不会递归搜索依赖项，只会解析应用的直接依赖。
 
-When enabled, this flag opts you out of the new behavior and restores the behavior from before **SDK 54**, only searching your app's direct dependencies for React Native modules. This option isn't considered when resolving Expo modules.
+启用此标志后，会让你退出新行为，并恢复到 **SDK 54** 之前的行为，只搜索应用的直接依赖中的 React Native 模块。解析 Expo 模块时不会考虑此选项。
 
 </PaddedAPIBox>
-
-## CLI commands
+## CLI 命令
 
 <PaddedAPIBox header="search">
 
-This command is called by the build system to resolve Expo modules during the first phase of autolinking. Its implementation is shared between all platforms. The output from `search` will contain a list of `duplicates` per package, if any duplicates were found.
+构建系统会在自动链接的第一阶段调用此命令来解析 Expo 模块。其实现对所有平台共享。`search` 的输出会包含每个包的 `duplicates` 列表（如果发现重复项）。
 
 <Terminal cmd={['$ npx expo-modules-autolinking search']} />
 
-The above command returns an object in JSON format with Expo modules that Expo Autolinking found:
+上述命令会返回一个 JSON 格式的对象，其中包含 Expo Autolinking 找到的 Expo 模块：
 
 ```json
 {
@@ -171,24 +170,24 @@ The above command returns an object in JSON format with Expo modules that Expo A
     "path": "/absolute/path/to/node_modules/expo-random",
     "version": "13.0.0",
     "config": {
-      // Contents of `expo-module.config.json`
+      // `expo-module.config.json` 的内容
     },
     "duplicates": [
-      // List of conflicting duplicates for this module (with lower precedence)
+      // 此模块的冲突重复项列表（优先级更低）
     ]
   }
-  // more modules...
+  // 更多模块...
 }
 ```
 
 </PaddedAPIBox>
 <PaddedAPIBox header="resolve">
 
-This command is called by the build system during the second phase of autolinking. It outputs an object with more (platform-specific) details for each Expo module, such as the path to the **build.gradle** or podspec files and module classes to link.
+构建系统会在自动链接的第二阶段调用此命令。它会为每个 Expo 模块输出一个包含更多（平台相关）细节的对象，例如 **build.gradle** 或 podspec 文件的路径，以及要链接的模块类。
 
 <Terminal cmd={['$ npx expo-modules-autolinking resolve --platform <apple|android>']} />
 
-For example, with the `--platform apple` option, it returns an object in JSON format with an array of modules and resolved details for the platform:
+例如，使用 `--platform apple` 选项时，它会返回一个 JSON 格式的对象，其中包含一个模块数组以及该平台的解析详情：
 
 ```json
 {
@@ -208,7 +207,7 @@ For example, with the `--platform apple` option, it returns an object in JSON fo
       "reactDelegateHandlers": [],
       "debugOnly": false
     }
-    // more modules...
+    // 更多模块...
   ]
 }
 ```
@@ -216,20 +215,20 @@ For example, with the `--platform apple` option, it returns an object in JSON fo
 </PaddedAPIBox>
 <PaddedAPIBox header="verify">
 
-Verifies the autolinked native modules by checking for duplicates. Warnings are shown for each conflicting, duplicate installation.
+通过检查重复项来验证自动链接的原生模块。每个冲突的重复安装都会显示警告。
 
 <Terminal cmd={['$ npx expo-modules-autolinking verify']} />
 
-Pass the `--verbose` option to list all autolinked native modules.
+传递 `--verbose` 选项可列出所有自动链接的原生模块。
 
 </PaddedAPIBox>
 <PaddedAPIBox header="react-native-config">
 
-This command is called by the build system when autolinking React Native modules. It outputs an object with more platform-specific details for each React Native module, such as the path to the gradle or podspec files.
+当自动链接 React Native 模块时，构建系统会调用此命令。它会为每个 React Native 模块输出一个包含更多平台相关细节的对象，例如 gradle 或 podspec 文件的路径。
 
 <Terminal cmd={['$ npx expo-modules-autolinking react-native-config']} />
 
-For example, with the `--platform ios` option, it returns an object in **react-native.config.js**'s output format with information about each React Native dependency and the path to the React Native installation.
+例如，使用 `--platform ios` 选项时，它会返回一个 **react-native.config.js** 输出格式的对象，其中包含每个 React Native 依赖项的信息以及 React Native 安装路径。
 
 ```json
 {
@@ -248,43 +247,43 @@ For example, with the `--platform ios` option, it returns an object in **react-n
         }
       }
     }
-    // more modules...
+    // 更多模块...
   }
 }
 ```
 
+## 依赖解析与冲突
+
+Autolinking 和 Node 解析的目标不同，Node 和 Metro 中的模块解析算法有时会发生冲突。如果你的应用包含被 autolinking 识别到的某个原生模块的重复安装，你的 JavaScript bundle 可能会同时包含该原生模块的两个版本，而 autolinking 和你的原生应用中只会包含一个版本。这可能会导致运行时崩溃，并带来兼容性风险。
+
+这在隔离依赖或 monorepo 中尤其常见，你应该[检查并去重依赖中的原生模块](/guides/monorepos/#duplicate-native-packages-within-monorepos)。
+
+从 **SDK 54** 开始，你可以在你的[应用配置](/workflow/configuration/)中将 `experiments.autolinkingModuleResolution` 设置为 `true`，以自动将 autolinking 应用于 Expo CLI 和 Metro bundler。这将强制 Metro 解析到的依赖与 **autolinking** 解析到的原生模块保持一致。
+
+从 **SDK 55** 开始，针对 monorepo 中的应用，`experiments.autolinkingModuleResolution` 标志默认启用。
+
+## 常见问题
+
+### 如何在我的应用中设置 autolinking？
+
+所有通过 `npx create-expo-app` 命令创建的项目都已经配置为使用 Expo Autolinking。如果你的项目是使用其他工具创建的，请查看[安装 Expo 模块](/bare/installing-expo-modules)，以确保你的项目包含所有必要的更改。
+
+### 我的模块中需要具备什么才能被 autolink？
+
+模块解析算法只会搜索在根目录中、位于 **package.json** 文件旁边包含 [Expo 模块配置](/modules/module-config/) 文件（**expo-module.config.json**）的包。
+还需要在 `platforms` 数组中包含受支持的平台——如果运行 autolinking 算法的平台不在该数组中，它就会在搜索结果中被跳过。
+
+### 它与 React Native 社区 CLI 的 autolinking 有什么不同？
+
+- Expo Autolinking 内置支持 monorepo、包管理器工作区、传递依赖，以及隔离依赖安装。
+- 它也显著更快，尽管模块解析算法更复杂，但这样做是为了更可靠并匹配 Node.js 的模块解析。
+- Expo 模块解析也能够检测重复依赖，这是 monorepo 中的常见问题。
+- 最后但同样重要的是，它与 Expo Modules APIs 提供的功能配合良好，并支持 React Native 模块。
+
+### 对 React Native 模块停用 Expo Autolinking
+
+从 SDK 52 开始，Expo Autolinking 默认会替代 React Native 社区 CLI 的 autolinking。如果你希望改用 React Native 社区 CLI 的 autolinking，请设置环境变量 `EXPO_USE_COMMUNITY_AUTOLINKING=1`，并将 `@react-native-community/cli` 作为 dev dependency 添加到你的项目中。
+
+设置此环境变量后，Expo Autolinking 将不会用于解析 React Native 模块，但仍会继续对 Expo 模块进行 autolink。
+
 </PaddedAPIBox>
-
-## Dependency resolution and conflicts
-
-Autolinking and Node resolution have different goals and the module resolution algorithm in Node and Metro can sometimes come into conflict. If your app contains duplicate installations of a native module that is picked up by autolinking, your JavaScript bundle may contain both versions of the native module, while autolinking and your native app will only contain one version. This might cause runtime crashes and risks incompatibilities.
-
-This is an especially common problem with isolated dependencies or monorepos, and you should [check for and deduplicate native modules in your dependencies](/guides/monorepos/#duplicate-native-packages-within-monorepos).
-
-From **SDK 54**, you can set `experiments.autolinkingModuleResolution` to `true` in your [app config](/workflow/configuration/) to apply autolinking to Expo CLI and Metro bundler automatically. This will force dependencies that Metro resolves to match the native modules that **autolinking** resolves.
-
-From **SDK 55**, the `experiments.autolinkingModuleResolution` flag is enabled by default for apps in monorepos.
-
-## Common questions
-
-### How to set up the autolinking in my app?
-
-All projects created with the `npx create-expo-app` command are already configured to use Expo Autolinking. If your project was created using a different tool, see [Installing Expo modules](/bare/installing-expo-modules) to make sure your project includes all necessary changes.
-
-### What do I need to have in my module to make it autolinkable?
-
-The module resolution algorithm searches only for packages that contain the [Expo module config](/modules/module-config/) file (**expo-module.config.json**) at the root directory, next to the **package.json** file.
-It's also necessary to include supported platforms in the `platforms` array — if the platform for which the autolinking algorithm is run is not present in this array, it's just skipped in the search results.
-
-### How is it different from React Native community CLI autolinking?
-
-- Expo Autolinking comes with built-in support for monorepos, package manager workspaces, transitive dependencies, and isolated dependencies installations.
-- It's also significantly faster, although the module resolution algorithm is more complex to be more reliable and match Node.js's module resolution.
-- Expo module resolution is also capable of detecting duplicate dependencies, which is a common issue in monorepos.
-- Last but not least, it integrates well with the features offered by Expo Modules APIs and supports React Native modules.
-
-### Opting out of Expo Autolinking for React Native modules
-
-Starting from SDK 52, Expo Autolinking replaces the React Native community CLI autolinking by default. If you would like to use the React Native community CLI's autolinking instead, set the environment variable `EXPO_USE_COMMUNITY_AUTOLINKING=1` and add `@react-native-community/cli` as a dev dependency to your project.
-
-With this environment variable set, Expo Autolinking will not be used to resolve React Native modules, but will continue to autolink Expo modules.

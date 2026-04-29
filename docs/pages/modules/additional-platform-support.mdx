@@ -1,20 +1,20 @@
 ---
-title: Additional platform support
-description: Learn how to add support for macOS and tvOS platforms.
+title: 额外的平台支持
+description: 了解如何为 macOS 和 tvOS 平台添加支持。
 ---
 
 import { DiffBlock } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-Expo Modules API provides first-class support for Android and iOS. However, since all Apple platforms are based on the same foundation and use the same programming language, targeting other [Out-of-Tree platforms](https://reactnative.dev/docs/out-of-tree-platforms) in the Expo module is possible.
+Expo Modules API 为 Android 和 iOS 提供了一流的支持。然而，由于所有 Apple 平台都基于相同的基础并使用相同的编程语言，因此在 Expo 模块中支持其他 [Out-of-Tree 平台](https://reactnative.dev/docs/out-of-tree-platforms) 是可行的。
 
-Currently, only **macOS** and **tvOS** platforms are supported. This guide will walk you through adding support for these platforms.
+目前，仅支持 **macOS** 和 **tvOS** 平台。本指南将引导你为这些平台添加支持。
 
 <Step label="1">
 
-## Use the `"apple"` platform in `expo-module.config.json`
+## 在 `expo-module.config.json` 中使用 `"apple"` 平台
 
-To provide seamless support for other Apple platforms, Expo SDK introduced a universal `"apple"` platform to instruct the [autolinking](/modules/autolinking/) that the module may support any of the Apple platform and whether to link the module in the specific CocoaPods target is moved off to the podspec. If you have used `"ios"` before, you can safely replace it:
+为了为其他 Apple 平台提供无缝支持，Expo SDK 引入了一个通用的 `"apple"` 平台，用于告诉 [autolinking](/modules/autolinking/) 该模块可能支持任意 Apple 平台，以及是否在特定的 CocoaPods 目标中链接该模块则移至 podspec 中处理。如果你之前使用的是 `"ios"`，可以安全地将其替换为：
 
 <DiffBlock
   raw={`diff --git a/expo-module.config.json b/expo-module.config.json
@@ -37,9 +37,9 @@ index 0000000..1111111 100644
 
 <Step label="2">
 
-## Update the podspec to declare support for other platforms
+## 更新 podspec 以声明对其他平台的支持
 
-The module's podspec needs to be updated with a list of the supported platforms. Otherwise, CocoaPods would fail to install the pod on targets for the other platforms. As mentioned in the first step, this part of the spec is the source of truth for autolinking when the module is configured with a universal `"apple"` platform.
+模块的 podspec 需要更新为受支持平台列表。否则，CocoaPods 将无法在其他平台的目标上安装该 pod。正如第一步所述，当模块配置为通用的 `"apple"` 平台时，这部分 spec 是 autolinking 的权威来源。
 
 <DiffBlock
   raw={`diff --git a/YourModule.podspec b/YourModule.podspec
@@ -55,40 +55,40 @@ index 0000000..1111111 100644
 + }`}
 />
 
-Any changes in the podspec require running `pod install` to have an effect.
+podspec 中的任何更改都需要运行 `pod install` 才会生效。
 
 </Step>
 
 <Step label="3">
 
-## Set up `react-native-macos` or `react-native-tvos` in the app
+## 在应用中设置 `react-native-macos` 或 `react-native-tvos`
 
-If you are writing a local module and your app is already set up, you can skip this step. Otherwise, you will need to set up your app or the example app if you are writing a standalone (non-local) module.
+如果你正在编写本地模块，并且应用已经完成设置，则可以跳过此步骤。否则，你需要为应用或示例应用完成设置，前提是你正在编写一个独立的（非本地）模块。
 
-- **For macOS**: follow the official [Install React Native for macOS](https://microsoft.github.io/react-native-macos/docs/getting-started) guide from `react-native-macos` documentation.
-- **For tvOS**: follow the instructions in the [`react-native-tvos`](https://github.com/react-native-tvos/react-native-tvos) repository. If you are building an Expo app, you should also follow the instructions in the [Build Expo apps for TV guide](/guides/building-for-tv/).
+- **对于 macOS**：请参考 `react-native-macos` 文档中的官方 [Install React Native for macOS](https://microsoft.github.io/react-native-macos/docs/getting-started) 指南。
+- **对于 tvOS**：请按照 [`react-native-tvos`](https://github.com/react-native-tvos/react-native-tvos) 仓库中的说明进行操作。如果你正在构建 Expo 应用，还应参考 [为 TV 构建 Expo 应用指南](/guides/building-for-tv/)。
 
 </Step>
 <Step label="4">
 
-## Review the code for using APIs not supported on these platforms
+## 检查使用了这些平台不支持的 API 的代码
 
-Platform APIs may differ between Apple platforms. The most noticeable difference comes from relying on different UI frameworks &mdash;`UIKit` on iOS/tvOS and `AppKit` on macOS.
+不同 Apple 平台之间的平台 API 可能有所差异。最明显的区别来自于依赖不同的 UI 框架 &mdash; iOS/tvOS 上使用 `UIKit`，而 macOS 上使用 `AppKit`。
 
-Both `react-native-macos` and `expo-modules-core` provide aliases and polyfills to reference`UIKit` classes on macOS target (for example, `UIView` is an alias to `NSView`, `UIApplication` is an alias to `NSApplication`), but it's usually not enough for iOS-first libraries to support other platforms out of the box. You may need to write conditionally compiled code that uses different implementations depending on the platform.
+`react-native-macos` 和 `expo-modules-core` 都提供了别名和 polyfill，用于在 macOS 目标中引用 `UIKit` 类（例如，`UIView` 是 `NSView` 的别名，`UIApplication` 是 `NSApplication` 的别名），但这通常不足以让 iOS 优先的库开箱即用地支持其他平台。你可能需要编写条件编译代码，根据平台使用不同的实现。
 
-To do this, use Swift compiler directives with the `os` condition, which includes a given piece of code when our app is being built for a specific platform. In combination with the `#if` and `#else` directives, lets you set up platform-specific branches within the cross-platform code.
+为此，请使用带有 `os` 条件的 Swift 编译器指令，当我们的应用为特定平台构建时，它会包含相应的一段代码。结合 `#if` 和 `#else` 指令，你可以在跨平台代码中设置特定于平台的分支。
 
 ```swift
 #if os(iOS)
-  // iOS implementation
+  // iOS 实现
 #elseif os(macOS)
-  // macOS implementation
+  // macOS 实现
 #elseif os(tvOS)
-  // tvOS implementation
+  // tvOS 实现
 #endif
 ```
 
 </Step>
 
-Your module is now ready to be used on Out-of-Tree platform.
+你的模块现在已经可以在 Out-of-Tree 平台上使用了。

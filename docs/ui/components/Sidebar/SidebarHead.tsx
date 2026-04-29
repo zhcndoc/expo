@@ -19,11 +19,11 @@ type SidebarHeadProps = {
 export const SidebarHead = ({ sidebarActiveGroup }: SidebarHeadProps) => {
   const isPreviewVisible = shouldShowFeaturePreviewLink();
   const mainSectionMap: Record<string, string> = {
-    home: 'Home',
-    general: 'Guides',
-    eas: 'Expo Application Services',
-    reference: 'Reference',
-    learn: 'Learn',
+    home: '首页',
+    general: '指南',
+    eas: 'Expo 应用服务',
+    reference: '参考',
+    learn: '学习',
   };
   const mainSection = mainSectionMap[sidebarActiveGroup];
 
@@ -34,7 +34,7 @@ export const SidebarHead = ({ sidebarActiveGroup }: SidebarHeadProps) => {
           href="/"
           className="text-secondary hocus:bg-element flex items-center gap-3 rounded-md p-2.5">
           <ArrowLeftIcon className="text-icon-secondary" />
-          Back
+          返回
         </LinkBase>
       </div>
     );
@@ -52,19 +52,19 @@ export const SidebarHead = ({ sidebarActiveGroup }: SidebarHeadProps) => {
           )}>
           <SidebarSingleEntry
             href="/"
-            title="Home"
+            title="首页"
             Icon={Home02DuotoneIcon}
             isActive={sidebarActiveGroup === 'home'}
             allowCompactDisplay
-            mainSection="Home"
+            mainSection="首页"
           />
           <SidebarSingleEntry
             href="/guides/overview/"
-            title="Guides"
+            title="指南"
             Icon={BookOpen02DuotoneIcon}
             isActive={sidebarActiveGroup === 'general'}
             allowCompactDisplay
-            mainSection="Guides"
+            mainSection="指南"
           />
           <SidebarSingleEntry
             href="/eas/"
@@ -76,24 +76,24 @@ export const SidebarHead = ({ sidebarActiveGroup }: SidebarHeadProps) => {
           />
           <SidebarSingleEntry
             href="/versions/latest/"
-            title="Reference"
+            title="参考"
             Icon={DocsLogo}
             isActive={sidebarActiveGroup === 'reference'}
             allowCompactDisplay
-            mainSection="Reference"
+            mainSection="参考"
           />
           <SidebarSingleEntry
             href="/tutorial/overview/"
-            title="Learn"
+            title="学习"
             Icon={GraduationHat02DuotoneIcon}
             isActive={sidebarActiveGroup === 'learn'}
             allowCompactDisplay
-            mainSection="Learn"
+            mainSection="学习"
           />
           {isPreviewVisible && (
             <SidebarSingleEntry
               href="/feature-preview/"
-              title="Feature Preview"
+              title="功能预览"
               Icon={Stars02DuotoneIcon}
               isActive={sidebarActiveGroup === 'featurePreview' || sidebarActiveGroup === 'preview'}
               allowCompactDisplay

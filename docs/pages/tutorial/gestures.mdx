@@ -1,6 +1,6 @@
 ---
-title: Add gestures
-description: In this tutorial, learn how to implement gestures from React Native Gesture Handler and Reanimated libraries.
+title: 添加手势
+description: 在本教程中，了解如何实现来自 React Native Gesture Handler 和 Reanimated 库的手势。
 hasVideoLink: true
 ---
 
@@ -9,38 +9,38 @@ import { ProgressTracker } from '~/ui/components/ProgressTracker';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-Gestures are a great way to provide an intuitive user experience in an app. The [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/docs/) library provides built-in native components that can handle gestures. It recognizes pan, tap, rotation, and other gestures using the platform's native touch handling system. In this chapter, we'll add two different gestures using this library:
+手势是在应用中提供直观用户体验的绝佳方式。[React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/docs/) 库提供了内置的原生组件来处理手势。它使用平台的原生触摸处理系统来识别平移、点击、旋转以及其他手势。在本章中，我们将使用这个库添加两种不同的手势：
 
-- Double tap to scale the size of the emoji sticker and reduce the scale when double tapped again.
-- Pan to move the emoji sticker around the screen so that the user can place the sticker anywhere on the image.
+- 双击以放大 emoji 贴纸的尺寸，并在再次双击时缩小尺寸。
+- 平移以在屏幕上移动 emoji 贴纸，这样用户就可以将贴纸放置在图片中的任意位置。
 
-We'll also use the [Reanimated](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/handling-gestures/) library to animate between gesture states.
+我们还会使用 [Reanimated](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/handling-gestures/) 库在手势状态之间制作动画过渡。
 
 <VideoBoxLink
   videoId="0q48LLvTGDU"
-  title="Watch: Adding gestures to your universal Expo app"
-  description="Add double tap and pan gestures to the emoji sticker using React Native Gesture Handler and Reanimated."
+  title="观看：为你的通用 Expo 应用添加手势"
+  description="使用 React Native Gesture Handler 和 Reanimated 为 emoji 贴纸添加双击和平移手势。"
 />
 
 ---
 
 <Step label="1">
 
-## Add GestureHandlerRootView
+## 添加 GestureHandlerRootView
 
-To get gesture interactions to work in the app, we'll render `<GestureHandlerRootView>` from `react-native-gesture-handler` at the top of `Index` component. Replace the root level `<View>` component in the **app/(tabs)/index.tsx** with `<GestureHandlerRootView>`.
+为了让手势交互在应用中正常工作，我们将在 `Index` 组件顶部从 `react-native-gesture-handler` 渲染 `<GestureHandlerRootView>`。将 **app/(tabs)/index.tsx** 中最外层的 `<View>` 组件替换为 `<GestureHandlerRootView>`。
 
 {/* prettier-ignore */}
 ```tsx app/(tabs)/index.tsx
-// ... rest of the import statements remain same
-/* @tutinfo Import <CODE>GestureHandlerRootView</CODE> from <CODE>react-native-gesture-handler-library</CODE>. */import { GestureHandlerRootView } from 'react-native-gesture-handler';/* @end */
+// ...其余导入语句保持不变
+/* @tutinfo 从 <CODE>react-native-gesture-handler-library</CODE> 导入 <CODE>GestureHandlerRootView</CODE>. */import { GestureHandlerRootView } from 'react-native-gesture-handler';/* @end */
 
 export default function Index() {
   return (
-    /* @tutinfo Replace the root level <CODE>View</CODE> component with <CODE>GestureHandlerRootView</CODE>. */
+    /* @tutinfo 将最外层的 <CODE>View</CODE> 组件替换为 <CODE>GestureHandlerRootView</CODE>. */
     <GestureHandlerRootView style={styles.container}>
     /* @end */
-      {/* ...rest of the code remains */}
+      {/* ...其余代码保持不变 */}
     /* @tutinfo */
     </GestureHandlerRootView>
     /* @end */
@@ -52,17 +52,17 @@ export default function Index() {
 
 <Step label="2">
 
-## Use animated components
+## 使用动画组件
 
-An `Animated` component looks at the `style` prop of the component and determines which values to animate and apply updates to create an animation. Reanimated exports animated components such as `<Animated.View>`, `<Animated.Text>`, or `<Animated.ScrollView>`. We will apply animations to the `<Animated.Image>` component to make a double tap gesture work.
+`Animated` 组件会查看组件的 `style` 属性，并判断哪些值需要进行动画处理和更新，从而创建动画。Reanimated 导出了诸如 `<Animated.View>`、`<Animated.Text>` 或 `<Animated.ScrollView>` 之类的动画组件。我们将把动画应用到 `<Animated.Image>` 组件上，以实现双击手势效果。
 
-1. Open the **EmojiSticker.tsx** file in the **components** directory. Inside it, import `Animated` from the `react-native-reanimated` library to use animated components.
-2. Replace the `Image` component with `<Animated.Image>`.
+1. 打开 **components** 目录下的 **EmojiSticker.tsx** 文件。在其中从 `react-native-reanimated` 库导入 `Animated`，以使用动画组件。
+2. 将 `Image` 组件替换为 `<Animated.Image>`。
 
 {/* prettier-ignore */}
 ```tsx components/EmojiSticker.tsx
 import { ImageSourcePropType, View } from 'react-native';
-/* @tutinfo Import <CODE>Animated</CODE> from <CODE>react-native-reanimated</CODE>. */import Animated from 'react-native-reanimated';/* @end */
+/* @tutinfo 从 <CODE>react-native-reanimated</CODE> 导入 <CODE>Animated</CODE>. */import Animated from 'react-native-reanimated';/* @end */
 
 type Props = {
   imageSize: number;
@@ -72,7 +72,7 @@ type Props = {
 export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   return (
     <View style={{ top: -350 }}>
-      /* @tutinfo Replace the <CODE>Image</CODE> component with <CODE>Animated.Image</CODE>. */
+      /* @tutinfo 将 <CODE>Image</CODE> 组件替换为 <CODE>Animated.Image</CODE>. */
       <Animated.Image
         source={stickerSource}
         resizeMode="contain"
@@ -84,24 +84,24 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 }
 ```
 
-> For a complete reference of the animated component API, see [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/docs/core/createAnimatedComponent) documentation.
+> 关于动画组件 API 的完整参考，请查看 [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/docs/core/createAnimatedComponent) 文档。
 
 </Step>
 
 <Step label="3">
 
-## Add a tap gesture
+## 添加点击手势
 
-React Native Gesture Handler allows us to add behavior when it detects touch input, like a double tap event.
+React Native Gesture Handler 允许我们在检测到触摸输入时添加行为，比如双击事件。
 
-In the **EmojiSticker.tsx** file:
+在 **components/EmojiSticker.tsx** 文件中：
 
-1. Import `Gesture` and `GestureDetector` from `react-native-gesture-handler`.
-2. To recognize the tap on the sticker, import `useAnimatedStyle`, `useSharedValue`, and `withSpring` from `react-native-reanimated` to animate the style of the `<Animated.Image>`.
-3. Inside the `EmojiSticker` component, create a reference called `scaleImage` using the `useSharedValue()` hook. It will take the value of `imageSize` as its initial value.
+1. 从 `react-native-gesture-handler` 导入 `Gesture` 和 `GestureDetector`。
+2. 为了识别贴纸上的点击，导入 `useAnimatedStyle`、`useSharedValue` 和 `withSpring`，以便为 `<Animated.Image>` 的样式添加动画。
+3. 在 `EmojiSticker` 组件内部，使用 `useSharedValue()` 钩子创建一个名为 `scaleImage` 的引用。它会将 `imageSize` 的值作为初始值。
 
 ```tsx components/EmojiSticker.tsx
-// ...rest of the import statements remain same
+// ...其余导入语句保持不变
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
@@ -109,14 +109,14 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   const scaleImage = useSharedValue(imageSize);
 
   return (
-    // ...rest of the code remains same
+    // ...其余代码保持不变
   )
 }
 ```
 
-Creating a shared value using the `useSharedValue()` hook has many advantages. It helps to mutate data and runs animations based on the current value. We can access and modify the shared value using the `.value` property. We'll create a `doubleTap` object to scale the initial value and use `Gesture.Tap()` to animate the transition while scaling the sticker image. To determine the number of taps required, we'll add `numberOfTaps()`.
+使用 `useSharedValue()` 钩子创建共享值有很多优点。它有助于修改数据，并基于当前值运行动画。我们可以使用 `.value` 属性来访问和修改共享值。我们将创建一个 `doubleTap` 对象来缩放初始值，并使用 `Gesture.Tap()` 在缩放贴纸图片时为过渡添加动画。为了确定所需的点击次数，我们会添加 `numberOfTaps()`。
 
-Create the following object in the `EmojiSticker` component:
+在 `EmojiSticker` 组件中创建以下对象：
 
 ```tsx components/EmojiSticker.tsx
 const doubleTap = Gesture.Tap()
@@ -130,11 +130,11 @@ const doubleTap = Gesture.Tap()
   });
 ```
 
-To animate the transition, let's use a spring-based animation. This will make it feel alive because it's based on the real-world physics of a spring. We will use the `withSpring()` function provided by `react-native-reanimated`.
+为了给过渡添加动画，我们来使用基于弹簧的动画。这会让它更有生命力，因为它基于现实世界中弹簧的物理特性。我们将使用 `react-native-reanimated` 提供的 `withSpring()` 函数。
 
-On the sticker image, we'll use the `useAnimatedStyle()` hook to create a style object. This will help us to update styles using shared values when the animation happens. We'll also scale the size of the image by manipulating the `width` and `height` properties. The initial values of these properties are set to `imageSize`.
+在贴纸图片上，我们将使用 `useAnimatedStyle()` 钩子来创建一个样式对象。这将帮助我们在动画发生时使用共享值更新样式。我们还会通过修改 `width` 和 `height` 属性来缩放图片大小。这些属性的初始值设置为 `imageSize`。
 
-Create an `imageStyle` variable and add it to the `EmojiSticker` component:
+创建一个 `imageStyle` 变量并将其添加到 `EmojiSticker` 组件中：
 
 ```tsx components/EmojiSticker.tsx
 const imageStyle = useAnimatedStyle(() => {
@@ -145,7 +145,7 @@ const imageStyle = useAnimatedStyle(() => {
 });
 ```
 
-Next, wrap the `<Animated.Image>` component with the `<GestureDetector>` and modify the `style` prop on the `<Animated.Image>` to pass the `imageStyle`.
+接下来，将 `<Animated.Image>` 组件包裹在 `<GestureDetector>` 中，并修改 `<Animated.Image>` 上的 `style` 属性以传入 `imageStyle`。
 
 {/* prettier-ignore */}
 ```tsx components/EmojiSticker.tsx
@@ -180,11 +180,11 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 
   return (
     <View style={{ top: -350 }}>
-      /* @tutinfo Wrap the <CODE>Animated.Image</CODE> component with <CODE>GestureDetector</CODE>.*/ <GestureDetector gesture={doubleTap}>/* @end */
+      /* @tutinfo 用 <CODE>GestureDetector</CODE> 包裹 <CODE>Animated.Image</CODE> 组件。*/ <GestureDetector gesture={doubleTap}>/* @end */
         <Animated.Image
           source={stickerSource}
           resizeMode="contain"
-          style={/* @tutinfo Modify the <CODE>style</CODE> prop on the <CODE>Animated.Image</CODE> to pass the <CODE>imageStyle</CODE>. */[imageStyle, { width: imageSize, height: imageSize }]/* @end */}
+          style={/* @tutinfo 修改 <CODE>Animated.Image</CODE> 上的 <CODE>style</CODE> 属性以传入 <CODE>imageStyle</CODE>. */[imageStyle, { width: imageSize, height: imageSize }]/* @end */}
         />
       /* @tutinfo */
       </GestureDetector>
@@ -194,54 +194,54 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 }
 ```
 
-In the above snippet, the `gesture` prop takes the value of the `doubleTap` to trigger a gesture when a user double-taps the sticker image.
+在上面的代码片段中，`gesture` 属性接收 `doubleTap` 的值，以便在用户双击贴纸图片时触发手势。
 
-Let's take a look at our app on Android, iOS and the web:
+让我们看看我们在 Android、iOS 和 web 上的应用：
 
 <ContentSpotlight file="tutorial/tap-gesture.mp4" />
 
-> For a complete reference of the tap gesture API, see the [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/docs/2.x/gestures/tap-gesture) documentation.
+> 关于点击手势 API 的完整参考，请查看 [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/docs/2.x/gestures/tap-gesture) 文档。
 
 </Step>
 
 <Step label="4">
 
-## Add a pan gesture
+## 添加平移手势
 
-To recognize a dragging gesture on the sticker and to track its movement, we'll use a pan gesture. In the **components/EmojiSticker.tsx**:
+为了识别贴纸上的拖动手势并跟踪其移动，我们将使用平移手势。在 **components/EmojiSticker.tsx** 中：
 
-1. Create two new shared values: `translateX` and `translateY`.
-2. Replace the `<View>` with the `<Animated.View>` component.
+1. 创建两个新的共享值：`translateX` 和 `translateY`。
+2. 将 `<View>` 替换为 `<Animated.View>` 组件。
 
 {/* prettier-ignore */}
 ```tsx components/EmojiSticker.tsx
 export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   const scaleImage = useSharedValue(imageSize);
-  /* @tutinfo Add <CODE>translateX</CODE> and <CODE>translateY</CODE> shared values.*/
+  /* @tutinfo 添加 <CODE>translateX</CODE> 和 <CODE>translateY</CODE> 共享值。*/
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   /* @end */
-  // ...rest of the code remains same
+  // ...其余代码保持不变
 
   return (
-    /* @tutinfo Replace the <CODE>View</CODE> component with <CODE>Animated.View</CODE>. */<Animated.View style={{ top: -350 }}>/* @end */
+    /* @tutinfo 将 <CODE>View</CODE> 组件替换为 <CODE>Animated.View</CODE>. */<Animated.View style={{ top: -350 }}>/* @end */
       <GestureDetector gesture={doubleTap}>
-        {/* ...rest of the code remains same */}
+        {/* ...其余代码保持不变 */}
       </GestureDetector>
     /* @tutinfo */</Animated.View>/* @end */
   );
 }
 ```
 
-Let's learn what the above code does:
+让我们了解一下上面的代码做了什么：
 
-- The translation values defined will move the sticker around the screen. Since the sticker moves along both axes, we need to track the X and Y values.
-- In the `useSharedValue()` hooks, we have set both translation variables to have an initial position of `0`. This is the sticker's initial position and a starting point. This value sets the sticker's initial position when the gesture starts.
+- 定义的平移值会让贴纸在屏幕上移动。由于贴纸会沿着两个轴移动，我们需要跟踪 X 和 Y 值。
+- 在 `useSharedValue()` 钩子中，我们将两个平移变量的初始位置都设置为 `0`。这是贴纸的初始位置和起点。该值会在手势开始时设置贴纸的初始位置。
 
-In the previous step, we triggered the `onStart()` callback for the tap gesture chained to the `Gesture.Tap()` method. For the pan gesture, specify an `onChange()` callback, which runs when the gesture is active and moving.
+在上一步中，我们为通过 `Gesture.Tap()` 方法链式调用的点击手势触发了 `onStart()` 回调。对于平移手势，请指定 `onChange()` 回调，它会在手势处于活动状态并移动时运行。
 
-1. Create a `drag` object to handle the pan gesture. The `onChange()` callback accepts `event` as a parameter. `changeX` and `changeY` properties hold the change in position since the last event and update the values stored in `translateX` and `translateY`.
-2. Define the `containerStyle` object using the `useAnimatedStyle()` hook. It will return an array of transforms. For the `<Animated.View>` component, we need to set the `transform` property to the `translateX` and `translateY` values. This will change the sticker's position when the gesture is active.
+1. 创建一个 `drag` 对象来处理平移手势。`onChange()` 回调接受 `event` 作为参数。`changeX` 和 `changeY` 属性保存自上一个事件以来位置的变化，并更新存储在 `translateX` 和 `translateY` 中的值。
+2. 使用 `useAnimatedStyle()` 钩子定义 `containerStyle` 对象。它将返回一个变换数组。对于 `<Animated.View>` 组件，我们需要将 `transform` 属性设置为 `translateX` 和 `translateY` 的值。当手势激活时，这将改变贴纸的位置。
 
 ```tsx components/EmojiSticker.tsx
 const drag = Gesture.Pan().onChange(event => {
@@ -263,10 +263,10 @@ const containerStyle = useAnimatedStyle(() => {
 });
 ```
 
-Next, inside the JSX code:
+接下来，在 JSX 代码中：
 
-1. Update the `<EmojiSticker>` component so that the `<GestureDetector>` component becomes the top-level component.
-2. Add the `containerStyle` on the `<Animated.View>` component to apply the transform styles.
+1. 更新 `<EmojiSticker>` 组件，使 `<GestureDetector>` 组件成为最顶层组件。
+2. 在 `<Animated.View>` 组件上添加 `containerStyle`，以应用变换样式。
 
 {/* prettier-ignore */}
 ```tsx components/EmojiSticker.tsx
@@ -320,8 +320,8 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   });
 
   return (
-    /* @tutinfo Wrap all components inside <CODE>GestureDetector</CODE>. */<GestureDetector gesture={drag}>/* @end */
-      <Animated.View style={/* @tutinfo Add <CODE>containerStyle</CODE> to the <CODE>Animated.View</CODE> style prop. */[containerStyle, { top: -350 }]/* @end */}>
+    /* @tutinfo 用 <CODE>GestureDetector</CODE> 包裹所有组件。 */<GestureDetector gesture={drag}>/* @end */
+      <Animated.View style={/* @tutinfo 将 <CODE>containerStyle</CODE> 添加到 <CODE>Animated.View</CODE> 的 style 属性。 */[containerStyle, { top: -350 }]/* @end */}>
         <GestureDetector gesture={doubleTap}>
           <Animated.Image
             source={stickerSource}
@@ -335,19 +335,19 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 }
 ````
 
-Let's take a look at our app on Android, iOS and the web:
+让我们看看我们在 Android、iOS 和 web 上的应用：
 
 <ContentSpotlight file="tutorial/pan-gesture.mp4" />
 
 </Step>
 
-## Summary
+## 摘要
 
 <ProgressTracker
   currentChapterIndex={5}
   name="GET_STARTED"
-  summary="We've successfully implemented pan and tap gestures."
-  nextChapterDescription="In the next chapter, we'll learn how to take a screenshot of the image and the sticker, and save it on the device's library."
-  nextChapterTitle="Take a screenshot"
+  summary="我们已成功实现平移和点击手势。"
+  nextChapterDescription="在下一章中，我们将学习如何对图片和贴纸进行截图，并将其保存到设备的相册中。"
+  nextChapterTitle="截取屏幕截图"
   nextChapterLink="/tutorial/screenshot"
 />

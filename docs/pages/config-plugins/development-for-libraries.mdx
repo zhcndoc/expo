@@ -1,74 +1,74 @@
 ---
-title: Plugin development for libraries
-description: Learn how to develop config plugins for Expo and React Native libraries.
+title: 库的插件开发
+description: 了解如何为 Expo 和 React Native 库开发配置插件。
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-Expo config plugins in a React Native library represent a transformative approach to automating native project configuration. Rather than requiring library users to manually edit native files, such as **AndroidManifest.xml**, **Info.plist**, and so on, you can provide a plugin that handles these configurations automatically during the prebuild process. This changes developer experience from error-prone manual setup to reliable, automated configuration that can work consistently across different projects.
+React Native 库中的 Expo config plugin 代表了一种自动化原生项目配置的变革性方法。与其要求库用户手动编辑原生文件，例如 **AndroidManifest.xml**、**Info.plist** 等，不如提供一个插件，在 prebuild 过程中自动处理这些配置。这将开发者体验从容易出错的手动设置转变为可靠、自动化的配置，并且可以在不同项目之间稳定一致地工作。
 
-This guide explains key configuration steps and strategies that you can use to implement a config plugin in your library.
+本指南解释了你可以用来在库中实现 config plugin 的关键配置步骤和策略。
 
-## Strategic value of a config plugin in a library
+## config plugin 在库中的战略价值
 
-Config plugins tend to solve interconnected problems that have historically made React Native library adoption more difficult than it should be. At times, when a user installs a React Native library, they face a complex set of native configuration steps that must be performed correctly for the library to function. These steps are platform-specific and sometimes require deep knowledge of native development concepts.
+Config plugin 往往能够解决一系列相互关联的问题，而这些问题在历史上使 React Native 库的采用比本应有的更困难。有时，当用户安装一个 React Native 库时，他们会面临一组复杂的原生配置步骤，且这些步骤必须正确执行，库才能正常工作。这些步骤具有平台特定性，并且有时需要对原生开发概念有深入了解。
 
-By creating a config plugin within your library, you can transform this complex-looking manual process into a simple configuration declaration that a user can apply in their Expo project's app config file (usually, **app.json**). This reduces the barrier to adoption for your library and simultaneously makes the setup process reliable.
+通过在你的库中创建一个 config plugin，你可以把这个看起来复杂的手动过程转变为一个简单的配置声明，用户可以将其应用到 Expo 项目的 app config 文件中（通常是 **app.json**）。这降低了使用你库的门槛，同时也让设置过程更加可靠。
 
-Beyond immediate user experience improvements, config plugins enable compatibility with [Continuous Native Generation](/workflow/continuous-native-generation/), where native directories are generated automatically rather than checked into version control. Without a config plugin, developers who have adopted CNG face a difficult choice: either abandon the CNG workflow to manually configure native files, or invest significant effort in creating their own automation solutions. This creates a substantial barrier to library adoption in modern Expo development workflows.
+除了直接改善用户体验之外，config plugin 还使其能够兼容 [Continuous Native Generation](/workflow/continuous-native-generation/)，在这种模式下，原生目录会自动生成，而不是检查到版本控制中。没有 config plugin，采用 CNG 的开发者会面临一个艰难的选择：要么放弃 CNG 工作流，手动配置原生文件；要么投入大量精力自行创建自动化方案。这为现代 Expo 开发工作流中的库采用设置了相当大的障碍。
 
-## Project structure
+## 项目结构
 
-A directory structure is the foundation for maintaining config plugins within your library. Below is an example directory structure:
+目录结构是维护库中 config plugin 的基础。下面是一个示例目录结构：
 
 <FileTree
   files={[
-    ['./android', 'Android native module code'],
+    ['./android', 'Android 原生模块代码'],
     ['./android/src/main/java/com/your-awesome-library'],
     ['./android/build.gradle'],
-    ['./ios', 'iOS native module code'],
+    ['./ios', 'iOS 原生模块代码'],
     ['./ios/YourAwesomeLibrary'],
     ['./ios/YourAwesomeLibrary.podspec'],
-    ['./src/index.ts', 'Main library entry point'],
-    ['./src/YourAwesomeLibrary.ts', 'Core library implementation'],
-    ['./src/types.ts', 'TypeScript type definitions'],
-    ['./plugin/src/index.ts', 'Plugin entry point'],
-    ['./plugin/src/withAndroid.ts', 'Android-specific configurations'],
-    ['./plugin/src/withIos.ts', 'iOS-specific configurations'],
-    ['./plugin/build/', 'Compiled plugin output (generated)'],
-    ['./plugin/__tests__/', 'Plugin-specific tests'],
-    ['./plugin/tsconfig.json', 'Plugin-specific TypeScript config'],
-    ['./example/app.json', 'Example app configuration'],
-    ['./example/App.tsx', 'Example app implementation'],
-    ['./example/package.json', 'Example app dependencies'],
-    ['./__tests__/', 'Main library tests'],
-    ['./app.plugin.js', 'Plugin entry point for Expo CLI'],
-    ['./package.json', 'Package configuration'],
-    ['./tsconfig.json', 'Main TypeScript configuration'],
-    ['./jest.config.js', 'Testing configuration'],
-    ['./README.md', 'Documentation'],
+    ['./src/index.ts', '库的主入口点'],
+    ['./src/YourAwesomeLibrary.ts', '库的核心实现'],
+    ['./src/types.ts', 'TypeScript 类型定义'],
+    ['./plugin/src/index.ts', '插件入口点'],
+    ['./plugin/src/withAndroid.ts', 'Android 特定配置'],
+    ['./plugin/src/withIos.ts', 'iOS 特定配置'],
+    ['./plugin/build/', '编译后的插件输出（生成）'],
+    ['./plugin/__tests__/', '插件专属测试'],
+    ['./plugin/tsconfig.json', '插件专属 TypeScript 配置'],
+    ['./example/app.json', '示例应用配置'],
+    ['./example/App.tsx', '示例应用实现'],
+    ['./example/package.json', '示例应用依赖'],
+    ['./__tests__/', '主库测试'],
+    ['./app.plugin.js', 'Expo CLI 的插件入口点'],
+    ['./package.json', '包配置'],
+    ['./tsconfig.json', '主 TypeScript 配置'],
+    ['./jest.config.js', '测试配置'],
+    ['./README.md', '文档'],
   ]}
 />
 
-The directory structure example above highlights the following organizational principles:
+上面的目录结构示例突出显示了以下组织原则：
 
-- **Root-level separation**: Clear boundaries between library code (**src**) and plugin implementation (**plugin**)
-- **Plugin directory organization**: Platform-specific files (**withAndroid.ts**, **withIos.ts**) enable focused testing and maintenance
-- **Build output management**: Compiled JavaScript and TypeScript declarations in **plugins/build/** directory
-- **Testing**: Separate plugin tests from library tests to reflect different concerns.
+- **根级分离**：库代码（**src**）与插件实现（**plugin**）之间边界清晰
+- **插件目录组织**：平台特定文件（**withAndroid.ts**、**withIos.ts**）便于专注测试和维护
+- **构建输出管理**：编译后的 JavaScript 和 TypeScript 声明位于 **plugins/build/** 目录
+- **测试**：将插件测试与库测试分开，以反映不同关注点。
 
-## Installation and configuration for development
+## 开发安装与配置
 
-The most straightforward approach to leverage Expo's tooling is to use `expo` and [`expo-module-scripts`](https://www.npmjs.com/package/expo-module-scripts).
+利用 Expo 工具链最直接的方法是使用 `expo` 和 [`expo-module-scripts`](https://www.npmjs.com/package/expo-module-scripts)。
 
-- `expo` provides a config plugin API and types that your plugin will use.
-- `expo-module-scripts` provides build tooling specifically designed for Expo modules and config plugins. It also handles TypeScript compilation.
+- `expo` 提供了你的插件将使用的 config plugin API 和类型。
+- `expo-module-scripts` 提供专为 Expo 模块和 config plugin 设计的构建工具。它还负责 TypeScript 编译。
 
 <Terminal cmd={['$ npx expo install package']} />
 
-When using `expo-module-scripts`, it requires the following **package.json** configuration. For any already existing script with the same script name, replace it.
+使用 `expo-module-scripts` 时，需要以下 **package.json** 配置。如果已有同名脚本，请将其替换。
 
 ```json package.json
 {
@@ -94,7 +94,7 @@ When using `expo-module-scripts`, it requires the following **package.json** con
 }
 ```
 
-The next step is to add TypeScript support within the **plugins** directory. Open **plugins/tsconfig.json** file and add the following:
+下一步是在 **plugins** 目录中添加 TypeScript 支持。打开 **plugins/tsconfig.json** 文件并添加以下内容：
 
 ```json plugins/tsconfig.json
 {
@@ -108,25 +108,25 @@ The next step is to add TypeScript support within the **plugins** directory. Ope
 }
 ```
 
-You also need to define the main entry point for your config plugin in the **app.plugin.js** file, which exports the compiled plugin code from the **plugin/build** directory:
+你还需要在 **app.plugin.js** 文件中定义 config plugin 的主入口点，它会从 **plugin/build** 目录导出已编译的插件代码：
 
 ```js app.plugin.js
 module.exports = require('./plugin/build');
 ```
 
-The above configuration is essential because when the Expo CLI looks for a plugin, it checks for this file in the project root of your library. The **plugin/build** directory contains the JavaScript files generated from your config plugin's TypeScript source code.
+上述配置非常重要，因为当 Expo CLI 查找插件时，它会在你库的项目根目录中检查这个文件。**plugin/build** 目录包含由 config plugin 的 TypeScript 源代码生成的 JavaScript 文件。
 
-## Key implementation patterns
+## 关键实现模式
 
-Essential patterns for a successful config plugin implementation include:
+成功实现 config plugin 的关键模式包括：
 
-- **Plugin structure**: Core patterns that every plugin should follow
-- **Platform-specific implementations**: Handle Android and iOS configurations effectively
-- **Test strategies:** Validating your plugin code through testing
+- **插件结构**：每个插件都应遵循的核心模式
+- **平台特定实现**：有效处理 Android 和 iOS 配置
+- **测试策略**：通过测试验证你的插件代码
 
-### Plugin structure and platform-specific implementation
+### 插件结构与平台特定实现
 
-Every config plugin follows the same pattern: receives configuration and parameters, applies transformations through mods, and returns the modified configuration. Consider the following core plugin structure looks like:
+每个 config plugin 都遵循相同的模式：接收配置和参数，通过 mods 应用转换，并返回修改后的配置。请考虑如下核心插件结构：
 
 <Tabs>
 
@@ -141,10 +141,10 @@ export interface YourLibraryPluginProps {
 }
 
 const withYourLibrary: ConfigPlugin<YourLibraryPluginProps> = (config, props = {}) => {
-  // Apply Android configurations
+  // 应用 Android 配置
   config = withAndroidConfiguration(config, props);
 
-  // Apply iOS configurations
+  // 应用 iOS 配置
   config = withIosConfiguration(config, props);
 
   return config;
@@ -199,17 +199,17 @@ export const withIosConfiguration: ConfigPlugin<YourLibraryPluginProps> = (confi
 
 </Tabs>
 
-### Testing strategies
+### 测试策略
 
-Config plugin testing differs from regular library testing because you are testing configuration transformations rather than runtime behavior. Your plugin receives configuration objects and returns modified configuration objects.
+Config plugin 的测试不同于普通库测试，因为你测试的是配置转换，而不是运行时行为。你的插件接收配置对象并返回修改后的配置对象。
 
-Effective testing for a config plugin can be a combination of one or more of the following:
+对 config plugin 的有效测试可以是以下一种或多种方式的组合：
 
-- **Unit testing:** Test configuration transformation logic with mocked Expo configuration objects
-- **Cross-platform validation**: Use an example app to verify the actual prebuild output
-- **Error condition testing**: Use error handling
+- **单元测试**：使用模拟的 Expo 配置对象测试配置转换逻辑
+- **跨平台验证**：使用示例应用验证实际的 prebuild 输出
+- **错误条件测试**：使用错误处理
 
-Since unit tests focus on a plugin's transformation logic without involving the file system, you can use Jest to create and run mock configuration objects, pass them through your plugin, and verify expected modifications are made correctly. For example:
+由于单元测试关注的是插件的转换逻辑，而不涉及文件系统，因此你可以使用 Jest 创建并运行模拟配置对象，将它们传入你的插件，并验证是否正确地进行了预期修改。例如：
 
 ```ts plugin/__tests__/withYourLibrary.test.ts
 import { withYourLibrary } from '../src';
@@ -226,47 +226,47 @@ describe('withYourLibrary', () => {
       customProperty: 'test-value',
     });
 
-    // Verify the plugin was applied correctly
+    // 验证插件是否被正确应用
     expect(result.plugins).toBeDefined();
   });
 });
 ```
 
-Errors should be handled gracefully inside your config plugin to provide clear feedback when a configuration fails. Use `try-catch` blocks to intercept errors early:
+应当在你的 config plugin 内优雅地处理错误，以便在配置失败时提供清晰反馈。使用 `try-catch` 块尽早拦截错误：
 
 ```ts plugin/src/index.ts
 const withYourLibrary: ConfigPlugin<YourLibraryPluginProps> = (config, props = {}) => {
   try {
-    // Validate configuration early
+    // 及早验证配置
     validateProps(props);
 
-    // Apply configurations
+    // 应用配置
     config = withAndroidConfiguration(config, props);
     config = withIosConfiguration(config, props);
 
     return config;
   } catch (error) {
-    // Re-throw with more context if needed
+    // 如有需要，重新抛出并附加更多上下文
     throw new Error(`Failed to configure YourLibrary plugin: ${error.message}`);
   }
 };
 ```
 
-## Alternative build approaches
+## 其他构建方式
 
-If your library doesn't use `expo-module-scripts`, you have two options:
+如果你的库不使用 `expo-module-scripts`，你有两个选择：
 
-### Add a plugin to your main package
+### 为主包添加一个插件
 
-For libraries using different build tools (like those created with `create-react-native-library`), add an **app.plugin.js** file and build it along with your main package:
+对于使用不同构建工具的库（例如使用 `create-react-native-library` 创建的库），添加一个 **app.plugin.js** 文件，并将其与你的主包一起构建：
 
 ```js app.plugin.js
 module.exports = require('./lib/plugin');
 ```
 
-### Create a separate plugin package
+### 创建一个独立的插件包
 
-Some libraries distribute their config plugin as a separate package from their main library. This approach allows you to maintain your config plugin separately from the rest of your native module. You need to include export in **app.plugin.js** and compile the **build** directory from your plugin.
+有些库会将其配置插件作为一个独立包，与主库分开发布。这种方式允许你将配置插件与原生模块的其他部分分开维护。你需要在 **app.plugin.js** 中包含导出，并编译插件中的 **build** 目录。
 
 ```js app.plugin.js
 {
@@ -280,16 +280,16 @@ Some libraries distribute their config plugin as a separate package from their m
 }
 ```
 
-## Plugin development best practices
+## 插件开发最佳实践
 
-- **Instructions in your README**: If the plugin is tied to a React Native module, then you should document manual setup instructions for the package. If anything goes wrong with the plugin, developers should be able to manually add the project modifications that were automated by the plugin. This also allows you to support projects that are not using [CNG](/workflow/continuous-native-generation/).
-  - Document the available properties for the plugin, specifying if any of the properties are required.
-  - If possible, plugins should be idempotent, meaning the changes they make are the same whether they are run on a fresh native project template or run again on a project template where its changes already exist. This allows developers to run `npx expo prebuild` without the `--clean` flag to sync changes to the config, rather than recreating the native project entirely. This may be more difficult with dangerous mods.
-- **Naming conventions**: Use `withFeatureName` for the plugin function name if it applies to all platforms. If the plugin is platform-specific, use a camel case naming with the platform right after "with". For example, `withAndroidSplash`, `withIosSplash`.
-- **Leverage built-in plugins**: If there's already a configuration available in [app config](/versions/latest/config/app/) and [prebuild config](https://github.com/expo/expo/blob/main/packages/%40expo/prebuild-config/src/plugins/withDefaultPlugins.ts), you don't need to write a config plugin for it.
-- **Split up plugins by platform**: When using functions within the config plugin, split them by platform. For example, `withAndroidSplash`, `withIosSplash`. This makes using the `--platform` flag in `npx expo prebuild` a bit easier to follow in `EXPO_DEBUG` mode, as the logging will show which platform-specific functions are being executed.
-- **Unit test your plugin**: Write Jest tests for complex modifications. If your plugin requires access to the filesystem,
-  use a mock system (we strongly recommend [`memfs`](https://www.npmjs.com/package/memfs)), you can see examples of this in the [`expo-notifications`](https://github.com/expo/expo/blob/fc3fb2e81ad3a62332fa1ba6956c1df1c3186464/packages/expo-notifications/plugin/src/__tests__/withNotificationsAndroid-test.ts#L34) plugin tests.
-  - Notice the root [\*\*/\_\_mocks\_\_/\*\*/\*](https://github.com/expo/expo/tree/main/packages/expo-notifications/plugin/__mocks__) directory and [**plugin/jest.config.js**](https://github.com/expo/expo/tree/main/packages/expo-notifications/plugin/jest.config.js).
-- A TypeScript plugin is always preferable to a JavaScript due to added type-safety. Check out the [`expo-module-scripts` plugin](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin) tooling for more info.
-- Do not modify the `sdkVersion` via a config plugin, this can break commands like `expo install` and cause other unexpected issues.
+- **在 README 中提供说明**：如果插件绑定到一个 React Native 模块，那么你应该为该包编写手动设置说明。如果插件出现任何问题，开发者应该能够手动添加由插件自动完成的项目修改。这也使你能够支持未使用 [CNG](/workflow/continuous-native-generation/) 的项目。
+  - 记录插件可用的属性，并注明哪些属性是必需的。
+  - 如果可能，插件应当保持幂等，也就是说，无论是在全新的原生项目模板上运行，还是在已经包含其修改的项目模板上再次运行，所做的更改都应相同。这使开发者可以在不使用 `--clean` 标志的情况下运行 `npx expo prebuild` 来同步配置更改，而不是完全重新创建原生项目。这对于危险修改可能更难实现。
+- **命名约定**：如果插件函数适用于所有平台，请使用 `withFeatureName` 作为插件函数名。如果插件是平台特定的，请使用驼峰命名法，并将平台名紧跟在 "with" 之后。例如，`withAndroidSplash`、`withIosSplash`。
+- **利用内置插件**：如果在 [app config](/versions/latest/config/app/) 和 [prebuild config](https://github.com/expo/expo/blob/main/packages/%40expo/prebuild-config/src/plugins/withDefaultPlugins.ts) 中已经有可用的配置，那么你就不需要为它编写配置插件。
+- **按平台拆分插件**：在配置插件中使用函数时，按平台拆分它们。例如，`withAndroidSplash`、`withIosSplash`。这使得在 `EXPO_DEBUG` 模式下使用 `npx expo prebuild` 的 `--platform` 标志更容易理解，因为日志会显示正在执行哪些平台特定的函数。
+- **为插件编写单元测试**：为复杂修改编写 Jest 测试。如果你的插件需要访问文件系统，
+  请使用 mock 系统（我们强烈推荐 [`memfs`](https://www.npmjs.com/package/memfs)），你可以在 [`expo-notifications`](https://github.com/expo/expo/blob/fc3fb2e81ad3a62332fa1ba6956c1df1c3186464/packages/expo-notifications/plugin/src/__tests__/withNotificationsAndroid-test.ts#L34) 插件测试中看到示例。
+  - 注意根目录下的 [**/\_\_mocks\_\_/\*\*/\***](https://github.com/expo/expo/tree/main/packages/expo-notifications/plugin/__mocks__) 目录以及 [**plugin/jest.config.js**](https://github.com/expo/expo/tree/main/packages/expo-notifications/plugin/jest.config.js)。
+- 与 JavaScript 相比，TypeScript 插件通常更可取，因为它增加了类型安全。有关更多信息，请查看 [`expo-module-scripts` 插件](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin) 工具。
+- 不要通过配置插件修改 `sdkVersion`，这可能会破坏诸如 `expo install` 之类的命令，并导致其他意外问题。

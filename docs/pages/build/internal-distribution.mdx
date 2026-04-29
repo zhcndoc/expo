@@ -1,6 +1,6 @@
 ---
-title: Internal distribution
-description: Learn how EAS Build provides shareable URLs for your builds with your team for internal distribution.
+title: 内部分发
+description: 了解 EAS Build 如何为你的构建提供可共享的 URL，以便与你的团队进行内部分发。
 ---
 
 import { GraduationHat02DuotoneIcon } from '@expo/styleguide-icons/duotone/GraduationHat02DuotoneIcon';
@@ -9,88 +9,86 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-Setting up an internal distribution build only takes a few minutes with EAS Build and provides a streamlined way to share your app with your team and other testers for feedback. It does this by providing a URL that allows them to install the app directly to their device. If you are not sure yet if you want to use this approach and want to learn about all of the options available for distributing your app internally, refer to the [overview of distribution apps for review](/review/overview/) guide.
+使用 EAS Build 设置内部发布构建只需几分钟，并提供了一种简化的方式，让你与团队和其他测试人员共享应用以收集反馈。它通过提供一个 URL 来实现这一点，允许他们将应用直接安装到自己的设备上。如果你还不确定是否要采用这种方式，并且想了解内部发布应用的所有可用选项，请参阅 [用于审核的应用发布概览](/review/overview/) 指南。
 
-## Using internal distribution
+## 使用内部发布
 
-To configure a build profile for internal distribution, set `"distribution": "internal"` on it. When you set this configuration, it has the following effects on the build profile:
+要为内部发布配置构建配置文件，请将 `"distribution": "internal"` 设置在该配置文件上。当你设置此配置时，它会对构建配置文件产生以下影响：
 
-- **Android**: The default behavior for the `gradleCommand` will change to generate an APK instead of an AAB. If you have specified a custom `gradleCommand`, then make sure that it [produces an APK](/build-reference/apk/#configuring-a-profile-to-build-apks), or it won't be directly installable on an Android device. Additionally, EAS Build will generate a new Android keystore for signing the APK, or it will use an existing one if the package name is the same as your [development build](/develop/development-builds/introduction/).
-- **iOS**: Builds using this profile will use either [ad hoc or enterprise provisioning](#overview-of-distribution-mechanisms). When using ad hoc provisioning, EAS Build will generate a provisioning profile containing an allow-list of device UDIDs, and only those devices in the list at build time will be able to install it. You can add a device by running `eas device:create` and creating a new build.
-- By default, internal distribution build URLs are available to anybody with the URL, and each is identified by a 32 character UUID. If you would like to require sign-in to an authorized Expo account to access these builds, you can disable the **Unauthenticated access to internal builds** option in your [project settings](https://expo.dev/accounts/[account]/projects/[project]/settings).
+- **Android**：`gradleCommand` 的默认行为将变为生成 APK 而不是 AAB。如果你指定了自定义的 `gradleCommand`，请确保它 [生成 APK](/build-reference/apk/#configuring-a-profile-to-build-apks)，否则它将无法直接安装到 Android 设备上。此外，EAS Build 会为 APK 签名生成新的 Android keystore，或者如果包名与你的 [开发构建](/develop/development-builds/introduction/) 相同，则会使用现有的 keystore。
+- **iOS**：使用此配置文件的构建将使用 [ad hoc 或 enterprise provisioning](#overview-of-distribution-mechanisms) 之一。在使用 ad hoc provisioning 时，EAS Build 会生成一个包含设备 UDID 允许列表的 provisioning profile，只有在构建时位于该列表中的设备才能安装它。你可以通过运行 `eas device:create` 并创建一个新构建来添加设备。
+- 默认情况下，内部发布构建 URL 对任何拥有该 URL 的人都可用，每个 URL 由一个 32 字符的 UUID 标识。如果你希望仅允许已授权的 Expo 账户登录后访问这些构建，可以在你的 [项目设置](https://expo.dev/accounts/[account]/projects/[project]/settings) 中禁用 **未认证访问内部构建** 选项。
 
-See the tutorial on Internal distribution with EAS Build below for more information on how to configure, create, and install a build:
+有关如何配置、创建和安装构建的更多信息，请参阅下面的 EAS Build 内部发布教程：
 
 <BoxLink
-  title="Create and share internal distribution build"
-  description="Complete step-by-step guide to setting up and sharing internal distribution builds with EAS Build."
+  title="创建并共享内部发布构建"
+  description="完整的分步指南，介绍如何使用 EAS Build 设置并共享内部发布构建。"
   href="/tutorial/eas/internal-distribution-builds/"
   Icon={GraduationHat02DuotoneIcon}
 />
 
-### Automation on CI (optional)
+### CI 上的自动化（可选）
 
-It's possible to run internal distribution builds non-interactively in CI using the `--non-interactive` flag. However, if you are using ad hoc provisioning on iOS you will not be able to add new devices to your provisioning profile when using this flag. After registering a device through `eas device:create`, you need to run `eas build` interactively and authenticate with Apple in order for EAS to add the device to your provisioning profile. [Learn more about triggering builds from CI](/build/building-on-ci).
+可以使用 `--non-interactive` 标志在 CI 中以非交互方式运行内部发布构建。但是，如果你在 iOS 上使用 ad hoc provisioning，在使用此标志时将无法向 provisioning profile 添加新设备。在通过 `eas device:create` 注册设备后，你需要交互式运行 `eas build` 并使用 Apple 进行身份验证，以便 EAS 将该设备添加到你的 provisioning profile 中。[了解更多关于从 CI 触发构建的信息](/build/building-on-ci)。
 
-### Managing devices
+### 管理设备
 
-You can see any devices registered via `eas device:create` by running:
+你可以通过运行以下命令查看通过 `eas device:create` 注册的任何设备：
 
 <Terminal
-  cmd={['# List devices registered for ad hoc provisioning', '$ eas device:list']}
+  cmd={['# 列出已注册用于 ad hoc provisioning 的设备', '$ eas device:list']}
   cmdCopy="eas device:list"
 />
 
-Devices registered with Expo for ad hoc provisioning will appear on your Apple Developer Portal after they are used to generate a provisioning profile for a new internal build with EAS Build or to [resign an existing build](/app-signing/app-credentials/#re-signing-new-credentials) with `eas build:resign`.
+使用 Expo 为 ad hoc provisioning 注册的设备，在它们被用于通过 EAS Build 生成一个新的内部构建的 provisioning profile，或通过 `eas build:resign` [重新签名现有构建](/app-signing/app-credentials/#re-signing-new-credentials) 后，将会出现在你的 Apple Developer Portal 中。
 
-#### Remove devices
+#### 移除设备
 
-If a device is no longer in use, it can be removed from this list by running:
+如果某个设备已不再使用，可以通过运行以下命令将其从此列表中移除：
 
 <Terminal
   cmd={[
-    '# Delete devices from your Expo account, optionally disable them on the Apple Developer Portal',
+    '# 从你的 Expo 账户中删除设备，并可选择在 Apple Developer Portal 上将其禁用',
     '$ eas device:delete',
   ]}
   cmdCopy="eas device:delete"
 />
-This command will also prompt you to disable the device on the Apple Developer Portal. Disabled
-devices still count against [Apple's limit of 100
-devices](https://developer.apple.com/support/account/#:~:text=Resetting%20your%20device%20list%20annually)
-for ad hoc distribution per app.
+此命令还会提示你是否要在 Apple Developer Portal 上禁用该设备。已禁用的
+设备仍然会计入 [Apple 每个应用每年最多 100 台设备的限制](https://developer.apple.com/support/account/#:~:text=Resetting%20your%20device%20list%20annually)
+，适用于 ad hoc 分发。
 
-#### Rename devices
+#### 重命名设备
 
-Devices added via the website URL/QR code will default to displaying their UDID when selecting them for an EAS Build. You can assign friendly names to your devices with the following command:
+通过网站 URL/二维码添加的设备，在选择用于 EAS Build 时，默认会显示其 UDID。你可以使用以下命令为设备指定更友好的名称：
 
 <Terminal
-  cmd={['# Rename devices on Expo and the Apple Developer Portal', '$ eas device:rename']}
+  cmd={['# 在 Expo 和 Apple Developer Portal 上重命名设备', '$ eas device:rename']}
   cmdCopy="eas device:rename"
 />
 
-## Overview of distribution mechanisms
+## 发布机制概览
 
-The following are the different mechanisms for distributing your app to devices supported by internal distribution.
+以下是内部发布支持的、用于将应用分发到设备的不同机制。
 
-<Collapsible summary="Android: Build and distribute an APK">
+<Collapsible summary="Android：构建并分发 APK">
 
-To share your app to Android devices, you must build an APK (Android application package file) of your project. APKs can be installed directly to an Android device over USB, by downloading the file over the web or through an email or chat app, once the user accepts the security warning for installing an app that has not gone through Play Store review. AAB (Android app bundle) binaries of your app must be distributed through the Play Store.
-
-</Collapsible>
-
-<Collapsible summary="iOS: Ad Hoc distribution">
-
-Apple offers [ad hoc provisioning profiles](https://help.apple.com/xcode/mac/current/#/dev7ccaf4d3c) to distribute your app to test devices once they have been registered
-to your Apple Developer account. This method requires a paid Apple Developer account and that account will only be able to use this method to distribute to at most 100 iPhones per year.
-
-You will need to know the UDID (Unique Device Identifier) of each device that will install your app, which may be challenging if you try to share with someone who is not a developer. Adding a new device will require a rebuild of your app or [re-signing the build with new credentials](/app-signing/app-credentials/#re-signing-new-credentials).
-
-Setting up Ad Hoc certificates correctly can be intimidating if you haven't done it before and tedious even if you have. If you're using [EAS Build](#internal-distribution-with-eas-build), which is optimized for Expo and React Native projects, we'll handle the time-consuming parts of setting up Ad Hoc credentials for you.
+要将应用共享到 Android 设备，你必须为项目构建一个 APK（Android application package 文件）。一旦用户接受了安装尚未经过 Play Store 审核的应用的安全警告，就可以通过 USB 直接将 APK 安装到 Android 设备上，也可以通过网页下载文件，或通过电子邮件或聊天应用进行安装。应用的 AAB（Android app bundle）二进制文件必须通过 Play Store 分发。
 
 </Collapsible>
 
-<Collapsible summary="iOS: Enterprise distribution">
+<Collapsible summary="iOS：Ad Hoc 分发">
 
-If your app is only intended for internal use by employees of a large organization and cannot be distributed through the App Store, you should use Enterprise distribution. Unlike with Ad Hoc Distribution, the number of devices that can install your app is unlimited, and you do not need to manage each device's UDID. Often these apps will be distributed to end users through a mobile device management (MDM) solution. Enterprise Distribution requires membership in the [Apple Developer Enterprise Program](https://developer.apple.com/programs/enterprise/). Organizations joining the Enterprise Program must meet additional requirements beyond what is required for App Store distribution.
+Apple 提供了 [ad hoc provisioning profiles](https://help.apple.com/xcode/mac/current/#/dev7ccaf4d3c)，用于在测试设备注册到你的 Apple Developer 账户后，将应用分发给这些设备。此方法需要付费的 Apple Developer 账户，并且该账户每年最多只能使用此方法向 100 台 iPhone 分发应用。
+
+你需要知道每台将安装你的应用的设备的 UDID（唯一设备标识符），如果你尝试与非开发者共享，这可能会比较麻烦。添加新设备将需要重新构建你的应用，或使用新的凭据 [重新签名构建](/app-signing/app-credentials/#re-signing-new-credentials)。
+
+如果你以前没有做过，正确设置 Ad Hoc 证书可能会让人望而生畏；即使做过，也会很繁琐。如果你正在使用 [EAS Build](#internal-distribution-with-eas-build)，它针对 Expo 和 React Native 项目进行了优化，我们会帮你处理设置 Ad Hoc 凭据中耗时的部分。
+
+</Collapsible>
+
+<Collapsible summary="iOS：Enterprise 分发">
+
+如果你的应用仅供大型组织的员工内部使用，且无法通过 App Store 分发，你应该使用 Enterprise 分发。与 Ad Hoc Distribution 不同，能够安装你应用的设备数量没有限制，而且你无需管理每台设备的 UDID。通常，这些应用会通过移动设备管理（MDM）解决方案分发给最终用户。Enterprise Distribution 需要加入 [Apple Developer Enterprise Program](https://developer.apple.com/programs/enterprise/)。加入 Enterprise Program 的组织必须满足除 App Store 分发之外的额外要求。
 
 </Collapsible>

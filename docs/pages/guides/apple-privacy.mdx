@@ -1,25 +1,25 @@
 ---
-title: Privacy manifests
-description: Learn about configuring iOS privacy manifests for your mobile app.
+title: 隐私清单
+description: 了解如何为您的移动应用配置 iOS 隐私清单。
 ---
 
 import { ConfigReactNative } from '~/ui/components/ConfigSection';
 
-If you're using a native iOS library that uses a "restricted reason" APIs, you'll need to configure an iOS privacy manifest to declare why you're including native code to call those APIs.
+如果你正在使用一个原生 iOS 库，并且该库使用了“受限原因”API，那么你需要配置 iOS 隐私清单，以声明你为什么要包含调用这些 API 的原生代码。
 
-More details and a list of "required reason" APIs can be found in the [Apple Developer Documentation](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files).
+更多详情以及“必需原因”API 的列表可以在 [Apple 开发者文档](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files) 中找到。
 
-> **info** The information and steps included in this guide are still in development and may change due to new tools built for this purpose or new requirements from Apple.
+> **info** 本指南中包含的信息和步骤仍在开发中，可能会因专为此目的构建的新工具或来自 Apple 的新要求而发生变化。
 
-## What is a Privacy manifest?
+## 什么是隐私清单？
 
-A privacy manifest is a file named **PrivacyInfo.xcprivacy** that is included in your iOS native project. This file is used to declare why the app includes native code that calls into certain APIs that Apple considers sensitive.
+隐私清单是一个名为 **PrivacyInfo.xcprivacy** 的文件，包含在你的 iOS 原生项目中。此文件用于声明应用为什么包含会调用 Apple 认为敏感的某些 API 的原生代码。
 
-These APIs currently include accessing UserDefaults, file timestamp, system boot time, disk space, and active keyboard. Apple considers it an open list that can be expanded in the future.
+这些 API 目前包括访问 UserDefaults、文件时间戳、系统启动时间、磁盘空间以及活动键盘。Apple 将其视为一个开放列表，未来可能会扩展。
 
-## Configuration in app config
+## 在应用配置中的配置
 
-You can include an iOS privacy manifest by using the `privacyManifests` field under `expo.ios` in your app config.
+你可以通过在应用配置中的 `expo.ios` 下使用 `privacyManifests` 字段来包含 iOS 隐私清单。
 
 ```json app.json
 {
@@ -41,27 +41,27 @@ You can include an iOS privacy manifest by using the `privacyManifests` field un
 }
 ```
 
-Make sure you have updated your Expo SDK libraries to the latest versions for your SDK version using `npx expo install --fix`.
+请确保你已使用 `npx expo install --fix` 将 Expo SDK 库更新到与你的 SDK 版本对应的最新版本。
 
 <ConfigReactNative>
 
-You can include an iOS privacy manifest in a bare Expo app by creating a **PrivacyInfo.xcprivacy** file using Xcode and adding it to your iOS app target.
-Follow [Apple's Privacy manifest files](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files) guide to create a **PrivacyInfo.xcprivacy** file.
+你可以通过使用 Xcode 创建一个 **PrivacyInfo.xcprivacy** 文件并将其添加到你的 iOS 应用目标中，从而在裸 Expo 应用中包含 iOS 隐私清单。
+请按照 [Apple 的隐私清单文件](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files) 指南创建一个 **PrivacyInfo.xcprivacy** 文件。
 
 </ConfigReactNative>
 
-You can identify the `NSPrivacyAccessedAPITypes` and `NSPrivacyAccessedAPITypeReasons` values by looking at the [Apple Developer documentation](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api).
+你可以通过查看 [Apple 开发者文档](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api) 来识别 `NSPrivacyAccessedAPITypes` 和 `NSPrivacyAccessedAPITypeReasons` 的值。
 
-### Including required reasons for Expo SDK packages and other third-party libraries
+### 为 Expo SDK 包和其他第三方库包含必需原因
 
-As of now, Apple does not correctly parse all the **PrivacyInfo** files included by static CocoaPods dependencies (such as Expo SDK packages and other ecosystem libraries). You may need to include the required reasons for the APIs used by those dependencies in your app's **PrivacyInfo.xcprivacy** file or the configuration in the **app.json**.
+截至目前，Apple 无法正确解析静态 CocoaPods 依赖项（例如 Expo SDK 包和其他生态系统库）中包含的所有 **PrivacyInfo** 文件。你可能需要在应用的 **PrivacyInfo.xcprivacy** 文件中，或在 **app.json** 的配置中，包含这些依赖项所使用 API 的必需原因。
 
-All Expo SDK packages that use "required reason" APIs file have a **PrivacyInfo** file included in the package directory. Here's [an example file](https://github.com/expo/expo/blob/main/packages/expo-application/ios/PrivacyInfo.xcprivacy) included with the `expo-application` library.
+所有使用“必需原因”API 的 Expo SDK 包都会在包目录中包含一个 **PrivacyInfo** 文件。这里有一个随 `expo-application` 库一起包含的 [示例文件](https://github.com/expo/expo/blob/main/packages/expo-application/ios/PrivacyInfo.xcprivacy)。
 
-You can usually identify the required reasons for the APIs used by other third-party libraries by checking if the library you intend to use has a **PrivacyInfo.xcprivacy** file in the **node_modules/package_name/ios** directory. If it does, you can check the `NSPrivacyAccessedAPITypes` and `NSPrivacyAccessedAPITypeReasons` values in that file and copy those values to your configuration.
+你通常可以通过检查你打算使用的第三方库在 **node_modules/package_name/ios** 目录中是否有 **PrivacyInfo.xcprivacy** 文件，来识别该库所使用 API 的必需原因。如果有，你可以查看该文件中的 `NSPrivacyAccessedAPITypes` 和 `NSPrivacyAccessedAPITypeReasons` 值，并将这些值复制到你的配置中。
 
-As an alternative, Apple notifies developers after they submit a build with missing privacy manifest files or specific reasons. You can wait until you receive a notification email from Apple and then include the required reasons listed in the email in your app's **PrivacyInfo.xcprivacy** file (if you don't use [CNG](/workflow/continuous-native-generation/)) or the configuration in your **app.json** file.
+另外，Apple 会在开发者提交缺少隐私清单文件或特定原因的构建后通知他们。你可以等待收到来自 Apple 的通知邮件，然后将邮件中列出的必需原因添加到你的 **PrivacyInfo.xcprivacy** 文件中（如果你不使用 [CNG](/workflow/continuous-native-generation/)），或者添加到你的 **app.json** 文件配置中。
 
-## Testing the Privacy manifest
+## 测试隐私清单
 
-You can test the privacy manifest by building your app and submitting it, either through App Store review process or to TestFlight's external review. Apple will email you within a few minutes of submitting if your app is missing any required reasons for the APIs used.
+你可以通过构建并提交应用来测试隐私清单，无论是通过 App Store 审核流程还是 TestFlight 的外部审核。Apple 会在你提交后的几分钟内给你发送电子邮件，告知你的应用是否缺少所使用 API 的任何必需原因。

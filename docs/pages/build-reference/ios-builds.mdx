@@ -1,70 +1,70 @@
 ---
-title: iOS build process
-description: Learn how an iOS project is built on EAS Build.
+title: iOS 构建流程
+description: 了解 iOS 项目如何在 EAS Build 上构建。
 ---
 
-This page describes the process of building iOS projects with EAS Build. You may want to read this if you are interested in the implementation details of the build service.
+本页面描述了使用 EAS Build 构建 iOS 项目的过程。如果你对构建服务的实现细节感兴趣，建议阅读本文。
 
-## Build process
+## 构建流程
 
-Let's take a closer look at the steps for building iOS projects with EAS Build. We'll first run some steps on your local machine to prepare the project, and then we'll build the project on a remote service.
+让我们更详细地看看使用 EAS Build 构建 iOS 项目的步骤。我们会先在你的本地机器上执行一些步骤来准备项目，然后再在远程服务上构建项目。
 
-### Local steps
+### 本地步骤
 
-The first phase happens on your computer. EAS CLI is in charge of completing the following steps:
+第一阶段发生在你的电脑上。EAS CLI 负责完成以下步骤：
 
-1. If `cli.requireCommit` is set to `true` in **eas.json**, check if the git index is clean - this means that there aren't any uncommitted changes. If it's not clean, EAS CLI will provide an option to commit local changes for you or abort the build process.
-1. Prepare the credentials needed for the build.
-   - Depending on the value of `builds.ios.PROFILE_NAME.credentialsSource`, the credentials are obtained from either the local **credentials.json** file or from the EAS servers. If the `remote` mode is selected but no credentials exist yet, you're offered to generate them.
+1. 如果 **eas.json** 中的 `cli.requireCommit` 设置为 `true`，则检查 git 索引是否干净——这意味着没有任何未提交的更改。如果不干净，EAS CLI 会提供一个选项，让你提交本地更改，或者中止构建过程。
+1. 准备构建所需的凭证。
+   - 根据 `builds.ios.PROFILE_NAME.credentialsSource` 的值，凭证会从本地 **credentials.json** 文件或 EAS 服务器获取。如果选择了 `remote` 模式但尚未存在凭证，系统会提示你生成它们。
 
-1. **Bare** projects require an additional step: check whether the Xcode project is configured to be buildable on the EAS servers (to ensure the correct bundle identifier and Apple Team ID are set).
-1. Create the tarball containing a copy of the repository. Actual behavior depends on the [VCS workflow](https://expo.fyi/eas-vcs-workflow) you are using.
-1. Upload the project tarball to a private Google Cloud Storage (GCS) bucket and send the build request to EAS Build.
+1. **Bare** 项目需要额外一步：检查 Xcode 项目是否已配置为可以在 EAS 服务器上构建（以确保设置了正确的 bundle identifier 和 Apple Team ID）。
+1. 创建包含仓库副本的 tarball。实际行为取决于你正在使用的 [VCS 工作流](https://expo.fyi/eas-vcs-workflow)。
+1. 将项目 tarball 上传到私有的 Google Cloud Storage（GCS）存储桶，并向 EAS Build 发送构建请求。
 
-### Remote steps
+### 远程步骤
 
-In this next phase, this is what happens when EAS Build picks up your request:
+在下一阶段，当 EAS Build 接收到你的请求时，会发生以下事情：
 
-1. Create a new macOS VM for the build.
-   - Every build gets its own fresh macOS VM with all build tools installed there (Xcode, Fastlane, and so on).
+1. 为此次构建创建一个新的 macOS VM。
+   - 每次构建都会获得自己全新的 macOS VM，并在那里安装好所有构建工具（Xcode、Fastlane 等）。
 
-1. Download the project tarball from a private GCS bucket and unpack it.
-1. [Create **.npmrc**](/build-reference/private-npm-packages) if `NPM_TOKEN` is set.
-1. Run the `eas-build-pre-install` script from **package.json** if defined.
-1. Run `npm install` in the project root (or `yarn install` if **yarn.lock** exists).
-1. Run `npx expo-doctor` to diagnose potential issues with your project configuration.
-1. Restore the credentials
-   - Create a new keychain.
-   - Import the Distribution Certificate into the keychain.
-   - Write the Provisioning Profile to the **~/Library/MobileDevice/Provisioning Profiles** directory.
-   - Verify that the Distribution Certificate and Provisioning Profile match (every Provisioning Profile is assigned to a particular Distribution Certificate and cannot be used for building the iOS with any other certificate).
+1. 从私有 GCS 存储桶下载项目 tarball 并解压。
+1. 如果设置了 `NPM_TOKEN`，则[创建 **.npmrc**](/build-reference/private-npm-packages)。
+1. 如果 **package.json** 中定义了 `eas-build-pre-install` 脚本，则运行它。
+1. 在项目根目录执行 `npm install`（如果存在 **yarn.lock**，则执行 `yarn install`）。
+1. 运行 `npx expo-doctor` 以诊断项目配置中的潜在问题。
+1. 恢复凭证
+   - 创建一个新的 keychain。
+   - 将 Distribution Certificate 导入 keychain。
+   - 将 Provisioning Profile 写入 **~/Library/MobileDevice/Provisioning Profiles** 目录。
+   - 验证 Distribution Certificate 和 Provisioning Profile 是否匹配（每个 Provisioning Profile 都分配给特定的 Distribution Certificate，不能用于使用其他证书构建 iOS）。
 
-1. Additional step for **managed** projects: Run `npx expo prebuild` to convert the project to a bare one. This step will use the versioned Expo CLI.
-1. Restore a previously saved cache identified by the `cache.key` value in the [build profile](/build/eas-json).
-1. Run `pod install` in the **ios** directory inside your project.
-1. Run the `eas-build-post-install` script from **package.json** if defined.
-1. Update the Xcode project with the ID of the Provisioning Profile.
-1. Create **Gymfile** in the **ios** directory if it does **not** already exist (check out the [Default Gymfile](#default-gymfile) section).
-1. Run `fastlane gym` in the **ios** directory.
-1. **Deprecated:** Run the `eas-build-pre-upload-artifacts` script from **package.json** if defined.
-1. Store a cache of files and directories defined in the [build profile](/build/eas-json). **Podfile.lock** is cached by default. Subsequent builds will restore this cache.
-1. Upload the application archive to a private GCS bucket.
-   - The artifact path can be configured in **eas.json** at `builds.ios.PROFILE_NAME.applicationArchivePath`. It defaults to **ios/build/App.ipa**. You can specify a glob-like pattern for `applicationArchivePath`. We're using [glob patterns](https://github.com/isaacs/node-glob#glob-primer) for pattern matching.
+1. 对于 **managed** 项目，额外一步：运行 `npx expo prebuild` 将项目转换为 bare 项目。此步骤将使用版本化的 Expo CLI。
+1. 恢复之前保存的缓存，该缓存由 [构建配置文件](/build/eas-json) 中的 `cache.key` 值标识。
+1. 在项目中的 **ios** 目录里运行 `pod install`。
+1. 如果 **package.json** 中定义了 `eas-build-post-install` 脚本，则运行它。
+1. 使用 Provisioning Profile 的 ID 更新 Xcode 项目。
+1. 如果 **ios** 目录中还不存在 **Gymfile**，则创建它（请查看 [默认 Gymfile](#default-gymfile) 部分）。
+1. 在 **ios** 目录中运行 `fastlane gym`。
+1. **已弃用：** 如果 **package.json** 中定义了 `eas-build-pre-upload-artifacts` 脚本，则运行它。
+1. 存储 [构建配置文件](/build/eas-json) 中定义的文件和目录缓存。默认会缓存 **Podfile.lock**。后续构建将恢复此缓存。
+1. 将应用归档上传到私有 GCS 存储桶。
+   - 归档路径可以在 **eas.json** 的 `builds.ios.PROFILE_NAME.applicationArchivePath` 中配置。默认值为 **ios/build/App.ipa**。你可以为 `applicationArchivePath` 指定类似 glob 的模式。我们使用 [glob patterns](https://github.com/isaacs/node-glob#glob-primer) 进行模式匹配。
 
-1. If the build was successful: run the `eas-build-on-success` script from **package.json** if defined.
-1. If the build failed: run the `eas-build-on-error` script from **package.json** if defined.
-1. Run the `eas-build-on-complete` script from **package.json** if defined. The `EAS_BUILD_STATUS` env variable is set to either `finished` or `errored`.
-1. Upload the build artifacts archive to a private GCS bucket if `buildArtifactPaths` is specified in the build profile.
+1. 如果构建成功：如果 **package.json** 中定义了 `eas-build-on-success` 脚本，则运行它。
+1. 如果构建失败：如果 **package.json** 中定义了 `eas-build-on-error` 脚本，则运行它。
+1. 如果 **package.json** 中定义了 `eas-build-on-complete` 脚本，则运行它。`EAS_BUILD_STATUS` 环境变量会被设置为 `finished` 或 `errored`。
+1. 如果在构建配置文件中指定了 `buildArtifactPaths`，则将构建产物归档上传到私有 GCS 存储桶。
 
-## Building iOS projects with Fastlane
+## 使用 Fastlane 构建 iOS 项目
 
-We're using [Fastlane](https://fastlane.tools/) for building iOS projects. To be more precise, we're using the `fastlane gym` command ([see the Fastlane docs to learn more](https://docs.fastlane.tools/actions/gym/)). This command allows you to declare the build configuration in **Gymfile**.
+我们使用 [Fastlane](https://fastlane.tools/) 来构建 iOS 项目。更准确地说，我们使用 `fastlane gym` 命令（[查看 Fastlane 文档以了解更多信息](https://docs.fastlane.tools/actions/gym/)）。这个命令允许你在 **Gymfile** 中声明构建配置。
 
-EAS Build can use your own **Gymfile**. All you need to do is to place this file in the **ios** directory.
+EAS Build 可以使用你自己的 **Gymfile**。你只需要把这个文件放在 **ios** 目录中即可。
 
-### Default Gymfile
+### 默认 Gymfile
 
-If the **ios/Gymfile** file doesn't exist, the iOS builder creates a default one which looks similar to the following:
+如果 **ios/Gymfile** 文件不存在，iOS 构建器会创建一个默认文件，内容如下：
 
 ```rb ios/Gymfile
 suppress_xcode_output(true)

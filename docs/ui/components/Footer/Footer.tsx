@@ -78,7 +78,7 @@ export const Footer = ({
               <ArrowLeftIcon className="text-icon-secondary shrink-0" />
               <div>
                 <FOOTNOTE theme="secondary">
-                  Previous{previousPage.section ? ` (${previousPage.section})` : ''}
+                  上一篇{previousPage.section ? `（${previousPage.section}）` : ''}
                 </FOOTNOTE>
                 <P weight="medium">{previousPage.sidebarTitle ?? previousPage.name}</P>
               </div>
@@ -95,7 +95,7 @@ export const Footer = ({
               )}>
               <div>
                 <FOOTNOTE theme="secondary">
-                  Next{nextPage?.section ? ` (${nextPage.section})` : ''}
+                  下一篇{nextPage?.section ? `（${nextPage.section}）` : ''}
                 </FOOTNOTE>
                 <P weight="medium">{nextPage.sidebarTitle ?? nextPage.name}</P>
               </div>
@@ -120,12 +120,12 @@ export const Footer = ({
             <LlmsTxtLink fullVersionHref={llmsFullHref} fullVersionLabel={llmsFullLabel} />
             {!isDev && shouldShowModifiedDate && modificationDate && (
               <LI className="text-quaternary! mt-4! text-xs!">
-                Last updated on <time dateTime={modificationDate}>{modificationDate}</time>
+                最后更新于 <time dateTime={modificationDate}>{modificationDate}</time>
               </LI>
             )}
             {isDev && shouldShowModifiedDate && (
               <LI className="text-quaternary! mt-4! text-xs!">
-                Last updated data is not available in dev mode
+                开发模式下不提供最后更新时间
               </LI>
             )}
           </UL>
@@ -133,6 +133,14 @@ export const Footer = ({
         <NewsletterSignUp />
       </div>
       <PrivacyChoicesButton />
+      <div className="text-quaternary flex flex-col gap-1 text-xs">
+        <a target="_blank" href="https://www.zhcndoc.com">
+          简中文档
+        </a>
+        <a target="_blank" href="https://beian.miit.gov.cn" rel="nofollow">
+          沪ICP备2024070610号-3
+        </a>
+      </div>
     </footer>
   );
 };

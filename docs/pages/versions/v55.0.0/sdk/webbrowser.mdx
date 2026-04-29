@@ -1,6 +1,6 @@
 ---
 title: WebBrowser
-description: A library that provides access to the system's web browser and supports handling redirects.
+description: 一个提供访问系统网页浏览器并支持处理重定向的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-web-browser'
 packageName: 'expo-web-browser'
 iconUrl: '/static/images/packages/expo-web-browser.png'
@@ -12,17 +12,17 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 import { SnackInline } from '~/ui/components/Snippet';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-`expo-web-browser` provides access to the system's web browser and supports handling redirects. On Android, it uses `ChromeCustomTabs` and on iOS, it uses `SFSafariViewController` or `ASWebAuthenticationSession`, depending on the method you call. As of iOS 11, `SFSafariViewController` no longer shares cookies with Safari, so if you are using `WebBrowser` for authentication you will want to use `WebBrowser.openAuthSessionAsync`, and if you just want to open a webpage (such as your app privacy policy), then use `WebBrowser.openBrowserAsync`.
+`expo-web-browser` 提供对系统 Web 浏览器的访问，并支持处理重定向。在 Android 上，它使用 `ChromeCustomTabs`；在 iOS 上，它根据你调用的方法使用 `SFSafariViewController` 或 `ASWebAuthenticationSession`。从 iOS 11 起，`SFSafariViewController` 不再与 Safari 共享 cookie，因此如果你使用 `WebBrowser` 进行身份验证，应当使用 `WebBrowser.openAuthSessionAsync`；如果你只是想打开一个网页（例如应用的隐私政策），则使用 `WebBrowser.openBrowserAsync`。
 
-## Installation
+## 安装
 
 <APIInstallSection />
 
-## Configuration in app config
+## 在 app config 中配置
 
-You can configure `expo-web-browser` using its built-in [config plugin](/config-plugins/introduction/) if you use config plugins in your project ([Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)). The plugin allows you to configure various properties that cannot be set at runtime and require building a new app binary to take effect. If your app does **not** use CNG, then you'll need to manually configure the library.
+如果你在项目中使用 config plugin（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-web-browser` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置一些无法在运行时设置的属性，这些属性需要构建新的应用二进制文件后才会生效。如果你的应用**没有**使用 CNG，那么你需要手动配置该库。
 
-## Usage
+## 用法
 
 <SnackInline label="Basic WebBrowser usage" dependencies={["expo-web-browser", "expo-constants"]}>
 
@@ -43,7 +43,7 @@ export default function App() {
   };
   return (
     <View style={styles.container}>
-      <Button title="Open WebBrowser" onPress={_handlePressButtonAsync} />
+      <Button title="打开 WebBrowser" onPress={_handlePressButtonAsync} />
       <Text>{result && JSON.stringify(result)}</Text>
     </View>
   );
@@ -62,19 +62,19 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
-### Handling deep links from the WebBrowser
+### 处理来自 WebBrowser 的深度链接
 
 <Tabs>
 
-<Tab label="With Expo Router">
+<Tab label="使用 Expo Router">
 
-If your project uses Expo Router, deep links are handled automatically.
+如果你的项目使用 Expo Router，深度链接会自动处理。
 
 </Tab>
 
-<Tab label="Without Expo Router">
+<Tab label="不使用 Expo Router">
 
-If you use the `WebBrowser` window for authentication or another use case where you want to pass information back into your app through a deep link, add a handler with `Linking.addEventListener` before opening the browser. When the listener fires, you should call [`dismissBrowser`](#webbrowserdismissbrowser). It will not automatically be dismissed when a deep link is handled. Aside from that, redirects from `WebBrowser` work the same as other deep links. Read more about it in [Linking](/linking/into-your-app/#handle-urls).
+如果你使用 `WebBrowser` 窗口进行身份验证，或在其他需要通过深度链接将信息传回应用的场景中，请在打开浏览器之前通过 `Linking.addEventListener` 添加一个处理器。当监听器触发时，你应该调用 [`dismissBrowser`](#webbrowserdismissbrowser)。在处理深度链接时，它不会自动关闭。除此之外，`WebBrowser` 的重定向与其他深度链接的工作方式相同。有关更多信息，请阅读 [Linking](/linking/into-your-app/#handle-urls)。
 
 </Tab>
 
@@ -88,20 +88,20 @@ import * as WebBrowser from 'expo-web-browser';
 
 <APISection packageName="expo-web-browser" apiName="WebBrowser" />
 
-## Error codes
+## 错误代码
 
 ### `ERR_WEB_BROWSER_REDIRECT`
 
-**Web only:** The window cannot complete the redirect request because the invoking window doesn't have a reference to its parent. This can happen if the parent window was reloaded.
+**仅限 Web：** 该窗口无法完成重定向请求，因为调用它的窗口没有指向其父窗口的引用。如果父窗口已重新加载，就可能发生这种情况。
 
 ### `ERR_WEB_BROWSER_BLOCKED`
 
-**Web only:** The popup window was blocked by the browser or failed to open. This can happen in mobile browsers when the `window.open()` method was invoked too long after a user input was fired.
+**仅限 Web：** 弹出窗口被浏览器阻止或未能打开。如果在用户输入触发后过了太久才调用 `window.open()` 方法，这种情况可能会发生在移动浏览器中。
 
-Mobile browsers do this to prevent malicious websites from opening many unwanted popups on mobile.
+移动浏览器这样做是为了防止恶意网站在移动设备上打开大量不需要的弹窗。
 
-You're method can still run in an async function but there cannot be any long running tasks before it. You can use hooks to disable user-inputs until any other processes have finished loading.
+你的方法仍然可以在异步函数中运行，但在此之前不能有任何耗时较长的任务。你可以使用 hooks 在其他进程完成加载之前禁用用户输入。
 
 ### `ERR_WEB_BROWSER_CRYPTO`
 
-**Web only:** The current environment doesn't support crypto. Ensure you are running from a secure origin (localhost/https).
+**仅限 Web：** 当前环境不支持 crypto。请确保你是在安全源（localhost/https）下运行。

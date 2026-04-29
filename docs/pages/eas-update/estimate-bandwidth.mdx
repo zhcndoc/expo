@@ -1,45 +1,45 @@
 ---
-title: Estimate bandwidth usage
-description: Learn how to estimate bandwidth usage for EAS Update.
+title: 估算带宽使用量
+description: 了解如何估算 EAS Update 的带宽使用量。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-## Understanding update bandwidth usage
+## 了解更新带宽用量
 
-EAS Update enables an app to update its own non-native pieces (such as JavaScript, styling, and images) over-the-air. This guide explains how bandwidth is consumed and how consumption can be optimized.
+EAS Update 使应用能够通过空中下载更新自身的非原生部分（例如 JavaScript、样式和图片）。本指南将解释带宽是如何消耗的，以及如何优化消耗。
 
-## Bandwidth calculation breakdown
+## 带宽计算拆解
 
-Each subscription plan includes a predefined bandwidth allocation per monthly billing period in addition to its monthly active user (MAU) allocation ([learn more about how MAU are calculated](/eas-update/introduction/#how-are-monthly-active-users-counted-for)). MAU's beyond the standard allocation are billed at [usage-based pricing rates](https://expo.dev/pricing#update), and each of those additional MAU add an extra 40 MiB to your standard bandwidth allocation. This bandwidth determines the number of updates your users can download before being charged for additional bandwidth usage.
+每个订阅计划除了每月活跃用户（MAU）额度外，还包含每个按月计费周期预先设定的带宽配额（[了解 MAU 如何计算](/eas-update/introduction/#how-are-monthly-active-users-counted-for)）。超出标准配额的 MAU 将按[按用量计费费率](https://expo.dev/pricing#update)收费，而每增加 1 个此类 MAU，都会额外增加 40 MiB 的标准带宽配额。该带宽决定了在产生额外带宽费用之前，用户可以下载多少次更新。
 
-Here's how to estimate bandwidth usage per update:
+下面是估算每次更新带宽用量的方法：
 
-- **Update size:** The key factor in bandwidth consumption is the size of update assets that are not already on the device. If an update only modifies the JavaScript portion of your app, users will only download the new JavaScript. To begin an example, let's say the uncompressed JavaScript portion generated during export is **10 MB**. Compression will further reduce its size.
-- **Compression ratio:** The level of compression depends on the file type. JavaScript and Hermes bytecode (commonly used in React Native apps) can be compressed, while images and icons are not automatically compressed. In the example above, a Hermes bytecode bundle achieves an estimated **2.6× compression ratio**, reducing the actual download size to:
+- **更新大小：** 带宽消耗的关键因素是设备上尚未存在的更新资源大小。如果某次更新只修改了应用的 JavaScript 部分，用户只会下载新的 JavaScript。先举个例子，假设导出时生成的未压缩 JavaScript 部分为 **10 MB**。压缩会进一步减小其大小。
+- **压缩比：** 压缩级别取决于文件类型。JavaScript 和 Hermes 字节码（React Native 应用中常用）可以被压缩，而图片和图标不会被自动压缩。在上面的例子中，一个 Hermes 字节码包大约可达到 **2.6× 压缩比**，将实际下载大小降低为：
 
   ```text
   10 MB / 2.6 ≈ 3.85 MB update bandwidth size
   ```
 
-Given a bandwidth allocation, we estimate how many updates can be downloaded in a monthly billing period before additional bandwidth charges apply. For example, if you have 60,000 MAUs on a production plan, it includes 50,0000 MAU and **1 TiB (1,024 GiB) of bandwidth per month**. An additional 10,000 MAUs purchased through usage-based pricing receives an additional **40 MiB of bandwidth per MAU**. The total number of updates that can be downloaded is:
+给定带宽配额后，我们可以估算在一个月度计费周期内，在产生额外带宽费用之前最多可以下载多少次更新。例如，如果你的生产计划有 60,000 个 MAU，它包含 500,000 个 MAU 和每月 **1 TiB（1,024 GiB）** 的带宽。通过按用量计费额外购买的 10,000 个 MAU 会获得额外 **每个 MAU 40 MiB** 的带宽。可下载的更新总数为：
 
 ```text
 (1,024 GiB × 1,024 MiB/GiB) + (10,000 MAU × 40 MiB/MAU) = 1,448,576 MiB per month
 1,448,576 MiB / 3.85 MiB ≈ 376,254 updates
 ```
 
-## Measuring your actual update size
+## 测量你实际的更新大小
 
-Start by generating your uncompressed production bundle with the following command:
+先使用以下命令生成未压缩的生产构建包：
 
 <Terminal cmd={['$ npx expo export']} />
 
-Then, look inside the **dist/\_expo/static/js** directory. There will be **android** and **ios** directories with a **.hbc** file in each. The size of the **.hbc** file is the uncompressed size of your Hermes bundle. Note that Android and iOS bundles may differ in size, especially if you make use of platform-specific code files.
+然后，查看 **dist/\_expo/static/js** 目录。其中会有 **android** 和 **ios** 目录，每个目录里都有一个 **.hbc** 文件。**.hbc** 文件的大小就是你的 Hermes 包的未压缩大小。请注意，Android 和 iOS 包的大小可能不同，尤其是在你使用平台特定代码文件时。
 
-These files have long names that include a hash. For this example, rename the file you would like to analyze to **bundle.hbc**.
+这些文件的名称很长，并包含哈希值。在此示例中，将你想分析的文件重命名为 **bundle.hbc**。
 
-To determine the actual compressed size of your Hermes bundle, which is how large it will be when downloaded by app users, run the following commands:
+要确定你的 Hermes 包实际压缩后的大小，也就是应用用户下载时的大小，请运行以下命令：
 
 <Terminal
   cmd={[
@@ -50,17 +50,17 @@ To determine the actual compressed size of your Hermes bundle, which is how larg
   cmdCopy="brotli -5 -k bundle.hbc && gzip -9 -k bundle.hbc && ls -lh bundle.hbc.br bundle.hbc.gz"
 />
 
-This will generate **Brotli- and Gzip-compressed** versions of your Hermes bundle (**bundle.hbc.br** and **bundle.hbc.gz**) and display their sizes. You can use this to refine bandwidth calculations based on your app's real-world update sizes.
+这将生成你的 Hermes 包的 **Brotli 和 Gzip 压缩**版本（**bundle.hbc.br** 和 **bundle.hbc.gz**）并显示它们的大小。你可以利用这些数据，基于应用在真实场景中的更新大小来优化带宽计算。
 
-## Factors that affect bandwidth consumption
+## 影响带宽消耗的因素
 
-Actual bandwidth usage varies due to:
+实际带宽用量会因以下因素而有所不同：
 
-- **User behavior:** Theoretical calculations assume every user downloads every update. However, many users only get updates when they reopen the app, often skipping intermediate updates. As a result, actual bandwidth usage is usually much lower than the theoretical maximum.
-- **Missing assets:** If an update includes assets such as fonts and images that are not already on the device from the build or previously downloaded updates, they will need to be downloaded as well.
+- **用户行为：** 理论计算假设每个用户都会下载每次更新。然而，许多用户只会在重新打开应用时获取更新，往往会跳过中间更新。因此，实际带宽用量通常远低于理论最大值。
+- **缺失的资源：** 如果某次更新包含字体和图片等资源，而这些资源在当前构建或之前下载的更新中尚未存在于设备上，那么它们也需要被下载。
 
-## Optimizing bandwidth usage
+## 优化带宽用量
 
-1. **Monitor usage first:** The easiest way to manage bandwidth is to track your [usage metrics](https://expo.dev/accounts/[account]/settings/usage) and identify any unusual spikes or inefficiencies.
-2. **Optimize asset size:** Reduce the size of your assets with [this guide](/eas-update/optimize-assets).
-3. **Exclude assets when needed:** Use [asset selection](/eas-update/asset-selection) to reduce the number of assets included with each update. This is an advanced optimization and other approaches should be tried first.
+1. **先监控用量：** 管理带宽最简单的方法是跟踪你的[用量指标](https://expo.dev/accounts/[account]/settings/usage)，并找出任何异常峰值或低效之处。
+2. **优化资源大小：** 使用[本指南](/eas-update/optimize-assets)减小资源体积。
+3. **在需要时排除资源：** 使用[资源选择](/eas-update/asset-selection)减少每次更新中包含的资源数量。这是一种高级优化，应优先尝试其他方法。

@@ -1,7 +1,7 @@
 ---
-title: Create and use config plugins
-description: Learn how to create and use a config plugins in your Expo project.
-sidebar_title: Create a plugin
+title: 创建和使用配置插件
+description: 了解如何在你的 Expo 项目中创建和使用配置插件。
+sidebar_title: 创建一个插件
 searchRank: 4
 ---
 
@@ -11,53 +11,53 @@ import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-This guide covers sections on how to create a config plugin, how to pass parameters to a config plugin, and how to chain multiple config plugins together. It also covers how to use a config plugin from an Expo library.
+本指南涵盖了如何创建 config plugin、如何向 config plugin 传递参数，以及如何将多个 config plugin 串联在一起的相关章节。它还介绍了如何从 Expo 库中使用 config plugin。
 
-Using the diagram below, in this guide, you will learn the first two parts of the config plugin hierarchy:
+借助下方图示，在本指南中，你将学习 config plugin 层级结构的前两部分：
 
 <ConfigPluginHierarchy highlightedNodeIds={['1', '2']} />
 
-> **info** **Note:** The following sections use dynamic [app config](/workflow/configuration/) (**app.config.js/app.config.ts** instead of **app.json**), which is not required to use a simple config plugin. However, it is required to use dynamic app config when you want to create/use a function-based config plugin that accepts parameters.
+> **info** **注意：** 以下章节使用动态 [app config](/workflow/configuration/)（**app.config.js/app.config.ts**，而不是 **app.json**），但使用简单的 config plugin 并不要求这样做。不过，当你想创建/使用一个接受参数的基于函数的 config plugin 时，就必须使用动态 app config。
 
-## Creating a config plugin
+## 创建一个 config plugin
 
-In the following section, let's create a local config plugin that adds an arbitrary property `HelloWorldMessage` to the **AndroidManifest.xml** for Android and **Info.plist** for iOS.
+在下面的章节中，让我们创建一个本地 config plugin，它会为 Android 的 **AndroidManifest.xml** 和 iOS 的 **Info.plist** 添加一个任意属性 `HelloWorldMessage`。
 
-This example will create and modify the following files. To follow along, create a **plugins** directory in the root of your project, and inside it, create **withAndroidPlugin.ts**, **withIosPlugins.ts**, and **withPlugin.ts** files.
+此示例将创建并修改以下文件。为了跟着操作，请在项目根目录下创建一个 **plugins** 目录，并在其中创建 **withAndroidPlugin.ts**、**withIosPlugins.ts** 和 **withPlugin.ts** 文件。
 
 <FileTree
   files={[
     'plugins',
-    ['plugins/withAndroidPlugin.ts', 'Contains Android-specific modifications'],
-    ['plugins/withIosPlugin.ts', 'Contains iOS-specific modifications'],
-    ['plugins/withPlugin.ts', 'Main plugin file that combines both Android and iOS plugins'],
-    ['app.config.ts', 'Dynamic app config file that uses the plugin'],
+    ['plugins/withAndroidPlugin.ts', '包含 Android 特定修改'],
+    ['plugins/withIosPlugin.ts', '包含 iOS 特定修改'],
+    ['plugins/withPlugin.ts', '组合 Android 和 iOS 插件的主插件文件'],
+    ['app.config.ts', '使用该插件的动态 app config 文件'],
   ]}
 />
 
 <Step label="1">
 
-### Create Android plugin
+### 创建 Android 插件
 
-In **withAndroidPlugin.ts**, add the following code:
+在 **withAndroidPlugin.ts** 中，添加以下代码：
 
 ```ts withAndroidPlugin.ts
 import { ConfigPlugin, withAndroidManifest } from 'expo/config-plugins';
 
 const withAndroidPlugin: ConfigPlugin = config => {
-  // Define a custom message
+  // 定义一个自定义消息
   const message = 'Hello world, from Expo plugin!';
 
   return withAndroidManifest(config, config => {
     const mainApplication = config?.modResults?.manifest?.application?.[0];
 
     if (mainApplication) {
-      // Ensure meta-data array exists
+      // 确保 meta-data 数组存在
       if (!mainApplication['meta-data']) {
         mainApplication['meta-data'] = [];
       }
 
-      // Add the custom message as a meta-data entry
+      // 将自定义消息作为 meta-data 条目添加
       mainApplication['meta-data'].push({
         $: {
           'android:name': 'HelloWorldMessage',
@@ -73,25 +73,25 @@ const withAndroidPlugin: ConfigPlugin = config => {
 export default withAndroidPlugin;
 ```
 
-The example code above adds a meta-data entry `HelloWorldMessage` to the **android/app/src/main/AndroidManifest.xml** file by importing `ConfigPlugin` and `withAndroidManifest` from the `expo/config-plugins` library. The [`withAndroidManifest`](/config-plugins/mods/#mod-plugins) mod plugin is an asynchronous function that accepts a config and a data object and modifies the value before returning an object.
+上面的示例代码通过从 `expo/config-plugins` 库中导入 `ConfigPlugin` 和 `withAndroidManifest`，向 **android/app/src/main/AndroidManifest.xml** 文件添加了一个 `HelloWorldMessage` 的 meta-data 条目。[`withAndroidManifest`](/config-plugins/mods/#mod-plugins) mod plugin 是一个异步函数，它接受一个 config 和一个 data 对象，并在返回对象之前修改该值。
 
 </Step>
 
 <Step label="2">
 
-### Create iOS plugin
+### 创建 iOS 插件
 
-In **withIosPlugin.ts**, add the following code:
+在 **withIosPlugin.ts** 中，添加以下代码：
 
 ```ts withIosPlugin.ts
 import { ConfigPlugin, withInfoPlist } from 'expo/config-plugins';
 
 const withIosPlugin: ConfigPlugin = config => {
-  // Define the custom message
+  // 定义自定义消息
   const message = 'Hello world, from Expo plugin!';
 
   return withInfoPlist(config, config => {
-    // Add the custom message to the Info.plist file
+    // 将自定义消息添加到 Info.plist 文件中
     config.modResults.HelloWorldMessage = message;
     return config;
   });
@@ -100,17 +100,17 @@ const withIosPlugin: ConfigPlugin = config => {
 export default withIosPlugin;
 ```
 
-The example code above adds `HelloWorldMessage` as the custom key with a custom message in **ios/\<your-project-name\>/Info.plist** file by importing the `ConfigPlugin` and `withInfoPlist` from the `expo/config-plugins` library. The [`withInfoPlist`](/config-plugins/mods/#mod-plugins) mod plugin is an asynchronous function that accepts a config and a data object and modifies the value before returning an object.
+上面的示例代码通过从 `expo/config-plugins` 库中导入 `ConfigPlugin` 和 `withInfoPlist`，向 **ios/\<your-project-name\>/Info.plist** 文件中添加了一个名为 `HelloWorldMessage` 的自定义键及其自定义消息。[`withInfoPlist`](/config-plugins/mods/#mod-plugins) mod plugin 是一个异步函数，它接受一个 config 和一个 data 对象，并在返回对象之前修改该值。
 
 </Step>
 
 <Step label="3">
 
-### Create a combined plugin
+### 创建一个组合插件
 
-Now you can create a combined plugin that applies both platform-specific plugins. This approach allows the maintenance of platform-specific code separately while providing a single entry point.
+现在你可以创建一个组合插件，同时应用这两个平台特定插件。这种方式可以将平台特定代码分开维护，同时提供一个统一入口。
 
-In **withPlugin.ts**, add the following code:
+在 **withPlugin.ts** 中，添加以下代码：
 
 ```ts withPlugin.ts
 import { ConfigPlugin } from 'expo/config-plugins';
@@ -118,9 +118,9 @@ import withAndroidPlugin from './withAndroidPlugin';
 import withIosPlugin from './withIosPlugin';
 
 const withPlugin: ConfigPlugin = config => {
-  // Apply Android modifications first
+  // 先应用 Android 修改
   config = withAndroidPlugin(config);
-  // Then apply iOS modifications and return
+  // 再应用 iOS 修改并返回
   return withIosPlugin(config);
 };
 
@@ -131,15 +131,15 @@ export default withPlugin;
 
 <Step label="4">
 
-### Add TypeScript support and convert to dynamic app config
+### 添加 TypeScript 支持并转换为动态 app config
 
-We recommend writing config plugins in TypeScript, since this will provide intellisense for the configuration objects. However, your app config is ultimately evaluated by Node.js, which does not recognize TypeScript code by default. Therefore, you will need to add a parser for the TypeScript files from the **plugins** directory to **app.config.ts** file.
+我们建议使用 TypeScript 编写 config plugin，因为这样会为配置对象提供智能提示。不过，你的 app config 最终是由 Node.js 评估的，而 Node.js 默认并不识别 TypeScript 代码。因此，你需要为 **plugins** 目录中的 TypeScript 文件到 **app.config.ts** 文件添加一个解析器。
 
-Install `tsx` library by running the following command:
+通过运行以下命令安装 `tsx` 库：
 
 <Terminal cmd={['$ npm install --save-dev tsx']} />
 
-Then, change the static app config (**app.json**) to the [dynamic app config (**app.config.ts**)](/workflow/configuration/#dynamic-configuration) file. You can do this by renaming the **app.json** file to **app.config.ts** and changing the content of the file as shown below. Ensure to add the following import statement at the top of your **app.config.ts** file:
+然后，将静态 app config (**app.json**) 改为 [动态 app config (**app.config.ts**)](/workflow/configuration/#dynamic-configuration) 文件。你可以通过将 **app.json** 文件重命名为 **app.config.ts** 并按如下所示修改文件内容来实现。请确保在 **app.config.ts** 文件顶部添加以下导入语句：
 
 ```ts app.config.ts
 import 'tsx/cjs';
@@ -154,9 +154,9 @@ module.exports = () => {
 
 <Step label="5">
 
-### Call the config plugin from your dynamic app config
+### 从动态 app config 中调用 config plugin
 
-Now, you can call the config plugin from your dynamic app config. To do this, you need to add the path to the **withPlugin.ts** file to the plugins array in your app config:
+现在，你可以从动态 app config 中调用 config plugin。为此，你需要将 **withPlugin.ts** 文件的路径添加到 app config 的 plugins 数组中：
 
 ```ts app.config.ts
 import "tsx/cjs";
@@ -174,17 +174,17 @@ module.exports = /* @info */({ config }: { config: ExpoConfig })/* @end */ => {
 };
 ```
 
-To see the custom config applied in native projects, run the following command:
+要在原生项目中查看已应用的自定义配置，请运行以下命令：
 
 <Terminal cmd={['$ npx expo prebuild --clean --no-install']} />
 
-To verify the custom config plugins applied, open **android/app/src/main/AndroidManifest.xml** and **ios/\<your-project-name\>/Info.plist** files:
+要验证自定义 config plugins 是否已应用，请打开 **android/app/src/main/AndroidManifest.xml** 和 **ios/\<your-project-name\>/Info.plist** 文件：
 
 <CodeBlocksTable tabs={['AndroidManifest.xml', 'Info.plist']}>
 
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-<!-- ... rest of the configuration-->
+<!-- ... 其余配置-->
 	<application ...>
 		<meta-data android:name="HelloWorldMessage" android:value="Hello world, from Expo plugin!"/>
 		<!-- ... -->
@@ -207,13 +207,13 @@ To verify the custom config plugins applied, open **android/app/src/main/Android
 
 </Step>
 
-## Passing a parameter to a config plugin
+## 向 config plugin 传递参数
 
-Your config plugin can accept parameters passed from your app config. To do so, you will need to read the parameter in your config plugin function, and then pass an object containing the parameter along with the config plugin function in your app config.
+你的 config plugin 可以接受从 app config 传入的参数。为此，你需要在 config plugin 函数中读取该参数，然后在 app config 中将包含该参数的对象与 config plugin 函数一起传入。
 
 <Step label="1">
 
-Considering the previous example, let's pass a custom message to the plugin. Add an `options` object in **withAndroidPlugin.ts** and update the `message` variable to use the `options.message` property:
+基于前面的示例，让我们向插件传递一条自定义消息。在 **withAndroidPlugin.ts** 中添加一个 `options` 对象，并更新 `message` 变量以使用 `options.message` 属性：
 
 {/* prettier-ignore */}
 ```ts withAndroidPlugin.ts
@@ -224,9 +224,9 @@ type AndroidProps = {
 
 const withAndroidPlugin: ConfigPlugin<AndroidProps> = (
   config,
-  /* @info Pass an <code>options</code> object to the plugin. */ options = {}/* @end */
+  /* @info 将一个 <code>options</code> 对象传递给插件。 */ options = {}/* @end */
 ) => {
-  /* @info Use the provided message or fall back to a default */
+  /* @info 使用提供的消息，或回退到默认值 */
   const message = options.message || 'Hello world, from Expo plugin!';
   /* @end */
   return withAndroidManifest(config, config => {
@@ -240,7 +240,7 @@ export default withAndroidPlugin;
 </Step>
 <Step label="2">
 
-Similarly, add an `options` object in **withIosPlugin.ts** and update the `message` variable to use the `options.message` property:
+同样地，在 **withIosPlugin.ts** 中添加一个 `options` 对象，并更新 `message` 变量以使用 `options.message` 属性：
 
 {/* prettier-ignore */}
 ```ts withIosPlugin.ts
@@ -249,8 +249,8 @@ type IosProps = {
   message?: string;
 };
 
-const withIosPlugin: ConfigPlugin<IosProps> = (config, /* @info Pass an <code>options</code> object to the plugin. */ options = {}/* @end */) => {
-   /* @info Use the provided message or fall back to a default */
+const withIosPlugin: ConfigPlugin<IosProps> = (config, /* @info 将一个 <code>options</code> 对象传递给插件。 */ options = {}/* @end */) => {
+   /* @info 使用提供的消息，或回退到默认值 */
   const message = options.message || 'Hello world, from Expo plugin!';
   /* @end */
   /* @hide ... rest of the example remains unchanged*/ /* @end */
@@ -263,7 +263,7 @@ export default withIosPlugin;
 
 <Step label="3">
 
-Update the **withPlugin.ts** file to pass the `options` object to both plugins:
+更新 **withPlugin.ts** 文件，将 `options` 对象传递给这两个插件：
 
 {/* prettier-ignore */}
 ```ts withPlugin.ts
@@ -280,7 +280,7 @@ const withPlugin: ConfigPlugin<{ message?: string }> = (config, /* @info */ opti
 
 <Step label="4">
 
-To pass a value dynamically to the plugin, you can pass an object with the `message` property to the plugin in your app config:
+要动态地向插件传递值，你可以在 app config 中向插件传入一个带有 `message` 属性的对象：
 
 ```ts app.config.ts
 {
@@ -296,11 +296,11 @@ To pass a value dynamically to the plugin, you can pass an object with the `mess
 
 </Step>
 
-## Chaining config plugins
+## 串联 config plugins
 
-Config plugins can be chained together to apply multiple modifications. Each plugin in the chain runs in the order it appears, with the output of one plugin becoming the input for the next. This sequential execution ensures that dependencies between plugins are respected and allows you to control the precise order of modifications to your native code.
+config plugins 可以串联起来，以应用多个修改。链中的每个插件都会按其出现顺序运行，前一个插件的输出会成为下一个插件的输入。这种顺序执行确保插件之间的依赖关系得到尊重，并允许你精确控制对原生代码修改的顺序。
 
-To chain config plugins, you can pass an array of plugins to the `plugins` array property in your app config. This is also supported in JSON app config file format (**app.json**).
+要串联 config plugins，你可以在 app config 的 `plugins` 数组属性中传入一个插件数组。JSON 格式的 app config 文件（**app.json**）同样支持这一点。
 
 ```ts app.config.ts
 module.exports = ({ config }: { config: ExpoConfig }) => {
@@ -313,43 +313,43 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
 };
 ```
 
-The `plugins` array uses `withPlugins` method under the hood to chain the plugins. If your plugins array is getting long or has complex configuration, you can use the `withPlugins` method directly to make your configuration easier to read. `withPlugins` will chain the plugins together and execute them in order.
+`plugins` 数组在底层使用 `withPlugins` 方法来串联这些插件。如果你的 plugins 数组很长，或者配置较复杂，你可以直接使用 `withPlugins` 方法，使配置更易于阅读。`withPlugins` 会将插件串联起来并按顺序执行。
 
 ```ts app.config.ts
 import { withPlugins } from 'expo/config-plugins';
 
-// Create a base config object
+// 创建一个基础配置对象
 const baseConfig = {
   name: 'my app',
   /* @hide ... rest of the config */ /* @end */
 };
 
-// ❌ Hard to read
+// ❌ 不易阅读
 withDelta(withFoo(withBar(config, 'input 1'), 'input 2'), 'input 3');
 
-// ✅ Easy to read
+// ✅ 更易阅读
 withPlugins(config, [
   [withFoo, 'input 1'],
   [withBar, 'input 2'],
-  // When no input is required, you can just pass the method
+  // 当不需要输入时，你只需传入该方法
   withDelta,
 ]);
 
-// Export the base config with plugins applied
+// 导出应用了插件的基础配置
 module.exports = ({ config }: { config: ExpoConfig }) => {
   return withPlugins(baseConfig, plugins);
 };
 ```
 
-## Using a config plugin
+## 使用配置插件
 
-Expo config plugins are usually included in Node.js modules. You can install them just like other libraries in your project.
+Expo 配置插件通常包含在 Node.js 模块中。你可以像安装其他库一样在项目中安装它们。
 
-For example, `expo-camera` has a plugin that adds camera permissions to the **AndroidManifest.xml** and **Info.plist**. To install it in your project, run the following command:
+例如，`expo-camera` 有一个插件，会将相机权限添加到 **AndroidManifest.xml** 和 **Info.plist**。要在项目中安装它，请运行以下命令：
 
 <Terminal cmd={['$ npx expo install expo-camera']} />
 
-In your [app config](/versions/latest/config/app/), you can add `expo-camera` to the list of plugins:
+在你的 [应用配置](/versions/latest/config/app/) 中，你可以将 `expo-camera` 添加到插件列表：
 
 ```json app.json
 {
@@ -359,7 +359,7 @@ In your [app config](/versions/latest/config/app/), you can add `expo-camera` to
 }
 ```
 
-Some config plugins offer flexibility by allowing you to pass options to customize their configuration. To do this, you can pass an array with the Expo library name as the first argument, and an object containing the options as the second argument. For example, the `expo-camera` plugin allows you to customize the camera permission message:
+某些配置插件提供了灵活性，允许你传入选项来自定义其配置。为此，你可以传入一个数组，数组的第一个参数是 Expo 库名称，第二个参数是包含这些选项的对象。例如，`expo-camera` 插件允许你自定义相机权限消息：
 
 ```json app.json
 {
@@ -368,7 +368,7 @@ Some config plugins offer flexibility by allowing you to pass options to customi
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera."
+          "cameraPermission": "允许 $(PRODUCT_NAME) 访问你的相机。"
         }
       ]
     ]
@@ -376,8 +376,8 @@ Some config plugins offer flexibility by allowing you to pass options to customi
 }
 ```
 
-> **info** **Tip**: For every Expo library that has a config plugin, you'll find more information about that in the library's API reference. For example, the [`expo-camera` library has a config plugin section](/versions/latest/sdk/camera/#configuration-in-appjsonappconfigjs).
+> **info** **提示**：对于每一个带有配置插件的 Expo 库，你都可以在该库的 API 参考中找到更多相关信息。例如，[`expo-camera` 库有一个配置插件部分](/versions/latest/sdk/camera/#configuration-in-appjsonappconfigjs)。
 
-On running the `npx expo prebuild`, the [`mods`](/config-plugins/introduction/#mods) are compiled, and the native files change.
+在运行 `npx expo prebuild` 时，[`mods`](/config-plugins/introduction/#mods) 会被编译，原生文件也会发生变化。
 
-The changes don't take effect until you rebuild the native project, for example, with Xcode. **If you're using config plugins in a project without native directories (CNG projects), they will be applied during the prebuild step in EAS Build** or when running `npx expo prebuild|android|ios` locally.
+这些更改不会生效，直到你重新构建原生项目，例如使用 Xcode。**如果你在一个没有原生目录的项目（CNG 项目）中使用配置插件，它们会在 EAS Build 的 prebuild 步骤中应用**，或者在本地运行 `npx expo prebuild|android|ios` 时应用。

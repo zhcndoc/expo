@@ -1,53 +1,52 @@
 ---
-title: Configuring lifecycle listeners
-sidebar_title: Lifecycle listeners
-description: Learn about the mechanism that allows the Expo Modules API to hook into the lifecycle of your app.
+title: 配置生命周期监听器
+sidebar_title: 生命周期监听器
+description: 了解允许 Expo Modules API 钩入应用生命周期的机制。
 ---
 
 import { DiffBlock, Terminal } from '~/ui/components/Snippet';
 import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
 
-Some Expo libraries need to handle system events such as deep links, push notifications, and configuration changes by implementing `Activity`/`Application` or `AppDelegate` lifecycle callbacks.
+一些 Expo 库需要通过实现 `Activity`/`Application` 或 `AppDelegate` 生命周期回调来处理系统事件，例如深度链接、推送通知和配置更改。
 
-The Expo Modules API provides an easy way to manage such callbacks:
+Expo Modules API 提供了一种简单的方法来管理此类回调：
 
-- <PlatformTag platform="android" /> `ApplicationLifecycleDispatcher` and `ReactActivityHandler`
-  forward `Application` and `Activity` lifecycle events to registered listeners. Modules can provide
-  `ReactActivityLifecycleListener` and `ApplicationLifecycleListener` implementations through a
-  `Package` class to register callbacks.
-- <PlatformTag platform="ios" /> `ExpoAppDelegate` forwards `AppDelegate` calls to registered
-  subscribers. Modules can provide an `ExpoAppDelegateSubscriber` implementation to register
-  callbacks.
+- <PlatformTag platform="android" /> `ApplicationLifecycleDispatcher` 和 `ReactActivityHandler`
+  会将 `Application` 和 `Activity` 生命周期事件转发给已注册的监听器。模块可以通过
+  `Package` 类提供 `ReactActivityLifecycleListener` 和 `ApplicationLifecycleListener` 实现来注册回调。
+- <PlatformTag platform="ios" /> `ExpoAppDelegate` 会将 `AppDelegate` 调用转发给已注册的
+  订阅者。模块可以提供 `ExpoAppDelegateSubscriber` 实现来注册
+  回调。
 
-Using these mechanisms allows modules to register behavior without requiring you to edit native entry points repeatedly.
+使用这些机制可以让模块注册行为，而无需你反复编辑原生入口点。
 
-## Configure your native project
+## 配置你的原生项目
 
 ### Android
 
-To integrate `Application` lifecycle listeners on Android, forward the `onCreate()` and `onConfigurationChanged()` calls from your `Application` class to `ApplicationLifecycleDispatcher`:
+要在 Android 上集成 `Application` 生命周期监听器，请将你的 `Application` 类中的 `onCreate()` 和 `onConfigurationChanged()` 调用转发给 `ApplicationLifecycleDispatcher`：
 
 <DiffBlock source="/static/diffs/brownfield/lifecycle-listeners/application-lifecycle-dispatcher.diff" />
 
 ### iOS
 
-To integrate `AppDelegate` subscribers on iOS, forward the relevant calls to `ExpoAppDelegateSubscriberManager` in your existing `AppDelegate` implementation so that subscribers can respond to them:
+要在 iOS 上集成 `AppDelegate` 订阅者，请在你现有的 `AppDelegate` 实现中将相关调用转发给 `ExpoAppDelegateSubscriberManager`，以便订阅者能够响应它们：
 
 <DiffBlock source="/static/diffs/brownfield/lifecycle-listeners/expo-app-delegate-subscriber-manager.diff" />
 
-Alternatively, if your `AppDelegate` doesn't already extend another class, you can simplify the setup by inheriting from `ExpoAppDelegate`, which handles the forwarding automatically:
+或者，如果你的 `AppDelegate` 还没有继承其他类，你可以通过继承 `ExpoAppDelegate` 来简化设置，它会自动处理转发：
 
 <DiffBlock source="/static/diffs/brownfield/lifecycle-listeners/expo-app-delegate.diff" />
 
-> **Note:** Not all `UIApplicationDelegate` methods that could cause significant side effects are supported. See the Expo source (**ExpoAppDelegate.swift**) for the full list of forwarded methods if you need to rely on a specific delegate.
+> **注意：** 并非所有可能导致重大副作用的 `UIApplicationDelegate` 方法都受支持。如果你需要依赖某个特定的委托，请查看 Expo 源码（**ExpoAppDelegate.swift**）以获取完整的转发方法列表。
 
-## Test your integration
+## 测试你的集成
 
-To test if the callbacks are working correctly, install a module that relies on them. Install `expo-linking`, which uses lifecycle listeners to handle deep links:
+要测试回调是否正常工作，请安装一个依赖它们的模块。安装 `expo-linking`，它使用生命周期监听器来处理深度链接：
 
 <Terminal cmd={['$ npx expo install expo-linking']} />
 
-Add a listener for deep links in your code and observe the console when opening a deep link:
+在代码中为深度链接添加一个监听器，并在打开深度链接时观察控制台：
 
 ```jsx
 import * as Linking from 'expo-linking';
@@ -55,21 +54,21 @@ import { useEffect } from 'react';
 
 useEffect(() => {
   const listener = Linking.addEventListener('url', ({ url }) => {
-    console.log('Received deep link:', url);
+    console.log('收到深度链接：', url);
   });
 
   return listener.remove;
 }, []);
 ```
 
-Run the following command to open a deep link to your app:
+运行以下命令以打开指向你应用的深度链接：
 
 <Terminal
   cmd={[
-    '# If you have `android.package` or `ios.bundleIdentifier` defined in your app.json',
+    '# 如果你的 app.json 中定义了 `android.package` 或 `ios.bundleIdentifier`',
     '$ npx uri-scheme open com.example.app://somepath/details --android',
     '',
-    '# If you have a `scheme` defined in your app.json',
+    '# 如果你的 app.json 中定义了 `scheme`',
     '$ npx uri-scheme open myapp://somepath/details --ios',
   ]}
 />

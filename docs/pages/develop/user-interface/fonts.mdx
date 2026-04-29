@@ -1,6 +1,6 @@
 ---
-title: Fonts
-description: Learn how to integrate custom fonts in your app using local files or Google Font packages
+title: 字体
+description: 了解如何使用本地文件或 Google 字体包将自定义字体集成到你的应用中
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -14,61 +14,61 @@ import { Terminal, SnackInline } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { CODE } from '~/ui/components/Text';
 
-Android and iOS come with their own set of platform fonts. To provide a consistent user experience and enhance your app's branding, you can use custom fonts.
+Android 和 iOS 自带各自的平台字体。为了提供一致的用户体验并增强应用的品牌形象，你可以使用自定义字体。
 
-This guide covers different ways you can add and load a custom font into your project and also provides additional information related to fonts.
+本指南介绍了将自定义字体添加并加载到项目中的不同方式，也提供了与字体相关的其他信息。
 
-## Add a custom font
+## 添加自定义字体
 
-There are two ways you can add a custom font into your project:
+你可以通过两种方式将自定义字体添加到项目中：
 
-- Add a font file into your local assets. For example, a font file in the **assets/fonts** directory.
-- Install a Google Font package. For example, installing [`@expo-google-fonts/inter`](https://www.npmjs.com/package/@expo-google-fonts/inter) package.
+- 将字体文件添加到本地资源中。例如，放在 **assets/fonts** 目录下的字体文件。
+- 安装 Google Font 包。例如，安装 [`@expo-google-fonts/inter`](https://www.npmjs.com/package/@expo-google-fonts/inter) 包。
 
-### Supported font formats
+### 支持的字体格式
 
-Expo SDK officially supports OTF and TTF font formats across Android, iOS and web platforms. If your font is in another font format, you have to set up advanced configuration to support that format in your project.
+Expo SDK 官方支持在 Android、iOS 和 web 平台上使用 OTF 和 TTF 字体格式。如果你的字体是其他格式，则需要进行高级配置才能在项目中支持该格式。
 
-### Variable fonts
+### 可变字体
 
-Variable fonts, including variable font implementations in OTF and TTF, do not have support across all platforms. For full platform support, use static fonts. Alternatively, use a utility such as [fontTools](https://fonttools.readthedocs.io/en/latest/varLib/mutator.html) to extract the specific axis configuration you want to use from the variable font and save it as a separate font file.
+可变字体（包括 OTF 和 TTF 中的可变字体实现）并非在所有平台上都受支持。若要实现完整的平台支持，请使用静态字体。或者，你也可以使用类似 [fontTools](https://fonttools.readthedocs.io/en/latest/varLib/mutator.html) 的工具，从可变字体中提取你想使用的特定轴配置，并将其保存为单独的字体文件。
 
-### How to choose between OTF and TTF
+### 如何在 OTF 和 TTF 之间选择
 
-If the font you're using has both OTF and TTF versions, prefer OTF. The **.otf** files are smaller than **.ttf** files. Sometimes, OTF also renders slightly better in certain contexts.
+如果你使用的字体同时有 OTF 和 TTF 版本，优先选择 OTF。**.otf** 文件比 **.ttf** 文件更小。有时，在某些场景下 OTF 的渲染效果也会稍好一些。
 
-## Use a local font file
+## 使用本地字体文件
 
-Copy the file into your project's **assets/fonts** directory.
+将文件复制到项目的 **assets/fonts** 目录中。
 
-> **info** **assets/fonts** directory path is a common convention in React Native apps to put font files. You can place these files elsewhere if you follow a custom convention.
+> **info** **assets/fonts** 目录路径是在 React Native 应用中放置字体文件的一种常见约定。如果你遵循自定义约定，也可以把这些文件放在其他位置。
 
-Two ways to use the local font file in your project:
+在项目中使用本地字体文件有两种方式：
 
-- Embed the font file with [`expo-font` config plugin](/versions/latest/sdk/font/#configuration-in-app-config) (Android and iOS only).
-- Load the font file with [`useFonts`](/versions/latest/sdk/font/#usefontsmap) hook at runtime (Android, iOS, and web).
+- 使用 [`expo-font` 配置插件](/versions/latest/sdk/font/#configuration-in-app-config) 将字体文件嵌入（仅 Android 和 iOS）。
+- 在运行时使用 [`useFonts`](/versions/latest/sdk/font/#usefontsmap) hook 加载字体文件（Android、iOS 和 web）。
 
-### With `expo-font` config plugin
+### 使用 `expo-font` 配置插件
 
-The `expo-font` config plugin allows embedding one or more font files in your project's native code. It supports `ttf` and `otf` for both Android and iOS, and `woff` and `woff2` are supported on iOS only.
+`expo-font` 配置插件允许将一个或多个字体文件嵌入到项目的原生代码中。它支持 Android 和 iOS 的 `ttf` 和 `otf`，而 `woff` 和 `woff2` 仅在 iOS 上受支持。
 
-> **Note:** Config plugins only run on native platforms (Android and iOS). For web, use the [`useFonts` hook](#with-usefonts-hook) instead.
+> **Note:** 配置插件仅在原生平台（Android 和 iOS）上运行。对于 web，请改用 [`useFonts` hook](#with-usefonts-hook)。
 
-This is the recommended method for adding fonts to your app due to its benefits:
+由于以下优点，这是向应用添加字体的推荐方式：
 
-- Fonts are available immediately when the app starts on a device.
-- No additional code required to load fonts in a project asynchronously when the app starts.
-- Fonts are consistently available across all devices where the app is installed because they're bundled within the app.
+- 应用在设备上启动时，字体即可立即可用。
+- 应用启动时无需额外代码来异步加载字体。
+- 由于字体被打包进应用，因此在所有安装了该应用的设备上都能一致地使用字体。
 
-However, this method also has some limitations:
+不过，这种方式也有一些限制：
 
-- Doesn't work with Expo Go since this method requires [creating a development build](/develop/development-builds/create-a-build/).
+- 不适用于 Expo Go，因为这种方式需要[创建开发构建](/develop/development-builds/create-a-build/)。
 
-To embed a font in a project, follow the steps below:
+要将字体嵌入项目，请按以下步骤操作：
 
 <Step label="1">
 
-After adding a custom font file in your project, install the `expo-font` library.
+在项目中添加自定义字体文件后，安装 `expo-font` 库。
 
 <Terminal cmd={['$ npx expo install expo-font']} />
 
@@ -76,15 +76,15 @@ After adding a custom font file in your project, install the `expo-font` library
 
 <Step label="2">
 
-Add the config plugin to your [app config](/versions/latest/config/app/#plugins) file. The configuration must contain the path to the font file using [`fonts`, `android` or `ios`](/versions/latest/sdk/font/#configurable-properties) properties which take an array of one or more font definitions. The path to each font file is relative to the project's root.
+将配置插件添加到你的 [app config](/versions/latest/config/app/#plugins) 文件中。配置必须使用 [`fonts`、`android` 或 `ios`](/versions/latest/sdk/font/#configurable-properties) 属性包含字体文件路径，这些属性接受一个或多个字体定义的数组。每个字体文件的路径相对于项目根目录。
 
-The example below showcases all valid ways a font can be specified: as an array of objects that specify `fontFamily` and other properties, or an array of paths to font files.
+下面的示例展示了字体可指定的所有有效方式：可以是一个包含 `fontFamily` 和其他属性的对象数组，也可以是一个字体文件路径数组。
 
-For Android, you can specify the `fontFamily`, `weight`, and optionally `style` (defaults to `"normal"`), which will embed the fonts as native [XML resources](https://developer.android.com/develop/ui/views/text-and-emoji/fonts-in-xml). If you provide only the font file paths in an array, the file name becomes the font family name on Android. iOS always extracts the font family name from the font file itself.
+对于 Android，你可以指定 `fontFamily`、`weight`，以及可选的 `style`（默认为 `"normal"`），这样字体会被嵌入为原生 [XML resources](https://developer.android.com/develop/ui/views/text-and-emoji/fonts-in-xml)。如果你在数组中只提供字体文件路径，那么文件名会成为 Android 上的字体族名称。iOS 总是从字体文件本身提取字体族名称。
 
-If you plan to refer to fonts using just the `fontFamily`, provide an array of font paths (see `FiraSans-MediumItalic.ttf` below) and follow our [recommendation for file naming](#how-to-determine-which-font-family-name-to-use).
+如果你计划只使用 `fontFamily` 来引用字体，请提供字体路径数组（如下方的 `FiraSans-MediumItalic.ttf` 所示），并遵循我们关于[如何确定要使用哪个字体族名称](#how-to-determine-which-font-family-name-to-use)的建议。
 
-If you want to refer to fonts using a combination of `fontFamily`, `weight`, and `style`, provide an array of objects (see `Inter` below).
+如果你想通过 `fontFamily`、`weight` 和 `style` 的组合来引用字体，请提供对象数组（如下方的 `Inter` 所示）。
 
 ```json app.json
 {
@@ -94,7 +94,7 @@ If you want to refer to fonts using a combination of `fontFamily`, `weight`, and
         "expo-font",
         {
           "fonts": [
-            /* @info Refer to this font using fontFamily: 'FiraSans-MediumItalic' */
+            /* @info 使用 fontFamily: 'FiraSans-MediumItalic' 来引用此字体 */
             "./assets/fonts/FiraSans-MediumItalic.ttf"
             /* @end */
           ],
@@ -104,7 +104,7 @@ If you want to refer to fonts using a combination of `fontFamily`, `weight`, and
                 "fontFamily": "Inter",
                 "fontDefinitions": [
                   {
-                    /* @info Refer to this font using fontFamily: 'Inter', fontWeight: '700', fontStyle: 'italic' */
+                    /* @info 使用 fontFamily: 'Inter', fontWeight: '700', fontStyle: 'italic' 来引用此字体 */
                     "path": "./assets/fonts/Inter-BoldItalic.ttf",
                     /* @end */
                     "weight": 700,
@@ -132,9 +132,9 @@ If you want to refer to fonts using a combination of `fontFamily`, `weight`, and
 
 <Step label="3">
 
-After embedding the font with the config plugin, create a [new development build](/develop/development-builds/create-a-build/) and install it on your device or Android Emulator or iOS Simulator.
+使用配置插件嵌入字体后，创建一个[新的开发构建](/develop/development-builds/create-a-build/)，并将其安装到你的设备、Android 模拟器或 iOS 模拟器上。
 
-You can use the font with `<Text>` by specifying the `fontFamily` style prop. The examples below correspond to the fonts defined in the configuration above.
+你可以通过指定 `fontFamily` 样式属性在 `<Text>` 中使用该字体。下面的示例与上面配置中定义的字体相对应。
 
 ```tsx
 <Text style={{ fontFamily: 'Inter', fontWeight: '700' }}>Inter Bold</Text>
@@ -144,62 +144,62 @@ You can use the font with `<Text>` by specifying the `fontFamily` style prop. Th
 
 </Step>
 
-<ConfigReactNative title="Using this method in an existing React Native project?">
+<ConfigReactNative title="在现有 React Native 项目中使用这种方式？">
 
-- **Android:** Copy font files to **android/app/src/main/assets/fonts**.
-- **iOS:** See [Adding a Custom Font to Your App](https://developer.apple.com/documentation/uikit/text_display_and_fonts/adding_a_custom_font_to_your_app) in the Apple Developer documentation.
+- **Android:** 将字体文件复制到 **android/app/src/main/assets/fonts**。
+- **iOS:** 参见 Apple Developer 文档中的 [Adding a Custom Font to Your App](https://developer.apple.com/documentation/uikit/text_display_and_fonts/adding_a_custom_font_to_your_app)。
 
 </ConfigReactNative>
 
-#### How to determine which font family name to use
+#### 如何确定要使用哪个字体族名称
 
-- If you provide fonts as an array of file paths (as described above), on Android, the file name (without the extension) becomes the font family name. On iOS, the font family name is read from the font file itself. We recommend naming the font file same as its [PostScript name](#what-is-postscript-name-of-a-font) so the font family name is consistent on both platforms.
+- 如果你将字体以文件路径数组的形式提供（如上所述），在 Android 上，文件名（不含扩展名）会成为字体族名称。在 iOS 上，字体族名称会从字体文件本身读取。我们建议将字体文件命名为与其 [PostScript 名称](#what-is-postscript-name-of-a-font)相同，以便两个平台上的字体族名称保持一致。
 
-- If you use the object syntax, provide the "Family Name". This can be found in the Font Book app on macOS, [fontdrop.info](https://fontdrop.info/) or other programs.
+- 如果你使用对象语法，请提供 “Family Name”。你可以在 macOS 的 Font Book 应用、[fontdrop.info](https://fontdrop.info/) 或其他程序中找到它。
 
-<Collapsible summary="What is PostScript name of a font file?">
+<Collapsible summary="字体文件的 PostScript 名称是什么？">
 
-The **PostScript name** of a font file is a unique identifier assigned to the font that follows Adobe's PostScript standard. It is used by operating systems and apps to refer to the font. It is not a font's **display name**.
+字体文件的 **PostScript 名称** 是按照 Adobe 的 PostScript 标准分配给字体的唯一标识符。操作系统和应用使用它来引用该字体。它不是字体的 **显示名称**。
 
-For example, Inter Black font file's PostScript name is `Inter-Black`.
+例如，Inter Black 字体文件的 PostScript 名称是 `Inter-Black`。
 
-_Screenshot from Font Book app on macOS._
+_Font Book app 在 macOS 上的截图。_
 
 <ContentSpotlight src="/static/images/postscript-name.png" />
 
 </Collapsible>
 
-### With `useFonts` hook
+### 使用 `useFonts` hook
 
-The `useFonts` hook from `expo-font` library allows loading the font file asynchronously. This hook keeps track of the loading state and loads the font when an app is initialized.
+`expo-font` 库中的 `useFonts` hook 允许异步加载字体文件。这个 hook 会跟踪加载状态，并在应用初始化时加载字体。
 
-It works with all Expo SDK versions and with Expo Go. To load a font in a project using `useFonts` hook, follow the steps below:
+它适用于所有 Expo SDK 版本以及 Expo Go。要在项目中使用 `useFonts` hook 加载字体，请按以下步骤操作：
 
 <Step label="1">
 
-After adding a custom font file in your project, install the `expo-font` and `expo-splash-screen` libraries.
+在项目中添加自定义字体文件后，安装 `expo-font` 和 `expo-splash-screen` 库。
 
 <Terminal cmd={['$ npx expo install expo-font expo-splash-screen']} />
 
-The [`expo-splash-screen`](/versions/latest/sdk/splash-screen/) library provides `SplashScreen` component that you can use to prevent rendering the app until the font is loaded and ready.
+[`expo-splash-screen`](/versions/latest/sdk/splash-screen/) 库提供了 `SplashScreen` 组件，你可以用它在字体加载完成之前阻止应用渲染。
 
 </Step>
 
 <Step label="2">
 
-Map the font file using the `useFonts` hook in a top-level component such as the root layout (**src/app/\_layout.tsx**) file in your project:
+在项目中的顶层组件中，例如根布局（**src/app/\_layout.tsx**）文件，使用 `useFonts` hook 映射字体文件：
 
 ```tsx src/app/_layout.tsx
-/* @info Import <CODE>useFonts</CODE> hook from <CODE>expo-font</CODE>. */ import { useFonts } from 'expo-font'; /* @end */
-/* @info Import <CODE>SplashScreen</CODE> so that when the fonts are not loaded, we can continue to show <CODE>SplashScreen</CODE>. */ import * as SplashScreen from 'expo-splash-screen'; /* @end */
+/* @info 从 <CODE>expo-font</CODE> 导入 <CODE>useFonts</CODE> hook。 */ import { useFonts } from 'expo-font'; /* @end */
+/* @info 导入 <CODE>SplashScreen</CODE>，这样在字体未加载时，我们可以继续显示 <CODE>SplashScreen</CODE>。 */ import * as SplashScreen from 'expo-splash-screen'; /* @end */
 import {useEffect} from 'react';
 
-/* @info This prevents <CODE>SplashScreen</CODE> from auto hiding while the fonts are in loading state. */
+/* @info 这会在字体处于加载状态时，阻止 <CODE>SplashScreen</CODE> 自动隐藏。 */
 SplashScreen.preventAutoHideAsync();
 /* @end */
 
 export default function RootLayout() {
-  /* @info Map the font file using <CODE>useFonts</CODE> hook. */
+  /* @info 使用 <CODE>useFonts</CODE> hook 映射字体文件。 */
   const [loaded, error] = useFonts({
     'Inter-Black': require('./assets/fonts/Inter-Black.otf'),
   });
@@ -207,7 +207,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded || error) {
-      /* @info After the custom fonts have loaded, we can hide the splash screen and display the app screen. */
+      /* @info 在自定义字体加载完成后，我们可以隐藏启动画面并显示应用界面。 */
       SplashScreen.hideAsync();
       /* @end */
     }
@@ -227,7 +227,7 @@ export default function RootLayout() {
 
 <Step label="3">
 
-Use the font on the `<Text>` by using `fontFamily` style prop in a React component:
+在 React 组件中通过 `fontFamily` 样式属性在 `<Text>` 上使用该字体：
 
 ```tsx
 <Text style={{ fontFamily: 'Inter-Black' }}>Inter Black</Text>
@@ -235,22 +235,22 @@ Use the font on the `<Text>` by using `fontFamily` style prop in a React compone
 
 </Step>
 
-## Use Google Fonts
+## 使用 Google Fonts
 
-Expo has first-class support for all fonts listed in [Google Fonts](https://fonts.google.com/). They are available using [`@expo-google-fonts`](https://github.com/expo/google-fonts) library. With any of the font package from this library, you can quickly integrate that font and its variants.
+Expo 对 [Google Fonts](https://fonts.google.com/) 中列出的所有字体提供一流支持。它们可通过 [`@expo-google-fonts`](https://github.com/expo/google-fonts) 库使用。使用该库中的任意字体包，你都可以快速集成该字体及其变体。
 
-Two ways to use a Google Font in your project:
+在项目中使用 Google Font 有两种方式：
 
-- Embed the installed font with [`expo-font` config plugin](/versions/latest/sdk/font/#configuration-in-appjsonappconfigjs).
-- Load the installed font with [`useFonts`](/versions/latest/sdk/font/#usefontsmap) hook at runtime asynchronously.
+- 使用 [`expo-font` 配置插件](/versions/latest/sdk/font/#configuration-in-appjsonappconfigjs) 将已安装的字体嵌入应用。
+- 在运行时使用 [`useFonts`](/versions/latest/sdk/font/#usefontsmap) hook 异步加载已安装的字体。
 
-### With `expo-font` config plugin
+### 使用 `expo-font` 配置插件
 
-> **Note:** Embedding a Google Font using `expo-font` config plugin has same benefits and limitations as embedding a custom font on your own. See [using a local font file with `expo-font` config plugin](#with-expo-font-config-plugin) for more information.
+> **注意：** 使用 `expo-font` 配置插件嵌入 Google Font，与自行嵌入自定义字体具有相同的优点和限制。更多信息请参见[使用 `expo-font` 配置插件加载本地字体文件](#with-expo-font-config-plugin)。
 
 <Step label="1">
 
-Install the font package. For example, to use Inter Black font, install the [`@expo-google-fonts/inter`](https://www.npmjs.com/package/@expo-google-fonts/inter) package with the command below.
+安装字体包。例如，要使用 Inter Black 字体，请使用下面的命令安装 [`@expo-google-fonts/inter`](https://www.npmjs.com/package/@expo-google-fonts/inter) 包。
 
 <Terminal cmd={['$ npx expo install expo-font @expo-google-fonts/inter']} />
 
@@ -258,7 +258,7 @@ Install the font package. For example, to use Inter Black font, install the [`@e
 
 <Step label="2">
 
-Add the config plugin to your [app config](/versions/latest/config/app/#plugins) file. The configuration must contain the path to the font file using [`fonts`](/versions/latest/sdk/font/#configurable-properties) property which takes an array of one or more font files. The path to the font file is defined from the font package inside the `node_modules` directory. For example, if you have a font package named `@expo-google-fonts/inter`, then the name of the file is **Inter_900Black.ttf**.
+将配置插件添加到你的 [app config](/versions/latest/config/app/#plugins) 文件中。配置必须包含字体文件的路径，并使用 [`fonts`](/versions/latest/sdk/font/#configurable-properties) 属性，该属性接受一个或多个字体文件组成的数组。字体文件路径是从 `node_modules` 目录中的字体包定义的。例如，如果你有一个名为 `@expo-google-fonts/inter` 的字体包，那么文件名就是 **Inter_900Black.ttf**。
 
 ```json app.json
 {
@@ -266,7 +266,7 @@ Add the config plugin to your [app config](/versions/latest/config/app/#plugins)
     [
       "expo-font",
       {
-        /* @info The path to the font file is defined from the font package inside the node_modules directory. */
+        /* @info 字体文件的路径是从 node_modules 目录中的字体包定义的。 */
         "fonts": ["node_modules/@expo-google-fonts/inter/900Black/Inter_900Black.ttf"]
         /* @end */
       }
@@ -279,15 +279,15 @@ Add the config plugin to your [app config](/versions/latest/config/app/#plugins)
 
 <Step label="3">
 
-After embedding the font with the config plugin, create a [new development build](/develop/development-builds/create-a-build/) and install it on your device or Android Emulator or iOS Simulator.
+通过配置插件嵌入字体后，创建一个[新的开发构建](/develop/development-builds/create-a-build/)，并将其安装到你的设备、Android 模拟器或 iOS 模拟器上。
 
-On Android, you can use the font file name. For example, `Inter_900Black`. On iOS, use the font and its weight name ([PostScript name](#what-is-postscript-name-of-a-font)). The example below demonstrates how to use [`Platform`](https://reactnative.dev/docs/platform-specific-code#platform-module) to select the correct font family name for each platform:
+在 Android 上，你可以使用字体文件名。例如，`Inter_900Black`。在 iOS 上，使用字体及其字重名称（[PostScript 名称](#what-is-postscript-name-of-a-font)）。下面的示例演示了如何使用 [`Platform`](https://reactnative.dev/docs/platform-specific-code#platform-module) 为每个平台选择正确的字体族名称：
 
 {/* prettier-ignore */}
 ```tsx
 import { Platform } from 'react-native';
 
-// Inside a React component:
+// 在 React 组件内部：
 <Text
   style={{
     /* @info */
@@ -303,42 +303,42 @@ import { Platform } from 'react-native';
 
 </Step>
 
-### With `useFonts` hook
+### 使用 `useFonts` hook
 
-> **Note:** Loading a Google Font using `useFonts` hook has same benefits and limitations as embedding a custom font on your own. See [using a local font file with `useFonts` hook](#with-usefonts-hook) for more information.
+> **注意：** 使用 `useFonts` hook 加载 Google Font，与自行嵌入自定义字体具有相同的优点和限制。更多信息请参见[使用 `useFonts` hook 加载本地字体文件](#with-usefonts-hook)。
 
-Each Google Fonts package provides the `useFonts` hook to load the fonts asynchronously. This hook keeps track of the loading state and loads the font when an app is initialized. The font package also imports the font file so you don't have to explicitly import it.
+每个 Google Fonts 包都提供了 `useFonts` hook 来异步加载字体。该 hook 会跟踪加载状态，并在应用初始化时加载字体。字体包还会导入字体文件，因此你无需显式导入它。
 
 <Step label="1">
 
-Install the Google Fonts package, `expo-font` and `expo-splash-screen` libraries.
+安装 Google Fonts 包、`expo-font` 和 `expo-splash-screen` 库。
 
 <Terminal cmd={['$ npx expo install @expo-google-fonts/inter expo-font expo-splash-screen']} />
 
-The [`expo-splash-screen`](/versions/latest/sdk/splash-screen/) library provides `SplashScreen` component that you can use to prevent rendering the app until the font is loaded and ready.
+[`expo-splash-screen`](/versions/latest/sdk/splash-screen/) 库提供了 `SplashScreen` 组件，你可以用它在字体加载完成之前阻止应用渲染。
 
 </Step>
 
 <Step label="2">
 
-After installing the font package, map the font using the `useFonts` hook in a top-level component such as the root layout (**src/app/\_layout.tsx**) file in your project:
+安装字体包后，在项目中的顶层组件中使用 `useFonts` hook 映射字体，例如根布局（**src/app/\_layout.tsx**）文件：
 
 ```tsx src/app/_layout.tsx
-// Rest of the import statements
-/* @info Import <CODE>Inter_900Black</CODE> and <CODE>useFonts</CODE> hook from <CODE>@expo-google-fonts/inter</CODE>*/
+// 其余导入语句
+/* @info 从 <CODE>@expo-google-fonts/inter</CODE> 导入 <CODE>Inter_900Black</CODE> 和 <CODE>useFonts</CODE> hook。*/
 import { Inter_900Black, useFonts } from '@expo-google-fonts/inter';
 /* @end */
-/* @info Import <CODE>SplashScreen</CODE> so that when the fonts are not loaded, we can continue to show <CODE>SplashScreen</CODE>. */
+/* @info 导入 <CODE>SplashScreen</CODE>，这样当字体尚未加载时，我们可以继续显示 <CODE>SplashScreen</CODE>。 */
 import * as SplashScreen from 'expo-splash-screen';
 /* @end */
 import {useEffect} from 'react';
 
-/* @info This prevents <CODE>SplashScreen</CODE> from auto hiding while the fonts are in loading state. */
+/* @info 这会在字体处于加载状态时阻止 <CODE>SplashScreen</CODE> 自动隐藏。 */
 SplashScreen.preventAutoHideAsync();
 /* @end */
 
 export default function RootLayout() {
-  /* @info Map the font file using <CODE>useFonts</CODE> hook. */
+  /* @info 使用 <CODE>useFonts</CODE> hook 映射字体文件。 */
   const [loaded, error] = useFonts({
     Inter_900Black,
   });
@@ -346,7 +346,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded || error) {
-      /* @info After the custom fonts have loaded, we can hide the splash screen and display the app screen. */
+      /* @info 字体加载完成后，我们就可以隐藏启动画面并显示应用界面。 */
       SplashScreen.hideAsync();
       /* @end */
     }
@@ -366,7 +366,7 @@ export default function RootLayout() {
 
 <Step label="3">
 
-Use the font on the `<Text>` by using `fontFamily` style prop in a React component:
+在 React 组件中，通过在 `<Text>` 上使用 `fontFamily` 样式属性来使用该字体：
 
 ```tsx
 <Text style={{ fontFamily: 'Inter_900Black' }}>Inter Black</Text>
@@ -374,28 +374,28 @@ Use the font on the `<Text>` by using `fontFamily` style prop in a React compone
 
 </Step>
 
-## Additional information
+## 附加信息
 
-### Minimal example
+### 最小示例
 
 <BoxLink
   title={
     <>
-      <CODE>expo-font</CODE> usage
+      <CODE>expo-font</CODE> 用法
     </>
   }
-  description="See usage section in Expo Fonts API reference for a minimal example of using a custom font."
+  description="请参阅 Expo Fonts API 参考中的用法部分，了解使用自定义字体的最小示例。"
   href="/versions/latest/sdk/font/#usage"
   Icon={BookOpen02Icon}
 />
 
-### Beyond OTF and TTF
+### 超出 OTF 和 TTF 之外的格式
 
-If your font is in format other than OTF or TTF, you have to [customize the Metro bundler configuration to include it as an extra asset](/guides/customizing-metro#adding-more-file-extensions-to-assetexts) for it to work. In some cases, rendering a font format that a platform doesn't support may cause your app to crash.
+如果你的字体格式不是 OTF 或 TTF，你必须[自定义 Metro bundler 配置，将其作为额外资源包含进去](/guides/customizing-metro#adding-more-file-extensions-to-assetexts)，它才会生效。在某些情况下，渲染平台不支持的字体格式可能会导致你的应用崩溃。
 
-For reference, the following table provides the list formats that work on each native platform:
+作为参考，下表提供了在各个原生平台上可用的格式列表：
 
-| Format | Android     | iOS         | Web         |
+| 格式 | Android     | iOS         | Web         |
 | ------ | ----------- | ----------- | ----------- |
 | bdf    | <NoIcon />  | <NoIcon />  | <NoIcon />  |
 | dfont  | <YesIcon /> | <NoIcon />  | <NoIcon />  |
@@ -409,15 +409,15 @@ For reference, the following table provides the list formats that work on each n
 | woff   | <NoIcon />  | <YesIcon /> | <YesIcon /> |
 | woff2  | <NoIcon />  | <YesIcon /> | <YesIcon /> |
 
-### Platform built-in fonts
+### 平台内置字体
 
-If you don't want to use a custom font by specifying a `fontFamily`, platform's default font will be used. Each platform has a set of built in fonts. On Android, the default font is Roboto. On iOS, it's SF Pro.
+如果你不想通过指定 `fontFamily` 来使用自定义字体，那么将使用平台的默认字体。每个平台都有一组内置字体。在 Android 上，默认字体是 Roboto。在 iOS 上，是 SF Pro。
 
-A platform's default font is usually easy-to-read. However, don't be surprised when the system default font is changed to use another font that is not easy to read. In this case, use your custom font so you have precise control over what the user will see.
+平台的默认字体通常都很易读。不过，如果系统默认字体被更改为另一种不易读的字体，也不必惊讶。在这种情况下，请使用你的自定义字体，这样你就可以精确控制用户将看到的内容。
 
-### Handle `@expo/vector-icons` initial load
+### 处理 `@expo/vector-icons` 的首次加载
 
-When the icons from `@expo/vector-icons` library load for the first time, they appear as invisible icons in your app. Once they load, they're cached for all the app's subsequent usage. To avoid showing invisible icons on your app's first load, preload during the initial loading screen with [`useFonts`](/versions/latest/sdk/font/#usefontsmap). For example:
+当 `@expo/vector-icons` 库中的图标第一次加载时，它们在你的应用中会显示为不可见图标。一旦加载完成，它们就会被缓存，供应用后续使用。为了避免在应用首次加载时显示不可见图标，请在初始加载界面期间使用 [`useFonts`](/versions/latest/sdk/font/#usefontsmap) 进行预加载。例如：
 
 ```tsx src/app/_layout.tsx
 import { useFonts } from 'expo-font';
@@ -432,28 +432,28 @@ export default function RootLayout() {
 }
 ```
 
-Now, you can use any icon from the `Ionicons` library in a React component:
+现在，你可以在 React 组件中使用 `Ionicons` 库中的任意图标：
 
 ```tsx
 <Ionicons name="checkmark-circle" size={32} color="green" />
 ```
 
 <BoxLink
-  title="Icons"
-  description="Learn how to use various types of icons in your Expo app, including vector icons, custom icon fonts, icon images, and icon buttons."
+  title="图标"
+  description="了解如何在你的 Expo 应用中使用各种类型的图标，包括矢量图标、自定义图标字体、图标图片和图标按钮。"
   href="/guides/icons/"
   Icon={BookOpen02Icon}
 />
 
-### Loading a remote font directly from the web
+### 直接从网页加载远程字体
 
-> **warning** **If you're loading remote fonts, make sure they are being served from an origin with CORS properly configured**. If you don't do this, your remote font might not load properly on the web platform.
+> **warning** **如果你正在加载远程字体，请确保它们是从已正确配置 CORS 的源提供的**。如果你不这样做，你的远程字体在 web 平台上可能无法正常加载。
 
-Loading fonts from a local asset is the safest way to load a font in your app. When including fonts as local assets, after you submit your app to the app stores, these fonts are bundled with the app download and will be available immediately. You don't have to worry about CORS or other potential issues.
+从本地资源加载字体是在应用中加载字体最安全的方式。将字体作为本地资源包含后，当你将应用提交到应用商店时，这些字体会与应用下载包一起打包，并可立即使用。你无需担心 CORS 或其他潜在问题。
 
-However, loading a font file directly from web is done by replacing the `require('./assets/fonts/FontName.otf')` with the URL of your font as shown in the example below.
+不过，直接从网页加载字体文件的方法是将 `require('./assets/fonts/FontName.otf')` 替换为字体的 URL，如下面的示例所示。
 
-<SnackInline label="Using a remote font" dependencies={['expo-font']}>
+<SnackInline label="使用远程字体" dependencies={['expo-font']}>
 
 ```tsx
 import { useFonts } from 'expo-font';
@@ -471,7 +471,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text style={{ fontFamily: 'Inter-SemiBoldItalic', fontSize: 30 }}>Inter SemiBoldItalic</Text>
-      <Text style={{ fontSize: 30 }}>Platform Default</Text>
+      <Text style={{ fontSize: 30 }}>平台默认字体</Text>
     </View>
   );
 }

@@ -1,14 +1,14 @@
 ---
-title: Send notifications with the Expo Push Service
-description: Learn how to call Expo Push Service API to send push notifications from your server.
+title: 使用 Expo Push 服务发送通知
+description: 了解如何调用 Expo Push Service API 从您的服务器发送推送通知。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-The [`expo-notifications`](/versions/latest/sdk/notifications) library provides all the client-side functionality for push notifications. Expo also handles sending push notifications off to FCM and APNs which then send them to particular devices. All you need to do is send a request to Expo Push API with the `ExpoPushToken` you obtain with [`getExpoPushTokenAsync`](/versions/latest/sdk/notifications/#getexpopushtokenasyncoptions).
+The [`expo-notifications`](/versions/latest/sdk/notifications) 库提供了推送通知所需的全部客户端功能。Expo 还负责将推送通知发送到 FCM 和 APNs，然后它们再把通知发送到特定设备。你只需要使用通过 [`getExpoPushTokenAsync`](/versions/latest/sdk/notifications/#getexpopushtokenasyncoptions) 获取的 `ExpoPushToken` 向 Expo Push API 发送请求即可。
 
-> If you'd rather build a server that communicates with APNs and FCM directly, see [Send notifications with FCM and APNs](/push-notifications/sending-notifications-custom/). It's more complex than using Expo Push Service, but allows finer-grained control, and full access to all FCM and APNs features.
+> 如果你更愿意构建一个直接与 APNs 和 FCM 通信的服务器，请参阅 [使用 FCM 和 APNs 发送通知](/push-notifications/sending-notifications-custom/)。这比使用 Expo Push Service 更复杂，但可以实现更细粒度的控制，并能完全使用所有 FCM 和 APNs 功能。
 
 <ContentSpotlight
   alt="Diagram explaining sending a push from your server to device"
@@ -16,70 +16,70 @@ The [`expo-notifications`](/versions/latest/sdk/notifications) library provides 
   containerClassName="bg-palette-white"
 />
 
-## Send push notifications using a server
+## 使用服务器发送推送通知
 
-After you setup your push notification credentials and add logic to get the `ExpoPushToken`, you can send it to the Expo API using an HTTPS POST request. You can do this by setting up a server with a database (or you can also write a command line tool to send them or send them straight from your app).
+在你设置好推送通知凭据并添加获取 `ExpoPushToken` 的逻辑后，就可以通过 HTTPS POST 请求将其发送到 Expo API。你可以通过搭建一个带数据库的服务器来实现这一点（你也可以编写一个命令行工具来发送，或者直接从应用中发送）。
 
-The Expo team and community have taken care of creating back-ends for you in a few different languages:
+Expo 团队和社区已经为你准备好了多种不同语言的后端封装：
 
-| SDKs                                                                                                     | Back-end | Maintained by |
-| -------------------------------------------------------------------------------------------------------- | -------- | ------------- |
-| [expo-server-sdk-node](https://github.com/expo/expo-server-sdk-node)                                     | Node.js  | Expo team     |
-| [expo-server-sdk-python](https://github.com/expo/expo-server-sdk-python)                                 | Python   | Community     |
-| [expo-server-sdk-ruby](https://github.com/expo/expo-server-sdk-ruby)                                     | Ruby     | Community     |
-| [expo-push-notification-client-rust](https://github.com/katayama8000/expo-push-notification-client-rust) | Rust     | Community     |
-| [expo-notifier](https://github.com/symfony/expo-notifier)                                                | Symfony  | Symfony       |
-| [exponent-server-sdk-php](https://github.com/Alymosul/exponent-server-sdk-php)                           | PHP      | Community     |
-| [expo-server-sdk-php](https://github.com/ctwillie/expo-server-sdk-php)                                   | PHP      | Community     |
-| [exponent-server-sdk-golang](https://github.com/oliveroneill/exponent-server-sdk-golang)                 | Golang   | Community     |
-| [exponent](https://github.com/9ssi7/exponent)                                                            | Golang   | Community     |
-| [exponent-server-sdk-elixir](https://github.com/pachun/exponent-server-sdk-elixir)                       | Elixir   | Community     |
-| [expo-server-sdk-dotnet](https://github.com/glyphard/expo-server-sdk-dotnet)                             | dotnet   | Community     |
-| [expo-server-sdk-java](https://github.com/hlspablo/expo-server-sdk-java)                                 | Java     | Community     |
-| [laravel-expo-notifier](https://github.com/YieldStudio/laravel-expo-notifier)                            | Laravel  | Community     |
+| SDKs                                                                                                     | 后端      | 维护者         |
+| -------------------------------------------------------------------------------------------------------- | --------- | --------------- |
+| [expo-server-sdk-node](https://github.com/expo/expo-server-sdk-node)                                     | Node.js   | Expo 团队       |
+| [expo-server-sdk-python](https://github.com/expo/expo-server-sdk-python)                                 | Python    | 社区            |
+| [expo-server-sdk-ruby](https://github.com/expo/expo-server-sdk-ruby)                                     | Ruby      | 社区            |
+| [expo-push-notification-client-rust](https://github.com/katayama8000/expo-push-notification-client-rust) | Rust      | 社区            |
+| [expo-notifier](https://github.com/symfony/expo-notifier)                                                | Symfony   | Symfony        |
+| [exponent-server-sdk-php](https://github.com/Alymosul/exponent-server-sdk-php)                           | PHP       | 社区            |
+| [expo-server-sdk-php](https://github.com/ctwillie/expo-server-sdk-php)                                   | PHP       | 社区            |
+| [exponent-server-sdk-golang](https://github.com/oliveroneill/exponent-server-sdk-golang)                 | Golang    | 社区            |
+| [exponent](https://github.com/9ssi7/exponent)                                                            | Golang    | 社区            |
+| [exponent-server-sdk-elixir](https://github.com/pachun/exponent-server-sdk-elixir)                       | Elixir    | 社区            |
+| [expo-server-sdk-dotnet](https://github.com/glyphard/expo-server-sdk-dotnet)                             | dotnet    | 社区            |
+| [expo-server-sdk-java](https://github.com/hlspablo/expo-server-sdk-java)                                 | Java      | 社区            |
+| [laravel-expo-notifier](https://github.com/YieldStudio/laravel-expo-notifier)                            | Laravel   | 社区            |
 
-Each of the example servers above is a wrapper around Expo Push Service API.
+上面的每个示例服务器都是 Expo Push Service API 的封装。
 
-## Implement push notifications reliably
+## 可靠地实现推送通知
 
-Push Notifications travel through several systems from your server to recipient devices. Notifications are delivered most of the time. However, occasionally there are issues with systems along the way and the network connections between them. Handling errors helps push notifications to arrive at their destinations more reliably.
+推送通知会从你的服务器经过多个系统传递到接收设备。通知大多数时候都能送达。不过，有时在传输路径中的系统或它们之间的网络连接会出现问题。处理错误有助于让推送通知更可靠地到达目标设备。
 
-### Limit concurrent connections
+### 限制并发连接数
 
-When sending a large number of push notifications at once, limit the number of your concurrent connections. The [Node SDK](https://github.com/expo/expo-server-sdk-node) implements this for you and opens a maximum of six concurrent connections. This smooths out your peak load and helps the Expo push notification service receive push notification requests successfully.
+当一次发送大量推送通知时，请限制并发连接数。[Node SDK](https://github.com/expo/expo-server-sdk-node) 已经帮你实现了这一点，并且最多会打开 6 个并发连接。这样可以平滑峰值负载，并帮助 Expo 推送通知服务成功接收推送通知请求。
 
-### Retry on failure
+### 失败时重试
 
-The first step in sending push notifications is to deliver them to the Expo push notification service, which internally adds them to a queue for delivery to Google (FCM v1) and Apple (APNs). This first step can fail for several reasons:
+发送推送通知的第一步是将它们交给 Expo 推送通知服务，服务内部会把它们加入队列，再发送给 Google（FCM v1）和 Apple（APNs）。这第一步可能因为多种原因失败：
 
-- network issues between your server and the Expo push notification service
-- an outage or degraded availability of the Expo notification service
-- misconfigured push credentials
-- an invalid notification payload
+- 你的服务器与 Expo 推送通知服务之间的网络问题
+- Expo 通知服务宕机或可用性下降
+- 推送凭据配置错误
+- 无效的通知负载
 
-Some of these failures are temporary. For example, if the Expo push notification service is down or unreachable and you get a network error - a HTTP 429 error (Too Many Requests), or a HTTP 5xx error (Server Errors) - use [exponential backoff](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/) to wait a few seconds before retrying. If the first retry attempt is unsuccessful, wait for longer (follow exponential backoff) and retry again. This lets the temporarily unavailable service recover before you retry.
+其中一些失败是暂时性的。例如，如果 Expo 推送通知服务不可用或无法访问，并且你收到网络错误、HTTP 429 错误（请求过多）或 HTTP 5xx 错误（服务器错误），请使用[指数退避](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)等待几秒后再重试。如果第一次重试仍然失败，就等待更长时间（遵循指数退避）再试一次。这能让临时不可用的服务在你重试前恢复。
 
-Other failures will not resolve themselves. For example, if your push notification payload is malformed, you may get an HTTP 400 response explaining the issue with the payload. You will also get an error if there are no push credentials for your project or if you send push notifications for different projects in the same request.
+其他失败则不会自行解决。例如，如果你的推送通知负载格式错误，你可能会收到一个 HTTP 400 响应，说明负载中的问题。如果你的项目没有推送凭据，或者你在同一个请求中为不同项目发送推送通知，也会收到错误。
 
-### Check push receipts for errors
+### 检查推送回执中的错误
 
-The Expo push notification service responds with [**push tickets**](#push-tickets) upon successfully receiving notifications. A push ticket indicates that Expo has received your notification payload but may still need to send it. Each push ticket contains a ticket ID, which you later use to look up a [push receipt](#push-receipts). A push receipt is available after Expo has tried to deliver the notification to FCM or APNs. It tells you whether delivery to the push notification provider was successful.
+Expo 推送通知服务在成功接收通知后会返回[**推送票据**](#push-tickets)。推送票据表示 Expo 已经收到你的通知负载，但可能仍需要继续发送。每个推送票据都包含一个票据 ID，之后你可以用它来查询[推送回执](#push-receipts)。当 Expo 尝试将通知投递给 FCM 或 APNs 之后，就会生成推送回执。它会告诉你向推送通知提供方投递是否成功。
 
-You must check your push receipts. If there is an issue delivering push notifications, the push receipts are the best way to get information about the underlying cause. For example, the receipts may indicate a problem with FCMs or APNs, the Expo push notification service, or your notification payload.
+你必须检查推送回执。如果推送通知投递过程中出现问题，推送回执是了解根本原因的最佳途径。例如，回执可能会指出 FCM 或 APNs、Expo 推送通知服务，或者你的通知负载存在问题。
 
-Push receipts may also tell you if a recipient device has unsubscribed from notifications (for example, by revoking notification permissions or uninstalling your app) if APNs or FCM responds with that information. The push receipt will contain a `details` → `error` field set to `DeviceNotRegistered`. In this scenario, stop sending notifications to this device's push token until it re-registers with your server, so your app remains a good citizen. The `DeviceNotRegistered` error appears in push receipts only when Google or Apple deems the device to be unregistered. It takes an undefined amount of time and is often impossible to test by uninstalling your app and sending a push notification shortly after.
+如果 APNs 或 FCM 返回了相关信息，推送回执也可能告诉你接收设备已取消订阅通知（例如撤销了通知权限或卸载了你的应用）。推送回执中会包含一个 `details` → `error` 字段，值为 `DeviceNotRegistered`。在这种情况下，请停止向该设备的推送令牌发送通知，直到它重新向你的服务器注册，这样你的应用才算是“守规矩”的。`DeviceNotRegistered` 错误仅在 Google 或 Apple 认为该设备未注册时才会出现在推送回执中。这个过程所需时间不确定，而且通常无法通过卸载应用并在不久后发送推送来进行测试。
 
-We recommend checking push receipts 15 minutes after sending your push notifications. While push receipts are often available much sooner, a 15-minute window gives the Expo push notification service a comfortable amount of time to make the receipts available to you. If after 15 minutes there is no push receipt, this likely indicates an error with the Expo push notification service. Lastly, push receipts are cleared after 24 hours.
+我们建议在发送推送通知 15 分钟后检查推送回执。虽然推送回执通常会更早可用，但 15 分钟的窗口能给 Expo 推送通知服务充足的时间来提供回执。如果 15 分钟后仍没有推送回执，这通常表示 Expo 推送通知服务存在错误。最后，推送回执会在 24 小时后清除。
 
-### SLAs
+### SLA
 
-The Expo push notification service does not have an SLA and the FCM and APNs services also may have occasional outages. By following the guidance above, you can make your application robust against temporary service interruptions.
+Expo 推送通知服务没有 SLA，FCM 和 APNs 服务也可能偶尔出现中断。遵循上述建议，可以让你的应用在面对临时服务中断时更加健壮。
 
 ## HTTP/2 API
 
-Instead of using one of the libraries listed earlier, you may want to send requests directly to our HTTP/2 API (this API currently does not require any authentication).
+除了使用前面列出的某个库之外，你也可以直接向我们的 HTTP/2 API 发送请求（此 API 当前不需要任何认证）。
 
-To do so, send a POST request to `https://exp.host/--/api/v2/push/send` with the following HTTP headers:
+要这样做，请向 `https://exp.host/--/api/v2/push/send` 发送一个 POST 请求，并附带以下 HTTP 头：
 
 ```text
 host: exp.host
@@ -88,7 +88,7 @@ accept-encoding: gzip, deflate
 content-type: application/json
 ```
 
-This is a "hello world" push notification using cURL that you can send using your terminal (replace the placeholder push token with your own):
+下面是一个使用 cURL 的“hello world”推送通知，你可以在终端中发送（将占位符推送令牌替换为你自己的）：
 
 ```sh
 curl -H "Content-Type: application/json" -X POST "https://exp.host/--/api/v2/push/send" -d '{
@@ -98,7 +98,7 @@ curl -H "Content-Type: application/json" -X POST "https://exp.host/--/api/v2/pus
 }'
 ```
 
-The request body must be JSON. It may either be a single [message object](#message-request-format) (as shown in the example above) or an array of up to 100 message objects, as long as they are all for the same project as shown below. **We recommend using an array when you want to send multiple messages to efficiently minimize the number of requests you need to make to Expo servers.** Here's an example request body that sends four messages:
+请求体必须是 JSON。它可以是单个[消息对象](#message-request-format)（如上例所示），也可以是最多 100 个消息对象的数组，只要它们都属于同一个项目，如下所示。**当你需要发送多条消息时，我们建议使用数组，以便高效地尽量减少向 Expo 服务器发起的请求数量。** 下面是一个发送四条消息的请求体示例：
 
 ```json
 [
@@ -122,15 +122,15 @@ The request body must be JSON. It may either be a single [message object](#messa
 ]
 ```
 
-The Expo Push Service also optionally accepts gzip-compressed request bodies. This can greatly reduce the amount of upload bandwidth needed to send large numbers of notifications. The [Node Expo Server SDK](https://github.com/expo/expo-server-sdk-node) automatically gzips requests for you and automatically throttles your requests to smooth out the load, so we highly recommend it.
+Expo Push Service 也可选地接受 gzip 压缩的请求体。这可以大幅减少发送大量通知所需的上传带宽。 [Node Expo Server SDK](https://github.com/expo/expo-server-sdk-node) 会自动为你对请求进行 gzip 压缩，并自动限制请求速率以平滑负载，因此我们强烈推荐使用它。
 
-### Push tickets
+### 推送票据
 
-The requests above will respond with a JSON object with two optional fields, `data` and `errors`. `data` will contain an array of [**push tickets**](#push-ticket-format) in the same order in which the messages were sent (or one push ticket object, if you send a single message to a single recipient). Each ticket includes a `status` field indicating whether Expo successfully received the notification and, if successful, an `id` field that can be used to retrieve a push receipt later.
+上面的请求会返回一个 JSON 对象，其中包含两个可选字段：`data` 和 `errors`。`data` 将包含一个[**推送票据**](#push-ticket-format)数组，其顺序与消息发送顺序一致（如果你向单个接收者发送单条消息，则返回一个推送票据对象）。每个票据都包含一个 `status` 字段，用于表明 Expo 是否成功接收了通知；如果成功，还会包含一个可用于稍后检索推送回执的 `id` 字段。
 
-> A status of `ok` along with a receipt ID means that the message was received by Expo's servers, **not** that it was received by the user (for that you will need to check the [push receipt](#push-receipts)).
+> `ok` 状态以及回执 ID 仅表示消息已被 Expo 的服务器接收，**并不表示它已被用户接收**（要确认这一点，你需要检查[推送回执](#push-receipts)）。
 
-Continuing the above example, this is what a successful response body looks like:
+继续上面的示例，成功响应体如下所示：
 
 ```json
 {
@@ -143,7 +143,7 @@ Continuing the above example, this is what a successful response body looks like
 }
 ```
 
-If there were errors with individual messages, but not the entire request, the bad messages' corresponding push tickets will have a status of `error`, and fields that describe the error as shown below:
+如果某些单条消息出错，但整个请求没有失败，那么出错消息对应的推送票据将具有 `error` 状态，并包含如下所示描述错误的字段：
 
 ```json
 {
@@ -163,15 +163,15 @@ If there were errors with individual messages, but not the entire request, the b
 }
 ```
 
-If the entire request failed, the HTTP status code is 4xx or 5xx and the `errors` field will be an array of error objects (usually just one). Otherwise, the HTTP status code will be 200 and your messages will be on their way to the Android and iOS push notification services.
+如果整个请求失败，HTTP 状态码将是 4xx 或 5xx，`errors` 字段将是一个错误对象数组（通常只有一个）。否则，HTTP 状态码将为 200，你的消息将被发送到 Android 和 iOS 推送通知服务。
 
-### Push receipts
+### 推送回执
 
-After receiving a batch of notifications, Expo enqueues each notification to deliver to the Android and iOS push notification services (FCM and APNs, respectively). Most notifications are typically delivered within a few seconds. However, sometimes it may take longer to deliver notifications, particularly if the Android or iOS push notification services take longer than usual to receive and deliver notifications or if Expo's Push Service infrastructure is under high load.
+在接收到一批通知后，Expo 会将每个通知入队，交由 Android 和 iOS 推送通知服务（分别是 FCM 和 APNs）投递。大多数通知通常会在几秒内送达。不过，有时通知送达可能需要更长时间，特别是当 Android 或 iOS 推送通知服务接收和投递通知的时间比平时更长，或者 Expo Push Service 基础设施负载较高时。
 
-Once Expo delivers a notification to the Android or iOS push notification service, Expo creates a [**push receipt**](#push-receipt-response-format) that indicates whether the Android or iOS push notification service successfully received the notification. If there was an error in delivering the notification, perhaps due to faulty credentials or service downtime, the push receipt will contain more information regarding that error.
+一旦 Expo 将通知交给 Android 或 iOS 推送通知服务，Expo 就会创建一份[**推送回执**](#push-receipt-response-format)，以表明 Android 或 iOS 推送通知服务是否成功接收了该通知。如果在投递通知时发生错误，例如凭据有问题或服务宕机，推送回执会包含更多关于该错误的信息。
 
-To fetch the push receipts, send a POST request to `https://exp.host/--/api/v2/push/getReceipts`. The [request body](#push-receipt-request-format) must be a JSON object with a field name `ids` that is an array of ticket ID strings:
+要获取推送回执，请向 `https://exp.host/--/api/v2/push/getReceipts` 发送 POST 请求。[请求体](#push-receipt-request-format)必须是一个 JSON 对象，其中字段名 `ids` 是一个票据 ID 字符串数组：
 
 ```sh
 curl -H "Content-Type: application/json" -X POST "https://exp.host/--/api/v2/push/getReceipts" -d '{
@@ -183,126 +183,126 @@ curl -H "Content-Type: application/json" -X POST "https://exp.host/--/api/v2/pus
 }'
 ```
 
-The [response body](#push-receipt-response-format) for push receipts is very similar to that of push tickets; it is a JSON object with two optional fields, `data` and `errors`. `data` contains a mapping of receipt IDs to receipts. Receipts include a `status` field, and two optional `message` and `details` fields (in the case where `"status": "error"`). If there is no push receipt for a requested receipt ID, the mapping won't contain that ID. This is what a successful response to the above request looks like:
+推送回执的[响应体](#push-receipt-response-format)与推送票据非常相似；它是一个 JSON 对象，包含两个可选字段：`data` 和 `errors`。`data` 包含一个从回执 ID 到回执的映射。回执包含一个 `status` 字段，以及两个可选的 `message` 和 `details` 字段（在 `"status": "error"` 的情况下）。如果某个请求的回执 ID 没有对应的推送回执，映射中就不会包含该 ID。下面就是上述请求的成功响应示例：
 
 ```json
 {
   "data": {
     "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX": { "status": "ok" },
     "ZZZZZZZZ-ZZZZ-ZZZZ-ZZZZ-ZZZZZZZZZZZZ": { "status": "ok" }
-    // When there is no receipt with a given ID (YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY in this
-    // example), the ID is omitted from the response.
+    // 当某个 ID 没有对应的回执时（本例中的 YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY），
+    // 该 ID 会从响应中省略。
   }
 }
 ```
 
-**You must check each push receipt, since it may contain information about errors you need to resolve.** For example, if a device is no longer eligible to receive notifications, Apple's documentation asks that you stop sending notifications to that device. The push receipts contain information about these errors.
+**你必须检查每一条推送回执，因为它可能包含你需要解决的错误信息。** 例如，如果某个设备不再有资格接收通知，Apple 的文档要求你停止向该设备发送通知。推送回执中包含这些错误信息。
 
-> Even if a receipt's `status` says `ok`, this doesn't guarantee that the device has received the message; "ok" in a push receipt means that the Android (FCM) or iOS (APNs) push notification service successfully received the notification. If the recipient device is turned off, for example, the iOS or Android push notification service will try to deliver the message but the device won't necessarily receive it.
+> 即使回执的 `status` 显示为 `ok`，这也不能保证设备已经收到消息；推送回执中的“ok”只表示 Android（FCM）或 iOS（APNs）推送通知服务已成功接收通知。例如，如果接收设备处于关机状态，iOS 或 Android 推送通知服务会尝试投递消息，但设备不一定会收到它。
 
-If the entire request failed, the HTTP status code will be 4xx or 5xx and the `errors` field will be an array of error objects (usually just one). Otherwise, the HTTP status code will be 200 and your messages will be on their way to your users' devices.
+如果整个请求失败，HTTP 状态码将是 4xx 或 5xx，`errors` 字段将是一个错误对象数组（通常只有一个）。否则，HTTP 状态码将为 200，你的消息将被发送到用户的设备。
 
-## Errors
+## 错误
 
-Expo provides details regarding any errors that occur during this entire process. We'll cover some of the most common errors below so that you can implement logic to handle them automatically on your server.
+Expo 会提供在整个过程中发生的任何错误的详细信息。下面我们会介绍一些最常见的错误，这样你就可以在服务器上实现自动处理这些错误的逻辑。
 
-If for whatever reason, Expo couldn't deliver the message to the Android or iOS push notification service, the push receipt's details may also include service-specific information. This is useful mostly for debugging and reporting possible bugs to Expo.
+如果由于某种原因，Expo 无法将消息投递到 Android 或 iOS 推送通知服务，推送回执的详细信息中也可能包含特定于服务的信息。这主要用于调试以及向 Expo 报告可能的 bug。
 
-### Individual errors
+### 单个错误
 
-Inside both push tickets and push receipts, look for a `details` object with an `error` field. If present, it may be one of the following values, and you should handle these errors like so:
+在推送票据和推送回执中，查找带有 `error` 字段的 `details` 对象。如果存在，它可能是以下值之一，你应当像下面这样处理这些错误：
 
-### Push ticket errors
+### 推送票据错误
 
-- `DeviceNotRegistered`: The device cannot receive push notifications anymore and you should stop sending messages to the corresponding Expo push token.
+- `DeviceNotRegistered`：设备已无法再接收推送通知，你应该停止向相应的 Expo push token 发送消息。
 
-### Push receipt errors
+### 推送回执错误
 
-- `DeviceNotRegistered`: The device cannot receive push notifications anymore and you should stop sending messages to the corresponding Expo push token.
+- `DeviceNotRegistered`：设备已无法再接收推送通知，你应该停止向相应的 Expo push token 发送消息。
 
-- `MessageTooBig`: The total notification payload was too large. On Android and iOS, the total payload must be at most 4096 bytes.
+- `MessageTooBig`：通知有效负载总大小过大。在 Android 和 iOS 上，总有效负载必须最多为 4096 字节。
 
-- `MessageRateExceeded`: You are sending messages too frequently to the given device. Implement exponential backoff and slowly retry sending messages.
+- `MessageRateExceeded`：你向给定设备发送消息过于频繁。请实现指数退避，并缓慢重试发送消息。
 
-- `MismatchSenderId`: This indicates that there is an issue with your FCM push credentials. There are two pieces to FCM push credentials: your FCM server key, and your **google-services.json** file. Both must be associated with the same sender ID. You can find your sender ID in the [same place you find your server key](/push-notifications/push-notifications-setup/#upload-server-credentials). Check that the server key from your project's EAS dashboard under **Credentials** > **Application identifier** > **Service Credentials** > **FCM V1 service account key** and that the sender ID from your project's **google-services.json** > `project_number` is the same as shown in the Firebase console under **Project Settings** > **Cloud Messaging** tab > **Cloud Messaging API (Legacy)**.
+- `MismatchSenderId`：这表示你的 FCM 推送凭据存在问题。FCM 推送凭据由两部分组成：你的 FCM server key，以及你的 **google-services.json** 文件。两者都必须关联到同一个 sender ID。你可以在[找到 server key 的相同位置](/push-notifications/push-notifications-setup/#upload-server-credentials)找到你的 sender ID。请检查你项目的 EAS Dashboard 中 **Credentials** > **Application identifier** > **Service Credentials** > **FCM V1 service account key** 下的 server key，以及你项目的 **google-services.json** > `project_number` 中的 sender ID，是否与 Firebase 控制台中 **Project Settings** > **Cloud Messaging** 标签页 > **Cloud Messaging API (Legacy)** 下显示的值相同。
 
-- `InvalidCredentials`: Your push notification credentials for your standalone app are invalid (for example, you may have revoked them).
-  - **Android**: Make sure that you have correctly uploaded the server key from the Firebase Console as specified in [uploading FCM V1 server credentials](/push-notifications/fcm-credentials).
-  - **iOS**: Run `eas credentials` and follow the prompts to regenerate new push notification credentials. If you revoke an APN key, all apps that rely on that key will no longer be able to send or receive push notifications until you upload a new key to replace it. Uploading a new APN key will **not** change your users' Expo Push Tokens. Sometimes, these errors will contain further details claiming an `InvalidProviderToken` error. This is actually tied to both your APN key **and** your provisioning profile. To resolve this error, you should rebuild the app and regenerate a new push key and provisioning profile.
+- `InvalidCredentials`：你的独立应用的推送通知凭据无效（例如，你可能已经撤销了它们）。
+  - **Android**：请确保你已经按照[上传 FCM V1 server 凭据](/push-notifications/fcm-credentials)中的说明，正确上传了 Firebase Console 中的 server key。
+  - **iOS**：运行 `eas credentials` 并按照提示重新生成新的推送通知凭据。如果你撤销了 APN key，所有依赖该 key 的应用将无法再发送或接收推送通知，直到你上传新的 key 替换它。上传新的 APN key **不会**更改用户的 Expo Push Token。有时，这些错误还会包含进一步的详细信息，声称是 `InvalidProviderToken` 错误。实际上，这与 APN key **以及**你的 provisioning profile 都有关。要解决此错误，你应该重新构建应用并重新生成新的 push key 和 provisioning profile。
 
-> For a better understanding of iOS credentials, including push notification credentials, read our [App Signing docs](/app-signing/app-credentials#ios).
+> 若要更好地理解 iOS 凭据，包括推送通知凭据，请阅读我们的 [App Signing 文档](/app-signing/app-credentials#ios)。
 
-### Request errors
+### 请求错误
 
-If there's an error with the entire request for either push tickets or push receipts, the `errors` object might have one of the following values, and you should handle these errors:
+如果推送票据或推送回执的整个请求出现错误，`errors` 对象可能具有以下值之一，你应该处理这些错误：
 
-- `TOO_MANY_REQUESTS`: You are exceeding the request limit of 600 notifications per second per project. We recommend implementing rate-limiting in your server to prevent sending more than 600 notifications per second (note that if you use [expo-server-sdk-node](https://github.com/expo/expo-server-sdk-node), this is already implemented along with exponential backoffs for retries).
+- `TOO_MANY_REQUESTS`：你已超过每个项目每秒 600 条通知的请求限制。我们建议在服务器上实现限流，以防止每秒发送超过 600 条通知（注意，如果你使用 [expo-server-sdk-node](https://github.com/expo/expo-server-sdk-node)，这已经实现，并且还包含重试的指数退避）。
 
-- `PUSH_TOO_MANY_EXPERIENCE_IDS`: You are trying to send push notifications to different Expo experiences, for example, `@username/projectAAA` and `@username/projectBBB`. Check the `details` field for a mapping of experience names to their associated push tokens from the request, and remove any from another experience.
+- `PUSH_TOO_MANY_EXPERIENCE_IDS`：你正在尝试向不同的 Expo experience 发送推送通知，例如 `@username/projectAAA` 和 `@username/projectBBB`。请检查请求中的 `details` 字段，其中包含 experience 名称与其关联 push token 的映射，并移除属于其他 experience 的项。
 
-- `PUSH_TOO_MANY_NOTIFICATIONS`: You are trying to send more than 100 push notifications in one request. Make sure you are only sending 100 (or fewer) notifications in each request.
+- `PUSH_TOO_MANY_NOTIFICATIONS`：你正在尝试在一次请求中发送超过 100 条推送通知。请确保每次请求只发送 100 条或更少的通知。
 
-- `PUSH_TOO_MANY_RECEIPTS`: You are trying to get more than 1000 push receipts in one request. Make sure you are only sending an array of 1000 (or fewer) ticket ID strings to get your push receipts.
+- `PUSH_TOO_MANY_RECEIPTS`：你正在尝试在一次请求中获取超过 1000 条推送回执。请确保你只发送一个包含 1000 个或更少 ticket ID 字符串的数组来获取推送回执。
 
-## Additional security
+## 额外安全性
 
-You can require any push requests to be sent with a valid [access token](/accounts/programmatic-access) before we will deliver them to your users. You can enable this enhanced push security from your [EAS Dashboard](https://expo.dev/settings/access-tokens).
+在我们向用户投递之前，你可以要求任何推送请求都必须使用有效的 [access token](/accounts/programmatic-access) 发送。你可以在 [EAS Dashboard](https://expo.dev/settings/access-tokens) 中启用这种增强的推送安全性。
 
-By default, you can send a notification to your users by sending their Expo Push Token and any text or additional data needed for the message. This is easy to set up, but **if the tokens are leaked, a malicious user would be able to impersonate your server and send their message to your users.** We have never had an instance of this report. However, to follow best security practices, we offer the use of an access token alongside the push token as an additional layer of security.
+默认情况下，你可以通过发送用户的 Expo Push Token 以及消息所需的任意文本或附加数据来向用户发送通知。这很容易设置，但**如果 token 泄露，恶意用户就可以冒充你的服务器并向你的用户发送消息。** 我们从未收到过这类报告。然而，为了遵循最佳安全实践，我们提供将 access token 与 push token 一起使用，以增加一层额外安全保护。
 
-If you're using the [`expo-server-sdk-node`](https://github.com/expo/expo-server-sdk-node#usage), upgrade to at least `v3.6.0` and pass your `accessToken` as an option in the constructor. Otherwise, pass in the header `'Authorization': 'Bearer ${accessToken}'` with any requests to our push API.
+如果你使用 [`expo-server-sdk-node`](https://github.com/expo/expo-server-sdk-node#usage)，请升级到至少 `v3.6.0`，并在构造函数中将 `accessToken` 作为选项传入。否则，请在发送到我们的 push API 的任何请求中添加请求头 `'Authorization': 'Bearer ${accessToken}'`。
 
-Any requests sent _without_ a valid access token _after_ you enable push security will result in an error with code: `UNAUTHORIZED`.
+在启用推送安全后，任何**没有**有效 access token 的请求都会返回代码为 `UNAUTHORIZED` 的错误。
 
-## Formats
+## 格式
 
-### Message request format
+### 消息请求格式
 
-Each message must be a JSON object with the given fields (only the `to` field is required):
+每条消息必须是一个具有给定字段的 JSON 对象（只有 `to` 字段是必需的）：
 
-| Field               | Platform        | Type                                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------------- | --------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `to`                | Android and iOS | `string \| string[]`                                      | An Expo push token or an array of Expo push tokens specifying the recipient(s) of this message.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `_contentAvailable` | iOS Only        | `boolean \| undefined`                                    | When this is set to true, the notification will cause the iOS app to start in the background to run a [background task](/versions/latest/sdk/notifications/#background-notifications). Your app needs to be [configured](/versions/latest/sdk/notifications/#background-notification-configuration) to support this.                                                                                                                                                                                                                                                                                                                                                                  |
-| `data`              | Android and iOS | `Object`                                                  | A JSON object delivered to your app. It may be up to about 4KiB; the total notification payload sent to Apple and Google must be at most 4KiB or else you will get a "Message Too Big" error.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `title`             | Android and iOS | `string`                                                  | The title to display in the notification. Often displayed above the notification body. Maps to [`AndroidNotification.title`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification) and [`aps.alert.title`](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Payload-key-reference).                                                                                                                                                                                                                                                                                                               |
-| `body`              | Android and iOS | `string`                                                  | The message to display in the notification. Maps to [`AndroidNotification.body`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification) and [`aps.alert.body`](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Payload-key-reference).                                                                                                                                                                                                                                                                                                                                                            |
-| `ttl`               | Android and iOS | `number`                                                  | Time to Live: the number of seconds for which the message may be kept around for redelivery if it hasn't been delivered yet. Defaults to `undefined` to use the respective defaults of each provider (1 month for Android/FCM as well as iOS/APNs).                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `expiration`        | Android and iOS | `number`                                                  | Timestamp since the Unix epoch specifying when the message expires. Same effect as `ttl` (`ttl` takes precedence over `expiration`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `priority`          | Android and iOS | `'default' \| 'normal' \| 'high'`                         | The delivery priority of the message. Specify `default` or omit this field to use the default priority on each platform ("normal" on Android and "high" on iOS).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `subtitle`          | iOS Only        | `string`                                                  | The subtitle to display in the notification below the title. Maps to [`aps.alert.subtitle`](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Payload-key-reference).                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `sound`             | iOS Only        | `string \| null`                                          | Play a sound when the recipient receives this notification. Specify `default` to play the device's default notification sound, or omit this field to play no sound. Custom sounds need to be [configured](/versions/latest/sdk/notifications/#configurable-properties) via the config plugin and then specified including the file extension. Example: `bells_sound.wav`.                                                                                                                                                                                                                                                                                                             |
-| `badge`             | iOS Only        | `number`                                                  | Number to display in the badge on the app icon. Specify zero to clear the badge.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `interruptionLevel` | iOS Only        | `'active' \| 'critical' \| 'passive' \| 'time-sensitive'` | The importance and delivery timing of a notification. The string values correspond to the [`UNNotificationInterruptionLevel`](https://developer.apple.com/documentation/usernotifications/unnotificationinterruptionlevel) enumeration cases.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `channelId`         | Android Only    | `string`                                                  | ID of the Notification Channel through which to display this notification. If an ID is specified but the corresponding channel does not exist on the device (that has not yet been created by your app), the notification will not be displayed to the user.                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `icon`              | Android Only    | `string`                                                  | The notification's icon. Name of an Android drawable resource (example: `myicon`). Defaults to the icon specified in the [config plugin](/versions/latest/sdk/notifications/#configurable-properties).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `richContent`       | Android and iOS | `Object`                                                  | Currently supports setting a notification image. Provide an object with key `image` and value of type `string`, which is the image URL. Android will show the image out of the box. On iOS, you need to add a Notification Service Extension target to your app. See [this example](https://github.com/expo/expo/pull/36202) on how to do that.                                                                                                                                                                                                                                                                                                                                       |
-| `categoryId`        | Android and iOS | `string`                                                  | ID of the notification category that this notification is associated with. [Find out more about notification categories here](/versions/latest/sdk/notifications/#manage-notification-categories-interactive-notifications).                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `collapseId`        | Android and iOS | `string`                                                  | An identifier for collapsing notifications. On Android, this only coalesces messages in transit (if the device is offline, only the latest one with a given `collapseId` is delivered) and maps to the FCM [`collapse_key`](https://firebase.google.com/docs/cloud-messaging/concept-options#collapsible_and_non-collapsible_messages). To also replace already-displayed notifications on Android, use `tag`. On iOS, this both coalesces messages in transit and replaces already-displayed notifications on the device and maps to [`apns-collapse-id`](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Send-a-POST-request-to-APNs). |
-| `tag`               | Android Only    | `string`                                                  | An identifier for replacing notifications already displayed on the device. If the device is already showing a notification with the same `tag`, the new notification replaces it. This is separate from `collapseId`, which coalesces messages _in transit_, while `tag` replaces _already-displayed_ notifications. Maps to the FCM [`notification.tag`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification) field.                                                                                                                                                                                                                        |
-| `mutableContent`    | iOS Only        | `boolean`                                                 | Specifies whether this notification can be [intercepted by the client app](https://developer.apple.com/documentation/usernotifications/modifying-content-in-newly-delivered-notifications?language=objc). Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 字段               | 平台           | 类型                                                     | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------ | -------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `to`               | Android 和 iOS | `string \| string[]`                                     | 一个 Expo push token，或一个 Expo push token 数组，用于指定此消息的接收者。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `_contentAvailable` | 仅 iOS         | `boolean \| undefined`                                   | 当设置为 true 时，该通知会使 iOS 应用在后台启动并运行一个[后台任务](/versions/latest/sdk/notifications/#background-notifications)。你的应用需要进行[配置](/versions/latest/sdk/notifications/#background-notification-configuration)以支持此功能。                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `data`             | Android 和 iOS | `Object`                                                 | 传递给你应用的一个 JSON 对象。大小最多约为 4KiB；发送给 Apple 和 Google 的通知总有效负载必须最多为 4KiB，否则你会收到 “Message Too Big” 错误。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `title`            | Android 和 iOS | `string`                                                 | 在通知中显示的标题。通常显示在通知正文上方。对应于 [`AndroidNotification.title`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification) 和 [`aps.alert.title`](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Payload-key-reference)。                                                                                                                                                                                                                                                                                                                                                 |
+| `body`             | Android 和 iOS | `string`                                                 | 在通知中显示的消息。对应于 [`AndroidNotification.body`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification) 和 [`aps.alert.body`](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Payload-key-reference)。                                                                                                                                                                                                                                                                                                                                                                              |
+| `ttl`              | Android 和 iOS | `number`                                                 | 存活时间：如果消息尚未投递，可在多长时间内保留以便重新投递的秒数。默认为 `undefined`，以使用各提供商的默认值（Android/FCM 和 iOS/APNs 均为 1 个月）。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `expiration`       | Android 和 iOS | `number`                                                 | 自 Unix epoch 以来的时间戳，用于指定消息何时过期。效果与 `ttl` 相同（`ttl` 优先于 `expiration`）。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `priority`         | Android 和 iOS | `'default' \| 'normal' \| 'high'`                        | 消息的投递优先级。指定 `default` 或省略此字段，可使用各平台默认优先级（Android 为 “normal”，iOS 为 “high”）。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `subtitle`         | 仅 iOS         | `string`                                                 | 在通知标题下方显示的副标题。对应于 [`aps.alert.subtitle`](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Payload-key-reference)。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `sound`            | 仅 iOS         | `string \| null`                                         | 当接收者收到此通知时播放声音。指定 `default` 可播放设备默认通知声音；或省略此字段以不播放声音。自定义声音需要通过 config plugin 进行[配置](/versions/latest/sdk/notifications/#configurable-properties)，然后连同文件扩展名一起指定。例如：`bells_sound.wav`。                                                                                                                                                                                                                                                                                                                                                                                  |
+| `badge`            | 仅 iOS         | `number`                                                 | 显示在应用图标角标中的数字。指定为零可清除角标。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `interruptionLevel` | 仅 iOS         | `'active' \| 'critical' \| 'passive' \| 'time-sensitive'` | 通知的重要性和投递时机。这些字符串值对应于 [`UNNotificationInterruptionLevel`](https://developer.apple.com/documentation/usernotifications/unnotificationinterruptionlevel) 枚举项。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `channelId`        | 仅 Android     | `string`                                                 | 用于显示此通知的 Notification Channel 的 ID。如果指定了 ID，但设备上对应的 channel 不存在（尚未由你的应用创建），则不会向用户显示该通知。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `icon`             | 仅 Android     | `string`                                                 | 通知图标。Android drawable 资源的名称（例如：`myicon`）。默认使用 [config plugin](/versions/latest/sdk/notifications/#configurable-properties) 中指定的图标。                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `richContent`      | Android 和 iOS | `Object`                                                 | 当前支持设置通知图片。请提供一个包含 `image` 键的对象，其值类型为 `string`，即图片 URL。Android 会开箱即用地显示该图片。在 iOS 上，你需要为应用添加一个 Notification Service Extension target。请参见[这个示例](https://github.com/expo/expo/pull/36202)了解如何实现。                                                                                                                                                                                                                                                                                                                                                                         |
+| `categoryId`       | Android 和 iOS | `string`                                                 | 此通知所关联的通知类别 ID。[在这里了解更多关于通知类别的信息](/versions/latest/sdk/notifications/#manage-notification-categories-interactive-notifications)。                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `collapseId`       | Android 和 iOS | `string`                                                 | 用于折叠通知的标识符。在 Android 上，这只会合并传输中的消息（如果设备离线，则只会投递具有给定 `collapseId` 的最新一条），并映射到 FCM 的 [`collapse_key`](https://firebase.google.com/docs/cloud-messaging/concept-options#collapsible_and_non-collapsible_messages)。若还想替换 Android 上已经显示的通知，请使用 `tag`。在 iOS 上，这既会合并传输中的消息，也会替换设备上已经显示的通知，并映射到 [`apns-collapse-id`](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Send-a-POST-request-to-APNs)。 |
+| `tag`              | 仅 Android     | `string`                                                 | 用于替换设备上已经显示的通知的标识符。如果设备已经显示了带有相同 `tag` 的通知，则新通知会替换它。这与 `collapseId` 不同，`collapseId` 只会合并_传输中_的消息，而 `tag` 会替换_已经显示_的通知。映射到 FCM 的 [`notification.tag`](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification) 字段。                                                                                                                                                                                                                                                                                |
+| `mutableContent`   | 仅 iOS         | `boolean`                                                | 指定此通知是否可以被[客户端应用拦截](https://developer.apple.com/documentation/usernotifications/modifying-content-in-newly-delivered-notifications?language=objc)。默认为 `false`。                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
-**Note on `ttl`**: On Android, we make our best effort to deliver messages with zero TTL immediately and do not throttle them. However, setting TTL to a low value (for example, zero) can prevent normal-priority notifications from ever reaching Android devices that are in doze mode. To guarantee that a notification is delivered, TTL must be long enough for the device to wake from doze mode. This field takes precedence over `expiration` when both are specified.
+**关于 `ttl` 的说明**：在 Android 上，我们会尽最大努力立即投递 TTL 为零的消息，并且不会对它们进行限流。不过，将 TTL 设得很低（例如零）可能会导致普通优先级通知永远无法到达处于 doze 模式的 Android 设备。要保证通知被投递，TTL 必须足够长，以便设备能从 doze 模式中唤醒。此字段在同时指定 `expiration` 时优先于 `expiration`。
 
-**Note on `priority`**: On Android, normal-priority messages won't open network connections on sleeping devices and their delivery may be delayed to conserve the battery. High-priority messages are more likely to be delivered immediately and may wake sleeping devices to open network connections, consuming energy. On iOS, normal-priority messages are sent at a time that takes into account power considerations for the device and may be grouped and delivered in bursts. They are throttled and may not be delivered by Apple. High-priority messages are usually sent immediately. Normal priority corresponds to APNs priority level 5 and high priority to 10.
+**关于 `priority` 的说明**：在 Android 上，普通优先级消息不会在休眠设备上打开网络连接，其投递可能会延迟以节省电量。高优先级消息更有可能立即投递，并且可能会唤醒休眠设备以打开网络连接，从而消耗电量。在 iOS 上，普通优先级消息会在考虑设备耗电情况的时间发送，并且可能会被分组后成批投递。它们会被限流，并且可能不会由 Apple 投递。高优先级消息通常会立即发送。普通优先级对应 APNs 优先级 5，高优先级对应 10。
 
-**Note on `channelId`**: If left null, a "Default" channel is used, and Expo creates the channel on the device if it does not yet exist. However, use caution, as the "Default" channel is user-facing and you may not be able to fully delete it.
+**关于 `channelId` 的说明**：如果保持为 null，则会使用 “Default” channel，并且如果设备上尚不存在该 channel，Expo 会在设备上创建它。不过请谨慎使用，因为 “Default” channel 面向用户，你可能无法将其完全删除。
 
-### Push ticket format
+### 推送票据格式
 
 ```js
 {
   "data": [
     {
       "status": "error" | "ok",
-      "id": string, // this is the Receipt ID
-      // if status === "error"
+      "id": string, // 这是回执 ID
+      // 如果 status === "error"
       "message": string,
       "details": JSON
     },
     ...
   ],
-  // only populated if there was an error with the entire request
+  // 仅当整个请求发生错误时才会填充
   "errors": [{
     "code": string,
     "message": string
@@ -310,7 +310,7 @@ Each message must be a JSON object with the given fields (only the `to` field is
 }
 ```
 
-### Push receipt request format
+### 推送回执请求格式
 
 ```js
 {
@@ -318,20 +318,20 @@ Each message must be a JSON object with the given fields (only the `to` field is
 }
 ```
 
-### Push receipt response format
+### 推送回执响应格式
 
 ```js
 {
   "data": {
-    Receipt ID: {
+    回执 ID: {
       "status": "error" | "ok",
-      // if status === "error"
+      // 如果 status === "error"
       "message": string,
       "details": JSON
     },
     ...
   },
-  // only populated if there was an error with the entire request
+  // 仅当整个请求发生错误时才会填充
   "errors": [{
     "code": string,
     "message": string
@@ -339,61 +339,61 @@ Each message must be a JSON object with the given fields (only the `to` field is
 }
 ```
 
-## Delivery guarantees
+## 交付保障
 
-Expo makes a best effort to deliver notifications to the push notification services operated by Google and Apple. Expo's infrastructure is designed for at least one attempt at delivery to the underlying push notification services. It is more likely for a notification to be delivered to Google or Apple more than once rather than not at all; however, both these results are uncommon.
+Expo 会尽最大努力将通知传递给由 Google 和 Apple 运营的推送通知服务。Expo 的基础设施被设计为至少尝试一次将通知交付到底层推送通知服务。通知被交付给 Google 或 Apple 不止一次的可能性，比完全没有被交付的可能性更高；不过，这两种情况都不常见。
 
-After a notification has been handed off to an underlying push notification service, Expo creates a "push receipt" that records whether the handoff was successful. A push receipt denotes whether the underlying push notification service received the notification.
+在通知被移交给底层推送通知服务之后，Expo 会创建一份“推送回执”，记录此次移交是否成功。推送回执表示底层推送通知服务是否收到了该通知。
 
-Finally, the push notification services from Google and Apple follow their own policies to deliver the notifications to the device.
+最后，来自 Google 和 Apple 的推送通知服务会遵循各自的策略将通知送达设备。
 
-## Troubleshooting
+## 故障排查
 
-<Collapsible summary="Network connectivity issues">
-This section helps you diagnose and resolve common network issues. Your server must have connectivity to Google Cloud Platform services in the United States region, as this is where Expo's push notification service is hosted.
+<Collapsible summary="网络连接问题">
+本节帮助你诊断并解决常见的网络问题。你的服务器必须能够连接到美国区域的 Google Cloud Platform 服务，因为 Expo 的推送通知服务就托管在这里。
 
-#### DNS resolution
+#### DNS 解析
 
-Test if your server can resolve Expo's push service domain name:
+测试你的服务器是否可以解析 Expo 推送服务的域名：
 
 ```bash
 dig exp.host
 
-# Check with a public DNS server
+# 使用公共 DNS 服务器进行检查
 dig @8.8.8.8 exp.host
 ```
 
-#### Network routing and connectivity
+#### 网络路由和连通性
 
-Verify your server can reach Expo's endpoints:
+验证你的服务器是否可以访问 Expo 的端点：
 
 ```bash
-# Use traceroute to identify routing issues
+# 使用 traceroute 识别路由问题
 traceroute exp.host
 
-# Test basic connectivity
+# 测试基本连通性
 ping exp.host
 
-# Test HTTPS connectivity to the push server.
-# You should receive HTTP response headers with a 200 status code.
+# 测试到推送服务器的 HTTPS 连通性。
+# 你应该收到状态码为 200 的 HTTP 响应头。
 curl --verbose https://exp.host/
 ```
 
-Common issues to check:
+需要检查的常见问题：
 
-- Firewall rules blocking outbound HTTPS (port 443) traffic
-- Corporate proxy servers that may require authentication or special configuration
-- Network ACLs or security groups (in cloud environments) restricting outbound connections
-- Packet fragmentation due to MTU size issues
+- 防火墙规则阻止了出站 HTTPS（端口 443）流量
+- 可能需要身份验证或特殊配置的企业代理服务器
+- 限制出站连接的网络 ACL 或安全组（在云环境中）
+- 由于 MTU 大小问题导致的数据包分片
 
-#### TLS certificate validation
+#### TLS 证书验证
 
-Ensure your server can validate the server's TLS certificate:
+确保你的服务器能够验证服务器的 TLS 证书：
 
 ```bash
 openssl s_client -connect exp.host:443 -servername exp.host
 ```
 
-We use standard TLS certificates signed by major service providers including Cloudflare, Google, and Let's Encrypt.
+我们使用由主要服务提供商签发的标准 TLS 证书，包括 Cloudflare、Google 和 Let's Encrypt。
 
 </Collapsible>

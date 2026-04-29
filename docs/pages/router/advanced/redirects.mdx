@@ -1,13 +1,13 @@
 ---
-title: Redirects and rewrites
-description: Learn how to create redirects for routes that may no longer exist.
+title: 重定向与重写
+description: 了解如何为可能不再存在的路由创建重定向。
 ---
 
-> **warning** Static redirects are available from Expo Router `4.x.x`.
+> **warning** 静态重定向可从 Expo Router `4.x.x` 开始使用。
 
-## Redirect component
+## Redirect 组件
 
-To use `<Redirect />` component, import it from the `expo-router` and specify the `href` prop with the desired destination route.
+要使用 `<Redirect />` 组件，请从 `expo-router` 中导入它，并使用 `href` 属性指定所需的目标路由。
 
 ```tsx
 import { Redirect } from 'expo-router';
@@ -17,9 +17,9 @@ export default function Index() {
 }
 ```
 
-In the above example, when the app user visits this page, they will be automatically redirected to `/home` route.
+在上面的示例中，当应用用户访问此页面时，他们会被自动重定向到 `/home` 路由。
 
-You can use `<Redirect />` within a component that checks for conditions before navigating.
+你可以在组件中使用 `<Redirect />`，在导航前先检查条件。
 
 ```tsx
 import { Redirect } from 'expo-router';
@@ -29,7 +29,7 @@ export default function ProtectedPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Simulate checking authentication status
+    // 模拟检查身份验证状态
     setTimeout(() => setIsAuthenticated(true), 2000);
   }, []);
 
@@ -37,15 +37,15 @@ export default function ProtectedPage() {
     return <Redirect href="/login" />;
   }
 
-  return <Text>Welcome to the protected page!</Text>;
+  return <Text>欢迎来到受保护页面！</Text>;
 }
 ```
 
-In this case, if the user is not authenticated, they will be redirected to the `/login` page.
+在这种情况下，如果用户未通过身份验证，他们将被重定向到 `/login` 页面。
 
-## Static redirects
+## 静态重定向
 
-Static redirects allow you to specify a redirect configuration in your [app config](/workflow/configuration/) using the `expo-router` config plugin. This allows you to specify redirects for routes that may no longer exist in your **app** directory. When you navigate to a screen, Expo Router simulates a `GET` request to a local server, which responds with the screen's content. This ensures that Expo Router behaves consistently on native, web, and when fetching React Server Components. As such, this configuration is based upon **server requests** and is based upon the request URL, not the screen name.
+静态重定向允许你使用 `expo-router` 配置插件在 [应用配置](/workflow/configuration/) 中指定重定向配置。这使你能够为 **app** 目录中可能不再存在的路由指定重定向。当你导航到某个屏幕时，Expo Router 会模拟向本地服务器发起 `GET` 请求，服务器会返回该屏幕的内容。这确保了 Expo Router 在原生端、Web 端以及获取 React Server Components 时都能保持一致的行为。因此，这种配置基于 **服务器请求**，并且基于请求 URL，而不是屏幕名称。
 
 ```json app.json
 {
@@ -69,20 +69,20 @@ Static redirects allow you to specify a redirect configuration in your [app conf
 }
 ```
 
-Each redirect configuration should have the following properties:
+每个重定向配置都应包含以下属性：
 
-- **source**: The incoming request path pattern
-- **destination**: The path you want to route to. This can be a path within your Expo Router project **or** an external URL.
+- **source**：传入请求的路径模式
+- **destination**：你希望路由到的路径。这可以是 Expo Router 项目中的路径，也可以是外部 URL。
 
-Redirect configuration can have the following optional property:
+重定向配置可以包含以下可选属性：
 
-- **permanent**: Accepts `true` or `false`. If `true`, will use the 308 status code, which instructs clients/search engines to cache the redirect forever. If `false`, will use the 307 status code, which is temporary and is not cached.
+- **permanent**：接受 `true` 或 `false`。如果为 `true`，将使用 308 状态码，指示客户端/搜索引擎永久缓存该重定向。如果为 `false`，将使用 307 状态码，它是临时的且不会被缓存。
 
-Unlike routes within the **app** directory, you do not need to add the `/index` suffix for a directory route or `+api` to for API routes. You cannot create redirects for **\_layout** files.
+与 **app** 目录中的路由不同，目录路由不需要添加 `/index` 后缀，API 路由也不需要添加 `+api`。你不能为 **_layout** 文件创建重定向。
 
-### Dynamic routes
+### 动态路由
 
-The `source` and `destination` routes can use the [dynamic route syntax](/develop/app-navigation/) to create redirects for dynamic routes. You can define them in **app.json** using the `expo-router` config plugin.
+`source` 和 `destination` 路由可以使用 [动态路由语法](/develop/app-navigation/) 来为动态路由创建重定向。你可以使用 `expo-router` 配置插件在 **app.json** 中定义它们。
 
 ```json app.json
 {
@@ -102,7 +102,7 @@ The `source` and `destination` routes can use the [dynamic route syntax](/develo
 }
 ```
 
-The variable names will be matched when performing the redirection, if available. Any unmatched variables will be passed as query params.
+在执行重定向时，如果可用，变量名将会匹配。任何未匹配的变量都将作为查询参数传递。
 
 ```json app.json
 {
@@ -122,11 +122,11 @@ The variable names will be matched when performing the redirection, if available
 }
 ```
 
-Using the configuration above, `/redirect/apple/carrot/beef` will redirect to `/target/carrot/apple?meat=beef`
+使用上面的配置，`/redirect/apple/carrot/beef` 将重定向到 `/target/carrot/apple?meat=beef`
 
-### HTTP methods
+### HTTP 方法
 
-To redirect only certain HTTP methods, provide the methods as a string inside an array. Remember that screens are considered a `GET` request.
+若只想重定向某些 HTTP 方法，请在数组中以字符串形式提供这些方法。请记住，屏幕会被视为一次 `GET` 请求。
 
 ```json app.json
 {
@@ -145,13 +145,13 @@ To redirect only certain HTTP methods, provide the methods as a string inside an
 }
 ```
 
-## Rewrites
+## 重写
 
-> **warning** Static URL rewrites are only supported in server environments,
-> and are **not** available in static exports or native apps. For client-side
-> navigation, consider using [redirects](#redirect-component) instead.
+> **warning** 静态 URL 重写仅支持服务器环境，
+> 在静态导出或原生应用中**不可用**。对于客户端
+> 导航，请考虑改用 [重定向](#redirect-component)。
 
-Rewrites are only possible through static configuration. They are different from redirects as they act as a URL proxy and hide the destination URL. While redirects will return back an HTTP status code and reroute the request, a rewrite will render the new destination without changing the URL.
+重写只能通过静态配置实现。它与重定向不同，因为它作为 URL 代理并隐藏目标 URL。重定向会返回 HTTP 状态码并重新路由请求，而重写会在不更改 URL 的情况下渲染新的目标。
 
 ```json app.json
 {

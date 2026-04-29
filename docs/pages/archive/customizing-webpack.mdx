@@ -1,13 +1,13 @@
 ---
-title: Bundle with webpack
-description: Learn about different webpack bundler configurations that can be customized.
+title: 使用 webpack 打包
+description: 了解可自定义的不同 webpack 打包器配置。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-> **warning** **[Deprecated](/more/release-statuses/#deprecated)**: In SDK 50 and later, Expo Webpack has been deprecated in favor of [Expo Router](/router/introduction/). Learn how to [migrate from Expo Webpack to Expo Router](/router/migrate/from-expo-webpack/).
+> **警告** **[已弃用](/more/release-statuses/#deprecated)**：在 SDK 50 及更高版本中，Expo Webpack 已被 [Expo Router](/router/introduction/) 取代。了解如何[将 Expo Webpack 迁移到 Expo Router](/router/migrate/from-expo-webpack/)。
 
-To enable Webpack web support, modify your [app config](/workflow/configuration) using the `expo.web.bundler` field:
+要启用 Webpack Web 支持，请使用 `expo.web.bundler` 字段修改你的[应用配置](/workflow/configuration)：
 
 ```json app.json
 {
@@ -19,55 +19,55 @@ To enable Webpack web support, modify your [app config](/workflow/configuration)
 }
 ```
 
-## Customizing the Webpack config
+## 自定义 Webpack 配置
 
-When you run `npx expo start --web` or `expo export:web` the CLI checks to see if your project has a **webpack.config.js** in the root directory. If the file doesn't exist in your project, then Expo uses the default `@expo/webpack-config` (preferred).
+当你运行 `npx expo start --web` 或 `expo export:web` 时，CLI 会检查你的项目根目录中是否有 **webpack.config.js**。如果该文件在项目中不存在，那么 Expo 将使用默认的 `@expo/webpack-config`（推荐）。
 
-To edit the config, install `@expo/webpack-config` as a dev dependency and create a template **webpack.config.js** at the root of your project. This can be done by running the following command:
+要编辑该配置，请将 `@expo/webpack-config` 安装为开发依赖，并在项目根目录创建一个模板 **webpack.config.js**。可以通过运行以下命令来完成：
 
 <Terminal cmd={['$ npx expo customize webpack.config.js']} />
 
-You can now make changes to a config object based on the default config and return it for Expo CLI to use. Deleting the config will cause Expo to fall back to the default again.
+现在你可以基于默认配置对配置对象进行修改，并将其返回给 Expo CLI 使用。删除该配置后，Expo 会再次回退到默认配置。
 
-If you create a new webpack config or make any changes to it you'll need to restart your webpack dev server by running:
+如果你创建了新的 webpack 配置或对其进行了任何更改，则需要通过运行以下命令重新启动 webpack 开发服务器：
 
 <Terminal cmd={['$ npx expo start']} />
 
-## Example
+## 示例
 
 ```js webpack.config.js
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
 
-// Expo CLI will await this method so you can optionally return a promise.
+// Expo CLI 会等待此方法，因此你可以选择返回一个 promise。
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
-  // If you want to add a new alias to the config.
+  // 如果你想在配置中添加一个新的别名。
   config.resolve.alias['moduleA'] = 'moduleB';
 
-  // Maybe you want to turn off compression in dev mode.
+  // 也许你想在开发模式下关闭压缩。
   if (config.mode === 'development') {
     config.devServer.compress = false;
   }
 
-  // Or prevent minimizing the bundle when you build.
+  // 或者在构建时阻止压缩 bundle。
   if (config.mode === 'production') {
     config.optimization.minimize = false;
   }
 
-  // Finally return the new config for the CLI to use.
+  // 最后返回新的配置供 CLI 使用。
   return config;
 };
 ```
 
-## Editing static files
+## 编辑静态文件
 
-You can also use `npx expo customize` to generate static project files such as **index.html** and so on. These can be used to customize your project more familiarly.
+你也可以使用 `npx expo customize` 生成静态项目文件，例如 **index.html** 等。这些文件可用于以更熟悉的方式自定义你的项目。
 
-All the files you select from the terminal prompt will be copied to a **web** directory in your project's root directory. Think of this directory as **public** in Create React App. The **web** is used instead of **public** because Expo webpack is web-only, the static directory does not work for Android or iOS apps. For mobile platforms, the platform-specific project files are included in **android** and **ios** directories.
+你在终端提示中选择的所有文件都会被复制到项目根目录下的 **web** 目录中。可以将该目录视为 Create React App 中的 **public**。之所以使用 **web** 而不是 **public**，是因为 Expo webpack 仅用于 Web，静态目录不适用于 Android 或 iOS 应用。对于移动平台，特定于平台的项目文件包含在 **android** 和 **ios** 目录中。
 
-Deleting any of these files will cause Expo webpack to fall back to their respective default copies.
+删除这些文件中的任何一个都会导致 Expo webpack 回退到各自的默认副本。
 
-### Why
+### 为什么
 
-- Customizing the favicon icon.
-- Adding third-party API code to the `<head/>` in your **index.html**.
+- 自定义 favicon 图标。
+- 将第三方 API 代码添加到你的 **index.html** 中的 `<head/>`。

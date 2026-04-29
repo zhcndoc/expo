@@ -1,21 +1,21 @@
 ---
-title: Developing and debugging a plugin
-description: Learn about development best practices and debugging techniques for Expo config plugins.
-sidebar_title: Development and debugging
+title: 开发和调试插件
+description: 了解 Expo 配置插件的开发最佳实践和调试技巧。
+sidebar_title: 开发和调试
 ---
 
-Developing a plugin is a great way to extend the Expo ecosystem. However, there are times you'll want to debug your plugin. This page provides some of the best practices for developing and debugging a plugin.
+开发插件是扩展 Expo 生态系统的绝佳方式。不过，有时你会想要调试你的插件。本页面介绍了开发和调试插件的一些最佳实践。
 
-## Plugin development
+## 插件开发
 
-> Use [modifier previews](https://github.com/expo/vscode-expo#expo-preview-modifier) to debug the results of your plugin live.
+> 使用 [modifier previews](https://github.com/expo/vscode-expo#expo-preview-modifier) 实时调试你的插件结果。
 
-To make plugin development easier, we've added plugin support to [`expo-module-scripts`](https://www.npmjs.com/package/expo-module-scripts).
-Refer to the [config plugins guide](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin) for more info on using TypeScript, and Jest to build plugins.
+为了让插件开发更轻松，我们已为 [`expo-module-scripts`](https://www.npmjs.com/package/expo-module-scripts) 添加了插件支持。
+有关使用 TypeScript 和 Jest 构建插件的更多信息，请参阅 [配置插件指南](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin)。
 
-### Install dependencies
+### 安装依赖
 
-Use the following dependencies in a library that provides a config plugin:
+在提供配置插件的库中使用以下依赖：
 
 ```json package.json
 {
@@ -34,13 +34,13 @@ Use the following dependencies in a library that provides a config plugin:
 }
 ```
 
-- You may update the exact version of `expo` to build against a specific version.
-- For simple config plugins that depend on core, stable APIs, such as a plugin that only modifies **AndroidManifest.xml** or **Info.plist**, you can use a loose dependency such as in the example above.
-- You may also want to install [`expo-module-scripts`](https://github.com/expo/expo/blob/main/packages/expo-module-scripts/README.md) as a development dependency, but it's not required.
+- 你可以更新 `expo` 的具体版本，以便针对特定版本进行构建。
+- 对于依赖核心稳定 API 的简单配置插件，例如只修改 **AndroidManifest.xml** 或 **Info.plist** 的插件，你可以像上面的示例那样使用较宽松的依赖。
+- 你也可以将 [`expo-module-scripts`](https://github.com/expo/expo/blob/main/packages/expo-module-scripts/README.md) 作为开发依赖安装，但这不是必需的。
 
-### Import the config plugins package
+### 导入配置插件包
 
-The `expo/config-plugins` and `expo/config` packages are re-exported from the `expo` package.
+`expo/config-plugins` 和 `expo/config` 包会从 `expo` 包中重新导出。
 
 {/* prettier-ignore */}
 ```js
@@ -48,41 +48,41 @@ const { ... } = require('expo/config-plugins');
 const { ... } = require('expo/config');
 ```
 
-Importing through the `expo` package ensures that you are using the version of the `expo/config-plugins` and `expo/config` packages that are depended on by the `expo` package.
+通过 `expo` 包导入可确保你使用的是 `expo` 包所依赖的 `expo/config-plugins` 和 `expo/config` 包的版本。
 
-If you do not import the package through the `expo` re-export in this way, you may accidentally be importing an incompatible version
-(depending on the implementation details of module hoisting in the package manager used by the developer consuming the module) or be unable to import the module at all (if using "plug and play" features of a package manager such as Yarn Berry or pnpm).
+如果你不通过这种方式从 `expo` 的重新导出中导入该包，你可能会意外导入到一个不兼容的版本
+（这取决于使用该模块的开发者所使用的包管理器中模块提升的实现细节），或者根本无法导入该模块（如果使用诸如 Yarn Berry 或 pnpm 等包管理器的“plug and play”功能）。
 
-Config types are exported directly from `expo/config`, so there is no need to install or import from `expo/config-types`:
+Config 类型直接从 `expo/config` 导出，因此无需安装或从 `expo/config-types` 导入：
 
 ```ts
 import { ExpoConfig, ConfigContext } from 'expo/config';
 ```
 
-### Best practices for mods
+### 最佳实践：mod
 
-- Avoid regex: [static modification](#static-modification) is key. If you want to modify a value in an Android gradle file, consider using `gradle.properties`. If you want to modify some code in the Podfile, consider writing to JSON and having the Podfile read the static values.
-- Avoid performing long-running tasks like making network requests or installing Node modules in mods.
-- Do not add interactive terminal prompts in mods.
-- Generate, move, and delete new files in dangerous mods only. Failing to do so will break [introspection](#introspection).
-- Utilize built-in config plugins like `withXcodeProject` to minimize the amount of times a file is read and parsed.
-- Stick with the XML parsing libraries that prebuild uses internally, this helps prevent changes where code is rearranged needlessly.
+- 避免使用正则表达式： [静态修改](#static-modification) 是关键。如果你想修改 Android gradle 文件中的某个值，可以考虑使用 `gradle.properties`。如果你想修改 Podfile 中的一些代码，可以考虑将值写入 JSON，并让 Podfile 读取这些静态值。
+- 避免在 mod 中执行耗时较长的任务，例如发起网络请求或安装 Node 模块。
+- 不要在 mod 中添加交互式终端提示。
+- 仅在危险 mod 中生成、移动和删除新文件。否则会破坏 [内省](#introspection)。
+- 利用内置的配置插件，例如 `withXcodeProject`，以尽量减少文件被读取和解析的次数。
+- 使用 prebuild 内部采用的 XML 解析库，这有助于防止代码被不必要地重新排列。
 
-## Plugin structure and scaffolding
+## 插件结构和脚手架
 
-### Versioning
+### 版本管理
 
-By default, `npx expo prebuild` runs transformations on a [source template](https://github.com/expo/expo/tree/main/templates/expo-template-bare-minimum) associated with the Expo SDK version that a project is using. The SDK version is defined in the **app.json** or inferred from the installed version of `expo` that the project has.
+默认情况下，`npx expo prebuild` 会在与项目所使用的 Expo SDK 版本相关联的 [源模板](https://github.com/expo/expo/tree/main/templates/expo-template-bare-minimum) 上运行转换。SDK 版本定义在 **app.json** 中，或者根据项目已安装的 `expo` 版本推断得出。
 
-When Expo SDK upgrades to a new version of React Native for instance, the template may change significantly to account for changes in React Native or new releases of Android or iOS.
+例如，当 Expo SDK 升级到 React Native 的新版本时，模板可能会发生重大变化，以适应 React Native 或 Android、iOS 新版本带来的变更。
 
-If your plugin is mostly using [static modifications](#static-modification) then it will usually work well across SDK versions. If it's using a regular expression to transform application code, then you'll definitely want to document which Expo SDK version your plugin is intended for. During the SDK release cycle, there is a [beta period](https://github.com/expo/expo/blob/main/guides/releasing/Release%20Workflow.md#stage-4---beta-release) where you can test if your plugin works with the new version before it's released.
+如果你的插件主要使用 [静态修改](#static-modification)，那么它通常可以在不同 SDK 版本之间正常工作。如果它使用正则表达式来转换应用代码，那么你一定需要注明你的插件适用于哪个 Expo SDK 版本。在 SDK 发布周期中，会有一个 [beta 期间](https://github.com/expo/expo/blob/main/guides/releasing/Release%20Workflow.md#stage-4---beta-release)，你可以在正式发布前测试你的插件是否适用于新版本。
 
 {/* TODO: versioned plugin wrapper */}
 
-### Plugin properties
+### 插件属性
 
-Properties are used to customize the way a plugin works during prebuild. They must always be static values (no functions, or promises). Consider the following types:
+属性用于自定义插件在 prebuild 期间的工作方式。它们必须始终是静态值（不能是函数或 Promise）。请考虑以下类型：
 
 ```ts
 type StaticValue = boolean | number | string | null | StaticArray | StaticObject;
@@ -94,84 +94,84 @@ interface StaticObject {
 }
 ```
 
-Static properties are required because the app config must be serializable to JSON for use as the app manifest.
+之所以需要静态属性，是因为应用配置必须可序列化为 JSON，才能用作应用清单。
 
-If possible, attempt to make your plugin work without props, this will help resolution tooling like [`expo install`](#expo-install) or [VS Code Expo Tools](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools) work better. Remember that every property you add increases complexity, making it harder to change in the future and increases the amount of features you'll need to test. Good default values are preferred over mandatory configuration when feasible.
+如果可能，请尽量让插件在不使用 props 的情况下也能工作，这将有助于解析工具，例如 [`expo install`](#expo-install) 或 [VS Code Expo Tools](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools) 更好地工作。请记住，你添加的每一个属性都会增加复杂度，使未来更难修改，并增加你需要测试的功能数量。在可行的情况下，优先使用良好的默认值，而不是强制配置。
 
-## Development environment
+## 开发环境
 
-### Tooling
+### 工具
 
-We highly recommend installing the [Expo Tools VS Code extension](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools) as this will perform automatic validation on the plugins and surface error information along with other quality of life improvements for Config Plugin development.
+我们强烈建议安装 [Expo Tools VS Code 扩展](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools)，因为它会对插件执行自动验证，并显示错误信息，以及为 Config Plugin 开发带来其他一些体验改进。
 
-### Set up a playground environment
+### 搭建一个 playground 环境
 
-You can develop plugins easily using JS, but if you want to set up Jest tests and use TypeScript, you will want a monorepo.
+你可以很容易地使用 JS 来开发插件，但如果你想设置 Jest 测试并使用 TypeScript，你会需要一个 monorepo。
 
-A monorepo will enable you to work on a node module and import it in your app config like you would if it were published to npm. Expo config plugins have full monorepo support built-in so all you need to do is set up a project.
+monorepo 可以让你在一个 node 模块上进行开发，并像它已发布到 npm 一样将其导入到你的应用配置中。Expo 配置插件内置了完整的 monorepo 支持，所以你只需要搭建一个项目即可。
 
-In your monorepo's `packages/` directory, create a module, and [bootstrap a config plugin](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin) in it.
+在 monorepo 的 `packages/` 目录中，创建一个模块，并在其中 [引导一个 config plugin](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin)。
 
-### Manually run a plugin
+### 手动运行插件
 
-If you aren't comfortable setting up a monorepo, you can try manually running a plugin:
+如果你不想搭建 monorepo，也可以尝试手动运行插件：
 
-- Run `npm pack` in the package with the config plugin
-- In your test project, run `npm install path/to/react-native-my-package-1.0.0.tgz`, this will add the package to your **package.json** `dependencies` object.
-- Add the package to the `plugins` array in your **app.json**: `{ "plugins": ["react-native-my-package"] }`
-  - If you have [VS Code Expo Tools](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools) installed, autocomplete should work for the plugin.
-- If you need to update the package, change the `version` in the package's **package.json** and repeat the process.
+- 在包含 config plugin 的包中运行 `npm pack`
+- 在你的测试项目中，运行 `npm install path/to/react-native-my-package-1.0.0.tgz`，这会把该包添加到你的 **package.json** 的 `dependencies` 对象中。
+- 将该包添加到你的 **app.json** 中的 `plugins` 数组：`{ "plugins": ["react-native-my-package"] }`
+  - 如果你安装了 [VS Code Expo Tools](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools)，插件应当可以自动补全。
+- 如果你需要更新该包，请修改包的 **package.json** 中的 `version`，然后重复上述过程。
 
-## Modifying native files with plugins
+## 使用插件修改原生文件
 
-### Modify AndroidManifest.xml
+### 修改 AndroidManifest.xml
 
-Packages should attempt to use the built-in **AndroidManifest.xml** [merging system](https://developer.android.com/studio/build/manage-manifests) before using a config plugin. This can be used for static, non-optional features like permissions. This will ensure features are merged during build-time and not prebuild-time, which minimizes the possibility of the configuration being missed due to users forgetting to prebuild. The drawback is that users cannot use [introspection](#introspection) to preview the changes and debug any potential issues.
+在使用 config plugin 之前，包应尝试使用内置的 **AndroidManifest.xml** [合并系统](https://developer.android.com/studio/build/manage-manifests)。这可用于静态的、非可选的功能，比如权限。这样可以确保功能在构建时而不是 prebuild 时被合并，从而最大限度地减少由于用户忘记执行 prebuild 而导致配置被遗漏的可能性。缺点是用户无法使用 [introspection](#introspection) 来预览更改并调试任何潜在问题。
 
-Here is an example of a package's **AndroidManifest.xml**, which injects a required permission:
+以下是一个包的 **AndroidManifest.xml** 示例，它注入了一个必需的权限：
 
 ```xml AndroidManifest.xml
-<!-- @info Include <code>xmlns:android="..."</code> to use <code>android:*</code> properties like <code>android:name</code> in your manifest. -->
+<!-- @info 包含 <code>xmlns:android="..."</code> 以便在 manifest 中使用诸如 <code>android:name</code> 这样的 <code>android:*</code> 属性。 -->
 <manifest package="expo.modules.filesystem" xmlns:android="http://schemas.android.com/apk/res/android">
   <!-- @end -->
   <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>
 ```
 
-If you're building a plugin for your local project, or if your package needs more control, then you should implement a plugin.
+如果你正在为本地项目构建插件，或者你的包需要更多控制，那么你应该实现一个插件。
 
-You can use built-in types and helpers to ease the process of working with complex objects.
-Here's an example of adding a `<meta-data android:name="..." android:value="..."/>` to the default `<application android:name=".MainApplication" />`.
+你可以使用内置类型和辅助工具来简化处理复杂对象的过程。
+下面是一个向默认的 `<application android:name=".MainApplication" />` 添加 `<meta-data android:name="..." android:value="..."/>` 的示例。
 
 ```ts my-config-plugin.ts
 import { AndroidConfig, ConfigPlugin, withAndroidManifest } from 'expo/config-plugins';
 import { ExpoConfig } from 'expo/config';
 
-// Using helpers keeps error messages unified and helps cut down on XML format changes.
+// 使用辅助工具可以保持错误信息统一，并有助于减少 XML 格式变更。
 const { addMetaDataItemToMainApplication, getMainApplicationOrThrow } = AndroidConfig.Manifest;
 
 export const withMyCustomConfig: ConfigPlugin = config => {
   return withAndroidManifest(config, async config => {
-    // Modifiers can be async, but try to keep them fast.
+    // 修改器可以是 async 的，但尽量保持它们运行快速。
     config.modResults = await setCustomConfigAsync(config, config.modResults);
     return config;
   });
 };
 
-// Splitting this function out of the mod makes it easier to test.
+// 将这个函数从 mod 中拆分出来会更容易测试。
 async function setCustomConfigAsync(
   config: Pick<ExpoConfig, 'android'>,
   androidManifest: AndroidConfig.Manifest.AndroidManifest
 ): Promise<AndroidConfig.Manifest.AndroidManifest> {
   const appId = 'my-app-id';
-  // Get the <application /> tag and assert if it doesn't exist.
+  // 获取 <application /> 标签，如果不存在则抛出错误。
   const mainApplication = getMainApplicationOrThrow(androidManifest);
 
   addMetaDataItemToMainApplication(
     mainApplication,
-    // value for `android:name`
+    // `android:name` 的值
     'my-app-id-key',
-    // value for `android:value`
+    // `android:value` 的值
     appId
   );
 
@@ -179,16 +179,16 @@ async function setCustomConfigAsync(
 }
 ```
 
-### Modify Info.plist
+### 修改 Info.plist
 
-Using the `withInfoPlist` is a bit safer than statically modifying the `expo.ios.infoPlist` object in the **app.json** because it reads the contents of the Info.plist and merges it with the `expo.ios.infoPlist`, this means you can attempt to keep your changes from being overwritten.
+使用 `withInfoPlist` 比直接在 **app.json** 中静态修改 `expo.ios.infoPlist` 对象要更安全一些，因为它会读取 Info.plist 的内容，并将其与 `expo.ios.infoPlist` 合并，这意味着你可以尝试避免自己的更改被覆盖。
 
-Here's an example of adding a `GADApplicationIdentifier` to the **Info.plist**:
+下面是一个向 **Info.plist** 添加 `GADApplicationIdentifier` 的示例：
 
 ```ts my-config-plugin.ts
 import { ConfigPlugin, withInfoPlist } from 'expo/config-plugins';
 
-// Pass `<string>` to specify that this plugin requires a string property.
+// 传入 `<string>` 来指定这个插件需要一个字符串属性。
 export const withCustomConfig: ConfigPlugin<string> = (config, id) => {
   return withInfoPlist(config, config => {
     config.modResults.GADApplicationIdentifier = id;
@@ -197,56 +197,55 @@ export const withCustomConfig: ConfigPlugin<string> = (config, id) => {
 };
 ```
 
-### Modify iOS Podfile
+### 修改 iOS Podfile
 
-The iOS **Podfile** is the config file for CocoaPods, the dependency manager on iOS. It is similar to **package.json** for iOS.
-The **Podfile** is a Ruby file, which means you **cannot** safely modify it from Expo config plugins and should opt for another approach, such as [Expo Autolinking](/modules/autolinking) hooks.
+iOS 的 **Podfile** 是 CocoaPods 的配置文件，而 CocoaPods 是 iOS 上的依赖管理器。它类似于 iOS 的 **package.json**。
+**Podfile** 是一个 Ruby 文件，这意味着你**不能**安全地通过 Expo config plugins 去修改它，而应该选择其他方式，例如 [Expo Autolinking](/modules/autolinking) hooks。
 
-We do expose one mechanism for safely interacting with the Podfile, but it's very limited.
-The versioned [template Podfile](https://github.com/expo/expo/tree/main/templates/expo-template-bare-minimum/ios/Podfile) is hard coded to read
-from a static JSON file **Podfile.properties.json**, we expose a mod (`ios.podfileProperties`, `withPodfileProperties`) to safely read and write from this file.
-This is used by [expo-build-properties](/versions/latest/sdk/build-properties) and to configure the JavaScript engine.
+我们确实提供了一种可以安全操作 Podfile 的机制，但它非常有限。
+带版本的 [模板 Podfile](https://github.com/expo/expo/tree/main/templates/expo-template-bare-minimum/ios/Podfile) 被硬编码为从一个静态 JSON 文件 **Podfile.properties.json** 中读取，我们提供了一个 mod（`ios.podfileProperties`，`withPodfileProperties`）来安全地读写这个文件。
+这被 [expo-build-properties](/versions/latest/sdk/build-properties) 用于配置 JavaScript 引擎。
 
-### Add plugins to `pluginHistory`
+### 将插件添加到 `pluginHistory`
 
-`_internal.pluginHistory` was created to prevent duplicate plugins from running while migrating from legacy UNVERSIONED plugins to versioned plugins.
+`_internal.pluginHistory` 的创建是为了防止在从旧版 UNVERSIONED 插件迁移到版本化插件时，重复运行插件。
 
 ```ts my-config-plugin.ts
 import { ConfigPlugin, createRunOncePlugin } from 'expo/config-plugins';
 
-// Keeping the name, and version in sync with it's package.
+// 保持名称和版本与它的包同步。
 const pkg = require('my-cool-plugin/package.json');
 
 const withMyCoolPlugin: ConfigPlugin = config => config;
 
-// A helper method that wraps `withRunOnce` and appends items to `pluginHistory`.
+// 一个辅助方法，用于包装 `withRunOnce` 并将项目追加到 `pluginHistory`。
 export default createRunOncePlugin(
-  // The plugin to guard.
+  // 要保护的插件。
   withMyCoolPlugin,
-  // An identifier used to track if the plugin has already been run.
+  // 用于跟踪插件是否已经运行过的标识符。
   pkg.name,
-  // Optional version property, if omitted, defaults to UNVERSIONED.
+  // 可选的 version 属性，如果省略，默认值为 UNVERSIONED。
   pkg.version
 );
 ```
 
-### Configure Android app startup
+### 配置 Android 应用启动
 
-You may find that your project requires configuration to be setup before the JS engine has started.
-For example, in `expo-splash-screen` on Android, we need to specify the resize mode in the **MainActivity.java**'s `onCreate` method.
-Instead of attempting to dangerously regex these changes into the `MainActivity` via a dangerous mod, we use a system of lifecycle hooks and static settings
-to safely ensure the feature works across all supported Android languages (Java, Kotlin), versions of Expo, and combination of config plugins.
+你可能会发现，你的项目需要在 JS 引擎启动之前先完成配置。
+例如，在 Android 上的 `expo-splash-screen` 中，我们需要在 **MainActivity.java** 的 `onCreate` 方法里指定 resize mode。
+我们不是尝试通过一个危险的 mod，用正则表达式把这些更改不安全地注入到 `MainActivity` 中，而是使用一套生命周期钩子和静态设置系统，
+以安全地确保该功能在所有受支持的 Android 语言（Java、Kotlin）、Expo 版本以及 config plugins 的组合中都能正常工作。
 
-This system is made up of three components:
+这个系统由三个组件组成：
 
-- `ReactActivityLifecycleListeners`: An interface exposed by `expo-modules-core` to get a native callback when the project `ReactActivity`'s `onCreate` method is invoked.
-- `withStringsXml`: A mod exposed by `expo/config-plugins` which writes a property to the Android **strings.xml** file, the library can safely read the strings.xml value and do initial setup. The string XML values follow a designated format for consistency.
-- `SingletonModule` (optional): An interface exposed by `expo-modules-core` to create a shared interface between native modules and `ReactActivityLifecycleListeners`.
+- `ReactActivityLifecycleListeners`：由 `expo-modules-core` 暴露的一个接口，用于在项目的 `ReactActivity` 的 `onCreate` 方法被调用时获取原生回调。
+- `withStringsXml`：由 `expo/config-plugins` 暴露的一个 mod，它会向 Android 的 **strings.xml** 文件写入一个属性，库可以安全地读取该 strings.xml 值并进行初始设置。字符串 XML 值遵循指定格式以保持一致性。
+- `SingletonModule`（可选）：由 `expo-modules-core` 暴露的一个接口，用于在原生模块和 `ReactActivityLifecycleListeners` 之间创建共享接口。
 
-Consider this example: We want to set a custom "value" string to a property on the Android `Activity`, directly after the `onCreate` method was invoked.
-We can do this safely by creating a node module `expo-custom`, implementing `expo-modules-core`, and Expo config plugins:
+请考虑这个示例：我们希望在 `onCreate` 方法被调用后，直接为 Android `Activity` 的某个属性设置一个自定义的“value”字符串。
+我们可以通过创建一个 node 模块 `expo-custom`、实现 `expo-modules-core`，以及 Expo config plugins 来安全地做到这一点：
 
-First, we register the `ReactActivity` listener in our Android native module, this will only be invoked if the user has `expo-modules-core` support, setup in their project (default in projects bootstrapped with Expo CLI, Create React Native App, Ignite CLI, and Expo prebuilding).
+首先，我们在 Android 原生模块中注册 `ReactActivity` 监听器；只有在用户的项目中已设置 `expo-modules-core` 支持时，这个监听器才会被调用（这在通过 Expo CLI、Create React Native App、Ignite CLI 以及 Expo prebuilding 引导的项目中是默认配置）。
 
 ```kotlin expo-custom/android/src/main/java/expo/modules/custom/CustomPackage.kt
 package expo.modules.custom
@@ -264,7 +263,7 @@ class CustomPackage : BasePackage() {
 }
 ```
 
-Next we implement the `ReactActivity` listener, this is passed the `Context` and is capable of reading from the project **strings.xml** file.
+接下来我们实现 `ReactActivity` 监听器，它会接收 `Context`，并且能够读取项目的 **strings.xml** 文件。
 
 ```kotlin expo-custom/android/src/main/java/expo/modules/custom/CustomReactActivityLifecycleListener.kt
 package expo.modules.custom
@@ -277,23 +276,23 @@ import expo.modules.core.interfaces.ReactActivityLifecycleListener
 
 class CustomReactActivityLifecycleListener(activityContext: Context) : ReactActivityLifecycleListener {
   override fun onCreate(activity: Activity, savedInstanceState: Bundle?) {
-    // Execute static tasks before the JS engine starts.
-    // These values are defined via config plugins.
+    // 在 JS 引擎启动之前执行静态任务。
+    // 这些值通过 config plugins 定义。
 
     var value = getValue(activity)
     if (value != "") {
-      // Do something to the Activity that requires the static value...
+      // 对 Activity 执行某些需要静态值的操作...
     }
   }
 
-  // Naming is node module name (`expo-custom`) plus value name (`value`) using underscores as a delimiter
-  // i.e. `expo_custom_value`
+  // 命名规则是 node 模块名（`expo-custom`）加上 value 名称（`value`），并使用下划线作为分隔符
+  // 即 `expo_custom_value`
   // `@expo/vector-icons` + `iconName` -> `expo__vector_icons_icon_name`
   private fun getValue(context: Context): String = context.getString(R.string.expo_custom_value).toLowerCase()
 }
 ```
 
-We must define default **string.xml** values which the user will overwrite locally by using the same `name` property in their **strings.xml** file.
+我们必须定义默认的 **string.xml** 值，用户会通过在自己的 **strings.xml** 文件中使用相同的 `name` 属性在本地覆盖它。
 
 ```xml expo-custom/android/src/main/res/values/strings.xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -302,16 +301,16 @@ We must define default **string.xml** values which the user will overwrite local
 </resources>
 ```
 
-At this point, bare users can configure this value by creating a string in their local **strings.xml** file (assuming they also have `expo-modules-core` support setup):
+在这一点上，bare 用户可以通过在本地 **strings.xml** 文件中创建一个字符串来配置这个值（前提是他们也已经设置了 `expo-modules-core` 支持）：
 
 ```xml ./android/app/src/main/res/values/strings.xml
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="expo_custom_value" translatable="false">I Love Expo</string>
+    <string name="expo_custom_value" translatable="false">我爱 Expo</string>
 </resources>
 ```
 
-For managed users, we can expose this functionality (safely!) via an Expo config plugin:
+对于 managed 用户，我们可以通过 Expo config plugin（安全地！）暴露这个功能：
 
 ```js expo-custom/app.plugin.js
 const { AndroidConfig, withStringsXml } = require('expo/config-plugins');
@@ -324,10 +323,10 @@ function withCustom(config, value) {
 }
 
 function setStrings(strings, value) {
-  // Helper to add string.xml JSON items or overwrite existing items with the same name.
+  // 用于添加 string.xml JSON 项或覆盖同名现有项的辅助函数。
   return AndroidConfig.Strings.setStringItem(
     [
-      // XML represented as JSON
+      // 以 JSON 表示的 XML
       // <string name="expo_custom_value" translatable="false">value</string>
       { $: { name: 'expo_custom_value', translatable: 'false' }, _: value },
     ],
@@ -336,39 +335,39 @@ function setStrings(strings, value) {
 }
 ```
 
-Managed Expo users can now interact with this API like so:
+现在，managed Expo 用户可以这样与这个 API 交互：
 
 ```json app.json
 {
   "expo": {
-    "plugins": [["expo-custom", "I Love Expo"]]
+    "plugins": [["expo-custom", "我爱 Expo"]]
   }
 }
 ```
 
-By re-running `npx expo prebuild -p` (`eas build -p android`, or `npx expo run:ios`) the user can now see the changes, safely applied in their managed project!
+通过重新运行 `npx expo prebuild -p`（`eas build -p android`，或 `npx expo run:ios`），用户现在就可以看到这些更改，并且它们已经安全地应用到他们的 managed 项目中！
 
-As you can see from the example, we rely heavily on application code (expo-modules-core) to interact with application code (the native project). This ensures that our config plugins are safe and reliable, hopefully for a very long time!
+正如你从这个示例中看到的那样，我们在很大程度上依赖应用代码（expo-modules-core）与应用代码（原生项目）进行交互。这确保了我们的 config plugins 安全且可靠，希望能长期如此！
 
-## Debugging config plugins
+## 调试配置插件
 
-You can debug config plugins by running `EXPO_DEBUG=1 expo prebuild`. If `EXPO_DEBUG` is enabled, the plugin stack logs will be printed, these are useful for viewing which mods ran, and in what order they ran in. To view all static plugin resolution errors, enable `EXPO_CONFIG_PLUGIN_VERBOSE_ERRORS`, this should only be needed for plugin authors. By default, some automatic plugin errors are hidden because they're usually related to versioning issues and aren't very helpful (that is, legacy package doesn't have a config plugin yet).
+你可以通过运行 `EXPO_DEBUG=1 expo prebuild` 来调试配置插件。如果启用了 `EXPO_DEBUG`，将会打印插件堆栈日志，这些日志有助于查看哪些 mod 运行了，以及它们的运行顺序。要查看所有静态插件解析错误，请启用 `EXPO_CONFIG_PLUGIN_VERBOSE_ERRORS`，这通常只对插件作者有用。默认情况下，一些自动插件错误会被隐藏，因为它们通常与版本问题有关，而且不是很有帮助（也就是，旧版包还没有配置插件）。
 
-Running `npx expo prebuild --clean` will remove the generated native directories before compiling.
+运行 `npx expo prebuild --clean` 会在编译前移除生成的原生目录。
 
-You can also run `npx expo config --type prebuild` to print the results of the plugins with the mods unevaluated (no code is generated).
+你也可以运行 `npx expo config --type prebuild` 来打印插件结果，而不评估 mods（不会生成代码）。
 
-Expo CLI commands can be profiled using `EXPO_PROFILE=1`.
+Expo CLI 命令可以使用 `EXPO_PROFILE=1` 进行性能分析。
 
-## Introspection
+## 内省
 
-Introspection is an advanced technique used to read the evaluated results of modifiers without generating any code in the project.
-This can be used to quickly debug the results of [static modifications](#static-modification) without needing to run prebuild.
-You can interact with introspection live, by using the [preview feature](https://github.com/expo/vscode-expo#expo-preview-modifier) of `vscode-expo`.
+内省是一种高级技术，用于读取修饰器的已评估结果，而不在项目中生成任何代码。
+它可用于快速调试[静态修改](#static-modification)的结果，而无需运行 prebuild。
+你可以通过使用 `vscode-expo` 的[预览功能](https://github.com/expo/vscode-expo#expo-preview-modifier)与内省进行实时交互。
 
-You can try introspection by running `expo config --type introspect` in a project.
+你可以在项目中运行 `expo config --type introspect` 来尝试内省。
 
-Introspection only supports a subset of modifiers:
+内省仅支持一部分修饰器：
 
 - `android.manifest`
 - `android.gradleProperties`
@@ -381,33 +380,33 @@ Introspection only supports a subset of modifiers:
 - `ios.expoPlist`
 - `ios.podfileProperties`
 
-> Introspection only works on safe modifiers (static files like JSON, XML, plist, properties), except `ios.xcodeproj` which often requires file system changes, making it non idempotent.
+> 内省仅适用于安全的修饰器（如 JSON、XML、plist、properties 这类静态文件），`ios.xcodeproj` 除外，因为它通常需要文件系统更改，使其不是幂等的。
 
-Introspection works by creating custom base mods that work like the default base mods, except they don't write the `modResults` to disk at the end.
-Instead of persisting, they save the results to the app config under `_internal.modResults`, followed by the name of the mod
-such as the `ios.infoPlist` mod saves to `_internal.modResults.ios.infoPlist: {}`.
+内省的工作方式是创建自定义的基础 mod，它们像默认的基础 mod 一样工作，不同之处在于它们不会在最后将 `modResults` 写入磁盘。
+它们不会持久化，而是将结果保存到应用配置中的 `_internal.modResults` 下，后接 mod 的名称
+例如 `ios.infoPlist` mod 会保存到 `_internal.modResults.ios.infoPlist: {}`。
 
-As a real-world example, introspection is used by `eas-cli` to determine what the final iOS entitlements will be in a managed app, so it can sync them with the Apple Developer Portal before building. Introspection can also be used as a handy debugging and development tool.
+作为一个真实世界的例子，`eas-cli` 使用内省来确定托管应用中最终的 iOS entitlements 将是什么，这样它就可以在构建之前将它们与 Apple Developer Portal 同步。内省也可以作为一个方便的调试和开发工具。
 
 {/* TODO: Link to VS Code extension after preview feature lands */}
 
-## Legacy plugins
+## 旧版插件
 
-To make `eas build` work the same as the classic `expo build` service, we added support for "legacy plugins" which are applied automatically to a project when they're installed in the project.
+为了让 `eas build` 的行为与经典的 `expo build` 服务保持一致，我们增加了对“旧版插件（legacy plugins）”的支持：当这些插件安装到项目中时，会自动应用到项目里。
 
-For instance, say a project has `expo-camera` installed but doesn't have `plugins: ['expo-camera']` in their **app.json**.
-Expo CLI would automatically add `expo-camera` to the plugins to ensure that the required camera and microphone permissions are added to the project.
-The user can still customize the `expo-camera` plugin by adding it to the `plugins` array manually, and the manually defined plugins will take precedence over the automatic plugins.
+例如，假设某个项目安装了 `expo-camera`，但在 **app.json** 中没有配置 `plugins: ['expo-camera']`。
+Expo CLI 会自动将 `expo-camera` 添加到 plugins 中，以确保项目中会添加所需的摄像头和麦克风权限。
+用户仍然可以通过手动将 `expo-camera` 添加到 `plugins` 数组中来自定义该插件，而手动定义的插件会优先于自动插件。
 
-You can debug which plugins were added by running `expo config --type prebuild` and seeing the `_internal.pluginHistory` property.
+你可以运行 `expo config --type prebuild`，并查看 `_internal.pluginHistory` 属性，来调试哪些插件被添加了。
 
-This will show an object with all plugins that were added using `withRunOnce` plugin from `expo/config-plugins`.
+这会显示一个对象，其中包含所有使用 `expo/config-plugins` 中的 `withRunOnce` 插件添加的插件。
 
-Notice that `expo-location` uses `version: '11.0.0'`, and `react-native-maps` uses `version: 'UNVERSIONED'`. This means the following:
+注意，`expo-location` 使用的是 `version: '11.0.0'`，而 `react-native-maps` 使用的是 `version: 'UNVERSIONED'`。这意味着以下几点：
 
-- `expo-location` and `react-native-maps` are both installed in the project.
-- `expo-location` is using the plugin from the project's `node_modules/expo-location/app.plugin.js`
-- The version of `react-native-maps` installed in the project doesn't have a plugin, so it's falling back on the unversioned plugin that is shipped with `expo-cli` for legacy support.
+- `expo-location` 和 `react-native-maps` 都已安装在项目中。
+- `expo-location` 使用的是项目中 `node_modules/expo-location/app.plugin.js` 里的插件
+- 项目中安装的 `react-native-maps` 版本没有插件，因此它会回退到随 `expo-cli` 一起提供的、用于旧版支持的未版本化插件。
 
 ```json
 {
@@ -426,57 +425,57 @@ Notice that `expo-location` uses `version: '11.0.0'`, and `react-native-maps` us
 };
 ```
 
-For the most _stable_ experience, you should try to have no `UNVERSIONED` plugins in your project. This is because the `UNVERSIONED` plugin may not support the native code in your project.
-For instance, say you have an `UNVERSIONED` Facebook plugin in your project, if the Facebook native code or plugin has a breaking change, that will break the way your project prebuilds and cause it to error on build.
+为了获得最 _稳定_ 的体验，你应该尽量让项目中没有 `UNVERSIONED` 插件。这是因为 `UNVERSIONED` 插件可能不支持你项目中的原生代码。
+例如，假设你的项目中有一个 `UNVERSIONED` 的 Facebook 插件，如果 Facebook 的原生代码或插件发生了破坏性变更，就会破坏项目预构建的方式，并导致构建时报错。
 
-## Static modification
+## 静态修改
 
-Plugins can transform application code with regular expressions, but these modifications are dangerous if the template changes over time then the regex becomes hard to predict (similarly if the user modifies a file manually or uses a custom template). Here are some examples of files you shouldn't modify manually, and alternatives.
+插件可以使用正则表达式来转换应用代码，但这些修改是危险的，因为如果模板随着时间发生变化，正则表达式就会变得难以预测（同样地，如果用户手动修改了某个文件，或者使用了自定义模板，也会如此）。下面是一些你不应该手动修改的文件示例，以及可行的替代方案。
 
-### Android Gradle Files
+### Android Gradle 文件
 
-Gradle files are written in either Groovy or Kotlin. They are used to manage dependencies, versioning, and other settings in the Android app.
-Instead of modifying them directly with the `withProjectBuildGradle`, `withAppBuildGradle`, or `withSettingsGradle` mods, utilize the static `gradle.properties` file.
+Gradle 文件可以用 Groovy 或 Kotlin 编写。它们用于管理 Android 应用中的依赖、版本以及其他设置。
+不要直接使用 `withProjectBuildGradle`、`withAppBuildGradle` 或 `withSettingsGradle` mods 来修改它们，而应使用静态的 `gradle.properties` 文件。
 
-The `gradle.properties` is a static key/value pair that groovy files can read from. For example, say you wanted to control some toggle in Groovy:
+`gradle.properties` 是一组静态的键/值对，groovy 文件可以从中读取。例如，假设你想在 Groovy 中控制某个开关：
 
 ```properties gradle.properties
-# @info Safely modified using the <code>withGradleProperties()</code> mod. #
+# @info 可使用 <code>withGradleProperties()</code> mod 安全地修改。 #
 expo.react.jsEngine=hermes
 # @end #
 ```
 
-Then later in a Gradle file:
+然后在后面的 Gradle 文件中：
 
 ```groovy app/build.gradle
-project.ext.react = [/* @info This code would be added to the template ahead of time, but it could be regexed in using <code>withAppBuildGradle()</code> */ enableHermes: findProperty('expo.react.jsEngine') ?: 'jsc' /* @end */]
+project.ext.react = [/* @info 这段代码会提前添加到模板中，但也可以通过 <code>withAppBuildGradle()</code> 使用正则表达式方式注入 */ enableHermes: findProperty('expo.react.jsEngine') ?: 'jsc' /* @end */]
 ```
 
-- For keys in the `gradle.properties`, use camel case separated by `.`s, and usually starting with the `expo` prefix to denote that the property is managed by prebuild.
-- To access the property, use one of two global methods:
-  - `property`: Get a property, throw an error if the property is not defined.
-  - `findProperty`: Get a property without throwing an error if the property is missing. This can often be used with the `?:` operator to provide a default value.
+- 对于 `gradle.properties` 中的键，请使用以 `.` 分隔的驼峰命名，通常以 `expo` 前缀开头，以表明该属性由 prebuild 管理。
+- 要访问该属性，请使用以下两个全局方法之一：
+  - `property`：获取属性，如果属性未定义则抛出错误。
+  - `findProperty`：获取属性，如果属性缺失则不会抛出错误。这通常可以与 `?:` 运算符一起使用，以提供默认值。
 
-Generally, you should only interact with the Gradle file via Expo [Autolinking](/more/glossary-of-terms/#autolinking), this provides a programmatic interface with the project files.
+通常，你应该只通过 Expo [Autolinking](/more/glossary-of-terms/#autolinking) 与 Gradle 文件交互，这会为项目文件提供一个程序化接口。
 
 ### iOS AppDelegate
 
-Some modules may need to add delegate methods to the project AppDelegate. This can be done safely by using [AppDelegate subscribers](/modules/appdelegate-subscribers/) or dangerously via the `withAppDelegate` mod (_strongly discouraged_).
-Using AppDelegate subscribers allows native Expo modules to react to important events in a safe and reliable way.
+某些模块可能需要向项目的 AppDelegate 添加委托方法。可以通过使用 [AppDelegate subscribers](/modules/appdelegate-subscribers/) 安全地完成，也可以通过 `withAppDelegate` mod 以危险方式完成（_强烈不推荐_）。
+使用 AppDelegate subscribers 可以让原生 Expo 模块以安全且可靠的方式响应重要事件。
 
-Below are some examples of the AppDelegate subscribers in action. Additionally, you will find many examples in community repositories on GitHub ([one such example](https://github.com/bamlab/react-native-app-security/blob/c1a861cbd348f404ec18ffae90d1c9bdc66bc00d/ios/RNASAppLifecyleDelegate.swift)).
+下面是一些 AppDelegate subscribers 实际工作的示例。此外，你还可以在 GitHub 上的社区仓库中找到许多示例（[其中一个示例](https://github.com/bamlab/react-native-app-security/blob/c1a861cbd348f404ec18ffae90d1c9bdc66bc00d/ios/RNASAppLifecyleDelegate.swift)）。
 
-- `expo-linking`: [**LinkingAppDelegateSubscriber.swift**](https://github.com/expo/expo/blob/b4ca25a4319d7148258ebd5121d1df40a3b1333e/packages/expo-linking/ios/LinkingAppDelegateSubscriber.swift#L14) (openURL)
-- `expo-notifications`: [**NotificationsAppDelegateSubscriber.swift**](https://github.com/expo/expo/blob/bd469e421856f348d539b1b57325890147935dbc/packages/expo-notifications/ios/EXNotifications/PushToken/EXPushTokenManager.m) (didRegisterForRemoteNotificationsWithDeviceToken, didFailToRegisterForRemoteNotificationsWithError, didReceiveRemoteNotification)
+- `expo-linking`：[**LinkingAppDelegateSubscriber.swift**](https://github.com/expo/expo/blob/b4ca25a4319d7148258ebd5121d1df40a3b1333e/packages/expo-linking/ios/LinkingAppDelegateSubscriber.swift#L14)（openURL）
+- `expo-notifications`：[**NotificationsAppDelegateSubscriber.swift**](https://github.com/expo/expo/blob/bd469e421856f348d539b1b57325890147935dbc/packages/expo-notifications/ios/EXNotifications/PushToken/EXPushTokenManager.m)（didRegisterForRemoteNotificationsWithDeviceToken、didFailToRegisterForRemoteNotificationsWithError、didReceiveRemoteNotification）
 
 ### iOS CocoaPods Podfile
 
-The **Podfile** can be customized with a regular expression (this is considered dangerous because these types of changes do not compose well and multiple changes are likely to collide), but it's more reliable to instead set configuration values in JSON file called **Podfile.properties.json**. See how `podfile_properties` is used to customize the **Podfile** below:
+**Podfile** 可以通过正则表达式进行自定义（之所以认为这很危险，是因为这类更改不容易组合，并且多个更改很可能发生冲突），但更可靠的方式是在名为 **Podfile.properties.json** 的 JSON 文件中设置配置值。下面看看 `podfile_properties` 是如何用来定制 **Podfile** 的：
 
 ```ruby Podfile
 require 'json'
 
-# @info Import a JSON file and parse it in Ruby #
+# @info 导入 JSON 文件并在 Ruby 中解析它 #
 podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
 # @end #
 
@@ -490,44 +489,44 @@ target 'yolo27' do
 end
 ```
 
-Generally, you should only interact with the Podfile via Expo [Autolinking](/more/glossary-of-terms/#autolinking), this provides a programmatic interface with the project files.
+通常，你应该只通过 Expo [Autolinking](/more/glossary-of-terms/#autolinking) 与 Podfile 交互，这会为项目文件提供一个程序化接口。
 
-### Custom base modifiers
+### 自定义基础 modifier
 
-The Expo CLI `npx expo prebuild` command uses [`@expo/prebuild-config`](https://github.com/expo/expo/tree/main/packages/%40expo/prebuild-config) to get the default base modifiers. These defaults only manage a subset of common files, if you want to manage custom files you can do that locally by adding new base modifiers.
+Expo CLI 的 `npx expo prebuild` 命令会使用 [`@expo/prebuild-config`](https://github.com/expo/expo/tree/main/packages/%40expo/prebuild-config) 来获取默认的基础 modifiers。这些默认值只管理一部分常见文件；如果你想管理自定义文件，可以通过添加新的基础 modifier 在本地实现。
 
-For example, say you wanted to add support for managing the `ios/*/AppDelegate.h` file, you could do this by adding a `ios.appDelegateHeader` modifier.
+例如，假设你想增加对 `ios/*/AppDelegate.h` 文件的支持，可以通过添加一个 `ios.appDelegateHeader` modifier 来实现。
 
-> This example uses `tsx` for simple local TypeScript support, this isn't strictly necessary. [Learn more](/guides/typescript/#appconfigjs).
+> 这个示例使用 `tsx` 来提供简单的本地 TypeScript 支持，这并不是严格必需的。[了解更多](/guides/typescript/#appconfigjs)。
 
 ```ts withAppDelegateHeaderBaseMod.ts
 import { ConfigPlugin, IOSConfig, Mod, withMod, BaseMods } from 'expo/config-plugins';
 import fs from 'fs';
 
 /**
- * A plugin which adds new base modifiers to the prebuild config.
+ * 一个向 prebuild 配置添加新基础 modifier 的插件。
  */
 export function withAppDelegateHeaderBaseMod(config) {
   return BaseMods.withGeneratedBaseMods<'appDelegateHeader'>(config, {
     platform: 'ios',
     providers: {
-      // Append a custom rule to supply AppDelegate header data to mods on `mods.ios.appDelegateHeader`
+      // 添加一条自定义规则，为 mods.ios.appDelegateHeader 上的 mods 提供 AppDelegate header 数据
       appDelegateHeader: BaseMods.provider<IOSConfig.Paths.AppDelegateProjectFile>({
-        // Get the local filepath that should be passed to the `read` method.
+        // 获取传递给 read 方法的本地文件路径。
         getFilePath({ modRequest: { projectRoot } }) {
           const filePath = IOSConfig.Paths.getAppDelegateFilePath(projectRoot);
-          // Replace the .m with a .h
+          // 将 .m 替换为 .h
           if (filePath.endsWith('.m')) {
             return filePath.substr(0, filePath.lastIndexOf('.')) + '.h';
           }
-          // Possibly a Swift project...
+          // 可能是 Swift 项目...
           throw new Error(`Could not locate a valid AppDelegate.h at root: "${projectRoot}"`);
         },
-        // Read the input file from the filesystem.
+        // 从文件系统读取输入文件。
         async read(filePath) {
           return IOSConfig.Paths.getFileInfo(filePath);
         },
-        // Write the resulting output to the filesystem.
+        // 将生成的输出写入文件系统。
         async write(filePath: string, { modResults: { contents } }) {
           await fs.promises.writeFile(filePath, contents);
         },
@@ -537,7 +536,7 @@ export function withAppDelegateHeaderBaseMod(config) {
 }
 
 /**
- * (Utility) Provides the AppDelegate header file for modification.
+ * （工具）提供用于修改的 AppDelegate header 文件。
  */
 export const withAppDelegateHeader: ConfigPlugin<Mod<IOSConfig.Paths.AppDelegateProjectFile>> = (
   config,
@@ -550,7 +549,7 @@ export const withAppDelegateHeader: ConfigPlugin<Mod<IOSConfig.Paths.AppDelegate
   });
 };
 
-// (Example) Log the contents of the modifier.
+// （示例）输出 modifier 的内容。
 export const withSimpleAppDelegateHeaderMod = config => {
   return withAppDelegateHeader(config, config => {
     console.log('modify header:', config.modResults);
@@ -559,10 +558,10 @@ export const withSimpleAppDelegateHeaderMod = config => {
 };
 ```
 
-To use this new base mod, add it to the plugins array. The base mod **MUST** be added last after all other plugins that use the mod, this is because it must write the results to disk at the end of the process.
+要使用这个新的基础 mod，请将其添加到 plugins 数组中。基础 mod **必须** 放在最后，排在所有使用该 mod 的其他插件之后，因为它必须在流程结束时将结果写入磁盘。
 
 ```js app.config.js
-// Required for external files using TS
+// 使用 TS 处理外部文件所需
 require('tsx/cjs');
 
 import {
@@ -575,22 +574,22 @@ export default ({ config }) => {
   config.plugins.push(
     withSimpleAppDelegateHeaderMod,
 
-    // Base mods MUST be last
+    // 基础 mod 必须放在最后
     withAppDelegateHeaderBaseMod
   );
   return config;
 };
 ```
 
-For more info, see [the PR that adds support](https://github.com/expo/expo-cli/pull/3852) for this feature.
+更多信息请参见 [添加此功能支持的 PR](https://github.com/expo/expo-cli/pull/3852)。
 
 ## expo install
 
-When a node module is installed with the `npx expo install` command, if it includes a config plugin, it will be added to the project's app config automatically. This makes setup easier and helps prevent users from forgetting to add a plugin. However, this does come with a couple of caveats:
+当使用 `npx expo install` 命令安装一个 node 模块时，如果它包含 config plugin，就会自动将其添加到项目的 app config 中。这让设置更容易，也有助于防止用户忘记添加插件。不过，这也有几个注意事项：
 
-1. `npx expo install` only adds config plugins using the root **app.config.js** file automatically to the app manifest. This rule was added to prevent popular packages like `lodash` from being mistaken for a config plugin and breaking the prebuild.
-2. There is currently no mechanism for detecting if a config plugin has mandatory props. Because of this, `expo install` will only add the plugin, and not attempt to add any extra props. For example, `expo-camera` has optional extra props, so `plugins: ['expo-camera']` is valid, but if it had mandatory props, then `expo-camera` would throw an error.
-3. Plugins can only be automatically added when the user's project uses a static app config (**app.json** and **app.config.json**). If the user runs `expo install expo-camera` in a project with an **app.config.js**, they'll see a warning like:
+1. `npx expo install` 只会自动通过根目录下的 **app.config.js** 文件将 config plugin 添加到 app manifest 中。添加这条规则是为了防止像 `lodash` 这样流行的软件包被误认为是 config plugin，从而破坏 prebuild。
+2. 当前没有机制可以检测某个 config plugin 是否具有必需的 props。因此，`expo install` 只会添加插件，不会尝试添加任何额外 props。例如，`expo-camera` 有可选的额外 props，所以 `plugins: ['expo-camera']` 是有效的，但如果它有必需的 props，那么 `expo-camera` 就会抛出错误。
+3. 只有当用户的项目使用静态 app config（**app.json** 和 **app.config.json**）时，插件才可以被自动添加。如果用户在使用 **app.config.js** 的项目中运行 `expo install expo-camera`，他们会看到类似下面的警告：
 
 ```sh
 Cannot automatically write to dynamic config at: app.config.js

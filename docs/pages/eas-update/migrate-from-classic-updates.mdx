@@ -1,63 +1,63 @@
 ---
-title: Migrate from Classic Updates
-description: A guide to help migrate from Classic Updates to EAS Update.
+title: 从 Classic Updates 迁移
+description: 帮助从 Classic Updates 迁移到 EAS Update 的指南。
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { A } from '~/ui/components/Text';
 
-> **warning** SDK 49 was the last version to support Classic Updates. To continue using the deprecated `expo publish` command, set [`updates.useClassicUpdates`](/versions/latest/config/app/#useclassicupdates) in your app config.
+> **警告** SDK 49 是最后一个支持 Classic Updates 的版本。要继续使用已弃用的 `expo publish` 命令，请在你的应用配置中设置 [`updates.useClassicUpdates`](/versions/latest/config/app/#useclassicupdates)。
 
-EAS Update is the next generation of Expo's updates service. If you're using Classic Updates, this guide will help you upgrade to EAS Update.
+EAS Update 是 Expo 更新服务的下一代。如果你正在使用 Classic Updates，本指南将帮助你升级到 EAS Update。
 
-## Prerequisites
+## 前提条件
 
-EAS Update requires the following versions or greater:
+EAS Update 需要以下版本或更高版本：
 
 - Expo SDK >= 45.0.0
 - Expo CLI >= 5.3.0
 - EAS CLI >= 0.50.0
 - expo-updates >= 0.13.0
 
-## Install EAS CLI
+## 安装 EAS CLI
 
 <Step label="1">
-Install EAS CLI:
+安装 EAS CLI：
 
 <Terminal cmd={['$ npm install --global eas-cli']} />
 
 </Step>
 
 <Step label="2">
-Then, log in with your expo account:
+然后，使用你的 expo 账户登录：
 
 <Terminal cmd={['$ eas login']} />
 
 </Step>
 
-## Configure your project
+## 配置你的项目
 
-You'll need to make the following changes to your project:
+你需要对项目进行以下更改：
 
 <Step label="1">
-Initialize your project with EAS Update:
+使用 EAS Update 初始化你的项目：
 
 <Terminal cmd={['$ eas update:configure']} />
 
-After this command, you should have two new fields in your app config at `expo.updates.url` and `expo.runtimeVersion`.
+执行此命令后，你应该会在应用配置中看到两个新字段：`expo.updates.url` 和 `expo.runtimeVersion`。
 
 </Step>
 
 <Step label="2">
 
-To ensure that updates are compatible with the underlying native code inside a build, EAS Update uses a new field named `runtimeVersion` that replaces the `sdkVersion` field in your project's app config. Remove the `expo.sdkVersion` property from your app config.
+为了确保更新与构建中的底层原生代码兼容，EAS Update 使用了一个名为 `runtimeVersion` 的新字段，它取代了你项目应用配置中的 `sdkVersion` 字段。请从应用配置中移除 `expo.sdkVersion` 属性。
 
 </Step>
 
 <Step label="3">
 
-To allow updates to apply to builds built with EAS, update your EAS Build profiles in **eas.json** to include `channel` properties. These channels replace `releaseChannel` properties. We find it convenient to name the `channel` after the profile's name. For instance, the `preview` profile has a `channel` named `"preview"` and the `production` profile has a `channel` named `"production"`.
+为了允许更新应用到使用 EAS 构建的构建版本中，请更新 **eas.json** 中的 EAS Build 配置文件，添加 `channel` 属性。这些 channel 会取代 `releaseChannel` 属性。我们发现将 `channel` 命名为与配置文件同名很方便。例如，`preview` 配置文件有一个名为 `"preview"` 的 `channel`，而 `production` 配置文件有一个名为 `"production"` 的 `channel`。
 
 ```json eas.json
 {
@@ -81,38 +81,38 @@ To allow updates to apply to builds built with EAS, update your EAS Build profil
 
 <Step label="4">
 
-**Optional**: If your project is a bare React Native project, see [Use EAS Update in an existing project](/eas-update/getting-started/) for the extra configuration you may need.
+**可选**：如果你的项目是一个 bare React Native 项目，请查看 [在现有项目中使用 EAS Update](/eas-update/getting-started/)，了解你可能需要的额外配置。
 
 </Step>
 
-## Create new builds
+## 创建新构建
 
-The changes above affect the native code layer inside builds, which means you'll need to make new builds to start sending updates. Once your builds are complete, you'll be ready to publish an update.
+上述更改会影响构建中的原生代码层，这意味着你需要创建新的构建才能开始发送更新。构建完成后，你就可以发布更新了。
 
-## Publish an update
+## 发布更新
 
-After making a change to your project locally, you're ready to publish an update, run:
+在本地对项目进行更改后，你就可以发布更新了，请运行：
 
 <Terminal
   cmd={[
     '$ eas update --channel [channel-name] --message [message]',
     '',
-    '# Example',
+    '# 示例',
     '$ eas update --channel production --message "Fixes typo"',
   ]}
   cmdCopy="eas update --channel [channel-name] --message [message]"
 />
 
-Once published, you can see the update in the [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/updates).
+发布后，你可以在 [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/updates) 中查看该更新。
 
-## Additional migration steps
+## 其他迁移步骤
 
-- Replace instances of `expo publish` with `eas update` in scripts. You can view all the options for publishing with `eas update --help`.
-- If you have any code that references `Updates.releaseChannel` from the `expo-updates` library, replace them with `Updates.channel`.
-- Remove any code that references `Constants.manifest`. That will now always return `null`. You can access most properties you'll need with `Constants.expoConfig` from the `expo-constants` library.
+- 在脚本中将 `expo publish` 的实例替换为 `eas update`。你可以使用 `eas update --help` 查看发布的所有选项。
+- 如果你的任何代码引用了 `expo-updates` 库中的 `Updates.releaseChannel`，请将其替换为 `Updates.channel`。
+- 移除任何引用 `Constants.manifest` 的代码。这现在将始终返回 `null`。你可以通过 `expo-constants` 库中的 `Constants.expoConfig` 访问大多数你需要的属性。
 
-## Learn more
+## 了解更多
 
-The steps described above allow you to use a similar flow to Classic Updates. However, EAS Update is more flexible and has more features. It can be used to create more stable release flows. Learn [how EAS Update works](/eas-update/how-it-works) and how you can craft a more stable [deployment process](/eas-update/deployment-patterns) for your project and your team.
+上面描述的步骤使你能够使用与 Classic Updates 类似的流程。然而，EAS Update 更加灵活，功能也更多。它可用于创建更稳定的发布流程。了解 [EAS Update 的工作原理](/eas-update/how-it-works) 以及如何为你的项目和团队设计更稳定的 [部署流程](/eas-update/deployment-patterns)。
 
-If you experience issues with migrating, check out our [debugging guide](/eas-update/debug). If you have feedback, join us on <A href="https://chat.expo.dev/" shouldLeakReferrer>Discord</A> in the #update channel.
+如果你在迁移过程中遇到问题，请查看我们的 [调试指南](/eas-update/debug)。如果你有反馈，欢迎加入我们的 <A href="https://chat.expo.dev/" shouldLeakReferrer>Discord</A>，在 #update 频道中交流。

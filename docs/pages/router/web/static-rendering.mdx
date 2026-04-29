@@ -1,6 +1,6 @@
 ---
-title: Static rendering
-description: Learn how to render routes to static HTML and CSS files with Expo Router.
+title: 静态渲染
+description: 了解如何使用 Expo Router 将路由渲染为静态 HTML 和 CSS 文件。
 ---
 
 import { PaddedAPIBox } from '~/components/plugins/PaddedAPIBox';
@@ -8,15 +8,15 @@ import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-To enable Search Engine Optimization (SEO) on the web you must statically render your app. This guide will walk you through the process of statically rendering your Expo Router app.
+要在网页上启用搜索引擎优化（SEO），你必须对应用进行静态渲染。本指南将带你完成 Expo Router 应用的静态渲染过程。
 
-> **info** With static rendering, [data loaders](/router/web/data-loaders) are executed during the build process and their results are embedded in the output HTML files.
+> **info** 使用静态渲染时，[data loaders](/router/web/data-loaders) 会在构建过程中执行，并将其结果嵌入到输出的 HTML 文件中。
 
-## Setup
+## 设置
 
 <Step label="1">
 
-Enable static rendering in your project's [app config](/versions/latest/config/app/):
+在你项目的 [app config](/versions/latest/config/app/) 中启用静态渲染：
 
 ```json app.json
 {
@@ -34,60 +34,60 @@ Enable static rendering in your project's [app config](/versions/latest/config/a
 
 <Step label="2">
 
-Start the development server:
+启动开发服务器：
 
 <Terminal cmd={['$ npx expo start']} />
 
 </Step>
 
-## Production
+## 生产环境
 
-To bundle your static website for production, run the export command:
+要为生产环境打包你的静态网站，请运行导出命令：
 
 <Terminal cmd={['$ npx expo export --platform web']} />
 
-This will create a **dist** directory with your statically rendered website. If you have files in a local **public** directory, these will be copied over as well.
-You can test the production build locally by running the following command and opening the linked URL in your browser:
+这将创建一个包含静态渲染网站的 **dist** 目录。如果你在本地 **public** 目录中有文件，这些文件也会一并被复制过去。
+你可以在本地测试生产构建，方法是运行以下命令并在浏览器中打开链接的 URL：
 
 <Terminal cmd={['$ npx serve dist']} />
 
-This project can be deployed to almost every hosting service. Note that this is not a single-page application, nor does it contain a custom server API. This means dynamic routes (for example, **src/app/[id].tsx**) will not arbitrarily work. You may need to build a serverless function to handle dynamic routes.
+这个项目可以部署到几乎所有托管服务。请注意，这既不是单页应用，也不包含自定义服务器 API。这意味着动态路由（例如 **src/app/[id].tsx**）不会按预期正常工作。你可能需要构建一个无服务器函数来处理动态路由。
 
-## Dynamic Routes
+## 动态路由
 
-The `static` output will generate HTML files for each route. This means dynamic routes (**src/app/[id].tsx**) will not work out of the box. You can generate known routes ahead of time using the `generateStaticParams` function.
+`static` 输出会为每个路由生成 HTML 文件。这意味着动态路由（**src/app/[id].tsx**）开箱即用并不起作用。你可以使用 `generateStaticParams` 函数提前生成已知路由。
 
 ```tsx src/app/blog/[id].tsx
 import { Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
-/* @info This method is run in a Node.js environment at build-time. */
+/* @info 该方法会在构建时于 Node.js 环境中运行。 */
 export async function generateStaticParams(): Promise<Record<string, string>[]> {
   /* @end */
   const posts = await getPosts();
-  // Return an array of params to generate static HTML files for.
-  // Each entry in the array will be a new page.
+  // 返回一个参数数组，用于生成静态 HTML 文件。
+  // 数组中的每一项都会成为一个新页面。
   return posts.map(post => ({ id: post.id }));
 }
 
 export default function Page() {
   const { id } = useLocalSearchParams();
 
-  return <Text>Post {id}</Text>;
+  return <Text>文章 {id}</Text>;
 }
 ```
 
-This will output a file for each post in the **dist** directory. For example, if the `generateStaticParams` method returned `[{ id: "alpha" }, { id: "beta" }]`, the following files would be generated:
+这会在 **dist** 目录中为每篇文章输出一个文件。例如，如果 `generateStaticParams` 方法返回 `[{ id: "alpha" }, { id: "beta" }]`，则会生成以下文件：
 
 <FileTree files={['dist/blog/alpha.html', 'dist/blog/beta.html']} />
 
 <PaddedAPIBox header="generateStaticParams">
 
-A server-only function evaluated at build-time in a Node.js environment by Expo CLI. This means it has access to `__dirname`, `process.cwd()`, `process.env`, and more. It also has access to every environment variable that's available in the process. However, the values prefixed with `EXPO_PUBLIC_` do not run in a browser environment, so it cannot access browser APIs such as `localStorage` or `document`. It also cannot access native Expo APIs such as `expo-camera` or `expo-location`.
+由 Expo CLI 在 Node.js 环境中于构建时求值的仅服务器函数。这意味着它可以访问 `__dirname`、`process.cwd()`、`process.env` 等更多内容。它还可以访问进程中可用的每个环境变量。不过，前缀为 `EXPO_PUBLIC_` 的值不会在浏览器环境中运行，因此它无法访问诸如 `localStorage` 或 `document` 之类的浏览器 API。它也无法访问诸如 `expo-camera` 或 `expo-location` 之类的原生 Expo API。
 
 ```tsx src/app/[id].tsx
 export async function generateStaticParams(): Promise<Record<string, string>[]> {
-  /* @info Prints the current working directory */
+  /* @info 打印当前工作目录 */
   console.log(process.cwd());
   /* @end */
 
@@ -95,17 +95,17 @@ export async function generateStaticParams(): Promise<Record<string, string>[]> 
 }
 ```
 
-`generateStaticParams` cascades from nested parents down to children. The cascading parameters are passed to every dynamic child route that exports **generateStaticParams**.
+`generateStaticParams` 会从嵌套父级向子级级联传递。级联参数会传递给每一个导出 **generateStaticParams** 的动态子路由。
 
 ```tsx src/app/[id]/_layout.tsx
 export async function generateStaticParams(): Promise<Record<string, string>[]> {
-  /* @info Any dynamic children that export <CODE>generateStaticParams</CODE> will be invoked once for every entry in the array. */
+  /* @info 任何导出 <CODE>generateStaticParams</CODE> 的动态子路由，都会针对数组中的每一项各调用一次。 */
   return [{ id: 'one' }, { id: 'two' }];
   /* @end */
 }
 ```
 
-Now the dynamic child routes will be invoked twice, once with `{ id: 'one' }` and once with `{ id: 'two' }`. All variations must be accounted for.
+现在，动态子路由将被调用两次，一次使用 `{ id: 'one' }`，另一次使用 `{ id: 'two' }`。所有组合都必须被考虑到。
 
 ```tsx src/app/[id]/[comment].tsx
 export async function generateStaticParams(params: {
@@ -113,7 +113,7 @@ export async function generateStaticParams(params: {
 }): Promise<Record<string, string>[]> {
   const comments = await getComments(params.id);
   return comments.map(comment => ({
-    /* @info Ensure the parent properties are passed down too. */
+    /* @info 确保父级属性也一并向下传递。 */
     ...params,
     /* @end */
     comment: comment.id,
@@ -123,11 +123,11 @@ export async function generateStaticParams(params: {
 
 </PaddedAPIBox>
 
-### Read files using `process.cwd()`
+### 使用 `process.cwd()` 读取文件
 
-Since Expo Router compiles your code into a separate directory you cannot use `__dirname` to form a path as its value will be different than expected.
+由于 Expo Router 会将你的代码编译到一个单独的目录中，因此你不能使用 `__dirname` 来构造路径，因为它的值会与预期不同。
 
-Instead, use `process.cwd()`, which gives you the directory where the project is being compiled.
+相反，请使用 `process.cwd()`，它会返回项目正在编译的目录。
 
 ```tsx src/app/[category].tsx
 import fs from 'node:fs/promises';
@@ -146,22 +146,22 @@ export async function generateStaticParams(params: {
 }
 ```
 
-## Root HTML
+## 根 HTML
 
-By default, every page is wrapped with some small HTML boilerplate, this is known as the **root HTML**.
+默认情况下，每个页面都会被一些简短的 HTML 脚手架包裹，这称为 **根 HTML**。
 
-You can customize the root HTML file by creating a **src/app/+html.tsx** file in your project. This file exports a React component that only ever runs in Node.js, which means global CSS cannot be imported inside of it. The component will wrap all routes in the **app** directory. This is useful for adding global `<head>` elements or disabling body scrolling.
+你可以在项目中创建 **src/app/+html.tsx** 文件来自定义根 HTML 文件。该文件导出一个 React 组件，它只会在 Node.js 中运行，这意味着其中不能导入全局 CSS。该组件会包裹 **app** 目录中的所有路由。这对于添加全局 `<head>` 元素或禁用页面滚动非常有用。
 
-> **Note**: Global context providers should go in the [Root Layout](/router/basics/navigation-layouts/#root-layout) component, not the Root HTML component.
+> **Note**: 全局上下文提供者应放在 [Root Layout](/router/basics/navigation-layouts/#root-layout) 组件中，而不是 Root HTML 组件中。
 
 ```tsx src/app/+html.tsx
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { type PropsWithChildren } from 'react';
 
-// This file is web-only and used to configure the root HTML for every
-// web page during static rendering.
-// The contents of this function only run in Node.js environments and
-// do not have access to the DOM or browser APIs.
+// 此文件仅用于 Web，并用于为每个
+// 在静态渲染期间的网页配置根 HTML。
+// 此函数的内容仅在 Node.js 环境中运行，
+// 无法访问 DOM 或浏览器 API。
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -171,12 +171,12 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
         {/*
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
-          However, body scrolling is often nice to have for mobile web. If you want to enable it, remove this line.
+          禁用 Web 上的 body 滚动。这会使 ScrollView 组件的行为更接近原生端。
+          不过，在移动端 Web 上，body 滚动通常也很有用。如果你想启用它，请删除这一行。
         */}
         <ScrollViewStyleReset />
 
-        {/* Add any additional <head> elements that you want globally available on web... */}
+        {/* 添加你希望在 Web 上全局可用的任何额外 <head> 元素... */}
       </head>
       <body>{children}</body>
     </html>
@@ -184,21 +184,21 @@ export default function Root({ children }: PropsWithChildren) {
 }
 ```
 
-- The `children` prop comes with the root `<div id="root" />` tag included inside.
-- The JavaScript scripts are appended after the static render.
-- React Native web styles are statically injected automatically.
-- Global CSS should not be imported into this file. Instead, use the [Root Layout](/router/basics/navigation-layouts/#root-layout). Expo Router traverses the dependency graph starting from the root layout, so importing CSS elsewhere can cause unexpected loading order where **node_modules** CSS takes precedence over your custom styles.
-- Browser APIs like `window.location` are unavailable in this component as it only runs in Node.js during static rendering.
+- `children` 属性会包含根 `<div id="root" />` 标签。
+- JavaScript 脚本会在静态渲染之后附加。
+- React Native Web 样式会自动进行静态注入。
+- 不要将全局 CSS 导入到这个文件中。应改为使用 [Root Layout](/router/basics/navigation-layouts/#root-layout)。Expo Router 会从根布局开始遍历依赖图，因此在其他地方导入 CSS 可能会导致意外的加载顺序，使 **node_modules** 中的 CSS 优先于你的自定义样式。
+- 诸如 `window.location` 之类的浏览器 API 在此组件中不可用，因为它只会在静态渲染期间于 Node.js 中运行。
 
 ### `expo-router/html`
 
-The exports from `expo-router/html` are related to the Root HTML component.
+来自 `expo-router/html` 的导出与 Root HTML 组件相关。
 
-- `ScrollViewStyleReset`: Root style-reset for full-screen [React Native web apps](https://necolas.github.io/react-native-web/docs/setup/#root-element) with a root `<ScrollView />` should use the following styles to ensure native parity.
+- `ScrollViewStyleReset`: 对于带有根 `<ScrollView />` 的全屏 [React Native web apps](https://necolas.github.io/react-native-web/docs/setup/#root-element)，应使用根样式重置，以确保与原生端保持一致。
 
-## Meta tags
+## Meta 标签
 
-You can add meta tags to your pages with the `<Head />` module from `expo-router`:
+你可以使用 `expo-router` 中的 `<Head />` 模块为页面添加 meta 标签：
 
 ```tsx src/app/about.tsx
 import Head from 'expo-router/head';
@@ -208,28 +208,28 @@ export default function Page() {
   return (
     <>
       <Head>
-        <title>My Blog Website</title>
-        <meta name="description" content="This is my blog." />
+        <title>我的博客网站</title>
+        <meta name="description" content="这是我的博客。" />
       </Head>
-      <Text>About my blog</Text>
+      <Text>关于我的博客</Text>
     </>
   );
 }
 ```
 
-The head elements can be updated dynamically using the same API. However, it's useful for SEO to have static head elements rendered ahead of time.
+可以使用相同的 API 动态更新 head 元素。不过，为了 SEO，提前静态渲染 head 元素会很有用。
 
-## Static files
+## 静态文件
 
-Expo CLI supports a root **public** directory that gets copied to the **dist** directory during static rendering. This is useful for adding static files like images, fonts, and other assets.
+Expo CLI 支持一个根 **public** 目录，在静态渲染期间会被复制到 **dist** 目录。这对于添加图片、字体和其他资源等静态文件非常有用。
 
 <FileTree
   files={['public/favicon.ico', 'public/logo.png', 'public/.well-known/apple-app-site-association']}
 />
 
-> **warning** Some paths such as `/assets` are reserved by Metro. Avoid placing files in **public/assets/** or other reserved paths. See [Reserved paths](/router/reference/reserved-paths/) for the complete list.
+> **warning** 某些路径（例如 `/assets`）是 Metro 预留的。请避免将文件放在 **public/assets/** 或其他预留路径中。完整列表请参见 [Reserved paths](/router/reference/reserved-paths/)。
 
-These files will be copied to the **dist** directory during static rendering:
+这些文件会在静态渲染期间被复制到 **dist** 目录：
 
 <FileTree
   files={[
@@ -242,7 +242,7 @@ These files will be copied to the **dist** directory during static rendering:
   ]}
 />
 
-> **info** **Web only**: Static assets can be accessed in runtime code using relative paths. For example, the **logo.png** can be accessed at `/logo.png`:
+> **info** **仅限 Web**：静态资源可以在运行时代码中通过相对路径访问。例如，**logo.png** 可以通过 `/logo.png` 访问：
 
 ```tsx src/app/index.tsx
 import { Image } from 'react-native';
@@ -252,24 +252,24 @@ export default function Page() {
 }
 ```
 
-## Fonts
+## 字体
 
-Expo Font has automatic static optimization for font loading in Expo Router. When you load a font with `expo-font`, Expo CLI will automatically extract the font resource and embed it in the page's HTML, enabling preloading, faster hydration, and reduced layout shift.
+Expo Font 在 Expo Router 中对字体加载提供自动静态优化。当你使用 `expo-font` 加载字体时，Expo CLI 会自动提取字体资源并将其嵌入页面的 HTML 中，从而实现预加载、更快的 hydration 以及更少的布局偏移。
 
-The following snippet will load Inter into the namespace and statically optimize on web:
+下面的代码片段会将 Inter 加载到命名空间中，并在 Web 上进行静态优化：
 
 ```tsx src/app/home.tsx
 import { Text } from 'react-native';
 import { useFonts } from 'expo-font';
 
 export default function App() {
-  /* @info Expo CLI automatically finds and extracts this font during compilation. */
+  /* @info Expo CLI 会在编译期间自动查找并提取此字体。 */
   const [isLoaded] = useFonts({
     /* @end */
     inter: require('@/assets/inter.ttf'),
   });
 
-  /* @info Always true on web with static rendering enabled. */
+  /* @info 在启用静态渲染的 Web 上始终为 true。 */
   if (!isLoaded) {
     /* @end */
     return null;
@@ -279,10 +279,10 @@ export default function App() {
 }
 ```
 
-This generates the following static HTML:
+这会生成以下静态 HTML：
 
 ```html dist/home.html
-/* @info preload the font before the JavaScript loads. */
+/* @info 在 JavaScript 加载之前预加载字体。 */
 <link rel="preload" href="/assets/inter.ttf" as="font" crossorigin />
 /* @end */
 <style id="expo-generated-fonts" type="text/css">
@@ -294,24 +294,24 @@ This generates the following static HTML:
 </style>
 ```
 
-- Static font optimization requires the font to be loaded synchronously. If the font isn't statically optimized, it could be because it was loaded inside a `useEffect`, deferred component, or async function.
-- Static optimization is only supported with `Font.loadAsync` and `Font.useFonts` from `expo-font`. Wrapper functions are supported as long as the wrappers are synchronous.
+- 静态字体优化要求字体同步加载。如果字体没有被静态优化，可能是因为它是在 `useEffect`、延迟组件或异步函数中加载的。
+- 静态优化仅支持 `expo-font` 中的 `Font.loadAsync` 和 `Font.useFonts`。只要包装函数是同步的，就支持包装函数。
 
-## Common questions
+## 常见问题
 
-### How do I add a custom server?
+### 如何添加自定义服务器？
 
-There is no prescriptive way to add a custom server. You can use any server you want. However, you will need to handle dynamic routes yourself. You can use the `generateStaticParams` function to generate static HTML files for known routes.
+添加自定义服务器没有规定的方式。你可以使用任何你想要的服务器。不过，你需要自己处理动态路由。你可以使用 `generateStaticParams` 函数为已知路由生成静态 HTML 文件。
 
-In the future, there will be a server API, and a new `web.output` mode which will generate a project that will (among other things) support dynamic routes.
+将来会提供一个服务器 API，以及一种新的 `web.output` 模式，它将生成一个项目，并且（在其他功能中）支持动态路由。
 
-## Server-side Rendering
+## 服务器端渲染
 
-Rendering at request-time is not supported with `web.output: 'static'`. To render pages dynamically on each request, use [server rendering](/router/web/server-rendering) with `web.output: 'server'` instead.
+当 `web.output: 'static'` 时，不支持在请求时进行渲染。要在每次请求时动态渲染页面，请改用 [服务器渲染](/router/web/server-rendering)，并将 `web.output` 设置为 `'server'`。
 
-### Where can I deploy statically rendered websites?
+### 我可以将静态渲染的网站部署到哪里？
 
-You can deploy your statically rendered website to any static hosting service. Here are some popular options:
+你可以将静态渲染的网站部署到任何静态托管服务。以下是一些常见的选项：
 
 - [EAS Hosting](/eas/hosting/introduction/)
 - [Netlify](https://www.netlify.com/)
@@ -322,4 +322,4 @@ You can deploy your statically rendered website to any static hosting service. H
 - [Render](https://render.com/)
 - [Surge](https://surge.sh/)
 
-> **Note:** You don't need to add Single-Page Application styled redirects to your static hosting service. The static website is not a single-page application. It is a collection of static HTML files.
+> **注意：** 你不需要在静态托管服务上添加单页应用风格的重定向。静态网站不是单页应用。它是由静态 HTML 文件组成的集合。

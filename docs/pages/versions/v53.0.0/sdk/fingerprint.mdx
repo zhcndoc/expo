@@ -1,7 +1,7 @@
 ---
-title: Expo Fingerprint
-sidebar_title: Fingerprint
-description: A library to generate a fingerprint from a React Native project.
+title: Expo 指纹
+sidebar_title: 指纹
+description: 一个用于从 React Native 项目生成指纹的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-53/packages/@expo/fingerprint'
 packageName: '@expo/fingerprint'
 iconUrl: '/static/images/packages/expo-fingerprint.png'
@@ -14,51 +14,51 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 import { CODE } from '~/ui/components/Text';
 
-`@expo/fingerprint` provides an API to generate a fingerprint (hash) of your project for use in determining compatibility between the native layer and JavaScript layer of your app. The hash calculation is configurable, but is by default derived from hashing app dependencies, custom native code, native project files, and configuration.
+`@expo/fingerprint` 提供了一个 API，用于生成你的项目指纹（哈希），以便用于判断应用的原生层和 JavaScript 层之间的兼容性。哈希计算是可配置的，但默认情况下会通过对应用依赖项、自定义原生代码、原生项目文件和配置进行哈希处理来生成。
 
-## Installation
+## 安装
 
-`@expo/fingerprint` is included with [`expo`](expo.mdx) and [`expo-updates`](updates.mdx) by default.
+`@expo/fingerprint` 默认随 [`expo`](expo.mdx) 和 [`expo-updates`](updates.mdx) 一起包含。
 
-If you wish to use `@expo/fingerprint` as a standalone package, you can install it by running the command:
+如果你希望将 `@expo/fingerprint` 作为独立包使用，可以运行以下命令进行安装：
 
 <Terminal cmd={['$ npx expo install @expo/fingerprint']} />
 
-## CLI Usage
+## CLI 用法
 
 <Terminal cmd={['$ npx @expo/fingerprint --help']} />
 
-## Configuration
+## 配置
 
-`@expo/fingerprint` provides defaults that should work for most projects, but also provides a few ways to configure the fingerprinting process to better fit your app structure and workflow.
+`@expo/fingerprint` 提供了适用于大多数项目的默认配置，但也提供了几种方式来自定义指纹生成过程，使其更适合你的应用结构和工作流程。
 
 ### .fingerprintignore
 
-Placed in your project root, **.fingerprintignore** is a [**.gitignore**](https://git-scm.com/docs/gitignore#_pattern_format)-like ignore mechanism used to exclude files from hash calculation. All pattern paths are relative to the project root. It behaves similarly but instead uses `minimatch` for pattern matching which has some [limitations](#limitations) (see documentation for `ignorePaths` under [Options](#options)).
+放置在项目根目录中的 **.fingerprintignore** 是一种类似 [**.gitignore**](https://git-scm.com/docs/gitignore#_pattern_format) 的忽略机制，用于排除不参与哈希计算的文件。所有模式路径都相对于项目根目录。它的行为类似，但实际上使用 `minimatch` 进行模式匹配，这有一些 [限制](#limitations)（有关 [Options](#options) 下 `ignorePaths` 的说明请参见文档）。
 
-Here is an example **.fingerprintignore** configuration:
+下面是一个 **.fingerprintignore** 配置示例：
 
 ```ignore .fingerprintignore
-# Ignore the entire android directory
+# 忽略整个 android 目录
 android/**/*
 
-# Ignore the entire ios directory but still keep ios/Podfile and ios/Podfile.lock
+# 忽略整个 ios 目录，但仍保留 ios/Podfile 和 ios/Podfile.lock
 ios/**/*
 !ios/Podfile
 !ios/Podfile.lock
 
-# Ignore specific package in node_modules
+# 忽略 node_modules 中的特定包
 node_modules/some-package/**/*
 
-# Same as above but having broader scope because packages may be nested
+# 与上面相同，但作用范围更广，因为包可能嵌套存在
 **/node_modules/some-package/**/*
 ```
 
 ### fingerprint.config.js
 
-Placed in your project root, **fingerprint.config.js** allows you to specify custom hash calculation configuration beyond what is configurable in the **.fingerprintignore**. For supported configurations, see [Config](#config) and [`SourceSkips`](#sourceskips).
+放置在项目根目录中的 **fingerprint.config.js** 允许你在 **.fingerprintignore** 可配置的范围之外，指定自定义的哈希计算配置。有关受支持的配置，请参见 [Config](#config) 和 [`SourceSkips`](#sourceskips)。
 
-Below is an example **fingerprint.config.js** configuration, assuming you have `@expo/fingerprint` installed as a direct dependency:
+下面是一个 **fingerprint.config.js** 配置示例，假设你已将 `@expo/fingerprint` 作为直接依赖安装：
 
 ```js fingerprint.config.js
 /** @type {import('@expo/fingerprint').Config} */
@@ -72,21 +72,21 @@ const config = {
 module.exports = config;
 ```
 
-If you are using `@expo/fingerprint` through `expo` (where `@expo/fingerprint` is installed as a transitive dependency), you can import fingerprint from `expo/fingerprint`:
+如果你通过 `expo` 使用 `@expo/fingerprint`（此时 `@expo/fingerprint` 作为传递依赖安装），你可以从 `expo/fingerprint` 导入 fingerprint：
 
 ```js
 /** @type {import('expo/fingerprint').Config} */
 ```
 
-<Collapsible summary="Advanced: Customize sources before fingerprint hashing">
+<Collapsible summary="高级：在指纹哈希之前自定义源码">
 
-In some cases, you may want to customize the sources before fingerprinting. For example:
+在某些情况下，你可能希望在生成指纹之前自定义源码。例如：
 
-- You want to remove sensitive data from the app config.
-- You want to stabilize dynamic values in the app config.
-- You want to transform file hashes to stable values.
+- 你想从应用配置中移除敏感数据。
+- 你想稳定应用配置中的动态值。
+- 你想将文件哈希转换为稳定值。
 
-To do this, you can use the `fileHookTransform` option in the **fingerprint.config.js** file to transform the sources before hashing. Learn more about the [`fileHookTransform` option](#filehooktransformfunctionsource-chunk-isendoffile-encoding).
+为此，你可以在 **fingerprint.config.js** 文件中使用 `fileHookTransform` 选项，在哈希之前转换源码。了解更多关于 [`fileHookTransform` 选项](#filehooktransformfunctionsource-chunk-isendoffile-encoding) 的信息。
 
 ```js fingerprint.config.js
 const assert = require('node:assert');
@@ -96,7 +96,7 @@ const fileChunkMap = {};
 /** @type {import('@expo/fingerprint').Config} */
 const config = {
   fileHookTransform: (source, chunk, isEndOfFile, encoding) => {
-    // Remove the "updates" section from the app config
+    // 从应用配置中移除 "updates" 部分
     if (source.type === 'contents' && source.id === 'expoConfig') {
       assert(isEndOfFile, 'contents source is expected to have single chunk.');
       const config = JSON.parse(chunk);
@@ -104,18 +104,18 @@ const config = {
       return JSON.stringify(config);
     }
 
-    // Transform content sources to an empty string
+    // 将内容源转换为空字符串
     if (source.type === 'contents' && source.id === 'packageJson:scripts') {
       return '';
     }
 
-    // Transform a file source by replacing dynamic values
+    // 通过替换动态值来转换文件源
     if (source.type === 'file' && source.filePath === 'eas.json') {
       return chunk.toString().replace(/MyApp-Dev/g, 'MyApp');
     }
 
-    // Transform a large file that is processed in multiple chunks
-    // To get the full file, buffer all chunks and return them all at once
+    // 转换一个分多块处理的大文件
+    // 要获取完整文件，需要缓存所有块并一次性返回
     if (source.type === 'file' && source.filePath === 'assets/large-image.jpg') {
       let receivedBuffer = fileChunkMap[source.filePath] ?? Buffer.alloc(0);
       if (chunk != null) {
@@ -127,12 +127,12 @@ const config = {
         return null;
       }
       fileChunkMap[source.filePath] = null;
-      // The full payload is available here and you can transform it as needed.
+      // 完整载荷可在此处获取，你可以根据需要进行转换。
       receivedBuffer = receivedBuffer.toString().replace(/SensitiveData/g, 'StableData');
       return receivedBuffer;
     }
 
-    // For other sources, just return the chunk
+    // 对于其他源，直接返回 chunk
     return chunk;
   },
 };
@@ -142,19 +142,19 @@ module.exports = config;
 
 </Collapsible>
 
-## Limitations
+## 限制
 
-<Collapsible summary={<>Limited support for <CODE>@expo/config-plugins</CODE> raw functions</>}>
+<Collapsible summary={<>对 <CODE>@expo/config-plugins</CODE> 原始函数的支持有限</>}>
 
-When using config plugins with raw functions, it's essential to be aware of certain limitations, particularly in the context of fingerprinting. The library makes a best effort to generate fingerprints for changes made through config plugins; however, raw functions pose specific challenges. Raw functions are not serializable as fingerprints, which means they cannot be directly used for generating unique hashes.
+在使用带有原始函数的配置插件时，必须注意某些限制，尤其是在指纹生成的上下文中。该库会尽最大努力为通过配置插件所做的更改生成指纹；然而，原始函数带来了特定挑战。原始函数无法作为指纹被序列化，这意味着它们不能直接用于生成唯一哈希。
 
-To work around this limitation, the library employs one of the following strategies to create serializable fingerprints for raw functions:
+为了解决这一限制，库会采用以下策略之一为原始函数创建可序列化的指纹：
 
-1. Using `Function.name`: The library utilizes the `Function.name` property if available for named raw functions. This property provides a recognizable name for the function, which can be used as a fingerprint property.
+1. 使用 `Function.name`：对于具名的原始函数，如果可用，库会使用 `Function.name` 属性。该属性会提供函数一个可识别的名称，可作为指纹属性使用。
 
-2. Using `withAnonymous`: For anonymous raw functions without a `Function.name`, the library resorts to using `withAnonymous` as the fingerprint property. This is a generic identifier for anonymous functions.
+2. 使用 `withAnonymous`：对于没有 `Function.name` 的匿名原始函数，库会改用 `withAnonymous` 作为指纹属性。这是匿名函数的通用标识符。
 
-Here's an example to illustrate a case in which the library will use [`withMyPlugin`, `withAnonymous`] as plugin properties for fingerprint hashing:
+下面是一个示例，用于说明库将在何种情况下使用 [`withMyPlugin`, `withAnonymous`] 作为插件属性来进行指纹哈希：
 
 {/* prettier-ignore */}
 ```js app.config.js
@@ -175,13 +175,13 @@ export default ({ config }) => {
 };
 ```
 
-It's important to note that due to this design, if you make changes to the implementation of raw config plugins functions, such as altering the **Info.plist** value within `withMyPlugin`, the fingerprint will still generate the same hash value. To ensure unique fingerprints when modifying config plugins implementations, consider the following options:
+需要注意的是，由于这种设计，如果你对原始配置插件函数的实现进行更改，例如修改 `withMyPlugin` 中的 **Info.plist** 值，指纹仍然会生成相同的哈希值。为了在修改配置插件实现时确保指纹唯一，请考虑以下选项：
 
-- Avoid Anonymous Functions: Avoid using anonymous raw config plugins functions. Instead, use named functions whenever possible, and ensure that their names remain consistent as long as the implementation changes.
+- 避免匿名函数：避免使用匿名的原始配置插件函数。相反，尽可能使用具名函数，并确保只要实现发生变化，其名称也保持一致。
 
-- Use Local config plugins: Alternatively, you can create local config plugins as separate modules, each with its own export. This approach allows you to specify a different function name when making changes to the config plugins implementations.
+- 使用本地配置插件：或者，你可以将本地配置插件作为独立模块创建，每个模块都有自己的导出。这种方式允许你在修改配置插件实现时指定不同的函数名。
 
-Here's an example of using a local config plugin:
+下面是一个使用本地配置插件的示例：
 
 ```js ./plugins/withMyPlugin.js
 const { withInfoPlist } = require('expo/config-plugins');
@@ -207,7 +207,7 @@ module.exports = withMyPlugin;
 }
 ```
 
-By following these guidelines, you can effectively manage changes to config plugins and ensure that fingerprinting remains consistent and reliable.
+遵循这些准则后，你可以有效管理对配置插件的更改，并确保指纹生成保持一致且可靠。
 
 </Collapsible>
 

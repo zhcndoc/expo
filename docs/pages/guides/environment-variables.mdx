@@ -1,26 +1,26 @@
 ---
-title: Environment variables in Expo
-sidebar_title: Environment variables
-description: Learn how to use environment variables in an Expo project.
+title: Expo 中的环境变量
+sidebar_title: 环境变量
+description: 了解如何在 Expo 项目中使用环境变量。
 searchRank: 10
 ---
 
 import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
-Environment variables are key-value pairs configured outside your source code that allow your app to behave differently depending on the environment. For example, you can enable or disable certain features when building a test version of your app, or switch to a different API endpoint when building for production.
+环境变量是配置在源代码之外的键值对，可让你的应用根据所处环境表现出不同的行为。例如，在构建应用的测试版本时，你可以启用或禁用某些功能；或者在构建生产版本时切换到不同的 API 端点。
 
-The Expo CLI will automatically load environment variables with an `EXPO_PUBLIC_` prefix from **.env** files for use within your JavaScript code whenever you use the Expo CLI, such as when running `npx expo start` to start your app in local development mode.
+每当你使用 Expo CLI 时，例如运行 `npx expo start` 以在本地开发模式下启动应用，Expo CLI 会自动从 **.env** 文件中加载带有 `EXPO_PUBLIC_` 前缀的环境变量，以便在 JavaScript 代码中使用。
 
-## Reading environment variables from .env files
+## 从 .env 文件读取环境变量
 
-Create a **.env** file in the root of your project directory and add environment-specific variables on new lines in the form of `EXPO_PUBLIC_[NAME]=VALUE`:
+在项目目录根目录中创建一个 **.env** 文件，并按 `EXPO_PUBLIC_[NAME]=VALUE` 的形式在新行中添加环境相关变量：
 
 ```bash .env
 EXPO_PUBLIC_API_URL=https://staging.example.com
 EXPO_PUBLIC_API_KEY=abc123
 ```
 
-Now you can use environment variables directly in your source code:
+现在你可以直接在源代码中使用环境变量：
 
 ```tsx
 import { Button } from 'react-native';
@@ -32,79 +32,75 @@ function Post() {
     await fetch(apiUrl, { ... })
   }
 
-  return <Button onPress={onPress} title="Post" />;
+  return <Button onPress={onPress} title="发帖" />;
 }
 ```
 
-When you run `npx expo start`, `process.env.EXPO_PUBLIC_API_URL` will be replaced with `https://staging.example.com` in your app bundle. Variables can be updated as you edit your code without restarting the Expo CLI or clearing the cache. You will need to perform a full reload (for example, shake gesture and then Reload in Expo Go or your development build) to see the updated value.
+当你运行 `npx expo start` 时，`process.env.EXPO_PUBLIC_API_URL` 会在你的应用包中被替换为 `https://staging.example.com`。当你编辑代码时，变量会被更新，无需重启 Expo CLI 或清除缓存。你需要执行一次完整刷新（例如，在 Expo Go 或你的开发构建中摇一摇手势后点击 Reload）才能看到更新后的值。
 
-> **warning** Do not store sensitive info, such as private keys, in `EXPO_PUBLIC_` variables. These variables will be visible in plain-text in your compiled application.
+> **警告** 不要将敏感信息（例如私钥）存储在 `EXPO_PUBLIC_` 变量中。这些变量会以明文形式出现在你编译后的应用中。
 
-### How variables are loaded
+### 变量如何被加载
 
-Expo CLI loads **.env** files according to the [standard .env file resolution](https://github.com/bkeepers/dotenv/blob/c6e583a/README.md#what-other-env-files-can-i-use) and then replaces all references in your code to `process.env.EXPO_PUBLIC_[VARNAME]` with the corresponding value set in the **.env** files. Code inside **node_modules** is not affected for security purposes.
+Expo CLI 会根据 [标准 .env 文件解析规则](https://github.com/bkeepers/dotenv/blob/c6e583a/README.md#what-other-env-files-can-i-use) 加载 **.env** 文件，然后将代码中对 `process.env.EXPO_PUBLIC_[VARNAME]` 的所有引用替换为 **.env** 文件中设置的对应值。出于安全考虑，**node_modules** 中的代码不会受到影响。
 
-### How to read from environment variables
+### 如何从环境变量中读取
 
-- <YesIcon small /> **Every environment variable must be statically referenced as a property of
-  `process.env` using JavaScript's dot notation for it to be inlined.** For example, the expression
-  `process.env.EXPO_PUBLIC_KEY` is valid and will be inlined.
+- <YesIcon small /> **每个环境变量都必须以 JavaScript 的点表示法静态地作为 `process.env` 的属性来引用，才能被内联。** 例如，表达式 `process.env.EXPO_PUBLIC_KEY` 是有效的，并且会被内联。
 
-- <NoIcon small /> **Alternative versions of the expression are not supported**. For example,
-  `process.env['EXPO_PUBLIC_KEY']` or `const {EXPO_PUBLIC_X} = process.env` is invalid and will not
-  be inlined.
+- <NoIcon small /> **不支持该表达式的其他形式**。例如，`process.env['EXPO_PUBLIC_KEY']` 或 `const {EXPO_PUBLIC_X} = process.env` 是无效的，并且不会被内联。
 
-### Using multiple .env files to define separate environments
+### 使用多个 .env 文件定义不同环境
 
-You can define any of the [standard .env files](https://github.com/bkeepers/dotenv/blob/c6e583a/README.md#what-other-env-files-can-i-use), so it is possible to have separate **.env** and **.env.local**, files and they will load according to the standard priority.
+你可以定义任意 [标准 .env 文件](https://github.com/bkeepers/dotenv/blob/c6e583a/README.md#what-other-env-files-can-i-use)，因此可以同时拥有独立的 **.env** 和 **.env.local** 文件，它们会按照标准优先级加载。
 
-You may choose to commit the default **.env** file or other standard configurations, but generally **.env.local** files should be added to your **.gitignore**, because they are used to specify environment configuration specific to your local machine (such as, for example, your network IP address if you need it to make a request against a local server).
+你可以选择提交默认的 **.env** 文件或其他标准配置，但通常 **.env.local** 文件应添加到你的 **.gitignore** 中，因为它们用于指定仅适用于你本机的环境配置（例如，如果你需要向本地服务器发起请求，可能会用到你的网络 IP 地址）。
 
 ```bash .gitignore
 .env*.local
 ```
 
-#### Environment variables and `NODE_ENV`
+#### 环境变量与 `NODE_ENV`
 
-We recommend against using `NODE_ENV` to switch between **.env** files (such as **.env.test** and **.env.production**). While it is technically possible (`NODE_ENV=test npx expo start` will load **.env.test**) &mdash; it may not behave as you would expect. For example, `npx expo export` always forces `NODE_ENV` to `production`, so `NODE_ENV=test npx expo export` will not actually run the command with the `NODE_ENV` set to `test`.
+我们建议不要使用 `NODE_ENV` 在不同的 **.env** 文件之间切换（例如 **.env.test** 和 **.env.production**）。虽然技术上可行（`NODE_ENV=test npx expo start` 会加载 **.env.test**）&mdash;但其行为可能与你预期不同。例如，`npx expo export` 总是强制将 `NODE_ENV` 设置为 `production`，因此 `NODE_ENV=test npx expo export` 实际上不会以 `NODE_ENV` 为 `test` 来执行命令。
 
-Other tools that build on top of Expo CLI commands will exhibit the same behavior &mdash; for example, `eas update` calls into `npx expo export` and, as a result, `NODE_ENV=test eas update` will similarly not run with the `NODE_ENV` set to `test` (it will be `production`). The `NODE_ENV` environment variable is used by many tools in different ways (for example, if you run `NODE_ENV=production npm install` then your `devDependencies` will not be installed) and we have found that for React Native projects, it's best not to overload it further for this use case.
+其他基于 Expo CLI 命令构建的工具也会表现出相同的行为 &mdash; 例如，`eas update` 会调用 `npx expo export`，因此，`NODE_ENV=test eas update` 同样不会以 `NODE_ENV` 为 `test` 运行（它会是 `production`）。`NODE_ENV` 环境变量会被许多工具以不同方式使用（例如，如果你运行 `NODE_ENV=production npm install`，那么你的 `devDependencies` 将不会被安装），而我们发现，对于 React Native 项目来说，最好不要为了这个用例进一步滥用它。
 
-If you use EAS, consider using `eas env:pull` instead. This will swap your **.env.local** with an environment of your choice, rather than depending on `NODE_ENV`. You can accomplish a similar behavior without EAS by writing a script to overwrite **.env.local** or **.env** with the appropriate contents for the environment you wish to work with.
+如果你使用 EAS，建议改用 `eas env:pull`。这会用你选择的环境替换 **.env.local**，而不是依赖 `NODE_ENV`。如果你不使用 EAS，也可以通过编写脚本，用适合目标环境的内容覆盖 **.env.local** 或 **.env**，来实现类似的行为。
 
-### Disabling environment variables
+### 禁用环境变量
 
-Environment variables in Expo CLI have two parts and both can be disabled:
+Expo CLI 中的环境变量有两个部分，并且这两部分都可以被禁用：
 
-1. Expo CLI automatically loads the **.env** files into the global process. To disable this behavior, set the environment variable `EXPO_NO_DOTENV` to `1` before running any Expo CLI command: `EXPO_NO_DOTENV=1`.
-2. Expo's Metro config includes the inline serialization of environment variables in the client JavaScript bundle. To disable this behavior, you can use `EXPO_NO_CLIENT_ENV_VARS=1`.
+1. Expo CLI 会自动将 **.env** 文件加载到全局进程中。要禁用此行为，请在运行任何 Expo CLI 命令之前，将环境变量 `EXPO_NO_DOTENV` 设置为 `1`：`EXPO_NO_DOTENV=1`。
+2. Expo 的 Metro 配置包含在客户端 JavaScript 包中对环境变量的内联序列化。要禁用此行为，你可以使用 `EXPO_NO_CLIENT_ENV_VARS=1`。
 
-If you're experiencing issues with environment variables, you can try disabling one or both of these features.
+如果你遇到环境变量相关问题，可以尝试禁用其中一个或两个功能。
 
-## Environment variables in Expo Application Services
+## Expo Application Services 中的环境变量
 
 ### EAS Build
 
-[EAS Build](/build/introduction/) uses Metro Bundler to build the JavaScript bundle embedded within your app binary, so it will use **.env** files uploaded with your build job to inline `EXPO_PUBLIC_` variables into your code. EAS Build also lets you define environment variables within build profiles in **eas.json** and via EAS Secrets. Check out the EAS Build documentation on [environment variables and build secrets](/eas/environment-variables) for more information.
+[EAS Build](/build/introduction/) 使用 Metro Bundler 构建嵌入到应用二进制文件中的 JavaScript 包，因此它会使用与你的构建任务一起上传的 **.env** 文件，将 `EXPO_PUBLIC_` 变量内联到你的代码中。EAS Build 还允许你通过 **eas.json** 中的构建配置文件以及 EAS Secrets 来定义环境变量。有关更多信息，请查看 EAS Build 文档中的 [环境变量和构建密钥](/eas/environment-variables)。
 
 ### EAS Update
 
-[EAS Update](/eas-update/introduction) uses Metro Bundler in your local environment or CI to build your app bundle, so it will use available **.env** files to inline `EXPO_PUBLIC_` variables into your code. Check out the EAS Update documentation on [environment variables](/eas/environment-variables/usage/#using-environment-variables-with-eas-update) for more information.
+[EAS Update](/eas-update/introduction) 使用本地环境或 CI 中的 Metro Bundler 来构建你的应用包，因此它会使用可用的 **.env** 文件，将 `EXPO_PUBLIC_` 变量内联到你的代码中。有关更多信息，请查看 EAS Update 文档中的 [环境变量](/eas/environment-variables/usage/#using-environment-variables-with-eas-update)。
 
-## Migrating to Expo environment variables
+## 迁移到 Expo 环境变量
 
-### From react-native-config
+### 从 react-native-config 迁移
 
-Update your **.env** files to prefix any variables used within your JavaScript code with `EXPO_PUBLIC_`:
+更新你的 **.env** 文件，为任何在 JavaScript 代码中使用的变量添加 `EXPO_PUBLIC_` 前缀：
 
 ```diff .env
 - API_URL=https://myapi.com
 + EXPO_PUBLIC_API_URL=https://myapi.com
 ```
 
-> If you have any non-standard **.env** files (for example, **.env.staging**), you will need to migrate those to one of the [standard .env files](https://github.com/bkeepers/dotenv/blob/c6e583a/README.md#what-other-env-files-can-i-use).
+> 如果你有任何非标准的 **.env** 文件（例如 **.env.staging**），你需要将它们迁移到 [标准 .env 文件](https://github.com/bkeepers/dotenv/blob/c6e583a/README.md#what-other-env-files-can-i-use) 之一。
 
-Then update your code to use `process.env.EXPO_PUBLIC_[VARNAME]`:
+然后更新代码以使用 `process.env.EXPO_PUBLIC_[VARNAME]`：
 
 ```diff
 - import Config from 'react-native-config';
@@ -113,16 +109,16 @@ Then update your code to use `process.env.EXPO_PUBLIC_[VARNAME]`:
 + const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 ```
 
-### From babel-plugin-transform-inline-environment-variables
+### 从 babel-plugin-transform-inline-environment-variables 迁移
 
-Using a Babel plugin to transform your environment variable references in your code is similar to how Expo environment variables work. Set your variables inside a **.env** file and update your variable names to use the `EXPO_PUBLIC_` prefix:
+使用 Babel 插件来转换代码中的环境变量引用，其方式与 Expo 环境变量的工作原理类似。在 **.env** 文件中设置变量，并将变量名更新为使用 `EXPO_PUBLIC_` 前缀：
 
 ```diff
 - const apiUrl = process.env.API_URL;
 + const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 ```
 
-Then you can remove the plugin from your [Babel config](/versions/latest/config/babel/):
+然后你就可以从 [Babel 配置](/versions/latest/config/babel/) 中移除该插件：
 
 ```diff babel.config.js
 module.exports = function (api) {
@@ -134,13 +130,13 @@ module.exports = function (api) {
 };
 ```
 
-After updating your Babel config file, be sure to clear your cache with `npx expo start --clear`.
+更新 Babel 配置文件后，务必使用 `npx expo start --clear` 清除缓存。
 
-### From direnv
+### 从 direnv 迁移
 
-Move any environment variables used in your JavaScript from their **.envrc** file to a **.env** file and prefix it with `EXPO_PUBLIC_`.
+将 JavaScript 中使用的任何环境变量从 **.envrc** 文件移动到 **.env** 文件中，并为其添加 `EXPO_PUBLIC_` 前缀。
 
-Previously with `direnv`, you would need to use a [dynamic app config](/versions/latest/config/app/#app-config) that reads from [`process.env`](https://nodejs.org/dist/latest/docs/api/process.html#process_process_env) to set environment variables on the `extra` field so they can be used in your JavaScript code via [`expo-constants`](/versions/latest/sdk/constants). Move those references directly into your code, adding the `EXPO_PUBLIC_` prefix:
+以前使用 `direnv` 时，你需要使用一个 [动态应用配置](/versions/latest/config/app/#app-config)，它会从 [`process.env`](https://nodejs.org/dist/latest/docs/api/process.html#process_process_env) 读取并将环境变量设置到 `extra` 字段中，以便它们可以通过 [`expo-constants`](/versions/latest/sdk/constants) 在 JavaScript 代码中使用。现在将这些引用直接移到代码中，并添加 `EXPO_PUBLIC_` 前缀：
 
 ```diff
 - import Constants from 'expo-constants';
@@ -149,8 +145,8 @@ Previously with `direnv`, you would need to use a [dynamic app config](/versions
 + const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 ```
 
-> [`direnv`](https://direnv.net/) automatically loads and unloads environment variables in your shell depending on your current directory, meaning it can affect the environment for any process running in that directly, not just the Expo CLI. You will likely want to continue using `direnv` for other environment variables that are not used in your JavaScript code.
+> [`direnv`](https://direnv.net/) 会根据你当前的目录自动在 shell 中加载和卸载环境变量，这意味着它可能会影响当前目录中运行的任何进程的环境，而不仅仅是 Expo CLI。对于 JavaScript 代码中未使用的其他环境变量，你可能仍然会继续想使用 `direnv`。
 
-## Security considerations
+## 安全注意事项
 
-Never store sensitive secrets in environment variables that are prefixed with `EXPO_PUBLIC_`. When an end-user runs your app, they have access to all of the code and embedded environment variables in your app. Read more about [storing sensitive info](https://reactnative.dev/docs/security#storing-sensitive-info).
+切勿将带有 `EXPO_PUBLIC_` 前缀的环境变量用于存储敏感密钥。当终端用户运行你的应用时，他们可以访问应用中的所有代码以及嵌入的环境变量。阅读更多关于[存储敏感信息](https://reactnative.dev/docs/security#storing-sensitive-info)的内容。
