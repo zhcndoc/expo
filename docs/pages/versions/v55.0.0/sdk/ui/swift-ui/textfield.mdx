@@ -8,10 +8,8 @@ platforms: ['ios', 'tvos']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
-import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
-import { Tabs, Tab } from '~/ui/components/Tabs';
 
-一个允许用户输入和编辑文本的文本字段组件。
+Expo UI TextField 与官方 SwiftUI [TextField API](https://developer.apple.com/documentation/swiftui/textfield) 保持一致，支持单行和多行输入、键盘配置、提交处理，以及用于程序化控制的命令式 `ref`。
 
 ## 安装
 
@@ -19,27 +17,139 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 
 ## 用法
 
-<Tabs>
-  <Tab label="预览">
-    <ContentSpotlight
-      alt="iOS 上的 TextField 组件。"
-      src="/static/images/expo-ui/textinput/ios.png"
-      className="max-w-[320px]"
-    />
-  </Tab>
-  <Tab label="代码">
-    ```tsx
-    import { Host, TextField } from '@expo/ui/swift-ui';
+### 基本文本输入框
 
+```tsx BasicTextFieldExample.tsx
+import { useState } from 'react';
+import { Host, TextField } from '@expo/ui/swift-ui';
+
+export default function BasicTextFieldExample() {
+  const [value, setValue] = useState('');
+
+  return (
     <Host matchContents>
-      <TextField autocorrection={false} defaultValue="单行文本输入" onChangeText={setValue} />
+      <TextField placeholder="Username" onValueChange={setValue} />
     </Host>
-    ```
+  );
+}
+```
 
-  </Tab>
-</Tabs>
+### 多行文本输入框
 
-> 更多信息请参阅 [官方 SwiftUI 文档](https://developer.apple.com/documentation/swiftui/textfield)。
+设置 `axis="vertical"` 以允许文本输入框垂直扩展。使用 [`lineLimit`](modifiers/#linelimit) 修饰符来控制可见行数。使用 `Host matchContents` 时，添加 `fixedSize({ horizontal: false, vertical: true })`，这样文本输入框会在使用其理想高度的同时接受父容器的宽度。
+
+```tsx MultilineTextFieldExample.tsx
+import { useState } from 'react';
+import { Host, TextField } from '@expo/ui/swift-ui';
+import { lineLimit, fixedSize } from '@expo/ui/swift-ui/modifiers';
+
+export default function MultilineTextFieldExample() {
+  const [value, setValue] = useState('');
+
+  return (
+    <Host matchContents>
+      <TextField
+        axis="vertical"
+        placeholder="Tell us about yourself..."
+        onValueChange={setValue}
+        modifiers={[lineLimit(5), fixedSize({ horizontal: false, vertical: true })]}
+      />
+    </Host>
+  );
+}
+```
+
+### 键盘类型
+
+使用 [`keyboardType`](modifiers/#keyboardtypekeyboardtype) 修饰符显示特定的键盘布局。
+
+```tsx KeyboardTypeExample.tsx
+import { useState } from 'react';
+import { Host, TextField } from '@expo/ui/swift-ui';
+import { keyboardType, autocorrectionDisabled } from '@expo/ui/swift-ui/modifiers';
+
+export default function KeyboardTypeExample() {
+  const [value, setValue] = useState('');
+
+  return (
+    <Host matchContents>
+      <TextField
+        placeholder="Email"
+        onValueChange={setValue}
+        modifiers={[keyboardType('email-address'), autocorrectionDisabled()]}
+      />
+    </Host>
+  );
+}
+```
+
+### 提交处理
+
+使用 [`submitLabel`](modifiers/#submitlabelsubmitlabel) 修饰符来自定义回车键，并使用 [`onSubmit`](modifiers/#onsubmithandler) 来处理提交操作。
+
+```tsx SubmitHandlingExample.tsx
+import { useState } from 'react';
+import { Host, TextField } from '@expo/ui/swift-ui';
+import { submitLabel, onSubmit } from '@expo/ui/swift-ui/modifiers';
+
+export default function SubmitHandlingExample() {
+  const [value, setValue] = useState('');
+
+  return (
+    <Host matchContents>
+      <TextField
+        placeholder="Search..."
+        onValueChange={setValue}
+        modifiers={[submitLabel('search'), onSubmit(() => console.log('Submitted:', value))]}
+      />
+    </Host>
+  );
+}
+```
+
+### 命令式 ref
+
+使用 `ref` 以命令式方式设置文本、聚焦、失焦或选择文本。
+
+```tsx ImperativeRefExample.tsx
+import { useRef } from 'react';
+import { Host, TextField, TextFieldRef, Button, HStack, VStack } from '@expo/ui/swift-ui';
+import { buttonStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function ImperativeRefExample() {
+  const ref = useRef<TextFieldRef>(null);
+
+  return (
+    <Host matchContents>
+      <VStack>
+        <TextField ref={ref} defaultValue="Select me!" placeholder="Imperative field" />
+        <HStack spacing={12}>
+          <Button
+            modifiers={[buttonStyle('bordered')]}
+            onPress={() => ref.current?.focus()}
+            label="Focus"
+          />
+          <Button
+            modifiers={[buttonStyle('bordered')]}
+            onPress={() => ref.current?.blur()}
+            label="Blur"
+          />
+          <Button
+            modifiers={[buttonStyle('bordered')]}
+            onPress={() => ref.current?.setText('SwiftUI rocks!')}
+            label="Set Text"
+          />
+          <Button
+            modifiers={[buttonStyle('bordered')]}
+            onPress={() => ref.current?.setSelection(0, 7)}
+            label="Select"
+          />
+        </HStack>
+      </VStack>
+    </Host>
+  );
+}
+```
 
 ## API
 

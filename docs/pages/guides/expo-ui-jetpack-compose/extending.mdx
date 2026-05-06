@@ -1,0 +1,360 @@
+---
+title: 使用 Jetpack Compose 扩展
+sidebar_title: 使用 Jetpack Compose 扩展
+description: 了解如何创建可与 Expo UI 集成的自定义 Jetpack Compose 组件和修饰符。
+platforms: ['android']
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { CODE } from '~/ui/components/Text';
+
+本指南说明如何创建自定义的 Jetpack Compose 组件和修饰符，使其能够与 Expo UI 无缝集成。
+
+<Prerequisites>
+  <Requirement title={<><CODE>@expo/ui</CODE> 已安装</>}>
+    有关更多信息，请参阅 [使用 Expo UI 构建 Jetpack Compose 应用](/versions/latest/sdk/ui/jetpack-compose/)。
+
+    <Terminal cmd={['$ npx expo install @expo/ui']} />
+
+  </Requirement>
+  <Requirement title="应用的开发构建">
+    Expo UI 在 Expo Go 中不可用。请为你的应用创建一个 [开发构建](/develop/development-builds/introduction/)。
+  </Requirement>
+  <Requirement title="对 Expo Modules API 和 Jetpack Compose 的基本了解">
+    熟悉 [Expo Modules API](/modules/overview/) 和 [Jetpack Compose](https://developer.android.com/jetpack/compose)。
+  </Requirement>
+</Prerequisites>
+
+## 创建自定义组件
+
+### 项目设置
+
+<Step label="1">
+
+在你的项目中创建一个本地 Expo 模块：
+
+<Terminal cmd={['$ npx create-expo-module@latest --local my-ui']} />
+
+</Step>
+
+<Step label="2">
+
+更新模块的 **android/build.gradle** 以启用 Jetpack Compose 并依赖 `expo-ui`。下面标出的内容是在默认脚手架基础上新增的：
+
+```groovy my-ui/android/build.gradle
+// 引入 Kotlin Compose 编译器插件的 classpath。
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:${kotlinVersion}")
+  }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'expo-module-gradle-plugin'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose' // 应用 Compose 编译器插件。
+
+// ... group / version
+
+android {
+  // ... namespace, defaultConfig
+
+  // 为此模块开启 Jetpack Compose。
+  buildFeatures {
+    compose true
+  }
+}
+
+// 依赖 `expo-ui` 以及你使用的 Compose 库。
+dependencies {
+  if (findProject(':expo-ui') != null) {
+    implementation project(':expo-ui')
+  } else {
+    implementation 'expo.modules.ui:expo.modules.ui:+'
+  }
+  implementation 'androidx.compose.foundation:foundation-android:1.10.6'
+  implementation 'androidx.compose.ui:ui-android:1.10.6'
+  implementation 'androidx.compose.material3:material3:1.5.0-alpha17'
+}
+```
+
+</Step>
+
+### 创建 Compose 视图
+
+<Step label="3">
+
+创建你的 Compose 视图。它由两部分组成：
+
+1. **Props 数据类**：使用 `@OptimizedComposeProps` 注解，实现 `ComposeProps`，并包含一个用于 [`modifiers`](/versions/latest/sdk/ui/jetpack-compose/modifiers/) 属性的 `modifiers: ModifierList` 字段。
+2. **`@Composable` 内容函数**：作为 `FunctionalComposableScope` 的扩展，这样它就可以调用 `ModifierRegistry.applyModifiers(...)` 并渲染 `Children(...)`。
+
+```kotlin my-ui/android/src/main/java/expo/modules/myui/MyCustomView.kt
+package expo.modules.myui
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import expo.modules.kotlin.views.ComposeProps
+import expo.modules.kotlin.views.FunctionalComposableScope
+import expo.modules.kotlin.views.OptimizedComposeProps
+import expo.modules.ui.ModifierList
+import expo.modules.ui.ModifierRegistry
+import expo.modules.ui.UIComposableScope
+
+@OptimizedComposeProps
+data class MyCustomViewProps(
+  val title: String = "",
+  val modifiers: ModifierList = emptyList()
+) : ComposeProps
+
+@Composable
+fun FunctionalComposableScope.MyCustomViewContent(props: MyCustomViewProps) {
+  Column(
+    modifier = ModifierRegistry.applyModifiers(
+      props.modifiers,
+      appContext,
+      composableScope,
+      globalEventDispatcher
+    )
+  ) {
+    Text(text = props.title, style = MaterialTheme.typography.titleMedium)
+    Children(UIComposableScope()) // 渲染 React 子元素
+  }
+}
+```
+
+</Step>
+
+<Step label="4">
+
+在你的模块中使用 `ExpoUIView` 注册该视图。这会将你的 `@Composable` 内容接入 Expo modules 视图系统，并使其可供 JavaScript 使用：
+
+```kotlin my-ui/android/src/main/java/expo/modules/myui/MyUiModule.kt
+package expo.modules.myui
+
+import expo.modules.kotlin.modules.Module
+import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.ui.ExpoUIView
+
+class MyUiModule : Module() {
+  override fun definition() = ModuleDefinition {
+    Name("MyUi")
+
+    ExpoUIView<MyCustomViewProps>("MyCustomView") {
+      Content { props ->
+        MyCustomViewContent(props)
+      }
+    }
+  }
+}
+```
+
+</Step>
+
+<Step label="5">
+
+创建一个包装组件，将修饰符与事件处理连接起来。`createViewModifierEventListener` 工具可让诸如 `clickable` 和 `onVisibilityChanged` 之类的事件型修饰符与自定义视图协同工作：
+
+```tsx my-ui/src/MyCustomView.tsx
+import { type PrimitiveBaseProps } from '@expo/ui/jetpack-compose';
+import { createViewModifierEventListener } from '@expo/ui/jetpack-compose/modifiers';
+import { requireNativeView } from 'expo';
+
+export interface MyCustomViewProps extends PrimitiveBaseProps {
+  title: string;
+  children?: React.ReactNode;
+}
+
+const NativeMyCustomView = requireNativeView<MyCustomViewProps>('MyUi', 'MyCustomView');
+
+export function MyCustomView({ modifiers, ...restProps }: MyCustomViewProps) {
+  return (
+    <NativeMyCustomView
+      modifiers={modifiers}
+      {...(modifiers ? createViewModifierEventListener(modifiers) : undefined)}
+      {...restProps}
+    />
+  );
+}
+```
+
+</Step>
+
+### 使用你的自定义组件
+
+你的自定义组件现在可以与所有 `@expo/ui` 内置修饰符一起使用：
+
+```tsx app/index.tsx
+import { Host, Text } from '@expo/ui/jetpack-compose';
+import { background, clip, paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+import { MyCustomView } from './modules/my-ui';
+
+export default function App() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <MyCustomView
+        title="Hello World"
+        modifiers={[
+          paddingAll(16),
+          background('#f0f0f0'),
+          clip({ type: 'roundedCorner', radius: 12 }),
+        ]}>
+        <Text>子内容</Text>
+      </MyCustomView>
+    </Host>
+  );
+}
+```
+
+## 创建自定义修饰符
+
+你也可以创建适用于任何 Expo UI 组件的自定义修饰符。
+
+> **info** 修饰符是 Compose 用来配置布局以实现样式、尺寸、行为等功能的方式。更多信息请参阅 Android 的 [Compose 修饰符文档](https://developer.android.com/jetpack/compose/modifiers)。
+
+### 原生修饰符实现
+
+<Step label="1">
+
+将修饰符的参数定义为一个 `@OptimizedRecord` 数据类，并编写一个根据这些参数返回 `Modifier` 的函数：
+
+```kotlin my-ui/android/src/main/java/expo/modules/myui/CustomBorderModifier.kt
+package expo.modules.myui
+
+import android.graphics.Color
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import expo.modules.kotlin.records.Field
+import expo.modules.kotlin.records.Record
+import expo.modules.kotlin.types.OptimizedRecord
+import expo.modules.ui.compose
+
+@OptimizedRecord
+data class CustomBorderParams(
+  @Field val color: Color? = null,
+  @Field val width: Int = 2,
+  @Field val cornerRadius: Int = 0
+) : Record
+
+fun customBorderModifier(params: CustomBorderParams): Modifier {
+  return Modifier.border(
+    border = BorderStroke(params.width.dp, params.color.compose),
+    shape = RoundedCornerShape(params.cornerRadius.dp)
+  )
+}
+```
+
+`compose` 是 `expo.modules.ui` 包中定义的 `android.graphics.Color?` 的 Kotlin 扩展属性。通过 `import expo.modules.ui.compose` 导入它后，你就可以调用 `params.color.compose`，将从 JS 解析得到的 Android `Color` 转换为 Compose API（如 `BorderStroke`）所期望的 `androidx.compose.ui.graphics.Color`。这与 Expo UI 内置修饰符使用的是同一个辅助工具。
+
+</Step>
+
+<Step label="2">
+
+在模块定义中使用 `ModifierRegistry` 注册你的修饰符。使用 `OnCreate` 进行注册，使用 `OnDestroy` 进行注销，这样工厂就不会在模块重新加载之间泄漏：
+
+```kotlin my-ui/android/src/main/java/expo/modules/myui/MyUiModule.kt
+package expo.modules.myui
+
+import expo.modules.kotlin.modules.Module
+import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.kotlin.records.recordFromMap
+import expo.modules.ui.ExpoUIView
+import expo.modules.ui.ModifierRegistry
+
+class MyUiModule : Module() {
+  override fun definition() = ModuleDefinition {
+    Name("MyUi")
+
+    OnCreate {
+      ModifierRegistry.register("customBorder") { map, _, _, _ ->
+        customBorderModifier(recordFromMap<CustomBorderParams>(map))
+      }
+    }
+
+    OnDestroy {
+      ModifierRegistry.unregister("customBorder")
+    }
+
+    ExpoUIView<MyCustomViewProps>("MyCustomView") {
+      Content { props ->
+        MyCustomViewContent(props)
+      }
+    }
+  }
+}
+```
+
+`register` lambda 会接收从 JavaScript 发送来的原始 map、当前的 `ComposableScope`（用于像 `weight` 或 `align` 这类依赖作用域的修饰符）、`AppContext` 以及事件分发器。大多数修饰符只需要 `map`，并通过 `recordFromMap<T>(map)` 将其转换。
+
+</Step>
+
+### JavaScript 修饰符函数
+
+<Step label="3">
+
+创建一个用于构建修饰符配置的 TypeScript 函数：
+
+```ts my-ui/src/modifiers.ts
+import { createModifier } from '@expo/ui/jetpack-compose/modifiers';
+import { type ColorValue } from 'react-native';
+
+export const customBorder = (params: {
+  color?: ColorValue;
+  width?: number;
+  cornerRadius?: number;
+}) => createModifier('customBorder', params);
+```
+
+</Step>
+
+<Step label="4">
+
+从你的模块中导出该修饰符：
+
+```ts my-ui/index.ts
+export { MyCustomView, type MyCustomViewProps } from './src/MyCustomView';
+export { customBorder } from './src/modifiers';
+```
+
+</Step>
+
+### 使用自定义修饰符
+
+你的自定义修饰符可以与任何 `@expo/ui` 组件一起使用：
+
+```tsx app/index.tsx
+import { Column, Host, Text } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+import { customBorder } from './modules/my-ui';
+
+export default function App() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column
+        modifiers={[paddingAll(20), customBorder({ color: '#FF6B35', width: 3, cornerRadius: 8 })]}>
+        <Text>这有一个自定义边框！</Text>
+      </Column>
+    </Host>
+  );
+}
+```
+
+## 下一步
+
+恭喜！你已经学会了如何使用自定义 Jetpack Compose 组件和修饰符来扩展 Expo UI。现在，你的自定义组件可以与内置修饰符系统无缝集成。
+
+以下是一些下一步可以尝试构建的内容：
+
+- 使用 Expo UI 自带的[内置 Jetpack Compose 组件](/versions/latest/sdk/ui/jetpack-compose/)。
+- 为应用特定的样式模式构建自定义修饰符。
+- 封装第三方 Compose 库，以便在 React Native 中使用。
+- 将你的组件作为 npm 包共享给其他人使用。

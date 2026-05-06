@@ -1,0 +1,112 @@
+---
+title: Expo Observe 故障排查
+sidebar_title: 故障排查
+description: 常见 Expo Observe 问题的解决方案。
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+## 常见问题
+
+### 指标未出现在仪表盘中
+
+1. 确保在安装 `expo-observe` 之后已创建一个**新构建**。指标仅从包含该库的构建中收集。
+2. 检查你在 EAS 仪表盘中查看的是正确的项目。
+3. 如果在调试构建中测试，请确保通过 `configure()` 将 `dispatchInDebug` 设置为 `true`。参见 [在开发中启用指标](/eas/observe/configuration/#enable-metrics-in-development)。
+
+### 未显示首次渲染时间
+
+确认你的根布局已被 `AppMetricsRoot` 包裹：
+
+```jsx
+import { AppMetricsRoot } from 'expo-observe';
+
+function RootLayout() {
+  return (/* 你的布局 */);
+}
+
+export default AppMetricsRoot.wrap(RootLayout);
+```
+
+### 未显示可交互时间
+
+此指标需要手动埋点。请确认：
+
+1. 你在闪屏隐藏后调用了 `AppMetrics.markInteractive()`。
+2. 该调用确实被执行了（添加一个 `console.log` 进行验证）。
+
+<Collapsible summary="从 expo-eas-observe 迁移">
+
+如果你是私有预览的参与者，并且之前使用过 `expo-eas-observe`，请按照以下步骤迁移到 `expo-observe`。
+
+<Step label="1">
+
+**替换包**
+
+<Terminal cmd={['$ npx expo install expo-observe', '$ npm uninstall expo-eas-observe']} />
+
+如果你之前将 `expo-eas-client` 作为单独依赖安装过，可以将其移除：
+
+<Terminal cmd={['$ npm uninstall expo-eas-client']} />
+
+</Step>
+
+<Step label="2">
+
+**更新导入**
+
+```diff
+- import AppMetrics from 'expo-eas-observe';
++ import { AppMetrics } from 'expo-observe';
+```
+
+</Step>
+
+<Step label="3">
+
+**用 `AppMetricsRoot` 替换手动 `markFirstRender()`**
+
+不要再手动调用 `markFirstRender()`，而是用 `AppMetricsRoot` 高阶组件包裹你的根布局。这样会自动处理该指标的测量。
+
+之前：
+
+```jsx
+import { useEffect } from 'react';
+import AppMetrics from 'expo-eas-observe';
+
+export default function RootLayout() {
+  useEffect(() => {
+    AppMetrics.markFirstRender();
+  }, []);
+
+  return (/* 你的布局 */);
+}
+```
+
+之后：
+
+```jsx
+import { AppMetricsRoot } from 'expo-observe';
+
+function RootLayout() {
+  return (/* 你的布局 */);
+}
+
+export default AppMetricsRoot.wrap(RootLayout);
+```
+
+</Step>
+
+<Step label="4">
+
+**创建一个新构建**
+
+完成迁移后，为你的应用创建一个新构建：
+
+<Terminal cmd={['$ eas build']} />
+
+</Step>
+
+</Collapsible>

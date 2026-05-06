@@ -1,0 +1,41 @@
+---
+title: Universal
+sidebar_title: 概览
+description: 使用 @expo/ui 为 Android、iOS 和 web 构建跨平台共享 UI 的组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+hideTOC: true
+---
+
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+`@expo/ui` 中的通用组件是在各平台原生 UI 工具包之上的单一 API 层。在 Android 上，它们会委托给 [`@expo/ui/jetpack-compose`](../jetpack-compose)。在 iOS 上，它们会委托给 [`@expo/ui/swift-ui`](../swift-ui)。在 web 上，它们是使用 `react-dom` 或 `react-native-web` 的 JS 实现，并且会根据具体组件选择最适合该控件的实现。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+通用组件仍然必须包裹在一个 [`Host`](host) 中，但你可以从包的根入口导入所有内容，包括 `Host`。通用的 `Host` 会在 Android 和 iOS 上分发到平台原生的 host，因此无需直接使用 [`@expo/ui/swift-ui`](../swift-ui) 或 [`@expo/ui/jetpack-compose`](../jetpack-compose)。
+
+```tsx UniversalExample.tsx
+import { Host, Column, Button, Text } from '@expo/ui';
+
+export default function Example() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column spacing={12} alignment="center">
+        <Text>Hello, world!</Text>
+        <Button label="Press me" onPress={() => alert('Pressed')} />
+      </Column>
+    </Host>
+  );
+}
+```
+
+## 何时使用它，而不是 `swift-ui` / `jetpack-compose`
+
+- 当你希望有一棵在 Android、iOS 和 web 上无需修改即可运行的组件树时，请选择 **通用** 组件。由于这些组件在底层委托给了 Jetpack Compose/SwiftUI，因此在 Android 和 iOS 上仍然保留了平台原生的外观和交互体验。
+- 当你需要通用 API 未暴露的平台特定控件、修饰符或行为时，请直接选择 **[`@expo/ui/swift-ui`](../swift-ui)** 或 **[`@expo/ui/jetpack-compose`](../jetpack-compose)**。

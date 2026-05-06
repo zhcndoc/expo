@@ -1,14 +1,25 @@
 import NextHead from 'next/head';
 import type { PropsWithChildren } from 'react';
 
-type HeadProps = PropsWithChildren<{ title?: string; description?: string; canonicalUrl?: string }>;
+type HeadProps = PropsWithChildren<{
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+  markdownPath?: string;
+}>;
 
 const BASE_OG_URL = 'https://og.expo.dev/?theme=docs';
 
 const BASE_TITLE = 'Expo 中文文档';
 const BASE_DESCRIPTION = `Expo 是一个开源平台，可用 JavaScript 和 React 为 Android、iOS 以及 Web 构建通用原生应用。`;
 
-const DocumentationHead = ({ title, description, canonicalUrl, children }: HeadProps) => {
+const DocumentationHead = ({
+  title,
+  description,
+  canonicalUrl,
+  markdownPath,
+  children,
+}: HeadProps) => {
   const OGImageURL = `${BASE_OG_URL}&title=${encodeURIComponent(title ?? BASE_TITLE)}&description=${encodeURIComponent(description ?? BASE_DESCRIPTION)}`;
 
   return (
@@ -19,6 +30,7 @@ const DocumentationHead = ({ title, description, canonicalUrl, children }: HeadP
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="icon" type="image/png" href="/static/images/favicon.ico" sizes="32x32" />
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+      {markdownPath && <link rel="alternate" type="text/markdown" href={markdownPath} />}
 
       {/* oxlint-disable-next-line nextjs/next-script-for-ga */}
       <script async src="https://www.zhcndoc.com/js/common.js" />

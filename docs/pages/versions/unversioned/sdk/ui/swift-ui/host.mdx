@@ -3,7 +3,7 @@ title: 主机
 description: 一个 SwiftUI Host 组件，可在 React Native 中启用 SwiftUI 组件。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
 packageName: '@expo/ui'
-platforms: ['ios', 'tvos']
+platforms: ['ios', 'tvos', 'expo-go']
 ---
 
 import APISection from '~/components/plugins/APISection';
@@ -37,6 +37,26 @@ export default function MatchContentsExample() {
         }}>
         点击
       </Button>
+    </Host>
+  );
+}
+```
+
+> **注意：** 不要在与滚动容器（`ScrollView`、`List`、`Form`、`LazyHStack`、`LazyVStack`）相同的轴上使用 `matchContents`。`matchContents` 会解析为 SwiftUI 的 `.fixedSize`，这会让滚动容器按其内容进行尺寸计算。它还会使视口之外没有任何可供滚动进入的内容，因此滚动会悄然停止工作。请将 `matchContents={{ vertical: true }}` 与 `style={{ width: '100%' }}` 一起使用（或在滚动轴上使用任何有限宽度）。
+
+```tsx ScrollViewMatchContents.tsx
+import { Host, HStack, ScrollView, Text } from '@expo/ui/swift-ui';
+
+export default function ScrollViewMatchContents() {
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <ScrollView axes="horizontal">
+        <HStack spacing={12}>
+          {Array.from({ length: 20 }).map((_, i) => (
+            <Text key={i}>项目 {i}</Text>
+          ))}
+        </HStack>
+      </ScrollView>
     </Host>
   );
 }

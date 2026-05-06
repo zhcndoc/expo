@@ -6,6 +6,7 @@ description: 了解如何在 EAS Workflows 中设置和使用预打包作业。
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { FAQ } from '~/ui/components/FAQ';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 
 预打包作业是即用型工作流作业，可帮助你自动化构建、提交和测试应用等常见任务。它们提供了一种标准化方式来处理这些操作，而无需从头编写自定义作业配置。本指南将介绍可用的预打包作业，以及如何在工作流中使用它们。
 
@@ -15,9 +16,11 @@ import { FAQ } from '~/ui/components/FAQ';
 
 构建作业可以自定义，因此你可以在构建过程中执行自定义命令。更多信息请参见 [自定义构建](/custom-builds/get-started/)。
 
-### 前提条件
-
-要成功使用构建作业，你需要使用与预打包作业相同的平台和配置文件，通过 EAS CLI 完成一次构建。了解如何 [创建你的第一个构建](/build/setup/) 以开始使用。
+<Prerequisites>
+  <Requirement title="已完成的本地构建">
+    使用与预打包作业相同的平台和配置文件，通过 EAS CLI 完成一次构建。了解如何 [创建你的第一个构建](/build/setup/) 以开始使用。
+  </Requirement>
+</Prerequisites>
 
 ### 语法
 
@@ -179,9 +182,11 @@ jobs:
 
 使用 [EAS Hosting](/eas/hosting/introduction) 部署你的应用程序。
 
-### 前提条件
-
-要使用 EAS Hosting 部署你的应用程序，你需要先设置你的项目。更多信息请参见 [EAS Hosting 入门](/eas/hosting/get-started/#prerequisites)。
+<Prerequisites>
+  <Requirement title="已配置 EAS Hosting 的项目">
+    请参阅 [开始使用 EAS Hosting](/eas/hosting/get-started/#prerequisites) 以获取设置说明。
+  </Requirement>
+</Prerequisites>
 
 ### 语法
 
@@ -495,9 +500,13 @@ jobs:
 
 使用 EAS Submit 将 Android 或 iOS 构建提交到应用商店。
 
-### 前提条件
-
-提交任务需要额外配置才能在 CI/CD 流程中运行。有关更多信息，请参阅我们的 [Apple App Store CI/CD 提交指南](/submit/ios/#submitting-your-app-using-cicd-services) 和 [Google Play Store CI/CD 提交指南](/submit/android/#submitting-your-app-using-cicd-services)。
+<Prerequisites>
+  <Requirement title="CI/CD 提交配置">
+    提交作业需要额外配置才能在 CI/CD 流程中运行。更多信息请参见 [Google
+    Play Store CI/CD 提交指南](/submit/android/#submitting-your-app-using-cicd-services) 和
+    [Apple App Store CI/CD 提交指南](/submit/ios/#submitting-your-app-using-cicd-services)。
+  </Requirement>
+</Prerequisites>
 
 ### 语法
 
@@ -590,9 +599,13 @@ jobs:
 
 将 iOS 构建分发到 TestFlight 内部和外部测试组。这是 iOS submit 任务的替代方案，适用于你需要更高级的 TestFlight 功能时。如果你需要控制测试组、更新日志或 Beta App Review 提交，请使用 `testflight` 任务而不是 submit。
 
-### 前提条件
-
-TestFlight 任务需要使用 `distribution: store` 创建的 iOS 构建。你需要配置好 Apple Developer 账户。有关更多信息，请参阅 [TestFlight 提交指南](/submit/ios/#submitting-your-app-using-cicd-services)。
+<Prerequisites>
+  <Requirement title="一个 iOS 商店构建和 Apple Developer 账户">
+    TestFlight 作业需要使用 `distribution: store` 创建的 iOS 构建，并已配置 Apple Developer
+    账户。更多信息请参见 [TestFlight 提交
+    指南](/submit/ios/#submitting-your-app-using-cicd-services)。
+  </Requirement>
+</Prerequisites>
 
 ### 语法
 
@@ -692,9 +705,13 @@ jobs:
 
 使用 [EAS Update](/eas-update/introduction/) 发布更新。
 
-### 前提条件
-
-要发布更新预览并进行空中更新，你需要运行 `npx eas-cli@latest update:configure`，然后创建新的构建。了解更多关于 [配置 EAS Update](/eas-update/getting-started/#prerequisites)。
+<Prerequisites>
+  <Requirement title="已配置 EAS Update">
+    要发布更新预览并推送空中更新。运行 `npx eas-cli@latest
+    update:configure`，然后创建新构建。了解更多关于 [配置 EAS
+    Update](/eas-update/getting-started/#prerequisites) 的信息。
+  </Requirement>
+</Prerequisites>
 
 ### 语法
 
@@ -821,7 +838,7 @@ jobs:
 
 在 Android 模拟器或 iOS 模拟器构建上运行 Maestro 测试。
 
-> **important** Maestro 测试处于 [alpha](/more/release-statuses/#alpha) 阶段。
+> **重要** Maestro 测试处于 [alpha](/more/release-statuses/#alpha) 阶段。
 
 ### 语法
 
@@ -1161,7 +1178,7 @@ jobs:
       profile: production
 
   notify_build:
-    name: Notify Build Status
+    name: 通知构建状态
     needs: [build_ios]
     type: slack
     params:
@@ -1187,7 +1204,7 @@ jobs:
       profile: production
 
   notify_build:
-    name: Notify Build Status
+    name: 通知构建状态
     needs: [build_android]
     type: slack
     params:
@@ -1218,13 +1235,16 @@ jobs:
 
 </Collapsible>
 
-## GitHub Comment
+## GitHub 评论
 
 自动将你的工作流已完成的构建、更新和部署报告发布到 GitHub 拉取请求中。它特别适用于为 PR 构建提供即时反馈、通过二维码共享测试构建以便轻松在设备上测试、展示 EAS Hosting 部署预览，以及自动化部署通知。你也可以通过提供 `payload` 参数来覆盖评论内容。
 
-### 前提条件
-
-要使用 GitHub Comment 作业，你的项目必须已连接 GitHub 仓库。了解如何 [连接你的 GitHub 仓库](/build/building-from-github) 以开始使用。
+<Prerequisites>
+  <Requirement title="与你的项目连接的 GitHub 仓库">
+    要使用 GitHub Comment 作业，你的项目必须已连接一个 GitHub 仓库。了解如何
+    [连接你的 GitHub 仓库](/build/building-from-github/) 以开始使用。
+  </Requirement>
+</Prerequisites>
 
 ### 语法
 

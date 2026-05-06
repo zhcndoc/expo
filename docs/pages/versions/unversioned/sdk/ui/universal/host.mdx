@@ -1,0 +1,59 @@
+---
+title: Host
+description: 一个跨平台的 Host 组件，用于包装通用的 @expo/ui 内容。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+一个用于通用 `@expo/ui` 内容的容器。在 Android 和 iOS 上，它会重新导出平台原生的 [`Host` for Jetpack Compose](../jetpack-compose/host)/[`Host` for SwiftUI](../swift-ui/host)，因此 Jetpack Compose/SwiftUI 子组件的渲染效果与它们在平台特定包中的表现完全一致。在 web 上，它会回退为 React Native 的 [`View`](https://reactnative.dev/docs/view)。将 `Host` 作为任何通用子树的根节点，这样同一组件树就能在所有三个平台上工作。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本用法
+
+```tsx HostExample.tsx
+import { Host, Column, Text, Button } from '@expo/ui';
+
+export default function HostExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column spacing={12} alignment="center">
+        <Text>你好，世界！</Text>
+        <Button label="Press me" onPress={() => alert('Pressed')} />
+      </Column>
+    </Host>
+  );
+}
+```
+
+### 匹配内容尺寸
+
+使用 `matchContents` 让 `Host` 调整自身大小以适配其内容。在 Android 和 iOS 上，这会转发给平台原生的 `Host`（关于精确的平台语义，请参见 [Jetpack Compose](../jetpack-compose/host)/[SwiftUI](../swift-ui/host)）。在 web 上，该属性同样可用以保持 API 一致性，但最终尺寸仍由你传入的 `style` 决定，因为 web 端的 `Host` 渲染的是普通的 React Native `View`。
+
+```tsx MatchContentsExample.tsx
+import { Host, Button } from '@expo/ui';
+
+export default function MatchContentsExample() {
+  return (
+    <Host matchContents>
+      <Button label="内容自适应尺寸" onPress={() => {}} />
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Host } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/host" apiName="Host" />

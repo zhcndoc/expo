@@ -17,7 +17,7 @@ description: 了解 iOS 项目如何在 EAS Build 上构建。
 1. 准备构建所需的凭证。
    - 根据 `builds.ios.PROFILE_NAME.credentialsSource` 的值，凭证会从本地 **credentials.json** 文件或 EAS 服务器获取。如果选择了 `remote` 模式但尚未存在凭证，系统会提示你生成它们。
 
-1. **Bare** 项目需要额外一步：检查 Xcode 项目是否已配置为可以在 EAS 服务器上构建（以确保设置了正确的 bundle identifier 和 Apple Team ID）。
+1. 管理自身原生目录（**android** 和 **ios**）的项目，需要额外执行一个步骤：检查 Xcode 项目是否已配置为可在 EAS 服务器上构建（以确保设置了正确的 bundle identifier 和 Apple Team ID）。
 1. 创建包含仓库副本的 tarball。实际行为取决于你正在使用的 [VCS 工作流](https://expo.fyi/eas-vcs-workflow)。
 1. 将项目 tarball 上传到私有的 Google Cloud Storage（GCS）存储桶，并向 EAS Build 发送构建请求。
 
@@ -39,17 +39,17 @@ description: 了解 iOS 项目如何在 EAS Build 上构建。
    - 将 Provisioning Profile 写入 **~/Library/MobileDevice/Provisioning Profiles** 目录。
    - 验证 Distribution Certificate 和 Provisioning Profile 是否匹配（每个 Provisioning Profile 都分配给特定的 Distribution Certificate，不能用于使用其他证书构建 iOS）。
 
-1. 对于 **managed** 项目，额外一步：运行 `npx expo prebuild` 将项目转换为 bare 项目。此步骤将使用版本化的 Expo CLI。
-1. 恢复之前保存的缓存，该缓存由 [构建配置文件](/build/eas-json) 中的 `cache.key` 值标识。
-1. 在项目中的 **ios** 目录里运行 `pod install`。
+1. 对于使用 Continuous Native Generation（CNG）的项目的额外步骤：运行 `npx expo prebuild` 以生成 **android** 和 **ios** 目录。此步骤将使用带版本号的 Expo CLI。
+1. 恢复之前保存的缓存，该缓存由 [构建配置文件](/build/eas-json)中的 `cache.key` 值标识。
+1. 在项目内的 **ios** 目录中运行 `pod install`。
 1. 如果 **package.json** 中定义了 `eas-build-post-install` 脚本，则运行它。
 1. 使用 Provisioning Profile 的 ID 更新 Xcode 项目。
-1. 如果 **ios** 目录中还不存在 **Gymfile**，则创建它（请查看 [默认 Gymfile](#default-gymfile) 部分）。
+1. 如果 **ios** 目录中还不存在 **Gymfile**，则创建它（请参阅 [默认 Gymfile](#default-gymfile) 部分）。
 1. 在 **ios** 目录中运行 `fastlane gym`。
 1. **已弃用：** 如果 **package.json** 中定义了 `eas-build-pre-upload-artifacts` 脚本，则运行它。
-1. 存储 [构建配置文件](/build/eas-json) 中定义的文件和目录缓存。默认会缓存 **Podfile.lock**。后续构建将恢复此缓存。
+1. 存储 [构建配置文件](/build/eas-json)中定义的文件和目录缓存。默认会缓存 **Podfile.lock**。后续构建将恢复此缓存。
 1. 将应用归档上传到私有 GCS 存储桶。
-   - 归档路径可以在 **eas.json** 的 `builds.ios.PROFILE_NAME.applicationArchivePath` 中配置。默认值为 **ios/build/App.ipa**。你可以为 `applicationArchivePath` 指定类似 glob 的模式。我们使用 [glob patterns](https://github.com/isaacs/node-glob#glob-primer) 进行模式匹配。
+   - 产物路径可以在 **eas.json** 中通过 `builds.ios.PROFILE_NAME.applicationArchivePath` 配置。默认值为 **ios/build/App.ipa**。你可以为 `applicationArchivePath` 指定类似 glob 的模式。我们使用 [glob patterns](https://github.com/isaacs/node-glob#glob-primer) 进行模式匹配。
 
 1. 如果构建成功：如果 **package.json** 中定义了 `eas-build-on-success` 脚本，则运行它。
 1. 如果构建失败：如果 **package.json** 中定义了 `eas-build-on-error` 脚本，则运行它。

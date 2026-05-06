@@ -3,7 +3,7 @@ title: ScrollView
 description: 一个用于可滚动内容的 SwiftUI ScrollView 组件。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
 packageName: '@expo/ui'
-platforms: ['ios', 'tvos']
+platforms: ['ios', 'tvos', 'expo-go']
 ---
 
 import APISection from '~/components/plugins/APISection';
@@ -89,6 +89,60 @@ export default function ScrollViewHiddenIndicatorsExample() {
           ))}
         </VStack>
       </ScrollView>
+    </Host>
+  );
+}
+```
+
+### 共享滚动位置
+
+> **info** 需要 iOS 17 或更高版本。在较旧的版本上，该修饰符不会产生任何作用。
+
+从 JavaScript 跟踪领先的滚动目标 id，并通过写入状态来滚动到某个目标。为每个滚动目标添加 `id` 修饰符，将内容容器包裹在 `scrollTargetLayout` 中，并将 `scrollPosition` 修饰符应用到 `ScrollView`。可选的 `onChange` 回调会在领先目标发生变化时在 JS 线程上触发。
+
+`scrollPosition` 修饰符也适用于其他可滚动容器，例如 `LazyVStack` 和 `LazyHStack`。
+
+> **warning** 对 `state.value` 的写入必须在 UI 运行时中执行。请将写入操作包裹在 `react-native-worklets` 中的 `scheduleOnUI` 里，或者从 `'worklet'` 函数内部调用它们。来自 JS 运行时的写入会触发 Main Thread Checker，这是 Xcode 的运行时工具，用于标记在后台线程中进行的 UIKit 调用。
+
+```tsx ScrollViewSharedPositionExample.tsx
+import { Button, Host, ScrollView, Text, VStack, useNativeState } from '@expo/ui/swift-ui';
+import { id, padding, scrollPosition, scrollTargetLayout } from '@expo/ui/swift-ui/modifiers';
+import { scheduleOnUI } from 'react-native-worklets';
+
+export default function ScrollViewSharedPositionExample() {
+  const activeID = useNativeState<string | null>(null);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={12}>
+        <ScrollView
+          modifiers={[
+            scrollPosition(activeID, {
+              onChange: newID => {
+                console.log('[JS thread] leading target:', newID);
+              },
+            }),
+          ]}>
+          <VStack modifiers={[scrollTargetLayout()]}>
+            {Array.from({ length: 30 }, (_, i) => (
+              <Text
+                key={`item-${i}`}
+                modifiers={[id(`item-${i}`), padding({ horizontal: 16, vertical: 12 })]}>
+                {`Item ${i}`}
+              </Text>
+            ))}
+          </VStack>
+        </ScrollView>
+        <Button
+          label="从 worklet 滚动到 item 10"
+          onPress={() => {
+            scheduleOnUI(() => {
+              'worklet';
+              activeID.value = 'item-10';
+            });
+          }}
+        />
+      </VStack>
     </Host>
   );
 }

@@ -1,0 +1,125 @@
+---
+title: Expo Observe 简介
+sidebar_title: 简介
+description: Expo Observe 是一项性能监控服务，可跟踪你的应用在真实设备和各种环境条件下于生产环境中的表现。
+searchRank: 10
+---
+
+import { ActivityIcon } from '@expo/styleguide-icons/outline/ActivityIcon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { NoIcon, YesIcon } from '~/ui/components/DocIcons';
+import { FAQ } from '~/ui/components/FAQ';
+import { Terminal } from '~/ui/components/Snippet';
+
+> **重要** **Expo Observe** 处于[私有预览](/more/release-statuses/#preview)阶段，可能会发生破坏性变更。可按需申请访问权限（[在此申请](https://expo.dev/changelog/introducing-expo-observe)）。在预览期间，使用是免费的。
+
+**Expo Observe** 是 Expo 提供的性能监控服务，用于跟踪你的应用在生产环境中的表现。它让你能够了解真实环境下的启动时间、渲染性能，以及在不同设备、网络和条件下的用户体验。
+
+React Native 中的性能调试传统上一直局限于开发工具。Expo Observe 专注于生产环境，在那里性能特征与你在开发过程中看到的情况有显著不同。
+
+## 快速开始
+
+<Terminal cmd={['# 安装此库', '$ npx expo install expo-observe']} />
+
+使用 `AppMetricsRoot` 组件包裹你的根布局，并在应用准备好接受用户输入时调用 `markInteractive()`。完整设置指南请参见[入门](/eas/observe/get-started/)。
+
+## 为什么选择 Expo Observe
+
+传统的开发期分析工具只能显示你的应用在本机上的表现。Expo Observe 展示的是它在真实用户设备上的表现：
+
+- **生产环境性能数据**：跟踪来自真实用户会话的启动时间、渲染性能和 bundle 加载时间，覆盖多种设备
+- **版本对比**：查看不同应用版本和 OTA 更新之间指标如何变化，以便尽早发现回归问题
+- **会话调查**：深入分析单个用户会话，了解为什么某些设备或条件会导致更慢的性能
+- **CLI 和仪表板访问**：通过终端使用 `eas observe:` 命令查询指标，或在 EAS 仪表板中查看它们
+
+## 何时使用 Expo Observe
+
+| 场景                                              | 建议 |
+| ------------------------------------------------- | ---- |
+| 监控生产环境中的应用启动性能                     | <YesIcon />    |
+| 比较不同版本和 OTA 更新之间的性能               | <YesIcon />    |
+| 调查特定设备上的慢会话                         | <YesIcon />    |
+| 通过 CLI 查询性能指标                           | <YesIcon />    |
+| 开发期分析与调试                                 | <NoIcon />     |
+| 崩溃报告和错误跟踪                               | <NoIcon />     |
+| 自定义分析和事件跟踪                             | <NoIcon />     |
+
+**开发期分析与调试**：使用 [React Native DevTools](/debugging/tools/#debugging-with-react-native-devtools) 进行调试，并使用 [Expo Atlas](/guides/analyzing-bundles/) 检查 bundle。
+
+**崩溃报告和错误跟踪**：这是 Observe 未来计划新增的功能。目前我们建议使用崩溃报告服务，例如 [Sentry](/guides/using-sentry/) 或 [BugSnag](/guides/using-bugsnag/)。
+
+**自定义分析和事件跟踪**：这是 Observe 未来计划新增的功能。目前，请从 [React Native 分析指南](/guides/using-analytics/) 中选择一个分析提供商，例如 PostHog、Amplitude 或 Firebase Analytics。
+
+## 常见问题（FAQ）
+
+<FAQ>
+
+<Collapsible summary="Expo Observe 跟踪哪些指标？">
+
+Expo Observe 专注于启动指标：冷启动时间、热启动时间、首次渲染时间、可交互时间以及 bundle 加载时间。有关每项指标的详细说明，请参见[指标参考](/eas/observe/reference/metrics/)。
+
+</Collapsible>
+
+<Collapsible summary="支持哪些平台？">
+
+Expo Observe 支持 Android 和 iOS。指标来自生产构建，可在仪表板和 CLI 中按平台筛选。
+
+</Collapsible>
+
+<Collapsible summary="Expo Observe 会收集个人可识别信息吗？">
+
+不会。用户通过一个匿名 ID 进行标识，该 ID 在每次应用安装中都是唯一的。此 ID 不可识别个人身份，且当用户卸载并重新安装应用时会重置。更多详情请参见[指标参考：用户](/eas/observe/reference/metrics/#user)。
+
+</Collapsible>
+
+<Collapsible summary="设备离线时会发生什么？">
+
+离线期间收集的指标会存储在设备本地。当应用切换到后台且网络连接可用时，它们会自动发送。你也可以使用 `dispatchEvents()` 手动刷新事件。
+
+</Collapsible>
+
+<Collapsible summary="我可以在开发期间测试指标吗？">
+
+默认情况下，从调试构建中收集的指标不会发送。不过，你仍可以通过 [`configure()`](/eas/observe/configuration/#configure) 将 `dispatchInDebug` 设置为 `true` 来进行测试。详情请参见[配置](/eas/observe/configuration/#enable-metrics-in-development)。
+
+</Collapsible>
+
+<Collapsible summary="指标数据会保留多久？">
+
+指标数据至少保留 60 天。
+
+</Collapsible>
+
+</FAQ>
+
+## 入门
+
+<BoxLink
+  title="设置 Expo Observe"
+  description="安装该库，并开始从你的生产应用中收集指标。"
+  href="/eas/observe/get-started"
+  Icon={ActivityIcon}
+/>
+
+<BoxLink
+  title="Observe 仪表板"
+  description="查看指标，按平台或版本筛选，并调查单个会话。"
+  href="/eas/observe/dashboard"
+  Icon={ActivityIcon}
+/>
+
+<BoxLink
+  title="配置"
+  description="控制环境、发送机制以及开发模式设置。"
+  href="/eas/observe/configuration"
+  Icon={ActivityIcon}
+/>
+
+<BoxLink
+  title="指标参考"
+  description="每项指标、相关概念和数据处理方式的详细说明。"
+  href="/eas/observe/reference/metrics"
+  Icon={ActivityIcon}
+/>

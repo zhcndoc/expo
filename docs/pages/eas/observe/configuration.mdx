@@ -1,0 +1,102 @@
+---
+title: 配置 Expo Observe
+sidebar_title: 配置
+description: 控制 Expo Observe 如何收集和分发指标，包括环境设置、开发模式和自定义端点。
+---
+
+在运行时配置 Expo Observe，以适配你的应用构建设置、环境和数据路由。本页介绍 `configure()` 和 `dispatchEvents()`，以及在开发中启用指标、使用自定义端点和按环境分离数据。
+
+## `configure()`
+
+使用 `configure()` 方法来控制 Expo Observe 在运行时的行为：
+
+```tsx
+import ExpoObserve from 'expo-observe';
+
+ExpoObserve.configure({
+  environment: 'production',
+  dispatchingEnabled: true,
+});
+```
+
+| 选项                 | 类型      | 默认值                 | 描述                                                                                           |
+| -------------------- | --------- | ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `environment`        | `string`  | `process.env.NODE_ENV` | 可观测性事件的环境标签                                                                            |
+| `dispatchingEnabled` | `boolean` | `true`                 | 是否将收集到的事件发送到服务器                                                                      |
+| `dispatchInDebug`    | `boolean` | `false`                | 是否分发在调试构建中收集的指标。对发布构建没有影响。                                                  |
+| `sampleRate`         | `number`  | `undefined`            | 分发指标的安装占比，取值范围为 `[0, 1]`。参见 [抽样](#sampling)。                                 |
+
+## `dispatchEvents()`
+
+当应用切换到后台时，事件会自动分发。在 Android 上，一旦网络连接可用，后台 worker 就会分发事件。在 iOS 上，这发生在应用失去活跃状态或即将终止时。
+
+如需手动刷新事件（例如，在测试期间或为了确保在某个特定时点之前发送事件），请调用 `dispatchEvents()`：
+
+```tsx
+import ExpoObserve from 'expo-observe';
+
+await ExpoObserve.dispatchEvents();
+```
+
+## 抽样
+
+默认情况下，每次安装都会分发其指标。对于高流量应用，你可以通过将 `sampleRate` 设置为介于 `0` 和 `1` 之间的值来抽样一部分安装：
+
+```tsx
+import ExpoObserve from 'expo-observe';
+
+// 从约 25% 的安装中分发指标。
+ExpoObserve.configure({
+  sampleRate: 0.25,
+});
+```
+
+抽样决策对**每次安装是确定性的**。对于给定的抽样率，每次安装要么永久处于样本内，要么永久处于样本外，因此该选择在应用启动之间保持稳定，你获得的是一组一致的安装切片，而不是会话的随机子集。
+
+有几点细节值得了解：
+
+- 超出 `[0, 1]` 范围的值会被限制到最近的边界。`0` 始终丢弃；`1` 始终分发。
+- 样本外设备会丢弃待处理的指标，而不是累积它们。稍后降低抽样率不会追溯发送更早的会话。
+- 抽样依赖于 [`dispatchingEnabled`](#configure)。如果 `dispatchingEnabled` 为 `false`，无论 `sampleRate` 是多少，都不会分发任何内容。
+
+## 在开发中启用指标
+
+默认情况下，从调试构建中收集的指标不会被分发。若要仍然分发它们（例如，在测试你的 Expo Observe 集成时），请在调用 `configure()` 时将 `dispatchInDebug` 设置为 `true`：
+
+```tsx
+import ExpoObserve from 'expo-observe';
+
+ExpoObserve.configure({
+  dispatchInDebug: true,
+});
+```
+
+`dispatchInDebug` 对发布构建没有影响，发布构建始终会分发（受 [`dispatchingEnabled`](#configure) 和 [`sampleRate`](#sampling) 约束）。如果 `dispatchingEnabled` 为 `false` 或该安装处于样本外，则无论 `dispatchInDebug` 如何，都不会分发任何内容。
+
+> **warning** 仅在测试你的 Expo Observe 集成时启用此项。开发/调试性能与生产环境有显著差异，因此收集开发/调试指标可能会扭曲仪表板中显示的结果。
+
+## 自定义端点
+
+如果你需要更改可观测性 API 的端点，请在你的 **应用配置** 中设置 `endpointUrl` 值：
+
+```json app.json
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "observe": {
+          "endpointUrl": "https://your-custom-endpoint.com"
+        }
+      }
+    }
+  }
+}
+```
+
+端点 URL 会在构建时被写入应用的原生层，因此更改它需要重新生成原生代码。更新应用配置后，请运行 `npx expo prebuild` 并创建一个新构建以应用更改。
+
+## 环境
+
+所有指标都会按环境分组。默认情况下，环境值来自 `process.env.NODE_ENV`。如需覆盖它，请使用 [`configure({ environment })`](#configure)。
+
+从调试构建中收集的指标会在分发前被丢弃，除非通过 `configure()` 将 [`dispatchInDebug` 设置为 `true`](#enable-metrics-in-development)。你也可以通过 `configure({ dispatchingEnabled: false })` 全局禁用所有分发。

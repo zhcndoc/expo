@@ -1,0 +1,207 @@
+---
+title: 设置 Expo Observe
+sidebar_title: 开始使用
+description: 了解如何安装 Expo Observe，并开始从你的生产应用中收集性能指标。
+searchRank: 9
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Tabs, Tab } from '~/ui/components/Tabs';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+Expo Observe 会跟踪你的应用在生产环境中的启动性能。本指南将带你完成库的安装、应用设置，以及查看你的第一批指标。
+
+## 前提条件
+
+<Prerequisites>
+  <Requirement title="可访问 Expo Observe 预览版">
+    Expo Observe 目前处于私有预览阶段，需申请后才能获得访问权限。[在此申请访问
+    权限](https://expo.dev/changelog/introducing-expo-observe)。
+  </Requirement>
+  <Requirement title="Expo 用户账户">
+    任何拥有 Expo 账户的人都可以使用 Expo Observe。你可以在
+    [expo.dev/signup](https://expo.dev/signup) 注册。
+  </Requirement>
+  <Requirement title="Expo SDK 55 或更高版本">
+    Expo Observe 需要 SDK 55 或更高版本。运行 `npx expo-doctor` 检查你的 SDK 版本，并运行 `npx
+    expo install --fix` 更新依赖项。
+  </Requirement>
+  <Requirement title="EAS 项目">
+    你的应用必须已关联到一个 EAS 项目。请确保应用配置中的 `extra.eas.projectId`
+    包含项目 ID，或者通过运行 `eas init` 创建一个。
+  </Requirement>
+</Prerequisites>
+
+<Step label="1">
+
+## 安装库
+
+请确保你使用的是最新版本的 `expo`，然后安装 `expo-observe`：
+
+<Terminal cmd={['$ npx expo install --fix', '', '$ npx expo install expo-observe']} />
+
+</Step>
+
+<Step label="2">
+
+## 包裹你的根布局
+
+使用 `AppMetricsRoot` 包裹你的根布局。这个高阶组件（HOC）会自动为你测量 [首次渲染时间（TTR）](/eas/observe/reference/metrics/#time-to-first-render)。
+
+```tsx app/_layout.tsx
+import { Stack } from 'expo-router';
+import { AppMetricsRoot } from 'expo-observe';
+
+function RootLayout() {
+  return <Stack />;
+}
+
+export default AppMetricsRoot.wrap(RootLayout);
+```
+
+</Step>
+
+<Step label="3">
+
+## 标记为可交互
+
+当你的应用完全准备好接受用户交互时，调用 `markInteractive()`。这应该在闪屏之后的初始化工作全部完成后调用，例如：
+
+- 检查更新
+- 用户认证
+- 获取初始数据
+- 播放闪屏动画
+
+<Tabs>
+
+<Tab label="使用 Expo Router">
+
+```tsx app/_layout.tsx
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { AppMetrics, AppMetricsRoot } from 'expo-observe';
+import { useEffect, useState } from 'react';
+
+// 在获取资源期间保持闪屏可见
+SplashScreen.preventAutoHideAsync();
+
+function RootLayout() {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await authenticateUser();
+        await fetchInitialData();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (isReady) {
+      SplashScreen.hide();
+      AppMetrics.markInteractive();
+    }
+  }, [isReady]);
+
+  if (!isReady) {
+    return null;
+  }
+
+  return <Stack />;
+}
+
+export default AppMetricsRoot.wrap(RootLayout);
+```
+
+</Tab>
+
+<Tab label="不使用 Expo Router">
+
+```tsx App.tsx
+import { useEffect, useState } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+import { AppMetrics, AppMetricsRoot } from 'expo-observe';
+
+// 在获取资源期间保持闪屏可见
+SplashScreen.preventAutoHideAsync();
+
+function App() {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await authenticateUser();
+        await fetchInitialData();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (isReady) {
+      SplashScreen.hideAsync();
+      AppMetrics.markInteractive();
+    }
+  }, [isReady]);
+
+  if (!isReady) {
+    return null;
+  }
+
+  // 你的应用
+}
+
+export default AppMetricsRoot.wrap(App);
+```
+
+</Tab>
+
+</Tabs>
+
+> **info** `markInteractive()` 可以在每个会话中安全地调用多次，但只有第一次调用会记录该指标。如果你的应用有多个入口屏幕（例如引导流程、登录流程或深度链接目标），请在**这些屏幕中的每一个**上调用 `markInteractive`。如果你只在其中一个屏幕上调用，当应用通过深度链接打开到另一个屏幕时，[可交互时间（TTI）](/eas/observe/reference/metrics/#time-to-interactive) 将不会被记录。
+
+</Step>
+
+<Step label="4">
+
+## 创建新构建
+
+在安装 `expo-observe` 并添加埋点后，请为你的应用创建一个新构建：
+
+<Terminal cmd={['$ eas build']} />
+
+> **info** 默认情况下，从调试构建收集的指标不会被发送。若要在调试构建中测试集成，请参阅[在开发环境中启用指标](/eas/observe/configuration/#enable-metrics-in-development)。
+
+</Step>
+
+<Step label="5">
+
+## 查看你的指标
+
+打开你的项目，并打开 EAS 控制台中的 [**Observe** 选项卡](https://expo.dev/accounts/[account]/projects/[project]/observe) 来查看来自你的应用的指标。
+
+有关筛选、版本比较和会话调查的详细信息，请参阅 [Dashboard 指南](/eas/observe/dashboard/)。
+
+你也可以使用 EAS CLI 通过终端查询指标：
+
+- `eas observe:versions`：列出应用版本及其构建 ID、更新组 ID 和发布日期。适用于查找筛选其他命令所需的版本标识符。
+- `eas observe:metrics`：显示按应用版本分组的汇总性能指标（例如中位数、p75 和 p95 值）。可用于比较不同发布版本之间的整体启动性能。
+- `eas observe:events`：按指标值显示单个性能事件，包括会话和设备元数据。可用于调查特定的慢会话或异常值。
+
+使用 `--help` 运行上述任意命令，以查看可用的标志和参数。
+
+</Step>

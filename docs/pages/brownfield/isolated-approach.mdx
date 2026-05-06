@@ -8,6 +8,8 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
+import { FileTree } from '~/ui/components/FileTree';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { Tabs, Tab } from '~/ui/components/Tabs';
@@ -18,12 +20,14 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 
 > **info** 如果你想了解另一种将 React Native 直接集成到原生项目中的方案，请参阅 [集成式方案指南](/brownfield/integrated-approach/)。
 
-## 前提条件
-
-要将 React Native 集成到现有应用中，你需要先搭建 JavaScript 开发环境。这包括安装用于运行 Expo CLI 的 Node.js，以及用于管理项目 JavaScript 依赖的 Yarn。
-
-- [Node.js (LTS)](https://nodejs.org/en/): 用于执行 JavaScript 代码和 Expo CLI 的运行时。
-- [Yarn](https://yarnpkg.com/): 用于安装和管理 JavaScript 依赖的包管理器。
+<Prerequisites>
+  <Requirement title="Node.js (LTS)">
+    安装 [Node.js](https://nodejs.org/en/) 以运行 JavaScript 代码和 Expo CLI。
+  </Requirement>
+  <Requirement title="Yarn">
+    安装 [Yarn](https://yarnpkg.com/) 作为 JavaScript 依赖的包管理器。
+  </Requirement>
+</Prerequisites>
 
 更多信息请参阅 [环境搭建指南](/get-started/set-up-your-environment/)。
 
@@ -91,7 +95,7 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 ```
 </Collapsible>
 
-有关所有可用选项的详细信息，请参阅 [`expo-brownfield` API 参考](/versions/v55.0.0/sdk/brownfield/)。
+有关所有可用选项的详细信息，请参阅 [`expo-brownfield` API reference](/versions/latest/sdk/brownfield/)。
 
 </Step>
 
@@ -109,7 +113,7 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 这会构建 AAR 并将其发布到 Maven 仓库。默认情况下，它会发布到你的本地 Maven 仓库（`~/.m2`），但也可以配置为发布到远程仓库。
 生成的产物名称将由你的配置插件设置决定，在这个例子中是 `com.username.myproject:brownfield:1.0.0`。
 
-有关构建选项的更多细节，例如仅构建 debug 或 release、指定自定义输出目录等，请参阅 [API 参考](/versions/v55.0.0/sdk/brownfield/)。
+有关构建选项的更多详情，请参阅 [API reference](/versions/latest/sdk/brownfield/)，例如仅构建 debug 或 release、指定自定义输出目录等。
 
 </Tab>
 <Tab label="iOS">
@@ -125,7 +129,25 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 - **\{TargetName\}.xcframework** - 你的 Expo 项目作为原生库
 - **hermesvm.xcframework** - Hermes JavaScript 引擎
 
-有关构建选项的更多细节，例如仅构建 debug 或 release、指定自定义输出目录等，请参阅 [`expo-brownfield` API 参考](/versions/v55.0.0/sdk/brownfield/)。
+有关构建选项的更多详情，请参阅 [`expo-brownfield` API reference](/versions/latest/sdk/brownfield/)，例如仅构建 debug 或 release、指定自定义输出目录等。
+
+### 将产物作为 Swift Package 发布
+
+传入 `--package [name]` 标志，可以将构建输出打包为一个独立的 Swift Package，而不是分别生成 **.xcframework** 目录。然后，你可以在 Xcode 中将其作为本地依赖添加到宿主应用，而不是手动将 framework 拖入项目。
+
+<Terminal cmd={['$ npx expo-brownfield build:ios --release --package MyAppPackage']} />
+
+该标志接受一个可选名称。如果省略，包默认命名为 **\{TargetName\}Artifacts**。生成的目录是一个完整的 Swift Package，其结构如下：
+
+<FileTree
+  files={[
+    ['artifacts/MyAppPackage/Package.swift', ''],
+    ['artifacts/MyAppPackage/xcframeworks/MyAppPackage.xcframework', ''],
+    ['artifacts/MyAppPackage/xcframeworks/hermesvm.xcframework', ''],
+    ['artifacts/MyAppPackage/xcframeworks/React.xcframework', ''],
+    ['artifacts/MyAppPackage/xcframeworks/ReactNativeDependencies.xcframework', ''],
+  ]}
+/>
 
 </Tab>
 </Tabs>
@@ -217,7 +239,12 @@ startActivity(Intent(this, ExpoActivity::class.java))
 <Tab label="iOS">
 
 <Step label="1">
-#### 将 XCFramework 添加到项目中
+#### 将产物添加到你的项目中
+
+集成步骤取决于你构建的是 XCFramework 还是 Swift Package。
+
+<Tabs>
+<Tab label="XCFrameworks (default)">
 
 将两个 XCFramework 文件（\{TargetName\}**.xcframework** 和 **hermesvm.xcframework**）拖入 Xcode 项目导航器。在弹出的对话框中：
 
@@ -229,6 +256,16 @@ startActivity(Intent(this, ExpoActivity::class.java))
 然后，在你的 target 的 **General** 选项卡中，找到 **Frameworks, Libraries, and Embedded Content**，确保这两个 framework 都设置为 **Embed & Sign**。
 
 {/* vale on */}
+
+</Tab>
+<Tab label="Swift Package">
+
+当 `build:ios` 生成 Swift Package 时（例如 **./artifacts/MyAppPackage-release**），在 Xcode 中将其作为本地依赖添加到宿主应用，并选择该包目录。Xcode 会通过聚合库产品自动链接捆绑的 **.xcframework** 文件。
+
+若要同时支持 `--debug` 和 `--release`，请让宿主应用针对每种构建配置指向相应的包。
+
+</Tab>
+</Tabs>
 
 </Step>
 
@@ -337,8 +374,8 @@ struct ContentView: View {
   Icon={BookOpen02Icon}
 />
 <BoxLink
-  title="expo-brownfield API 参考"
-  description="查看用于通信、导航等功能的完整 JavaScript API。"
-  href="/versions/v55.0.0/sdk/brownfield/"
+  title="expo-brownfield API reference"
+  description="探索用于通信、导航等功能的完整 JavaScript API。"
+  href="/versions/latest/sdk/brownfield/"
   Icon={BookOpen02Icon}
 />

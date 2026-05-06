@@ -1,0 +1,55 @@
+---
+title: 将 Expo Router 从 SDK 55 迁移到 SDK 56
+sidebar_title: SDK 55 到 56
+description: 了解如何使用 codemod 或手动将 Expo Router 从 SDK 55 迁移到 56。
+---
+
+import { Terminal } from '~/ui/components/Snippet';
+
+在 **SDK 56 及更高版本**中，Expo Router 不再支持在应用代码中从外部 `@react-navigation/*` 包导入。请将这些导入更新为对应的 `expo-router` 入口点。运行时 API 保持不变——只是模块标识符发生了变化。
+
+## 自动迁移
+
+从项目根目录运行此 codemod。它会将应用代码中的 `@react-navigation/*` 导入重写为对应的 `expo-router` 入口点。
+
+<Terminal cmd={['$ npx expo-codemod sdk-56-expo-router-react-navigation-replace src']} />
+
+将 `src` 替换为包含应用代码的目录或 glob。
+
+## 手动迁移
+
+如果你无法运行 codemod，请手动将每个导入重定向：
+
+```tsx
+// 之前（SDK 55）
+import { ThemeProvider, DarkTheme } from '@react-navigation/native';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
+// 之后（SDK 56）
+import { ThemeProvider, DarkTheme } from 'expo-router/react-navigation';
+import { createMaterialTopTabNavigator } from 'expo-router/js-top-tabs';
+```
+
+使用下表将代码中的每个 React Navigation 导入映射到其对应的 `expo-router` 版本：
+
+| React Navigation source               | Expo Router target                                                                |
+| ------------------------------------- | --------------------------------------------------------------------------------- |
+| `@react-navigation/native`            | `expo-router/react-navigation`                                                    |
+| `@react-navigation/core`              | `expo-router/react-navigation`                                                    |
+| `@react-navigation/elements`          | `expo-router/react-navigation`                                                    |
+| `@react-navigation/routers`           | `expo-router/react-navigation`                                                    |
+| `@react-navigation/stack`             | `expo-router/js-stack`                                                            |
+| `@react-navigation/bottom-tabs`       | `expo-router/js-tabs`                                                             |
+| `@react-navigation/material-top-tabs` | `expo-router/js-top-tabs`                                                         |
+| `@react-navigation/native-stack`      | 没有直接对应项。请改用 [`Stack`](/router/advanced/stack) 布局。   |
+| `@react-navigation/drawer`            | 没有直接对应项。请改用 [`Drawer`](/router/advanced/drawer) 布局。 |
+
+## 库
+
+许多第三方库仍然从 `@react-navigation/core` 导入。为了简化 SDK 56 的过渡，Expo CLI 会在这些导入来自 **node_modules** 时自动将其重写为 `expo-router`。你的应用代码不受此重写影响。
+
+这是一个临时兼容性补丁。专门的库迁移指南会在自动重写移除之前说明替代方案。
+
+如需禁用，请在启动 bundler 之前于环境中设置 `EXPO_ROUTER_DISABLE_RN_NAVIGATION_CHECK=1`。这也会禁用应用代码中从 `@react-navigation/*` 导入时触发的 bundler 错误。
+
+<Terminal cmd={['$ EXPO_ROUTER_DISABLE_RN_NAVIGATION_CHECK=1 npx expo start']} />

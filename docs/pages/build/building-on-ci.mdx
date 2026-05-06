@@ -4,26 +4,26 @@ description: 了解如何在 EAS 上从 CI 环境（例如 GitHub Actions 等）
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal } from '~/ui/components/Snippet';
 
 本文档概述了如何从 CI 环境（例如 GitHub Actions、Travis CI 等）为你的应用触发 EAS 构建。
 
-## 前置条件
+<Prerequisites>
+  <Requirement title="从本地机器成功构建一次">
+    要从 CI 环境触发 EAS 构建，你的应用需要先配置为以非交互模式使用 EAS Build。请在本地终端中针对你希望在 CI 上支持的每个平台运行 `eas build -p [all|android|ios]`，这样 `eas build` 命令就可以提示你完成任何它所需的额外配置。之后，这些配置将可用于未来的非交互式运行。
 
-### 在本地机器上成功运行一次构建
+    在本地运行一次构建可完成以下关键配置步骤：
 
-要从 CI 环境触发 EAS 构建，你的应用需要先配置为以非交互模式使用 EAS Build。为此，请完成 EAS Build 的初始化步骤，并在本地终端中针对你希望在 CI 上支持的每个平台成功运行一次构建。这样，`eas build` 命令就可以提示你进行任何所需的额外配置，然后这些配置就可以用于未来在 CI 上的非交互式运行。
+    - 通过生成 `projectId` 在 EAS 上初始化项目。
+    - 添加一个定义构建配置的 **eas.json** 文件。
+    - 填充原生构建所需的关键应用配置属性，例如 `android.packageName` 和 `ios.bundleIdentifier`。
+    - 确保已创建构建凭据，包括 Android keystore 以及 iOS 分发证书和 provisioning profile。
 
-在本地运行构建将完成以下关键配置步骤：
+    如果你还没有完成这些，请先查看 [创建你的第一个构建](/build/setup/) 指南，准备好后再返回这里。
 
-- 通过生成 `projectId` 在 EAS 上初始化项目。
-- 添加定义构建配置文件的 **eas.json** 文件。
-- 为原生构建填充关键的应用配置属性，例如 `android.packageName` 和 `ios.bundleIdentifier`。
-- 确保已创建构建凭据，包括 Android keystore 以及 iOS 分发证书和 provisioning profile。
-
-运行 `eas build -p [all|android|ios]` 并验证每个平台的构建都能成功完成。然后，继续按照下面的步骤在 CI 上实现 EAS Build。
-
-如果你还没有完成这一步，请查看 [创建你的第一个构建](/build/setup/) 指南，并在准备好后返回这里。
+  </Requirement>
+</Prerequisites>
 
 ## 使用 EAS Workflows
 

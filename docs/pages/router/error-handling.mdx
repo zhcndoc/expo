@@ -1,11 +1,11 @@
 ---
-title: 错误处理
-description: 了解在使用 Expo Router 时，如何在应用中处理未匹配的路由和错误。
+title: 错误处理和加载状态
+description: 了解在使用 Expo Router 时，如何在应用中处理未匹配的路由、错误和加载状态。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-本指南说明了在使用 Expo Router 时，如何处理应用中的未匹配路由和错误。
+This guide specifies how to handle unmatched routes, errors, and loading states in your app when using Expo Router.
 
 ## 未匹配的路由
 
@@ -80,4 +80,53 @@ function Route({ ErrorBoundary, Component }) {
 
 ### 进行中
 
-React Native LogBox 需要以不那么激进的方式呈现，以便在出现错误时进行开发。目前，它会针对 `console.error` 和 `console.warn` 显示。不过，理想情况下它只应对未捕获的错误显示。
+React Native 的 LogBox 需要以更不激进的方式呈现，以便在存在错误时进行开发。目前，它会针对 `console.error` 和 `console.warn` 显示。但理想情况下，它只应在出现未捕获错误时显示。
+
+## 使用 Suspense fallback 的加载状态
+
+Expo Router 会将每个路由包装在一个 [React Suspense](https://react.dev/reference/react/Suspense) 边界中。你可以从布局文件中导出一个 [`SuspenseFallback`](/versions/unversioned/sdk/router/#suspensefallback) 组件，以自定义任何子路由处于挂起状态时显示的加载 UI：
+
+```tsx src/app/_layout.tsx
+import { ActivityIndicator, View } from 'react-native';
+import { Stack } from 'expo-router';
+
+export function SuspenseFallback() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" />
+    </View>
+  );
+}
+
+export default function RootLayout() {
+  return <Stack />;
+}
+```
+
+> 当多个父级布局定义了 fallback 时，最近的父级优先。
+
+### 访问路由参数
+
+[`SuspenseFallback`](/versions/unversioned/sdk/router/#suspensefallback) 组件会接收 `route` 和 `params` 属性。你可以使用 `params` 为动态路由显示上下文相关的加载状态，例如：
+
+```tsx src/app/(app)/_layout.tsx
+import { ActivityIndicator, Text, View } from 'react-native';
+import { Stack, type SuspenseFallbackProps } from 'expo-router';
+
+export function SuspenseFallback({ params }: SuspenseFallbackProps) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>正在加载个人资料 {params.id}...</Text>
+      <ActivityIndicator size="large" />
+    </View>
+  );
+}
+
+export default function AppLayout() {
+  return <Stack />;
+}
+```
+
+### 限制
+
+- [异步路由](/router/web/async-routes) 不支持自定义的 Suspense fallback。

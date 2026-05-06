@@ -110,7 +110,7 @@ export default function App() {
 
 | 网站                                                     | 提供方  | PKCE      | 自动发现      |
 | ------------------------------------------------------------ | -------- | --------- | ------------- |
-| [注册](https://developer.okta.com/signup/) > Applications | OpenID   | 支持      | 可用          |
+| [注册](https://developer.okta.com/signup/) > 应用程序 | OpenID   | 支持      | 可用          |
 
 - 你不能定义自定义 `redirectUri`，Okta 会为你提供一个。
 
@@ -178,7 +178,7 @@ export default function App() {
 在某些情况下，可能会有 1 到 3 个斜杠（`/`）。
 
 - **环境：**
-  - Bare 工作流
+  - 现有的 React Native 应用
     - `npx expo prebuild`
   - App 或 Play Store 中的独立构建，或在本地测试
     - Android: `eas build` 或 `npx expo run:android`
@@ -190,8 +190,8 @@ export default function App() {
   - `your.app:/authorize` -> `makeRedirectUri({ native: 'your.app:/authorize' })`
   - `your.app://auth?foo=bar` -> `makeRedirectUri({ scheme: 'your.app', path: 'auth', queryParams: { foo: 'bar' } })`
   - `exp://u.expo.dev/[project-id]?channel-name=[channel-name]&runtime-version=[runtime-version]` -> `makeRedirectUri()`
-  - 这个链接通常可以自动创建，但我们建议你至少定义 `scheme` 属性。整个 URL 也可以通过传入 `native` 属性在应用中覆盖。通常这会用于 Google 或 Okta 之类的提供商，它们要求你使用自定义的原生 URI 重定向。你可以使用 `npx uri-scheme` 添加、列出并打开 URI scheme。
-  - 如果你在 eject 之后更改了 `expo.scheme`，那么你需要使用 `expo apply` 命令将更改应用到你的原生项目，然后重新构建它们（`yarn ios`、`yarn android`）。
+  - 这个链接通常可以自动创建，但我们建议你至少定义 `scheme` 属性。整个 URL 都可以通过传入 `native` 属性在应用中覆盖。通常这会用于 Google 或 Okta 等提供商，它们要求你使用自定义的原生 URI 重定向。你可以使用 `npx uri-scheme` 来添加、列出和打开 URI scheme。
+  - 如果你更改了 `expo.scheme`，请运行 `npx expo prebuild --clean` 以使用新 scheme 重新生成原生项目，然后再使用 `npx expo run:android` 和 `npx expo run:ios` 重新构建。
 - **用法：** `promptAsync({ redirectUri })`
 
 ## 改善用户体验
@@ -211,7 +211,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 function App() {
   useEffect(() => {
-    /* @info <strong>仅限 Android：</strong>在后台开始加载默认浏览器应用，以改善切换时间。 */
+    /* @info <strong>仅限 Android：</strong>在后台启动默认浏览器应用的预热，以改善切换时间。 */
     WebBrowser.warmUpAsync();
     /* @end */
 
@@ -272,7 +272,7 @@ function App() {
     }
   }, [response]);
 
-  return <Button disabled={!request} onPress={() => promptAsync()} title="Login" />;
+  return <Button disabled={!request} onPress={() => promptAsync()} title="登录" />;
 }
 ```
 

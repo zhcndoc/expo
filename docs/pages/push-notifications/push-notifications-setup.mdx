@@ -6,6 +6,7 @@ hasVideoLink: true
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { Tab, Tabs } from '~/ui/components/Tabs';
@@ -34,22 +35,24 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 </Collapsible>
 
-## 前置条件
+<Prerequisites>
+  <Requirement title="支持推送功能的设备或模拟器/仿真器">
+    你可以在实体 Android 或 iOS 设备上测试推送通知，也可以在带有
+    Google Play 服务的 Android Emulator 上测试，或者在运行 Xcode 14 或更高版本（macOS 13+、iOS 16+）的 iOS Simulator 上测试。
+  </Requirement>
+</Prerequisites>
 
-> **warning** **重要：** Android 模拟器和 iOS 模拟器不支持推送通知。需要使用真机。
-
-本指南中描述的以下步骤使用 [EAS Build](/build/introduction/)。这是设置通知的最简单方式，因为你的 EAS 项目还会包含[通知凭据](#get-credentials-for-development-builds)。不过，你也可以在不使用 EAS Build 的情况下使用 `expo-notifications` 库，通过[在本地构建你的项目](/guides/local-app-development/)来完成。
+本指南中的以下步骤使用 [EAS Build](/build/introduction/)。这是设置通知最简单的方法，因为你的 EAS 项目还会包含[通知凭据](#get-credentials-for-development-builds)。不过，你也可以不使用 EAS Build，而通过[在本地构建项目](/guides/local-app-development/)来使用 `expo-notifications` 库。
 
 <Step label="1">
 
 ## 安装库
 
-运行以下命令安装 `expo-notifications`、`expo-device` 和 `expo-constants` 库：
+运行以下命令来安装 `expo-notifications` 和 `expo-constants` 库：
 
-<Terminal cmd={['$ npx expo install expo-notifications expo-device expo-constants']} />
+<Terminal cmd={['$ npx expo install expo-notifications expo-constants']} />
 
-- [`expo-notifications`](/versions/latest/sdk/notifications) 库用于请求用户权限以及获取用于发送推送通知的 `ExpoPushToken`。
-- [`expo-device`](/versions/latest/sdk/device) 用于检查应用是否运行在真机上。
+- [`expo-notifications`](/versions/latest/sdk/notifications) 库用于请求用户权限，并获取用于发送推送通知的 `ExpoPushToken`。
 - [`expo-constants`](/versions/latest/sdk/constants) 用于从应用配置中获取 `projectId` 值。
 
 </Step>
@@ -82,9 +85,8 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 下面的代码展示了一个在 React Native 应用中注册、发送和接收推送通知的可运行示例。将其复制并粘贴到你的项目中：
 
 ```tsx App.tsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Text, View, Button, Platform } from 'react-native';
-import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
@@ -136,37 +138,32 @@ async function registerForPushNotificationsAsync() {
     });
   }
 
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      handleRegistrationError('未授予获取推送通知推送令牌的权限！');
-      return;
-    }
-    const projectId =
-      Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-    if (!projectId) {
-      handleRegistrationError('未找到项目 ID');
-    }
-    try {
-      /* @info 这会获取 Expo 推送令牌（如果之前尚未获取），该令牌对该设备和 projectID 是唯一的。 */
-      const pushTokenString = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId,
-        })
-      ).data;
-      /* @end */
-      console.log(pushTokenString);
-      return pushTokenString;
-    } catch (e: unknown) {
-      handleRegistrationError(`${e}`);
-    }
-  } else {
-    handleRegistrationError('推送通知必须使用真机');
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+  if (finalStatus !== 'granted') {
+    handleRegistrationError('未授予获取推送通知推送令牌的权限！');
+    return;
+  }
+  const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+  if (!projectId) {
+    handleRegistrationError('未找到项目 ID');
+  }
+  try {
+    /* @info 这里会获取 Expo 推送令牌（如果之前未获取过），该令牌对该设备和项目 ID 是唯一的。 */
+    const pushTokenString = (
+      await Notifications.getExpoPushTokenAsync({
+        projectId,
+      })
+    ).data;
+    /* @end */
+    console.log(pushTokenString);
+    return pushTokenString;
+  } catch (e: unknown) {
+    handleRegistrationError(`${e}`);
   }
 }
 

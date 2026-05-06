@@ -3,7 +3,7 @@ title: 主机
 description: 用于桥接 React Native 和 Jetpack Compose 的 Jetpack Compose Host 组件。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
 packageName: '@expo/ui'
-platforms: ['android']
+platforms: ['android', 'expo-go']
 ---
 
 import APISection from '~/components/plugins/APISection';
@@ -28,6 +28,44 @@ export default function MatchContents() {
   return (
     <Host matchContents>
       <Button onClick={() => console.log('Pressed')}>按内容自适应尺寸</Button>
+    </Host>
+  );
+}
+```
+
+> **注意：** 不要在与可滚动子组件（`LazyRow`、`LazyColumn`、`Carousel`，或任何使用 `Modifier.horizontalScroll`/`verticalScroll` 的组件）相同的轴上使用 `matchContents`。可滚动组件在其滚动轴上需要有限的最大约束，而 `matchContents` 会传播一个无限约束。
+
+下面的示例会崩溃：
+
+```tsx MatchContentsCrash.tsx
+import { Host, LazyRow, Text } from '@expo/ui/jetpack-compose';
+
+export default function MatchContentsCrash() {
+  return (
+    <Host matchContents>
+      <LazyRow>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Text key={i}>Item {i}</Text>
+        ))}
+      </LazyRow>
+    </Host>
+  );
+}
+```
+
+要么在滚动轴上去掉 `matchContents`，要么通过 `style` 为 `Host` 在该轴上提供一个有限尺寸：
+
+```tsx MatchContentsFix.tsx
+import { Host, LazyRow, Text } from '@expo/ui/jetpack-compose';
+
+export default function MatchContentsFix() {
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <LazyRow>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Text key={i}>Item {i}</Text>
+        ))}
+      </LazyRow>
     </Host>
   );
 }
