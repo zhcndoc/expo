@@ -1,0 +1,100 @@
+---
+title: AuthSession
+description: 一个提供用于处理基于浏览器身份验证的 API 的通用库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-auth-session'
+packageName: 'expo-auth-session'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigReactNative } from '~/ui/components/ConfigSection';
+import { Terminal } from '~/ui/components/Snippet';
+
+`AuthSession` 通过利用 [WebBrowser](webbrowser.mdx) 和 [Crypto](crypto.mdx)，使你的应用能够进行基于网页浏览器的身份验证（例如，基于浏览器的 OAuth 流程）。有关实现细节，请参考本文档；有关使用方法，请参见 [Authentication](/guides/authentication/) 指南。
+
+> **注意：** `AuthSession` 支持通用的基于浏览器的 OAuth 和 OpenID Connect 身份验证工作流。在可用的情况下，我们建议使用身份提供商提供的库，因为它会处理该提供商特定的实现细节。例如，Google 身份验证请使用 [`@react-native-google-signin/google-signin`](/guides/google-authentication/)，Facebook 身份验证请使用 [`react-native-fbsdk-next`](/guides/facebook-authentication/)。更多信息请参见 [Authentication](/develop/authentication/) 概览。
+
+## 安装
+
+> `expo-crypto` 是一个同级依赖，必须与 `expo-auth-session` 一起安装。
+
+<APIInstallSection packageName="expo-auth-session expo-crypto" />
+
+## 配置
+
+<ConfigReactNative>
+
+要使用此库，你需要在应用中通过设置 `scheme` 来配置深度链接。使用 [`uri-scheme` CLI][n-uri-scheme] 工具可以方便地添加、移除、列出和打开你的 URI。
+
+例如，要让你的原生应用处理 `mycoolredirect://`，请运行：
+
+<Terminal cmd={['$ npx uri-scheme add mycoolredirect']} />
+
+现在你应该可以通过运行以下命令看到项目中所有 scheme 的列表：
+
+<Terminal cmd={['$ npx uri-scheme list']} />
+
+你可以这样测试它是否正常工作：
+
+<Terminal
+  cmd={[
+    '# 重新构建原生应用，请务必使用模拟器',
+    '$ yarn android',
+    '$ yarn ios',
+    '',
+    '# 打开一个 URI scheme',
+    '$ npx uri-scheme open mycoolredirect://some/redirect',
+  ]}
+/>
+
+</ConfigReactNative>
+
+### 独立应用中的使用
+
+```json app.json
+{
+  "expo": {
+    "scheme": "mycoolredirect"
+  }
+}
+```
+
+为了能够通过深度链接回到你的应用，你需要在项目的应用配置中设置一个 `scheme`，然后构建你的独立应用（它不能通过更新来修改）。如果你不包含 scheme，身份验证流程将会完成，但它无法将信息传回你的应用，用户将不得不手动退出身份验证模态框（这将导致一个取消事件）。
+
+## 指南
+
+> 指南已迁移：[Authentication Guide](/guides/authentication/)。
+
+## 基于网页浏览器的身份验证流程如何工作
+
+移动应用中基于浏览器的身份验证典型流程如下：
+
+- **启动**：用户按下登录按钮
+- **打开网页浏览器**：应用会打开一个网页浏览器，跳转到身份提供商的登录页面。打开的登录页面 URL 通常包含用于识别应用的信息，以及成功后重定向到的 URL。_注意：网页浏览器应当与系统网页浏览器共享 cookie，这样如果用户已经在系统浏览器中完成过身份验证，就无需再次登录——Expo 的 [WebBrowser](webbrowser.mdx) API 会负责处理这一点。_
+- **身份提供商重定向**：身份验证成功后，身份提供商应通过重定向到登录页面查询参数中由应用提供的 URL，将用户重定向回应用（[了解更多关于移动应用中链接机制的工作方式](/linking/overview/)），_前提是该 URL 位于允许的重定向 URL 白名单中_。对重定向 URL 进行白名单限制很重要，可以防止恶意行为者冒充你的应用。重定向会在 URL 中包含数据（如用户 id 和 token），这些数据可能位于 location hash、查询参数，或两者中。
+- **应用处理重定向**：由应用处理该重定向，并从重定向 URL 中解析数据。
+
+## 安全注意事项
+
+- **绝不要把任何密钥放在你的应用代码中，这样做没有安全方式！**相反，你应该将密钥存储在服务器上，并提供一个端点，让它为你的客户端发起 API 调用并将数据返回。
+
+## API
+
+```js
+import * as AuthSession from 'expo-auth-session';
+```
+
+<APISection packageName="expo-auth-session" apiName="AuthSession" />
+
+## 高级用法
+
+### 在 Linking 处理器中过滤掉 AuthSession 事件
+
+你可能有很多理由希望处理进入应用的链接，例如推送通知或常规深度链接（你可以在 [Linking](/linking/overview/) 中了解更多）；身份验证重定向只是深度链接的一种，而 `AuthSession` 会为你处理这些特定链接。在你自己的 `Linking.addEventListener` 处理器中，你可以通过检查 URL 是否包含 `+expo-auth-session` 字符串来过滤掉由 `AuthSession` 处理的深度链接——如果包含，就可以忽略它。这之所以有效，是因为 `AuthSession` 会在默认的 `returnUrl` 中添加 `+expo-auth-session`；不过，如果你提供了自己的 `returnUrl`，你可能需要考虑添加一个类似的标识符，以便从其他处理器中过滤出 `AuthSession` 事件。
+
+### 与 React Navigation 配合使用
+
+如果你使用 React Navigation 进行深度链接，那么通过 `Linking.addEventListener` 进行过滤就不够了，因为深度链接的处理方式不同（[handled differently](https://reactnavigation.org/docs/configuring-links/#advanced-cases)）。相反，为了过滤这些事件，请在你的 linking 配置中添加一个自定义的 `getStateFromPath` 函数，然后再按上面描述的相同方式按 URL 进行过滤。
+
+[n-uri-scheme]: https://www.npmjs.com/package/uri-scheme

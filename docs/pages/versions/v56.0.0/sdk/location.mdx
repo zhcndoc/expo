@@ -1,0 +1,380 @@
+---
+title: 位置
+description: 一个提供访问地理位置信息、轮询当前位置或订阅设备位置更新事件的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-location'
+packageName: 'expo-location'
+iconUrl: '/static/images/packages/expo-location.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { AndroidPermissions, IOSPermissions } from '~/components/plugins/permissions';
+import { Collapsible } from '~/ui/components/Collapsible';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { SnackInline } from '~/ui/components/Snippet';
+import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
+
+`expo-location` 允许从设备读取地理位置信息。你的应用可以轮询当前位置，或订阅位置更新事件。
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app 配置中进行配置
+
+如果你的项目中使用了配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-location` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "允许 $(PRODUCT_NAME) 使用你的位置信息。"
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'locationAlwaysAndWhenInUsePermission',
+      platform: 'ios',
+      description:
+        '用于设置 [`NSLocationAlwaysAndWhenInUseUsageDescription`](#permission-nslocationalwaysandwheninuseusagedescription) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 使用你的位置信息"',
+    },
+    {
+      name: 'locationAlwaysPermission',
+      platform: 'ios',
+      deprecated: true,
+      description:
+        '用于设置 [`NSLocationAlwaysUsageDescription`](#permission-nslocationalwaysusagedescription) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 使用你的位置信息"',
+    },
+    {
+      name: 'locationWhenInUsePermission',
+      platform: 'ios',
+      description:
+        '用于设置 [`NSLocationWhenInUseUsageDescription`](#permission-nslocationwheninuseusagedescription) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 使用你的位置信息"',
+    },
+    {
+      name: 'isIosBackgroundLocationEnabled',
+      platform: 'ios',
+      description: '一个布尔值，用于在 **Info.plist** 中的 `UIBackgroundModes` 启用 `location`。',
+      default: 'false',
+    },
+    {
+      name: 'isAndroidBackgroundLocationEnabled',
+      platform: 'android',
+      description:
+        '一个布尔值，用于启用 [`ACCESS_BACKGROUND_LOCATION`](#permission-access_background_location) 权限。',
+      default: 'false',
+    },
+    {
+      name: 'isAndroidForegroundServiceEnabled',
+      platform: 'android',
+      description:
+        '一个布尔值，用于启用 [`FOREGROUND_SERVICE`](#permission-foreground_service) 权限和 [`FOREGROUND_SERVICE_LOCATION`](#permission-foreground_service_location)。如果 `isAndroidBackgroundLocationEnabled` 为 `true`，默认值为 `true`，否则为 `false`。',
+    },
+    {
+      name: 'androidForegroundServiceIcon',
+      platform: 'android',
+      description:
+        '用于作为 `startLocationUpdatesAsync` 启动的前台服务图标的本地图片路径。96x96 的全白透明 png。若未设置，则会回退到 `notification_icon` drawable（如果通过 `expo-notifications` config plugin 配置过），再回退到应用启动图标。启动图标为全彩色，并且可能渲染成纯白方块，因为 Android 要求通知图标必须是单色。',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者你在手动使用原生 **ios** 项目，那么你需要将 `NSLocationAlwaysAndWhenInUseUsageDescription`、`NSLocationAlwaysUsageDescription` 和 `NSLocationWhenInUseUsageDescription` 键添加到项目的 **ios/[app]/Info.plist** 中：
+
+```xml
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>允许 $(PRODUCT_NAME) 使用你的位置信息</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>允许 $(PRODUCT_NAME) 使用你的位置信息</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>允许 $(PRODUCT_NAME) 使用你的位置信息</string>
+```
+
+</ConfigReactNative>
+
+### 后台定位
+
+后台定位允许你的应用在后台运行时接收位置更新，并且包括通过地理围栏进行的位置更新和区域监控。此功能受平台 API 限制和系统约束影响：
+
+- 当用户终止应用时，后台定位将停止。
+- 当用户重新启动应用时，后台定位会恢复。
+- <PlatformTag platform="android" /> 由于平台限制，已终止的应用不会在发生位置
+  或地理围栏事件时自动重启。
+- <PlatformTag platform="ios" /> 当发生新的地理围栏
+  事件时，系统会重启已终止的应用。
+
+> **Info** 在 Android 上，将应用从最近任务列表中移除后的结果会因设备厂商而异。例如，某些实现会将从最近任务列表中移除应用视为结束其进程。更多关于这些差异的信息请见：[https://dontkillmyapp.com](https://dontkillmyapp.com)。
+
+### 后台定位配置&ensp;<PlatformTag platform="ios" />
+
+要在 iOS 上运行后台定位，你需要在应用的 **Info.plist** 文件中的 `UIBackgroundModes` 数组里添加 `location` 值。
+
+**如果你正在使用 [CNG](/workflow/continuous-native-generation/)**，所需的 `UIBackgroundModes` 配置会在 prebuild 过程中自动应用。
+
+<Collapsible summary="在 iOS 上手动配置 UIBackgroundModes">
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者你在使用原生 iOS 项目，那么你需要将以下内容添加到 **Expo.plist** 文件中：
+
+```xml ios/project-name/Supporting/Expo.plist
+<key>UIBackgroundModes</key>
+  <array>
+    <string>location</string>
+  </array>
+```
+
+</Collapsible>
+
+### 后台定位方法
+
+要使用后台定位方法，需要满足以下要求：
+
+- 必须授予位置权限。
+- 后台定位任务必须定义在顶层作用域中，使用 [`TaskManager.defineTask`](task-manager.mdx#taskmanagerdefinetasktaskname-taskexecutor)。
+- <PlatformTag platform="ios" className="float-left" /> 必须在 **Info.plist** 文件中指定 `"location"` 后台模式。请参阅[后台定位配置](#background-location-configuration)。
+- <PlatformTag platform="ios" className="float-left" /> 你必须使用[开发构建](/develop/development-builds/introduction/)来使用后台定位，因为 Expo Go 应用不支持它。
+
+### 地理围栏方法
+
+要使用地理围栏方法，需要满足以下要求：
+
+- 必须授予位置权限。
+- 地理围栏任务必须定义在顶层作用域中，使用 [`TaskManager.defineTask`](task-manager.mdx#taskmanagerdefinetasktaskname-taskexecutor)。
+
+使用地理围栏时，适用以下平台差异：
+
+- <PlatformTag platform="android" /> 每个应用最多允许 [100 个](https://developer.android.com/develop/sensors-and-location/location/geofencing) 活跃地理围栏。
+- <PlatformTag platform="ios" /> Expo Location 会在应用启动时报告已注册
+  地理围栏的初始状态。
+- <PlatformTag platform="ios" /> 可以同时监控的 `regions` 数量有 [20 个的限制](https://developer.apple.com/documentation/corelocation/monitoring_the_user_s_proximity_to_geographic_regions) 。
+
+### 后台权限
+
+要在后台使用位置跟踪或地理围栏，你必须请求相应的权限：
+
+- 在 Android 上，你必须同时请求前台和后台权限。
+- 在 iOS 上，必须使用 [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync) 并选择 `Always` 选项授予权限。
+
+<Collapsible summary="Expo 和 iOS 权限">
+iOS 权限分为两类：`When In Use` 和 `Always`，对应 Expo 的前台和后台定位权限，请求方式如下：
+
+- [`requestForegroundPermissionsAsync`](#locationrequestforegroundpermissionsasync) 对应 `When In Use`
+- [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync) 对应 `Always`
+
+> **注意：** 在请求 `When In Use` 授权时，用户可以在系统权限对话框中选择 `Allow Once` 来授予**临时访问**。该授权将**仅在当前应用会话期间有效**，并会在应用关闭时自动撤销。
+
+**区分 “Allow Once” 与 “Allow While Using the App”**
+
+遗憾的是，**iOS 无法提供一种方式来检测用户选择的是 `Allow Once` 还是 `Allow While Using the App`**。这两种响应都会返回 `When In Use` 授权。
+
+如果用户选择了 `Allow Once`，而你随后在同一会话中调用 [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync)，系统**不会再次显示提示**。相反，请求将**静默失败**，返回的后台权限状态将为**denied**。
+
+**处理 “Allow Once” 场景**
+
+如果你怀疑用户选择了 `Allow Once`，并且需要请求后台权限，他们必须在设置应用中**手动启用后台定位**。你可以在应用中使用 `Linking` 打开设置应用：
+
+```js
+import { Linking } from 'react-native';
+
+function openSettings() {
+  Linking.openURL('app-settings:');
+}
+```
+
+**渐进式权限请求**
+
+可以先请求前台定位权限，然后在稍后再请求后台定位权限。这样可以在仅于必要时请求权限，从而改善用户体验。
+
+**直接请求后台权限**
+
+如果你在未先请求前台权限的情况下调用 [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync)，iOS 会将其视为同时请求 `When In Use` 和 `Always` 授权。系统随后会提示用户授予 `When In Use` 访问权限，并且当系统判定需要 `Always` 授权时，会显示 `Always` 授权提示。
+
+请记住，用户也可以选择仅授予应用 `When In Use` 授权。你始终必须准备好在 `When In Use` 权限下运行。
+
+</Collapsible>
+
+## 延迟位置
+
+在使用后台位置时，你可以配置位置管理器以延迟更新。这样可以通过降低更新频率来帮助节省电量。你可以将更新设置为仅在设备移动了某个距离后，或在指定时间间隔后触发。
+
+延迟更新通过 [`LocationTaskOptions`](#locationtaskoptions) 配置，使用 [`deferredUpdatesDistance`](#locationtaskoptions)、[`deferredUpdatesInterval`](#locationtaskoptions) 和 [`deferredTimeout`](#locationtaskoptions) 属性。
+
+> 延迟位置仅在应用处于后台时适用。
+
+## 用法
+
+如果你使用的是 Android Emulator 或 iOS Simulator，请确保 [已启用位置](#enable-emulator-location)。
+
+<SnackInline label='Location' dependencies={['expo-location', 'expo-constants', 'expo-device']}>
+
+```tsx
+import { useState, useEffect } from 'react';
+import { Platform, Text, View, StyleSheet } from 'react-native';
+/* @hide */
+import * as Device from 'expo-device';
+/* @end */
+import * as Location from 'expo-location';
+
+export default function App() {
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function getCurrentLocation() {
+      /* @hide */
+      if (Platform.OS === 'android' && !Device.isDevice) {
+        setErrorMsg(
+          'Oops, this will not work on Snack in an Android Emulator. Try it on your device!'
+        );
+        return;
+      }
+      /* @end */
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('获取位置的权限被拒绝');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    }
+
+    getCurrentLocation();
+  }, []);
+
+  let text = '等待中...';
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.paragraph}>{text}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  paragraph: {
+    fontSize: 18,
+    textAlign: 'center',
+  },
+});
+```
+
+</SnackInline>
+
+## 启用模拟器位置
+
+### Android Emulator
+
+打开 Android Studio，然后启动 Android Emulator。在其中，转到 **Settings** > **Location** 并启用 **Use location**。
+
+<ContentSpotlight
+  alt="Android Emulator 中适用于 12 及更高版本的定位设置"
+  src="/static/images/sdk/location/enable-android-emulator-location.png"
+  className="max-w-[360px]"
+/>
+
+如果你没有在模拟器中接收到位置，可能需要关闭 **Improve Location Accuracy** 设置。这将关闭 Wi-Fi 定位，仅使用 GPS。然后你可以通过模拟器使用 GPS 数据来操控位置。
+
+对于 Android 12 及更高版本，转到 **Settings** > **Location** > **Location Services** > **Google Location Accuracy**，并关闭 **Improve Location Accuracy**。对于 Android 11 及更低版本，转到 **Settings** > **Location** > **Advanced** > **Google Location Accuracy**，并关闭 **Google Location Accuracy**。
+
+### iOS Simulator
+
+打开 Simulator 后，转到 **Features** > **Location**，并选择除 **None** 之外的任意选项。
+
+<ContentSpotlight
+  alt="iOS 模拟器中的定位设置。"
+  src="/static/images/sdk/location/ios-simulator-location.png"
+  className="max-w-[480px]"
+/>
+
+## API
+
+```js
+import * as Location from 'expo-location';
+```
+
+<APISection packageName="expo-location" apiName="Location" />
+
+## 权限
+
+### Android
+
+> **warning** 在 Android 的 Expo Go 中，前台和后台服务不可用。作为替代，我们建议使用 [development build](/develop/development-builds/introduction/) 以避免限制。
+
+当你安装 `expo-location` 模块时，它会自动添加以下权限：
+
+- `ACCESS_COARSE_LOCATION`：用于近似设备位置
+- `ACCESS_FINE_LOCATION`：用于精确设备位置
+
+以下权限是可选的：
+
+- `FOREGROUND_SERVICE` 和 `FOREGROUND_SERVICE_LOCATION`：用于在应用打开但处于后台时访问位置。`FOREGROUND_SERVICE_LOCATION` 仅从 Android 14 开始需要。当你在新构建中启用此权限时，需要[提交应用进行审核并申请使用前台服务权限](https://support.google.com/googleplay/android-developer/answer/13392821?hl=en)。
+- `ACCESS_BACKGROUND_LOCATION`：用于在应用处于后台或关闭时访问位置。当你在新构建中启用此权限时，需要[提交应用进行审核并申请使用后台位置权限](https://support.google.com/googleplay/android-developer/answer/9799150?hl=en)。
+
+<AndroidPermissions
+  permissions={[
+    'ACCESS_COARSE_LOCATION',
+    'ACCESS_FINE_LOCATION',
+    'FOREGROUND_SERVICE',
+    'FOREGROUND_SERVICE_LOCATION',
+    'ACCESS_BACKGROUND_LOCATION',
+  ]}
+/>
+
+#### 排除权限
+
+> **注意**：从应用中的某个模块排除一个**必需权限**可能会破坏该权限对应的功能。请始终确保包含模块所依赖的所有权限。
+
+当你的 Expo 项目不需要包含某个特定权限时，你可以省略它。例如，如果你的应用不需要访问精确位置，你可以排除 `ACCESS_FINE_LOCATION` 权限。
+
+另一个示例可以使用[可用的位置精度](#accuracy)来说明。Android 将近似位置精度估计为约 3 平方公里，将精确位置精度估计为约 50 米。例如，如果位置精度值为 [Low](#low)，你可以排除 `ACCESS_FINE_LOCATION` 权限。要了解有关位置精度级别的更多信息，请参阅 [Android 文档](https://developer.android.com/training/location/permissions#accuracy)。
+
+要了解如何排除权限，请参阅[排除 Android 权限](/guides/permissions/#excluding-android-permissions)。
+
+### iOS
+
+此库使用以下用途说明键：
+
+<IOSPermissions
+  permissions={[
+    'NSLocationAlwaysAndWhenInUseUsageDescription',
+    'NSLocationAlwaysUsageDescription',
+    'NSLocationWhenInUseUsageDescription',
+  ]}
+/>
+
+自 iOS 11 起，`NSLocationAlwaysUsageDescription` 已被弃用，推荐使用 `NSLocationAlwaysAndWhenInUseUsageDescription`。

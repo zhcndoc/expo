@@ -1,0 +1,390 @@
+---
+title: GlassEffect
+description: 使用 iOS 原生 UIVisualEffectView 渲染液态玻璃效果的 React 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-glass-effect'
+packageName: 'expo-glass-effect'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+> **重要** `GlassView` 仅适用于 iOS 26 及以上版本。在不受支持的平台上，它会回退为普通的 `View`。
+
+使用 [`UIVisualEffectView`](https://developer.apple.com/documentation/uikit/uivisualeffectview) 渲染原生 iOS 液态玻璃效果的 React 组件。支持可自定义的玻璃样式和色调颜色。
+
+#### 已知问题
+
+- 将 `GlassView` 或其任何父视图的 `opacity` 设置为 `0` 会导致玻璃效果完全不渲染。若要淡入/淡出玻璃效果，请使用 `glassEffectStyle` 中内置的 [`animate` 和 `animationDuration`](#animated-glass-effect-style) 属性，而不要更改 opacity。如果你仍想使用 `opacity`，请查看 [opacity 动画变通方案](#opacity-animation-workaround) 示例。更多详情请参阅 [Apple 的文档](https://developer.apple.com/documentation/uikit/uivisualeffectview#Set-the-correct-alpha-value) 和 [GitHub issue #41024](https://github.com/expo/expo/issues/41024)。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### `GlassView`
+
+`GlassView` 组件会渲染原生 iOS 玻璃效果。它支持不同的玻璃效果样式，并且可以通过色调颜色进行自定义，以满足各种审美需求。
+
+<SnackInline label='Basic GlassView usage' dependencies={['expo-glass-effect']} platforms={['ios']}>
+
+```jsx
+import { StyleSheet, View, Image } from 'react-native';
+import { GlassView } from 'expo-glass-effect';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Image
+        style={styles.backgroundImage}
+        source={{
+          uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+        }}
+      />
+
+      {/* 基础玻璃视图 */}
+      <GlassView style={styles.glassView} />
+
+      {/* 透明样式的玻璃视图 */}
+      <GlassView style={styles.tintedGlassView} glassEffectStyle="clear" />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  backgroundImage: {
+    ...StyleSheet.absoluteFill,
+    width: '100%',
+    height: '100%',
+  },
+  glassView: {
+    position: 'absolute',
+    top: 100,
+    left: 50,
+    width: 200,
+    height: 100,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  tintedGlassView: {
+    position: 'absolute',
+    top: 250,
+    left: 50,
+    width: 200,
+    height: 100,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    textAlign: 'center',
+  },
+});
+```
+
+</SnackInline>
+
+### `GlassContainer`
+
+`GlassContainer` 组件允许你将多个玻璃视图组合成一个整体效果。
+
+<SnackInline label='GlassContainer example' dependencies={['expo-glass-effect']} platforms={['ios']}>
+
+```jsx
+import { StyleSheet, View, Image } from 'react-native';
+import { GlassView, GlassContainer } from 'expo-glass-effect';
+
+export default function GlassContainerDemo() {
+  return (
+    <View style={styles.container}>
+      <Image
+        style={styles.backgroundImage}
+        source={{
+          uri: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=600&fit=crop',
+        }}
+      />
+      <GlassContainer spacing={10} style={styles.containerStyle}>
+        <GlassView style={styles.glass1} isInteractive />
+        <GlassView style={styles.glass2} />
+        <GlassView style={styles.glass3} />
+      </GlassContainer>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  backgroundImage: {
+    ...StyleSheet.absoluteFill,
+    width: '100%',
+    height: '100%',
+  },
+  containerStyle: {
+    position: 'absolute',
+    top: 200,
+    left: 50,
+    width: 250,
+    height: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  glass1: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  glass2: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  glass3: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+});
+```
+
+</SnackInline>
+
+### 玻璃效果样式动画
+
+`glassEffectStyle` 属性接受一个包含 `animate` 和 `animationDuration` 属性的配置对象，用于在不同玻璃样式之间原生地执行过渡动画。这是无需修改 `opacity` 即可淡入/淡出玻璃效果的推荐方式。
+
+<SnackInline label='Animated glass effect style' dependencies={['expo-glass-effect']} platforms={['ios']}>
+
+```jsx
+import { useState } from 'react';
+import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import { GlassView } from 'expo-glass-effect';
+
+export default function AnimatedGlassStyleExample() {
+  const [visible, setVisible] = useState(true);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.backgroundImage}>
+        <Image
+          style={{
+            width: 300,
+            height: 200,
+          }}
+          source={{
+            uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+          }}
+        />
+        <GlassView
+          style={styles.glassView}
+          glassEffectStyle={{
+            style: visible ? 'clear' : 'none',
+            animate: true,
+            animationDuration: 0.5,
+          }}
+        />
+      </View>
+      <Pressable style={styles.toggleButton} onPress={() => setVisible(prev => !prev)}>
+        <Text style={styles.toggleButtonText}>{visible ? '隐藏' : '显示'}玻璃效果</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    height: 300,
+    width: 300,
+  },
+  backgroundImage: {
+    position: 'absolute',
+  },
+  glassView: {
+    position: 'absolute',
+    width: 200,
+    height: 120,
+    borderRadius: 12,
+  },
+  toggleButton: {
+    position: 'absolute',
+    bottom: 100,
+    alignSelf: 'center',
+    backgroundColor: '#007AFF',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  toggleButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+```
+
+</SnackInline>
+
+### opacity 动画变通方案
+
+由于将 `GlassView` 或其父视图的 `opacity` 设置为 `0` 会导致玻璃效果完全不渲染，因此你可以使用 Reanimated 在切换 `glassEffectStyle` 为目标样式和 `'none'` 之间时，给包装视图的 opacity 做动画。
+
+<SnackInline label='Glass effect opacity animation workaround' dependencies={['expo-glass-effect', 'react-native-reanimated']} platforms={['ios']}>
+
+```jsx
+import { GlassView } from 'expo-glass-effect';
+import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import Animated, {
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+
+const AnimatedGlassView = Animated.createAnimatedComponent(GlassView);
+
+export default function GlassOpacityAnimationExample() {
+  const fadeOpacity = useSharedValue(0);
+
+  const glassViewProps = useAnimatedProps(() => {
+    const glassEffectStyle = fadeOpacity.value > 0.01 ? 'regular' : 'none';
+    return {
+      glassEffectStyle,
+      style: {
+        width: 150,
+        height: 100,
+        borderRadius: 12,
+        position: 'absolute',
+      },
+    };
+  });
+
+  const fadeOpacityStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    opacity: fadeOpacity.value,
+    width: 150,
+    height: 100,
+    borderRadius: 12,
+  }));
+
+  return (
+    <>
+      <Text style={styles.title}>Opacity 动画变通方案（iOS 26.1+）</Text>
+      <View style={styles.backgroundContainer}>
+        <Image
+          style={styles.backgroundImage}
+          source={{
+            uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+          }}
+        />
+        <Animated.View style={fadeOpacityStyle}>
+          <AnimatedGlassView animatedProps={glassViewProps} />
+        </Animated.View>
+      </View>
+
+      <Pressable
+        style={styles.toggleButton}
+        onPress={() => {
+          fadeOpacity.value = withTiming(fadeOpacity.value > 0.5 ? 0 : 1, { duration: 500 });
+        }}>
+        <Text style={styles.toggleButtonText}>切换玻璃可见性</Text>
+      </Pressable>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  backgroundContainer: {
+    height: 300,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  backgroundImage: {
+    width: '100%',
+    height: '100%',
+  },
+  toggleButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  toggleButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+```
+
+</SnackInline>
+
+### `isLiquidGlassAvailable`
+
+`isLiquidGlassAvailable` 函数可以让你检查编译后的应用中是否可用 Liquid Glass 效果。
+它会验证系统和编译器版本，以及 [**Info.plist**](https://developer.apple.com/documentation/BundleResources/Information-Property-List/UIDesignRequiresCompatibility) 设置。
+
+```tsx
+import { isLiquidGlassAvailable } from 'expo-glass-effect';
+
+export default function CheckLiquidGlass() {
+  return (
+    <Text>
+      {isLiquidGlassAvailable()
+        ? 'Liquid Glass effect is available'
+        : 'Liquid Glass effect is not available'}
+    </Text>
+  );
+}
+```
+
+### `isGlassEffectAPIAvailable`
+
+`isGlassEffectAPIAvailable` 函数会检查设备运行时是否可用 Liquid Glass API。
+
+> **警告** 添加此 API 的原因是某些 iOS 26 测试版并没有提供 Liquid Glass API，这可能会导致崩溃。在应用中使用 `GlassView` 之前，你应该先进行检查以确保兼容性。更多信息请参阅 [GitHub issue #40911](https://github.com/expo/expo/issues/40911)。
+
+```tsx
+import { isGlassEffectAPIAvailable } from 'expo-glass-effect';
+
+export default function CheckGlassEffectAPI() {
+  return (
+    <Text>
+      {isGlassEffectAPIAvailable()
+        ? 'Glass Effect API is available'
+        : 'Glass Effect API is not available'}
+    </Text>
+  );
+}
+```
+
+## API
+
+```js
+import {
+  GlassView,
+  GlassContainer,
+  isLiquidGlassAvailable,
+  isGlassEffectAPIAvailable,
+} from 'expo-glass-effect';
+```
+
+<APISection packageName="expo-glass-effect" />

@@ -71,7 +71,9 @@ ExpoObserve.configure({
 });
 ```
 
-`dispatchInDebug` 对发布构建没有影响，发布构建始终会分发（受 [`dispatchingEnabled`](#configure) 和 [`sampleRate`](#sampling) 约束）。如果 `dispatchingEnabled` 为 `false` 或该安装处于样本外，则无论 `dispatchInDebug` 如何，都不会分发任何内容。
+如果原生应用是调试构建，或者 JS bundle 是开发包（`__DEV__` 为 `true`），则会将构建视为调试构建。此检测与 `environment` 值无关（参见 [环境](#environments)）。
+
+`dispatchInDebug` 对发布构建没有影响；发布构建始终会分发（受 [`dispatchingEnabled`](#configure) 和 [`sampleRate`](#sampling) 约束）。如果 `dispatchingEnabled` 为 `false`，或者此安装处于样本外，则无论 `dispatchInDebug` 如何，都不会分发任何内容。
 
 > **warning** 仅在测试你的 Expo Observe 集成时启用此项。开发/调试性能与生产环境有显著差异，因此收集开发/调试指标可能会扭曲仪表板中显示的结果。
 
@@ -97,6 +99,6 @@ ExpoObserve.configure({
 
 ## 环境
 
-所有指标都会按环境分组。默认情况下，环境值来自 `process.env.NODE_ENV`。如需覆盖它，请使用 [`configure({ environment })`](#configure)。
+所有指标都会按环境分组。默认情况下，环境值由 `process.env.NODE_ENV` 派生（如果未设置，则回退为 `'production'`）。若要覆盖它，请使用 [`configure({ environment })`](#configure)。
 
-从调试构建中收集的指标会在分发前被丢弃，除非通过 `configure()` 将 [`dispatchInDebug` 设置为 `true`](#enable-metrics-in-development)。你也可以通过 `configure({ dispatchingEnabled: false })` 全局禁用所有分发。
+环境是附加到每个指标上的元数据标签，并且与 bundle 的构建方式无关。若要控制是否分发调试构建的指标，请参见 [在开发中启用指标](#enable-metrics-in-development)。若要全局禁用所有分发，请使用 `configure({ dispatchingEnabled: false })`。

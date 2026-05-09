@@ -1,0 +1,201 @@
+---
+title: Expo
+description: Expo 及相关包的一组常用方法和类型。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo'
+packageName: 'expo'
+iconUrl: '/static/images/packages/expo.png'
+platforms: ['android', 'ios', 'tvos', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { FAQ } from '~/ui/components/FAQ';
+import { CODE } from '~/ui/components/Text';
+
+## 安装
+
+<APIInstallSection hideBareInstructions />
+
+## API
+
+```tsx
+import * as Expo from 'expo';
+```
+
+### `expo/fetch` API
+
+`expo/fetch` 提供了一个 [符合 WinterCG 的 Fetch API](https://fetch.spec.whatwg.org/)，可在 web 和移动环境中一致工作，确保在 Expo 应用中获得标准化且跨平台的 fetch 体验。
+
+```ts Streaming fetch
+import { fetch } from 'expo/fetch';
+
+const resp = await fetch('https://httpbin.org/drip?numbytes=512&duration=2', {
+  headers: { Accept: 'text/event-stream' },
+});
+const reader = resp.body.getReader();
+const chunks = [];
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) {
+    break;
+  }
+  chunks.push(value);
+}
+const buffer = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+console.log(buffer.length); // 512
+```
+
+> **注意：** 在 Android 和 iOS 上，`expo/fetch` 也会作为全局 `fetch` 安装。这意味着任何未从 `expo/fetch` 导入而直接调用的 `fetch(...)` 都会使用相同的、符合 WinterCG 的实现。若要保持 React Native 内置的 `fetch` 作为全局对象，请在你的 [环境变量](/guides/environment-variables/) 中设置 `EXPO_PUBLIC_USE_RN_FETCH=1`。无论此标志如何，来自 `expo/fetch` 的具名导入都仍可正常使用。
+
+### 编码 API
+
+`TextEncoder` 和 `TextDecoder` 是内置 API，提供了在各种字符编码中编码和解码文本的方法。它们在所有平台上都可用。有关 web 和 Node.js，请参考 [浏览器和服务器运行时支持](https://caniuse.com/textencoder)。
+
+```ts TextEncoder and TextDecoder
+// [104, 101, 108, 108, 111]
+const hello = new TextEncoder().encode('hello');
+
+// "hello"
+const text = new TextDecoder().decode(hello);
+```
+
+`TextEncoder` API 已包含在 Hermes 引擎中。请参阅 [Hermes GitHub 仓库中 TextEncoder.cpp 的源代码](https://github.com/facebook/hermes/blob/9e2bbf8eda15936ee00aee4f8e024ceaa7cd800d/lib/VM/JSLib/TextEncoder.cpp#L1)。
+
+`TextDecoder` API 在原生平台上并不完全 [符合规范](https://encoding.spec.whatwg.org/#textdecoder)。仅支持 UTF-8 编码。如果你需要支持更多编码，请使用类似 [`text-encoding`](https://www.npmjs.com/package/text-encoding) 的 polyfill。
+
+这些 API 的流式对应版本 `TextEncoderStream` 和 `TextDecoderStream` 也在所有平台上可用。它们允许你以流式方式编码和解码文本，这对于处理大量数据而无需一次性将其全部加载到内存中非常有用。
+
+```ts TextEncoderStream
+const encoder = new TextEncoderStream();
+const stream = new ReadableStream({
+  start(controller) {
+    controller.enqueue('Hello');
+    controller.enqueue('World');
+    controller.close();
+  },
+});
+const reader = stream.pipeThrough(encoder).getReader();
+reader.read().then(({ done, value }) => {
+  console.log(value); // Uint8Array [72, 101, 108, 108, 111]
+});
+```
+
+### Streams API
+
+原生平台提供了标准 web streams 的全局支持，以匹配 web 和服务器平台的行为。有关 web 和 Node.js 的具体支持情况，请参考 [浏览器和服务器运行时支持](https://caniuse.com/streams)。EAS Hosting 服务器运行时也包含对标准 web streams API 的支持。
+
+可全局访问 `ReadableStream`、`WritableStream` 和 `TransformStream` 类。
+
+```js ReadableStream
+const stream = new ReadableStream({
+  start(controller) {
+    controller.enqueue('Hello');
+    controller.enqueue('World');
+    controller.close();
+  },
+});
+const reader = stream.getReader();
+reader.read().then(({ done, value }) => {
+  console.log(value); // Hello
+});
+reader.read().then(({ done, value }) => {
+  console.log(value); // World
+});
+```
+
+### URL API
+
+`URL` 在所有平台上都提供标准 API。
+
+在原生平台上，内置的 `URL` 和 `URLSearchParams` 实现会替代 `react-native` 中的 shim。有关 web 和 Node.js，请参考 [浏览器和服务器运行时支持](https://caniuse.com/url)。
+
+```ts URL and URLSearchParams
+const url = new URL('https://expo.dev');
+
+const params = new URLSearchParams();
+```
+
+Expo 内置的 `URL` 支持会尽量做到完全 [符合规范](https://developer.mozilla.org/en-US/docs/Web/API/URL)。唯一缺少的例外是原生平台目前不支持主机名中的 [非 ASCII 字符](https://unicode.org/reports/tr46/)。
+
+```ts Non-ASCII characters
+console.log(new URL('http://🥓').toString());
+
+// This outputs the following:
+// - Web, Node.js: http://xn--pr9h/
+// - Android, iOS: http://🥓/
+```
+
+### `structuredClone`
+
+`structuredClone` 是一个内置函数，允许你创建值的深拷贝，包括 `Map`、`Set` 和 `ArrayBuffer` 等复杂对象。它在所有平台上都可用。
+
+```ts
+const original = { name: 'Expo', date: new Date() };
+const clone = structuredClone(original);
+console.log(clone); // { name: 'Expo', date: Date }
+```
+
+`ArrayBuffer` 和 `TypedArray` 的 `transfer` 选项未实现。
+
+请移除任何 `structuredClone` 的自定义 polyfill，以避免体积膨胀。有关 [structured clone algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone) 的更多信息，请参阅标准文档。
+
+<APISection packageName="expo" />
+
+## 常见问题
+
+关于在项目中使用 `expo` 包的一些常见问题。
+
+<FAQ>
+
+<Collapsible summary={<><CODE>rootRegisterComponent</CODE> 现有 React Native 项目的设置</>}>
+
+如果你正在手动管理 React Native 项目的原生目录（**android** 和 **ios**），你需要按照下面的说明来设置 `registerRootComponent` 函数。这对于 Expo 模块正常工作是必要的。
+
+**Android**
+
+更新 **android/app/src/main/your-package/MainActivity.java** 文件，使 `getMainComponentName` 函数使用名为 `main` 的名称。
+
+```diff android/app/src/main/your-package/MainActivity.java
+  @Override
+  protected String getMainComponentName() {
++    return "main";
+  }
+```
+
+**iOS**
+
+更新 iOS **ios/your-project/AppDelegate.(m|mm|swift)** 文件，使 `application:didFinishLaunchingWithOptions:` 函数中的 `createRootViewWithBridge:bridge moduleName:@"main" initialProperties:initProps` 一行使用 **moduleName** `main`。
+
+</Collapsible>
+
+<Collapsible summary="如果我想把主应用文件命名为 App.js 或 app/_layout.tsx 以外的名字怎么办？">
+
+**对于不使用 [Expo Router](/router/introduction/) 的项目**，你可以将 **package.json** 中的 `"main"` 设置为项目中的任意文件。如果这样做，你就需要使用 `registerRootComponent`。如果你使用的是自定义入口文件，`export default` 并不会让这个组件成为应用的根组件。
+
+例如，假设你想把 **src/main.jsx** 作为应用的入口文件——也许你不喜欢在项目根目录中放置 JavaScript 文件。首先，在 **package.json** 中这样设置：
+
+```json package.json
+{
+  "main": "src/main.jsx"
+}
+```
+
+然后，在 **src/main.jsx** 中，确保调用 `registerRootComponent`，并传入你想在应用根部渲染的组件：
+
+```jsx src/main.jsx
+import { registerRootComponent } from 'expo';
+import { View } from 'react-native';
+
+function App() {
+  return <View />;
+}
+
+registerRootComponent(App);
+```
+
+**对于使用 [Expo Router](/router/introduction/) 的项目**，你可以按照 [Expo Router 安装指南](/router/installation/#custom-entry-point-to-initialize-and-load) 中的这些步骤创建自定义入口点。要在你的 Expo Router 项目中使用顶层 **src** 目录，请参阅 [src 目录参考](/router/reference/src-directory/) 了解更多信息。
+
+</Collapsible>
+
+</FAQ>

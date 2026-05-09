@@ -1,0 +1,245 @@
+---
+title: 迁移到 expo-media-library/next
+sidebar_title: expo-media-library/next
+description: 从旧版 expo-media-library API 迁移到新的基于类的 expo-media-library/next API，使用 Asset、Album 和 Query。
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Terminal } from '~/ui/components/Snippet';
+
+`expo-media-library/next` API 现已稳定。旧版 `expo-media-library` 模块已弃用。请迁移到 `expo-media-library/next`，以便使用新的 API 和未来的修复。
+
+新的 API 用 `Asset`、`Album` 和 `Query` 类取代了基于函数的 `MediaLibrary.getAssetsAsync({ ... })` 风格。相册和资产现在都表示为类实例，仅持有原生资产的 ID。资产属性变为异步 getter，而不是预先获取的字段。`Query` 用可链式调用的构建器模式替代了 `getAssetsAsync` 函数。
+
+## 安装
+
+安装包含 `expo-media-library/next` 的、与 SDK 兼容的包：
+
+<Terminal cmd={['$ npx expo install expo-media-library']} />
+
+## 导入新 API
+
+从 `expo-media-library/next` 导入：
+
+```ts
+import { Asset, Album, Query } from 'expo-media-library/next';
+```
+
+## 资产
+
+### 从文件创建资产
+
+```ts
+// 之前
+await MediaLibrary.saveToLibraryAsync(localUri);
+// 或者，如果想要获取一个引用：
+const asset = await MediaLibrary.createAssetAsync(localUri);
+
+// 之后
+const asset = await Asset.create(localUri);
+```
+
+新 API 中没有 `saveToLibraryAsync`。请使用 `Asset.create`，它会将文件保存到媒体库并返回一个 `Asset` 实例。
+
+### 查询资产
+
+```ts
+// 之前
+const { assets } = await MediaLibrary.getAssetsAsync({
+  mediaType: MediaLibrary.MediaType.photo,
+  first: 20,
+  sortBy: [['creationTime', false]],
+});
+
+// 之后
+const assets = await new Query()
+  .eq(AssetField.MEDIA_TYPE, MediaType.IMAGE)
+  .limit(20)
+  .orderBy({ key: AssetField.CREATION_TIME, ascending: false })
+  .exe();
+```
+
+`Query` 会直接返回 `Asset` 实例数组。没有 `assets` 包装对象，也没有 `endCursor`。分页通过链式调用 `.limit()` 和 `.offset()` 处理。
+
+### 读取资产属性
+
+```ts
+// 之前
+const info = await MediaLibrary.getAssetInfoAsync(asset);
+console.log(info.filename, info.width, info.height);
+
+// 之后，逐个 getter
+const filename = await asset.getFilename();
+const width = await asset.getWidth();
+const height = await asset.getHeight();
+const mediaType = await asset.getMediaType();
+
+// 之后，一次获取所有属性
+const info = await asset.getInfo();
+```
+
+属性现在通过异步 getter 访问，而不是预先获取的字段。使用 `getInfo()` 一次性获取所有属性，返回一个 `AssetInfo` 对象。
+
+### 读取 EXIF 数据
+
+```ts
+// 之前
+const info = await MediaLibrary.getAssetInfoAsync(asset);
+const exif = info.exif;
+
+// 之后
+const exif = await asset.getExif();
+```
+
+### 删除资产
+
+```ts
+// 之前
+await MediaLibrary.deleteAssetsAsync([asset]);
+
+// 之后，单个资产
+await asset.delete();
+
+// 之后，多个资产
+await Asset.delete([asset1, asset2]);
+```
+
+## 相册
+
+### 通过名称获取相册
+
+```ts
+// 之前
+const album = await MediaLibrary.getAlbumAsync('MyAlbum');
+
+// 之后
+const album = await Album.get('MyAlbum');
+if (album) {
+  // 找到相册
+}
+```
+
+### 获取所有相册
+
+```ts
+// 之前
+const albums = await MediaLibrary.getAlbumsAsync();
+
+// 之后
+const albums = await Album.getAll();
+```
+
+### 创建相册
+
+```ts
+// 之前
+const album = await MediaLibrary.createAlbumAsync('MyNewAlbum', asset, false);
+
+// 之后
+const album = await Album.create('MyNewAlbum', [asset]);
+```
+
+### 获取相册中的所有资产
+
+```ts
+// 之前
+const { assets } = await MediaLibrary.getAssetsAsync({ album: album.id });
+
+// 之后
+const assets = await album.getAssets();
+```
+
+### 获取相册标题
+
+```ts
+// 之前，title 是同步属性，但需要先获取完整的相册对象
+const album = await MediaLibrary.getAlbumAsync('MyAlbum');
+console.log(album.title);
+
+// 之后
+const title = await album.getTitle();
+```
+
+### 向相册添加资产
+
+```ts
+// 之前
+await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+
+// 之后
+await album.add([asset]);
+```
+
+### 从相册中移除资产（仅 iOS）
+
+```ts
+// 之前
+await MediaLibrary.removeAssetsFromAlbumAsync(assets, album);
+
+// 之后
+await album.removeAssets(assets);
+```
+
+### 删除相册
+
+```ts
+// 之前
+await MediaLibrary.deleteAlbumsAsync([album], false);
+
+// 之后，单个相册
+await album.delete();
+
+// 之后，多个相册
+await Album.delete([album1, album2]);
+```
+
+## 权限
+
+权限 hooks 和函数保持原名可用。唯一的变化是 `presentPermissionsPickerAsync` 重命名为 `presentPermissionsPicker`。
+
+```ts
+// 之前
+await MediaLibrary.presentPermissionsPickerAsync(mediaTypes);
+
+// 之后
+await presentPermissionsPicker(mediaTypes);
+```
+
+`requestPermissionsAsync`、`getPermissionsAsync` 和 `usePermissions` 保持不变。
+
+## 监听变化
+
+```ts
+// 之前
+const subscription = MediaLibrary.addListener(event => { ... });
+subscription.remove();
+
+// 之后
+const subscription = addListener(event => { ... });
+subscription.remove();
+
+// 一次移除所有监听器
+removeAllListeners();
+```
+
+监听器事件的结构保持不变。
+
+## 破坏性的语义变化
+
+- 资产属性现在是异步 getter（`getFilename()`、`getWidth()`、...），而不是结果对象上的同步字段。使用 `asset.getInfo()` 可一次获取所有属性。
+- 去掉了 `Async` 后缀。整个库都是异步的。
+- `Query` 取代了 `getAssetsAsync` 的选项对象。没有 `endCursor`/`hasNextPage`。分页请使用 `.limit()` 和 `.offset()`。
+- 相册和资产上的操作现在是 `Album` 和 `Asset` 实例的方法，而不是接收 ID 或引用的独立函数。
+- `saveToLibraryAsync` 被 `Asset.create` 取代，它会返回一个 `Asset` 实例。
+- `getMomentsAsync`、`albumNeedsMigrationAsync` 和 `migrateAlbumIfNeededAsync` 已移除，且没有替代方案。你可以安全地删除对这些函数的任何调用。
+
+## 参考
+
+<BoxLink
+  title="MediaLibrary (next)"
+  description="查看 expo-media-library/next 的完整 API 参考。"
+  href="/versions/latest/sdk/media-library-next/"
+  Icon={BookOpen02Icon}
+/>

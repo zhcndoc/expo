@@ -8,6 +8,7 @@ platforms: ['android', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
 
 Expo UI 提供两个文本字段组件，与官方 Jetpack Compose [TextField API](https://developer.android.com/develop/ui/compose/text/user-input) 保持一致：`TextField`（填充式）和 `OutlinedTextField`（描边式边框）。这两个变体共享相同的 props，并支持用于 label、placeholder、图标、前缀、后缀和辅助文本的可组合 slot 子组件。
 
@@ -15,6 +16,13 @@ Expo UI 提供两个文本字段组件，与官方 Jetpack Compose [TextField AP
 | -------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | 填充式   | 实心背景，底部有一条指示线。                   | 遵循 Material3 设计的默认文本输入样式。适用于大多数表单和输入字段。                                           |
 | 描边式   | 透明背景，带边框轮廓。                         | 提供明显视觉边界的替代样式。当填充式字段与背景融为一体时使用。                                                |
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/textfield/android-light.webp"
+  darkSource="/static/images/expo-ui/textfield/android-dark.webp"
+  alt="Filled and outlined Material 3 text fields"
+/>
 
 ## 安装
 
@@ -199,7 +207,7 @@ export default function ErrorStateExample() {
 
 ### 命令式 ref
 
-使用 ref 以命令式方式设置文本、聚焦或取消聚焦文本字段。
+使用 ref 可通过命令式方式设置文本、清空字段、修改选择范围或移动焦点。
 
 ```tsx ImperativeRefExample.tsx
 import { useRef, useState } from 'react';
@@ -219,9 +227,17 @@ export default function ImperativeRefExample() {
           </TextField.Label>
         </TextField>
         <Row horizontalArrangement={{ spacedBy: 8 }} modifiers={[padding(8, 0, 0, 0)]}>
-          <Button onClick={() => ref.current?.setText('你好！')}>
+          <Button onClick={() => ref.current?.setText('Hello world')}>
             <Text>设置文本</Text>
           </Button>
+          <Button onClick={() => ref.current?.clear()}>
+            <Text>清空</Text>
+          </Button>
+          <Button onClick={() => ref.current?.setSelection(0, 5)}>
+            <Text>选择前一个词</Text>
+          </Button>
+        </Row>
+        <Row horizontalArrangement={{ spacedBy: 8 }} modifiers={[padding(8, 0, 0, 0)]}>
           <Button onClick={() => ref.current?.focus()}>
             <Text>聚焦</Text>
           </Button>
@@ -230,6 +246,50 @@ export default function ImperativeRefExample() {
           </Button>
         </Row>
       </Column>
+    </Host>
+  );
+}
+```
+
+### Worklet 文本掩码
+
+当 `onValueChange` 使用 `'worklet'` 指令标记时，它会在 UI 线程上同步运行，因此在回调中对 [`useNativeState`](usenativestate) 可观察对象的写入会在下一帧之前生效。输入文本与掩码文本之间不会出现闪烁。下面的示例会在用户输入时对电话号码进行掩码，并从 worklet 中同时写入 `value` 和 `selection`，以保持光标位于格式化后值的末尾。
+
+> **注意：** Worklet 需要安装 [`react-native-reanimated`](https://docs.swmansion.com/react-native-reanimated/) 和 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。
+
+```tsx WorkletPhoneMaskExample.tsx
+import { Host, TextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
+import { fillMaxWidth } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function WorkletPhoneMaskExample() {
+  const phone = useNativeState('');
+  const selection = useNativeState({ start: 0, end: 0 });
+
+  return (
+    <Host matchContents>
+      <TextField
+        value={phone}
+        selection={selection}
+        keyboardOptions={{ keyboardType: 'phone' }}
+        modifiers={[fillMaxWidth()]}
+        onValueChange={v => {
+          'worklet';
+          const digits = v.replace(/\D/g, '').slice(0, 10);
+          let formatted = digits;
+          if (digits.length > 6) {
+            formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+          } else if (digits.length > 3) {
+            formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+          }
+          if (formatted !== v) {
+            phone.value = formatted;
+            selection.value = { start: formatted.length, end: formatted.length };
+          }
+        }}>
+        <TextField.Placeholder>
+          <Text>(555) 123-4567</Text>
+        </TextField.Placeholder>
+      </TextField>
     </Host>
   );
 }

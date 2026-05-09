@@ -1,0 +1,78 @@
+---
+title: '@react-native-community/netinfo'
+description: 一个跨平台 API，提供对网络信息的访问。
+sourceCodeUrl: 'https://github.com/react-native-community/react-native-netinfo'
+packageName: '@react-native-community/netinfo'
+platforms: ['android', 'ios', 'tvos', 'web', 'expo-go']
+inExpoGo: true
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { BoxLink } from '~/ui/components/BoxLink';
+
+`@react-native-community/netinfo` 允许你获取有关连接类型和连接质量的信息。
+
+## 安装
+
+<APIInstallSection href="https://github.com/react-native-community/react-native-netinfo#getting-started" />
+
+## API
+
+要导入此库，请使用：
+
+```js
+import NetInfo from '@react-native-community/netinfo';
+```
+
+如果你想仅获取一次网络连接信息，可以使用：
+
+```js
+NetInfo.fetch().then(state => {
+  console.log('连接类型', state.type);
+  console.log('是否已连接？', state.isConnected);
+});
+```
+
+或者，如果你更愿意订阅网络状态更新（这样就可以在网络状态变化时运行代码/执行操作），请使用：
+
+```js
+const unsubscribe = NetInfo.addEventListener(state => {
+  console.log('连接类型', state.type);
+  console.log('是否已连接？', state.isConnected);
+});
+
+// 要取消订阅这些更新，只需使用：
+unsubscribe();
+```
+
+## 访问 SSID
+
+要访问 `ssid` 属性（可在 `state.details.ssid` 下获取），还需要一些额外的配置步骤：
+
+- 使用 [`Location.requestForegroundPermissionsAsync()`](location.mdx#locationrequestforegroundpermissionsasync) 或 [`Location.requestBackgroundPermissionsAsync()`](location.mdx#locationrequestbackgroundpermissionsasync) 请求位置权限。
+
+### 仅限 iOS
+
+- 将 `com.apple.developer.networking.wifi-info` entitlement 添加到 **app.json** 中的 `ios.entitlements` 下：
+
+  ```json app.json
+    "ios": {
+      "entitlements": {
+        "com.apple.developer.networking.wifi-info": true
+      }
+    }
+  ```
+
+- 在你应用的 App Identifier 中勾选 **Access Wi-Fi Information**，[可在此处找到](https://developer.apple.com/account/resources/identifiers/list)。
+- 使用 [`eas build --platform ios`](/build/setup/#4-run-a-build) 或 [`npx expo run:ios`](/more/expo-cli/#compiling) 重新构建你的应用。
+
+## 了解更多
+
+<BoxLink
+  title="访问官方文档"
+  description="获取有关 API 及其用法的完整信息。"
+  Icon={BookOpen02Icon}
+  href="https://github.com/react-native-netinfo/react-native-netinfo"
+/>

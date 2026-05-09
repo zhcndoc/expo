@@ -1,0 +1,162 @@
+---
+title: 滑块
+description: 一个用于从范围中选择值的 Jetpack Compose 滑块组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI Slider 与官方 Jetpack Compose [Slider API](https://developer.android.com/develop/ui/compose/components/slider) 保持一致，并允许从有界范围中选择值。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/slider/android-light.webp"
+  darkSource="/static/images/expo-ui/slider/android-dark.webp"
+  alt="两个处于不同位置的 Material 3 滑块"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基础滑块
+
+```tsx BasicSliderExample.tsx
+import { useState } from 'react';
+import { Host, Slider } from '@expo/ui/jetpack-compose';
+
+export default function BasicSliderExample() {
+  const [value, setValue] = useState(0.5);
+
+  return (
+    <Host matchContents>
+      <Slider value={value} onValueChange={setValue} />
+    </Host>
+  );
+}
+```
+
+### 自定义范围的滑块
+
+使用 `min` 和 `max` 属性来定义滑块的值范围。
+
+```tsx CustomRangeSliderExample.tsx
+import { useState } from 'react';
+import { Host, Slider } from '@expo/ui/jetpack-compose';
+
+export default function CustomRangeSliderExample() {
+  const [value, setValue] = useState(50);
+
+  return (
+    <Host matchContents>
+      <Slider value={value} min={0} max={100} onValueChange={setValue} />
+    </Host>
+  );
+}
+```
+
+### 带步进的滑块
+
+使用 `steps` 属性来定义离散增量。将 `steps` 设为 `0` 可表示连续值。
+
+```tsx SteppedSliderExample.tsx
+import { useState } from 'react';
+import { Host, Slider } from '@expo/ui/jetpack-compose';
+
+export default function SteppedSliderExample() {
+  const [value, setValue] = useState(0);
+
+  return (
+    <Host matchContents>
+      <Slider value={value} min={0} max={100} steps={10} onValueChange={setValue} />
+    </Host>
+  );
+}
+```
+
+### 自定义颜色
+
+使用 `colors` 属性覆盖滑块的 thumb、track 和 tick marks 的默认 Material3 颜色。
+
+```tsx CustomColorsSliderExample.tsx
+import { useState } from 'react';
+import { Host, Slider } from '@expo/ui/jetpack-compose';
+
+export default function CustomColorsSliderExample() {
+  const [value, setValue] = useState(0.5);
+
+  return (
+    <Host matchContents>
+      <Slider
+        value={value}
+        colors={{
+          thumbColor: '#6200EE',
+          activeTrackColor: '#6200EE',
+          inactiveTrackColor: '#E0E0E0',
+        }}
+        onValueChange={setValue}
+      />
+    </Host>
+  );
+}
+```
+
+### 自定义 thumb 和 track
+
+同时使用 `Slider.Thumb` 和 `Slider.Track` 插槽，可实现完全自定义的滑块外观。
+
+```tsx FullyCustomSliderExample.tsx
+import { useState } from 'react';
+import { Host, Slider, Shape, Row, Box } from '@expo/ui/jetpack-compose';
+import {
+  fillMaxWidth,
+  height,
+  weight,
+  size,
+  clip,
+  background,
+  Shapes,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function FullyCustomSliderExample() {
+  const [value, setValue] = useState(0.5);
+
+  return (
+    <Host matchContents>
+      <Slider value={value} onValueChange={setValue}>
+        <Slider.Thumb>
+          <Box modifiers={[size(24, 24), clip(Shapes.Circle), background('#6200EE')]} />
+        </Slider.Thumb>
+        <Slider.Track>
+          <Row modifiers={[fillMaxWidth(), height(8)]}>
+            <Shape.RoundedCorner
+              color="#6200EE"
+              cornerRadii={{ topStart: 4, bottomStart: 4 }}
+              modifiers={[weight(Math.max(value, 0.01)), height(8)]}
+            />
+            <Shape.RoundedCorner
+              color="#BDBDBD"
+              cornerRadii={{ topEnd: 4, bottomEnd: 4 }}
+              modifiers={[weight(Math.max(1 - value, 0.01)), height(8)]}
+            />
+          </Row>
+        </Slider.Track>
+      </Slider>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Slider } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/slider" apiName="Slider" />

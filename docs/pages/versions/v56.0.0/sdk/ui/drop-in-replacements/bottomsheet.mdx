@@ -1,0 +1,168 @@
+---
+title: BottomSheet
+description: 一个与 @gorhom/bottom-sheet 兼容的底部弹出面板。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+一个与 `@gorhom/bottom-sheet` API 兼容的 `BottomSheet` 组件。它封装了平台特定的 `@expo/ui` 基元：Android 上使用 [Jetpack Compose ModalBottomSheet](../jetpack-compose/bottomsheet)，iOS 上使用 [SwiftUI BottomSheet](../swift-ui/bottomsheet)。在 web 上，它使用 [vaul](https://github.com/emilkowalski/vaul) 抽屉。
+
+如果你需要对平台特定的样式、修饰器或布局行为进行更底层的控制，请直接使用这些原生基元。
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@gorhom/bottom-sheet` 迁移
+
+- 将导入从：
+
+  ```tsx
+  import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+  ```
+
+  改为使用 `@expo/ui/community/bottom-sheet`：
+
+  ```tsx
+  import BottomSheet, { BottomSheetView } from '@expo/ui/community/bottom-sheet';
+  ```
+
+- 此实现不需要来自 `react-native-gesture-handler` 的 `GestureHandlerRootView`。如果你的应用其他部分需要它，也可以保留不变。
+- 不支持 `BottomSheetBackdrop`、`BottomSheetHandle`、`BottomSheetFooter`、`BottomSheetDraggableView`、`BottomSheetVirtualizedList`、`BottomSheetFlashList`、`useBottomSheetModal`、`useBottomSheetSpringConfigs` 和 `useBottomSheetTimingConfigs` 等组件与 hook 导出。为了保持 API 兼容性，导出了一些相关的 prop 类型。
+
+## 基本用法
+
+```tsx BottomSheetExample.tsx
+import { useRef } from 'react';
+import { Button, Text, View } from 'react-native';
+import BottomSheet, { BottomSheetView } from '@expo/ui/community/bottom-sheet';
+
+export default function BottomSheetExample() {
+  const sheetRef = useRef<BottomSheet>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Open" onPress={() => sheetRef.current?.snapToIndex(0)} />
+
+      <BottomSheet
+        ref={sheetRef}
+        snapPoints={['25%', '50%', '90%']}
+        index={-1}
+        onChange={index => {
+          console.log('onChange', index);
+        }}
+        onClose={() => {
+          console.log('closed');
+        }}
+        enablePanDownToClose>
+        <BottomSheetView style={{ flex: 1, padding: 24, alignItems: 'center' }}>
+          <Text>Sheet content</Text>
+        </BottomSheetView>
+      </BottomSheet>
+    </View>
+  );
+}
+```
+
+## `BottomSheetModal`
+
+从 `@gorhom/bottom-sheet` 的 modal API 迁移时，请使用 `BottomSheetModal`。它默认处于关闭状态，并通过 `present()` 打开。
+
+```tsx BottomSheetModalExample.tsx
+import { useRef } from 'react';
+import { Button, Text, View } from 'react-native';
+import { BottomSheetModal, BottomSheetView } from '@expo/ui/community/bottom-sheet';
+
+export default function BottomSheetModalExample() {
+  const modalRef = useRef<BottomSheetModal>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Present" onPress={() => modalRef.current?.present()} />
+
+      <BottomSheetModal ref={modalRef} snapPoints={['50%', '90%']} enablePanDownToClose>
+        <BottomSheetView style={{ padding: 24 }}>
+          <Text>Modal content</Text>
+          <Button title="Dismiss" onPress={() => modalRef.current?.dismiss()} />
+        </BottomSheetView>
+      </BottomSheetModal>
+    </View>
+  );
+}
+```
+
+## 动态尺寸
+
+当未提供 `snapPoints` 时，底部 sheet 默认会根据内容自适应尺寸。请使用 `BottomSheetView` 作为 sheet 内容容器。
+
+```tsx DynamicBottomSheetExample.tsx
+import { useRef } from 'react';
+import { Button, Text, View } from 'react-native';
+import BottomSheet, { BottomSheetView } from '@expo/ui/community/bottom-sheet';
+
+export default function DynamicBottomSheetExample() {
+  const sheetRef = useRef<BottomSheet>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Open" onPress={() => sheetRef.current?.present()} />
+
+      <BottomSheet ref={sheetRef} index={-1} enablePanDownToClose>
+        <BottomSheetView style={{ padding: 24 }}>
+          <Text>This sheet sizes itself to its content.</Text>
+        </BottomSheetView>
+      </BottomSheet>
+    </View>
+  );
+}
+```
+
+## 平台行为
+
+`@gorhom/bottom-sheet` 会以内联方式渲染在其父视图底部。这个组件在 Android 和 iOS 上使用原生模态呈现，在 web 上使用抽屉覆盖层。
+
+这种差异是有意为之。`@gorhom/bottom-sheet` 通过 `react-native-gesture-handler` 和 `react-native-reanimated` 控制手势与动画层，而 `@expo/ui/community/bottom-sheet` 将这些行为委托给 Jetpack Compose、SwiftUI 和 web 抽屉基元。因此，这个组件更适合用于模态底部 sheet 流程，包括使用 `BottomSheet` API 而不是 `BottomSheetModal` 的调用场景。
+
+| 功能                 | Android                                      | iOS                               | Web                           |
+| -------------------- | -------------------------------------------- | --------------------------------- | ----------------------------- |
+| 呈现方式             | Jetpack Compose 模态底部 sheet               | SwiftUI sheet                     | vaul 抽屉                    |
+| Snap points          | 映射为部分展开和完全展开状态                 | 支持提供的 snap points           | 支持提供的 snap points       |
+| 未提供 `snapPoints`  | 内容自适应                                   | 内容自适应                       | 内容自适应                  |
+| 下滑关闭             | 同时启用返回按钮和遮罩点击关闭               | 同时启用背景点击关闭             | 启用抽屉关闭                 |
+| 持久的内联预览       | 不支持                                       | 不支持                           | 不支持                      |
+
+## 支持的导出
+
+| 导出                       | 是否支持 | 说明                                                   |
+| -------------------------- | -------- | ------------------------------------------------------ |
+| `BottomSheet`              | 是       | Android 和 iOS 上为模态，web 上为抽屉                   |
+| `BottomSheetModal`        | 是       | 默认关闭，并通过 `present()` 打开                      |
+| `BottomSheetModalProvider` | 是       | 为兼容性直接渲染子元素                                   |
+| `BottomSheetView`         | 是       | 封装 sheet 内容                                         |
+| `BottomSheetScrollView`   | 是       | React Native `ScrollView` 的重新导出                   |
+| `BottomSheetFlatList`     | 是       | React Native `FlatList` 的重新导出                     |
+| `BottomSheetSectionList`  | 是       | React Native `SectionList` 的重新导出                  |
+| `BottomSheetTextInput`    | 是       | React Native `TextInput` 的重新导出                    |
+| `useBottomSheet`          | 是       | 从上下文返回 sheet ref 方法                              |
+| `BottomSheetBackdrop`     | 否       | 原生 sheet 或 web 抽屉会处理背景遮罩                    |
+| `BottomSheetHandle`       | 否       | 原生 sheet 或 web 抽屉会处理拖拽指示器                  |
+| `BottomSheetFooter`       | 否       | 此实现中没有对应项                                       |
+
+## 兼容性说明
+
+- 支持 `snapPoints`、`index`、`onChange`、`onClose`、`onDismiss`、`enablePanDownToClose` 和 `enableDynamicSizing`。
+- `handleComponent={null}` 会隐藏原生或 web 的拖拽指示器。自定义 handle 组件不会在原生平台上渲染。
+- `backgroundStyle` 在 web 上会完全生效。在 Android 上，`backgroundColor` 用于原生容器颜色。在 iOS 上，使用系统 sheet 背景。
+- 动画、过度拖拽、内容拖动、handle 拖动、键盘行为、自定义背景遮罩、自定义背景、自定义页脚、动画值和 detached 属性会被接受以保持 API 兼容性，但不会改变行为。
+
+## API
+
+```tsx
+import BottomSheet from '@expo/ui/community/bottom-sheet';
+```
+
+<APISection packageName="expo-ui/community/bottom-sheet" apiName="BottomSheet" />

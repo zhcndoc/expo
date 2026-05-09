@@ -1,0 +1,79 @@
+---
+title: VideoThumbnails
+description: 一个允许你从视频文件生成图像作为缩略图的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-video-thumbnails'
+packageName: 'expo-video-thumbnails'
+platforms: ['android', 'ios', 'tvos', 'expo-go']
+isDeprecated: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+> **警告** **[已弃用](/more/release-statuses/#deprecated):** Video Thumbnails 库已弃用，推荐改用 [`expo-video`](video.mdx) 中的 [`generateThumbnailsAsync`](video.mdx#generatethumbnailsasynctimes-options)。`expo-video-thumbnails` 不再接收补丁更新，并将在 SDK 56 中移除。
+
+`expo-video-thumbnails` 可让你从视频文件生成一张图片作为缩略图。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+<SnackInline label='Video Thumbnails' dependencies={['expo-video-thumbnails']}>
+
+```jsx
+import { useState } from 'react';
+import { StyleSheet, Button, View, Image, Text } from 'react-native';
+import * as VideoThumbnails from 'expo-video-thumbnails';
+
+export default function App() {
+  const [image, setImage] = useState(null);
+
+  const generateThumbnail = async () => {
+    try {
+      const { uri } = await VideoThumbnails.getThumbnailAsync(
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        {
+          time: 15000,
+        }
+      );
+      setImage(uri);
+    } catch (e) {
+      console.warn(e);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Button onPress={generateThumbnail} title="生成缩略图" />
+      {image && <Image source={{ uri: image }} style={styles.image} />}
+      <Text>{image}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  image: {
+    width: 200,
+    height: 200,
+  },
+});
+```
+
+</SnackInline>
+
+## API
+
+```js
+import * as VideoThumbnails from 'expo-video-thumbnails';
+```
+
+<APISection packageName="expo-video-thumbnails" apiName="VideoThumbnails" />

@@ -1,0 +1,132 @@
+---
+title: AgeRange
+description: 一个通过 Android 上的 Play Age Signals API 和 iOS 上的 Declared Age Range framework 提供年龄范围信息访问的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-age-range'
+packageName: 'expo-age-range'
+platforms: ['android', 'ios', 'expo-go']
+isAlpha: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigReactNative } from '~/ui/components/ConfigSection';
+import { SnackInline } from '~/ui/components/Snippet';
+import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
+
+> **重要** **此库当前处于 [alpha](/more/release-statuses/#alpha) 阶段，并且会频繁出现破坏性更改。**
+
+`expo-age-range` 提供对用户年龄范围信息的访问。它在 Android 上使用 Google 的 [Play Age Signals API](https://developer.android.com/google/play/age-signals/use-age-signals-api)，在 iOS 上使用 Apple 的 [Declared Age Range framework](https://developer.apple.com/documentation/declaredagerange/)。
+
+此库允许你向应用用户请求年龄范围信息，以帮助你遵守适龄内容相关法规（例如 [美国德克萨斯州](https://developer.apple.com/news/?id=btkirlj8) 的相关要求），并在应用中提供适龄体验。
+
+### 限制
+
+我们强烈建议在真机上测试该功能，因为模拟器运行时可能无法按预期工作。
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app 配置中进行配置
+
+### 设置 iOS 项目
+
+要在 iOS 上使用年龄范围 API，你需要使用 Xcode 26.0 或更高版本构建项目。需要 `com.apple.developer.declared-age-range` entitlement。将其添加到你的 [app config](../config/app/) 文件中：
+
+```json app.json
+{
+  "expo": {
+    "ios": {
+      "entitlements": {
+        "com.apple.developer.declared-age-range": true
+      }
+    }
+  }
+}
+```
+
+<ConfigReactNative>
+
+对于现有的 React Native 项目，请将该 entitlement 添加到项目的 **ios/[app]/[app].entitlements** 文件中：
+
+```xml
+<key>com.apple.developer.declared-age-range</key>
+<true/>
+```
+
+</ConfigReactNative>
+
+## 使用方法
+
+<SnackInline label="年龄范围使用" dependencies={['expo-age-range']} platforms={['android', 'ios']}>
+
+```tsx
+import * as AgeRange from 'expo-age-range';
+import { useState } from 'react';
+import { StyleSheet, Text, View, Button } from 'react-native';
+
+export default function App() {
+  const [result, setResult] = useState<AgeRange.AgeRangeResponse | { error: string } | null>(null);
+
+  const requestAgeRange = async () => {
+    try {
+      const ageRange = await AgeRange.requestAgeRangeAsync({
+        threshold1: 10,
+        threshold2: 13,
+        threshold3: 18,
+      });
+      setResult(ageRange);
+    } catch (error) {
+      setResult({ error: error.message });
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Button title="请求年龄范围" onPress={requestAgeRange} />
+      {result && (
+        <Text style={styles.result}>
+          {'error' in result ? `错误：${result.error}` : `最低年龄下限：${result.lowerBound}`}
+        </Text>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  result: {
+    marginTop: 20,
+    fontSize: 16,
+  },
+});
+```
+
+</SnackInline>
+
+## 其他资源
+
+- [Play Age Signals API](https://developer.android.com/google/play/age-signals/use-age-signals-api)：Android 年龄信号文档
+- [Declared Age Range framework](https://developer.apple.com/documentation/declaredagerange/)：iOS 声明年龄范围文档
+
+## API
+
+```ts
+import * as AgeRange from 'expo-age-range';
+```
+
+<APISection packageName="expo-age-range" apiName="AgeRange" />
+
+## 错误代码
+
+可在原生模块抛出的任何错误的 `code` 属性中找到。有关 Android 特定的错误代码，请参阅 [Play Age Signals API 文档](https://developer.android.com/google/play/age-signals/use-age-signals-api#handle-api-errors) 中的 “处理 API 错误代码”。
+
+| 代码                            | 平台                             | 描述                                                                                                        |
+| ------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `ERR_AGE_RANGE_USER_DECLINED`   | <PlatformTags platforms={['ios']} /> | 用户拒绝共享其年龄范围。                                                                            |
+| `ERR_AGE_RANGE_NOT_AVAILABLE`   | <PlatformTags platforms={['ios']} /> | 年龄范围不可用。最可能的原因是用户未在设备上登录其 Apple 账号。 |
+| `ERR_AGE_RANGE_INVALID_REQUEST` | <PlatformTags platforms={['ios']} /> | 提供的参数无效。年龄范围需要至少相差 2 年。                                 |

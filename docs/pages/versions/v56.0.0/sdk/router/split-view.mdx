@@ -1,0 +1,427 @@
+---
+title: 路由分屏视图
+sidebar_title: 分屏视图
+description: 一个提供原生分屏布局的 Expo Router 子模块。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-router'
+packageName: 'expo-router'
+platforms: ['ios']
+isAlpha: true
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import APISection from '~/components/plugins/APISection';
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { FileTree } from '~/ui/components/FileTree';
+
+> **重要** SplitView 是一个 [alpha](/more/release-statuses/#alpha) API，仅在 **Expo SDK 55** 及更高版本中于 **iOS** 上可用。该 API 可能会有破坏性变更，目前尚未准备好用于生产环境。
+
+`expo-router/unstable-split-view` 是 `expo-router` 的一个子模块，导出用于构建分栏视图布局的组件，采用 [平台原生系统分栏视图](https://developer.apple.com/design/human-interface-guidelines/split-views)。
+
+> 更多关于适用于原生和 Web 应用的基于文件路由库的信息，请参阅 [Expo Router](./index) 参考文档。
+
+## 平台支持
+
+Split View 仅在 iOS 上可用。在其他平台上，`SplitView` 组件会自动回退为标准的 `Slot` 导航器，确保你的应用无需条件代码即可跨平台运行。
+
+## iPhone 支持
+
+在 iPhone 上，`SplitView` 会自动将所有列折叠为单一视图。一次只会显示一列。
+
+### 选择初始列
+
+使用 `topColumnForCollapsing` 属性来控制分栏视图折叠时显示哪一列：
+
+```tsx
+<SplitView topColumnForCollapsing="primary">{/* ... */}</SplitView>
+```
+
+可接受的值为 `primary`、`supplementary` 和 `secondary`。如果不设置，系统将使用其默认行为。
+
+### 在列之间导航
+
+> **信息** `.show()` 方法需要 `react-native-screens` 4.24.0 或更高版本。SDK 55 捆绑的是 `~4.23.0`，因此你需要手动安装 `react-native-screens@~4.24.0` 才能使用此功能。
+
+使用 `ref` 可以通过 `show` 方法以编程方式显示特定列：
+
+```tsx
+import { useRef } from 'react';
+import { Pressable, Text } from 'react-native';
+import { SplitView } from 'expo-router/unstable-split-view';
+import type { SplitHostCommands } from 'react-native-screens/experimental';
+
+export default function Layout() {
+  const ref = useRef<SplitHostCommands>(null);
+
+  return (
+    <SplitView ref={ref} topColumnForCollapsing="primary">
+      <SplitView.Column>
+        <Pressable onPress={() => ref.current?.show('secondary')}>
+          <Text>显示主内容</Text>
+        </Pressable>
+      </SplitView.Column>
+    </SplitView>
+  );
+}
+```
+
+## 已知限制
+
+<Collapsible summary="不能嵌套">
+
+导航层级中只能有一个 `SplitView`。尝试嵌套分栏视图会导致错误。
+
+</Collapsible>
+
+<Collapsible summary="不能在其他导航器内部使用">
+
+`SplitView` 不能在另一个导航器内部使用（`Slot` 除外）。它必须在根布局层级中使用。
+
+</Collapsible>
+
+<Collapsible summary="仅允许特定子元素">
+
+`SplitView` 只接受 `SplitView.Column` 和 `SplitView.Inspector` 作为直接子元素。其他组件会被忽略，并伴有警告。
+
+</Collapsible>
+
+<Collapsible summary="标题栏目前无法自定义">
+
+分栏视图列中的标题栏（导航栏）目前无法自定义。不支持自定义标题栏配置。
+
+</Collapsible>
+
+<Collapsible summary="API 有限">
+
+当前 API 面较为精简，可能无法覆盖所有使用场景。未来版本将添加更多属性和配置选项。
+
+</Collapsible>
+
+<Collapsible summary="在 iPhone 上返回上一列">
+
+要返回上一列，请点击导航栏中的系统返回按钮。未来版本将提供更细粒度的程序化返回导航控制。
+
+</Collapsible>
+
+> **信息** **注意：** 我们正在积极开发 `SplitView`，并希望获得反馈。你可以在 [Discord](https://chat.expo.dev) 上分享你的想法、[在 GitHub 上提交 issue](https://github.com/expo/expo/issues)，或者使用本页底部的 **Feedback** 按钮。
+
+## 安装
+
+要在项目中使用 `expo-router/unstable-split-view`，你需要先在项目中安装 `expo-router`。请按照 Expo Router 安装指南中的说明进行操作：
+
+<BoxLink
+  title="安装 Expo Router"
+  description="了解如何在项目中安装 Expo Router。"
+  href="/router/installation/"
+  Icon={BookOpen02Icon}
+/>
+
+## 使用 `SplitView.Column`
+
+`SplitView.Column` 用于定义分栏视图布局中的附加列。你最多可以在主内容区域之前添加两列。
+
+### 双栏布局
+
+一个带有主内容的简单侧边栏：
+
+<ContentSpotlight
+  alt="一张展示 iPad 应用使用双栏分栏视图的截图。"
+  src="/static/images/expo-router/split-view-two-column-layout.png"
+  className="max-h-[400px]"
+/>
+
+```tsx app/_layout.tsx
+import { Link } from 'expo-router';
+import { SplitView } from 'expo-router/unstable-split-view';
+import { Text, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-screens/experimental';
+
+export default function Layout() {
+  return (
+    <SplitView>
+      <SplitView.Column>
+        <SafeAreaView edges={{ left: true, top: true }} style={{ flex: 1 }}>
+          <Link href="/inbox">
+            <Pressable style={{ padding: 16 }}>
+              <Text>收件箱</Text>
+            </Pressable>
+          </Link>
+          <Link href="/sent">
+            <Pressable style={{ padding: 16 }}>
+              <Text>已发送</Text>
+            </Pressable>
+          </Link>
+        </SafeAreaView>
+      </SplitView.Column>
+    </SplitView>
+  );
+}
+```
+
+### 三栏布局
+
+一个带有辅助列和主内容的侧边栏：
+
+<ContentSpotlight
+  alt="一张展示 iPad 应用使用三栏分栏视图的截图。"
+  src="/static/images/expo-router/split-view-three-column-layout.png"
+  className="max-h-[400px]"
+/>
+
+```tsx app/_layout.tsx
+import { Link, useGlobalSearchParams } from 'expo-router';
+import { SplitView } from 'expo-router/unstable-split-view';
+import { SafeAreaView } from 'react-native-screens/experimental';
+
+export default function Layout() {
+  const params = useGlobalSearchParams();
+
+  return (
+    <SplitView>
+      <SplitView.Column>
+        <SafeAreaView
+          edges={{ left: true, top: true }}
+          style={{
+            flex: 1,
+            gap: 16,
+            padding: 16,
+          }}>
+          <Link href="/?col1=1" style={{ fontWeight: params.col1 === '1' ? 'bold' : 'normal' }}>
+            选项 1
+          </Link>
+          <Link href="/?col1=2" style={{ fontWeight: params.col1 === '2' ? 'bold' : 'normal' }}>
+            选项 2
+          </Link>
+          <Link href="/?col1=3" style={{ fontWeight: params.col1 === '3' ? 'bold' : 'normal' }}>
+            选项 3
+          </Link>
+        </SafeAreaView>
+      </SplitView.Column>
+      <SplitView.Column>
+        <SafeAreaView
+          edges={{ left: true, top: true }}
+          style={{
+            flex: 1,
+            gap: 16,
+            padding: 16,
+          }}>
+          <Link href={`/?col1=${params.col1}&col2=1`}>子选项 1</Link>
+          <Link href={`/?col1=${params.col1}&col2=2`}>子选项 2</Link>
+          <Link href={`/?col1=${params.col1}&col2=3`}>子选项 3</Link>
+        </SafeAreaView>
+      </SplitView.Column>
+    </SplitView>
+  );
+}
+```
+
+## 使用 `SplitView.Inspector`
+
+`SplitView.Inspector` 会添加一个从尾边滑入的辅助列，适合显示额外的详情或元数据：
+
+<ContentSpotlight
+  alt="一张展示 iPad 应用使用带检查器的分栏视图的截图。"
+  src="/static/images/expo-router/split-view-inspector.png"
+  className="max-h-[400px]"
+/>
+
+```tsx
+<SplitView>
+  <SplitView.Column>{/* 侧边栏 */}</SplitView.Column>
+  <SplitView.Inspector>
+    <View style={{ flex: 1, padding: 16 }}>
+      <Text>检查器面板</Text>
+    </View>
+  </SplitView.Inspector>
+</SplitView>
+```
+
+## 完整示例
+
+下面是一个类似密码管理器的应用，包含三列：
+
+<FileTree
+  files={['app/_layout.tsx', 'app/index.tsx', 'app/[type]/[id].tsx', 'app/[type]/index.tsx']}
+/>
+
+```tsx app/_layout.tsx
+import { Link, Color, useGlobalSearchParams } from 'expo-router';
+import { SplitView } from 'expo-router/unstable-split-view';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-screens/experimental';
+
+export default function Layout() {
+  return (
+    <SplitView showInspector>
+      <SplitView.Column>
+        <PasscodeList />
+      </SplitView.Column>
+      <SplitView.Column>
+        <PasswordElementList />
+      </SplitView.Column>
+      <SplitView.Inspector>
+        <InspectorContent />
+      </SplitView.Inspector>
+    </SplitView>
+  );
+}
+
+function PasscodeList() {
+  return (
+    <SafeAreaView edges={{ top: true, left: true }} style={style.passcodeList}>
+      <PasscodeCard title="全部" param="all" />
+      <PasscodeCard title="通行密钥" param="passkeys" />
+      <PasscodeCard title="代码" param="codes" />
+      <PasscodeCard title="安全" param="security" />
+      <PasscodeCard title="已删除" param="deleted" />
+    </SafeAreaView>
+  );
+}
+
+const passkeys = ['Github', 'Google', 'Facebook', 'Twitter', 'Apple', 'Microsoft', 'Amazon'];
+const security = ['Admin1234', 'Root'];
+
+const all = [...passkeys, ...security];
+
+function PasswordElementList() {
+  const params = useGlobalSearchParams();
+  const data = (() => {
+    switch (params.type) {
+      case 'all':
+      case undefined:
+        return all;
+      case 'passkeys':
+        return passkeys;
+      case 'security':
+        return security;
+      default:
+        return [];
+    }
+  })();
+  return (
+    <ScrollView contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: undefined }}>
+      {data.map(item => (
+        <PasswordElement key={item} title={item} />
+      ))}
+    </ScrollView>
+  );
+}
+
+function PasscodeCard({ param, title }: { param: string; title: string }) {
+  const params = useGlobalSearchParams();
+  const isActive = params.type === param;
+  return (
+    <Link
+      href={`/${param}/`}
+      disabled={isActive}
+      style={[
+        style.passcodeCard,
+        {
+          backgroundColor: isActive ? Color.ios.systemBlue : Color.ios.systemGray6,
+        },
+      ]}
+      asChild>
+      <Pressable>
+        <Text style={{ color: isActive ? 'white' : 'black', fontSize: 16 }}>{title}</Text>
+      </Pressable>
+    </Link>
+  );
+}
+
+function PasswordElement({ title }: { title: string }) {
+  const params = useGlobalSearchParams();
+  const isActive = params.id === title;
+  return (
+    <Link href={`/${params.type}/${title}/`} asChild>
+      <Pressable
+        style={{
+          backgroundColor: isActive ? Color.ios.systemBlue : undefined,
+          padding: 12,
+        }}>
+        <SafeAreaView edges={{ left: true }}>
+          <Text style={{ color: isActive ? 'white' : 'black', fontSize: 16 }}>{title}</Text>
+        </SafeAreaView>
+      </Pressable>
+    </Link>
+  );
+}
+
+function InspectorContent() {
+  return (
+    <View style={style.inspectorContent}>
+      <Text>检查器</Text>
+    </View>
+  );
+}
+
+const style = StyleSheet.create({
+  passcodeList: {
+    flex: 1,
+    flexWrap: 'wrap',
+    gap: 8,
+    flexDirection: 'row',
+    padding: 8,
+  },
+  passcodeCard: {
+    width: '48%',
+    padding: 12,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 50,
+  },
+  inspectorContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+```
+
+```tsx app/index.tsx
+import { Redirect } from 'expo-router';
+
+export default function Index() {
+  return <Redirect href="/all/" />;
+}
+```
+
+```tsx app/[type]/index.tsx
+import { Color } from 'expo-router';
+import { Text, View } from 'react-native';
+
+export default function Index() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ color: Color.ios.label, fontSize: 24, fontWeight: 'bold' }}>
+        未选择任何内容
+      </Text>
+    </View>
+  );
+}
+```
+
+```tsx app/[type]/[id].tsx
+import { useLocalSearchParams } from 'expo-router';
+import { Text, View } from 'react-native';
+
+export default function Id() {
+  const { id } = useLocalSearchParams();
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>ID: {id}</Text>
+    </View>
+  );
+}
+```
+
+## API
+
+```js
+import { SplitView } from 'expo-router/unstable-split-view';
+```
+
+<APISection packageName="expo-router/split-view" apiName="分屏视图" />

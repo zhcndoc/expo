@@ -129,7 +129,7 @@ jobs:
 此工作流会使用可在构建过程中使用的自定义环境变量来构建你的 Android 应用。
 
 ```yaml .eas/workflows/build-with-env.yml
-name: Build with environment variables
+name: 使用环境变量构建
 
 on:
   push:
@@ -154,7 +154,7 @@ jobs:
 此工作流使用不同配置文件创建两个不同的 Android 构建——一个用于内部分发，另一个用于提交到商店，分别使用 development 和 production 配置文件。
 
 ```yaml .eas/workflows/build-profiles.yml
-name: Build with different profiles
+name: 使用不同配置文件构建
 
 on:
   push:
@@ -348,7 +348,7 @@ jobs:
 > **注意：** 如果你依赖内联环境变量，你需要始终确保在每个位置（构建配置文件、指纹作业、更新作业等）将正确的一组环境变量设置为正确的值，以确保指纹匹配。**我们建议改用 [EAS 环境变量](/eas/environment-variables/)，** 在那里你可以将变量集合分组到环境中，并在构建配置文件和工作流作业中引用它们。
 
 ```yaml .eas/workflows/fingerprint-with-env.yml
-name: Fingerprint with Environment Variables
+name: 使用环境变量的指纹
 
 jobs:
   fingerprint:
@@ -503,7 +503,7 @@ jobs:
 <Prerequisites>
   <Requirement title="CI/CD 提交配置">
     提交作业需要额外配置才能在 CI/CD 流程中运行。更多信息请参见 [Google
-    Play Store CI/CD 提交指南](/submit/android/#submitting-your-app-using-cicd-services) 和
+    Play 商店 CI/CD 提交指南](/submit/android/#submitting-your-app-using-cicd-services) 和
     [Apple App Store CI/CD 提交指南](/submit/ios/#submitting-your-app-using-cicd-services)。
   </Requirement>
 </Prerequisites>
@@ -1002,44 +1002,42 @@ jobs:
     environment: production | preview | development # 可选 - 默认为 preview
     image: string # 可选 - 请参阅 https://docs.expo.dev/build-reference/infrastructure/ 了解可用镜像列表。
     params:
-      build_id: string # 必需 - 要测试的构建 ID。
-      maestro_project_id: string # 必需 - Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
-      flows: string # 必需 - 要运行的 Maestro flow 文件或包含这些 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。
-      maestro_api_key: string # 可选 - 默认为 `$MAESTRO_CLOUD_API_KEY`
-      include_tags: string | string[] # 可选 - 要包含在测试中的标签。将作为 `--include-tags` 传递给 Maestro。
-      exclude_tags: string | string[] # 可选 - 要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
-      maestro_version: string # 可选 - 测试中使用的 Maestro 版本。如果未提供，将使用最新版本。
-      android_api_level: string # 可选 - 测试中使用的 Android API 级别。将作为 `--android-api-level` 传递给 Maestro。
-      maestro_config: string # 可选 - 测试中使用的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
-      device_locale: string # 可选 - 测试中使用的设备区域设置。将作为 `--device-locale` 传递给 Maestro。运行 `maestro cloud --help` 查看支持值列表。
-      device_model: string # 可选 - 测试中使用的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro cloud --help` 查看支持值列表。
-      device_os: string # 可选 - 测试中使用的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro cloud --help` 查看支持值列表。
-      name: string # 可选 - Maestro Cloud 上传的名称。对应 `maestro cloud` 的 `--name` 参数。
-      branch: string # 可选 - 覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是由 GitHub 触发的，则使用该工作流运行所在的分支。对应 `maestro cloud` 的 `--branch` 参数。
-      async: boolean # 可选 - 异步运行 Maestro Cloud 测试。如果为 true，作业状态只会表示上传是否成功，_不会_表示测试是否通过。对应 `maestro cloud` 的 `--async` 参数。
+      build_id: string # required - ID of the build to test.
+      maestro_project_id: string # required - Maestro Cloud project ID. Example: `proj_01jw6hxgmdffrbye9fqn0pyzm0`.
+      flows: string # required - Path to the Maestro flow file or directory containing the flows to run. Corresponds to `--flows` param to `maestro cloud`.
+      maestro_api_key: string # optional - defaults to `$MAESTRO_CLOUD_API_KEY`
+      include_tags: string | string[] # optional - tags to include in the tests. Will be passed to Maestro as `--include-tags`.
+      exclude_tags: string | string[] # optional - tags to exclude from the tests. Will be passed to Maestro as `--exclude-tags`.
+      maestro_version: string # optional - version of Maestro to use for the tests. If not provided, the latest version will be used.
+      maestro_config: string # optional - path to the Maestro `config.yaml` file to use for the tests. Will be passed to Maestro as `--config`.
+      device_locale: string # optional - device locale to use for the tests. Will be passed to Maestro as `--device-locale`.
+      device_model: string # optional - model of the device to use for the tests. Will be passed to Maestro as `--device-model`. Run `maestro list-cloud-devices` for a list of supported values.
+      device_os: string # optional - OS of the device to use for the tests. Will be passed to Maestro as `--device-os`. Run `maestro list-cloud-devices` for a list of supported values.
+      name: string # optional - name for the Maestro Cloud upload. Corresponds to `--name` param to `maestro cloud`.
+      branch: string # optional - override for the branch the Maestro Cloud upload originated from. By default, if the workflow run has been triggered from GitHub, the branch of the workflow run will be used. Corresponds to `--branch` param to `maestro cloud`.
+      async: boolean # optional - run the Maestro Cloud tests asynchronously. If true, the status of the job will only denote whether the upload was successful, _not_ whether the tests succeeded. Corresponds to `--async` param to `maestro cloud`.
 ```
 
 #### 参数
 
 你可以将以下参数传入 `params` 列表：
 
-| 参数               | 类型    | 描述                                                                                                                                                                                                                                          |
-| ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id           | string  | 必需。要测试的构建 ID。示例：`${{ needs.build_android.outputs.build_id }}`。                                                                                                                                                                  |
-| maestro_project_id | string  | 必需。要使用的 Maestro Cloud 项目 ID。对应 `maestro cloud` 的 `--project-id` 参数。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。前往 [Maestro Cloud](https://app.maestro.dev/) 查找你的项目 ID。                                                |
-| flows              | string  | 必需。要运行的 Maestro flow 文件或包含这些 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。                                                                                                                                          |
-| maestro_api_key    | string  | 可选。用于 Maestro 项目的 API 密钥。默认情况下，将使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。                                                                                                          |
-| include_tags       | string  | 可选。要包含在测试中的标签。对应 `maestro cloud` 的 `--include-tags` 参数。示例：`"pull,push"`。                                                                                                                                             |
-| exclude_tags       | string  | 可选。要从测试中排除的标签。对应 `maestro cloud` 的 `--exclude-tags` 参数。示例：`"disabled"`。                                                                                                                                              |
-| maestro_version    | string  | 可选。要使用的 Maestro 版本。示例：`1.30.0`。                                                                                                                                                                                                 |
-| android_api_level  | string  | 可选。要使用的 Android API 级别。对应 `maestro cloud` 的 `--android-api-level` 参数。示例：`29`。                                                                                                                                             |
-| maestro_config     | string  | 可选。要使用的 Maestro `config.yaml` 文件路径。对应 `maestro cloud` 的 `--config` 参数。示例：`.maestro/config.yaml`。                                                                                                                        |
-| device_locale      | string  | 可选。将在用于测试的设备上设置的区域设置。对应 `maestro cloud` 的 `--device-locale` 参数。示例：`pl_PL`。                                                                                                                                    |
-| device_model       | string  | 可选。要用于测试的设备型号。对应 `maestro cloud` 的 `--device-model` 参数。示例：`iPhone-11`。运行 `maestro cloud --help` 查看支持值列表。                                                                                                   |
-| device_os          | string  | 可选。要用于测试的设备操作系统。对应 `maestro cloud` 的 `--device-os` 参数。示例：`iOS-18-2`。运行 `maestro cloud --help` 查看支持值列表。                                                                                                   |
-| name               | string  | 可选。Maestro Cloud 上传的名称。对应 `maestro cloud` 的 `--name` 参数。                                                                                                                                                                       |
-| branch             | string  | 可选。覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是由 GitHub 触发的，则使用该工作流运行所在的分支。对应 `maestro cloud` 的 `--branch` 参数。                                                                                 |
-| async              | boolean | 可选。异步运行 Maestro Cloud 测试。如果为 true，作业状态只会表示上传是否成功，_不会_表示测试是否通过。对应 `maestro cloud` 的 `--async` 参数。                                                                                                 |
+| 参数               | 类型    | 描述                                                                                                                                                                                                                                  |
+| ------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| build_id           | string  | 必需。要测试的构建 ID。示例：`${{ needs.build_android.outputs.build_id }}`。                                                                                                                                               |
+| maestro_project_id | string  | 必需。要使用的 Maestro Cloud 项目 ID。对应 `maestro cloud` 的 `--project-id` 参数。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。前往 [Maestro Cloud](https://app.maestro.dev/) 查找你的项目。                     |
+| flows              | string  | 必需。要运行的 Maestro flow 文件或包含 flow 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。                                                                                                     |
+| maestro_api_key    | string  | 可选。用于 Maestro 项目的 API 密钥。默认会使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。                                                            |
+| include_tags       | string  | 可选。要在测试中包含的标签。对应 `maestro cloud` 的 `--include-tags` 参数。示例：`"pull,push"`。                                                                                                                |
+| exclude_tags       | string  | 可选。要从测试中排除的标签。对应 `maestro cloud` 的 `--exclude-tags` 参数。示例：`"disabled"`。                                                                                                               |
+| maestro_version    | string  | 可选。要使用的 Maestro 版本。示例：`1.30.0`。                                                                                                                                                                                  |
+| maestro_config     | string  | 可选。要使用的 Maestro `config.yaml` 文件路径。对应 `maestro cloud` 的 `--config` 参数。示例：`.maestro/config.yaml`。                                                                                            |
+| device_locale      | string  | 可选。将在测试所用设备上设置的区域设置。对应 `maestro cloud` 的 `--device-locale` 参数。示例：`pl_PL`。                                                                                            |
+| device_model       | string  | 可选。要用于测试的设备型号。对应 `maestro cloud` 的 `--device-model` 参数。示例：`iPhone-11`。运行 `maestro list-cloud-devices` 可查看支持的值列表。                                     |
+| device_os          | string  | 可选。要用于测试的设备操作系统。对应 `maestro cloud` 的 `--device-os` 参数。示例：`iOS-18-2`。运行 `maestro list-cloud-devices` 可查看支持的值列表。                                            |
+| name               | string  | 可选。Maestro Cloud 上传的名称。对应 `maestro cloud` 的 `--name` 参数。                                                                                                                                               |
+| branch             | string  | 可选。覆盖 Maestro Cloud 上传来源分支。默认情况下，如果工作流运行是从 GitHub 触发的，则会使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。 |
+| async              | boolean | 可选。异步运行 Maestro Cloud 测试。如果为 true，作业状态只表示上传是否成功，而不表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。               |
 
 > **重要** 你需要在作业环境中设置 `maestro_api_key` 参数或 `MAESTRO_CLOUD_API_KEY` 环境变量。前往 [Maestro Cloud](https://app.maestro.dev/) 的“Settings”生成 API 密钥，然后前往 [环境变量](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 将其添加到你的项目中。
 

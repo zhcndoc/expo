@@ -1,0 +1,257 @@
+---
+title: MediaLibrary
+description: 一个可访问设备媒体库的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-media-library'
+packageName: 'expo-media-library'
+iconUrl: '/static/images/packages/expo-media-library.png'
+platforms: ['android', 'ios', 'tvos', 'expo-go']
+isDeprecated: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { AndroidPermissions, IOSPermissions } from '~/components/plugins/permissions';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+> **警告** **[已弃用](/more/release-statuses/#deprecated)：** `expo-media-library` 库正被 [`expo-media-library/next`](media-library-next.mdx) 中的新版本所取代。当前 API 不再接收补丁更新，并将在即将发布的版本中移除。
+
+`expo-media-library` 提供对用户媒体库的访问，允许应用访问用户已有的图片和视频，并保存新的图片和视频。你还可以订阅用户媒体库的任何更新。
+
+> **警告** Android 仅允许需要广泛访问照片的应用完全访问媒体库（这也是此包的用途）。请参阅 [Google Play 照片和视频权限政策详情](https://support.google.com/googleplay/android-developer/answer/14115180)。
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app 配置中进行配置
+
+如果你的项目使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-media-library` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置各种无法在运行时设置、且需要重新构建新的应用二进制文件才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置此库。
+
+<ConfigPluginExample>
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "允许 $(PRODUCT_NAME) 访问你的照片。",
+          "savePhotosPermission": "允许 $(PRODUCT_NAME) 保存照片。",
+          "isAccessMediaLocationEnabled": true,
+          "granularPermissions": ["audio", "photo"]
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'photosPermission',
+      platform: 'ios',
+      description:
+        '在 **Info.plist** 中设置 iOS 的 `NSPhotoLibraryUsageDescription` 权限消息。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的照片。"',
+    },
+    {
+      name: 'savePhotosPermission',
+      platform: 'ios',
+      description:
+        '在 **Info.plist** 中设置 iOS 的 `NSPhotoLibraryAddUsageDescription` 权限消息。',
+      default: '"允许 $(PRODUCT_NAME) 保存照片。"',
+    },
+    {
+      name: 'preventAutomaticLimitedAccessAlert',
+      platform: 'ios',
+      description:
+        '当用户对照片库的访问受限时，阻止自动显示受限访问提醒。适用于只想访问有限照片库、而不希望 iOS 强制显示提醒的应用。',
+      default: 'false',
+    },
+    {
+      name: 'isAccessMediaLocationEnabled',
+      platform: 'android',
+      description:
+        '设置是否在 Android 上请求 `ACCESS_MEDIA_LOCATION` 权限。',
+      default: 'false',
+    },
+    {
+      name: 'granularPermissions',
+      platform: 'android',
+      description:
+        '设置要包含的 [`GranularPermission`](#granularpermission) 值，以决定会向 Android 清单添加哪些媒体权限（`READ_MEDIA_IMAGES`、`READ_MEDIA_VIDEO`、`READ_MEDIA_AUDIO`）。与运行时 API 的行为一致。',
+      default: '["photo", "video", "audio"]',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者你在手动使用原生 **android** 和 **ios** 项目，那么你需要向原生项目添加以下权限和配置：
+
+**Android**
+
+- 要访问资源位置（纬度和经度 EXIF 标签），请将 `ACCESS_MEDIA_LOCATION` 权限添加到项目的 **android/app/src/main/AndroidManifest.xml** 中：
+
+  ```xml
+  <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+  ```
+
+- [分区存储](https://developer.android.com/training/data-storage#scoped-storage) 从 Android 10 开始可用。要让 `expo-media-library` 在分区存储下正常工作，你需要将以下配置添加到 **android/app/src/main/AndroidManifest.xml** 中：
+
+  ```xml
+  <manifest ... >
+    <application android:requestLegacyExternalStorage="true" ...>
+  </manifest>
+  ```
+
+**iOS**
+
+- 将 `NSPhotoLibraryUsageDescription` 和 `NSPhotoLibraryAddUsageDescription` 键添加到项目的 **ios/[app]/Info.plist** 中：
+
+  ```xml
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>赋予 $(PRODUCT_NAME) 访问你的照片的权限</string>
+  <key>NSPhotoLibraryAddUsageDescription</key>
+  <string>赋予 $(PRODUCT_NAME) 保存照片的权限</string>
+  ```
+
+</ConfigReactNative>
+
+## 用法
+
+<SnackInline label='获取相册并显示资源' dependencies={['expo-media-library']}>
+
+{/* prettier-ignore */}
+```jsx
+import { useState, useEffect } from 'react';
+import { Button, Text, ScrollView, StyleSheet, Image, View, Platform } from 'react-native';
+import * as MediaLibrary from 'expo-media-library';
+
+export default function App() {
+  const [albums, setAlbums] = useState(null);
+  const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
+
+  async function getAlbums() {
+    if (permissionResponse.status !== 'granted') {
+      await requestPermission();
+    }
+    const fetchedAlbums = await MediaLibrary.getAlbumsAsync({
+      includeSmartAlbums: true,
+    });
+    setAlbums(fetchedAlbums);
+  }
+
+  return (
+    <View style={styles.container}>
+      <Button onPress={getAlbums} title="获取相册" />
+      <ScrollView>
+        {albums && albums.map((album) => <AlbumEntry album={album} />)}
+      </ScrollView>
+    </View>
+  );
+}
+
+function AlbumEntry({ album }) {
+  const [assets, setAssets] = useState([]);
+
+  useEffect(() => {
+    async function getAlbumAssets() {
+      const albumAssets = await MediaLibrary.getAssetsAsync({ album });
+      setAssets(albumAssets.assets);
+    }
+    getAlbumAssets();
+  }, [album]);
+
+  return (
+    <View key={album.id} style={styles.albumContainer}>
+      <Text>
+        {album.title} - {album.assetCount ?? '无'} 个资源
+      </Text>
+      <View style={styles.albumAssetsContainer}>
+        {assets && assets.map((asset) => (
+          <Image source={{ uri: asset.uri }} width={50} height={50} />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/* @hide const styles = StyleSheet.create({ ... }); */
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    gap: 8,
+    justifyContent: 'center',
+  },
+  albumContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    gap: 4,
+  },
+  albumAssetsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+});
+/* @end */
+````
+
+</SnackInline>
+
+## 已知限制
+
+### 空相册
+
+由于 Android 的系统限制，无法创建空相册。必须传入一个已有资源以添加到相册中，或者传入一个本地资源的 URI，用于在相册中创建一个新资源。
+
+### 在相册之间移动资源
+
+Android 11 引入了权限变更，使得在相册之间移动资源的操作每次都需要用户确认。
+因此，在创建新资源时，不建议先创建资源再将其移动到相册，而是推荐将 `album` 参数传递给 [`createAssetAsync`](#medialibrarycreateassetasynclocaluri-album) 方法，这样会自动将资源添加到相册中，无需用户确认。
+
+### 图片方向错误
+
+在 Android 上，使用 `getAssetsAsync` 但不启用 `resolveWithFullInfo: true` 时，图片方向可能不正确，因为 EXIF 数据（包含方向信息）只有在启用该选项时才会读取。
+
+## API
+
+```js
+import * as MediaLibrary from 'expo-media-library';
+```
+
+<APISection packageName="expo-media-library" apiName="MediaLibrary" />
+
+## 权限
+
+### Android
+
+以下权限会通过此库的 **AndroidManifest.xml** 自动添加：
+
+<AndroidPermissions
+  permissions={[
+    'READ_EXTERNAL_STORAGE',
+    'WRITE_EXTERNAL_STORAGE',
+    'READ_MEDIA_IMAGES',
+    'READ_MEDIA_VIDEO',
+    'READ_MEDIA_AUDIO',
+    'READ_MEDIA_VISUAL_USER_SELECTED',
+  ]}
+/>
+
+### iOS
+
+以下使用说明键会被此库使用：
+
+<IOSPermissions
+  permissions={['NSPhotoLibraryUsageDescription', 'NSPhotoLibraryAddUsageDescription']}
+/>

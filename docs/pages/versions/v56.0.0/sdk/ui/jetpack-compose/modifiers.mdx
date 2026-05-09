@@ -1,0 +1,460 @@
+---
+title: 修饰符
+description: 适用于 @expo/ui 组件的 Jetpack Compose 布局修饰符。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+Jetpack Compose 修饰符允许你自定义 UI 组件的布局、外观和行为。修饰符是 Compose 中相当于样式属性的概念——它们控制尺寸、内边距、背景、交互等。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+修饰符通过带有数组语法的 `modifiers` 属性应用到组件上。你可以组合多个修饰符来创建复杂的样式和行为。修饰符会按照它们在数组中出现的顺序依次应用，这可能会影响最终结果（例如，先应用 `padding` 再应用 `background` 与反过来会产生不同结果）。
+
+```tsx
+import { Button, Host } from '@expo/ui/jetpack-compose';
+import {
+  paddingAll,
+  fillMaxWidth,
+  background,
+  border,
+  shadow,
+  clickable,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+function ModifiersExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      {/* 基础样式修饰符 */}
+      <Button modifiers={[paddingAll(16), fillMaxWidth(), background('#FF6B6B')]}>
+        全宽带内边距按钮
+      </Button>
+
+      {/* 带有边框和阴影的复杂组合 */}
+      <Button modifiers={[paddingAll(12), background('#4ECDC4'), border(2, '#2C3E50'), shadow(4)]}>
+        带边框和阴影的样式按钮
+      </Button>
+    </Host>
+  );
+}
+```
+
+## 内边距
+
+控制组件内容周围的间距。
+
+### `paddingAll(all)`
+
+在四个边上应用相等的内边距。
+
+| 参数 | 类型     | 描述           |
+| ---- | -------- | -------------- |
+| `all`     | `number` | 内边距值，单位为 dp。 |
+
+```tsx
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[paddingAll(16)]}>带内边距的按钮</Button>;
+```
+
+### `padding(start, top, end, bottom)`
+
+分别为每一侧应用内边距。
+
+| 参数     | 类型     | 描述               |
+| -------- | -------- | ------------------ |
+| `start`   | `number` | 左侧/起始内边距，单位为 dp。 |
+| `top`     | `number` | 顶部内边距，单位为 dp。        |
+| `end`     | `number` | 右侧/结束内边距，单位为 dp。  |
+| `bottom`  | `number` | 底部内边距，单位为 dp。     |
+
+```tsx
+import { padding } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[padding(16, 8, 16, 8)]}>自定义内边距</Button>;
+```
+
+## 大小
+
+控制组件的尺寸。
+
+### `size(width, height)`
+
+为组件设置精确尺寸。
+
+| 参数     | 类型     | 描述   |
+| -------- | -------- | ----- |
+| `width`   | `number` | 宽度，单位为 dp。  |
+| `height`  | `number` | 高度，单位为 dp。 |
+
+```tsx
+import { size } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[size(200, 48)]}>固定大小</Button>;
+```
+
+### `fillMaxSize(fraction?)`
+
+在宽高两个方向上填充所有可用空间。
+
+| 参数       | 类型     | 描述                                           |
+| ---------- | -------- | ---------------------------------------------- |
+| `fraction` | `number` | 可用空间所占比例（0.0–1.0）。默认值为 `1.0`。 |
+
+```tsx
+import { fillMaxSize } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[fillMaxSize()]}>填满所有空间</Button>
+<Button modifiers={[fillMaxSize(0.5)]}>填满一半</Button>
+```
+
+### `fillMaxWidth(fraction?)`
+
+填充可用宽度。
+
+| 参数       | 类型     | 描述                                           |
+| ---------- | -------- | ---------------------------------------------- |
+| `fraction` | `number` | 可用宽度所占比例（0.0–1.0）。默认值为 `1.0`。 |
+
+```tsx
+import { fillMaxWidth } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[fillMaxWidth()]}>全宽</Button>;
+```
+
+### `fillMaxHeight(fraction?)`
+
+填充可用高度。
+
+| 参数       | 类型     | 描述                                            |
+| ---------- | -------- | ----------------------------------------------- |
+| `fraction` | `number` | 可用高度所占比例（0.0–1.0）。默认值为 `1.0`。 |
+
+### `width(value)`
+
+设置精确宽度。
+
+| 参数   | 类型     | 描述  |
+| ------ | -------- | ----- |
+| `value`   | `number` | 宽度，单位为 dp。 |
+
+### `height(value)`
+
+设置精确高度。
+
+| 参数   | 类型     | 描述   |
+| ------ | -------- | ----- |
+| `value`   | `number` | 高度，单位为 dp。 |
+
+### `wrapContentWidth(alignment?)`
+
+将组件大小设为包裹其内容的宽度。
+
+| 参数        | 类型     | 描述                          |
+| ----------- | -------- | ---------------------------- |
+| `alignment` | `string` | 内容的水平对齐方式。 |
+
+### `wrapContentHeight(alignment?)`
+
+将组件大小设为包裹其内容的高度。
+
+| 参数        | 类型     | 描述                        |
+| ----------- | -------- | ---------------------------- |
+| `alignment` | `string` | 内容的垂直对齐方式。 |
+
+## 位置
+
+控制组件相对于其自然位置的位置。
+
+### `offset(x, y)`
+
+在不影响周围组件布局的情况下，让组件相对于其自然位置产生偏移。
+
+| 参数 | 类型     | 描述              |
+| ---- | -------- | ---------------- |
+| `x`       | `number` | 水平偏移量，单位为 dp。 |
+| `y`       | `number` | 垂直偏移量，单位为 dp。   |
+
+```tsx
+import { offset } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[offset(10, 5)]}>偏移按钮</Button>;
+```
+
+## 外观
+
+控制组件的视觉外观。
+
+### `background(color)`
+
+设置背景颜色。
+
+| 参数   | 类型     | 描述                    |
+| ------ | -------- | ---------------------- |
+| `color`   | `string` | 背景颜色（十六进制字符串）。 |
+
+```tsx
+import { background } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[background('#3498DB')]}>蓝色背景</Button>;
+```
+
+### `border(borderWidth, borderColor)`
+
+为组件添加边框。
+
+| 参数          | 类型     | 描述                |
+| ------------- | -------- | -------------------------- |
+| `borderWidth` | `number` | 边框宽度，单位为 dp。        |
+| `borderColor` | `string` | 边框颜色（十六进制字符串）。 |
+
+```tsx
+import { border } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[border(2, '#E74C3C')]}>带边框按钮</Button>;
+```
+
+### `shadow(elevation)`
+
+为组件下方添加海拔阴影。
+
+| 参数       | 类型     | 描述             |
+| ---------- | -------- | ---------------- |
+| `elevation` | `number` | 阴影海拔，单位为 dp。 |
+
+```tsx
+import { shadow } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[shadow(8)]}>有层次感的按钮</Button>;
+```
+
+### `alpha(alpha)`
+
+控制组件的不透明度。
+
+| 参数   | 类型     | 描述              |
+| --------- | -------- | ------------------------ |
+| `alpha`   | `number` | 不透明度值（0.0–1.0）。 |
+
+```tsx
+import { alpha } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[alpha(0.5)]}>半透明</Button>;
+```
+
+### `blur(radius)`
+
+为组件应用模糊效果。
+
+| 参数   | 类型     | 描述        |
+| -------- | -------- | ------------------ |
+| `radius`  | `number` | 模糊半径，单位为 dp。 |
+
+```tsx
+import { blur } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[blur(4)]}>模糊按钮</Button>;
+```
+
+## 变换
+
+对组件应用视觉变换。
+
+### `rotate(degrees)`
+
+旋转组件。
+
+| 参数     | 类型     | 描述                |
+| -------- | -------- | -------------------------- |
+| `degrees` | `number` | 旋转角度，单位为度。 |
+
+```tsx
+import { rotate } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[rotate(45)]}>已旋转</Button>;
+```
+
+### `zIndex(index)`
+
+控制重叠组件的绘制顺序。
+
+| 参数   | 类型     | 描述  |
+| -------- | -------- | ------------ |
+| `index`   | `number` | 层级索引。 |
+
+```tsx
+import { zIndex } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[zIndex(10)]}>置顶</Button>;
+```
+
+## 动画
+
+为组件内的布局变化添加动画。
+
+### `animateContentSize(dampingRatio?, stiffness?)`
+
+使用弹簧动画为组件内容的尺寸变化添加动画。
+
+| 参数           | 类型     | 描述                                 |
+| -------------- | -------- | ------------------------------------------- |
+| `dampingRatio` | `number` | 弹簧阻尼比。控制弹跳感。  |
+| `stiffness`    | `number` | 弹簧刚度。控制动画速度。 |
+
+```tsx
+import { animateContentSize } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[animateContentSize()]}>尺寸动画</Button>
+<Button modifiers={[animateContentSize(0.5, 200)]}>自定义弹簧</Button>
+```
+
+## 布局
+
+控制组件在其父容器中的尺寸和位置。
+
+### `weight(weight)`
+
+在 `Row` 或 `Column` 内为组件分配弹性权重，使可用空间在带权重的子项之间按比例分配。
+
+| 参数   | 类型     | 描述    |
+| -------- | -------- | -------------- |
+| `weight`  | `number` | 权重因子。 |
+
+```tsx
+import { weight } from '@expo/ui/jetpack-compose/modifiers';
+
+// 在 Row 中，第一个按钮占 2/3，第二个占 1/3
+<Button modifiers={[weight(2)]}>更宽</Button>
+<Button modifiers={[weight(1)]}>更窄</Button>
+```
+
+### `align(alignment)`
+
+设置组件在其父容器中的对齐方式。
+
+| 参数        | 类型     | 描述                     |
+| ----------- | -------- | ------------------------------- |
+| `alignment` | `string` | 容器内的对齐方式。 |
+
+### `matchParentSize()`
+
+将组件大小设为与其父 `Box` 的大小一致。与 `fillMaxSize` 不同，这不会影响父组件的测量。
+
+```tsx
+import { matchParentSize } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[matchParentSize()]}>匹配父级</Button>;
+```
+
+## 交互
+
+为组件添加用户交互处理器。
+
+### `clickable(handler)`
+
+使组件响应点击事件。
+
+| 参数     | 类型         | 描述                |
+| -------- | ------------ | -------------------------- |
+| `handler` | `() => void` | 点击时调用的回调。 |
+
+```tsx
+import { clickable } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[clickable(() => console.log('Clicked!'))]}>可点击</Button>;
+```
+
+### `selectable(selected, handler)`
+
+使组件可选中，类似单选按钮。
+
+| 参数       | 类型         | 描述                                    |
+| ---------- | ------------ | ---------------------------------------------- |
+| `selected` | `boolean`    | 组件当前是否处于选中状态。   |
+| `handler`  | `() => void` | 选中状态发生变化时调用的回调。 |
+
+```tsx
+import { selectable } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[selectable(isSelected, () => setIsSelected(!isSelected))]}>
+  可选项
+</Button>;
+```
+
+## 裁剪
+
+将组件的内容裁剪为特定形状。
+
+### `clip(shape)`
+
+将组件裁剪为给定形状。形状边界之外的内容不会被绘制。
+
+| 参数      | 类型    | 描述           |
+| --------- | ------- | --------------------- |
+| `shape`   | `Shape` | 要裁剪成的形状。 |
+
+#### 可用形状
+
+| 形状                           | 描述                                                                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Shapes.Rectangle`             | 一个没有圆角的矩形。                                                                                                                                |
+| `Shapes.Circle`                | 一个完美的圆。                                                                                   |
+| `Shapes.RoundedCorner(radius)` | 一个四个角都为统一圆角的矩形。传入 `number` 可设置相同半径，或传入对象 `{ topStart, topEnd, bottomStart, bottomEnd }` 可分别设置各个角的半径。 |
+| `Shapes.CutCorner(radius)`     | 一个四个角都为切角（倒角）的矩形。接受与 `RoundedCorner` 相同的半径选项。                                                                       |
+| `Shapes.Material.Cookie4Sided` | Material Design 的四边 cookie 形状。                                                                                                                          |
+| `Shapes.Material.Cookie6Sided` | Material Design 的六边 cookie 形状。                                                                                                                          |
+
+```tsx
+import { clip } from '@expo/ui/jetpack-compose/modifiers';
+import { Shapes } from '@expo/ui/jetpack-compose/modifiers';
+
+// 圆形裁剪
+<Button modifiers={[clip(Shapes.Circle)]}>圆形</Button>
+
+// 统一半径的圆角
+<Button modifiers={[clip(Shapes.RoundedCorner(12))]}>圆角</Button>
+
+// 单独设置各个角的圆角
+<Button
+  modifiers={[
+    clip(Shapes.RoundedCorner({ topStart: 16, topEnd: 16, bottomStart: 0, bottomEnd: 0 })),
+  ]}>
+  仅顶部圆角
+</Button>
+
+// 切角
+<Button modifiers={[clip(Shapes.CutCorner(8))]}>切角</Button>
+```
+
+## 工具
+
+### `testID(tag)`
+
+为组件分配一个测试标识符，以便在 UI 测试中使用。
+
+| 参数 | 类型     | 描述  |
+| --------- | -------- | ------------ |
+| `tag`     | `string` | 测试 ID。 |
+
+```tsx
+import { testID } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button modifiers={[testID('submit-button')]}>提交</Button>;
+```
+
+## API
+
+{/* prettier-ignore */}
+```tsx
+import { paddingAll, padding, size, fillMaxWidth, background, clickable, clip, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/modifiers" />

@@ -1,0 +1,275 @@
+---
+title: 菜单
+description: 一个用于显示下拉菜单的 SwiftUI Menu 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI Menu 与官方 SwiftUI [Menu API](https://developer.apple.com/documentation/swiftui/menu) 保持一致，并支持通过 [`buttonStyle`](modifiers/#buttonstylestyle) 修饰符进行样式设置。Menu 会在单击时打开。对于长按交互，请改用 [`ContextMenu`](contextmenu)。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/menu/ios-light.webp"
+  darkSource="/static/images/expo-ui/menu/ios-dark.webp"
+  alt="打开的菜单，显示 Settings、Profile 和一个破坏性 Delete 项"
+/>
+
+> **注意：** 在 tvOS 上，Menu 需要 tvOS 17.0 或更高版本。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 简单文本标签
+
+```tsx SimpleMenuExample.tsx
+import { Host, Menu, Button } from '@expo/ui/swift-ui';
+
+export default function SimpleMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu label="选项">
+        <Button label="选项 1" onPress={() => console.log('Option 1')} />
+        <Button label="选项 2" onPress={() => console.log('Option 2')} />
+        <Button label="选项 3" onPress={() => console.log('Option 3')} />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### 带 SF Symbol 的文本标签
+
+```tsx MenuWithIconExample.tsx
+import { Host, Menu, Button, Divider } from '@expo/ui/swift-ui';
+
+export default function MenuWithIconExample() {
+  return (
+    <Host matchContents>
+      <Menu label="更多" systemImage="ellipsis.circle">
+        <Button label="设置" systemImage="gear" onPress={() => console.log('Settings')} />
+        <Button label="个人资料" systemImage="person" onPress={() => console.log('Profile')} />
+        <Divider />
+        <Button
+          label="删除"
+          role="destructive"
+          systemImage="trash"
+          onPress={() => console.log('Delete')}
+        />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### 自定义标签
+
+你可以将 React 节点作为标签传入，以便进行自定义样式设置。
+
+```tsx CustomLabelMenuExample.tsx
+import { Host, Menu, Button, Text } from '@expo/ui/swift-ui';
+
+export default function CustomLabelMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu label={<Text color="accentColor">自定义标签</Text>}>
+        <Button label="操作 1" onPress={() => console.log('Action 1')} />
+        <Button label="操作 2" onPress={() => console.log('Action 2')} />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### 嵌套菜单
+
+菜单可以嵌套以创建子菜单。
+
+```tsx NestedMenuExample.tsx
+import { Host, Menu, Button } from '@expo/ui/swift-ui';
+
+export default function NestedMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu label="主菜单">
+        <Button label="项目 1" onPress={() => console.log('Item 1')} />
+        <Menu label="子菜单">
+          <Button label="子项目 1" onPress={() => console.log('Sub Item 1')} />
+          <Button label="子项目 2" onPress={() => console.log('Sub Item 2')} />
+        </Menu>
+        <Button label="项目 2" onPress={() => console.log('Item 2')} />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### 带主操作
+
+当提供 `onPrimaryAction` 时，单击会触发主操作，而长按会显示菜单。
+
+```tsx PrimaryActionMenuExample.tsx
+import { Host, Menu, Button } from '@expo/ui/swift-ui';
+
+export default function PrimaryActionMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu
+        label="点击或按住"
+        systemImage="play.circle"
+        onPrimaryAction={() => console.log('Primary action triggered!')}>
+        <Button label="菜单项 1" onPress={() => console.log('Menu Item 1')} />
+        <Button label="菜单项 2" onPress={() => console.log('Menu Item 2')} />
+        <Button label="菜单项 3" onPress={() => console.log('Menu Item 3')} />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### 使用修饰符进行样式设置
+
+你可以使用 `buttonStyle` 修饰符来更改菜单触发器的外观。
+
+```tsx StyledMenuExample.tsx
+import { Host, Menu, Button } from '@expo/ui/swift-ui';
+import { buttonStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function StyledMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu label="样式化菜单" modifiers={[buttonStyle('borderedProminent')]}>
+        <Button label="样式化操作 1" onPress={() => console.log('Styled 1')} />
+        <Button label="样式化操作 2" onPress={() => console.log('Styled 2')} />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### 玻璃菜单
+
+要创建具有 iOS Liquid Glass 外观的菜单，请在 Menu 组件上使用 `buttonStyle('glass')` 或 `buttonStyle('glassProminent')`。
+
+> **重要：** 不要将 `glassEffect()` 修饰符应用到 Menu 的标签视图上来实现玻璃效果。这会导致一个视觉瑕疵：菜单被关闭时，触发器后面会短暂出现一个矩形光晕。请始终改用 `buttonStyle`，因为它能与 Menu 的关闭动画正确集成。
+
+```tsx GlassMenuExample.tsx
+import { Host, Menu, Button } from '@expo/ui/swift-ui';
+import { buttonStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function GlassMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu label="玻璃菜单" systemImage="ellipsis.circle" modifiers={[buttonStyle('glass')]}>
+        <Button label="操作 1" onPress={() => console.log('Action 1')} />
+        <Button label="操作 2" onPress={() => console.log('Action 2')} />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+若要获得更醒目的玻璃效果，请使用 `glassProminent`：
+
+```tsx GlassProminentMenuExample.tsx
+import { Host, Menu, Button } from '@expo/ui/swift-ui';
+import { buttonStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function GlassProminentMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu
+        label="醒目的玻璃菜单"
+        systemImage="slider.horizontal.3"
+        modifiers={[buttonStyle('glassProminent')]}>
+        <Button label="设置" systemImage="gear" onPress={() => console.log('Settings')} />
+        <Button
+          label="筛选"
+          systemImage="line.3.horizontal.decrease"
+          onPress={() => console.log('Filter')}
+        />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### 带控制组
+
+在菜单中使用 [`ControlGroup`](controlgroup) 可渲染一行横向排列的图标按钮，类似 Apple Music 或 Safari 菜单中的快速操作行。
+
+```tsx MenuWithControlGroupExample.tsx
+import { Host, Menu, ControlGroup, Button, Section, Divider } from '@expo/ui/swift-ui';
+
+export default function MenuWithControlGroupExample() {
+  return (
+    <Host matchContents>
+      <Menu label="歌曲选项" systemImage="ellipsis.circle">
+        <ControlGroup>
+          <Button systemImage="plus" label="添加" onPress={() => console.log('Add')} />
+          <Button systemImage="star" label="收藏" onPress={() => console.log('Favorite')} />
+          <Button
+            systemImage="square.and.arrow.up"
+            label="分享"
+            onPress={() => console.log('Share')}
+          />
+        </ControlGroup>
+        <Section>
+          <Button
+            systemImage="text.badge.plus"
+            label="添加到播放列表"
+            onPress={() => console.log('Add to Playlist')}
+          />
+          <Button
+            systemImage="antenna.radiowaves.left.and.right"
+            label="创建电台"
+            onPress={() => console.log('Create Station')}
+          />
+        </Section>
+        <Divider />
+        <Button
+          systemImage="hand.thumbsdown"
+          label="减少推荐"
+          onPress={() => console.log('Suggest Less')}
+        />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### 仅图标菜单按钮
+
+使用 `labelStyle('iconOnly')` 修饰符仅显示图标，不显示标签文本。`label` 属性仍应提供，以满足可访问性需求。
+
+```tsx IconOnlyMenuExample.tsx
+import { Host, Menu, Button } from '@expo/ui/swift-ui';
+import { labelStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function IconOnlyMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu label="仅图标按钮" systemImage="gear" modifiers={[labelStyle('iconOnly')]}>
+        <Button label="菜单项 1" onPress={() => console.log('Menu Item 1')} />
+        <Button label="菜单项 2" onPress={() => console.log('Menu Item 2')} />
+        <Button label="菜单项 3" onPress={() => console.log('Menu Item 3')} />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Menu } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/menu" apiName="Menu" />

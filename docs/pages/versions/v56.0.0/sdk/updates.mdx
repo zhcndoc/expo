@@ -1,0 +1,287 @@
+---
+title: 更新
+description: 一个支持你的应用管理应用代码远程更新的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-updates'
+packageName: 'expo-updates'
+iconUrl: '/static/images/packages/expo-updates.png'
+platforms: ['android', 'ios', 'tvos', 'expo-go']
+searchRank: 100
+searchPosition: 1
+---
+
+import { GithubIcon } from '@expo/styleguide-icons/custom/GithubIcon';
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
+
+`expo-updates` 是一个库，可让你的应用管理应用代码的远程更新。它会与已配置的远程更新服务通信，以获取可用更新的信息。
+
+## 安装
+
+`expo-updates` 库可以通过 [EAS Update](/eas-update/introduction/) 自动配置，EAS Update 是一项托管服务，用于管理并向你的应用提供更新。要开始使用 EAS Update，请按照 [Get started](/eas-update/getting-started/) 指南中的说明进行操作。
+
+另外，在需要使用不同的远程更新服务，或者配置仅在原生文件中指定时，也可以手动配置 `expo-updates` 库。
+
+<Collapsible summary="手动安装、配置和自定义远程更新服务">
+
+<APIInstallSection hideBareInstructions />
+
+如果你要在 [bare React Native app](/bare/overview/) 中安装此库，或者在手动配置原生代码的通用应用中安装，请遵循这些 [安装说明](/bare/installing-updates/)。
+
+如果使用 [app config](/workflow/configuration/) 进行配置，则可以通过设置至少以下 app config 属性来配置此库：
+
+- [`updates.url`](../config/app/#updates)：实现 [Expo Updates 协议](/technical-specs/expo-updates-1/) 的远程服务 URL
+- [`runtimeVersion`](../config/app/#runtimeversion)：一个 [runtime version](#runtime-version)
+
+远程服务必须实现 [Expo Updates 协议](/technical-specs/expo-updates-1/)。[EAS Update](/eas-update/introduction) 就是其中一种服务，但也可以将此库与自定义服务器一起使用。
+
+<BoxLink
+  title="自定义 Expo Updates 服务器"
+  description="自定义服务器及使用该服务器的应用的示例实现。"
+  href="https://github.com/expo/custom-expo-updates-server"
+  Icon={GithubIcon}
+/>
+
+</Collapsible>
+
+## 配置
+
+有一些构建时配置选项会控制该库的行为。对于大多数应用，这些配置值都在 [app config](/workflow/configuration/) 的 [`updates` 属性](../config/app/#updates)下设置。
+
+| [App config 属性](../config/app/#updates)                                       | 默认值   | 是否必需？   | iOS plist/dictionary 键               | Android meta-data 名称                                           | Android Map 键               |
+| ----------------------------------------------------------------------------------- | --------- | ----------- | -------------------------------------- | ---------------------------------------------------------------- | ----------------------------- |
+| [`updates.enabled`](../config/app/#enabled)                                         | `true`    | <NoIcon />  | `EXUpdatesEnabled`                     | `expo.modules.updates.ENABLED`                                   | `enabled`                     |
+| [`updates.url`](../config/app/#url)                                                 | (无)      | <YesIcon /> | `EXUpdatesURL`                         | `expo.modules.updates.EXPO_UPDATE_URL`                           | `updateUrl`                   |
+| [`updates.requestHeaders`](../config/app/#requestheaders)                           | (无)      | <NoIcon />  | `EXUpdatesRequestHeaders`              | `expo.modules.updates.UPDATES_CONFIGURATION_REQUEST_HEADERS_KEY` | `requestHeaders`              |
+| [`runtimeVersion`](../config/app/#runtimeversion)                                   | (无)      | <YesIcon /> | `EXUpdatesRuntimeVersion`              | `expo.modules.updates.EXPO_RUNTIME_VERSION`                      | `runtimeVersion`              |
+| [`updates.checkAutomatically`](../config/app/#checkautomatically)                   | `ON_LOAD` | <NoIcon />  | `EXUpdatesCheckOnLaunch`               | `expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH`              | `checkOnLaunch`               |
+| [`updates.fallbackToCacheTimeout`](../config/app/#fallbacktocachetimeout)           | `0`       | <NoIcon />  | `EXUpdatesLaunchWaitMs`                | `expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS`               | `launchWaitMs`               |
+| [`updates.useEmbeddedUpdate`](../config/app/#useembeddedupdate)                     | `true`    | <NoIcon />  | `EXUpdatesHasEmbeddedUpdate`           | `expo.modules.updates.HAS_EMBEDDED_UPDATE`                       | `hasEmbeddedUpdate`           |
+| [`updates.codeSigningCertificate`](../config/app/#codesigningcertificate)           | (无)      | <NoIcon />  | `EXUpdatesCodeSigningCertificate`      | `expo.modules.updates.CODE_SIGNING_CERTIFICATE`                  | `codeSigningCertificate`      |
+| [`updates.codeSigningMetadata`](../config/app/#codesigningmetadata)                 | (无)      | <NoIcon />  | `EXUpdatesCodeSigningMetadata`         | `expo.modules.updates.CODE_SIGNING_METADATA`                     | `codeSigningMetadata`         |
+| [`updates.assetPatternsToBeBundled`](../config/app/#assetpatternstobebundled)       | (无)      | <NoIcon />  | N/A                                    | N/A                                                              | N/A                           |
+| [`updates.disableAntiBrickingMeasures`](../config/app/#disableantibrickingmeasures) | `false`   | <NoIcon />  | `EXUpdatesDisableAntiBrickingMeasures` | `expo.modules.updates.DISABLE_ANTI_BRICKING_MEASURES`            | `disableAntiBrickingMeasures` |
+| [`updates.enableBsdiffPatchSupport`](../config/app/#enablebsdiffpatchsupport)       | `false`   | <NoIcon />  | `EXUpdatesEnableBsdiffPatchSupport`    | `expo.modules.updates.ENABLE_BSDIFF_PATCH_SUPPORT`               | `enableBsdiffPatchSupport`    |
+
+两个核心必需的配置选项是：
+
+- [`updates.url`](../config/app/#updates)：库获取远程更新的 URL
+- [`runtimeVersion`](../config/app/#runtimeversion)：一个 [runtime version](#runtime-version)
+
+按照 EAS Update 的 [Get started](/eas-update/getting-started/) 指南操作时，这些会自动配置。
+
+#### Runtime version
+
+每次为你的应用构建二进制文件时，它都会包含构建时存在的原生代码和配置，以及原生配置，而这个独特的组合会被表示为一个名为 runtime version 的字符串。一个远程更新会针对某个 runtime version，这表示只有具有匹配 runtime version 的二进制文件才能加载该远程更新。
+
+<Collapsible summary="手动配置">
+
+可以通过在配置字段中设置字符串值来手动管理 runtime version。
+
+```json
+{
+  "expo": {
+    "runtimeVersion": "<runtime_version_string>"
+  }
+}
+```
+
+</Collapsible>
+
+<Collapsible summary = "使用 runtime version 策略进行自动配置">
+
+runtime version 策略会从项目中已存在的其他信息推导出 runtime version。它们可以按如下方式在 [`runtimeVersion`](../config/app/#runtimeversion) 配置字段中设置：
+
+```json
+{
+  "expo": {
+    "runtimeVersion": {
+      "policy": "<policy_name>"
+    }
+  }
+}
+```
+
+可用的策略类型：
+
+<Collapsible summary="appVersion">
+
+`"appVersion"` 策略适用于希望根据应用版本来定义其运行时兼容性的项目。
+
+例如，在一个 app config 包含以下内容的项目中：
+
+```json
+{
+  "expo": {
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "version": "1.0.0",
+    "ios": {
+      "buildNumber": "1"
+    },
+    "android": {
+      "versionCode": 1
+    }
+  }
+}
+```
+
+`"appVersion"` 策略会将 runtime version 设置为项目当前的 `"version"` 属性。在这种情况下，Android 和 iOS 构建以及任何更新的 runtime version 都将是 `"1.0.0"`。
+
+对于包含自定义原生代码，并且在每次公开发布后都会更新 `"version"` 字段的项目，这个策略非常适合。要提交应用，应用商店要求每个提交的构建都具有更新的原生版本号，因此如果你希望确保安装在用户设备上的每个版本都具有不同的 runtime version，这个策略会很方便。
+
+使用此策略时，你需要在每次公开发布时手动更新 app config 中的 `"version"` 字段，但对于 Play Store 的 Internal Test Track 和 App Store 的 TestFlight 上传，你可以依赖 **eas.json** 中的 `"autoIncrement"` 选项来为你 [管理版本](/build-reference/app-versions/#remote-version-source)。
+
+</Collapsible>
+
+<Collapsible summary="nativeVersion">
+
+`"nativeVersion"` 策略适用于希望根据项目当前的 `"version"` 和 `"versionCode"`（Android）或 `"buildNumber"`（iOS）属性来定义运行时兼容性的项目。
+
+例如，在一个 app config 包含以下内容的项目中：
+
+```json
+{
+  "expo": {
+    "runtimeVersion": {
+      "policy": "nativeVersion"
+    },
+    "version": "1.0.0",
+    "ios": {
+      "buildNumber": "1"
+    },
+    "android": {
+      "versionCode": 1
+    }
+  }
+}
+```
+
+Android 和 iOS 构建以及任何更新的 runtime version 都将是 `"[version]([buildNumber|versionCode])"` 的组合，在这种情况下将是 `"1.0.0(1)"`。
+
+对于包含自定义原生代码的项目，这个策略非常适合，因为它会在每次构建时更新原生版本号（iOS 使用 `"buildNumber"`，Android 使用 `"versionCode"`）。要提交应用，应用商店要求每个提交的构建都具有更新的原生版本号，因此如果你希望确保上传到 Play Store 的 Internal Test Track 和 App Store 的 TestFlight 分发工具中的每个应用都有不同的 `runtimeVersion`，这个策略会很方便。
+
+需要注意的是，此策略要求在每次构建之间手动管理原生版本号。
+
+另外，如果你在 Android 和 iOS 之间选择了不同的原生版本，那么最终会得到具有各自独立 runtime version 的构建和更新。
+
+</Collapsible>
+
+<Collapsible summary="fingerprint">
+
+`"fingerprint"` runtime version 策略会自动为你计算 runtime version，包括 SDK 升级或添加自定义原生代码等变更。
+
+```json
+{
+  "expo": {
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    }
+  }
+}
+```
+
+此策略适用于有或没有自定义原生代码的项目。它通过使用 [`@expo/fingerprint`](fingerprint) 包在构建和更新期间计算项目的哈希值，以确定构建-更新兼容性（也称为 runtime）。
+
+</Collapsible>
+
+</Collapsible>
+
+#### 原生配置和覆盖
+
+如果你的项目没有使用 Continuous Native Generation，这些配置值也可以在应用的原生配置文件中设置，或者在原生代码初始化期间被覆盖。
+
+<Collapsible summary="原生配置说明">
+
+在 Android 上，这些选项会作为 `meta-data` 标签设置在 **AndroidManifest.xml** 文件中（如果使用了自动设置，则位于安装过程中添加的标签旁边）。你也可以在运行时使用 `UpdatesController.overrideConfiguration()` 来设置或覆盖它们。
+
+在 iOS 上，这些属性会作为键设置在 **Expo.plist** 文件中。你也可以通过调用 `AppController.overrideConfiguration` 在运行时设置或覆盖它们。
+
+<Collapsible summary="导入 Swift 生成的头文件以供 Objective-C++ 使用">
+
+如果你的 iOS 原生代码或 `AppDelegate.mm` 是用 Objective-C++ 编写的，你需要添加以下导入，以引用 `EXUpdatesAppController` 上的方法。这仅在需要在运行时覆盖配置时才有必要。
+
+```objc
+#import "ExpoModulesCore-Swift.h"
+#import "EXUpdatesInterface-Swift.h"
+#import "EXUpdates-Swift.h"
+```
+
+</Collapsible>
+
+</Collapsible>
+
+## 使用
+
+默认情况下，`expo-updates` 会在应用启动时检查更新。如果有可用更新，它会下载更新并在应用下次重启时应用。你可以使用上面的 `checkAutomatically` 和 `fallbackToCacheTimeout` 配置选项来调整这种启动行为。
+
+该库还提供了多种常量，用于检查当前更新，以及一些函数，用于从你的应用代码中自定义更新行为（在启动之后）。例如，一种常见的替代使用模式是在应用启动后手动检查更新，而不是在启动时执行默认检查。
+
+<Collapsible summary="示例：手动检查更新">
+
+你可以按照以下步骤将应用配置为手动检查更新：
+
+1. 将 `checkAutomatically` 配置值设置为 `ON_ERROR_RECOVERY` 或 `NEVER`，以禁用该库默认的启动行为。
+2. 添加以下代码来检查可用更新、下载它们并重新加载：
+
+   ```jsx App.js
+   import { View, Button } from 'react-native';
+   import * as Updates from 'expo-updates';
+
+   function App() {
+     async function onFetchUpdateAsync() {
+       try {
+         const update = await Updates.checkForUpdateAsync();
+
+         if (update.isAvailable) {
+           await Updates.fetchUpdateAsync();
+           await Updates.reloadAsync();
+         }
+       } catch (error) {
+         // 你也可以添加一个 alert()，以便在获取更新时出错时查看错误消息。
+         alert(`获取最新 Expo 更新时出错：${error}`);
+       }
+     }
+
+     return (
+       <View>
+         <Button title="获取更新" onPress={onFetchUpdateAsync} />
+       </View>
+     );
+   }
+   ```
+
+</Collapsible>
+
+## 测试
+
+该库中的大多数方法和常量只能在发布构建中使用或测试。在调试构建中，默认行为始终是从开发服务器加载最新的 JavaScript。你可以[构建一个具有与发布构建相同更新行为的应用调试版本](/eas-update/debug/#debugging-of-native-code-while-loading-the-app-through-expo-updates)。这样的应用不会从你的开发服务器打开最新的 JavaScript —— 它会像发布构建一样加载已发布的更新。当应用未连接到开发服务器时，这对于调试其行为可能很有用。
+
+**要在开发构建中测试更新内容**，请运行[`eas update`](/eas-update/getting-started/)，然后在你的开发构建中浏览到该更新。请注意，这只是模拟更新在你的应用中的显示效果，并且在开发构建中运行时，大多数 [Updates API](#api) 都不可用。
+
+**要在发布构建中测试更新**，你可以创建一个 [**.apk**](/build-reference/apk) 或一个 [模拟器构建](/build-reference/simulators)，或者使用 `npx expo run:android --variant release` 和 `npx expo run:ios --configuration Release` 在本地生成发布构建（你不需要将此构建提交到商店进行测试）。完整的 [Updates API](#api) 在发布构建中可用。
+
+**要在 Expo Go 中测试更新内容**，请运行[`eas update`](/eas-update/getting-started/)，然后在 Expo Go 中浏览到该更新。请注意，这只是模拟更新在你的应用中的显示效果，并且在 Expo Go 中运行时，大多数 [Updates API](#api) 都不可用。另外请注意，仅支持使用 [与 Expo Go 兼容的库](/workflow/using-libraries/#determining-third-party-library-compatibility) 的更新。
+
+## API
+
+```js
+import * as Updates from 'expo-updates';
+```
+
+<APISection packageName="expo-updates" apiName="Updates" />
+
+## 错误代码
+
+| Code                              | Description                                                                                                                                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ERR_UPDATES_DISABLED`            | 在 Updates 库被禁用，或者应用正在开发模式下运行时，尝试调用某个方法                                                                                                                                              |
+| `ERR_UPDATES_RELOAD`              | 尝试重新加载应用时发生错误，且无法重新加载。对于裸 React Native 应用，请再次检查此库的设置步骤，以确保已正确安装并调用了正确的原生初始化方法。 |
+| `ERR_UPDATES_CHECK`               | 在尝试检查新更新时发生了意外错误。有关更多信息，请查看错误消息。                                                                                                                                                   |
+| `ERR_UPDATES_FETCH`               | 在尝试获取新更新时发生了意外错误。有关更多信息，请查看错误消息。                                                                                                                                                      |
+| `ERR_UPDATES_READ_LOGS`           | 在尝试读取日志条目时发生了意外错误。有关更多信息，请查看错误消息。                                                                                                                                                        |
+| `ERR_NOT_AVAILABLE_IN_DEV_CLIENT` | 在开发构建中运行时，某个方法不可用。应使用发布构建来测试此方法。                                                                                                                                                 |

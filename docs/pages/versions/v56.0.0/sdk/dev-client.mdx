@@ -1,0 +1,131 @@
+---
+title: DevClient
+description: 一个允许创建开发构建并包含有用开发工具的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-dev-client'
+packageName: 'expo-dev-client'
+iconUrl: '/static/images/packages/expo-dev-client.png'
+platforms: ['android', 'ios', 'tvos']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+
+`expo-dev-client` 会为你的调试构建添加各种实用的开发工具：
+
+- 一个可配置的启动器 UI，因此你可以启动更新（例如来自 [PR 预览](/develop/development-builds/development-workflows#pr-previews)）并在不同的开发服务器之间切换，而无需重新编译原生应用
+- 改进的调试工具（例如支持 [检查网络请求](/debugging/tools/#inspecting-network-requests)）
+- [一个强大且可扩展的开发者菜单 UI](/debugging/tools#developer-menu)
+
+Expo 文档将包含 `expo-dev-client` 的调试构建称为 [development builds](/develop/development-builds/introduction/)。
+
+## 安装
+
+<APIInstallSection hideBareInstructions />
+
+如果你要在一个[已有的 React Native 应用](/bare/overview/)中安装它，请先在你的项目中安装 [`expo`](/bare/installing-expo-modules/)。然后，按照 [在现有 React Native 项目中安装 `expo-dev-client`](/bare/install-dev-builds-in-bare/) 中的说明进行操作。
+
+## 在 app 配置中进行配置
+
+如果你在项目中使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用其内置的 [config plugin](/config-plugins/introduction/) 来配置 development client 启动器。该插件允许你配置各种无法在运行时设置、且需要构建新的应用二进制文件才能生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent",
+          "defaultLaunchURL": "http://localhost:8081",
+          "android": {
+            "defaultLaunchURL": "http://10.0.0.2:8081"
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'launchMode',
+      description: [
+        '决定是启动最近打开的项目，还是进入启动器屏幕。',
+        '* `most-recent` - 尝试直接启动到之前打开过的项目，如果无法连接，则回退到启动器屏幕。',
+        '* `launcher` - 打开启动器屏幕。',
+      ].join('\n'),
+      default: '"most-recent"',
+    },
+    {
+      name: 'addGeneratedScheme',
+      description: [
+        '默认情况下，`expo-dev-client` 会注册一个自定义 URL scheme 来打开项目。将此属性设为 `false` 可禁用该 scheme。',
+      ].join('\n'),
+      default: 'true',
+    },
+    {
+      name: 'defaultLaunchURL',
+      description: [
+        '直接启动到此 URL，而不是进入启动器屏幕。',
+        '如果 `launchMode` 设置为 `most-recent`，则启动器会将 `defaultLaunchURL` 作为回退。',
+      ].join('\n'),
+    },
+    {
+      name: 'android.launchMode',
+      description: [
+        '决定在 Android 上是启动最近打开的项目，还是进入启动器屏幕。仅对 Android 覆盖顶层的 `launchMode` 设置。',
+        '* `most-recent` - 尝试直接启动到之前打开过的项目，如果无法连接，则回退到启动器屏幕。',
+        '* `launcher` - 打开启动器屏幕。',
+      ].join('\n'),
+      default: '"most-recent"',
+      platform: 'android',
+    },
+    {
+      name: 'ios.launchMode',
+      description: [
+        '决定在 iOS 上是启动最近打开的项目，还是进入启动器屏幕。仅对 iOS 覆盖顶层的 `launchMode` 设置。',
+        '* `most-recent` - 尝试直接启动到之前打开过的项目，如果无法连接，则回退到启动器屏幕。',
+        '* `launcher` - 打开启动器屏幕。',
+      ].join('\n'),
+      default: '"most-recent"',
+      platform: 'ios',
+    },
+    {
+      name: 'android.defaultLaunchURL',
+      description: [
+        '直接启动到此 URL，而不是进入启动器屏幕。',
+        '如果 `launchMode` 设置为 `most-recent`，则启动器会将 `defaultLaunchURL` 作为回退。',
+      ].join('\n'),
+      platform: 'android',
+    },
+    {
+      name: 'ios.defaultLaunchURL',
+      description: [
+        '直接启动到此 URL，而不是进入启动器屏幕。',
+        '如果 `launchMode` 设置为 `most-recent`，则启动器会将 `defaultLaunchURL` 作为回退。',
+      ].join('\n'),
+      platform: 'ios',
+    },
+  ]}
+/>
+
+## TV 支持
+
+- 该库仅在 SDK 54 及更高版本中支持 TV。
+  - **Android TV**：支持所有操作，与 Android 手机类似。
+  - **Apple TV**：支持使用本地或隧道式 packager 的基本操作。目前尚不支持 EAS 认证，以及列出 EAS builds 和 updates。
+
+## API
+
+```js
+import * as DevClient from 'expo-dev-client';
+```
+
+<APISection packageName={['expo-dev-client']} apiName="DevClient" />

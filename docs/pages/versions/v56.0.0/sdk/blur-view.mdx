@@ -1,0 +1,222 @@
+---
+title: BlurView
+description: 一个 React 组件，会模糊视图下方的所有内容。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-blur'
+packageName: 'expo-blur'
+iconUrl: '/static/images/packages/expo-blur.png'
+platforms: ['android', 'ios', 'tvos', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { SnackInline } from '~/ui/components/Snippet';
+import { CODE } from '~/ui/components/Text';
+
+一个会模糊其下方所有内容的 React 组件。它通常用于导航栏、标签栏和模态框。
+
+> **info** 在 SDK 55 及更高版本中，`expo-blur` 在 Android 上是稳定的，但 `BlurView` 需要进行一些代码更改才能正常工作。请参阅 [Android support](#android-support) 部分了解更多信息。
+
+#### 已知问题
+
+当 `BlurView` 在动态内容（例如 `FlatList`）渲染之前先被渲染时，模糊效果不会更新。要修复此问题，请确保 `BlurView` 在动态内容组件之后渲染。例如：
+
+```jsx
+<View>
+  <FlatList />
+  <BlurView />
+</View>
+```
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+<Collapsible summary={<>基础的仅 iOS 和 Web 的 <CODE>BlurView</CODE> 用法</>}>
+  这是创建 `BlurView` 的旧方式，这种方式只会在 iOS 上产生模糊效果。在 Android 上，这将显示为一个带有半透明背景的视图。
+
+  <SnackInline label='基础的仅 iOS 的 BlurView 用法' dependencies={['expo-blur']}>
+
+```jsx
+import { Text, StyleSheet, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+
+export default function App() {
+  const text = 'Hello, my container is blurring contents underneath!';
+  return (
+    <View style={styles.container}>
+      <View style={styles.background}>
+        {[...Array(20).keys()].map(i => (
+          <View
+            key={`box-${i}`}
+            style={[styles.box, i % 2 === 1 ? styles.boxOdd : styles.boxEven]}
+          />
+        ))}
+      </View>
+      <BlurView intensity={100} style={styles.blurContainer}>
+        <Text style={styles.text}>{text}</Text>
+      </BlurView>
+      <BlurView intensity={80} tint="light" style={styles.blurContainer}>
+        <Text style={styles.text}>{text}</Text>
+      </BlurView>
+      <BlurView intensity={90} tint="dark" style={styles.blurContainer}>
+        <Text style={[styles.text, { color: '#fff' }]}>{text}</Text>
+      </BlurView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  blurContainer: {
+    flex: 1,
+    padding: 20,
+    margin: 16,
+    textAlign: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: 20,
+  },
+  background: {
+    flex: 1,
+    flexWrap: 'wrap',
+    ...StyleSheet.absoluteFill,
+  },
+  box: {
+    width: '25%',
+    height: '20%',
+  },
+  boxEven: {
+    backgroundColor: 'orangered',
+  },
+  boxOdd: {
+    backgroundColor: 'gold',
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: '600',
+  },
+});
+```
+
+  </SnackInline>
+
+</Collapsible>
+<Collapsible summary={<>支持 Android 的基础 <CODE>BlurView</CODE> 用法</>}>
+  要在 Android 上模糊视图的背景，请将需要模糊的内容包裹在 `BlurTargetView` 组件中，并将其 ref 传递给 `BlurView`。
+  > **info** **注意：** 请注意，只要所有 `BlurView` 都位于单个 `BlurTargetView` 的边界范围内，你就可以让多个 `BlurView` 共用同一个 `BlurTargetView`。这比创建多个 `BlurTargetView` 更高效。
+  <SnackInline label='支持 Android 的基础 BlurView 用法' dependencies={['expo-blur']}>
+
+```tsx
+import { BlurView, BlurTargetView } from 'expo-blur';
+import { useRef } from 'react';
+import { Text, StyleSheet, View } from 'react-native';
+
+export default function App() {
+  const targetRef = useRef<View | null>(null);
+  const text = 'Hello, my container is blurring contents underneath!';
+
+  return (
+    <View style={styles.container}>
+      <BlurTargetView ref={targetRef} style={styles.background}>
+        {[...Array(20).keys()].map(i => (
+          <View
+            key={`box-${i}`}
+            style={[styles.box, i % 2 === 1 ? styles.boxOdd : styles.boxEven]}
+          />
+        ))}
+      </BlurTargetView>
+      <BlurView
+        blurTarget={targetRef}
+        intensity={100}
+        style={styles.blurContainer}
+        blurMethod="dimezisBlurView">
+        <Text style={styles.text}>{text}</Text>
+      </BlurView>
+      <BlurView
+        blurTarget={targetRef}
+        intensity={80}
+        tint="light"
+        style={styles.blurContainer}
+        blurMethod="dimezisBlurView">
+        <Text style={styles.text}>{text}</Text>
+      </BlurView>
+      <BlurView
+        blurTarget={targetRef}
+        intensity={90}
+        tint="dark"
+        style={styles.blurContainer}
+        blurMethod="dimezisBlurView">
+        <Text style={[styles.text, { color: '#fff' }]}>{text}</Text>
+      </BlurView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  blurContainer: {
+    flex: 1,
+    padding: 20,
+    margin: 16,
+    textAlign: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: 20,
+  },
+  background: {
+    flex: 1,
+    flexWrap: 'wrap',
+    ...StyleSheet.absoluteFill,
+  },
+  box: {
+    width: '25%',
+    height: '20%',
+  },
+  boxEven: {
+    backgroundColor: 'orangered',
+  },
+  boxOdd: {
+    backgroundColor: 'gold',
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: '600',
+  },
+});
+```
+
+  </SnackInline>
+
+</Collapsible>
+
+## Android 支持
+
+模糊功能在 Android 上是稳定的。迁移时有几点需要注意：
+
+### API
+
+要在 Android 上模糊视图的背景，请将需要模糊的内容包裹在 `BlurTargetView` 组件中，并将其 ref 传递给 `BlurView`。你可以在 [用法](#basic-blurview-usage-with-android-support) 部分查看示例。
+
+### 性能
+
+只有使用 [RenderNode](https://developer.android.com/reference/android/graphics/RenderNode) Android API 才能高效地实现模糊效果，该 API 于 Android SDK 31（Android 9.0）中引入。因此，在较旧版本的 Android 上，`expo-blur` 使用效率低得多的 [RenderScript](https://developer.android.com/guide/topics/renderscript/compute) API。
+如果你想避免在旧平台上的性能损耗，可以使用 `dimezisBlurViewSdk31Plus` [BlurMethod](#blurmethod-1)，它只会在较新的 Android 版本上进行模糊处理，而在旧版本上回退到 [`none`](#blurmethod-1)。
+
+## API
+
+```js
+import { BlurView } from 'expo-blur';
+```
+
+<APISection packageName="expo-blur" />
+
+## 将 `borderRadius` 与 `BlurView` 一起使用
+
+在 Android 和 iOS 上使用 `BlurView` 时，如果显式提供 `borderRadius` 属性，它不会生效。要修复此问题，可以使用 `overflow: 'hidden'` 样式，因为 `BlurView` 会继承 `<View>` 的属性。示例请参见 [用法](#usage)。

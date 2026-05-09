@@ -1,0 +1,211 @@
+---
+title: 按钮
+description: 一个用于显示原生按钮的 SwiftUI Button 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI Button 与官方 SwiftUI [Button API](https://developer.apple.com/documentation/swiftui/button) 保持一致，并支持通过 [`buttonStyle`](modifiers/#buttonstylestyle)、[`controlSize`](modifiers/#controlsizesize) 以及其他修饰符进行样式设置。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/button/ios-light.webp"
+  darkSource="/static/images/expo-ui/button/ios-dark.webp"
+  alt="两个 iOS 26 Liquid Glass 按钮 — 一个 glassProminent 的“开始使用”在上方，一个 glass 的“了解更多”"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基础按钮
+
+```tsx BasicButtonExample.tsx
+import { Host, Button } from '@expo/ui/swift-ui';
+
+export default function BasicButtonExample() {
+  return (
+    <Host matchContents>
+      <Button label="按我" onPress={() => alert('已按下！')} />
+    </Host>
+  );
+}
+```
+
+### 带系统图标的按钮
+
+```tsx ButtonWithImageExample.tsx
+import { Host, Button } from '@expo/ui/swift-ui';
+
+export default function ButtonWithImageExample() {
+  return (
+    <Host matchContents>
+      <Button
+        label="下载"
+        systemImage="arrow.down.circle"
+        onPress={() => alert('正在下载...')}
+      />
+    </Host>
+  );
+}
+```
+
+### 仅图标按钮
+
+使用 `labelStyle` 修饰符只显示图标，同时保留标签以便于辅助功能访问。
+
+```tsx IconOnlyButtonExample.tsx
+import { Host, Button } from '@expo/ui/swift-ui';
+import { labelStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function IconOnlyButtonExample() {
+  return (
+    <Host matchContents>
+      <Button
+        label="设置"
+        systemImage="gear"
+        modifiers={[labelStyle('iconOnly')]}
+        onPress={() => alert('设置')}
+      />
+    </Host>
+  );
+}
+```
+
+### 按钮样式
+
+使用 `buttonStyle` 修饰符来更改按钮外观。可用样式有：`bordered`、`borderedProminent`、`borderless`、`plain`、`glass` 和 `glassProminent`。
+
+> **注意：** `glass` 和 `glassProminent` 样式仅在使用 Xcode 26 构建时，iOS 26+ 可用。
+
+```tsx ButtonStylesExample.tsx
+import { Host, Button, VStack } from '@expo/ui/swift-ui';
+import { buttonStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function ButtonStylesExample() {
+  return (
+    <Host matchContents>
+      <VStack spacing={8}>
+        <Button label="带边框" modifiers={[buttonStyle('bordered')]} />
+        <Button label="带边框且突出" modifiers={[buttonStyle('borderedProminent')]} />
+        <Button label="无边框" modifiers={[buttonStyle('borderless')]} />
+        <Button label="纯样式" modifiers={[buttonStyle('plain')]} />
+      </VStack>
+    </Host>
+  );
+}
+```
+
+### 控件尺寸
+
+使用 `controlSize` 修饰符来调整按钮大小。可用尺寸有：`mini`、`small`、`regular`、`large` 和 `extraLarge`。
+
+> **注意：** `extraLarge` 尺寸仅在 iOS 17+ 可用。
+
+```tsx ControlSizeExample.tsx
+import { Host, Button, VStack } from '@expo/ui/swift-ui';
+import { buttonStyle, controlSize } from '@expo/ui/swift-ui/modifiers';
+
+export default function ControlSizeExample() {
+  return (
+    <Host matchContents>
+      <VStack spacing={8}>
+        <Button label="迷你" modifiers={[controlSize('mini'), buttonStyle('bordered')]} />
+        <Button label="小号" modifiers={[controlSize('small'), buttonStyle('bordered')]} />
+        <Button label="常规" modifiers={[controlSize('regular'), buttonStyle('bordered')]} />
+        <Button label="大号" modifiers={[controlSize('large'), buttonStyle('bordered')]} />
+      </VStack>
+    </Host>
+  );
+}
+```
+
+### 按钮角色
+
+使用 `role` 属性来指示按钮的语义角色。可用角色有：`default`、`cancel` 和 `destructive`。
+
+```tsx ButtonRolesExample.tsx
+import { Host, Button, VStack } from '@expo/ui/swift-ui';
+
+export default function ButtonRolesExample() {
+  return (
+    <Host matchContents>
+      <VStack spacing={8}>
+        <Button label="默认" role="default" />
+        <Button label="取消" role="cancel" />
+        <Button label="删除" role="destructive" />
+      </VStack>
+    </Host>
+  );
+}
+```
+
+### 带色调的按钮
+
+使用 `tint` 修饰符来更改按钮的颜色。
+
+```tsx TintedButtonExample.tsx
+import { Host, Button } from '@expo/ui/swift-ui';
+import { tint } from '@expo/ui/swift-ui/modifiers';
+
+export default function TintedButtonExample() {
+  return (
+    <Host matchContents>
+      <Button label="自定义颜色" modifiers={[tint('#FF6347')]} />
+    </Host>
+  );
+}
+```
+
+### 禁用按钮
+
+使用 `disabled` 修饰符来禁用按钮。
+
+```tsx DisabledButtonExample.tsx
+import { Host, Button } from '@expo/ui/swift-ui';
+import { disabled } from '@expo/ui/swift-ui/modifiers';
+
+export default function DisabledButtonExample() {
+  return (
+    <Host matchContents>
+      <Button label="已禁用" modifiers={[disabled()]} />
+    </Host>
+  );
+}
+```
+
+### 自定义标签内容
+
+你可以将自定义组件作为 `children` 传入，以实现更复杂的按钮标签内容。
+
+```tsx CustomContentExample.tsx
+import { Host, Button, VStack, Image, Text } from '@expo/ui/swift-ui';
+
+export default function CustomContentExample() {
+  return (
+    <Host matchContents>
+      <Button onPress={() => console.log('已按下！')}>
+        <VStack spacing={4}>
+          <Image systemName="folder" />
+          <Text>文件夹</Text>
+        </VStack>
+      </Button>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Button } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/button" apiName="Button" />

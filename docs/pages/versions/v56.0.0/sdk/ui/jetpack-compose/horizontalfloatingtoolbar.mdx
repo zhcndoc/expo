@@ -1,0 +1,104 @@
+---
+title: HorizontalFloatingToolbar
+description: 一个用于显示浮动操作栏的 Jetpack Compose HorizontalFloatingToolbar 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI HorizontalFloatingToolbar 封装了官方的 Jetpack Compose [`HorizontalFloatingToolbar`](https://kotlinlang.org/api/compose-multiplatform/material3/androidx.compose.material3/-horizontal-floating-toolbar.html)，并显示一个悬浮在内容上方的水平工具栏，包含操作按钮。
+
+> **注意：** 如果你只需要一个单独的悬浮按钮，请改用 [`FloatingActionButton`](/versions/unversioned/sdk/ui/jetpack-compose/floatingactionbutton/)。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/horizontalfloatingtoolbar/android-light.webp"
+  darkSource="/static/images/expo-ui/horizontalfloatingtoolbar/android-dark.webp"
+  alt="一个胶囊形悬浮工具栏，包含三个图标按钮和一个单独的主 FAB"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 可随滚动内容悬浮的工具栏
+
+将工具栏放在带有 `floatingToolbarExitAlwaysScrollBehavior` 的 `Box` 内，以获得随滚动隐藏/显示的行为。使用 `align('bottomCenter')` 将工具栏定位在屏幕底部。整个布局都保留在 Compose 层中——不需要 React Native 的绝对定位。
+
+```tsx FloatingToolbarExample.tsx
+import {
+  Box,
+  HorizontalFloatingToolbar,
+  Host,
+  Icon,
+  IconButton,
+  LazyColumn,
+  ListItem,
+} from '@expo/ui/jetpack-compose';
+import { align, fillMaxSize, fillMaxWidth, offset } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function FloatingToolbarExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Box modifiers={[fillMaxSize()]} floatingToolbarExitAlwaysScrollBehavior="bottom">
+        <LazyColumn modifiers={[fillMaxSize()]}>{/* ...列表项... */}</LazyColumn>
+
+        <HorizontalFloatingToolbar
+          variant="vibrant"
+          modifiers={[align('bottomCenter'), offset(0, -16)]}>
+          <IconButton onClick={() => console.log('Edit pressed')}>
+            <Icon source={require('./assets/edit.xml')} />
+          </IconButton>
+          <HorizontalFloatingToolbar.FloatingActionButton
+            onClick={() => console.log('Add pressed')}>
+            <Icon source={require('./assets/add.xml')} />
+          </HorizontalFloatingToolbar.FloatingActionButton>
+        </HorizontalFloatingToolbar>
+      </Box>
+    </Host>
+  );
+}
+```
+
+### 带有 FloatingActionButton 的工具栏
+
+将 `IconButton` 作为工具栏项的直接子元素使用，并将 `HorizontalFloatingToolbar.FloatingActionButton` 用作主操作按钮。
+
+```tsx ToolbarWithFABExample.tsx
+import { Host, HorizontalFloatingToolbar, IconButton, Icon } from '@expo/ui/jetpack-compose';
+
+export default function ToolbarWithFABExample() {
+  return (
+    <Host matchContents>
+      <HorizontalFloatingToolbar>
+        <IconButton onClick={() => console.log('Edit pressed')}>
+          <Icon source={require('./assets/edit.xml')} contentDescription="编辑" />
+        </IconButton>
+        <IconButton onClick={() => console.log('Share pressed')}>
+          <Icon source={require('./assets/share.xml')} contentDescription="分享" />
+        </IconButton>
+        <HorizontalFloatingToolbar.FloatingActionButton onPress={() => console.log('Add pressed')}>
+          <Icon source={require('./assets/add.xml')} contentDescription="添加" />
+        </HorizontalFloatingToolbar.FloatingActionButton>
+      </HorizontalFloatingToolbar>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { HorizontalFloatingToolbar } from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/horizontalfloatingtoolbar"
+  apiName="HorizontalFloatingToolbar"
+/>

@@ -1,0 +1,84 @@
+---
+title: DeviceMotion
+description: 一个用于访问设备运动和方向传感器的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-sensors'
+packageName: 'expo-sensors'
+iconUrl: '/static/images/packages/expo-sensors.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { IOSPermissions } from '~/components/plugins/permissions';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+
+`expo-sensors` 中的 `DeviceMotion` 提供了对设备运动和方向传感器的访问。所有数据都以穿过设备的三个轴来表示。按照竖屏方向：X 轴从左到右，Y 轴从下到上，Z 轴垂直于屏幕，从后到前。
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app 配置中进行配置
+
+如果你在项目中使用配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用内置的 [config plugin](/config-plugins/introduction/) 来配置 `expo-sensor` 中的 `DeviceMotion`。该插件允许你配置各种无法在运行时设置、且需要重新构建新的应用二进制文件才能生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "允许 $(PRODUCT_NAME) 访问你的设备运动。"
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'motionPermission',
+      platform: 'ios',
+      description: '用于设置 [`NSMotionUsageDescription`](#ios) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的设备运动"',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者你正在手动使用原生 **ios** 项目，那么你需要在原生项目中配置 `NSMotionUsageDescription` 键，以访问 `DeviceMotion` 统计数据：
+
+```xml ios/[app]/Info.plist
+<key>NSMotionUsageDescription</key>
+<string>允许 $(PRODUCT_NAME) 访问你的设备运动</string>
+```
+
+</ConfigReactNative>
+
+## API
+
+```js
+import { DeviceMotion } from 'expo-sensors';
+```
+
+<APISection packageName="expo-device-motion" />
+
+## 权限
+
+### iOS
+
+此库使用以下用途说明键：
+
+<IOSPermissions permissions={['NSMotionUsageDescription']} />

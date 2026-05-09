@@ -8,8 +8,16 @@ platforms: ['ios', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
 
 Expo UI DisclosureGroup 与官方 SwiftUI [DisclosureGroup API](https://developer.apple.com/documentation/swiftui/disclosuregroup) 保持一致，并显示一个披露指示器，用于展开或隐藏内容。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/disclosuregroup/ios-light.webp"
+  darkSource="/static/images/expo-ui/disclosuregroup/ios-dark.webp"
+  alt="在 Form 中展开的 DisclosureGroup"
+/>
 
 ## 安装
 
@@ -19,15 +27,28 @@ Expo UI DisclosureGroup 与官方 SwiftUI [DisclosureGroup API](https://develope
 
 ### 基本披露组
 
+`DisclosureGroup` 最常用于 [`Form`](form) 中，因此它会沿用带有展开指示箭头的标准 iOS 列表样式。
+
 ```tsx BasicDisclosureGroupExample.tsx
-import { Host, DisclosureGroup, Text } from '@expo/ui/swift-ui';
+import { useState } from 'react';
+import { DisclosureGroup, Form, Host, Section, Text } from '@expo/ui/swift-ui';
 
 export default function BasicDisclosureGroupExample() {
+  const [isExpanded, setIsExpanded] = useState(true);
   return (
-    <Host matchContents>
-      <DisclosureGroup label="更多信息">
-        <Text>当披露组展开时，将显示此内容。</Text>
-      </DisclosureGroup>
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section>
+          <DisclosureGroup
+            label="高级设置"
+            isExpanded={isExpanded}
+            onIsExpandedChange={setIsExpanded}>
+            <Text>自动更新应用</Text>
+            <Text>应用下载</Text>
+            <Text>卸载未使用的应用</Text>
+          </DisclosureGroup>
+        </Section>
+      </Form>
     </Host>
   );
 }

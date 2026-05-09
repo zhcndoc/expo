@@ -1,0 +1,141 @@
+---
+title: 跟踪透明度
+description: 一个用于跟踪应用用户并管理跟踪权限的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-tracking-transparency'
+packageName: 'expo-tracking-transparency'
+platforms: ['android', 'ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { IOSPermissions } from '~/components/plugins/permissions';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+一个用于跟踪应用用户和管理跟踪权限的库。它提供对广告标识符的访问，并管理跟踪所需的权限。用于跟踪的数据示例包括电子邮件地址、设备 ID、广告 ID 等。如果设备级设置“允许 App 请求跟踪”处于关闭状态，则此权限将被拒绝。请务必将 `NSUserTrackingUsageDescription` 添加到你的 [**Info.plist**](../config/app/#infoplist) 中，以说明用户将如何被跟踪。否则，你的应用将被 Apple 拒绝。
+
+有关 Apple 的 App Tracking Transparency 框架的更多信息，请参阅其[文档](https://developer.apple.com/app-store/user-privacy-and-data-use/)。
+
+## 安装
+
+<APIInstallSection />
+
+## 应用配置中的配置
+
+如果你在项目中使用配置插件（[连续原生生成（CNG）](/workflow/continuous-native-generation/)），你可以使用 `expo-tracking-transparency` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置各种无法在运行时设置、并且需要构建新的应用二进制文件后才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "此标识符将用于向你投放个性化广告。"
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'userTrackingPermission',
+      platform: 'ios',
+      description:
+        '在 **Info.plist** 中设置 iOS 的 `NSUserTrackingUsageDescription` 权限消息。',
+      default:
+        '"允许此应用收集与应用相关的数据，这些数据可用于跟踪你或你的设备。"',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+如果你没有使用连续原生生成（[CNG](/workflow/continuous-native-generation/)）（也就是你在手动使用原生 **android** 和 **ios** 项目），那么你需要在原生项目中配置以下权限：
+
+- 对于 Android，在项目的 **android/app/src/main/AndroidManifest.xml** 中添加 `com.google.android.gms.permission.AD_ID` 权限。
+
+  ```xml
+  <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+  ```
+
+- 对于 iOS，在项目的 **ios/[app]/Info.plist** 中添加 `NSUserTrackingUsageDescription` 键：
+
+  ```xml
+  <key>NSUserTrackingUsageDescription</key>
+  <string>你自定义的用途说明字符串写在这里。</string>
+  ```
+
+</ConfigReactNative>
+
+## 用法
+
+<SnackInline label='基本的跟踪透明度用法' dependencies={['expo-tracking-transparency']}>
+
+```jsx
+import { useEffect } from 'react';
+import { Text, StyleSheet, View } from 'react-native';
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
+
+export default function App() {
+  useEffect(() => {
+    (async () => {
+      const { status } = await requestTrackingPermissionsAsync();
+      if (status === 'granted') {
+        console.log('太好了！我已获得用户跟踪数据的权限');
+      }
+    })();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text>跟踪透明度模块示例</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+```
+
+</SnackInline>
+
+## API
+
+```ts
+import * as ExpoTrackingTransparency from 'expo-tracking-transparency';
+```
+
+<APISection packageName="expo-tracking-transparency" />
+
+## 权限
+
+### Android
+
+以下权限会通过该库的 **AndroidManifest.xml** 自动添加。
+
+| Android 权限                               | 描述                                                                                                                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `com.google.android.gms.permission.AD_ID` | 允许访问用于跟踪和分析的 Advertising ID。对于目标为 Android 13（API 级别 33）或更高、并使用 Google Play services Advertising ID 的应用，这是必需的。 |
+
+### iOS
+
+该库使用以下用途说明键：
+
+<IOSPermissions permissions={['NSUserTrackingUsageDescription']} />

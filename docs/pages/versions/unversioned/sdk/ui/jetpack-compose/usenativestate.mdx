@@ -19,33 +19,26 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 > **注意：** 使用 worklet 需要在项目中安装 [`react-native-reanimated`](https://docs.swmansion.com/react-native-reanimated/) 和 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。`useNativeState` 本身不依赖它们即可工作，但下面展示的 UI 线程同步更新依赖 worklet 运行时。
 
-下面的示例会在用户输入时屏蔽电话号码。格式化和对 `maskedPhone.value` 的写入都会在 UI 线程上同步发生，因此输入值和屏蔽后的值之间不会出现闪烁。
+下面的示例在用户输入时对电话号码进行掩码处理。格式化以及对 `maskedPhone.value`（文本）和 `selection.value`（光标位置）的写入都在 UI 线程上同步发生，因此输入值和掩码值之间不会出现闪烁。
 
 ```tsx WorkletPhoneMaskExample.tsx
-import {
-  Host,
-  TextField,
-  TextFieldValue,
-  Text as ComposeText,
-  useNativeState,
-} from '@expo/ui/jetpack-compose';
+import { Host, TextField, Text as ComposeText, useNativeState } from '@expo/ui/jetpack-compose';
 import { fillMaxWidth } from '@expo/ui/jetpack-compose/modifiers';
 
 export default function WorkletPhoneMaskExample() {
-  const maskedPhone = useNativeState<TextFieldValue>({
-    text: '',
-    selection: { start: 0, end: 0 },
-  });
+  const maskedPhone = useNativeState('');
+  const selection = useNativeState({ start: 0, end: 0 });
 
   return (
     <Host matchContents>
       <TextField
         value={maskedPhone}
+        selection={selection}
         keyboardOptions={{ keyboardType: 'phone' }}
         modifiers={[fillMaxWidth()]}
         onValueChange={v => {
           'worklet';
-          const digits = v.text.replace(/\D/g, '').slice(0, 10);
+          const digits = v.replace(/\D/g, '').slice(0, 10);
           let formatted: string;
           if (digits.length === 0) {
             formatted = '';
@@ -56,11 +49,9 @@ export default function WorkletPhoneMaskExample() {
           } else {
             formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
           }
-          if (formatted !== v.text) {
-            maskedPhone.value = {
-              text: formatted,
-              selection: { start: formatted.length, end: formatted.length },
-            };
+          if (formatted !== v) {
+            maskedPhone.value = formatted;
+            selection.value = { start: formatted.length, end: formatted.length };
           }
         }}>
         <TextField.Placeholder>

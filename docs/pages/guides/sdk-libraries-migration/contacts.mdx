@@ -1,0 +1,316 @@
+---
+title: 迁移到 expo-contacts/next
+sidebar_title: expo-contacts/next
+description: 从旧版 expo-contacts API 迁移到新的基于类的 expo-contacts/next API。
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Terminal } from '~/ui/components/Snippet';
+
+`expo-contacts/next` API 现已稳定。旧版 `expo-contacts` 模块已被弃用。请迁移到 `expo-contacts/next`，以便享受新的 API 和后续修复。
+
+新 API 用 `Contact` 类替代了基于函数的 API。联系人被表示为类实例，实例中只保存本地联系人 ID。主要变化如下：
+
+- 联系人属性（姓名、公司、生日等）现在是异步 getter 和 setter，而不再是普通对象属性。
+- 子记录（电话、邮箱、地址等）通过专门的 `add*`/`get*`/`update*`/`delete*` 方法管理，而不是重写整个数组。
+- 现在提供两种更新方法：用于局部更新的 `patch`，以及用于完整替换的 `update`。
+
+## 安装
+
+安装包含 `expo-contacts/next` 的、与 SDK 兼容的软件包：
+
+<Terminal cmd={['$ npx expo install expo-contacts']} />
+
+## 导入新 API
+
+从 `expo-contacts/next` 导入：
+
+```ts
+import { Contact } from 'expo-contacts/next';
+```
+
+## 联系人
+
+### 创建联系人
+
+```ts
+// 之前
+const id = await Contacts.addContactAsync({ firstName: 'John', lastName: 'Doe' });
+
+// 之后
+const contact = await Contact.create({ givenName: 'John', familyName: 'Doe' });
+```
+
+`Contact.create` 返回的是 `Contact` 实例，而不只是 ID。
+
+### 获取所有联系人
+
+```ts
+// 之前
+const { data } = await Contacts.getContactsAsync({
+  fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
+  pageSize: 20,
+  pageOffset: 10,
+  sort: Contacts.SortTypes.FirstName,
+});
+
+// 之后，实例对象
+const contacts = await Contact.getAll({
+  limit: 20,
+  offset: 10,
+  sortOrder: ContactsSortOrder.GivenName,
+});
+
+// 之后，类型化字段投影
+const contacts = await Contact.getAllDetails([ContactField.FULL_NAME, ContactField.PHONES], {
+  limit: 20,
+  offset: 10,
+});
+```
+
+`getAllDetails` 返回的是强类型投影，结果会被缩窄为请求的字段。
+
+### 按 ID 获取联系人
+
+`getAllDetails` 的结果中包含联系人 ID。如果你想对 `getAllDetails` 返回的联系人调用方法，可以使用构造函数将其包装为 `Contact` 实例：
+
+```ts
+const results = await Contact.getAllDetails([ContactField.FULL_NAME, ContactField.PHONES]);
+const contact = new Contact(results[0].id);
+await contact.addPhone({ label: 'work', number: '+12345678912' });
+```
+
+### 统计联系人数量
+
+```ts
+// 之前
+const hasAny = await Contacts.hasContactsAsync();
+
+// 之后
+const hasAny = await Contact.hasAny();
+
+// 之后，之前没有直接对应方法
+const count = await Contact.getCount();
+```
+
+### 更新联系人
+
+```ts
+// 之前，重写整个联系人
+await Contacts.updateContactAsync({ ...contact, firstName: 'Andrew' });
+
+// 之后，局部更新（仅修改提供的字段）
+await contact.patch({ givenName: 'Andrew' });
+
+// 之后，完整替换 - 未提供的所有字段都将被清空
+await contact.update({
+  givenName: 'John',
+  familyName: 'Doe',
+  phones: [{ label: 'mobile', number: '+12123456789' }],
+});
+```
+
+### 删除联系人
+
+```ts
+// 之前
+await Contacts.removeContactAsync(id);
+
+// 之后
+await contact.delete();
+```
+
+## 标量字段
+
+所有标量联系人属性现在都是异步 getter 和 setter。使用 `get*` 读取，使用 `set*` 写入。你也可以通过 `contact.getDetails()` 一次获取多个字段。
+
+| 字段                     | Getter                  | Setter                  |
+| ------------------------ | ----------------------- | ----------------------- |
+| 名                       | `getGivenName`          | `setGivenName`          |
+| 姓                       | `getFamilyName`         | `setFamilyName`         |
+| 中间名                   | `getMiddleName`         | `setMiddleName`         |
+| 全名                     | `getFullName`           | —                       |
+| 昵称（仅 iOS）           | `getNickname`           | `setNickname`           |
+| 前缀                     | `getPrefix`             | `setPrefix`             |
+| 后缀                     | `getSuffix`             | `setSuffix`             |
+| 拼音名                   | `getPhoneticGivenName`  | `setPhoneticGivenName`  |
+| 拼音姓                   | `getPhoneticFamilyName` | `setPhoneticFamilyName` |
+| 公司                     | `getCompany`            | `setCompany`            |
+| 职位                     | `getJobTitle`           | `setJobTitle`           |
+| 部门                     | `getDepartment`         | `setDepartment`         |
+| 生日（仅 iOS）           | `getBirthday`           | `setBirthday`           |
+| 备注                     | `getNote`               | `setNote`               |
+| 图像                     | `getImage`              | `setImage`              |
+| 缩略图                   | `getThumbnail`          | —                       |
+| 收藏（仅 Android）       | `getIsFavourite`        | `setIsFavourite`        |
+
+### 姓名
+
+```ts
+// 之前，联系人通过 getContactByIdAsync 获取
+const contact = await Contacts.getContactByIdAsync(id);
+console.log(contact.firstName, contact.lastName);
+
+// 之后，分别使用异步 getter
+const givenName = await contact.getGivenName();
+const familyName = await contact.getFamilyName();
+
+// 之后，通过 getDetails() 获取完整姓名对象
+const details = await contact.getDetails([ContactField.FULL_NAME]);
+
+await contact.setGivenName('John');
+await contact.setFamilyName('Doe');
+await contact.setMiddleName('Michael');
+```
+
+## 子记录
+
+子记录不再通过 `updateContactAsync` 重写整个数组来管理。每种类型都有专门的 `add*`、`get*`、`update*` 和 `delete*` 方法：
+
+| 子记录                     | 方法                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| 电话号码                   | `addPhone`, `getPhones`, `updatePhone`, `deletePhone`                                 |
+| 邮箱                       | `addEmail`, `getEmails`, `updateEmail`, `deleteEmail`                                 |
+| 地址                       | `addAddress`, `getAddresses`, `updateAddress`, `deleteAddress`                        |
+| URL                       | `addUrlAddress`, `getUrlAddresses`, `updateUrlAddress`, `deleteUrlAddress`            |
+| 社交资料                   | `addSocialProfile`, `getSocialProfiles`, `updateSocialProfile`, `deleteSocialProfile` |
+| IM 地址                    | `addImAddress`, `getImAddresses`, `updateImAddress`, `deleteImAddress`                |
+| 日期                       | `addDate`, `getDates`, `updateDate`, `deleteDate`                                     |
+| 额外姓名（仅 Android）     | `addExtraName`, `getExtraNames`, `updateExtraName`, `deleteExtraName`                 |
+
+下面的示例使用电话号码。
+
+```ts
+// 之前，重写整个数组
+await Contacts.updateContactAsync({
+  ...contact,
+  phoneNumbers: [...existing, { label: 'work', number: '+12345678912' }],
+});
+
+// 之后，添加
+await contact.addPhone({ label: 'work', number: '+12345678912' });
+
+// 之后，获取
+const phones = await contact.getPhones();
+
+// 之后，更新
+await contact.updatePhone(existingPhone);
+
+// 之后，删除
+await contact.deletePhone(existingPhone);
+```
+
+## 原生 UI
+
+```ts
+// 之前
+const contact = await Contacts.presentContactPickerAsync();
+await Contacts.presentFormAsync(null, contactData, { isNew: true });
+await Contacts.presentFormAsync(contactId);
+
+// 之后
+const contact = await Contact.presentPicker();
+if (contact) {
+  // 用户选择了一个联系人
+}
+const created = await Contact.presentCreateForm(contactData);
+await contact.editWithForm();
+```
+
+### 访问选择器（仅 iOS 18+）
+
+```ts
+// 之前
+const contactIds = await Contacts.presentAccessPickerAsync();
+
+// 之后
+const selectedContacts = await Contact.presentAccessPicker();
+```
+
+## 分组（仅 iOS）
+
+```ts
+// 之前
+const groups = await Contacts.getGroupsAsync({});
+await Contacts.createGroupAsync('Family');
+await Contacts.addExistingContactToGroupAsync(contactId, groupId);
+await Contacts.removeContactFromGroupAsync(contactId, groupId);
+
+// 之后
+const groups = await Group.getAll();
+const group = await Group.create('Family');
+await group.addContact(contact);
+await group.removeContact(contact);
+const contacts = await group.getContacts();
+const name = await group.getName();
+await group.setName('Close Friends');
+await group.delete();
+```
+
+## 容器（仅 iOS）
+
+```ts
+// 之前
+const containers = await Contacts.getContainersAsync({});
+const defaultId = await Contacts.getDefaultContainerIdAsync();
+
+// 之后
+const containers = await Container.getAll();
+const defaultContainer = await Container.getDefault(); // 可能为 null
+const name = await container.getName();
+const type = await container.getType();
+const groups = await container.getGroups();
+const contacts = await container.getContacts();
+```
+
+## 权限
+
+```ts
+// 之前
+const { status } = await Contacts.requestPermissionsAsync();
+const { status } = await Contacts.getPermissionsAsync();
+
+// 之后
+const { status } = await requestPermissionsAsync();
+const { status } = await getPermissionsAsync();
+```
+
+## 监听变化
+
+```ts
+// 之前
+const subscription = Contacts.addContactsChangeListener(() => {
+  // 联系人已更改
+});
+subscription.remove();
+
+// 之后
+const subscription = addContactsChangeListener(() => {
+  // 联系人已更改
+});
+subscription.remove();
+
+// 一次移除所有监听器
+removeAllContactsChangeListeners();
+```
+
+## 破坏性语义变化
+
+- 字段名遵循平台约定。例如，`firstName`/`lastName` 变为 `givenName`/`familyName`。
+- 字段选择使用类型化的 `ContactField` 枚举。`getAllDetails` 的结果类型会缩窄为请求的字段。
+- 去掉了 `Async` 后缀。整个库都是异步的。
+- 联系人属性现在是异步 getter 和 setter，而不是联系人对象上的普通属性。使用 `contact.getDetails()` 一次获取多个字段。
+- 子记录（电话、邮箱、地址等）通过专门的 `add*`/`get*`/`update*`/`delete*` 方法管理，而不是通过 `updateContactAsync` 重写整个数组。
+- 两种更新方法取代了 `updateContactAsync`：`patch` 应用局部更改，`update` 替换整个联系人。
+- `shareContactAsync` 和 `writeContactToFileAsync` 已移除，且没有替代方案。你可以安全地删除对这些函数的任何调用。
+
+## 参考
+
+<BoxLink
+  title="联系人（next）"
+  description="查看 expo-contacts/next 的完整 API 参考。"
+  href="/versions/latest/sdk/contacts-next/"
+  Icon={BookOpen02Icon}
+/>

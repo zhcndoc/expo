@@ -1,0 +1,51 @@
+---
+title: react-native-view-shot
+description: 一个允许你捕获 React Native 视图并将其保存为图像的库。
+sourceCodeUrl: 'https://github.com/gre/react-native-view-shot'
+packageName: react-native-view-shot
+platforms: ['android', 'ios', 'expo-go']
+inExpoGo: true
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { BoxLink } from '~/ui/components/BoxLink';
+
+给定一个视图，`captureRef` 本质上会对该视图进行截图，并为你返回一张图片。这对于签名板之类的场景非常有用，在这些场景中，用户绘制一些内容，然后你想从中保存一张图片。
+
+如果你有兴趣从 GLView 中获取快照，我们建议你改用 [GLView 的 takeSnapshotAsync](gl-view.mdx#takesnapshotasyncoptions)。
+
+## 安装
+
+<APIInstallSection href="https://github.com/gre/react-native-view-shot" />
+
+## 关于像素值的说明
+
+请记得将设备的 `PixelRatio` 考虑在内。当你在 UI 中处理像素值时，大多数时候这些单位是“逻辑像素”或“与设备无关的像素”。而对于 PNG 等图片文件，你通常处理的是“物理像素”。你可以使用 React Native 的 API 获取设备的 `PixelRatio`：`PixelRatio.get()`
+
+例如，要保存一张 `1080x1080` 的“FullHD”图片，你可以这样做：
+
+```js
+const targetPixelCount = 1080; // 如果你想要全高清图片
+const pixelRatio = PixelRatio.get(); // 设备的像素比
+// pixels * pixelRatio = targetPixelCount，所以 pixels = targetPixelCount / pixelRatio
+const pixels = targetPixelCount / pixelRatio;
+
+const result = await captureRef(this.imageContainer, {
+  result: 'tmpfile',
+  height: pixels,
+  width: pixels,
+  quality: 1,
+  format: 'png',
+});
+```
+
+## 了解更多
+
+<BoxLink
+  title="访问官方文档"
+  description="获取有关 API 及其用法的完整信息。"
+  Icon={BookOpen02Icon}
+  href="https://github.com/gre/react-native-view-shot"
+/>

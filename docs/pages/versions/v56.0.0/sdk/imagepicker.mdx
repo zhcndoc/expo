@@ -1,0 +1,295 @@
+---
+title: ImagePicker
+description: 一个库，提供访问系统 UI 的能力，用于从手机图库中选择图片和视频，或使用相机拍照。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-image-picker'
+packageName: 'expo-image-picker'
+iconUrl: '/static/images/packages/expo-image-picker.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+searchRank: 8
+---
+
+import { GithubIcon } from '@expo/styleguide-icons/custom/GithubIcon';
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { AndroidPermissions, IOSPermissions } from '~/components/plugins/permissions';
+import { BoxLink } from '~/ui/components/BoxLink';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { SnackInline } from '~/ui/components/Snippet';
+import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
+
+`expo-image-picker` 提供了访问系统 UI 的能力，用于从手机图库中选择图片和视频，或使用相机拍照。
+
+<ContentSpotlight file="sdk/imagepicker.mp4" loop={false} />
+
+## 安装
+
+<APIInstallSection />
+
+#### 已知问题&ensp;<PlatformTags platforms={['ios']} />
+
+在 iOS 上，当从相册中选取一张图片（通常是[更高分辨率](https://openradar.me/49866214)）时，裁剪后的图片结果在某些情况下会给出错误的裁剪矩形值。不幸的是，这个问题出在底层的 `UIImagePickerController` 上，原因是 iOS 内置的闭源工具中存在一个 bug。
+
+## 在应用配置中进行配置
+
+如果你在项目中使用了配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），可以使用 `expo-image-picker` 自带的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置各种无法在运行时设置、且需要重新构建新的应用二进制文件后才会生效的属性。如果你的应用**没有**使用 CNG，那么你需要手动配置该库。
+
+默认情况下，`expo-image-picker` 会在 Android 上添加 `RECORD_AUDIO` 权限。你可以通过将下面配置中的 `microphonePermission` 设置为 false 来移除它。
+
+<ConfigPluginExample>
+
+{/* prettier-ignore */}
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "应用会访问你的照片，以便让你与朋友分享它们。",
+          "colors": {
+            "cropToolbarColor": "#000000"
+          },
+          "dark": {
+            "colors": {
+              "cropToolbarColor": "#000000"
+            }
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'photosPermission',
+      platform: 'ios',
+      description: '用于设置 `NSPhotoLibraryUsageDescription` 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的照片"',
+    },
+    {
+      name: 'cameraPermission',
+      platform: 'android' | 'ios',
+      description:
+        '用于设置 `NSCameraUsageDescription` 权限消息的字符串。如果提供值 `false`，则 Android 上的 `CAMERA` 权限将被阻止。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的相机"',
+    },
+    {
+      name: 'microphonePermission',
+      platform: 'android' | 'ios',
+      description:
+        '用于设置 `NSMicrophoneUsageDescription` 权限消息的字符串。如果提供值 `false`，则 Android 上的 `RECORD_AUDIO` 权限将被阻止。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的麦克风"',
+    },
+    {
+      name: 'colors',
+      platform: 'android',
+      description:
+        '包含颜色属性的对象，用于自定义浅色模式下的图片选择器裁剪 UI。',
+      default: 'undefined',
+    },
+    {
+      name: 'colors.cropToolbarColor',
+      platform: 'android',
+      description: '用于裁剪工具栏背景颜色的十六进制颜色字符串。',
+      default: '#00000000',
+    },
+    {
+      name: 'colors.cropToolbarIconColor',
+      platform: 'android',
+      description: '用于裁剪工具栏图标颜色的十六进制颜色字符串。',
+      default: '#000000',
+    },
+    {
+      name: 'colors.cropToolbarActionTextColor',
+      platform: 'android',
+      description: '用于裁剪工具栏操作文本颜色的十六进制颜色字符串。',
+      default: '#000000',
+    },
+    {
+      name: 'colors.cropBackButtonIconColor',
+      platform: 'android',
+      description: '用于裁剪工具栏返回按钮图标颜色的十六进制颜色字符串。',
+      default: '#000000',
+    },
+    {
+      name: 'colors.cropBackgroundColor',
+      platform: 'android',
+      description: '用于裁剪界面背景颜色的十六进制颜色字符串。',
+      default: '#ffffff',
+    },
+    {
+      name: 'dark.colors',
+      platform: 'android',
+      description:
+        '包含颜色属性的对象，用于自定义深色模式下的图片选择器裁剪 UI。',
+      default:
+        '{ cropToolbarColor: "#00000000", cropToolbarIconColor: "#ffffff", cropToolbarActionTextColor: "#ffffff", cropBackButtonIconColor: "#ffffff", cropBackgroundColor: "#000000"  }',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者你是在手动使用原生 **ios** 项目，那么你需要在 **ios/[app]/Info.plist** 中添加 `NSPhotoLibraryUsageDescription`、`NSCameraUsageDescription` 和 `NSMicrophoneUsageDescription` 键：
+
+```xml Info.plist
+<key>NSPhotoLibraryUsageDescription</key>
+<string>授予 $(PRODUCT_NAME) 保存照片的权限</string>
+<key>NSCameraUsageDescription</key>
+<string>授予 $(PRODUCT_NAME) 访问你的相机的权限</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>授予 $(PRODUCT_NAME) 使用你的麦克风的权限</string>
+```
+
+</ConfigReactNative>
+
+## 使用
+
+<SnackInline label='Image Picker' dependencies={['expo-image-picker']}>
+
+```tsx
+import { useState } from 'react';
+import { Alert, Button, Image, View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+
+export default function ImagePickerExample() {
+  const [image, setImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    // 启动图片库不需要请求权限。
+    // 当 `allowsEditing` 设为 `false`
+    // 且 `videoExportPreset` 为 `'Passthrough'`（默认值）时，需手动请求 iOS 上视频的权限，最好在打开选择器之前请求，
+    // 这样用户在选择视频后就不会突然看到系统对话框而感到意外。
+    // 更多详情请参见“调用视频权限”小节。
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert('需要权限', '访问媒体库的权限是必需的。');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images', 'videos'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Button title="从相册中选择一张图片" onPress={pickImage} />
+      {image && <Image source={{ uri: image }} style={styles.image} />}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  image: {
+    width: 200,
+    height: 200,
+  },
+});
+```
+
+</SnackInline>
+
+当你运行这个示例并选择一张图片时，你会看到你选中的图片显示在应用中，同时控制台中也会显示类似的日志：
+
+```json collapseHeight=425
+{
+  "assets": [
+    {
+      "assetId": "C166F9F5-B5FE-4501-9531",
+      "base64": null,
+      "duration": null,
+      "exif": null,
+      "fileName": "IMG.HEIC",
+      "fileSize": 6018901,
+      "height": 3025,
+      "type": "image",
+      "uri": "file:///data/user/0/host.exp.exponent/cache/cropped1814158652.jpg"
+      "width": 3024
+    }
+  ],
+  "canceled": false
+}
+```
+
+### 调用视频权限 <PlatformTags platforms={['ios']} />
+
+在 SDK 54 及更高版本中，默认配置会将 `allowsEditing` 保持为 `false`，并将 [`videoExportPreset`](#videoexportpreset) 设置为 `'Passthrough'`。这些设置会立即返回原始资源（包括 HEIC 和 AVIF 文件），因为选择器会跳过压缩，但 iOS 需要媒体库权限来访问原始文件，并且会在用户选择视频后立即显示权限对话框。
+
+为了避免在选择后显示权限对话框，请在打开选择器之前通过 [`requestMediaLibraryPermissionsAsync`](#imagepickerrequestmedialibrarypermissionsasyncwriteonly) 或 [`useMediaLibraryPermissions`](#usemedialibrarypermissionsoptions) **手动请求媒体库权限**。
+
+### 配合 AWS S3 使用
+
+<BoxLink
+  title="AWS storage example"
+  description="AWS 存储示例可在 with-aws-storage-upload 中找到。"
+  Icon={GithubIcon}
+  href="https://github.com/expo/examples/tree/master/with-aws-storage-upload"
+/>
+
+请参阅 [Amplify 文档](https://docs.amplify.aws/) 指南，以正确设置你的项目。
+
+### 配合 Firebase 使用
+
+<BoxLink
+  title="Firebase storage example"
+  description="Firebase 存储示例可在 with-firebase-storage-upload 中找到。"
+  Icon={GithubIcon}
+  href="https://github.com/expo/examples/tree/master/with-firebase-storage-upload"
+/>
+
+请参阅 [使用 Firebase](/guides/using-firebase/) 指南，以正确设置你的项目。
+
+## API
+
+```js
+import * as ImagePicker from 'expo-image-picker';
+```
+
+<APISection packageName="expo-image-picker" apiName="ImagePicker" />
+
+## 权限
+
+### Android
+
+以下权限会通过该库的 **AndroidManifest.xml** 自动添加。
+
+<AndroidPermissions permissions={['CAMERA', 'READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE']} />
+
+### iOS
+
+以下使用说明键会被该库中的 API 使用。
+
+<IOSPermissions
+  permissions={[
+    'NSMicrophoneUsageDescription',
+    'NSPhotoLibraryUsageDescription',
+    'NSCameraUsageDescription',
+  ]}
+/>

@@ -1,0 +1,102 @@
+---
+title: Server
+description: Expo Router 项目的服务端 API 和运行时。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-server'
+packageName: 'expo-server'
+platforms: ['server']
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { BoxLink } from '~/ui/components/BoxLink';
+
+`expo-server` 是 Expo Router 的服务端 API 和运行时库。它提供了一些辅助函数，可用于你的 Expo Router API 路由或其他服务端代码中，并包含用于运行 Expo Router 服务端导出的适配器。
+
+## 安装
+
+<APIInstallSection packageName="expo-server" hideBareInstructions />
+
+要在项目中使用 `expo-server`，你需要配置你的 Expo Router 项目以 `server` 模式导出。请按照 Expo Router 的 API Routes 指南中的说明进行设置：
+
+<BoxLink
+  title="API Routes"
+  description="了解如何使用 Expo Router 创建服务端端点。"
+  href="/router/web/api-routes"
+  Icon={BookOpen02Icon}
+/>
+
+## 用法
+
+`expo-server` 的运行时 API 只能在服务端代码中使用，并让你能够访问服务端运行时环境。运行时 API 会暴露一些函数，这些函数可以在请求处理程序的异步上下文中调用，并为你提供当前请求的信息，或安排与传入请求并发执行的任务。
+
+### 访问请求元数据
+
+```ts
+import { origin, environment } from 'expo-server';
+
+export async function GET() {
+  return Response.json({
+    isProduction: environment() == null,
+    isStaging: environment() === 'staging',
+    origin: origin(),
+  });
+}
+```
+
+### 安排任务
+
+```ts
+import { runTask, deferTask } from 'expo-server';
+
+export async function GET() {
+  runTask(async () => {
+    console.log('将立即运行。');
+  });
+
+  deferTask(async () => {
+    console.log('将在响应解析完成后运行。');
+  });
+
+  return Response.json({ success: true });
+}
+```
+
+## 适配器
+
+`expo-server` 提供适配器，用于在不同环境或不同云服务商的无服务器函数中运行 Expo Router 的服务端导出。通常，每种运行时都需要自己的适配器才能与 `expo-server` 运行时配合使用。在部署到这些提供商之前，最好先熟悉 [`npx expo export`](/more/expo-cli#exporting) 命令的基础知识。
+
+| 适配器                        | 提供商                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| `expo-server/adapter/bun`     | [Bun](https://bun.com/docs)                                              |
+| `expo-server/adapter/express` | [Express](https://expressjs.com/en/5x/api.html)                          |
+| `expo-server/adapter/http`    | [Node.js](https://nodejs.org/api/http.html)                              |
+| `expo-server/adapter/netlify` | [Netlify Functions](https://docs.netlify.com/build/functions/overview/)  |
+| `expo-server/adapter/vercel`   | [Vercel Functions](https://vercel.com/docs/functions)                    |
+| `expo-server/adapter/workerd`  | [Cloudflare Workers](https://developers.cloudflare.com/pages/functions/) |
+
+要了解如何在不同的第三方服务上托管 API 路由，请按照 Expo Router 的 API Routes 指南中的说明进行：
+
+<BoxLink
+  title="API Routes"
+  description="了解如何在第三方服务上托管 API Routes。"
+  href="/router/web/api-routes#hosting-on-third-party-services"
+  Icon={BookOpen02Icon}
+/>
+
+按照约定，所有适配器都会导出一个 `createRequestHandler` 函数，该函数接受一个参数对象。该对象接受一个 `build` 参数，必须设置为 `npx expo export` 创建的 `dist/server` 输出目录的相对路径。某些适配器还可能接受更多值来配置运行时 API。
+
+```ts
+import path from 'node:path';
+import { createRequestHandler } from 'expo-server/adapter/http';
+
+const onRequest = createRequestHandler({
+  build: path.join(process.cwd(), 'dist/server'),
+  environment: process.env.NODE_ENV,
+});
+```
+
+## API
+
+<APISection packageName="expo-server" />

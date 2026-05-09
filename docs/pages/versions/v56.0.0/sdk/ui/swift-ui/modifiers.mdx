@@ -1,0 +1,89 @@
+---
+title: 修饰器
+description: 用于自定义组件外观和行为的 SwiftUI 视图修饰器。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+用于自定义 UI 组件外观和行为的 SwiftUI 视图修饰符。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+修饰符通过带数组语法的 `modifiers` 属性应用到组件上。你可以组合多个修饰符来创建复杂的样式和行为。
+
+```tsx
+import { Text, Host, VStack } from '@expo/ui/swift-ui';
+import {
+  background,
+  cornerRadius,
+  padding,
+  shadow,
+  foregroundColor,
+  onTapGesture,
+} from '@expo/ui/swift-ui/modifiers';
+
+function ModifiersExample() {
+  const [isEnabled, setIsEnabled] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={20}>
+        {/* 基础样式修饰符 */}
+        <Text
+          modifiers={[
+            background('#FF6B6B'),
+            cornerRadius(12),
+            padding({ all: 16 }),
+            foregroundColor('#FFFFFF'),
+          ]}>
+          基础样式文本
+        </Text>
+
+        {/* 带阴影和交互的复杂组合 */}
+        <Text
+          modifiers={[
+            background('#4ECDC4'),
+            cornerRadius(16),
+            padding({ horizontal: 20, vertical: 12 }),
+            shadow({ radius: 4, x: 0, y: 2, color: '#4ECDC440' }),
+            onTapGesture(() => console.log('Tapped!')),
+          ]}>
+          带阴影和点击手势的样式文本
+        </Text>
+
+        {/* 使用扩展运算符的条件修饰符 */}
+        <Text
+          modifiers={[
+            background('#9B59B6'),
+            cornerRadius(8),
+            padding({ all: 14 }),
+            ...(isEnabled
+              ? [shadow({ radius: 6, y: 3 }), scaleEffect(1.02)]
+              : [grayscale(0.5), opacity(0.7)]),
+          ]}>
+          条件样式
+        </Text>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+> **info** 你还可以创建适用于任何 Expo UI 组件的自定义修饰符。详情请参阅 [使用 SwiftUI 扩展](/guides/expo-ui-swift-ui/extending/) 指南。
+
+## API
+
+{/* prettier-ignore */}
+```tsx
+import { background, cornerRadius, padding, shadow, foregroundColor, onTapGesture } from '@expo/ui/swift-ui/modifiers';
+```
+
+<APISection packageName="expo-ui/swift-ui/modifiers" />

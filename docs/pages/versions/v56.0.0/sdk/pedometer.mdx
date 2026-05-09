@@ -1,0 +1,86 @@
+---
+title: 计步器
+description: 一个提供访问设备计步器传感器的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-sensors'
+packageName: 'expo-sensors'
+iconUrl: '/static/images/packages/expo-sensors.png'
+platforms: ['android', 'ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+`Pedometer` 来自 `expo-sensors`，在 Android 上使用系统的 `hardware.Sensor`，在 iOS 上使用 Core Motion 来获取用户的步数统计，同时也允许你订阅计步器更新。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+<SnackInline label='Pedometer' dependencies={['expo-sensors']} >
+
+```jsx
+import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pedometer } from 'expo-sensors';
+
+export default function App() {
+  const [isPedometerAvailable, setIsPedometerAvailable] = useState('checking');
+  const [pastStepCount, setPastStepCount] = useState(0);
+  const [currentStepCount, setCurrentStepCount] = useState(0);
+
+  const subscribe = async () => {
+    const isAvailable = await Pedometer.isAvailableAsync();
+    setIsPedometerAvailable(String(isAvailable));
+
+    if (isAvailable) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - 1);
+
+      const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
+      if (pastStepCountResult) {
+        setPastStepCount(pastStepCountResult.steps);
+      }
+
+      return Pedometer.watchStepCount(result => {
+        setCurrentStepCount(result.steps);
+      });
+    }
+  };
+
+  useEffect(() => {
+    const subscription = subscribe();
+    return () => subscription && subscription.remove();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text>Pedometer.isAvailableAsync(): {isPedometerAvailable}</Text>
+      <Text>过去 24 小时内的步数：{pastStepCount}</Text>
+      <Text>走起来！看这个数字不断增加：{currentStepCount}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+```
+
+</SnackInline>
+
+## API
+
+```js
+import { Pedometer } from 'expo-sensors';
+```
+
+<APISection packageName="expo-pedometer" apiName="Pedometer" />

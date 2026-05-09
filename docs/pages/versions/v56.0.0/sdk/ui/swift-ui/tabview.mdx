@@ -1,0 +1,260 @@
+---
+title: TabView
+description: 一个用于分页或选项卡内容的 SwiftUI TabView 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI TabView 与官方 SwiftUI [TabView API](https://developer.apple.com/documentation/swiftui/tabview) 一致，并通过 [`tabViewStyle`](modifiers/#tabviewstyleconfig) 修饰符在不同样式之间切换。
+
+<ComponentDiagram
+  mode="portrait"
+  source="/static/images/expo-ui/tabview/ios-light.webp"
+  darkSource="/static/images/expo-ui/tabview/ios-dark.webp"
+  alt="一个 TabView，底部标签栏显示 Home、Search 和 Profile 标签，采用 iOS 26 Liquid Glass 风格"
+/>
+
+> **注意：** 对于跨全屏路由的有路由底部标签导航，请改用 [expo-router/unstable-native-tabs`](/router/advanced/native-tabs/)。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+每个页面都是 `<TabView.Tab>` 的子元素，通过 `value` 属性标识。`TabView` 不会强加自身高度 &mdash; 请为它设置一个 frame，或者将它放在一个已有高度的父容器中。
+
+### 页面样式（可滑动分页器）
+
+使用 `tabViewStyle({ type: 'page' })` 可获得带可选圆点指示器的横向分页器。传入 `defaultSelection` 可让分页器从指定页面开始，而无需由 React 来控制它。
+
+```tsx PagerExample.tsx
+import { Host, Spacer, TabView, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  background,
+  font,
+  foregroundStyle,
+  frame,
+  tabViewStyle,
+} from '@expo/ui/swift-ui/modifiers';
+
+const fillFrame = frame({ maxWidth: Infinity, maxHeight: Infinity });
+const pageFrame = frame({ minHeight: 320, maxHeight: 320 });
+
+export default function PagerExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <TabView defaultSelection="1" modifiers={[pageFrame, tabViewStyle({ type: 'page' })]}>
+        <TabView.Tab value="0">
+          <Page label="第 1 页" color="#6200EE" />
+        </TabView.Tab>
+        <TabView.Tab value="1">
+          <Page label="第 2 页" color="#03DAC5" />
+        </TabView.Tab>
+        <TabView.Tab value="2">
+          <Page label="第 3 页" color="#FF5722" />
+        </TabView.Tab>
+      </TabView>
+    </Host>
+  );
+}
+
+function Page({ label, color }: { label: string; color: string }) {
+  return (
+    <VStack alignment="center" modifiers={[fillFrame, background(color)]}>
+      <Spacer />
+      <Text modifiers={[font({ size: 28, weight: 'bold' }), foregroundStyle('#FFFFFF')]}>
+        {label}
+      </Text>
+      <Spacer />
+    </VStack>
+  );
+}
+```
+
+### 受控选择
+
+传入 `selection` 和 `onSelectionChange`，即可通过 React 状态驱动当前激活的标签页。每个 `<TabView.Tab>` 的 `value` 都会与 `selection` 进行匹配。当 `selection` 从 JS 发生变化时，添加 [`animation`](modifiers/#animationanimation-value) 修饰符可为切换添加动画。
+
+```tsx ControlledTabViewExample.tsx
+import { useState } from 'react';
+import { Button, Host, Spacer, TabView, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  animation,
+  Animation,
+  background,
+  font,
+  foregroundStyle,
+  frame,
+  tabViewStyle,
+} from '@expo/ui/swift-ui/modifiers';
+
+const fillFrame = frame({ maxWidth: Infinity, maxHeight: Infinity });
+const pageFrame = frame({ minHeight: 320, maxHeight: 320 });
+
+export default function ControlledTabViewExample() {
+  const [selected, setSelected] = useState('0');
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack>
+        <Text>已选择：{selected}</Text>
+        <Button label="跳转到第 3 页" onPress={() => setSelected('2')} />
+        <TabView
+          selection={selected}
+          onSelectionChange={setSelected}
+          modifiers={[
+            pageFrame,
+            tabViewStyle({ type: 'page' }),
+            animation(Animation.default, Number(selected)),
+          ]}>
+          <TabView.Tab value="0">
+            <Page label="第 1 页" color="#6200EE" />
+          </TabView.Tab>
+          <TabView.Tab value="1">
+            <Page label="第 2 页" color="#03DAC5" />
+          </TabView.Tab>
+          <TabView.Tab value="2">
+            <Page label="第 3 页" color="#FF5722" />
+          </TabView.Tab>
+        </TabView>
+      </VStack>
+    </Host>
+  );
+}
+
+function Page({ label, color }: { label: string; color: string }) {
+  return (
+    <VStack alignment="center" modifiers={[fillFrame, background(color)]}>
+      <Spacer />
+      <Text modifiers={[font({ size: 28, weight: 'bold' }), foregroundStyle('#FFFFFF')]}>
+        {label}
+      </Text>
+      <Spacer />
+    </VStack>
+  );
+}
+```
+
+### 页面指示圆点
+
+结合 `tabViewStyle({ type: 'page' })` 使用 [`indexViewStyle`](modifiers/#indexviewstyleconfig) 修饰符来控制圆点指示器。将 `indexDisplayMode` 设为 `'always'`、`'never'` 或 `'automatic'`，并设置 `backgroundDisplayMode` 以在圆点后渲染一个半透明胶囊背景。
+
+```tsx PageIndicatorExample.tsx
+import { Host, Spacer, TabView, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  background,
+  font,
+  foregroundStyle,
+  frame,
+  indexViewStyle,
+  tabViewStyle,
+} from '@expo/ui/swift-ui/modifiers';
+
+const fillFrame = frame({ maxWidth: Infinity, maxHeight: Infinity });
+const pageFrame = frame({ minHeight: 320, maxHeight: 320 });
+
+export default function PageIndicatorExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <TabView
+        modifiers={[
+          pageFrame,
+          tabViewStyle({ type: 'page', indexDisplayMode: 'always' }),
+          indexViewStyle({ backgroundDisplayMode: 'always' }),
+        ]}>
+        <TabView.Tab value="0">
+          <Page label="第 1 页" color="#4F8DF6" />
+        </TabView.Tab>
+        <TabView.Tab value="1">
+          <Page label="第 2 页" color="#34C759" />
+        </TabView.Tab>
+        <TabView.Tab value="2">
+          <Page label="第 3 页" color="#FF9F0A" />
+        </TabView.Tab>
+      </TabView>
+    </Host>
+  );
+}
+
+function Page({ label, color }: { label: string; color: string }) {
+  return (
+    <VStack alignment="center" modifiers={[fillFrame, background(color)]}>
+      <Spacer />
+      <Text modifiers={[font({ size: 28, weight: 'bold' }), foregroundStyle('#FFFFFF')]}>
+        {label}
+      </Text>
+      <Spacer />
+    </VStack>
+  );
+}
+```
+
+### 底部标签栏
+
+使用 `tabViewStyle({ type: 'automatic' })` 可获得 SwiftUI 默认的标签栏。每个标签页的 `label` 和 `systemImage` 会填充到栏项目中。可在某个标签页上使用 [`badge`](modifiers/#badgevalue) 修饰符，为其栏项目添加徽标。
+
+> **注意：** 对于跨全屏路由的有路由底部标签导航，请改用 [expo-router/unstable-native-tabs`](/router/advanced/native-tabs/)。
+
+```tsx BottomTabsExample.tsx
+import { useState } from 'react';
+import { Host, Spacer, TabView, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  background,
+  badge,
+  font,
+  foregroundStyle,
+  frame,
+  tabViewStyle,
+} from '@expo/ui/swift-ui/modifiers';
+
+const fillFrame = frame({ maxWidth: Infinity, maxHeight: Infinity });
+
+export default function BottomTabsExample() {
+  const [selected, setSelected] = useState('inbox');
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <TabView
+        selection={selected}
+        onSelectionChange={setSelected}
+        modifiers={[tabViewStyle({ type: 'automatic' })]}>
+        <TabView.Tab value="inbox" label="收件箱" systemImage="tray.fill" modifiers={[badge('3')]}>
+          <Page label="收件箱" color="#4F8DF6" />
+        </TabView.Tab>
+        <TabView.Tab value="sent" label="已发送" systemImage="paperplane.fill">
+          <Page label="已发送" color="#34C759" />
+        </TabView.Tab>
+        <TabView.Tab value="drafts" label="草稿" systemImage="square.and.pencil">
+          <Page label="草稿" color="#FF9F0A" />
+        </TabView.Tab>
+      </TabView>
+    </Host>
+  );
+}
+
+function Page({ label, color }: { label: string; color: string }) {
+  return (
+    <VStack alignment="center" modifiers={[fillFrame, background(color)]}>
+      <Spacer />
+      <Text modifiers={[font({ size: 28, weight: 'bold' }), foregroundStyle('#FFFFFF')]}>
+        {label}
+      </Text>
+      <Spacer />
+    </VStack>
+  );
+}
+```
+
+## API
+
+```tsx
+import { TabView } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/tabview" apiName="TabView" />

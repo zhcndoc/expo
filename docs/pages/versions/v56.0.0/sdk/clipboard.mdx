@@ -1,0 +1,79 @@
+---
+title: 剪贴板
+description: 一个允许获取和设置剪贴板内容的通用库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-clipboard'
+packageName: 'expo-clipboard'
+iconUrl: '/static/images/packages/expo-clipboard.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+`expo-clipboard` 提供了一个在 Android、iOS 和 Web 上获取和设置剪贴板内容的接口。
+
+## 安装
+
+<APIInstallSection />
+
+## 使用
+
+<SnackInline label='Clipboard' dependencies={['expo-clipboard']} platforms={['ios', 'android', 'web']}>
+
+```jsx
+import { useState } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+
+export default function App() {
+  const [copiedText, setCopiedText] = useState('');
+
+  const copyToClipboard = async () => {
+    /* @info 将文本复制到剪贴板 */
+    await Clipboard.setStringAsync('hello world');
+    /* @end */
+  };
+
+  const fetchCopiedText = async () => {
+    const text = /* @info 从剪贴板粘贴文本 */ await Clipboard.getStringAsync();
+    /* @end */
+    setCopiedText(text);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Button title="点击此处复制到剪贴板" onPress={copyToClipboard} />
+      <Button title="查看已复制的文本" onPress={fetchCopiedText} />
+      <Text style={styles.copiedText}>{copiedText}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  copiedText: {
+    marginTop: 10,
+    color: 'red',
+  },
+});
+```
+
+</SnackInline>
+
+## API
+
+```js
+import * as Clipboard from 'expo-clipboard';
+```
+
+> **warning** 在 Web 上，此模块使用 [`AsyncClipboard` API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API)，
+> 不同浏览器的行为可能不同，或者可能并未得到完整支持。
+> 尤其是在 WebKit 上，这个 API 存在一个问题，会导致它无法在异步代码中使用。
+> [点击这里了解更多详情](https://bugs.webkit.org/show_bug.cgi?id=222262)。
+
+<APISection packageName="expo-clipboard" />

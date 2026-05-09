@@ -1,0 +1,431 @@
+---
+title: 音频（expo-audio）
+description: 一个提供用于在应用中实现音频播放和录制的 API 的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-audio'
+packageName: 'expo-audio'
+iconUrl: '/static/images/packages/expo-av.png'
+platforms: ['android', 'ios', 'web', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import {
+  ConfigPluginExample,
+  ConfigPluginProperties,
+  ConfigReactNative,
+} from '~/ui/components/ConfigSection';
+import { SnackInline } from '~/ui/components/Snippet';
+import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
+
+`expo-audio` 是一个跨平台音频库，用于访问设备的原生音频能力。
+
+[Android 媒体格式支持文档](https://developer.android.com/media/media3/exoplayer/supported-formats) 说明了在 Android 上使用 Expo Player 时支持的格式。[iOS 音频和视频格式文档](https://developer.apple.com/documentation/coreaudiotypes/audio-format-identifiers) 列出了 Apple 设备支持的媒体格式。
+
+请注意，如果耳机/Bluetooth 音频设备断开连接，音频会自动停止。
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app config 中配置
+
+如果你的项目使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-audio` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件才能生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone.",
+          "enableBackgroundPlayback": true,
+          "enableBackgroundRecording": false
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'microphonePermission',
+      platform: 'ios',
+      description:
+        '一个字符串，用于设置 `NSMicrophoneUsageDescription` 权限消息。将其设为 `false` 会禁用该权限。',
+      default: '"Allow $(PRODUCT_NAME) to access your microphone"',
+    },
+    {
+      name: 'recordAudioAndroid',
+      platform: 'android',
+      description:
+        '一个布尔值，用于决定是否在 Android 上启用 `RECORD_AUDIO` 权限。',
+      default: 'true',
+    },
+    {
+      name: 'enableBackgroundRecording',
+      description:
+        '一个布尔值，用于决定是否启用后台音频录制。在 Android 上，这会添加一个录制前台服务和相关权限，并在录制期间显示一个持续通知。在 iOS 上，这会添加 `audio` 后台模式。**注意：**后台录制会显著影响电池续航。',
+      default: 'false',
+    },
+    {
+      name: 'enableBackgroundPlayback',
+      description:
+        '一个布尔值，用于决定是否启用后台音频播放。在 Android 上，这会添加一个媒体播放前台服务，并允许你显示锁屏控制，这是持续后台播放所必需的。在 iOS 上，这会添加 `audio` 后台模式。',
+      default: 'true',
+    },
+  ]}
+/>
+
+## 使用
+
+### 播放声音
+
+<SnackInline
+  label='Playing sounds'
+  dependencies={['expo-audio', 'expo-asset']}
+  files={{
+    'assets/Hello.mp3': 'https://snack-code-uploads.s3.us-west-1.amazonaws.com/~asset/c9c43b458d6daa9771a7287cae9f5b47'
+  }}
+>
+
+```jsx
+import { View, StyleSheet, Button } from 'react-native';
+import { useAudioPlayer } from 'expo-audio';
+
+const audioSource = require('./assets/Hello.mp3');
+
+export default function App() {
+  const player = useAudioPlayer(audioSource);
+
+  return (
+    <View style={styles.container}>
+      <Button title="Play Sound" onPress={() => player.play()} />
+      <Button
+        title="Replay Sound"
+        onPress={() => {
+          player.seekTo(0);
+          player.play();
+        }}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#ecf0f1',
+    padding: 10,
+  },
+});
+```
+
+</SnackInline>
+
+### 录制声音
+
+<SnackInline label='录制声音' dependencies={['expo-audio', 'expo-asset']}>
+
+```jsx
+import { useState, useEffect } from 'react';
+import { View, StyleSheet, Button } from 'react-native';
+import {
+  useAudioRecorder,
+  AudioModule,
+  RecordingPresets,
+  setAudioModeAsync,
+  useAudioRecorderState,
+} from 'expo-audio';
+
+export default function App() {
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderState = useAudioRecorderState(audioRecorder);
+
+  const record = async () => {
+    await audioRecorder.prepareToRecordAsync();
+    audioRecorder.record();
+  };
+
+  const stopRecording = async () => {
+    // 录音将可在 `audioRecorder.uri` 中获取。
+    await audioRecorder.stop();
+  };
+
+  useEffect(() => {
+    (async () => {
+      const status = await AudioModule.requestRecordingPermissionsAsync();
+      if (!status.granted) {
+        Alert.alert('已拒绝访问麦克风的权限');
+      }
+
+      setAudioModeAsync({
+        playsInSilentMode: true,
+        allowsRecording: true,
+      });
+    })();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Button
+        title={recorderState.isRecording ? '停止录音' : '开始录音'}
+        onPress={recorderState.isRecording ? stopRecording : record}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#ecf0f1',
+    padding: 10,
+  },
+});
+```
+
+</SnackInline>
+
+### 在后台播放音频
+
+后台音频播放允许你的应用在进入后台或设备屏幕锁定时继续播放音频。
+
+#### 配置
+
+要启用后台音频播放，请在你的 [app config](/workflow/configuration/) 中使用 config plugin：
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": true
+        }
+      ]
+    ]
+  }
+}
+```
+
+上述配置会自动配置所需的原生设置：
+
+- <PlatformTags platforms={['android']} /> 添加 `FOREGROUND_SERVICE` 和
+  `FOREGROUND_SERVICE_MEDIA_PLAYBACK` 权限。同时在应用的 **AndroidManifest.xml** 中声明一个媒体播放前台服务
+  （`AudioControlsService`）。
+- <PlatformTags platforms={['ios']} /> 添加 `audio` `UIBackgroundMode` 能力
+
+#### 使用
+
+使用 config plugin 配置好应用后，你需要：
+
+1. **配置音频会话** 以允许后台播放
+2. **启用锁屏控制**（在 Android 上，持续后台播放需要此项）
+
+```jsx
+import { View, Button } from 'react-native';
+import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
+import { useEffect } from 'react';
+
+export default function AudioPlayerScreen() {
+  const audioSource = require('./assets/audio.mp3');
+  const player = useAudioPlayer(audioSource);
+
+  useEffect(() => {
+    // 为后台播放配置音频会话
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: true,
+      interruptionMode: 'doNotMix',
+    });
+  }, []);
+
+  const handlePlay = () => {
+    // 启用带元数据的锁屏控制
+    player.setActiveForLockScreen(true, {
+      title: '我的音频标题',
+      artist: '艺人名称',
+      albumTitle: '专辑名称',
+      artworkUrl: 'https://example.com/artwork.jpg', // 可选
+    });
+
+    // 开始播放 - 这将持续在后台运行
+    player.play();
+  };
+
+  const handleStop = () => {
+    player.pause();
+    // 完成后可选择禁用锁屏控制
+    player.setActiveForLockScreen(false);
+  };
+
+  return (
+    <View>
+      <Button title="播放" onPress={handlePlay} />
+      <Button title="停止" onPress={handleStop} />
+    </View>
+  );
+}
+```
+
+<PlatformTags platforms={['android']} />
+
+> **注意**：在 Android 上，若要持续后台播放，你必须使用 [`setActiveForLockScreen`](#setactiveforlockscreenactive-metadata-options) 启用锁屏控制。否则，音频会在后台播放约 3 分钟后停止（这是系统限制）。请确保适当地[配置 config plugin](#configuration-in-app-config)。
+
+- 通知抽屉中会出现一个带播放控制的媒体通知
+- 音频会在后台持续无限播放
+- 用户可以通过锁屏和通知控制播放
+- 前台服务会在播放期间保持播放存活
+
+<PlatformTags platforms={['ios']} />
+
+在 iOS 上，一旦音频会话配置为 `shouldPlayInBackground: true`，音频播放就会在后台无缝继续。锁屏控制是可选的，但它们通过在锁屏和控制中心提供播放控制来提升用户体验。
+
+<ConfigReactNative>
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)）（也就是你在手动使用原生 **android** 和 **ios** 项目），那么你需要为后台播放配置以下内容：
+
+- 对于 Android，添加到 **android/app/src/main/AndroidManifest.xml**：
+
+  ```xml android/app/src/main/AndroidManifest.xml
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+  <application>
+    <!-- 其他应用组件 -->
+    <service
+      android:name="expo.modules.audio.service.AudioControlsService"
+      android:exported="false"
+      android:foregroundServiceType="mediaPlayback">
+      <intent-filter>
+        <action android:name="androidx.media3.session.MediaSessionService" />
+      </intent-filter>
+    </service>
+  </application>
+  ```
+
+- 对于 iOS，添加到 **ios/YourApp/Info.plist**：
+
+  ```xml ios/YourApp/Info.plist
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>audio</string>
+  </array>
+  ```
+
+</ConfigReactNative>
+
+### 在后台录制音频
+
+> **warning** 后台录制会显著影响电池续航。仅在你的应用功能确有需要时才启用它。
+
+后台音频录制允许你的应用在进入后台或设备屏幕锁定时继续录制。
+
+要启用后台录制，请在你的 [app config](/workflow/configuration/) 中使用 config plugin：
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to record audio.",
+          "enableBackgroundRecording": true
+        }
+      ]
+    ]
+  }
+}
+```
+
+上述配置会自动配置所需的原生设置：
+
+- <PlatformTags platforms={['android']} /> 添加 `FOREGROUND_SERVICE`、
+  `FOREGROUND_SERVICE_MICROPHONE` 和 `POST_NOTIFICATIONS` 权限。同时在应用的 **AndroidManifest.xml** 中声明一个音频
+  录制前台服务。
+- <PlatformTags platforms={['ios']} /> 添加 `audio` `UIBackgroundMode` 能力
+
+<ConfigReactNative>
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)）（也就是你在手动使用原生 **android** 和 **ios** 项目），那么你需要在原生项目中配置以下权限：
+
+- 对于 Android，添加到 **android/app/src/main/AndroidManifest.xml**：
+
+  ```xml android/app/src/main/AndroidManifest.xml
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  ```
+
+- 对于 iOS，添加到 **ios/YourApp/Info.plist**：
+
+  ```xml ios/YourApp/Info.plist
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>audio</string>
+  </array>
+  ```
+
+</ConfigReactNative>
+
+#### 使用
+
+配置好应用后，使用 [`setAudioModeAsync`](#audiosetaudiomodeasyncmode) 在运行时启用后台录制：
+
+```jsx
+import { setAudioModeAsync, useAudioRecorder, RecordingPresets } from 'expo-audio';
+
+await setAudioModeAsync({
+  playsInSilentMode: true,
+  allowsRecording: true,
+  allowsBackgroundRecording: true,
+});
+
+const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+await recorder.prepareToRecordAsync();
+await recorder.record();
+
+// 录制会在后台继续
+```
+
+<PlatformTags platforms={['android']} />
+
+在 Android 上，后台录制需要一个前台服务，它会显示一条写有“Recording audio”的持续通知和一个停止按钮。录制进行时，此通知不能被移除，录制停止后会自动消失。
+
+<PlatformTags platforms={['ios']} />
+
+在 iOS 上，当应用处于后台或屏幕锁定时，后台录制会无缝继续。除了系统状态栏之外，不会向应用用户显示额外的通知或指示器。
+
+### 直接使用 AudioPlayer
+
+在大多数情况下，请使用 [`useAudioPlayer`](#useaudioplayersource-options) 这个 hook 来创建 `AudioPlayer` 实例。它会管理播放器的生命周期，并确保在组件卸载时正确释放。不过，在一些高级用例中，你可能需要创建一个生命周期超出组件范围的 `AudioPlayer`。
+在这些情况下，请使用 [`createAudioPlayer`](#audiocreateaudioplayersource-options) 函数。你需要了解这种方式带来的风险，因为当播放器不再需要时，调用 [`release()`](../sdk/expo/#release) 方法是你的责任。如果处理不当，这种方式可能会导致内存泄漏。
+
+```tsx
+import { createAudioPlayer } from 'expo-audio';
+const player = createAudioPlayer(audioSource);
+```
+
+### Web 使用说明
+
+- Chrome 上的一个 MediaRecorder 问题会生成缺少时长元数据的 WebM 文件。[查看未解决的 Chromium 问题](https://bugs.chromium.org/p/chromium/issues/detail?id=642012)。
+- MediaRecorder 的编码选项和其他配置在不同浏览器之间并不一致。在你的应用中使用 [kbumsik/opus-media-recorder](https://github.com/kbumsik/opus-media-recorder) 或 [ai/audio-recorder-polyfill](https://github.com/ai/audio-recorder-polyfill) 这样的 polyfill 会改善你的体验。传递给 `prepareToRecordAsync` 的任何选项都将直接传递给 MediaRecorder API，也就是该 polyfill。
+- Web 浏览器要求站点通过安全方式提供，才能监听麦克风。有关更多细节，请参见 [MediaDevices `getUserMedia()` 安全性](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia#security)。
+
+## API
+
+```js
+import { useAudioPlayer, useAudioRecorder } from 'expo-audio';
+```
+
+<APISection packageName="expo-audio" apiName="Audio" />

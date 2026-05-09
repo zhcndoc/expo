@@ -1,0 +1,105 @@
+---
+title: package.json
+description: package.json 文件中可使用的 Expo 特定属性参考。
+---
+
+import { PaddedAPIBox } from '~/components/plugins/PaddedAPIBox';
+
+**package.json** 是一个 JSON 文件，包含 JavaScript 项目的元数据。这是对可在 **package.json** 文件中使用的 Expo 特定属性的参考说明。
+
+<PaddedAPIBox>
+
+## `install.exclude`
+
+以下命令会检查项目中已安装库的版本，并在某个库的版本与 Expo 推荐的版本不同时发出警告：
+
+- `npx expo start` 和 `npx expo-doctor`
+- `npx expo install`（在安装该库的新版本或使用 `--check` 或 `--fix` 选项时）
+
+通过在 **package.json** 文件中的 `install.exclude` 数组里指定该库，你可以将其从版本检查中排除：
+
+```json package.json
+{
+  "expo": {
+    "install": {
+      "exclude": ["expo-updates", "expo-splash-screen"]
+    }
+  }
+}
+```
+
+</PaddedAPIBox>
+
+<PaddedAPIBox>
+
+## `autolinking`
+
+允许通过在 **package.json** 中使用 `autolinking` 属性来配置模块解析行为。
+
+完整参考请参见 [Autolinking configuration](/modules/autolinking/#configuration)。
+
+</PaddedAPIBox>
+
+<PaddedAPIBox>
+
+## `doctor`
+
+允许配置 [`npx expo-doctor`](/develop/tools/#expo-doctor) 命令的行为。
+
+<PaddedAPIBox>
+
+### `reactNativeDirectoryCheck`
+
+默认情况下，Expo Doctor 会根据 [React Native directory](https://reactnative.directory/) 验证你项目的包。此检查会对不包含在 React Native Directory 中的包列表发出警告。
+
+你可以通过在项目的 **package.json** 文件中添加以下配置来自定义此检查：
+
+```json package.json
+{
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        /* @info 使用此选项可禁用/启用检查。 */
+        "enabled": true,
+        /* @end */
+        /* @info 使用此选项可排除特定包。 */
+        "exclude": ["/foo/", "bar"],
+        /* @end */
+        /* @info 使用此选项可禁用/启用未知包列表。 */
+        "listUnknownPackages": true
+        /* @end */
+      }
+    }
+  }
+}
+```
+
+默认情况下，该检查已启用，并且会列出未知包。
+
+</PaddedAPIBox>
+
+<PaddedAPIBox>
+
+### `appConfigFieldsNotSyncedCheck`
+
+Expo Doctor 会检查你的项目是否包含原生项目目录，例如 **android** 或 **ios**。如果这些目录存在，但未在 **.gitignore** 或 [**.easignore**](/build-reference/easignore) 文件中列出，Expo Doctor 会验证是否存在 app config 文件。如果该文件存在，则表示你的项目已配置为使用 [Prebuild](/more/glossary-of-terms/#prebuild)。
+
+当存在 **android** 或 **ios** 目录时，EAS Build 不会将 app config 属性同步到原生项目。如果这些条件成立，Expo Doctor 会发出警告。
+
+你可以通过在项目的 **package.json** 文件中添加以下配置来禁用或启用此检查：
+
+```json package.json
+{
+  "expo": {
+    "doctor": {
+      "appConfigFieldsNotSyncedCheck": {
+        "enabled": false
+      }
+    }
+  }
+}
+```
+
+</PaddedAPIBox>
+
+</PaddedAPIBox>

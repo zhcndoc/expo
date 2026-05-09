@@ -1,0 +1,136 @@
+---
+id: statusbar
+title: 状态栏
+description: 一个提供与 React Native StatusBar API 相同接口的库，但默认值略有不同，以便在 Expo 环境中表现更佳。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-status-bar'
+packageName: 'expo-status-bar'
+iconUrl: '/static/images/packages/expo-status-bar.png'
+platforms: ['android', 'ios', 'tvos', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { SnackInline } from '~/ui/components/Snippet';
+
+`expo-status-bar` 为你提供了一个组件和命令式接口，用于控制应用状态栏，以更改其文本颜色、隐藏它，并对这些更改应用动画。你能通过 `StatusBar` 组件执行的操作，具体取决于你所使用的平台。
+
+> **tvOS 和 web 支持**
+>
+> 对于 **tvOS**，`expo-status-bar` 代码可以编译并运行，但不会显示状态栏。
+>
+> 对于 **web**，没有可用的 API 来控制操作系统的状态栏，因此 `expo-status-bar` 不会执行任何操作，也不会抛出错误。
+
+<ContentSpotlight videoId="_ogZuukmZa8" />
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app 配置中进行配置
+
+如果你在项目中使用配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），可以使用 `expo-status-bar` 内置的 [config plugin](/config-plugins/introduction/) 来进行配置。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-status-bar",
+        {
+          "hidden": false,
+          "style": "dark"
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'hidden',
+      description:
+        '确定状态栏是否在启动时隐藏。接受 `true` 和 `false` 作为值。',
+      default: 'undefined',
+    },
+    {
+      name: 'style',
+      description:
+        '确定状态栏启动时采用哪种样式。接受 `light` 和 `dark` 作为值。',
+      default: 'undefined',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+如果你没有使用 Continuous Native Generation ([CNG](/workflow/continuous-native-generation/))，或者你是手动使用原生项目，那么你需要向原生项目添加以下配置：
+
+- 要在 **Android** 上隐藏状态栏，请在 **android/app/src/main/res/values/styles.xml** 中添加 `expoStatusBarHidden`：
+
+  ```xml
+  <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <!-- ... -->
+    <item name="expoStatusBarHidden">true</item>
+  </style>
+  ```
+
+- 要在 **iOS** 上隐藏状态栏，请在 **ios/&lt;project&gt;/Info.plist** 中设置以下键：
+
+  ```xml
+  <key>UIStatusBarHidden</key>
+  <true/>
+  ```
+
+</ConfigReactNative>
+
+## 用法
+
+<SnackInline dependencies={["expo-status-bar"]}>
+
+```jsx collapseHeight=310
+import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>请注意，状态栏的文本是浅色的！</Text>
+      <StatusBar style="light" />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    color: '#fff',
+  },
+});
+```
+
+</SnackInline>
+
+## API
+
+```js
+import { StatusBar } from 'expo-status-bar';
+```
+
+<APISection packageName="expo-status-bar" apiName="StatusBar" />

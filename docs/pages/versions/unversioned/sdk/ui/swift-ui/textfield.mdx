@@ -8,8 +8,16 @@ platforms: ['ios', 'tvos', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
 
 Expo UI TextField 与官方 SwiftUI [TextField API](https://developer.apple.com/documentation/swiftui/textfield) 保持一致，支持单行和多行输入、键盘配置、提交处理，以及用于程序化控制的命令式 `ref`。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/textfield/ios-light.webp"
+  darkSource="/static/images/expo-ui/textfield/ios-dark.webp"
+  alt="Form 中的 TextField 和 SecureField"
+/>
 
 ## 安装
 
@@ -28,7 +36,7 @@ export default function BasicTextFieldExample() {
 
   return (
     <Host matchContents>
-      <TextField placeholder="用户名" onValueChange={setValue} />
+      <TextField placeholder="用户名" onTextChange={setValue} />
     </Host>
   );
 }
@@ -50,8 +58,8 @@ export default function MultilineTextFieldExample() {
     <Host matchContents>
       <TextField
         axis="vertical"
-        placeholder="请告诉我们关于你自己的信息..."
-        onValueChange={setValue}
+        placeholder="跟我们介绍一下你自己..."
+        onTextChange={setValue}
         modifiers={[lineLimit(5), fixedSize({ horizontal: false, vertical: true })]}
       />
     </Host>
@@ -75,7 +83,7 @@ export default function KeyboardTypeExample() {
     <Host matchContents>
       <TextField
         placeholder="邮箱"
-        onValueChange={setValue}
+        onTextChange={setValue}
         modifiers={[keyboardType('email-address'), autocorrectionDisabled()]}
       />
     </Host>
@@ -99,7 +107,7 @@ export default function SubmitHandlingExample() {
     <Host matchContents>
       <TextField
         placeholder="搜索..."
-        onValueChange={setValue}
+        onTextChange={setValue}
         modifiers={[submitLabel('search'), onSubmit(() => console.log('已提交:', value))]}
       />
     </Host>
@@ -111,18 +119,29 @@ export default function SubmitHandlingExample() {
 
 使用 `ref` 可以以命令式方式设置文本、聚焦、失焦或选中文本。
 
+> **注意:** `setSelection` 需要 iOS 18.0+ / tvOS 18.0+。其他 ref 方法可在所有受支持的版本上工作。
+
 ```tsx ImperativeRefExample.tsx
 import { useRef } from 'react';
-import { Host, TextField, TextFieldRef, Button, HStack, VStack } from '@expo/ui/swift-ui';
+import {
+  Host,
+  TextField,
+  TextFieldRef,
+  Button,
+  HStack,
+  VStack,
+  useNativeState,
+} from '@expo/ui/swift-ui';
 import { buttonStyle } from '@expo/ui/swift-ui/modifiers';
 
 export default function ImperativeRefExample() {
   const ref = useRef<TextFieldRef>(null);
+  const text = useNativeState('选择我！');
 
   return (
     <Host matchContents>
       <VStack>
-        <TextField ref={ref} defaultValue="选中我！" placeholder="命令式字段" />
+        <TextField ref={ref} text={text} placeholder="命令式字段" />
         <HStack spacing={12}>
           <Button
             modifiers={[buttonStyle('bordered')]}
@@ -141,11 +160,57 @@ export default function ImperativeRefExample() {
           />
           <Button
             modifiers={[buttonStyle('bordered')]}
+            onPress={() => ref.current?.clear()}
+            label="清除"
+          />
+          <Button
+            modifiers={[buttonStyle('bordered')]}
             onPress={() => ref.current?.setSelection(0, 7)}
             label="选择"
           />
         </HStack>
       </VStack>
+    </Host>
+  );
+}
+```
+
+### Worklet 文本遮罩
+
+当 `onTextChange` 使用 `'worklet'` 指令标记时，它会在 UI 线程上同步运行，因此在回调中对 [`useNativeState`](usenativestate) 可观察对象的写入会在下一帧之前生效。输入文本和遮罩后的文本之间不会出现闪烁。下面的示例会在用户输入时对电话号码进行遮罩，并从 worklet 中同时写入 `text` 和 `selection`，以保持光标位于格式化值的末尾。
+
+> **注意:** Worklet 需要安装 [`react-native-reanimated`](https://docs.swmansion.com/react-native-reanimated/) 和 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。`selection` 属性需要 iOS 18.0+ / tvOS 18.0+。在较旧版本上，worklet 仍然可以更新文本，但无法进行光标定位。
+
+```tsx WorkletPhoneMaskExample.tsx
+import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
+import { keyboardType } from '@expo/ui/swift-ui/modifiers';
+
+export default function WorkletPhoneMaskExample() {
+  const phone = useNativeState('');
+  const selection = useNativeState({ start: 0, end: 0 });
+
+  return (
+    <Host matchContents>
+      <TextField
+        text={phone}
+        selection={selection}
+        placeholder="(555) 123-4567"
+        modifiers={[keyboardType('phone-pad')]}
+        onTextChange={v => {
+          'worklet';
+          const digits = v.replace(/\D/g, '').slice(0, 10);
+          let formatted = digits;
+          if (digits.length > 6) {
+            formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+          } else if (digits.length > 3) {
+            formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+          }
+          if (formatted !== v) {
+            phone.value = formatted;
+            selection.value = { start: formatted.length, end: formatted.length };
+          }
+        }}
+      />
     </Host>
   );
 }

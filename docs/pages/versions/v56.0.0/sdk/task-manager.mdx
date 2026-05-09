@@ -1,0 +1,97 @@
+---
+title: TaskManager
+description: 一个为可在后台运行的任务提供支持的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-task-manager'
+packageName: 'expo-task-manager'
+platforms: ['android', 'ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { SnackInline } from '~/ui/components/Snippet';
+import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
+
+`expo-task-manager` 提供了一个 API，使你能够管理长时间运行的任务，特别是那些在应用处于后台时也能运行的任务。这个库的某些功能会被其他库在底层使用。下面是使用 `TaskManager` 的 Expo SDK 库列表。
+
+## 使用 Expo TaskManager 的库
+
+- [Location](location.mdx)
+- [BackgroundTask](background-task.mdx)
+- [BackgroundFetch](background-fetch.mdx)
+- [Notifications](notifications.mdx)
+
+## 安装
+
+<APIInstallSection />
+
+<br />
+
+> **info** 你可以在 Expo Go 应用中测试 `TaskManager`。不过，请查看每个使用 `TaskManager` 的[库](#libraries-using-expo-taskmanager)的文档，确认它是否支持在 Expo Go 中测试。
+
+## 配置&ensp;<PlatformTag platform='ios' />
+
+独立应用需要一些额外配置：在 iOS 上，每个后台功能都需要在你的 **Info.plist** 文件中的 `UIBackgroundModes` 数组里设置一个特定的键。
+
+关于如何进行此配置的更多信息，请参阅使用 `TaskManager` 的[库](#libraries-using-expo-taskmanager)的参考文档。
+
+## 示例
+
+<SnackInline dependencies={["expo-task-manager", "expo-location"]} platforms={['android', 'ios']}>
+
+```jsx
+import React from 'react';
+import { Button, View, StyleSheet } from 'react-native';
+import * as TaskManager from 'expo-task-manager';
+import * as Location from 'expo-location';
+
+const LOCATION_TASK_NAME = 'background-location-task';
+
+const requestPermissions = async () => {
+  const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
+  if (foregroundStatus === 'granted') {
+    const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
+    if (backgroundStatus === 'granted') {
+      await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+        accuracy: Location.Accuracy.Balanced,
+      });
+    }
+  }
+};
+
+const PermissionsButton = () => (
+  <View style={styles.container}>
+    <Button onPress={requestPermissions} title="启用后台定位" />
+  </View>
+);
+
+TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
+  if (error) {
+    // 发生错误 - 查看 `error.message` 获取更多详情。
+    return;
+  }
+  if (data) {
+    const { locations } = data;
+    // 对在后台捕获的位置数据执行一些操作
+  }
+});
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+
+export default PermissionsButton;
+```
+
+</SnackInline>
+
+## API
+
+```js
+import * as TaskManager from 'expo-task-manager';
+```
+
+<APISection packageName="expo-task-manager" apiName="TaskManager" />

@@ -1,0 +1,152 @@
+---
+title: 工具提示
+description: 用于在长按时显示上下文信息的 Jetpack Compose 工具提示组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI Tooltip 与官方 Jetpack Compose [Tooltip](https://developer.android.com/develop/ui/compose/components/tooltip) API 保持一致。`TooltipBox` 会包装锚点内容并显示一个提示框。提示框内容通过 `TooltipBox.PlainTooltip` 或 `TooltipBox.RichTooltip` 复合组件提供，它们分别对应 [`PlainTooltip`](https://developer.android.com/develop/ui/compose/components/tooltip#display-plain) 和 [`RichTooltip`](https://developer.android.com/develop/ui/compose/components/tooltip#display-rich)。提示框可以通过长按触发，也可以通过 `ref` 以编程方式显示。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/tooltip/android-light.webp"
+  darkSource="/static/images/expo-ui/tooltip/android-dark.webp"
+  alt="带有标题、正文、了解更多操作和锚点按钮的 Material 3 富提示框"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 简单提示框
+
+长按锚点内容以显示提示框。
+
+```tsx PlainTooltipExample.tsx
+import { Host, TooltipBox, Button, Text } from '@expo/ui/jetpack-compose';
+
+export default function PlainTooltipExample() {
+  return (
+    <Host matchContents>
+      <TooltipBox>
+        <TooltipBox.PlainTooltip>
+          <Text>添加到收藏</Text>
+        </TooltipBox.PlainTooltip>
+        <Button onClick={() => {}}>
+          <Text>收藏</Text>
+        </Button>
+      </TooltipBox>
+    </Host>
+  );
+}
+```
+
+### 带标题和正文的富提示框
+
+将 `TooltipBox.RichTooltip` 与 `Title` 和 `Text` 复合组件模式一起使用，以提供更详细的上下文信息。
+
+```tsx RichTooltipExample.tsx
+import { Host, TooltipBox, Button, Text } from '@expo/ui/jetpack-compose';
+
+export default function RichTooltipExample() {
+  return (
+    <Host matchContents>
+      <TooltipBox>
+        <TooltipBox.RichTooltip>
+          <TooltipBox.RichTooltip.Title>
+            <Text>相机</Text>
+          </TooltipBox.RichTooltip.Title>
+          <TooltipBox.RichTooltip.Text>
+            <Text>使用设备相机拍照和录制视频。</Text>
+          </TooltipBox.RichTooltip.Text>
+        </TooltipBox.RichTooltip>
+        <Button onClick={() => {}}>
+          <Text>打开相机</Text>
+        </Button>
+      </TooltipBox>
+    </Host>
+  );
+}
+```
+
+### 带操作的富提示框
+
+使用 `TooltipBox.RichTooltip.Action` 添加一个可交互操作。使用 `isPersistent`，让提示框保持可见，便于用户点击。只要存在操作槽位，`hasAction` 就会自动推导出来。
+
+```tsx RichTooltipActionExample.tsx
+import { Host, TooltipBox, Button, TextButton, Text } from '@expo/ui/jetpack-compose';
+
+export default function RichTooltipActionExample() {
+  return (
+    <Host matchContents>
+      <TooltipBox isPersistent>
+        <TooltipBox.RichTooltip>
+          <TooltipBox.RichTooltip.Title>
+            <Text>需要权限</Text>
+          </TooltipBox.RichTooltip.Title>
+          <TooltipBox.RichTooltip.Text>
+            <Text>此功能需要访问摄像头和麦克风。</Text>
+          </TooltipBox.RichTooltip.Text>
+          <TooltipBox.RichTooltip.Action>
+            <TextButton onClick={() => {}}>
+              <Text>了解更多</Text>
+            </TextButton>
+          </TooltipBox.RichTooltip.Action>
+        </TooltipBox.RichTooltip>
+        <Button onClick={() => {}}>
+          <Text>录制视频</Text>
+        </Button>
+      </TooltipBox>
+    </Host>
+  );
+}
+```
+
+### 编程式显示和关闭
+
+使用 `ref` 可以不依赖长按，直接以命令式方式 `show()` 或 `dismiss()` 提示框。
+
+```tsx ProgrammaticTooltipExample.tsx
+import { useRef } from 'react';
+import { Host, TooltipBox, type TooltipBoxRef, Button, Text, Row } from '@expo/ui/jetpack-compose';
+
+export default function ProgrammaticTooltipExample() {
+  const tooltipRef = useRef<TooltipBoxRef>(null);
+
+  return (
+    <Host matchContents>
+      <TooltipBox ref={tooltipRef} isPersistent>
+        <TooltipBox.PlainTooltip>
+          <Text>通过编程方式显示！</Text>
+        </TooltipBox.PlainTooltip>
+        <Button onClick={() => {}}>
+          <Text>锚点</Text>
+        </Button>
+      </TooltipBox>
+      <Row horizontalArrangement={{ spacedBy: 8 }}>
+        <Button onClick={() => tooltipRef.current?.show()}>
+          <Text>显示</Text>
+        </Button>
+        <Button onClick={() => tooltipRef.current?.dismiss()}>
+          <Text>关闭</Text>
+        </Button>
+      </Row>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { TooltipBox } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/tooltip" apiName="TooltipBox" />

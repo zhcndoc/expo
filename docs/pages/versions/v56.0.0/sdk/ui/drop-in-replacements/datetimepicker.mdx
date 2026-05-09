@@ -1,0 +1,145 @@
+---
+title: DateTimePicker
+description: 与 @react-native-community/datetimepicker 兼容的日期和时间选择器。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+一个与 `@react-native-community/datetimepicker` API 兼容的 `DateTimePicker` 组件。它在 Android 上使用 Jetpack Compose，在 iOS 上使用 SwiftUI，默认提供现代化的 Material 3 和 SwiftUI 外观（社区模块在 Android 上默认使用较旧的外观）。
+
+`DateTimePicker` 组件完全采用声明式方式。使用 `presentation` 属性可将选择器直接以 `'inline'` 形式渲染到视图层级中，或在 Android 上以 `'dialog'` 形式显示。没有 Android 的命令式 API（`DateTimePickerAndroid.open()`）。
+
+在底层，该组件封装了平台特定的 `@expo/ui` 基础组件：
+
+- **Android**: [Jetpack Compose DateTimePicker](../jetpack-compose/datetimepicker#datetimepicker)（inline），[DatePickerDialog/TimePickerDialog](../jetpack-compose/datetimepicker#datepickerdialog)（dialog）
+- **iOS**: [SwiftUI DatePicker](../swift-ui/datepicker)
+
+如果你需要更底层的控制（自定义修饰符、样式或布局），请直接使用这些基础组件。
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@react-native-community/datetimepicker` 迁移
+
+- 将导入从 `import DateTimePicker from '@react-native-community/datetimepicker'` 更新为 `import DateTimePicker from '@expo/ui/community/datetime-picker'`。
+- 没有命令式的 `DateTimePickerAndroid.open()` API。请渲染该组件，并改用 `presentation="dialog"`。
+- 不支持 `minuteInterval`、`textColor`、`firstDayOfWeek`、`neutralButton`、`onNeutralButtonPress`、`fullscreen`、`title` 和 `startOnYearSelection` 属性。
+- 使用 `timeZoneName`（IANA 名称）替代 `timeZoneOffsetInMinutes`。
+- 不支持 `countdown` 模式。
+- 不需要 `onError` 属性。
+
+## 基本用法
+
+```tsx DateTimePickerExample.tsx
+import { useState } from 'react';
+import DateTimePicker from '@expo/ui/community/datetime-picker';
+
+export default function DateTimePickerExample() {
+  const [date, setDate] = useState(new Date());
+
+  return (
+    <DateTimePicker
+      value={date}
+      onValueChange={(event, selectedDate) => {
+        setDate(selectedDate);
+      }}
+      mode="date"
+    />
+  );
+}
+```
+
+## 时间选择器
+
+```tsx TimePickerExample.tsx
+import { useState } from 'react';
+import DateTimePicker from '@expo/ui/community/datetime-picker';
+
+export default function TimePickerExample() {
+  const [date, setDate] = useState(new Date());
+
+  return (
+    <DateTimePicker
+      value={date}
+      onValueChange={(event, selectedDate) => {
+        setDate(selectedDate);
+      }}
+      mode="time"
+    />
+  );
+}
+```
+
+## 带日期限制
+
+```tsx ConstrainedDatePickerExample.tsx
+import { useState } from 'react';
+import DateTimePicker from '@expo/ui/community/datetime-picker';
+
+const today = new Date();
+const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+export default function ConstrainedDatePickerExample() {
+  const [date, setDate] = useState(new Date());
+
+  return (
+    <DateTimePicker
+      value={date}
+      onValueChange={(event, selectedDate) => {
+        setDate(selectedDate);
+      }}
+      mode="date"
+      minimumDate={today}
+      maximumDate={thirtyDaysFromNow}
+    />
+  );
+}
+```
+
+## 对话框展示
+
+在 Android 上，你可以使用 `presentation="dialog"` 将选择器作为模态对话框显示。对话框会在组件挂载时打开。请在响应 `onValueChange` 或 `onDismiss` 时卸载它。在 iOS 上，此属性会被忽略，选择器始终以内联方式渲染。
+
+```tsx AndroidDialogExample.tsx
+import { useState } from 'react';
+import { Button, View } from 'react-native';
+import DateTimePicker from '@expo/ui/community/datetime-picker';
+
+export default function AndroidDialogExample() {
+  const [date, setDate] = useState(new Date());
+  const [show, setShow] = useState(false);
+
+  return (
+    <View>
+      <Button title="Pick a date" onPress={() => setShow(true)} />
+      {show && (
+        <DateTimePicker
+          value={date}
+          onValueChange={(event, selectedDate) => {
+            setShow(false);
+            setDate(selectedDate);
+          }}
+          onDismiss={() => {
+            setShow(false);
+          }}
+          mode="date"
+          presentation="dialog"
+        />
+      )}
+    </View>
+  );
+}
+```
+
+## API
+
+```tsx
+import DateTimePicker from '@expo/ui/community/datetime-picker';
+```
+
+<APISection packageName="expo-ui/community/datetime-picker" apiName="DateTimePicker" />

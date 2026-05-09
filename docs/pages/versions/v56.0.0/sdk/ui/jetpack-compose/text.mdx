@@ -1,0 +1,181 @@
+---
+title: 文本
+description: 一个用于显示样式化文本的 Jetpack Compose Text 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI Text 与官方 Jetpack Compose [文本样式](https://developer.android.com/develop/ui/compose/text/style-text) API 一致，并使用 Material 3 排版样式、自定义字体和文本格式选项来显示文本。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/text/android-light.webp"
+  darkSource="/static/images/expo-ui/text/android-dark.webp"
+  alt="Material 3 排版层级：标题、主标题、正文和标签"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本文本
+
+```tsx BasicTextExample.tsx
+import { Host, Text } from '@expo/ui/jetpack-compose';
+
+export default function BasicTextExample() {
+  return (
+    <Host matchContents>
+      <Text>你好，世界！</Text>
+    </Host>
+  );
+}
+```
+
+### 排版样式
+
+使用带有 `typography` 的 `style` 属性来应用 Material 3 排版预设。
+
+```tsx TypographyExample.tsx
+import { Host, Text, Column } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function TypographyExample() {
+  return (
+    <Host matchContents>
+      <Column modifiers={[paddingAll(16)]}>
+        <Text style={{ typography: 'displayLarge' }}>展示大号</Text>
+        <Text style={{ typography: 'headlineMedium' }}>中号标题</Text>
+        <Text style={{ typography: 'bodySmall' }}>小号正文</Text>
+        <Text style={{ typography: 'labelLarge' }}>大号标签</Text>
+      </Column>
+    </Host>
+  );
+}
+```
+
+### 带有 maxLines 和 overflow 的文本
+
+使用 `maxLines` 和 `overflow` 控制文本截断。
+
+```tsx TextOverflowExample.tsx
+import { Host, Text } from '@expo/ui/jetpack-compose';
+import { width } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function TextOverflowExample() {
+  return (
+    <Host matchContents>
+      <Text maxLines={2} overflow="ellipsis" modifiers={[width(200)]}>
+        这是一段很长的文本，经过两行后将被截断，并在末尾显示省略号，以表示还有更多内容。
+      </Text>
+    </Host>
+  );
+}
+```
+
+### 样式化文本
+
+应用自定义文本样式，包括字体粗细、样式、大小和装饰。
+
+```tsx StyledTextExample.tsx
+import { Host, Text, Column } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function StyledTextExample() {
+  return (
+    <Host matchContents>
+      <Column modifiers={[paddingAll(16)]}>
+        <Text style={{ fontWeight: 'bold', fontSize: 20 }}>粗体文本</Text>
+        <Text style={{ fontStyle: 'italic' }}>斜体文本</Text>
+        <Text style={{ textDecoration: 'underline' }}>带下划线的文本</Text>
+        <Text style={{ letterSpacing: 4 }}>字间距加大的文本</Text>
+        <Text color="#E91E63" style={{ fontSize: 18, textAlign: 'center' }}>
+          彩色且居中
+        </Text>
+      </Column>
+    </Host>
+  );
+}
+```
+
+### 嵌套文本
+
+嵌套 `<Text>` 组件以便为句子的部分内容应用行内样式。子 span 会继承其父级的样式。例如，带有粗体父级和斜体子级时，子级会同时呈现粗体和斜体。
+
+```tsx NestedTextExample.tsx
+import { Host, Text, Column } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function NestedTextExample() {
+  return (
+    <Host matchContents>
+      <Column modifiers={[paddingAll(16)]}>
+        {/* 粗体父级，斜体子级继承粗体 */}
+        <Text style={{ fontWeight: 'bold' }}>
+          你好 <Text style={{ fontStyle: 'italic' }}>世界</Text>！
+        </Text>
+
+        {/* 混合行内样式 */}
+        <Text style={{ fontSize: 16 }}>
+          正常，<Text style={{ fontStyle: 'italic' }}>斜体</Text>，{' '}
+          <Text style={{ fontWeight: 'bold' }}>粗体</Text>，以及{' '}
+          <Text style={{ textDecoration: 'underline' }}>下划线</Text>
+        </Text>
+
+        {/* 每个 span 的颜色和背景覆盖 */}
+        <Text style={{ fontSize: 18 }}>
+          点击{' '}
+          <Text color="#007AFF" style={{ fontWeight: 'bold' }}>
+            这里
+          </Text>{' '}
+          或 <Text style={{ background: '#FFEB3B' }}>高亮</Text>
+        </Text>
+
+        {/* 深层嵌套 — 样式会累积 */}
+        <Text style={{ fontWeight: 'bold' }}>
+          粗体{' '}
+          <Text style={{ fontStyle: 'italic' }}>
+            粗体+斜体 <Text style={{ textDecoration: 'underline' }}>粗体+斜体+下划线</Text>
+          </Text>
+        </Text>
+      </Column>
+    </Host>
+  );
+}
+```
+
+### 自定义字体
+
+通过将字体族名称传递给 `style.fontFamily`，使用通过 [`expo-font`](/versions/latest/sdk/font/) 加载的字体。
+
+```tsx CustomFontExample.tsx
+import { Host, Text, Column } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function CustomFontExample() {
+  return (
+    <Host matchContents>
+      <Column modifiers={[paddingAll(16)]}>
+        <Text style={{ fontFamily: 'serif', fontSize: 16 }}>系统衬线字体</Text>
+        <Text style={{ fontFamily: 'monospace', fontSize: 16 }}>系统等宽字体</Text>
+        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 16 }}>自定义 Inter 粗体字体</Text>
+      </Column>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Text } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/text" apiName="Text" />

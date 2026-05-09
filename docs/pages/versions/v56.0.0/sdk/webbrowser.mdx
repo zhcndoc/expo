@@ -1,0 +1,107 @@
+---
+title: WebBrowser
+description: 一个提供访问系统网页浏览器并支持处理重定向的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-web-browser'
+packageName: 'expo-web-browser'
+iconUrl: '/static/images/packages/expo-web-browser.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { SnackInline } from '~/ui/components/Snippet';
+import { Tabs, Tab } from '~/ui/components/Tabs';
+
+`expo-web-browser` 提供对系统网页浏览器的访问，并支持处理重定向。在 Android 上，它使用 `ChromeCustomTabs`；在 iOS 上，它根据你调用的方法使用 `SFSafariViewController` 或 `ASWebAuthenticationSession`。从 iOS 11 开始，`SFSafariViewController` 不再与 Safari 共享 cookie，因此如果你使用 `WebBrowser` 进行身份验证，应该使用 `WebBrowser.openAuthSessionAsync`；如果你只是想打开一个网页（例如应用的隐私政策），则使用 `WebBrowser.openBrowserAsync`。
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app 配置中进行配置
+
+如果你在项目中使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），可以使用 `expo-web-browser` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置运行时无法设置、且需要构建新的应用二进制文件后才会生效的各种属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+## 用法
+
+<SnackInline label="Basic WebBrowser usage" dependencies={["expo-web-browser", "expo-constants"]}>
+
+```jsx
+import { useState } from 'react';
+import { Button, Text, View, StyleSheet } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+/* @hide */
+import Constants from 'expo-constants';
+/* @end */
+
+export default function App() {
+  const [result, setResult] = useState(null);
+
+  const _handlePressButtonAsync = async () => {
+    let result = await WebBrowser.openBrowserAsync('https://expo.dev');
+    setResult(result);
+  };
+  return (
+    <View style={styles.container}>
+      <Button title="打开 WebBrowser" onPress={_handlePressButtonAsync} />
+      <Text>{result && JSON.stringify(result)}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: Constants.statusBarHeight,
+    backgroundColor: '#ecf0f1',
+  },
+});
+```
+
+</SnackInline>
+
+### 处理来自 WebBrowser 的深度链接
+
+<Tabs>
+
+<Tab label="使用 Expo Router">
+
+如果你的项目使用 Expo Router，深度链接会自动处理。
+
+</Tab>
+
+<Tab label="不使用 Expo Router">
+
+如果你使用 `WebBrowser` 窗口进行身份验证，或用于其他希望通过深度链接将信息传回应用的场景，请在打开浏览器之前使用 `Linking.addEventListener` 添加一个处理程序。当监听器触发时，你应该调用 [`dismissBrowser`](#webbrowserdismissbrowser)。当深度链接被处理时，它不会自动关闭。除此之外，`WebBrowser` 的重定向与其他深度链接的工作方式相同。更多信息请参阅 [Linking](/linking/into-your-app/#handle-urls)。
+
+</Tab>
+
+</Tabs>
+
+## API
+
+```js
+import * as WebBrowser from 'expo-web-browser';
+```
+
+<APISection packageName="expo-web-browser" apiName="WebBrowser" />
+
+## 错误代码
+
+### `ERR_WEB_BROWSER_REDIRECT`
+
+**仅限 Web：** 该窗口无法完成重定向请求，因为发起窗口没有指向其父窗口的引用。如果父窗口已重新加载，就可能发生这种情况。
+
+### `ERR_WEB_BROWSER_BLOCKED`
+
+**仅限 Web：** 弹出窗口被浏览器阻止或未能打开。当在移动浏览器中，`window.open()` 方法在用户输入触发后过久才被调用时，就可能发生这种情况。
+
+移动浏览器这样做是为了防止恶意网站在移动设备上打开大量不需要的弹出窗口。
+
+你的方法仍然可以在异步函数中运行，但在此之前不能有任何长时间运行的任务。你可以使用 hooks 在其他进程完成加载之前禁用用户输入。
+
+### `ERR_WEB_BROWSER_CRYPTO`
+
+**仅限 Web：** 当前环境不支持 crypto。请确保你是在安全来源（localhost/https）下运行。

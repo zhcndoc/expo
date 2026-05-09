@@ -1,0 +1,156 @@
+---
+title: AlertDialog
+description: 用于显示原生警报对话框的 Jetpack Compose AlertDialog 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI AlertDialog 与官方 Jetpack Compose [AlertDialog](https://developer.android.com/develop/ui/compose/components/dialog) API 相匹配。内容通过槽位子组件（`AlertDialog.Title`、`AlertDialog.Text`、`AlertDialog.ConfirmButton`、`AlertDialog.DismissButton`、`AlertDialog.Icon`）提供，这些子组件可直接映射到 Compose 的槽位参数。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/alertdialog/android-light.webp"
+  darkSource="/static/images/expo-ui/alertdialog/android-dark.webp"
+  alt="带有标题、辅助文本以及 Cancel/Discard 按钮的 Material 3 警告对话框"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基础警告对话框
+
+```tsx BasicAlertDialogExample.tsx
+import { useState } from 'react';
+import { Host, AlertDialog, Button, TextButton, Text } from '@expo/ui/jetpack-compose';
+
+export default function BasicAlertDialogExample() {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>显示警告</Text>
+      </Button>
+      {visible && (
+        <AlertDialog onDismissRequest={() => setVisible(false)}>
+          <AlertDialog.Title>
+            <Text>确认操作</Text>
+          </AlertDialog.Title>
+          <AlertDialog.Text>
+            <Text>你确定要继续吗？</Text>
+          </AlertDialog.Text>
+          <AlertDialog.ConfirmButton>
+            <TextButton onClick={() => setVisible(false)}>
+              <Text>确认</Text>
+            </TextButton>
+          </AlertDialog.ConfirmButton>
+          <AlertDialog.DismissButton>
+            <TextButton onClick={() => setVisible(false)}>
+              <Text>取消</Text>
+            </TextButton>
+          </AlertDialog.DismissButton>
+        </AlertDialog>
+      )}
+    </Host>
+  );
+}
+```
+
+### 自定义颜色
+
+```tsx CustomColorsExample.tsx
+import { useState } from 'react';
+import { Host, AlertDialog, Button, TextButton, Text } from '@expo/ui/jetpack-compose';
+
+export default function CustomColorsExample() {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>显示警告</Text>
+      </Button>
+      {visible && (
+        <AlertDialog
+          onDismissRequest={() => setVisible(false)}
+          colors={{
+            containerColor: '#1E1E2E',
+            titleContentColor: '#CDD6F4',
+            textContentColor: '#BAC2DE',
+          }}>
+          <AlertDialog.Title>
+            <Text>自定义对话框</Text>
+          </AlertDialog.Title>
+          <AlertDialog.Text>
+            <Text>此对话框使用了自定义颜色。</Text>
+          </AlertDialog.Text>
+          <AlertDialog.ConfirmButton>
+            <TextButton onClick={() => setVisible(false)}>
+              <Text>确定</Text>
+            </TextButton>
+          </AlertDialog.ConfirmButton>
+          <AlertDialog.DismissButton>
+            <TextButton onClick={() => setVisible(false)}>
+              <Text>取消</Text>
+            </TextButton>
+          </AlertDialog.DismissButton>
+        </AlertDialog>
+      )}
+    </Host>
+  );
+}
+```
+
+### 带图标
+
+```tsx IconDialogExample.tsx
+import { useState } from 'react';
+import { Host, AlertDialog, Button, TextButton, Text, Icon } from '@expo/ui/jetpack-compose';
+
+export default function IconDialogExample() {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>显示警告</Text>
+      </Button>
+      {visible && (
+        <AlertDialog onDismissRequest={() => setVisible(false)}>
+          <AlertDialog.Icon>
+            {/* 替换为你自己的图标资源 */}
+            <Icon source={require('./info-icon.xml')} />
+          </AlertDialog.Icon>
+          <AlertDialog.Title>
+            <Text>带图标的对话框</Text>
+          </AlertDialog.Title>
+          <AlertDialog.Text>
+            <Text>这个对话框在标题上方有一个图标。</Text>
+          </AlertDialog.Text>
+          <AlertDialog.ConfirmButton>
+            <TextButton onClick={() => setVisible(false)}>
+              <Text>确定</Text>
+            </TextButton>
+          </AlertDialog.ConfirmButton>
+        </AlertDialog>
+      )}
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { AlertDialog } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/alertdialog" apiName="AlertDialog" />

@@ -1,0 +1,239 @@
+---
+title: MediaLibrary（next）
+description: 一个提供访问设备媒体库的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-media-library/src/next'
+packageName: 'expo-media-library'
+iconUrl: '/static/images/packages/expo-media-library.png'
+platforms: ['android', 'ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { SnackInline } from '~/ui/components/Snippet';
+
+`expo-media-library` 提供对用户媒体库的访问，使应用能够读取现有图片和视频，以及保存新的内容。
+
+> **warning** 在 Android 上，只有需要对照片进行广泛访问的应用才允许完全访问媒体库（这是此包的主要用途）。请参阅 [Google Play 照片和视频权限政策的详细信息](https://support.google.com/googleplay/android-developer/answer/14115180)。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+<Collapsible summary="从网络添加新的资源">
+<SnackInline label="从网络添加新的资源" dependencies={['expo-file-system', 'expo-image', 'expo-media-library']}>
+
+```tsx
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
+import { useEffect, useState } from 'react';
+import { File, Paths } from 'expo-file-system';
+import { Asset, requestPermissionsAsync } from 'expo-media-library/next';
+
+export default function SaveToMediaLibraryExample() {
+  const [asset, setAsset] = useState<Asset | null>(null);
+
+  const downloadFile = async () => {
+    const url = 'https://picsum.photos/200/300';
+    const destinationFile = new File(Paths.cache, 'test_image.jpg');
+    if (destinationFile.exists) {
+      return destinationFile;
+    } else {
+      return File.downloadFileAsync(url, destinationFile);
+    }
+  };
+
+  useEffect(() => {
+    const downloadAndSaveAsset = async () => {
+      const file = await downloadFile();
+      const { status } = await requestPermissionsAsync();
+      if (status !== 'granted') {
+        return;
+      }
+      const asset = await Asset.create(file.uri);
+      setAsset(asset);
+    };
+
+    downloadAndSaveAsset();
+  }, []);
+
+  return (
+    <View>
+      {asset ? (
+        <>
+          <Text>{asset.id}</Text>
+          <Image source={{ uri: asset.id }} style={{ width: 200, height: 300 }} />
+        </>
+      ) : (
+        <Text>正在下载并创建资源...</Text>
+      )}
+    </View>
+  );
+}
+```
+
+</SnackInline>
+</Collapsible>
+
+<Collapsible summary="检索资源属性">
+<SnackInline label="检索资源属性" dependencies={["expo-media-library"]}>
+
+```tsx
+import { View, Text } from 'react-native';
+import { useEffect, useState } from 'react';
+import { AssetField, MediaType, Query, requestPermissionsAsync } from 'expo-media-library/next';
+
+export default function RetrievingAssetPropertiesExample() {
+  const [assetInfo, setAssetInfo] = useState<{
+    id: string;
+    filename: string;
+    mediaType: string;
+    width: number;
+    height: number;
+    creationTime: number | null;
+    modificationTime: number | null;
+  } | null>(null);
+
+  useEffect(() => {
+    const querySomeAsset = async () => {
+      const { status } = await requestPermissionsAsync();
+      if (status !== 'granted') {
+        return;
+      }
+
+      const [asset] = await new Query().limit(1).eq(AssetField.MEDIA_TYPE, MediaType.IMAGE).exe();
+
+      if (asset) {
+        const filename = await asset.getFilename();
+        const mediaType = (await asset.getMediaType()).toString();
+        const width = await asset.getWidth();
+        const height = await asset.getHeight();
+        const creationTime = await asset.getCreationTime();
+        const modificationTime = await asset.getModificationTime();
+        setAssetInfo({
+          id: asset.id,
+          filename,
+          mediaType,
+          width,
+          height,
+          creationTime,
+          modificationTime,
+        });
+      } else {
+        console.log('在媒体库中未找到资源。');
+      }
+    };
+
+    querySomeAsset();
+  }, []);
+
+  return (
+    <View>
+      {assetInfo ? (
+        <View>
+          <Text>资源 ID: {assetInfo.id}</Text>
+          <Text>文件名: {assetInfo.filename}</Text>
+          <Text>媒体类型: {assetInfo.mediaType}</Text>
+          <Text>
+            尺寸: {assetInfo.width} x {assetInfo.height}
+          </Text>
+          <Text>
+            创建时间：{' '}
+            {assetInfo.creationTime
+              ? new Date(assetInfo.creationTime).toLocaleString()
+              : '不可用'}
+          </Text>
+          <Text>
+            修改时间：{' '}
+            {assetInfo.modificationTime
+              ? new Date(assetInfo.modificationTime).toLocaleString()
+              : '不可用'}
+          </Text>
+        </View>
+      ) : (
+        <Text>正在获取资源 ...</Text>
+      )}
+    </View>
+  );
+}
+```
+
+</SnackInline>
+</Collapsible>
+
+<Collapsible summary="创建新相册">
+<SnackInline label="创建新相册" dependencies={["expo-media-library"]}>
+
+```tsx
+import { View, Text, FlatList, Image, Button } from 'react-native';
+import { useState } from 'react';
+import {
+  Asset,
+  AssetField,
+  MediaType,
+  Query,
+  requestPermissionsAsync,
+  Album,
+} from 'expo-media-library/next';
+
+export default function CreateAlbumExample() {
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [album, setAlbum] = useState<Album | null>(null);
+  const [albumTitle, setAlbumTitle] = useState<string>('');
+
+  const createAlbumWithAsset = async () => {
+    await requestPermissionsAsync();
+
+    const [asset] = await new Query().limit(1).eq(AssetField.MEDIA_TYPE, MediaType.IMAGE).exe();
+
+    if (!asset) {
+      console.log('在媒体库中未找到资源。');
+      return;
+    }
+
+    const newAlbum = await Album.create('MyNewAlbum', [asset]);
+
+    setAlbum(newAlbum);
+    setAlbumTitle(await newAlbum.getTitle());
+    const albumAssets = await newAlbum.getAssets();
+    setAssets(albumAssets);
+  };
+
+  return (
+    <View style={{ flex: 1, padding: 20 }}>
+      <Button title="创建相册并添加资源" onPress={createAlbumWithAsset} />
+
+      {assets.length > 0 ? (
+        <>
+          <Text style={{ marginTop: 20, fontSize: 18, fontWeight: 'bold' }}>
+            {albumTitle} 中的资源：
+          </Text>
+          <FlatList
+            data={assets}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <View style={{ marginVertical: 10 }}>
+                <Image
+                  source={{ uri: item.id }}
+                  style={{ width: 100, height: 100, borderRadius: 8 }}
+                />
+              </View>
+            )}
+          />
+        </>
+      ) : (
+        <Text style={{ marginTop: 20 }}>{album ? '相册为空。' : '尚未创建相册。'}</Text>
+      )}
+    </View>
+  );
+}
+```
+
+</SnackInline>
+</Collapsible>
+
+## API
+
+<APISection packageName="expo-media-library-next" apiName="MediaLibrary (next)" />

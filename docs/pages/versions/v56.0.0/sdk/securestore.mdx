@@ -1,0 +1,251 @@
+---
+title: SecureStore
+description: 一个库，提供在设备本地加密并安全存储键值对的方法。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-secure-store'
+packageName: 'expo-secure-store'
+iconUrl: '/static/images/packages/expo-secure-store.png'
+platforms: ['android', 'ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import {
+  ConfigPluginExample,
+  ConfigReactNative,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+`expo-secure-store` 提供了一种在设备本地加密并安全存储键值对的方法。每个 Expo 项目都有独立的存储系统，无法访问其他 Expo 项目的存储。
+
+**底层平台可能会拒绝较大的负载。历史上，一些 iOS 版本会拒绝大约 2048 字节以上的值。Expo 不强制限制，因此如果你计划存储非常大的字符串，请务必处理原生错误。**
+
+**由于缺少 `NSFaceIDUsageDescription` 键，当可用生物识别认证时，Expo Go 中不支持 `requireAuthentication` 选项。**
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app 配置中进行配置
+
+如果你在项目中使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-secure-store` 内置的 [config plugin](/config-plugins/introduction/) 来进行配置。该插件允许你配置各种无法在运行时设置、且需要构建新的应用二进制文件后才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "允许 $(PRODUCT_NAME) 访问你的 Face ID 生物识别数据。"
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'configureAndroidBackup',
+      platform: 'android',
+      description:
+        '一个布尔值，表示是否配置 Android 自动备份以便与 `expo-secure-store` 正常工作。[了解更多](#android-auto-backup)。',
+      default: 'true',
+    },
+    {
+      name: 'faceIDPermission',
+      platform: 'ios',
+      description: '用于设置 [`NSFaceIDUsageDescription`](#ios) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的 Face ID 生物识别数据。"'
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+将 `NSFaceIDUsageDescription` 键添加到 **Info.plist**：
+
+```xml Info.plist
+<key>NSFaceIDUsageDescription</key>
+<string>允许 $(PRODUCT_NAME) 访问你的 Face ID 生物识别数据。</string>
+```
+
+</ConfigReactNative>
+
+## 平台值存储
+
+### Android
+
+在 Android 上，值存储在 [`SharedPreferences`](https://developer.android.com/training/data-storage/shared-preferences) 中，并使用 [Android 的 Keystore 系统](https://developer.android.com/training/articles/keystore.html)进行加密。
+
+### iOS
+
+在 iOS 上，值使用 [keychain services](https://developer.apple.com/documentation/security/keychain_services) 以 `kSecClassGenericPassword` 的形式存储。**由于 iOS Keychain 的底层特性，使用 `expo-secure-store` 存储的数据在应用被卸载后，如果以相同的 bundle ID 重新安装，仍会保留。** 这是 iOS Keychain 系统的预期行为，在设计应用的数据处理方式时应加以考虑。iOS 还提供了额外选项，可以设置值的 `kSecAttrAccessible` 属性，用于控制何时可以获取该值。
+
+## 数据持久性
+
+`expo-secure-store` 的设计目的是在应用重启和更新之间提供持久的数据存储方案。不过，重要的是不要把它当作不可替代关键数据的唯一真实来源。
+
+- **在 Android 上：** 使用 `expo-secure-store` 保存的数据**在应用卸载后不会被保留**。
+- **在 iOS 上：** 如果应用以相同的 bundle ID 重新安装，使用 `expo-secure-store` 保存的数据**会在应用卸载后继续保留**。这是由于 iOS Keychain 管理已存储凭据的方式所致。请记住，这并不保证，你永远不应依赖这一实现细节。
+
+此外，任何使用 `requireAuthentication` 选项并设置为 `true` 保护的数据，在用户的生物识别设置发生变化时（例如添加新的指纹）将变得无法访问。
+
+#### 免除加密提示
+
+Apple App Store Connect 会提示你选择应用所实现的加密算法类型，这被称为 **出口合规信息**。在发布应用或提交 TestFlight 时会出现该提示。
+
+使用 `expo-secure-store` 时，你可以在应用配置中将 [`ios.config.usesNonExemptEncryption`](../config/app/#usesnonexemptencryption) 属性设置为 `false`：
+
+{/* prettier-ignore */}
+```json app.json
+{
+  "expo": {
+    "ios": {
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+      /* @hide ... */ /* @end */
+    }
+  }
+}
+```
+
+设置此属性会自动处理合规信息提示。
+
+## Android 自动备份
+
+[适用于应用的 Android 自动备份](https://developer.android.com/identity/data/autobackup) 会自动备份目标为 Android 6.0（API 级别 23）或更高版本并在其上运行的应用中的用户数据。
+
+自动备份系统必须配置为排除 `expo-secure-store` 的 shared preferences 条目，因为在恢复备份后无法对其解密——当应用被卸载时，应用的条目会从 Android Key Store 中删除。
+
+如果你的应用没有任何自定义备份配置，`expo-secure-store` 会自动配置自动备份系统以忽略 `expo-secure-store` 数据。
+
+如果你正在使用自己的自动备份配置，你应当在 `sharedpref` 域下排除 `SecureStore`，并在 [config plugin 配置](#example-appjson-with-config-plugin) 中将 `configureAndroidBackup` 设置为 `false`。
+
+```xml
+<!--  Android 12 及更高版本的自动备份配置 -->
+<data-extraction-rules>
+  <cloud-backup>
+    <include domain="sharedpref" path="."/>
+    <exclude domain="sharedpref" path="SecureStore"/>
+  </cloud-backup>
+  <device-transfer>
+    <include domain="sharedpref" path="."/>
+    <exclude domain="sharedpref" path="SecureStore"/>
+  </device-transfer>
+</data-extraction-rules>
+```
+
+```xml
+<!--  Android 11 及更低版本的自动备份配置 -->
+<full-backup-content>
+  <include domain="sharedpref" path="."/>
+  <exclude domain="sharedpref" path="SecureStore"/>
+</full-backup-content>
+```
+
+## 用法
+
+<SnackInline label='SecureStore' dependencies={['expo-secure-store']} platforms={['ios', 'android']}>
+
+```jsx
+import { useState } from 'react';
+import { Text, View, StyleSheet, TextInput, Button } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+
+async function save(key, value) {
+  await SecureStore.setItemAsync(key, value);
+}
+
+async function getValueFor(key) {
+  let result = await SecureStore.getItemAsync(key);
+  if (result) {
+    alert("🔐 Here's your value 🔐 \n" + result);
+  } else {
+    alert('该键下未存储任何值。');
+  }
+}
+
+export default function App() {
+  const [key, onChangeKey] = useState('Your key here');
+  const [value, onChangeValue] = useState('Your value here');
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.paragraph}>保存一个项目，然后稍后取回它！</Text>
+      {/* @hide 添加一些 TextInput 组件... */}
+
+      <TextInput
+        style={styles.textInput}
+        clearTextOnFocus
+        onChangeText={text => onChangeKey(text)}
+        value={key}
+      />
+      <TextInput
+        style={styles.textInput}
+        clearTextOnFocus
+        onChangeText={text => onChangeValue(text)}
+        value={value}
+      />
+      {/* @end */}
+      <Button
+        title="保存此键/值对"
+        onPress={() => {
+          save(key, value);
+          onChangeKey('Your key here');
+          onChangeValue('Your value here');
+        }}
+      />
+      <Text style={styles.paragraph}>🔐 输入你的键 🔐</Text>
+      <TextInput
+        style={styles.textInput}
+        onSubmitEditing={event => {
+          getValueFor(event.nativeEvent.text);
+        }}
+        placeholder="输入你想获取的值对应的键"
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: 10,
+    backgroundColor: '#ecf0f1',
+    padding: 8,
+  },
+  paragraph: {
+    marginTop: 34,
+    margin: 24,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  textInput: {
+    height: 35,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    padding: 4,
+  },
+});
+```
+
+</SnackInline>
+
+## API
+
+```js
+import * as SecureStore from 'expo-secure-store';
+```
+
+<APISection packageName="expo-secure-store" apiName="SecureStore" />

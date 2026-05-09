@@ -1,0 +1,96 @@
+---
+title: MaskedView
+description: 与 @react-native-masked-view/masked-view 兼容的遮罩视图。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+一个与 `@react-native-masked-view/masked-view` 兼容 API 的 `MaskedView` 组件。`maskElement` 的不透明像素会显示其后方被遮罩的内容；透明像素会将其隐藏。
+
+在底层，这个组件会将任意 React Native 子元素桥接到平台特定的 `@expo/ui` 遮罩原语：
+
+- **Android**：使用 `BlendMode.DstIn` 的 Jetpack Compose 图形层合成。
+- **iOS**：SwiftUI [`.mask`](<https://developer.apple.com/documentation/swiftui/view/mask(alignment:_:)>) 修饰符。
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@react-native-masked-view/masked-view` 迁移
+
+- 将导入从 `import MaskedView from '@react-native-masked-view/masked-view'` 更新为 `import { MaskedView } from '@expo/ui/community/masked-view'`。
+- 不支持 `androidRenderingMode` 属性。基于 Compose 的实现始终使用离屏图形层，因此该属性没有对应项，并且已从公开类型中省略。
+- Web 尚未实现。在 Web 上，子元素会无掩码渲染，并会记录一次控制台警告。对于 Web 目标，请优先使用适合你具体场景的 CSS 原语：
+  - **渐变文本** — 使用 `background-clip: text`，配合 `color: 'transparent'`，并将 CSS 渐变/图片作为背景。
+  - **Alpha 淡出** — 直接在内容视图上使用 `mask-image: linear-gradient(...)`（或 `WebkitMaskImage`）。
+  - **形状遮罩**（圆形、圆角矩形等）— `clip-path: circle(...)` / `inset(...)` / `path(...)`，或 `border-radius` + `overflow: 'hidden'`。
+
+## 基本用法
+
+```tsx MaskedViewExample.tsx
+import { MaskedView } from '@expo/ui/community/masked-view';
+import { StyleSheet, Text, View } from 'react-native';
+
+export default function MaskedViewExample() {
+  return (
+    <MaskedView
+      style={{ width: 300, height: 80 }}
+      maskElement={
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 64, fontWeight: 'bold' }}>EXPO</Text>
+        </View>
+      }>
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            experimental_backgroundImage:
+              'linear-gradient(135deg, #FF3B30, #FF9500, #FFCC00, #34C759, #007AFF, #AF52DE)',
+          },
+        ]}
+      />
+    </MaskedView>
+  );
+}
+```
+
+## Alpha 淡出遮罩
+
+只有 `maskElement` 的 alpha 通道才重要：不透明像素会显示内容，透明像素会隐藏内容。使用一个从不透明到透明的 `LinearGradient`（来自 `expo-linear-gradient`）——例如下面从 `'black'` 到 `'transparent'`——来沿某个轴向淡出内容。
+
+```tsx AlphaFadeExample.tsx
+import { MaskedView } from '@expo/ui/community/masked-view';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, View } from 'react-native';
+
+export default function AlphaFadeExample() {
+  return (
+    <MaskedView
+      style={{ width: 300, height: 80, flexDirection: 'row' }}
+      maskElement={
+        <LinearGradient
+          colors={['black', 'transparent']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+      }>
+      <View style={{ flex: 1, backgroundColor: '#3D5A80' }} />
+      <View style={{ flex: 1, backgroundColor: '#DAA520' }} />
+      <View style={{ flex: 1, backgroundColor: '#E07A5F' }} />
+    </MaskedView>
+  );
+}
+```
+
+## API
+
+```tsx
+import { MaskedView } from '@expo/ui/community/masked-view';
+```
+
+<APISection packageName="expo-ui/community/masked-view" apiName="MaskedView" />

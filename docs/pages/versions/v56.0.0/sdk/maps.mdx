@@ -1,0 +1,196 @@
+---
+title: 地图
+description: 一个在 Android 上提供对 Google Maps、在 iOS 上提供对 Apple Maps 访问的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-maps'
+packageName: 'expo-maps'
+platforms: ['ios', 'android']
+iconUrl: '/static/images/packages/expo-maps.png'
+isAlpha: true
+hasVideoLink: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { AndroidPermissions, IOSPermissions } from '~/components/plugins/permissions';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+import { Step } from '~/ui/components/Step';
+import { Tabs, Tab } from '~/ui/components/Tabs';
+import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+> **重要** **此库目前处于 [alpha](/more/release-statuses/#alpha) 阶段，并且会经常出现破坏性变更。** 它在 Expo Go 应用中不可用 &ndash; 请使用 [开发构建](/develop/development-builds/introduction/) 来试用。
+
+## 安装
+
+<APIInstallSection />
+
+<br />
+<VideoBoxLink
+  videoId="jDCuaIQ9vd0"
+  title="观看：Expo Maps 深度解析"
+  description="使用 expo-maps 库将 Google Maps 和 Apple Maps 添加到你的 Expo 应用中。"
+/>
+
+## 配置
+
+Expo Maps 提供对 Android 和 iOS 平台原生地图 API 的访问。
+
+- **Apple Maps（仅在 <PlatformTag platform="ios" /> 上可用）**。安装此包后无需额外配置即可使用。
+- **Google Maps（仅在 <PlatformTag platform="android" /> 上可用）**。虽然 Google 为 iOS 提供了 Google Maps SDK，但 Expo Maps 仅在 Android 上支持它。如果你想在 iOS 上使用 Google Maps，可以考虑使用 [替代库](https://reactnative.directory/) 或 [自行编写](/modules/overview/)。
+
+### Google Cloud API 设置
+
+**在 Android 上使用 Google Maps 之前**，你需要注册一个 Google Cloud API 项目，启用 Android 版 Maps SDK，并将相关配置添加到你的 Expo 项目中。
+
+<Collapsible summary="在 Android 上设置 Google Maps">
+
+> 如果你已经为 Android 上的其他 Google 服务（例如 Google 登录）注册了项目，那么只需在你的项目中启用 **Maps SDK for Android**，然后跳到第 4 步。
+
+<Step label="1">
+**注册一个 Google Cloud API 项目并启用 Android 版 Maps SDK**
+
+- 在浏览器中打开 [Google API Manager](https://console.cloud.google.com/apis) 并创建一个项目。
+- 项目创建完成后，进入该项目并启用 **Maps SDK for Android**。
+
+</Step>
+
+<Step label="2">
+**复制你应用的 SHA-1 证书指纹**
+
+<Tabs>
+<Tab label="针对 Google Play 商店">
+
+- **如果你要将应用发布到 Google Play 商店**，你至少需要先 [将应用二进制文件上传到 Google Play 控制台](/submit/android/)。这是 Google 生成应用签名凭据所必需的。
+- 前往 **[Google Play Console](https://play.google.com/console) >（你的应用）> Release > Setup > App integrity > App Signing**。
+- 复制 **SHA-1 certificate fingerprint** 的值。
+
+</Tab>
+
+<Tab label="针对开发构建">
+
+- 如果你已经创建了一个 [开发构建](/develop/development-builds/introduction/)，你的项目将使用 debug keystore 进行签名。
+- 构建完成后，前往你的 [项目仪表盘](https://expo.dev/accounts/[username]/projects/[project-name])，然后在 **Project settings** 下点击 **Credentials**。
+- 在 **Application Identifiers** 下，点击你项目的包名，然后在 **Android Keystore** 下复制 **SHA-1 Certificate Fingerprint** 的值。
+
+</Tab>
+
+</Tabs>
+
+</Step>
+
+<Step label="3">
+**创建一个 API key**
+
+- 前往 [Google Cloud Credential manager](https://console.cloud.google.com/apis/credentials) 并点击 **Create Credentials**，然后选择 **API Key**。
+- 在弹窗中点击 **Edit API key**。
+- 在 **Key restrictions** > **Application restrictions** 下，选择 **Android apps**。
+- 在 **Restrict usage to your Android apps** 下，点击 **Add an item**。
+- 将你在 **app.json** 中的 `android.package`（例如：`com.company.myapp`）添加到包名字段。
+- 然后，添加第 2 步中 **SHA-1 certificate fingerprint** 的值。
+- 点击 **Done**，然后点击 **Save**。
+
+</Step>
+
+<Step label="4">
+**将 API key 添加到你的项目中**
+
+- 将你的 **API Key** 复制到 **app.json** 中的 `android.config.googleMaps.apiKey` 字段下。
+- 创建一个新的开发构建，现在你就可以在 Android 上使用 `expo-maps` 的 Google Maps API 了。
+
+</Step>
+
+</Collapsible>
+
+## 权限
+
+要在地图上显示用户的位置，你需要提前声明并请求位置权限。如果你在项目中使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），可以通过其内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件才能生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "允许 $(PRODUCT_NAME) 使用你的位置"
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'requestLocationPermission',
+      description: '一个布尔值，用于向 **AndroidManifest.xml** 和 **Info.plist** 添加权限。',
+      default: 'false',
+    },
+    {
+      name: 'locationPermission',
+      platform: 'ios',
+      description:
+        '用于设置 [`NSLocationWhenInUseUsageDescription`](#permission-nslocationwheninuseusagedescription) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 使用你的位置"',
+    },
+  ]}
+/>
+
+## 用法
+
+```tsx
+import { AppleMaps, GoogleMaps } from 'expo-maps';
+import { Platform, Text } from 'react-native';
+
+export default function App() {
+  if (Platform.OS === 'ios') {
+    return <AppleMaps.View style={{ flex: 1 }} />;
+  } else if (Platform.OS === 'android') {
+    return <GoogleMaps.View style={{ flex: 1 }} />;
+  } else {
+    return <Text>地图仅适用于 Android 和 iOS</Text>;
+  }
+}
+```
+
+## API
+
+```js
+import { AppleMaps, GoogleMaps } from 'expo-maps';
+
+// AppleMaps.View 和 GoogleMaps.View 是 React 组件
+```
+
+<APISection packageName="expo-maps" apiName="Maps" />
+
+## 权限
+
+### Android
+
+要在地图上显示用户的位置，`expo-maps` 库需要以下权限：
+
+- `ACCESS_COARSE_LOCATION`：用于设备的大致位置
+- `ACCESS_FINE_LOCATION`：用于设备的精确位置
+
+<AndroidPermissions
+  permissions={[
+    'ACCESS_COARSE_LOCATION',
+    'ACCESS_FINE_LOCATION',
+    'FOREGROUND_SERVICE',
+    'FOREGROUND_SERVICE_LOCATION',
+    'ACCESS_BACKGROUND_LOCATION',
+  ]}
+/>
+
+### iOS
+
+此库使用以下用途说明键：
+
+<IOSPermissions permissions={['NSLocationWhenInUseUsageDescription']} />

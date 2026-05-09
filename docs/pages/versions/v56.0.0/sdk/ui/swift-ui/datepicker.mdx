@@ -1,0 +1,268 @@
+---
+title: DatePicker
+description: 一个用于选择日期和时间的 SwiftUI DatePicker 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI DatePicker 与官方 SwiftUI [DatePicker API](https://developer.apple.com/documentation/swiftui/datepicker) 保持一致，并支持通过 [`datePickerStyle`](modifiers/#datepickerstylestyle) 修饰符进行样式设置。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/datepicker/ios-light.webp"
+  darkSource="/static/images/expo-ui/datepicker/ios-dark.webp"
+  alt="表单中的日期和时间 DatePicker 行"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 日期选择器
+
+```tsx DatePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+
+export default function DatePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        title="选择日期"
+        selection={selectedDate}
+        displayedComponents={['date']}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+      />
+    </Host>
+  );
+}
+```
+
+## 时间选择器
+
+```tsx TimePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+
+export default function TimePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        title="选择时间"
+        selection={selectedDate}
+        displayedComponents={['hourAndMinute']}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+      />
+    </Host>
+  );
+}
+```
+
+## 日期和时间选择器
+
+```tsx DateTimePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+
+export default function DateTimePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        title="选择日期和时间"
+        selection={selectedDate}
+        displayedComponents={['date', 'hourAndMinute']}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+      />
+    </Host>
+  );
+}
+```
+
+## 带日期范围
+
+```tsx DateRangePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+
+export default function DateRangePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        title="选择日期"
+        selection={selectedDate}
+        displayedComponents={['date']}
+        range={{
+          start: new Date(2024, 0, 1),
+          end: new Date(2024, 11, 31),
+        }}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+      />
+    </Host>
+  );
+}
+```
+
+## 使用修饰符进行样式设置
+
+你可以使用 `datePickerStyle` 修饰符来更改选择器的外观。可用样式有：`automatic`、`compact`、`graphical` 和 `wheel`。
+
+```tsx WheelDatePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+import { datePickerStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function WheelDatePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        modifiers={[datePickerStyle('wheel')]}
+        title="选择日期"
+        selection={selectedDate}
+        displayedComponents={['date']}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+      />
+    </Host>
+  );
+}
+```
+
+```tsx GraphicalDatePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+import { datePickerStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function GraphicalDatePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        modifiers={[datePickerStyle('graphical')]}
+        title="选择日期"
+        selection={selectedDate}
+        displayedComponents={['date']}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+      />
+    </Host>
+  );
+}
+```
+
+## 禁用的选择器
+
+你可以使用 `disabled` 修饰符使选择器不可交互。
+
+```tsx DisabledDatePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+import { disabled } from '@expo/ui/swift-ui/modifiers';
+
+export default function DisabledDatePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        title="选择日期"
+        selection={selectedDate}
+        displayedComponents={['date']}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+        modifiers={[disabled()]}
+      />
+    </Host>
+  );
+}
+```
+
+## 自定义区域设置
+
+使用带有 `locale` 键的 `environment` 修饰符，以特定区域设置显示选择器。
+
+```tsx LocaleDatePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+import { environment } from '@expo/ui/swift-ui/modifiers';
+
+export default function LocaleDatePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        title="Sélectionner la date"
+        selection={selectedDate}
+        displayedComponents={['date']}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+        modifiers={[environment('locale', 'fr_FR')]}
+      />
+    </Host>
+  );
+}
+```
+
+## 自定义时区
+
+使用带有 `timeZone` 键的 `environment` 修饰符，以特定的 IANA 时区显示选择器。
+
+```tsx TimeZoneDatePickerExample.tsx
+import { useState } from 'react';
+import { Host, DatePicker } from '@expo/ui/swift-ui';
+import { environment } from '@expo/ui/swift-ui/modifiers';
+
+export default function TimeZoneDatePickerExample() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <Host matchContents>
+      <DatePicker
+        title="东京时间"
+        selection={selectedDate}
+        displayedComponents={['date', 'hourAndMinute']}
+        onDateChange={date => {
+          setSelectedDate(date);
+        }}
+        modifiers={[environment('timeZone', 'Asia/Tokyo')]}
+      />
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { DatePicker } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/datepicker" apiName="DatePicker" />

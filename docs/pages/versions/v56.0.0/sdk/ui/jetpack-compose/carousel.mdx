@@ -1,0 +1,130 @@
+---
+title: 轮播
+description: 用于显示可滚动项目集合的 Jetpack Compose 轮播组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentDiagram } from '~/ui/components/Diagram';
+
+Expo UI 提供三个轮播组件，与官方 Jetpack Compose [Carousel](https://developer.android.com/develop/ui/compose/components/carousel) API 相匹配：`HorizontalCenteredHeroCarousel`、`HorizontalMultiBrowseCarousel` 和 `HorizontalUncontainedCarousel`。
+
+> **注意：** Carousel 是一个可水平滚动的组件，因此父级 `Host` 必须在滚动轴上提供一个有限宽度。请结合 `style={{ width: '100%' }}` 使用 `matchContents={{ vertical: true }}`（或任何有限宽度）。有关详细信息，请参见 [Host 参考中的 Match contents](host/#match-contents)。
+
+<ComponentDiagram
+  mode="landscape"
+  source="/static/images/expo-ui/carousel/android-light.webp"
+  darkSource="/static/images/expo-ui/carousel/android-dark.webp"
+  alt="带有一个主项和较小预览项的 Material 3 多浏览轮播"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### HorizontalCenteredHeroCarousel
+
+将一个大的主项居中放置在两个小预览项之间——非常适合展示电影海报等内容。
+
+```tsx CenteredHeroExample.tsx
+import { Host, HorizontalCenteredHeroCarousel, Box, Text } from '@expo/ui/jetpack-compose';
+import { size, background } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function CenteredHeroExample() {
+  const colors = ['#6200EE', '#03DAC5', '#FF5722', '#4CAF50', '#2196F3'];
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <HorizontalCenteredHeroCarousel itemSpacing={8}>
+        {colors.map((color, index) => (
+          <Box
+            key={index}
+            contentAlignment="center"
+            modifiers={[size(300, 200), background(color)]}>
+            <Text color="#FFFFFF">幻灯片 {index + 1}</Text>
+          </Box>
+        ))}
+      </HorizontalCenteredHeroCarousel>
+    </Host>
+  );
+}
+```
+
+### HorizontalMultiBrowseCarousel
+
+在一个大项旁边显示较小的预览项，让用户浏览接下来会出现的内容。
+
+```tsx MultiBrowseExample.tsx
+import { Host, HorizontalMultiBrowseCarousel, Box, Text } from '@expo/ui/jetpack-compose';
+import { size, background } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function MultiBrowseExample() {
+  const colors = ['#6200EE', '#03DAC5', '#FF5722', '#4CAF50', '#2196F3'];
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <HorizontalMultiBrowseCarousel
+        preferredItemWidth={200}
+        itemSpacing={8}
+        flingBehavior="singleAdvance">
+        {colors.map((color, index) => (
+          <Box
+            key={index}
+            contentAlignment="center"
+            modifiers={[size(200, 180), background(color)]}>
+            <Text color="#FFFFFF">卡片 {index + 1}</Text>
+          </Box>
+        ))}
+      </HorizontalMultiBrowseCarousel>
+    </Host>
+  );
+}
+```
+
+### HorizontalUncontainedCarousel
+
+每个项目都有固定宽度，并支持自由形式滚动。
+
+```tsx UncontainedExample.tsx
+import { Host, HorizontalUncontainedCarousel, Box, Text } from '@expo/ui/jetpack-compose';
+import { size, background } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function UncontainedExample() {
+  const items = ['照片 1', '照片 2', '照片 3', '照片 4', '照片 5'];
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <HorizontalUncontainedCarousel
+        itemWidth={160}
+        itemSpacing={12}
+        contentPadding={{ start: 16, top: 0, end: 16, bottom: 0 }}>
+        {items.map(item => (
+          <Box
+            key={item}
+            contentAlignment="center"
+            modifiers={[size(160, 180), background('#3F51B5')]}>
+            <Text color="#FFFFFF">{item}</Text>
+          </Box>
+        ))}
+      </HorizontalUncontainedCarousel>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import {
+  HorizontalCenteredHeroCarousel,
+  HorizontalMultiBrowseCarousel,
+  HorizontalUncontainedCarousel,
+} from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/carousel" apiName="Carousel" />

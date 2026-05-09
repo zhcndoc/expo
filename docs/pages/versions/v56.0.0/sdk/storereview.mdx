@@ -1,0 +1,78 @@
+---
+title: StoreReview
+description: 一个提供访问原生 API 以实现应用内评价的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-store-review'
+packageName: 'expo-store-review'
+iconUrl: '/static/images/packages/expo-store-review.png'
+platforms: ['android', 'ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+`expo-store-review` 是一个库，它提供对 Android 5+ 上的 `ReviewManager` API 和 iOS 上的 `SKStoreReviewController` API 的访问。它允许你在不离开应用本身的情况下，请求用户为你的应用评分。
+
+<ContentSpotlight
+  src="/static/images/store-review.png"
+  alt="iOS 上商店评论 API 运行时的截图"
+/>
+
+## 安装
+
+<APIInstallSection packageName="expo-store-review" />
+
+## 使用
+
+在使用此 API 时，遵循 iOS 的 [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/ratings-and-reviews) 和 Android 的 [Guidelines](https://developer.android.com/guide/playcore/in-app-review#when-to-request) 非常重要。
+
+**具体来说：**
+
+- 不要从按钮中调用 `StoreReview.requestReview()` - 而是尝试在用户完成应用中的某个标志性交互之后调用它。
+- 不要频繁打扰用户。
+- 当用户正在进行诸如导航之类的时间敏感操作时，不要请求评论。
+- 在展示评分按钮或卡片之前或期间，不要向用户提出任何问题。
+
+### 写评论
+
+#### Android
+
+Android 上没有对应的重定向，你仍然可以使用查询参数 `showAllReviews=true` 打开 Play 商店的评论区，方式如下：
+
+```ts Android Play Store example
+const androidPackageName = 'host.exp.exponent';
+// 在浏览器中打开 Android Play 商店 -> 在 Android 上重定向到 Play 商店
+Linking.openURL(
+  `https://play.google.com/store/apps/details?id=${androidPackageName}&showAllReviews=true`
+);
+// 直接打开 Android Play 商店
+Linking.openURL(`market://details?id=${androidPackageName}&showAllReviews=true`);
+```
+
+#### iOS
+
+你可以通过使用查询参数 `action=write-review`，将应用用户重定向到 iOS App Store 中该应用的 **“写评论”** 页面。例如：
+
+```ts iOS App Store example
+const itunesItemId = 982107779;
+// 在浏览器中打开 iOS App Store -> 在 iOS 上重定向到 App Store
+Linking.openURL(`https://apps.apple.com/app/apple-store/id${itunesItemId}?action=write-review`);
+// 直接打开 iOS App Store
+Linking.openURL(
+  `itms-apps://itunes.apple.com/app/viewContentsUserReviews/id${itunesItemId}?action=write-review`
+);
+```
+
+## API
+
+```js
+import * as StoreReview from 'expo-store-review';
+```
+
+<APISection packageName="expo-store-review" apiName="StoreReview" />
+
+## 错误代码
+
+### `ERR_STORE_REVIEW_FAILED`
+
+当商店评论请求不成功时会发生此错误。
