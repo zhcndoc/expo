@@ -16,7 +16,7 @@ Expo UI TextField 与官方 SwiftUI [TextField API](https://developer.apple.com/
   mode="landscape"
   source="/static/images/expo-ui/textfield/ios-light.webp"
   darkSource="/static/images/expo-ui/textfield/ios-dark.webp"
-  alt="Form 中的 TextField 和 SecureField"
+  alt="表单中的 TextField 和 SecureField"
 />
 
 ## 安装
@@ -184,10 +184,27 @@ export default function ImperativeRefExample() {
 ```tsx WorkletPhoneMaskExample.tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { keyboardType } from '@expo/ui/swift-ui/modifiers';
+import { useEffectEvent } from 'react';
 
 export default function WorkletPhoneMaskExample() {
   const phone = useNativeState('');
   const selection = useNativeState({ start: 0, end: 0 });
+
+  const handleTextChange = useEffectEvent((v: string) => {
+    'worklet';
+    const digits = v.replace(/\D/g, '').slice(0, 10);
+    let formatted = digits;
+    if (digits.length > 6) {
+      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    } else if (digits.length > 3) {
+      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    }
+    if (formatted !== v) {
+      phone.value = formatted;
+      // 为演示而跳到末尾。真正的遮罩需要更智能的光标处理。
+      selection.value = { start: formatted.length, end: formatted.length };
+    }
+  });
 
   return (
     <Host matchContents>
@@ -196,20 +213,7 @@ export default function WorkletPhoneMaskExample() {
         selection={selection}
         placeholder="(555) 123-4567"
         modifiers={[keyboardType('phone-pad')]}
-        onTextChange={v => {
-          'worklet';
-          const digits = v.replace(/\D/g, '').slice(0, 10);
-          let formatted = digits;
-          if (digits.length > 6) {
-            formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-          } else if (digits.length > 3) {
-            formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-          }
-          if (formatted !== v) {
-            phone.value = formatted;
-            selection.value = { start: formatted.length, end: formatted.length };
-          }
-        }}
+        onTextChange={handleTextChange}
       />
     </Host>
   );

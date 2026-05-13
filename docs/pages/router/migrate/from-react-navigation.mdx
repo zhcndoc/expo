@@ -6,9 +6,11 @@ description: 了解如何将使用 React Navigation 的项目迁移到 Expo Rout
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { FileTree } from '~/ui/components/FileTree';
-import { Terminal, DiffBlock } from '~/ui/components/Snippet';
+import { DiffBlock } from '~/ui/components/Snippet';
 
-## Pitch
+> **info** 本指南适用于 **SDK 56 及更高版本**。在 SDK 56 中，Expo Router 停止接受来自 `@react-navigation/*.` 的应用代码导入。它们现在来自 `expo-router/\*` 入口点。如果你正在将现有的 Expo Router 应用从 SDK 55 或更早版本升级，请按照 [SDK 55 到 56 迁移指南](/router/migrate/sdk-55-to-56) 进行操作。下面的示例已经使用了 SDK 56 及更高版本的导入路径。
+
+## 前言
 
 除了 React Navigation 的所有优点之外，Expo Router 还支持自动深度链接、[类型安全](/router/reference/typed-routes)、[延迟打包](/router/web/async-routes)、[Web 端静态渲染](/router/web/static-rendering)等功能。
 
@@ -334,7 +336,7 @@ function Example() {
 在 React Navigation 中，你使用 [`<NavigationContainer />`](https://reactnavigation.org/docs/navigation-container/#theme) 组件为整个应用设置主题。Expo Router 会为你管理根容器，因此你应该直接使用 `ThemeProvider` 设置主题。
 
 ```tsx src/app/_layout.tsx
-import { ThemeProvider, DarkTheme, DefaultTheme, useTheme } from '@react-navigation/native';
+import { ThemeProvider, DarkTheme, DefaultTheme, useTheme } from 'expo-router/react-navigation';
 import { Slot } from 'expo-router';
 
 export default function RootLayout() {
@@ -348,7 +350,7 @@ export default function RootLayout() {
 }
 ```
 
-你可以在应用的任意层级使用此技术，为特定布局设置主题。当前主题可以通过来自 `@react-navigation/native` 的 `useTheme` hook 访问。
+你可以在应用的任何层使用此技术来为特定布局设置主题。当前主题可以通过 `expo-router/react-navigation` 中的 `useTheme` hook 访问。
 
 #### `children`
 
@@ -396,7 +398,7 @@ export const CustomNavigator = withLayoutContext(createCustomNavigator().Navigat
 {/* prettier-ignore */}
 ```jsx
 import { View } from 'react-native';
-import { TabRouter } from '@react-navigation/native';
+import { TabRouter } from 'expo-router/react-navigation';
 
 import { Navigator, usePathname, Slot, Link } from 'expo-router';
 
@@ -457,12 +459,12 @@ router.push({ pathname: '/account/settings', params: { user: 'jane' } });
 
 你可以使用 React Navigation 库中的 [`reset`](https://reactnavigation.org/docs/navigation-actions/#reset) 动作来重置导航状态。它通过 Expo Router 的 [`useNavigation`](/versions/latest/sdk/router/#usenavigation) hook 分发，以访问 `navigation` 属性。
 
-在下面的示例中，`navigation` 属性可通过 `useNavigation` hook 获取，而 `CommonActions.reset` 动作来自 `@react-navigation/native`。`reset` 动作中指定的对象会用新状态替换现有的导航状态。
+在下面的示例中，`navigation` 属性可通过 `useNavigation` hook 访问，而 `CommonActions.reset` 动作来自 `expo-router/react-navigation`。在 `reset` 动作中指定的对象会用新的导航状态替换现有的导航状态。
 
 {/* prettier-ignore */}
 ```tsx src/app/screen.tsx
 import { useNavigation } from 'expo-router'
-import { CommonActions } from '@react-navigation/native'
+import { CommonActions } from 'expo-router/react-navigation'
 
 export default function Screen() {
   const navigation = useNavigation();
@@ -493,8 +495,8 @@ Expo Router 可以自动生成[静态类型路由](/router/reference/typed-route
 React Navigation 的导航器 `<Stack>`、`<Drawer>` 和 `<Tabs>` 使用共享的外观提供器。在 React Navigation 中，你可以使用 `<NavigationContainer />` 组件为整个应用设置主题。Expo Router 会管理根容器，因此你可以直接使用 `ThemeProvider` 来设置主题。
 
 ```tsx src/app/_layout.tsx
-/* @info 直接从 React Navigation 导入主题 API。 */
-import { ThemeProvider, DarkTheme, DefaultTheme, useTheme } from '@react-navigation/native';
+/* @info 从 React Navigation 直接导入主题 API。 */
+import { ThemeProvider, DarkTheme, DefaultTheme, useTheme } from 'expo-router/react-navigation';
 /* @end */
 import { Slot } from 'expo-router';
 
@@ -509,14 +511,16 @@ export default function RootLayout() {
 }
 ```
 
-你可以在应用的任何层级使用这种技术，为特定布局设置主题。当前主题可以通过来自 `@react-navigation/native` 的 `useTheme` hook 访问。
+你可以在应用的任何层级使用此技术，为特定布局设置主题。当前主题可以通过 `expo-router/react-navigation` 中的 `useTheme` 钩子访问。
 
 ### React Navigation Elements
 
-[`@react-navigation/elements`](https://reactnavigation.org/docs/elements/) 库提供了一组可用于构建导航界面的 UI 元素和辅助工具。这些组件被设计为可组合且可定制。你可以重用该库中的默认功能，或者在其基础上构建你的导航器 UI。
+[React Navigation Elements](https://reactnavigation.org/docs/elements/) 库提供了一组 UI 元素和辅助工具，可用于构建导航 UI。这些组件设计为可组合且可定制的。你可以复用该库中的默认功能，或在此基础上构建你自己的导航器 UI。
 
-要在 Expo Router 中使用它，你需要安装该库：
+在 SDK 56 及更高版本中，该库会从 `expo-router/react-navigation` 重新导出，因此无需单独安装包：
 
-<Terminal cmd={['$ npx expo install @react-navigation/elements']} />
+```tsx
+import { Header, HeaderBackButton } from 'expo-router/react-navigation';
+```
 
 要了解该库提供的更多组件和工具，请参阅 [Elements 库](https://reactnavigation.org/docs/elements/) 文档。

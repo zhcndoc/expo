@@ -1236,17 +1236,18 @@ jobs:
     environment: production | preview | development # 可选，默认值为 preview
     image: string # 可选。有关可用镜像列表，请参见 https://docs.expo.dev/eas/workflows/syntax/#jobsjob_idruns_on。
     params:
-      build_id: string # 必填
-      flow_path: string | string[] # 必填
-      shards: number # 可选，默认值为 1
-      retries: number # 可选，默认值为 1
-      record_screen: boolean # 可选，默认值为 false。如果为 true，则上传测试录屏。
-      include_tags: string | string[] # 可选。要包含在测试中的标签。将以 `--include-tags` 形式传递给 Maestro。
-      exclude_tags: string | string[] # 可选。要从测试中排除的标签。将以 `--exclude-tags` 形式传递给 Maestro。
-      maestro_version: string # 可选。用于测试的 Maestro 版本。如果未提供，将使用最新版本。
-      android_system_image_package: string # 可选。要使用的 Android 模拟器系统镜像包。
-      device_identifier: string | { android?: string, ios?: string } # 可选。用于测试的设备标识符。
-      output_format?: string # 可选，默认值为 junit。Maestro 测试报告格式。将以 `--format` 形式传递给 Maestro。可以是 `junit` 或其他受支持的格式。
+      build_id: string # required
+      flow_path: string | string[] # required
+      shards: number # optional, defaults to 1
+      retries: number # optional, defaults to 0
+      retry_failed_only: boolean # optional, defaults to true. When true, retries will attempt to re-run only the flows that failed on the previous attempt when applicable.
+      record_screen: boolean # optional, defaults to false. If true, uploads a screen recording of the tests.
+      include_tags: string | string[] # optional. Tags to include in the tests. Will be passed to Maestro as `--include-tags`.
+      exclude_tags: string | string[] # optional. Tags to exclude from the tests. Will be passed to Maestro as `--exclude-tags`.
+      maestro_version: string # optional. Version of Maestro to use for the tests. If not provided, the latest version will be used.
+      android_system_image_package: string # optional. Android emulator system image package to use.
+      device_identifier: string | { android?: string, ios?: string } # optional. Device identifier to use for the tests.
+      output_format?: string # optional, defaults to junit. Maestro test report format. Will be passed to Maestro as `--format`. Can be `junit` or other supported formats.
 ```
 
 #### `maestro-cloud`
@@ -1802,7 +1803,7 @@ jobs:
       # @info #
       - uses: eas/send_slack_message
         # @end #
-        with:
+      with:
           message: 'This is a message to plain input URL'
           slack_hook_url: 'https://hooks.slack.com/services/[rest_of_hook_url]'
 ```

@@ -1,0 +1,129 @@
+---
+title: TextInput
+description: 一个由原生 SwiftUI 和 Jetpack Compose 组件支持的文本输入，具有与 React Native 兼容的 API。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+一个文本输入组件，在 Android 上路由到来自 `@expo/ui/jetpack-compose` 的 [`TextField`](../jetpack-compose/textfield)，在 iOS 上路由到来自 `@expo/ui/swift-ui` 的 [`TextField`](../swift-ui/textfield)，在 web 上路由到 React Native 的 [`TextInput`](https://reactnative.dev/docs/textinput)。
+
+该 API 与 React Native 的 [`TextInput`](https://reactnative.dev/docs/textinput) 保持一致，但有两点不同：[`value`](#value) 和 [`selection`](#selection) 是可观察的状态对象（通过 `useNativeState` 创建），并且 [`onChangeText`](#onchangetext) 可以是一个 worklet，以便在 UI 线程上同步更新状态。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 非受控
+
+省略 [`value`](#value)，字段将自行在内部管理文本。使用 [`onChangeText`](#onchangetext) 观察编辑，并使用 [ref](#textinputref) 执行诸如 `focus`、`blur` 和 `clear` 之类的命令式操作。
+
+```tsx UncontrolledTextInputExample.tsx
+import { Button, Column, Host, TextInput, type TextInputRef } from '@expo/ui';
+import { useRef } from 'react';
+
+export default function UncontrolledTextInputExample() {
+  const inputRef = useRef<TextInputRef>(null);
+
+  return (
+    <Host matchContents={{ vertical: true }}>
+      <Column spacing={8}>
+        <TextInput
+          ref={inputRef}
+          defaultValue="hello"
+          placeholder="在此输入"
+          onChangeText={value => console.log(value)}
+        />
+        <Button label="清除" onPress={() => inputRef.current?.clear()} />
+      </Column>
+    </Host>
+  );
+}
+```
+
+### 受控
+
+传入 [`value`](#value) 以通过 `useNativeState` 可观察对象驱动字段。下面的示例会在你输入时将 `Hello` 替换为 `World`。
+
+```tsx ControlledTextInputExample.tsx
+import { Host, TextInput, useNativeState } from '@expo/ui';
+import { useEffectEvent } from 'react';
+
+export default function ControlledTextInputExample() {
+  const text = useNativeState('');
+
+  const handleChangeText = useEffectEvent((value: string) => {
+    'worklet';
+    text.value = value === 'Hello' ? 'World' : value;
+  });
+
+  return (
+    <Host matchContents={{ vertical: true }}>
+      <TextInput value={text} placeholder="在此输入" onChangeText={handleChangeText} />
+    </Host>
+  );
+}
+```
+
+### Worklet 掩码
+
+为 [`onChangeText`](#onchangetext) 添加 `'worklet'` 指令，以便在 UI 线程上同步更新状态。对 `value` 的写入不会经过 JS 线程来回切换，从而避免可能导致光标闪烁的问题。
+
+> **注意：** Worklet 需要安装 [`react-native-reanimated`](https://docs.swmansion.com/react-native-reanimated/) 和 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。
+
+```tsx PhoneMaskExample.tsx
+import { Host, TextInput, useNativeState } from '@expo/ui';
+import { useEffectEvent } from 'react';
+
+function formatPhone(input: string) {
+  'worklet';
+  const digits = input.replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+export default function PhoneMaskExample() {
+  const phone = useNativeState('');
+  const selection = useNativeState({ start: 0, end: 0 });
+
+  const handleChangeText = useEffectEvent((value: string) => {
+    'worklet';
+    const formatted = formatPhone(value);
+    if (formatted !== value) {
+      phone.value = formatted;
+      // 为演示起见，将光标跳到末尾。真正的掩码需要更智能的光标处理。
+      selection.value = { start: formatted.length, end: formatted.length };
+    }
+  });
+
+  return (
+    <Host matchContents={{ vertical: true }}>
+      <TextInput
+        value={phone}
+        selection={selection}
+        keyboardType="phone-pad"
+        placeholder="(555) 123-4567"
+        onChangeText={handleChangeText}
+      />
+    </Host>
+  );
+}
+```
+
+## 不支持的 React Native props
+
+某些 React Native `TextInput` props 不受支持，因为 Compose 的 `TextField` 或 SwiftUI 的 `TextField` 没有提供对应能力，或者该 prop 已被其他机制替代。请参阅下方的 [API](#api) 部分了解支持的 props。如果某个缺失的 prop 阻碍了你的使用场景，请 [提交 issue](https://github.com/expo/expo/issues/new/choose) 以便将其优先处理。
+
+## API
+
+```tsx
+import { TextInput, useNativeState } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/textinput" apiName="TextInput" />

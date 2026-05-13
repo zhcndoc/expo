@@ -1,5 +1,5 @@
 ---
-modificationDate: 2025年9月17日
+modificationDate: 2026年5月12日
 title: 构建服务器基础设施
 sidebar_title: 服务器基础设施
 maxHeadingDepth: 4
@@ -42,17 +42,9 @@ Android 构建器运行在隔离环境中的虚拟机上。每次构建都会获
 
   <BuildResourceList platform="android" />
 
-- [使用 Kubernetes 部署的 npm 缓存](/build-reference/caching/#javascript-dependencies)
-- [使用 Kubernetes 部署的 Maven 缓存](/build-reference/caching/#android-dependencies)
-- **~/.gradle/gradle.properties** 中的全局 Gradle 配置：
-
-  ```ini ~/.gradle/gradle.properties
-  org.gradle.jvmargs=-Xmx14g -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
-  org.gradle.parallel=true
-  org.gradle.configureondemand=true
-  org.gradle.daemon=false
-  ```
-
+- [npm 缓存已通过 Kubernetes 部署](/build-reference/caching/#javascript-dependencies)
+- [Maven 缓存已通过 Kubernetes 部署](/build-reference/caching/#android-dependencies)
+- 构建环境预配时，会通过 `GRADLE_OPTS` 环境变量注入 Gradle JVM 参数。请参见下方的 [Gradle JVM 参数](#gradle-jvm-args)。
 - **~/.npmrc** 中的全局 npm 配置：
 
   ```ini ~/.npmrc
@@ -67,6 +59,32 @@ Android 构建器运行在隔离环境中的虚拟机上。每次构建都会获
   npmRegistryServer: 'http://npm.production.caches.eas-build.internal'
   enableImmutableInstalls: false
   ```
+
+### Gradle JVM 参数
+
+EAS Build 会在 Gradle 运行前，将 `GRADLE_OPTS` 环境变量设置到构建 VM（worker）上。其值取决于你选择的[资源类别](/eas/json/#resourceclass)：
+
+| 资源类别 | `-Xmx`（最大堆） |
+| -------------- | ----------------- |
+| `medium`       | `4g`              |
+| `large`        | `8g`              |
+
+除了 `-Xmx` 之外，worker 还会通过 `-Dorg.gradle.jvmargs` 向 Gradle 构建 JVM 传递以下 JVM 参数：
+
+- `-XX:MaxMetaspaceSize=1g`
+- `-XX:+HeapDumpOnOutOfMemoryError`
+- `-Dfile.encoding=UTF-8`
+
+worker 还会通过 `GRADLE_OPTS` 设置这些顶层 Gradle 属性：
+
+- `-Dorg.gradle.parallel=true`
+- `-Dorg.gradle.daemon=false`
+
+> **warning** worker 会通过 `GRADLE_OPTS` 设置 `org.gradle.jvmargs`，这会覆盖你项目 **gradle.properties** 中定义的任何 `org.gradle.jvmargs`。
+
+#### 覆盖 `GRADLE_OPTS`
+
+你可以在 **eas.json** 的构建配置文件 [`env`](/eas/json/#env) 中、在[工作流文件](/eas/workflows/syntax/#jobsjob_idenv)中，或通过 [EAS 环境变量](/eas/environment-variables/)设置 `GRADLE_OPTS`，以替换 worker 的默认值。项目环境变量优先于 worker 的默认值。
 
 ### Android 服务器镜像
 

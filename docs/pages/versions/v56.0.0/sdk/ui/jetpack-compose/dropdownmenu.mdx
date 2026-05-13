@@ -28,7 +28,7 @@ Expo UI DropdownMenu 与官方 Jetpack Compose [Menu API](https://developer.andr
 ### 基础下拉菜单
 
 ```tsx BasicDropdownMenuExample.tsx
-import { Host, DropdownMenu, Button, Text, Icon } from '@expo/ui/jetpack-compose';
+import { Host, DropdownMenu, DropdownMenuItem, Button, Text, Icon } from '@expo/ui/jetpack-compose';
 import { useState } from 'react';
 
 export default function BasicDropdownMenuExample() {
@@ -45,7 +45,7 @@ export default function BasicDropdownMenuExample() {
           <DropdownMenuItem
             onClick={() => {
               setIsExpanded(false);
-              console.log('Home pressed');
+              console.log('主页被按下');
             }}>
             <DropdownMenuItem.Text>
               <Text>主页</Text>
@@ -53,6 +53,59 @@ export default function BasicDropdownMenuExample() {
             <DropdownMenuItem.LeadingIcon>
               <Icon source={homeIcon} size={24} />
             </DropdownMenuItem.LeadingIcon>
+          </DropdownMenuItem>
+        </DropdownMenu.Items>
+      </DropdownMenu>
+    </Host>
+  );
+}
+```
+
+### 作为触发器的 React Native 组件
+
+你可以通过将 React Native 视图（例如 `Pressable`）包装在 [`RNHostView`](rnhostview) 中，将其用作下拉菜单的触发器。
+
+```tsx RNTriggerDropdownMenuExample.tsx
+import {
+  Host,
+  DropdownMenu,
+  DropdownMenuItem,
+  Text as ComposeText,
+  RNHostView,
+} from '@expo/ui/jetpack-compose';
+import { useState } from 'react';
+import { Pressable, Text } from 'react-native';
+
+export default function RNTriggerDropdownMenuExample() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  return (
+    <Host matchContents>
+      <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
+        <DropdownMenu.Trigger>
+          <RNHostView matchContents>
+            <Pressable
+              onPress={() => setIsExpanded(true)}
+              style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 8,
+                backgroundColor: '#9B59B6',
+              }}>
+              <Text style={{ color: 'white', fontWeight: '600' }}>RN Pressable 触发器</Text>
+            </Pressable>
+          </RNHostView>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Items>
+          <DropdownMenuItem onClick={() => setIsExpanded(false)}>
+            <DropdownMenuItem.Text>
+              <ComposeText>项目 1</ComposeText>
+            </DropdownMenuItem.Text>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsExpanded(false)}>
+            <DropdownMenuItem.Text>
+              <ComposeText>项目 2</ComposeText>
+            </DropdownMenuItem.Text>
           </DropdownMenuItem>
         </DropdownMenu.Items>
       </DropdownMenu>

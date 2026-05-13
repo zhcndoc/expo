@@ -849,17 +849,18 @@ jobs:
     environment: production | preview | development # 可选 - 默认为 preview
     image: string # 可选 - 可用镜像列表请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      build_id: string # 必需
-      flow_path: string | string[] # 必需
-      shards: number # 可选 - 默认为 1
-      retries: number # 可选 - 默认为 1
-      record_screen: boolean # 可选 - 默认为 false
-      include_tags: string | string[] # 可选
-      exclude_tags: string | string[] # 可选
-      maestro_version: string # 可选 - 默认为 latest
-      android_system_image_package: string # 可选
-      device_identifier: string | { android: string, ios: string } # 可选
-      output_format: string # 可选 - 默认为 junit
+      build_id: string # required
+      flow_path: string | string[] # required
+      shards: number # optional - defaults to 1
+      retries: number # optional - defaults to 0
+      retry_failed_only: boolean # optional - defaults to true
+      record_screen: boolean # optional - defaults to false
+      include_tags: string | string[] # optional
+      exclude_tags: string | string[] # optional
+      maestro_version: string # optional - defaults to latest
+      android_system_image_package: string # optional
+      device_identifier: string | { android: string, ios: string } # optional
+      output_format: string # optional - defaults to junit
 ```
 
 #### 参数
@@ -868,18 +869,19 @@ jobs:
 
 | 参数                         | 类型                                                  | 描述                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id                     | string                                                | 必需。要测试的构建 ID。                                                                                                                                                                                                                                                                                                                                                                                                |
-| flow_path                    | string or string[]                                    | 必需。要运行的 Maestro flow 文件或目录路径。                                                                                                                                                                                                                                                                                                                                                                   |
-| shards                       | number                                                | 可选且实验性。将测试拆分成的分片数量。默认为 1。                                                                                                                                                                                                                                                                                                                                               |
-| retries                      | number                                                | 可选。失败测试的重试次数。默认为 1。                                                                                                                                                                                                                                                                                                                                                                   |
-| record_screen                | boolean                                               | 可选。是否录制屏幕。默认为 false。注意：录屏可能会影响模拟器性能。录屏时你可能希望使用 large runners。                                                                                                                                                                                                                                                           |
-| include_tags                 | string or string[]                                    | 可选。要在测试中包含的 flow 标签。将作为 `--include-tags` 传递给 Maestro。                                                                                                                                                                                                                                                                                                                                           |
-| exclude_tags                 | string or string[]                                    | 可选。要从测试中排除的 flow 标签。将作为 `--exclude-tags` 传递给 Maestro。                                                                                                                                                                                                                                                                                                                                         |
-| maestro_version              | string                                                | 可选。用于测试的 Maestro 版本。如果未提供，将使用最新版本。                                                                                                                                                                                                                                                                                                                                  |
-| output_format                | string                                                | 可选。Maestro 测试报告格式。默认为 `junit`。将作为 `--format` 传递给 Maestro。可以是 `junit` 或其他受支持的格式。                                                                                                                                                                                                                                                                                        |
-| android_system_image_package | string                                                | 可选。要使用的 Android Emulator 系统镜像包。在你的机器上运行 `sdkmanager --list` 以列出可用包。选择 `x86_64` 变体。示例：`system-images;android-36;google_apis;x86_64`、`system-images;android-35-ext15;google_apis_playstore;x86_64`。注意，更高版本的镜像需要更多计算资源，因此你可能希望使用 large runners。                                                 |
-| device_identifier            | string or `{ android?: string, ios?: string }` object | 可选。用于测试的设备标识符。你也可以使用单值表达式，例如 `pixel_6`、`iPhone 16 Plus` 或 `${{ needs.build.outputs.platform == "android" ? "pixel_6" : "iPhone 16 Plus" }}`，以及对象形式 `device_identifier: { android: "pixel_6", ios: "iPhone 16 Plus" }`。注意，iOS 设备可用性因 runner 镜像而异。可用设备列表可在作业日志中找到。 |
-| skip_build_check             | boolean                                               | 可选。跳过对构建的验证（即 iOS 构建是否为模拟器构建）。默认为 false。                                                                                                                                                                                                                                                                                                                                |
+| build_id                     | string                                                | 必需。要测试的构建 ID。                                                                                                                                                                                                                                                                                                                                                                                                                |
+| flow_path                    | string or string[]                                    | 必需。要运行的 Maestro flow 文件或目录的路径。                                                                                                                                                                                                                                                                                                                                                                                       |
+| shards                       | number                                                | 可选且为实验性功能。将测试拆分为多少个分片。默认为 1。                                                                                                                                                                                                                                                                                                                                                                               |
+| retries                      | number                                                | 可选。如果测试失败，重试的次数。默认为 0。                                                                                                                                                                                                                                                                                                                                                                                           |
+| retry_failed_only            | boolean                                               | 可选。当为 true（默认）时，在适用情况下，重试将只重新运行上一次尝试中失败的 flows。设置为 false 可在每次重试时重新运行所有 flows。                                                                                                                                                                                                                                                                                               |
+| record_screen                | boolean                                               | 可选。是否录制屏幕。默认为 false。注意：录制屏幕可能会影响模拟器性能。录制屏幕时你可能希望使用 large runners。                                                                                                                                                                                                                                                                                                                     |
+| include_tags                 | string or string[]                                    | 可选。要包含在测试中的 flow 标签。会作为 `--include-tags` 传递给 Maestro。                                                                                                                                                                                                                                                                                                                                                          |
+| exclude_tags                 | string or string[]                                    | 可选。要从测试中排除的 flow 标签。会作为 `--exclude-tags` 传递给 Maestro。                                                                                                                                                                                                                                                                                                                                                          |
+| maestro_version              | string                                                | 可选。要用于测试的 Maestro 版本。如果未提供，将使用最新版本。                                                                                                                                                                                                                                                                                                                                                                      |
+| output_format                | string                                                | 可选。Maestro 测试报告格式。默认为 `junit`。会作为 `--format` 传递给 Maestro。可以是 `junit` 或其他受支持的格式。                                                                                                                                                                                                                                                                                                                  |
+| android_system_image_package | string                                                | 可选。要使用的 Android Emulator 系统镜像包。在你的机器上运行 `sdkmanager --list` 以列出可用包。请选择 `x86_64` 变体。示例：`system-images;android-36;google_apis;x86_64`、`system-images;android-35-ext15;google_apis_playstore;x86_64`。请注意，更高版本的镜像需要更多计算资源，因此你可能希望使用 large runners。                                                 |
+| device_identifier            | string or `{ android?: string, ios?: string }` object | 可选。要用于测试的设备标识符。你也可以使用单值表达式，例如 `pixel_6`、`iPhone 16 Plus` 或 `${{ needs.build.outputs.platform == "android" ? "pixel_6" : "iPhone 16 Plus" }}`，以及对象形式，如 `device_identifier: { android: "pixel_6", ios: "iPhone 16 Plus" }`。请注意，iOS 设备在不同 runner 镜像上的可用性不同。可用设备列表可在作业日志中找到。 |
+| skip_build_check             | boolean                                               | 可选。跳过构建校验（即 iOS 构建是否为模拟器构建）的验证。默认为 false。                                                                                                                                                                                                                                                                                                                                                              |
 
 ### 示例
 
@@ -1002,20 +1004,20 @@ jobs:
     environment: production | preview | development # 可选 - 默认为 preview
     image: string # 可选 - 请参阅 https://docs.expo.dev/build-reference/infrastructure/ 了解可用镜像列表。
     params:
-      build_id: string # required - ID of the build to test.
-      maestro_project_id: string # required - Maestro Cloud project ID. Example: `proj_01jw6hxgmdffrbye9fqn0pyzm0`.
-      flows: string # required - Path to the Maestro flow file or directory containing the flows to run. Corresponds to `--flows` param to `maestro cloud`.
-      maestro_api_key: string # optional - defaults to `$MAESTRO_CLOUD_API_KEY`
-      include_tags: string | string[] # optional - tags to include in the tests. Will be passed to Maestro as `--include-tags`.
-      exclude_tags: string | string[] # optional - tags to exclude from the tests. Will be passed to Maestro as `--exclude-tags`.
-      maestro_version: string # optional - version of Maestro to use for the tests. If not provided, the latest version will be used.
-      maestro_config: string # optional - path to the Maestro `config.yaml` file to use for the tests. Will be passed to Maestro as `--config`.
-      device_locale: string # optional - device locale to use for the tests. Will be passed to Maestro as `--device-locale`.
-      device_model: string # optional - model of the device to use for the tests. Will be passed to Maestro as `--device-model`. Run `maestro list-cloud-devices` for a list of supported values.
-      device_os: string # optional - OS of the device to use for the tests. Will be passed to Maestro as `--device-os`. Run `maestro list-cloud-devices` for a list of supported values.
-      name: string # optional - name for the Maestro Cloud upload. Corresponds to `--name` param to `maestro cloud`.
-      branch: string # optional - override for the branch the Maestro Cloud upload originated from. By default, if the workflow run has been triggered from GitHub, the branch of the workflow run will be used. Corresponds to `--branch` param to `maestro cloud`.
-      async: boolean # optional - run the Maestro Cloud tests asynchronously. If true, the status of the job will only denote whether the upload was successful, _not_ whether the tests succeeded. Corresponds to `--async` param to `maestro cloud`.
+      build_id: string # required - 要测试的构建 ID。
+      maestro_project_id: string # required - Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
+      flows: string # required - 要运行的 Maestro flow 文件或包含 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。
+      maestro_api_key: string # optional - 默认为 `$MAESTRO_CLOUD_API_KEY`
+      include_tags: string | string[] # optional - 要在测试中包含的标签。将作为 `--include-tags` 传递给 Maestro。
+      exclude_tags: string | string[] # optional - 要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
+      maestro_version: string # optional - 测试要使用的 Maestro 版本。如果未提供，将使用最新版本。
+      maestro_config: string # optional - 要用于测试的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
+      device_locale: string # optional - 要用于测试的设备区域设置。将作为 `--device-locale` 传递给 Maestro。
+      device_model: string # optional - 要用于测试的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
+      device_os: string # optional - 要用于测试的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
+      name: string # optional - Maestro Cloud 上传名称。对应 `maestro cloud` 的 `--name` 参数。
+      branch: string # optional - 覆盖 Maestro Cloud 上传所来源的分支。默认情况下，如果工作流运行是从 GitHub 触发的，则会使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。
+      async: boolean # optional - 异步运行 Maestro Cloud 测试。如果为 true，作业状态只表示上传是否成功，而不表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。
 ```
 
 #### 参数

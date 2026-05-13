@@ -38,7 +38,7 @@ Expo Autolinking 集成到了 Android 的 Gradle 构建系统和 iOS 的 CocoaPo
 模块解析的行为可以通过一些配置选项进行自定义。这些选项可以定义在三个不同位置，优先级从低到高依次为：
 
 - 应用 **package.json** 中的 `expo.autolinking` 配置对象
-- 通过 `expo.autolinking.ios` 和 `expo.autolinking.android` 对象进行按平台覆盖
+- 按平台覆盖的 `expo.autolinking.android`、`expo.autolinking.ios` 和 `expo.autolinking.apple` 对象（当 `apple` 缺失时会回退到 `ios`）
 - 传递给 CLI 命令、**Podfile** 中的 `use_expo_modules!` 方法或 **settings.gradle** 中的 `useExpoModules` 函数的选项
 
 <PaddedAPIBox header="searchPaths">
@@ -108,6 +108,38 @@ module.exports = {
 ```
 
 > **info** 在 **SDK 54** 之前，`exclude` 选项只适用于 Expo 模块，而不适用于 React Native 模块。React Native 模块只能通过项目根目录中的 **react-native.config.js** 文件来排除。
+
+</PaddedAPIBox>
+<PaddedAPIBox header="include">
+
+> **info** 适用于 **SDK 55 及更高版本**。
+
+要额外验证去重的一组包名列表。这对于即使不是原生模块也不应因单例或内部状态而被重复的工具类库很有用。
+
+```json package.json
+{
+  "expo": {
+    "autolinking": {
+      "include": ["third-party-expo-module"]
+    }
+  }
+}
+```
+
+与其他选项不同，按平台的 `include` 列表会与根列表合并，而不是覆盖。下面的配置会在所有平台上验证一个第三方库，并且在 Android 上额外检查一个仅适用于该平台的库：
+
+```json package.json
+{
+  "expo": {
+    "autolinking": {
+      "include": ["third-party-expo-module"],
+      "android": {
+        "include": ["third-party-android-module"]
+      }
+    }
+  }
+}
+```
 
 </PaddedAPIBox>
 <PaddedAPIBox header="flags" platforms={["ios"]}>

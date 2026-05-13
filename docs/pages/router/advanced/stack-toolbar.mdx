@@ -1,17 +1,62 @@
 ---
 title: 堆栈工具栏
-description: 了解如何在 Stack 导航中使用 Expo Router 的 iOS 工具栏。
+description: 了解如何在使用 Expo Router 的堆栈导航中使用原生工具栏。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
+import { Tabs, Tab } from '~/ui/components/Tabs';
 
-> **重要** `Stack.Toolbar` 是一个 [alpha](/more/release-statuses/#alpha) API，仅在 **Expo SDK 55** 及更高版本中可用于 **iOS**。该 API 可能会发生破坏性变更。
+> **重要** `Stack.Toolbar` 是一个 [alpha](/more/release-statuses/#alpha) API，适用于 **Expo SDK 56** 及更高版本的 Android，以及 **Expo SDK 55** 及更高版本的 iOS。该 API 可能会发生破坏性更改。
 
-[`Stack.Toolbar`](/versions/latest/sdk/router/stack/#stacktoolbar) 允许你为 Stack 屏幕添加原生 iOS 工具栏项。你可以在标题栏（左侧或右侧）或底部工具栏区域放置按钮、菜单和自定义视图。
+[`Stack.Toolbar`](/versions/latest/sdk/router/stack/#stacktoolbar) 允许你在 Android 和 iOS 的 Stack 屏幕中添加原生工具栏项。你可以将按钮、菜单和自定义视图放置在标题栏（左侧或右侧）或底部工具栏中。
 
 ## 添加标题栏按钮
 
 在 `Stack.Toolbar` 中使用 [`Stack.Toolbar.Button`](/versions/latest/sdk/router/stack/#stacktoolbarbutton)，并设置 `placement="right"` 或 `placement="left"`，即可向导航标题栏添加按钮。这对于收藏、分享或编辑内容等操作非常有用。
+
+<Tabs>
+
+<Tab label="Android">
+
+```tsx src/app/notes/[id].tsx
+import { useState } from 'react';
+import { Stack } from 'expo-router';
+import { View, Text, Alert } from 'react-native';
+
+export default function NoteScreen() {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  return (
+    <>
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button
+          // 用你自己的图标替换
+          icon={isFavorite ? require('./assets/star-filled.png') : require('./assets/star.png')}
+          onPress={() => setIsFavorite(!isFavorite)}
+        />
+        <Stack.Toolbar.Button
+          icon={require('./assets/share.png')}
+          onPress={() => Alert.alert('Share')}
+        />
+      </Stack.Toolbar>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button
+          icon={require('./assets/sidebar.png')}
+          onPress={() => Alert.alert('Sidebar')}
+        />
+      </Stack.Toolbar>
+
+      <View style={{ flex: 1, padding: 16 }}>
+        <Text>Note content...</Text>
+      </View>
+    </>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="iOS">
 
 ```tsx src/app/notes/[id].tsx
 import { useState } from 'react';
@@ -42,13 +87,17 @@ export default function NoteScreen() {
 }
 ```
 
+</Tab>
+
+</Tabs>
+
 ## 图标
 
-工具栏按钮支持两种图标类型：SF Symbols 和自定义图片。
+工具栏按钮支持 SF Symbols（仅限 iOS）和自定义图片（Android 和 iOS）。
 
-### SF Symbols
+### SF Symbols（仅限 iOS）
 
-添加图标最简单的方法是使用 [SF Symbols](https://developer.apple.com/sf-symbols/)，这是 Apple 内置的图标库。将符号名称直接传递给 `icon` 属性：
+在 iOS 上添加图标最简单的方法是使用 [SF Symbols](https://developer.apple.com/sf-symbols/)，这是 Apple 内置的图标库。直接将符号名称传递给 `icon` 属性：
 
 ```tsx
 <Stack.Toolbar.Button icon="star.fill" onPress={() => {}} />
@@ -58,11 +107,61 @@ export default function NoteScreen() {
 
 你可以在 Apple 的 SF Symbols 应用中浏览可用符号。
 
+> **信息** SF Symbols 是仅限 iOS 的功能。
+
 ### 自定义图片
 
-你也可以使用自定义图片。在标题栏工具栏（`placement="left"` 或 `placement="right"`）中，将图片源直接传递给 `icon` 属性。
+你也可以使用自定义图片。传递它们的 API 因平台而异：
 
-> **信息** 在标题栏位置的子菜单（`Stack.Toolbar.Menu`）中使用自定义图片需要 `react-native-screens` 4.24.0 或更高版本。SDK 55 捆绑的是 `~4.23.0`，因此你需要手动安装 `react-native-screens@~4.24.0` 才能使用此功能。
+<Tabs>
+
+<Tab label="Android">
+
+将图片传递给 `icon` 属性：
+
+```tsx
+import { Stack } from 'expo-router';
+
+export default function Page() {
+  return (
+    <>
+      <Stack.Toolbar>
+        <Stack.Toolbar.Button icon={require('./assets/expo.png')} onPress={() => {}} />
+      </Stack.Toolbar>
+      {/* 屏幕内容 */}
+    </>
+  );
+}
+```
+
+默认情况下，来自图片源的图标会使用工具栏的着色颜色进行着色（`iconRenderingMode` 默认值为 `'template'`）。传递 `iconRenderingMode="original"` 可保留源图片的原始颜色，这对于多色图标很有用：
+
+```tsx
+import { Stack } from 'expo-router';
+
+export default function Page() {
+  return (
+    <>
+      <Stack.Toolbar>
+        <Stack.Toolbar.Button
+          icon={require('./assets/expo.png')}
+          iconRenderingMode="original"
+          onPress={() => {}}
+        />
+      </Stack.Toolbar>
+      {/* 屏幕内容 */}
+    </>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="iOS">
+
+iOS 根据位置使用两种不同的 API：对于标题栏工具栏，直接将图片源传递给 `icon`；对于底部工具栏，则使用 `useImage` 和 `image` 属性。
+
+> **信息** 在标题栏位置的子菜单（`Stack.Toolbar.Menu`）中使用自定义图片需要 `react-native-screens` 4.24.0 或更高版本。SDK 55 自带的是 `~4.23.0`，因此你需要手动安装 `react-native-screens@~4.24.0` 才能使用此功能。SDK 56 默认捆绑了兼容版本。
 
 ```tsx
 import { Stack } from 'expo-router';
@@ -102,11 +201,70 @@ export default function Page() {
 }
 ```
 
-> **信息** 用于底部工具栏自定义图片的 `useImage` 和 `image` 属性模式是一个临时 API，未来版本中可能会发生变化。
+> **信息** 用于底部工具栏自定义图片的 `useImage` 和 `image` 属性模式仅限 iOS，并且是一个临时 API，未来版本中可能会更改。
+
+</Tab>
+
+</Tabs>
 
 ## 构建操作菜单
 
 对于有多个操作的屏幕，使用 [`Stack.Toolbar.Menu`](/versions/latest/sdk/router/stack/#stacktoolbarmenu) 将它们分组到一个下拉菜单中：
+
+> **信息** 某些 [`Stack.Toolbar.Menu`](/versions/latest/sdk/router/stack/#stacktoolbarmenu) 和 [`Stack.Toolbar.MenuAction`](/versions/latest/sdk/router/stack/#stacktoolbarmenuaction) 属性仅限 iOS。请参阅 API 参考文档了解每个属性的平台可用性。
+
+<Tabs>
+
+<Tab label="Android">
+
+```tsx src/app/mail/[id].tsx
+import { useState } from 'react';
+import { Stack } from 'expo-router';
+import { Alert } from 'react-native';
+
+export default function EmailScreen() {
+  const [isArchived, setIsArchived] = useState(false);
+
+  return (
+    <>
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Menu icon={require('./assets/menu.png')}>
+          <Stack.Toolbar.MenuAction
+            icon={require('./assets/reply.png')}
+            onPress={() => Alert.alert('Reply')}>
+            Reply
+          </Stack.Toolbar.MenuAction>
+
+          <Stack.Toolbar.MenuAction
+            icon={require('./assets/forward.png')}
+            onPress={() => Alert.alert('Forward')}>
+            Forward
+          </Stack.Toolbar.MenuAction>
+
+          <Stack.Toolbar.MenuAction
+            icon={isArchived ? require('./assets/unarchive.png') : require('./assets/archive.png')}
+            isOn={isArchived}
+            onPress={() => setIsArchived(!isArchived)}>
+            {isArchived ? 'Unarchive' : 'Archive'}
+          </Stack.Toolbar.MenuAction>
+
+          <Stack.Toolbar.MenuAction
+            icon={require('./assets/trash.png')}
+            destructive
+            onPress={() => Alert.alert('Delete')}>
+            Delete
+          </Stack.Toolbar.MenuAction>
+        </Stack.Toolbar.Menu>
+      </Stack.Toolbar>
+      {/* 邮件内容 */}
+    </>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="iOS">
 
 ```tsx src/app/mail/[id].tsx
 import { useState } from 'react';
@@ -150,11 +308,62 @@ export default function EmailScreen() {
 }
 ```
 
-[`Stack.Toolbar.MenuAction`](/versions/latest/sdk/router/stack/#stacktoolbarmenuaction) 上的 `isOn` 属性会在操作旁显示一个对勾，这对于切换状态非常有用。`destructive` 属性会将该操作样式设为红色，以表示危险操作。
+</Tab>
+
+</Tabs>
 
 ### 嵌套子菜单
 
 对于更复杂的菜单，可以在另一个菜单中嵌套 `Stack.Toolbar.Menu`。使用 `inline` 属性可以直接显示子菜单项，而不会折叠：
+
+<Tabs>
+
+<Tab label="Android">
+
+```tsx
+import { useState } from 'react';
+import { Stack } from 'expo-router';
+
+export default function EmailScreen() {
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('name');
+  const [showHiddenFiles, setShowHiddenFiles] = useState(false);
+
+  return (
+    <>
+      <Stack.Toolbar>
+        <Stack.Toolbar.Menu icon={require('./assets/menu.png')}>
+          {/* 内联子菜单 - 选项会直接显示在菜单中 */}
+          <Stack.Toolbar.Menu inline title="Sort By">
+            <Stack.Toolbar.MenuAction isOn={sortBy === 'name'} onPress={() => setSortBy('name')}>
+              Name
+            </Stack.Toolbar.MenuAction>
+            <Stack.Toolbar.MenuAction isOn={sortBy === 'date'} onPress={() => setSortBy('date')}>
+              Date
+            </Stack.Toolbar.MenuAction>
+            <Stack.Toolbar.MenuAction isOn={sortBy === 'size'} onPress={() => setSortBy('size')}>
+              Size
+            </Stack.Toolbar.MenuAction>
+          </Stack.Toolbar.Menu>
+
+          {/* 嵌套子菜单 - 作为单独菜单打开 */}
+          <Stack.Toolbar.Menu title="Preferences">
+            <Stack.Toolbar.MenuAction
+              isOn={showHiddenFiles}
+              onPress={() => setShowHiddenFiles(!showHiddenFiles)}>
+              Show Hidden Files
+            </Stack.Toolbar.MenuAction>
+          </Stack.Toolbar.Menu>
+        </Stack.Toolbar.Menu>
+      </Stack.Toolbar>
+      {/* 邮件内容 */}
+    </>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="iOS">
 
 ```tsx
 import { useState } from 'react';
@@ -197,9 +406,44 @@ export default function EmailScreen() {
 }
 ```
 
+</Tab>
+
+</Tabs>
+
 ## 使用底部工具栏
 
-iOS 应用通常会在底部工具栏中放置主要操作。要添加底部工具栏，可以使用不带 placement 属性的 `Stack.Toolbar`（它默认是 `"bottom"`）：
+底部工具栏在 iOS 上通常用于主要屏幕操作，例如 Photos 和 Mail 应用中的工具栏。要添加一个工具栏，请在不传入 placement 属性的情况下使用 `Stack.Toolbar`，它默认值为 `"bottom"`：
+
+<Tabs>
+
+<Tab label="Android">
+
+```tsx src/app/photos/index.tsx
+import { Stack } from 'expo-router';
+import { Alert } from 'react-native';
+
+export default function PhotosScreen() {
+  return (
+    <>
+      <Stack.Toolbar>
+        <Stack.Toolbar.Button
+          icon={require('./assets/select.png')}
+          onPress={() => Alert.alert('选择')}
+        />
+        <Stack.Toolbar.Spacer width={24} />
+        <Stack.Toolbar.Button
+          icon={require('./assets/plus.png')}
+          onPress={() => Alert.alert('添加')}
+        />
+      </Stack.Toolbar>
+    </>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="iOS">
 
 ```tsx src/app/photos/index.tsx
 import { Stack } from 'expo-router';
@@ -222,11 +466,20 @@ export default function PhotosScreen() {
 }
 ```
 
-[`Stack.Toolbar.Spacer`](/versions/latest/sdk/router/stack/#stacktoolbarspacer) 会在项目之间创建弹性空间，将它们推向相反两侧。这就是实现工具栏两端各放一个按钮这类布局的方法。
+</Tab>
+
+</Tabs>
 
 > **信息** 底部工具栏只能在页面组件中使用，不能在布局文件中使用。
 
-## 为按钮添加徽标
+## 间隔器
+
+使用 [`Stack.Toolbar.Spacer`](/versions/latest/sdk/router/stack/#stacktoolbarspacer) 在工具栏项之间添加空白。其行为因平台而异：
+
+- **Android**：`Stack.Toolbar.Spacer` 始终需要显式的 `width`。目前没有可伸缩填充的间隔器。
+- **iOS**：不带 `width` 的 `Stack.Toolbar.Spacer` 会在项目之间创建可伸缩空白，将它们推到两侧。这对于类似工具栏两端放按钮的布局很有用。传入 `width` 可实现固定大小的间距。
+
+## 为按钮添加徽标（仅限 iOS）
 
 在标题栏工具栏中，你可以添加徽标来表示数量或状态。使用 [`Stack.Toolbar.Icon`](/versions/latest/sdk/router/stack/#stacktoolbaricon)、[`Stack.Toolbar.Label`](/versions/latest/sdk/router/stack/#stacktoolbarlabel) 和 [`Stack.Toolbar.Badge`](/versions/latest/sdk/router/stack/#stacktoolbarbadge) 来组合按钮内容：
 
@@ -251,7 +504,7 @@ export default function InboxScreen() {
 }
 ```
 
-> **信息** 徽标仅适用于标题栏位置（`left` 或 `right`），不适用于底部工具栏。
+> **info** 徽标仅适用于 iOS 标题栏位置（`left` 或 `right`），不适用于底部工具栏，也不适用于 Android。
 
 ## 嵌入自定义视图
 
@@ -272,7 +525,13 @@ export default function SearchScreen() {
             onPress={() => {
               Alert.alert('筛选按钮已按下');
             }}>
-            <SymbolView name="line.3.horizontal.decrease.circle" size={24} />
+            <SymbolView
+              name={{
+                ios: 'line.3.horizontal.decrease.circle',
+                android: 'filter_list',
+              }}
+              size={24}
+            />
           </Pressable>
         </Stack.Toolbar.View>
       </Stack.Toolbar>
@@ -285,6 +544,41 @@ export default function SearchScreen() {
 ## 动态显示和隐藏项目
 
 使用 `hidden` 属性可以根据状态切换工具栏项目的显示与隐藏：
+
+<Tabs>
+
+<Tab label="Android">
+
+```tsx src/app/document.tsx
+import { useState } from 'react';
+import { Stack } from 'expo-router';
+
+export default function DocumentScreen() {
+  const [isEditing, setIsEditing] = useState(false);
+
+  return (
+    <>
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button
+          hidden={isEditing}
+          icon={require('./assets/pencil.png')}
+          onPress={() => setIsEditing(true)}
+        />
+        <Stack.Toolbar.Button
+          hidden={!isEditing}
+          icon={require('./assets/check.png')}
+          onPress={() => setIsEditing(false)}
+        />
+      </Stack.Toolbar>
+      {/* 文档内容 */}
+    </>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="iOS">
 
 ```tsx src/app/document.tsx
 import { useState } from 'react';
@@ -306,6 +600,10 @@ export default function DocumentScreen() {
   );
 }
 ```
+
+</Tab>
+
+</Tabs>
 
 ## 常见问题
 
@@ -407,9 +705,23 @@ export default function Home() {
 
 ## 已知限制
 
-<Collapsible summary="仅限 iOS">
+<Collapsible summary="仅限原生">
 
-`Stack.Toolbar` 仅在 iOS 上可用。在 Android 和 web 上，该组件不会渲染。
+`Stack.Toolbar` 仅在 Android 和 iOS 上渲染。Web 没有标准工具栏，因此如果你需要在 Web 上实现工具栏行为，必须自己实现。
+
+</Collapsible>
+
+<Collapsible summary="Android 上仅支持自定义图标">
+
+在 Android 上，`icon` 必须是 `ImageSourcePropType`。例如 `require('./icon.png')` 或 `{ uri: '...' }`。
+
+你也可以使用 [`Stack.Toolbar.Icon`](/versions/latest/sdk/router/stack/#stacktoolbaricon) 并通过 `src` 属性提供跨平台图标。
+
+</Collapsible>
+
+<Collapsible summary="Android 上的间隔器需要显式宽度">
+
+可伸缩间隔器（没有 `width` 的 `<Stack.Toolbar.Spacer />`）仅适用于 iOS。在 Android 上，不带 `width` 的 `Stack.Toolbar.Spacer` 不会渲染任何内容——请在每个位置传入固定的 `width`，例如 `<Stack.Toolbar.Spacer width={24} />`。
 
 </Collapsible>
 
@@ -428,6 +740,18 @@ export default function Home() {
 <Collapsible summary="徽标仅适用于标题位置">
 
 `Stack.Toolbar.Badge` 仅在使用 `placement="left"` 或 `placement="right"` 时受支持。徽标不会显示在底部工具栏中。
+
+</Collapsible>
+
+<Collapsible summary="Android 不支持 Badge 和 Label 原语">
+
+在 Android 上，`Stack.Toolbar.Button` 只会渲染其图标 —— `Stack.Toolbar.Badge` 和 `Stack.Toolbar.Label` 子元素会被忽略。如果你需要在 Android 上实现类似徽标的 UI，请使用 [`Stack.Toolbar.View`](/versions/latest/sdk/router/stack/#stacktoolbarview) 嵌入自定义组件。
+
+</Collapsible>
+
+<Collapsible summary="Android 不支持 SearchBarSlot">
+
+`Stack.Toolbar.SearchBarSlot` 在 Android 上不会渲染任何内容。请使用 [`Stack.SearchBar`](/versions/latest/sdk/router/stack/#stacksearchbar) 来获得跨平台搜索栏支持。
 
 </Collapsible>
 
