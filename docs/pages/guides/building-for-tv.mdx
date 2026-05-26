@@ -9,6 +9,7 @@ import { GithubIcon } from '@expo/styleguide-icons/custom/GithubIcon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Tab, Tabs } from '~/ui/components/Tabs';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
@@ -18,7 +19,7 @@ React Native 通过 [React Native TV 项目](https://github.com/react-native-tvo
 
 在 Expo 项目中将 React Native TV 库作为 `react-native` 依赖项使用后，它就能够同时面向移动设备（Android、iOS）和 TV 设备（Android TV、Apple TV）。
 
-## 项目更改要求
+## 需要的原生项目更改
 
 对原生 Android 和 iOS 文件所需的更改很少，并且如果你使用 [prebuild](/more/glossary-of-terms/#prebuild)，可以通过 [config plugin](https://github.com/react-native-tvos/config-tv/tree/main/packages/config-tv) 自动完成。下面列出了 config plugins 所做的更改，你也可以选择手动应用这些更改：
 
@@ -145,28 +146,57 @@ TV 也可与 [React Navigation](https://reactnavigation.org/)、[React Native Sk
 
 ### 为 TV 修改依赖项
 
-在 **package.json** 中，修改 `react-native` 依赖以使用 TV 仓库，并将该依赖项从 [`npx expo install` 版本验证](/more/expo-cli/#configuring-dependency-validation) 中排除。
+在 **package.json** 中，修改 `react-native` 依赖项以使用 TV 仓库。
 
-> **警告** `react-native-tvos` 版本应与所使用的 Expo SDK 版本匹配。例如，Expo SDK 54 使用 React Native 0.81，因此你应使用 `react-native-tvos@0.81-stable`（最新的 0.81 版本），如下所示。请参阅 [SDK 兼容性表](/versions/latest/#each-expo-sdk-version-depends-on-a-react-native-version) 以获取旧版 SDK 应使用的正确版本。
+<Tabs>
 
-{/* prettier-ignore */}
+<Tab label="SDK 56 and later">
 ```json package.json
 {
   /* @hide ... */ /* @end */
   "dependencies": {
     /* @hide ... */ /* @end */
-    "react-native": "npm:react-native-tvos@0.81-stable",
+    "react-native": "npm:react-native-tvos@0.85-stable"
+    /* @hide ... */ /* @end */
+  }
+}
+```
+
+`react-native-tvos` 的版本必须与你正在使用的 Expo SDK 匹配。例如，Expo SDK 56 使用 React Native 0.85，因此你应当使用上面所示的 `react-native-tvos@0.85-stable`（最新的 0.85 版本）。请参阅 [SDK 兼容性表](/versions/latest/#each-expo-sdk-version-depends-on-a-react-native-version) 以了解应使用的正确版本。
+
+在 SDK 56 及更高版本中，[将项目升级到更新的 SDK 版本](/workflow/upgrading-expo-sdk-walkthrough/#upgrade-the-expo-sdk) 也会升级 TV 仓库依赖项。
+
+</Tab>
+
+<Tab label="SDK 55 and earlier">
+你需要将 `react-native` 依赖项从 [`npx expo install` 版本验证](/more/expo-cli/#configuring-dependency-validation) 中排除。
+
+```json package.json
+{
+  /* @hide ... */ /* @end */
+  "dependencies": {
+    /* @hide ... */ /* @end */
+    "react-native": "npm:react-native-tvos@0.83-stable"
     /* @hide ... */ /* @end */
   },
   "expo": {
     "install": {
-      "exclude": [
-        "react-native"
-      ]
+      "exclude": ["react-native"]
     }
   }
 }
 ```
+
+`react-native-tvos` 的版本必须与你正在使用的 Expo SDK 匹配。例如，Expo SDK 55 使用 React Native 0.83，因此你应当使用上面所示的 `react-native-tvos@0.83-stable`（最新的 0.83 版本）。请参阅 [SDK 兼容性表](/versions/latest/#each-expo-sdk-version-depends-on-a-react-native-version) 以了解应使用的正确版本。
+
+> **警告** 如果将一个 Expo TV 项目升级到 SDK 55 或更早版本，`react-native-tvos` 的版本**必须手动升级**。它不会通过 `npx expo install expo@latest --fix` 自动更新。
+
+</Tab>
+
+</Tabs>
+
+> **警告** 如果你在 monorepo 中有多个 Expo 项目，并且其中一个项目已修改为支持 TV，那么所有项目都应按此处所述修改为使用 React Native TV 包，即使其中某些项目并未配置为目标 TV。这样可以避免项目依赖之间可能产生的冲突，同时仍然为所有项目完全支持移动端开发。
+> {/* prettier-ignore */}
 
 </Step>
 

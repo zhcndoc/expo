@@ -1,12 +1,13 @@
 ---
-title: Expo Observe 故障排查
-sidebar_title: 故障排查
-description: 常见 Expo Observe 问题的解决方案。
+title: EAS Observe 故障排除
+sidebar_title: 故障排除
+description: 常见 EAS Observe 问题的解决方案。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
+import { Tabs, Tab } from '~/ui/components/Tabs';
 
 ## 常见问题
 
@@ -18,7 +19,11 @@ import { Step } from '~/ui/components/Step';
 
 ### 未显示首次渲染时间
 
-确认你的根布局已被 `AppMetricsRoot` 包裹：
+请验证你的根布局已使用根 HOC 包裹：
+
+<Tabs>
+
+<Tab label="SDK 55">
 
 ```jsx
 import { AppMetricsRoot } from 'expo-observe';
@@ -30,12 +35,45 @@ function RootLayout() {
 export default AppMetricsRoot.wrap(RootLayout);
 ```
 
+</Tab>
+
+<Tab label="SDK 56 及以后">
+
+```jsx
+import { ObserveRoot } from 'expo-observe';
+
+function RootLayout() {
+  return (/* 你的布局 */);
+}
+
+export default ObserveRoot.wrap(RootLayout);
+```
+
+</Tab>
+
+</Tabs>
+
 ### 未显示可交互时间
 
 此指标需要手动埋点。请确认：
 
-1. 你在闪屏隐藏后调用了 `AppMetrics.markInteractive()`。
+<Tabs>
+
+<Tab label="SDK 55">
+
+1. 你在闪屏页面隐藏后调用了 `AppMetrics.markInteractive()`。
 2. 该调用确实被执行了（添加一个 `console.log` 进行验证）。
+
+</Tab>
+
+<Tab label="SDK 56">
+
+1. 你在闪屏页面隐藏后调用了 `markInteractive()`（来自 `useObserve()`）。
+2. 该调用确实被执行了（添加一个 `console.log` 进行验证）。
+
+</Tab>
+
+</Tabs>
 
 <Collapsible summary="从 expo-eas-observe 迁移">
 
@@ -66,9 +104,9 @@ export default AppMetricsRoot.wrap(RootLayout);
 
 <Step label="3">
 
-**用 `AppMetricsRoot` 替换手动 `markFirstRender()`**
+**使用根 HOC 替代手动调用 `markFirstRender()`**
 
-不要再手动调用 `markFirstRender()`，而是用 `AppMetricsRoot` 高阶组件包裹你的根布局。这样会自动处理该指标的测量。
+不要再手动调用 `markFirstRender()`，而是使用适用于你 SDK 的根 HOC 包裹根布局。这会自动处理该指标的测量。
 
 之前：
 
@@ -87,6 +125,10 @@ export default function RootLayout() {
 
 之后：
 
+<Tabs>
+
+<Tab label="SDK 55">
+
 ```jsx
 import { AppMetricsRoot } from 'expo-observe';
 
@@ -96,6 +138,24 @@ function RootLayout() {
 
 export default AppMetricsRoot.wrap(RootLayout);
 ```
+
+</Tab>
+
+<Tab label="SDK 56 及以后">
+
+```jsx
+import { ObserveRoot } from 'expo-observe';
+
+function RootLayout() {
+  return (/* 你的布局 */);
+}
+
+export default ObserveRoot.wrap(RootLayout);
+```
+
+</Tab>
+
+</Tabs>
 
 </Step>
 

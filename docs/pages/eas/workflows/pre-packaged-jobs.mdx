@@ -410,7 +410,7 @@ jobs:
 | simulator            | boolean | 可选。是否获取模拟器构建。                                                       |
 | wait_for_in_progress | boolean | 可选。是否等待匹配的进行中构建。默认：`false`。                                   |
 
-如果将 `wait_for_in_progress` 设置为 `true`，该任务仍会优先立即继续使用成功的构建，但也会查找进行中的构建。如果未找到成功的构建，任务将在继续前等待进行中的构建完成。如果匹配的构建成功，则任务将被标记为成功，并返回该成功构建。如果匹配的构建失败，则任务将被标记为成功，且其输出将为空 &mdash; 就像该构建未被匹配一样。
+If `wait_for_in_progress` is set to `true`, the job will still prioritize continuing immediately with a successful build, but it will also look for in-progress builds. If no successful build is found, the job will wait for an in-progress build to complete before continuing. If the matched build succeeds, the job will be marked as successful and will return the successful build. If the matched build fails, the job will be marked as successful and its outputs will be empty — as if the build has not been matched.
 
 #### 输出
 
@@ -518,6 +518,9 @@ jobs:
     params:
       build_id: string # 必需
       profile: string # 可选 - 默认：production
+    hooks:
+      before_submit: step[] # 可选 - 在提交开始前运行的步骤。
+      after_submit: step[] # 可选 - 在提交完成后运行的步骤。
 ```
 
 #### 参数
@@ -538,6 +541,15 @@ jobs:
 | apple_app_id          | string | 已提交构建的 Apple App ID。         |
 | ios_bundle_identifier | string | 已提交构建的 iOS 包标识符。         |
 | android_package_id    | string | 已提交构建的 Android 包 ID。        |
+
+#### Hooks
+
+以下 hook 适用于 Submit 作业：
+
+- `before_submit`：在提交开始前运行的步骤。
+- `after_submit`：在提交完成后运行的步骤。
+
+有关通用 hooks 语法，请参见 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
 ### 示例
 
@@ -836,7 +848,7 @@ jobs:
 
 ## Maestro
 
-在 Android 模拟器或 iOS 模拟器构建上运行 Maestro 测试。
+在 Android Emulator 或 iOS Simulator 构建上运行 Maestro 测试。
 
 > **重要** Maestro 测试处于 [alpha](/more/release-statuses/#alpha) 阶段。
 
@@ -859,8 +871,11 @@ jobs:
       exclude_tags: string | string[] # optional
       maestro_version: string # optional - defaults to latest
       android_system_image_package: string # optional
-      device_identifier: string | { android: string, ios: string } # optional
+      device_identifier: string | { android?: string, ios?: string } # optional
       output_format: string # optional - defaults to junit
+    hooks:
+      before_maestro_tests: step[] # optional - tests start 前运行的步骤。
+      after_maestro_tests: step[] # optional - tests complete 后运行的步骤。
 ```
 
 #### 参数
@@ -883,7 +898,16 @@ jobs:
 | device_identifier            | string or `{ android?: string, ios?: string }` object | 可选。要用于测试的设备标识符。你也可以使用单值表达式，例如 `pixel_6`、`iPhone 16 Plus` 或 `${{ needs.build.outputs.platform == "android" ? "pixel_6" : "iPhone 16 Plus" }}`，以及对象形式，如 `device_identifier: { android: "pixel_6", ios: "iPhone 16 Plus" }`。请注意，iOS 设备在不同 runner 镜像上的可用性不同。可用设备列表可在作业日志中找到。 |
 | skip_build_check             | boolean                                               | 可选。跳过构建校验（即 iOS 构建是否为模拟器构建）的验证。默认为 false。                                                                                                                                                                                                                                                                                                                                                              |
 
-### 示例
+#### Hooks
+
+Maestro 作业支持以下 hooks：
+
+- `before_maestro_tests`：在 tests start 之前运行的步骤。
+- `after_maestro_tests`：在 tests complete 之后运行的步骤。
+
+有关通用 hooks 语法，请参见 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
+
+### Examples
 
 以下是一些使用 Maestro 作业的实际示例：
 
@@ -908,7 +932,7 @@ jobs:
 
 <Collapsible summary="带分片的 Maestro 测试">
 
-此工作流在 Android 模拟器构建上运行 Maestro 测试，使用 3 个分片和 2 次失败重试。
+此工作流在 Android Emulator 构建上运行 Maestro 测试，使用 3 个分片，并对失败的测试进行 2 次重试。
 
 ```yaml .eas/workflows/maestro-sharded.yml
 name: Sharded Maestro Test
@@ -947,9 +971,32 @@ jobs:
 
 </Collapsible>
 
+<Collapsible summary="在运行测试前生成 Maestro flows">
+
+此工作流使用一个 hook，在 Maestro 开始运行测试之前立即生成 `maestro_tests` 目录。
+
+```yaml .eas/workflows/maestro-hooks.yml
+name: Maestro Hooks
+
+jobs:
+  test:
+    name: Run Maestro Tests
+    type: maestro
+    environment: preview
+    params:
+      build_id: ${{ needs.build_ios_simulator.outputs.build_id }}
+      flow_path: ./maestro_tests
+    hooks:
+      before_maestro_tests:
+        - name: Generate Maestro flows
+          run: npx tsx scripts/generate-maestro-tests.ts
+```
+
+</Collapsible>
+
 <Collapsible summary="录制屏幕并使用特定设备">
 
-此工作流在 Android 模拟器构建上运行 Maestro 测试，使用特定设备并录制屏幕。
+此工作流在 Android Emulator 构建上使用特定设备运行 Maestro 测试，并录制屏幕。
 
 ```yaml .eas/workflows/maestro-sharded.yml
 name: Pixel E2E Test
@@ -989,6 +1036,32 @@ appId: com.myapp
 
 </Collapsible>
 
+<Collapsible summary="将 Maestro 产物报告到 Slack">
+
+此工作流会将截图和录屏保存到 `MAESTRO_TESTS_DIR`，然后在测试结束后运行一个脚本，将这些文件上传或向 Slack 发送摘要。
+
+```yaml .eas/workflows/maestro-report-artifacts.yml
+name: Maestro Artifact Reporting
+
+jobs:
+  test:
+    name: Run Maestro Tests
+    type: maestro
+    environment: preview
+    env:
+      SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+    params:
+      build_id: ${{ needs.build_ios_simulator.outputs.build_id }}
+      flow_path: ./maestro/flows
+      record_screen: true
+    hooks:
+      after_maestro_tests:
+        - name: Report Maestro artifacts
+          run: npx tsx scripts/report-maestro-artifacts.ts "$MAESTRO_TESTS_DIR"
+```
+
+</Collapsible>
+
 ## Maestro Cloud
 
 在 Maestro Cloud 上运行 Maestro 测试。
@@ -1004,20 +1077,23 @@ jobs:
     environment: production | preview | development # 可选 - 默认为 preview
     image: string # 可选 - 请参阅 https://docs.expo.dev/build-reference/infrastructure/ 了解可用镜像列表。
     params:
-      build_id: string # required - 要测试的构建 ID。
-      maestro_project_id: string # required - Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
-      flows: string # required - 要运行的 Maestro flow 文件或包含 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。
-      maestro_api_key: string # optional - 默认为 `$MAESTRO_CLOUD_API_KEY`
-      include_tags: string | string[] # optional - 要在测试中包含的标签。将作为 `--include-tags` 传递给 Maestro。
-      exclude_tags: string | string[] # optional - 要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
-      maestro_version: string # optional - 测试要使用的 Maestro 版本。如果未提供，将使用最新版本。
-      maestro_config: string # optional - 要用于测试的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
-      device_locale: string # optional - 要用于测试的设备区域设置。将作为 `--device-locale` 传递给 Maestro。
-      device_model: string # optional - 要用于测试的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
-      device_os: string # optional - 要用于测试的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
-      name: string # optional - Maestro Cloud 上传名称。对应 `maestro cloud` 的 `--name` 参数。
-      branch: string # optional - 覆盖 Maestro Cloud 上传所来源的分支。默认情况下，如果工作流运行是从 GitHub 触发的，则会使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。
-      async: boolean # optional - 异步运行 Maestro Cloud 测试。如果为 true，作业状态只表示上传是否成功，而不表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。
+      build_id: string # 必需 - 要测试的构建 ID。
+      maestro_project_id: string # 必需 - Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
+      flows: string # 必需 - 要运行的 Maestro flow 文件或包含 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。
+      maestro_api_key: string # 可选 - 默认值为 `$MAESTRO_CLOUD_API_KEY`
+      include_tags: string | string[] # 可选 - 要包含在测试中的标签。将作为 `--include-tags` 传递给 Maestro。
+      exclude_tags: string | string[] # 可选 - 要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
+      maestro_version: string # 可选 - 用于测试的 Maestro 版本。如果未提供，将使用最新版本。
+      maestro_config: string # 可选 - 用于测试的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
+      device_locale: string # 可选 - 用于测试的设备区域设置。将作为 `--device-locale` 传递给 Maestro。
+      device_model: string # 可选 - 用于测试的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
+      device_os: string # 可选 - 用于测试的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
+      name: string # 可选 - Maestro Cloud 上传名称。对应 `maestro cloud` 的 `--name` 参数。
+      branch: string # 可选 - 覆盖 Maestro Cloud 上传来源分支。默认情况下，如果工作流运行是从 GitHub 触发的，则会使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。
+      async: boolean # 可选 - 异步运行 Maestro Cloud 测试。如果为 true，作业状态只表示上传是否成功，而不表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。
+    hooks:
+      before_maestro_cloud: step[] # 可选 - 在 Maestro Cloud 上传之前运行的步骤。
+      after_maestro_cloud: step[] # 可选 - 在 Maestro Cloud 上传之后运行的步骤。
 ```
 
 #### 参数
@@ -1028,7 +1104,7 @@ jobs:
 | ------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | build_id           | string  | 必需。要测试的构建 ID。示例：`${{ needs.build_android.outputs.build_id }}`。                                                                                                                                               |
 | maestro_project_id | string  | 必需。要使用的 Maestro Cloud 项目 ID。对应 `maestro cloud` 的 `--project-id` 参数。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。前往 [Maestro Cloud](https://app.maestro.dev/) 查找你的项目。                     |
-| flows              | string  | 必需。要运行的 Maestro flow 文件或包含 flow 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。                                                                                                     |
+| flows              | string  | 必需。要运行的 Maestro flow 文件或包含 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。                                                                                                     |
 | maestro_api_key    | string  | 可选。用于 Maestro 项目的 API 密钥。默认会使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。                                                            |
 | include_tags       | string  | 可选。要在测试中包含的标签。对应 `maestro cloud` 的 `--include-tags` 参数。示例：`"pull,push"`。                                                                                                                |
 | exclude_tags       | string  | 可选。要从测试中排除的标签。对应 `maestro cloud` 的 `--exclude-tags` 参数。示例：`"disabled"`。                                                                                                               |
@@ -1043,7 +1119,16 @@ jobs:
 
 > **重要** 你需要在作业环境中设置 `maestro_api_key` 参数或 `MAESTRO_CLOUD_API_KEY` 环境变量。前往 [Maestro Cloud](https://app.maestro.dev/) 的“Settings”生成 API 密钥，然后前往 [环境变量](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 将其添加到你的项目中。
 
-#### 输出
+#### Hooks
+
+以下 hook 支持用于 Maestro Cloud 作业：
+
+- `before_maestro_cloud`：在 Maestro Cloud 上传之前运行的步骤。
+- `after_maestro_cloud`：在 Maestro Cloud 上传之后运行的步骤。
+
+有关通用 hooks 语法，请参阅 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
+
+#### Outputs
 
 你可以在后续作业中引用以下输出：
 
@@ -1058,9 +1143,11 @@ jobs:
 
 > **注意：** 当使用 `async: true` 模式时，只有 `maestro_cloud_url` 输出可以保证有效。其他输出（flow 数量和 flow 名称）可能无效或为空，因为作业不会等待上传完成，flows 也尚未执行。
 
+你也可以使用 [`jobs.<job_id>.outputs`](/eas/workflows/syntax/#jobsjob_idoutputs) 为此作业定义额外输出。
+
 ### 示例
 
-以下是一些使用 Maestro 作业的实际示例：
+以下是使用 Maestro Cloud 作业的一些实际示例：
 
 <Collapsible summary="基础 Maestro Cloud 测试">
 

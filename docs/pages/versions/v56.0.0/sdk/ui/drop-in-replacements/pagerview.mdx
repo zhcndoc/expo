@@ -1,0 +1,110 @@
+---
+title: PagerView
+description: 与 react-native-pager-view 兼容的水平分页视图。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
+
+一个与 `react-native-pager-view` API 兼容的 `PagerView` 组件。它封装了平台特定的 `@expo/ui` 基元：Android 上的 Jetpack Compose `HorizontalPager`，以及 iOS 上的分页 SwiftUI `ScrollView`。每个子项都会成为单独的一页，并拉伸以填满 pager。
+
+如果你需要对平台特定的分页行为或修饰器进行更底层的控制，请直接使用原生基元。在 iOS 上，使用 [`TabView`](../swift-ui/tabview/#page-indicator-dots) 并设置 `page` 样式，也会渲染一个水平 pager，并且当你想要 SwiftUI 内置的分页指示器时，它可能更适合。
+
+## 安装
+
+<APIInstallSection />
+
+如果你需要以下任一功能，可以选择安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)：
+
+- **在 iOS 上为 `setPage` 提供动画。** 不使用 worklets 时，iOS 的 `setPage` 会退化为无动画跳转。Android 无论如何都会进行动画。
+- **保持在 UI 线程上的逐帧 `onPageScroll` 回调。** 当你的 `onPageScroll` 处理函数本身就是一个 worklet 时，它会在 UI 线程上每一帧同步运行，而不是切回 JS。即使不使用 worklets，回调仍然会触发——只是它会在 JS 线程上运行。
+
+## 从 `react-native-pager-view` 迁移
+
+通过从 `@expo/ui/community/pager-view` 导入 `PagerView` 来更新导入语句：
+
+```tsx
+import PagerView from 'react-native-pager-view';
+// 变为：
+import PagerView from '@expo/ui/community/pager-view';
+```
+
+在替换之前，你需要了解这些变化：
+
+- 不支持 `orientation="vertical"`、`keyboardDismissMode`、`overdrag` 和 `overScrollMode`。
+- 不提供 `usePagerView` hook——请改用 `ref`。
+- 在 iOS 上，`onPageScroll` 和 `onPageScrollStateChanged` 仅在 iOS 18+ 上触发。
+
+完整列表请参见 [平台行为](#platform-behavior)。
+
+## 基本用法
+
+```tsx PagerViewExample.tsx
+import { useRef } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
+
+export default function PagerViewExample() {
+  const pagerRef = useRef<PagerViewRef>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <PagerView
+        ref={pagerRef}
+        style={{ flex: 1 }}
+        initialPage={0}
+        onPageSelected={event => {
+          console.log('selected page', event.nativeEvent.position);
+        }}>
+        <View key="one" style={[styles.page, { backgroundColor: '#fde68a' }]}>
+          <Text>第一页</Text>
+        </View>
+        <View key="two" style={[styles.page, { backgroundColor: '#bfdbfe' }]}>
+          <Text>第二页</Text>
+        </View>
+        <View key="three" style={[styles.page, { backgroundColor: '#bbf7d0' }]}>
+          <Text>第三页</Text>
+        </View>
+      </PagerView>
+
+      <Button title="跳转到第 2 页" onPress={() => pagerRef.current?.setPage(1)} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  page: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+});
+```
+
+## 平台行为
+
+Web 不受支持，并且在 web 上渲染 `PagerView` 会在运行时抛出异常。
+
+| 功能                                        | Android                | iOS                                                                                                       |
+| ------------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------- |
+| 最低平台版本                                 | 任意受支持版本          | iOS 17+ 支持分页。在 iOS 16 上，视图会水平滚动，但页面不会吸附                                             |
+| `onPageScroll` / `onPageScrollStateChanged` | <YesIcon />            | 仅限 iOS 18+。在 iOS 17 上，它们永远不会触发，并且组件在挂载时会记录一条开发警告                         |
+| 动画化 `setPage`                             | 原生 pager 动画         | 通过 `react-native-worklets` 运行。如果未安装该包，则回退为无动画跳转                                   |
+| `layoutDirection`                           | <YesIcon />            | <NoIcon />                                                                                                |
+| `offscreenPageLimit`                        | <YesIcon />            | <NoIcon />                                                                                                |
+| `pageMargin`                                | <YesIcon />            | <NoIcon />                                                                                                |
+
+相较于上游 `react-native-pager-view` 的其他差异：
+
+- 不支持 `orientation="vertical"`、`keyboardDismissMode`、`overdrag` 和 `overScrollMode`。仅提供水平分页，其余选项会回退为平台 pager 的默认值。
+- 不提供 `usePagerView` hook。请使用 `PagerView` 的 `ref` 来访问 `setPage`、`setPageWithoutAnimation` 和 `setScrollEnabled`。
+- `setScrollEnabled` 会触发重新渲染，以便新值作为 prop 传递给原生视图。对于从非 React 上下文切换状态（例如基于 ref 的手势处理器）来说，它仍然很有用。
+- `borderRadius` 样式在两个平台上都会生效。在 Android 上，只有数值类型才会裁剪 pager。底层的 Compose 宿主会静默丢弃诸如 `'50%'` 之类的字符串值。
+
+## API
+
+```tsx
+import PagerView from '@expo/ui/community/pager-view';
+```
+
+<APISection packageName="expo-ui/community/pager-view" apiName="PagerView" />

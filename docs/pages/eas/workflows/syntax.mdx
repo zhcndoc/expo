@@ -8,6 +8,7 @@ maxHeadingDepth: 5
 import { GithubIcon } from '@expo/styleguide-icons/custom/GithubIcon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
+import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 
@@ -311,19 +312,19 @@ on:
     # @end #
 ```
 
-| 属性           | 类型       | 必需                     | 描述                                                                 |
-| ------------- | ---------- | ------------------------ | --------------------------------------------------------------------------- |
-| `type`        | `string`   | 是                      | 输入类型（`string`、`boolean`、`number`、`choice` 或 `environment`）。 |
-| `description` | `string`   | 否                       | 输入的说明。                                                  |
-| `required`    | `boolean`  | 否                       | 是否需要该输入。默认为 `false`。                         |
-| `default`     | varies     | 否                       | 输入的默认值。必须与输入类型匹配。                     |
-| `options`     | `string[]` | 是（针对 `type: choice`） | 可用于选择输入的选项。                                        |
+| 属性           | 类型        | 是否必填                          | 说明                                                                 |
+| ------------- | ---------- | -------------------------------- | --------------------------------------------------------------------------- |
+| `type`        | `string`   | <YesIcon />                      | 输入类型（`string`、`boolean`、`number`、`choice` 或 `environment`）。 |
+| `description` | `string`   | <NoIcon />                       | 输入的说明。                                                  |
+| `required`    | `boolean`  | <NoIcon />                       | 是否需要该输入。默认为 `false`。                         |
+| `default`     | varies     | <NoIcon />                       | 输入的默认值。必须与输入类型匹配。                     |
+| `options`     | `string[]` | <YesIcon /> (for `type: choice`) | 可用于 choice 输入的选项。                                        |
 
 #### 提供输入
 
 运行带有输入的工作流时，你可以通过以下几种方式提供它们：
 
-1. Command-line flags:
+1. 命令行标志：
 
    <Terminal
      cmd={[
@@ -438,6 +439,25 @@ jobs:
       RETRY_COUNT: 3
       PREV_JOB_OUTPUT: ${{ needs.previous_job.outputs.some_output }}
     # @end #
+```
+
+### `jobs.<job_id>.hooks`
+
+一些预打包的 job 支持 hooks，可在主要 job 动作之前或之后运行额外步骤（例如 `maestro-cloud`、`maestro` 和 `submit`）。hook 名称是特定于 job 的。有关可用的 hook 键，请参见该 job 的文档。
+
+```yaml
+jobs:
+  maestro_test:
+    type: maestro-cloud
+    params:
+      build_id: ${{ needs.build.outputs.build_id }}
+      maestro_project_id: proj_xyz
+      flows: ./maestro/flows
+    hooks:
+      before_maestro_cloud:
+        - run: echo "Before upload"
+      after_maestro_cloud:
+        - run: echo "After upload"
 ```
 
 ### `jobs.<job_id>.defaults.run.working_directory`
@@ -581,7 +601,7 @@ jobs:
 
 ## 插值
 
-你可以根据 workflow 运行的上下文，自定义 workflow 的行为——包括要执行的命令、控制流、环境变量、构建配置、应用版本等。
+你可以根据 workflow 运行的上下文，自定义 workflow 的行为——要执行的命令、控制流、环境变量、构建配置、应用版本等。
 
 使用 `${{ expression }}` 语法来访问上下文属性和函数。例如：`${{ github.ref_name }}` 或 `${{ needs.build_ios.outputs.build_id }}`。
 
@@ -1152,13 +1172,16 @@ jobs:
       build_id: string # 必填
       profile: string # 可选，默认值：production
       groups: string[] # 可选
+    hooks:
+      before_submit: step[] # 可选
+      after_submit: step[] # 可选
 ```
 
 此任务输出以下属性：
 
 ```json
 {
-  "apple_app_id": string | null, // Apple App ID. https://expo.fyi/asc-app-id
+  "apple_app_id": string | null, // Apple App ID。https://expo.fyi/asc-app-id
   "ios_bundle_identifier": string | null, // 已提交构建的 iOS bundle identifier。https://expo.fyi/bundle-identifier
   "android_package_id": string | null // 已提交的 Android package ID。https://expo.fyi/android-package
 }
@@ -1188,7 +1211,7 @@ jobs:
 
 ```json
 {
-  "apple_app_id": string | null, // Apple App ID. https://expo.fyi/asc-app-id
+  "apple_app_id": string | null, // Apple App ID。https://expo.fyi/asc-app-id
   "ios_bundle_identifier": string | null // 已提交构建的 iOS bundle identifier。https://expo.fyi/bundle-identifier
 }
 ```
@@ -1236,18 +1259,21 @@ jobs:
     environment: production | preview | development # 可选，默认值为 preview
     image: string # 可选。有关可用镜像列表，请参见 https://docs.expo.dev/eas/workflows/syntax/#jobsjob_idruns_on。
     params:
-      build_id: string # required
-      flow_path: string | string[] # required
-      shards: number # optional, defaults to 1
-      retries: number # optional, defaults to 0
-      retry_failed_only: boolean # optional, defaults to true. When true, retries will attempt to re-run only the flows that failed on the previous attempt when applicable.
-      record_screen: boolean # optional, defaults to false. If true, uploads a screen recording of the tests.
-      include_tags: string | string[] # optional. Tags to include in the tests. Will be passed to Maestro as `--include-tags`.
-      exclude_tags: string | string[] # optional. Tags to exclude from the tests. Will be passed to Maestro as `--exclude-tags`.
-      maestro_version: string # optional. Version of Maestro to use for the tests. If not provided, the latest version will be used.
-      android_system_image_package: string # optional. Android emulator system image package to use.
-      device_identifier: string | { android?: string, ios?: string } # optional. Device identifier to use for the tests.
-      output_format?: string # optional, defaults to junit. Maestro test report format. Will be passed to Maestro as `--format`. Can be `junit` or other supported formats.
+      build_id: string # 必填
+      flow_path: string | string[] # 必填
+      shards: number # 可选，默认值为 1
+      retries: number # 可选，默认值为 0
+      retry_failed_only: boolean # 可选，默认值为 true。为 true 时，在适用情况下，重试将仅重新运行上一次尝试中失败的 flows。
+      record_screen: boolean # 可选，默认值为 false。为 true 时，会上传测试的屏幕录制。
+      include_tags: string | string[] # 可选。要包含在测试中的标签。将作为 `--include-tags` 传递给 Maestro。
+      exclude_tags: string | string[] # 可选。要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
+      maestro_version: string # 可选。用于测试的 Maestro 版本。如果未提供，将使用最新版本。
+      android_system_image_package: string # 可选。要使用的 Android Emulator 系统镜像包。
+      device_identifier: string | { android?: string, ios?: string } # 可选。用于测试的设备标识符。
+      output_format?: string # 可选，默认值为 junit。Maestro 测试报告格式。将作为 `--format` 传递给 Maestro。可以是 `junit` 或其他受支持的格式。
+    hooks:
+      before_maestro_tests: step[] # 可选
+      after_maestro_tests: step[] # 可选
 ```
 
 #### `maestro-cloud`
@@ -1265,20 +1291,23 @@ jobs:
     environment: production | preview | development # 可选，默认值为 preview
     image: string # 可选。有关可用镜像列表，请参见 https://docs.expo.dev/eas/workflows/syntax/#jobsjob_idruns_on。
     params:
-      build_id: string # 必填. 要测试的构建 ID。
-      maestro_project_id: string # 必填. Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
-      flows: string # 必填. Maestro flow 文件或包含待运行 flow 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。
-      maestro_api_key: string # 可选. 用于 Maestro 项目的 API key。默认会使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。
-      include_tags: string | string[] # 可选. 要包含在测试中的标签。会作为 `--include-tags` 传递给 Maestro。
-      exclude_tags: string | string[] # 可选. 要从测试中排除的标签。会作为 `--exclude-tags` 传递给 Maestro。
-      maestro_version: string # 可选. 要用于测试的 Maestro 版本。如果未提供，将使用最新版本。
-      maestro_config: string # 可选. 用于测试的 Maestro `config.yaml` 文件路径。会作为 `--config` 传递给 Maestro。
-      device_locale: string # 可选. 用于测试的设备区域设置。会作为 `--device-locale` 传递给 Maestro。
-      device_model: string # 可选. 用于测试的设备型号。会作为 `--device-model` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
-      device_os: string # 可选. 用于测试的设备操作系统。会作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
-      name: string # 可选. Maestro Cloud 上传名称。对应 `maestro cloud` 的 `--name` 参数。
-      branch: string # 可选. 覆盖 Maestro Cloud 上传来源分支。默认情况下，如果 workflow 运行是从 GitHub 触发的，则会使用该 workflow 运行所在的分支。对应 `maestro cloud` 的 `--branch` 参数。
-      async: boolean # 可选. 异步运行 Maestro Cloud 测试。如果为 true，job 的状态只表示上传是否成功，而*不表示*测试是否成功。对应 `maestro cloud` 的 `--async` 参数。
+      build_id: string # 必填。要测试的构建 ID。
+      maestro_project_id: string # 必填。Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
+      flows: string # 必填。Maestro flow 文件的路径，或包含要运行的 flows 的目录。对应 `maestro cloud` 的 `--flows` 参数。
+      maestro_api_key: string # 可选。用于 Maestro 项目的 API key。默认使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。
+      include_tags: string | string[] # 可选。要包含在测试中的标签。将作为 `--include-tags` 传递给 Maestro。
+      exclude_tags: string | string[] # 可选。要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
+      maestro_version: string # 可选。用于测试的 Maestro 版本。如果未提供，将使用最新版本。
+      maestro_config: string # 可选。用于测试的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
+      device_locale: string # 可选。用于测试的设备区域设置。将作为 `--device-locale` 传递给 Maestro。
+      device_model: string # 可选。用于测试的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看受支持的值列表。
+      device_os: string # 可选。用于测试的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看受支持的值列表。
+      name: string # 可选。Maestro Cloud 上传的名称。对应 `maestro cloud` 的 `--name` 参数。
+      branch: string # 可选。覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是从 GitHub 触发的，将使用该工作流运行所在的分支。对应 `maestro cloud` 的 `--branch` 参数。
+      async: boolean # 可选。异步运行 Maestro Cloud 测试。如果为 true，任务状态只表示上传是否成功，而不表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。
+    hooks:
+      before_maestro_cloud: step[] # 可选。在 Maestro Cloud 上传之前运行的步骤。
+      after_maestro_cloud: step[] # 可选。在 Maestro Cloud 上传之后运行的步骤。
 ```
 
 #### `slack`
@@ -1460,14 +1489,14 @@ jobs:
 
 {/* vale off */}
 
-| Worker                             | vCPU | 内存 (GiB RAM) | SSD (GiB) | 备注                             |
+| 工作器                             | vCPU | 内存 (GiB RAM) | SSD (GiB) | 备注                             |
 | ---------------------------------- | ---- | ---------------- | --------- | --------------------------------- |
-| linux-medium                       | 4    | 16               | 14        | 默认 worker。                   |
+| linux-medium                       | 4    | 16               | 14        | 默认工作器。                   |
 | linux-large                        | 8    | 32               | 28        |                                   |
 | linux-medium-nested-virtualization | 4    | 16               | 14        | 允许运行 Android 模拟器。 |
 | linux-large-nested-virtualization  | 4    | 32               | 28        | 允许运行 Android 模拟器。 |
 
-| Worker       | 效率核心 | 统一内存（GiB RAM） | SSD (GiB) | 备注                                |
+| 工作器       | 效率核心 | 统一内存（GiB RAM） | SSD (GiB) | 备注                                |
 | ------------ | ---------------- | ------------------------ | --------- | ------------------------------------ |
 | macos-medium | 5                | 20                       | 125       | 运行 iOS 任务，包括模拟器。 |
 | macos-large  | 10               | 40                       | 125       | 运行 iOS 任务，包括模拟器。 |
@@ -1622,10 +1651,10 @@ jobs:
           extensions: [apk, aab, ipa, app] # 可选。要查找的文件扩展名列表。默认为 ["apk", "aab", "ipa", "app"]。
 ```
 
-| Property     | Type     | Required | Default                        | Description                                                                |
-| ------------ | -------- | -------- | ------------------------------ | -------------------------------------------------------------------------- |
-| `build_id`   | string   | Yes      | –                              | 要下载的构建 ID。必须是有效的 UUID。                                        |
-| `extensions` | string[] | No       | `["apk", "aab", "ipa", "app"]` | 在下载的制品或归档中要查找的文件扩展名列表。                                  |
+| 属性          | 类型      | 是否必填 | 默认值                         | 描述                                                                 |
+| ------------ | --------- | -------- | ------------------------------ | -------------------------------------------------------------------- |
+| `build_id`   | string    | <YesIcon /> | –                              | 要下载的构建的 ID。必须是有效的 UUID。                                 |
+| `extensions` | string[]  | <NoIcon />  | `["apk", "aab", "ipa", "app"]` | 要在下载的制品或归档中查找的文件扩展名列表。                           |
 
 **输出：**
 
@@ -1691,10 +1720,10 @@ jobs:
       # @end #
 ```
 
-| Property        | Type      | Description                                                                                                                                 |
-| --------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `clean`         | `boolean` | 可选属性，定义在运行命令时该函数是否应使用 `--clean` 标志。默认为 false。                                                                      |
-| `apple_team_id` | `string`  | 可选属性，定义在执行 prebuild 时应使用的 Apple 团队 ID。对于使用凭据的 iOS 构建，应指定该值。                                                     |
+| 属性              | 类型       | 描述                                                                                                                                   |
+| ----------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `clean`           | `boolean`  | 可选属性，定义在运行命令时该函数是否应使用 `--clean` 标志。默认为 false。                                                               |
+| `apple_team_id`   | `string`   | 可选属性，定义在执行 prebuild 时应使用的 Apple 团队 ID。对于使用凭据的 iOS 构建，应指定该值。                                            |
 
 <BoxLink
   title="eas/prebuild 源代码"
@@ -1738,11 +1767,11 @@ jobs:
       # @end #
 ```
 
-| Property       | Type        | Required | Description                                                                                                                                              |
-| -------------- | ----------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key`          | `string`    | Yes      | 要恢复的缓存 key。你可以使用诸如 `${{ hashFiles('package-lock.json') }}` 这样的表达式，根据文件哈希创建动态 key。                                         |
-| `restore_keys` | `string`    | No       | 当找不到精确匹配的 key 时使用的备用 key 或前缀。如果提供，缓存系统将查找任何以该前缀开头的缓存项。                                                         |
-| `path`         | `string`    | Yes      | 应恢复缓存的路径。该路径应与保存缓存时使用的路径一致。                                                                                                   |
+| 属性              | 类型      | 是否必填 | 描述                                                                                                                                              |
+| ----------------- | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`             | `string`  | <YesIcon /> | 要恢复的缓存 key。你可以使用 `${{ hashFiles('package-lock.json') }}` 之类的表达式，根据文件哈希创建动态 key。                                    |
+| `restore_keys`    | `string`  | <NoIcon />  | 如果找不到完全匹配的 key，则使用的备用 key 或前缀。如果提供了该值，缓存系统会查找任何以前缀开头的缓存条目。                                      |
+| `path`            | `string`  | <YesIcon /> | 应恢复缓存的路径。该路径应与保存缓存时使用的路径一致。                                                                                           |
 
 <BoxLink
   title="eas/restore_cache 源代码"
@@ -1776,10 +1805,10 @@ jobs:
       # @end #
 ```
 
-| Property | Type     | Required | Description                                                                                                                                                                                                       |
-| -------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key`    | `string` | Yes      | 将缓存保存到其下的缓存 key。你可以使用诸如 `${{ hashFiles('package-lock.json') }}` 这样的表达式，根据文件哈希创建动态 key。该值应与恢复缓存时使用的 key 一致。                                         |
-| `path`   | `string` | Yes      | 应缓存的目录或文件路径。该值应与恢复缓存时使用的路径一致。                                                                                                              |
+| 属性     | 类型      | 是否必填 | 描述                                                                                                                                                                                                       |
+| -------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`    | `string`  | <YesIcon /> | 要将缓存保存到的 key。你可以使用 `${{ hashFiles('package-lock.json') }}` 之类的表达式，根据文件哈希创建动态 key。该值应与恢复缓存时使用的 key 一致。                                                        |
+| `path`   | `string`  | <YesIcon /> | 要缓存的目录或文件路径。该路径应与恢复缓存时使用的路径一致。                                                                                                                                               |
 
 <BoxLink
   title="eas/save_cache 源代码"
@@ -1808,8 +1837,8 @@ jobs:
           slack_hook_url: 'https://hooks.slack.com/services/[rest_of_hook_url]'
 ```
 
-| Property         | Type         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| -----------| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 属性              | 类型    | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `message`        | `string` | 你想发送的消息文本。例如，`'This is the content of the message'`。<br /> <br />**注意：** 必须提供 `message` 或 `payload` 之一，但不能同时提供两者。                                                                                                                                                                                                                                                                                                                                                            |
 | `payload`        | `json`   | 你想发送的消息内容，使用 [Slack Block Kit](https://docs.slack.dev/block-kit) 布局定义。<br /> <br />**注意：** 必须提供 `message` 或 `payload` 之一，但不能同时提供两者。                                                                                                                                                                                                                                                                                                                          |
 | `slack_hook_url` | `string` | 之前配置好的 Slack webhook URL，它会将你的消息发布到指定频道。你可以提供类似 `slack_hook_url: 'https://hooks.slack.com/services/[rest_of_hook_url]'` 这样的普通 URL，使用 [EAS 环境变量](/eas/environment-variables/#managing-environment-variables) 例如 `slack_hook_url: ${{ env.ANOTHER_SLACK_HOOK_URL }}`，或者设置 `SLACK_HOOK_URL` 环境变量，它将作为默认的 webhook URL（在后一种情况下，不需要提供 `slack_hook_url` 属性）。 |
@@ -1863,16 +1892,16 @@ jobs:
 
 ##### 属性
 
-| Property      | Type   | Required | Description                                                                      |
-| ------------- | ------ | -------- | -------------------------------------------------------------------------------- |
-| `name`        | string | No       | 要下载的制品名称。如果未提供 `artifact_id`，则为必填。                            |
-| `artifact_id` | string | No       | 要下载的制品 ID。如果未提供 `name`，则为必填。                                   |
+| 属性           | 类型   | 是否必填 | 描述                                                                      |
+| ------------- | ------ | -------- | ------------------------------------------------------------------------- |
+| `name`        | string | <NoIcon /> | 要下载的制品名称。如果未提供 `artifact_id`，则为必填。                      |
+| `artifact_id` | string | <NoIcon /> | 要下载的制品 ID。如果未提供 `name`，则为必填。                            |
 
 ##### 输出
 
-| Property        | Type   | Description                                                                                                                                            |
-| --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `artifact_path` | string | 已下载制品的路径。该输出可作为工作流中其他步骤的输入。例如，用于发送或处理该制品。                                                                     |
+| 属性            | 类型   | 描述                                                                                                                                            |
+| --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `artifact_path` | string | 已下载制品的路径。该输出可作为工作流中其他步骤的输入。例如，用于发送或处理该制品。                                                              |
 
 ##### 示例
 

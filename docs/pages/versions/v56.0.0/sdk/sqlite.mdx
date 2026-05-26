@@ -519,7 +519,7 @@ expect(row.data).toEqual(blob);
 
 ### 浏览设备上的数据库
 
-`expo-sqlite` 库内置了一个 DevTools 检查器插件，会在开发环境中自动启用，无需额外设置。它可以让你浏览表、查看和编辑行、运行 SQL 查询，以及直接从浏览器导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>shift+m</kbd> 打开开发工具菜单，然后选择 **Open expo-sqlite** 来启动检查器。
+`expo-sqlite` 库内置了一个 DevTools 检查器插件，它会在开发环境中自动启用，无需额外设置。你可以直接在浏览器中浏览表、查看和编辑行、运行 SQL 查询以及导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>Shift</kbd> + <kbd>M</kbd> 打开开发者工具菜单，然后选择 **Open expo-sqlite** 启动检查器。
 
 <ContentSpotlight
   alt="SQLite inspector showing a data browser with table rows, edit/delete actions, and a sidebar listing tables"
@@ -574,33 +574,33 @@ globalThis.localStorage.setItem('key', 'value');
 console.log(globalThis.localStorage.getItem('key')); // 'value'
 ```
 
-## 安全性
+## Security
 
-SQL 注入是一类漏洞，攻击者会诱使你的应用将用户输入当作 SQL 代码来执行。你必须对传递给 SQLite 的所有用户输入进行转义，以防御 SQL 注入。[预处理语句](#prepared-statements) 是解决此问题的有效防护措施。它们明确地将 SQL 查询的逻辑与其输入参数分离，而 SQLite 在执行预处理语句时会自动对输入进行转义。
+SQL injection is a class of vulnerability in which an attacker tricks your app into executing user input as SQL code. You must escape all user input passed to SQLite to defend against SQL injection. [Prepared statements](#prepared-statements) are an effective defense against this issue. They explicitly separate the logic of an SQL query from its input parameters, and SQLite automatically escapes the input when executing prepared statements.
 
-## 第三方库集成
+## Third-party library integration
 
-`expo-sqlite` 库旨在成为一个稳固的 SQLite 基础。它支持与第三方库进行更广泛的集成，以实现更高级的上层功能。以下是一些可以与 `expo-sqlite` 一起使用的库。
+The `expo-sqlite` library is designed to be a robust SQLite foundation. It supports broader integration with third-party libraries to enable more advanced higher-level functionality. Below are some libraries that can be used with `expo-sqlite`.
 
 ### Drizzle ORM
 
-[Drizzle](https://orm.drizzle.team/) 是一个 ["headless TypeScript ORM with a head"](https://orm.drizzle.team/docs/overview)。它可运行于 Node.js、Bun、Deno 和 React Native 上。它还有一个名为 [`drizzle-kit`](https://orm.drizzle.team/kit-docs/overview) 的 CLI 配套工具，用于生成 SQL 迁移。
+[Drizzle](https://orm.drizzle.team/) is a ["headless TypeScript ORM with a head"](https://orm.drizzle.team/docs/overview). It runs on Node.js, Bun, Deno, and React Native. It also has a CLI companion tool called [`drizzle-kit`](https://orm.drizzle.team/kit-docs/overview) for generating SQL migrations.
 
-查看更多详情，请查阅 [Drizzle ORM 文档](https://orm.drizzle.team/) 和 [`expo-sqlite` 集成指南](https://orm.drizzle.team/docs/get-started/expo-new)。
+For more details, please refer to the [Drizzle ORM documentation](https://orm.drizzle.team/) and the [`expo-sqlite` integration guide](https://orm.drizzle.team/docs/get-started/expo-new).
 
 ### Knex.js
 
-[Knex.js](https://knexjs.org/) 是一个 SQL 查询构建器，且 ["flexible, portable, and fun to use!"](https://github.com/knex/knex)
+[Knex.js](https://knexjs.org/) is an SQL query builder, and ["flexible, portable, and fun to use!"](https://github.com/knex/knex)
 
-查看更多详情，请查阅 [`expo-sqlite` 集成指南](https://github.com/expo/knex-expo-sqlite-dialect)。
+For more details, please refer to the [`expo-sqlite` integration guide](https://github.com/expo/knex-expo-sqlite-dialect).
 
 ## SQLCipher
 
-> **注意：** [Expo Go](https://expo.dev/go) 不支持 SQLCipher。
+> **Note:** [Expo Go](https://expo.dev/go) does not support SQLCipher.
 
-[SQLCipher](https://www.zetetic.net/sqlcipher/) 是 SQLite 的一个分支，它为数据库添加了加密和认证功能。`expo-sqlite` 库支持 Android、iOS 和 macOS 上的 SQLCipher。要使用 SQLCipher，你需要在 **app.json** 中添加 `useSQLCipher` 配置，如 [app 配置中的配置](#configuration-in-app-config) 部分所示，然后运行 `npx expo prebuild`。
+[SQLCipher](https://www.zetetic.net/sqlcipher/) is a fork of SQLite that adds encryption and authentication capabilities to the database. The `expo-sqlite` library supports SQLCipher on Android, iOS, and macOS. To use SQLCipher, you need to add the `useSQLCipher` configuration in **app.json**, as shown in the [configuration in app config](#configuration-in-app-config) section, and then run `npx expo prebuild`.
 
-在打开数据库后，你需要使用 `PRAGMA key = 'password'` 语句为数据库设置密码。
+After opening the database, you need to use the `PRAGMA key = 'password'` statement to set a password for the database.
 
 ```ts 为数据库添加密码
 const db = await SQLite.openDatabaseAsync('databaseName');
@@ -609,15 +609,15 @@ await db.execAsync(`PRAGMA key = 'password'`);
 
 ## API
 
-### 常用 API 速查
+### Common API quick reference
 
-下表总结了 [`SQLiteDatabase`](#sqlitedatabase) 和 [`SQLiteStatement`](#sqlitestatement) 类的常用 API：
+The following table summarizes the commonly used APIs of the [`SQLiteDatabase`](#sqlitedatabase) and [`SQLiteStatement`](#sqlitestatement) classes:
 
-| [`SQLiteDatabase`](#sqlitedatabase) 方法      | [`SQLiteStatement`](#sqlitestatement) 方法                                 | 描述                                                                                                                                                            | 使用场景                                                                                                                                                                                   |
+| [`SQLiteDatabase`](#sqlitedatabase) method      | [`SQLiteStatement`](#sqlitestatement) method                                 | Description                                                                                                                                                            | Use case                                                                                                                                                                                   |
 | ------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`runAsync()`](#runasyncsource-params)           | [`executeAsync()`](#executeasyncparams)                                       | 执行 SQL 查询，并返回所做更改的信息。                                                                                                       | 适用于 SQL 写入操作，例如 `INSERT`、`UPDATE`、`DELETE`。                                                                                                                       |
-| [`getFirstAsync()`](#getfirstasyncsource-params) | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getfirstasync) | 检索查询结果中的第一行。                                                                                                                         | 适合从数据库中获取单行数据。例如：`getFirstAsync('SELECT * FROM Users WHERE id = ?', userId)`。                                                            |
-| [`getAllAsync()`](#getallasyncsource-params)     | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync)   | 一次获取所有查询结果。                                                                                                                                     | 最适合结果集较小的场景，例如带有 LIMIT 子句的查询，如 `SELECT * FROM Table LIMIT 100`，并且你希望一次性获取全部结果。 |
-| [`getEachAsync()`](#geteachasyncsource-params)   | [`executeAsync()`](#executeasyncparams) + `for-await-of` async iterator       | 提供用于遍历结果集的迭代器。此方法一次从数据库获取一行，与 `getAllAsync()` 相比，可能减少内存使用。 | 推荐用于逐步处理大型结果集，例如无限滚动实现。                                                                                 |
+| [`runAsync()`](#runasyncsource-params)           | [`executeAsync()`](#executeasyncparams)                                       | Executes an SQL query and returns information about the changes made.                                                                                                       | Suitable for SQL write operations such as `INSERT`, `UPDATE`, and `DELETE`.                                                                                                                       |
+| [`getFirstAsync()`](#getfirstasyncsource-params) | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getfirstasync) | Retrieves the first row in the query results.                                                                                                                         | Suitable for fetching a single row from the database. For example: `getFirstAsync('SELECT * FROM Users WHERE id = ?', userId)`.                                                            |
+| [`getAllAsync()`](#getallasyncsource-params)     | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync)   | Fetches all query results at once.                                                                                                                                     | Best suited for scenarios with small result sets, such as queries with a LIMIT clause like `SELECT * FROM Table LIMIT 100`, when you want to retrieve all results at once. |
+| [`getEachAsync()`](#geteachasyncsource-params)   | [`executeAsync()`](#executeasyncparams) + `for-await-of` async iterator       | Provides an iterator for traversing the result set. This method fetches one row from the database at a time, which may reduce memory usage compared with `getAllAsync()`. | Recommended for incrementally processing large result sets, such as an infinite scrolling implementation.                                                                                 |
 
 <APISection packageName="expo-sqlite" apiName="SQLite" exposeAllClassPropsInSidebar />

@@ -8,34 +8,43 @@ platforms: ['android', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
-import { ComponentDiagram } from '~/ui/components/Diagram';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Terminal } from '~/ui/components/Snippet';
 
-一个用于在 Jetpack Compose 中渲染图标的图标组件。我们建议从 [Material Symbols](https://fonts.google.com/icons) 下载 XML 矢量可绘制对象中的图标，这是 Android 开发的标准方法。
+> **info** 关于跨平台用法，请查看通用的 [`Icon`](../universal/icon) — 它会针对每个平台渲染相应的原生组件。
 
-<ComponentDiagram
-  mode="landscape"
-  source="/static/images/expo-ui/icon/android-light.webp"
-  darkSource="/static/images/expo-ui/icon/android-dark.webp"
-  alt="使用 Material 3 Icon 组件渲染的 Wifi、蓝牙、邮件和人物图标"
+用于在 Jetpack Compose 中渲染 Material Symbol XML 矢量可绘制对象的图标组件。推荐来源是 [`@expo/material-symbols`](https://www.npmjs.com/package/@expo/material-symbols) — 它将 Google 的 [Material Symbols](https://fonts.google.com/icons) 作为独立的资源子路径提供，因此 Metro 只会打包你实际导入的图标。对于其他样式（rounded、sharp、filled）或自定义轴，该包的 [CLI](#custom-styles-via-expomaterial-symbols-cli) 会直接将任意变体下载到你的项目中。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/icon/android-light.webp"
+  darkSrc="/static/images/expo-ui/icon/android-dark.webp"
+  alt="使用 Material 3 Icon 组件渲染的 Wifi、蓝牙、邮件和个人图标"
 />
 
 ## 安装
 
 <APIInstallSection />
 
+你也可以选择安装 [`@expo/material-symbols`](https://www.npmjs.com/package/@expo/material-symbols) 以使用内置图标。若要使用不同样式或自定义轴，请参阅 [自定义样式](#custom-styles-via-expomaterial-symbols-cli) — 无需安装。
+
+<Terminal cmd={['$ npx expo install @expo/material-symbols']} />
+
 ## 用法
 
 ### 基本图标
 
-使用 `require()` 加载从 [Material Symbols](https://fonts.google.com/icons) 下载的 XML 矢量可绘制对象。
+直接从 `@expo/material-symbols` 各自的子路径导入任意图标 — 每个图标都会解析为可由 `Icon` 原生渲染的 Metro 资源。对于你添加到项目中的本地 XML 文件，请改用 `require()`（见下方的 [自定义样式](#custom-styles-via-expomaterial-symbols-cli)）。
 
 ```tsx BasicIcon.tsx
 import { Host, Icon } from '@expo/ui/jetpack-compose';
+import Home from '@expo/material-symbols/home.xml';
 
 export default function BasicIcon() {
   return (
     <Host matchContents>
-      <Icon source={require('./assets/home.xml')} contentDescription="主页" />
+      <Icon source={Home} contentDescription="Home" />
     </Host>
   );
 }
@@ -47,15 +56,12 @@ export default function BasicIcon() {
 
 ```tsx TintedIcon.tsx
 import { Host, Icon } from '@expo/ui/jetpack-compose';
+import Favorite from '@expo/material-symbols/favorite.xml';
 
 export default function TintedIcon() {
   return (
     <Host matchContents>
-      <Icon
-        source={require('./assets/favorite.xml')}
-        tint="#6200ee"
-        contentDescription="收藏"
-      />
+      <Icon source={Favorite} tint="#6200ee" contentDescription="Favorite" />
     </Host>
   );
 }
@@ -67,11 +73,55 @@ export default function TintedIcon() {
 
 ```tsx SizedIcon.tsx
 import { Host, Icon } from '@expo/ui/jetpack-compose';
+import Settings from '@expo/material-symbols/settings.xml';
 
 export default function SizedIcon() {
   return (
     <Host matchContents>
-      <Icon source={require('./assets/settings.xml')} size={48} contentDescription="设置" />
+      <Icon source={Settings} size={48} contentDescription="Settings" />
+    </Host>
+  );
+}
+```
+
+### 通过 `@expo/material-symbols` CLI 自定义样式
+
+`@expo/material-symbols` 默认提供 **outlined** 样式及默认轴。當你需要不同样式（`rounded`、`sharp`）、filled 变体，或自定义 weight、grade、optical size 时，请使用其 CLI 直接从 Google Fonts 获取特定的可绘制对象并放入你的项目中。
+
+<Terminal
+  cmd={[
+    '# 按名称下载图标（默认：outlined，weight 400，24px）',
+    '$ npx @expo/material-symbols star home',
+    '',
+    '# Rounded 样式',
+    '$ npx @expo/material-symbols --style rounded star home',
+    '',
+    '# Sharp + filled',
+    '$ npx @expo/material-symbols --style sharp --fill favorite',
+    '',
+    '# 粘贴 fonts.google.com/icons 的 URL 以保留你在那里选择的轴参数',
+    '$ npx @expo/material-symbols "https://fonts.google.com/icons?selected=Material+Symbols+Outlined:check_box:FILL@1;wght@300;GRAD@0;opsz@24"',
+  ]}
+/>
+
+| 选项                  | 描述                                       | 默认值      |
+| --------------------- | ------------------------------------------ | ---------- |
+| `-o, --output <dir>`  | 输出目录                                    | `./assets` |
+| `-s, --style <style>` | 图标样式：`outlined`、`rounded`、`sharp`    | `outlined` |
+| `-f, --fill`          | 使用 filled 变体                            |            |
+| `-w, --weight <wght>` | 粗细：`100`–`700`                           | `400`      |
+| `-g, --grade <grad>`  | 等级：`-25`、`0`、`200`                    | `0`        |
+| `--opsz <size>`       | 光学尺寸：`20`、`24`、`40`、`48`            | `24`       |
+
+CLI 会将可直接使用的 XML 矢量可绘制对象写入你的项目。使用 `require()` 加载它们并传递给 `Icon`。
+
+```tsx CustomIcon.tsx
+import { Host, Icon } from '@expo/ui/jetpack-compose';
+
+export default function CustomIcon() {
+  return (
+    <Host matchContents>
+      <Icon source={require('./assets/star-rounded.xml')} size={32} contentDescription="Star" />
     </Host>
   );
 }

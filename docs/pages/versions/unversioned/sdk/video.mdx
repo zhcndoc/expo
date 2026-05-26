@@ -159,7 +159,7 @@ import { useEventListener } from 'expo';
 useEventListener(player, 'statusChange', ({ status, error }) => {
   setPlayerStatus(status);
   setPlayerError(error);
-  console.log('Player status changed: ', status);
+  console.log('播放器状态已更改：', status);
 });
 // 组件其余部分...
 ```
@@ -175,7 +175,7 @@ useEffect(() => {
   const subscription = player.addListener('statusChange', ({ status, error }) => {
     setPlayerStatus(status);
     setPlayerError(error);
-    console.log('Player status changed: ', status);
+    console.log('播放器状态已更改：', status);
   });
 
   return () => {
@@ -208,15 +208,15 @@ const player2 = useVideoPlayer(videoSource);
 
 ### 播放媒体库中的媒体
 
-`expo-video` 支持使用 [`expo-media-library`](../sdk/media-library/) 或任何具有适当权限的有效 `PHAsset` URI 播放从用户媒体库中选择的视频。
+`expo-video` 支持使用 [`expo-media-library/legacy`](../sdk/media-library-legacy/) 从用户的媒体库中挑选的视频，或任何带有相应权限的有效 `PHAsset` URI。
 
-要播放媒体库中的视频，你应当通过 [`MediaLibrary.getAssetsAsync()`](../sdk/media-library/#medialibrarygetassetsasyncassetsoptions) 获取一个 [`Asset`](../sdk/asset/#asset) 对象，并将其 [`uri`](../sdk/asset/#uri) 属性作为视频源的 [`uri`](#videosource)。
-在播放前，请确保使用 [`MediaLibrary.requestPermissionsAsync()`](../sdk/media-library/#medialibraryrequestpermissionsasyncwriteonly-granularpermissions) 请求必要的权限。
+要播放媒体库中的视频，你应当使用 [`MediaLibrary.getAssetsAsync()`](../sdk/media-library-legacy/#medialibrarygetassetsasyncassetsoptions) 获取一个 [`Asset`](../sdk/asset/#asset) 对象，并将其 [`uri`](../sdk/asset/#uri) 属性作为视频源的 [`uri`](#videosource)。
+在播放之前，请务必使用 [`MediaLibrary.requestPermissionsAsync()`](../sdk/media-library-legacy/#medialibraryrequestpermissionsasyncwriteonly-granularpermissions) 请求所需权限。
 
 在 iOS 上，请务必不要使用资产信息中的 `localUri` 属性，因为它不包含读取该资产所需的权限。
 
 ```tsx Playing media from media library
-import * as MediaLibrary from 'expo-media-library';
+import * as MediaLibrary from 'expo-media-library/legacy';
 import { VideoSource, useVideoPlayer, VideoView } from 'expo-video';
 
 // ...组件定义、创建 player 等。
@@ -395,7 +395,7 @@ Providers 会在模块启动时注册到 `VideoAssetTransportRegistry` 中。当
 
 | 属性 | 描述 |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `assetURL`                | 用于初始化底层 `AVURLAsset` 的 URL。可以是原始源 URL，也可以是运输相关的替代 URL，例如重写后的 scheme、本地代理 URL，或生成的播放列表 URL。 |
+| `assetURL`                | 用于初始化底层 `AVURLAsset` 的 URL。可以是原始源 URL，也可以是传输相关的替代 URL，例如重写后的 scheme、本地代理 URL，或生成的播放列表 URL。 |
 | `assetOptions`            | 可选的 `AVURLAsset` 初始化选项。用于覆盖 `expo-video` 通常会根据源推导出的默认选项。                                                         |
 | `reportedContentTypeHint` | 一个可选的内容类型，用于描述 `assetURL` 的实际播放格式。当传输方式改变了源类型时使用，例如将 DASH 转换为 HLS。                            |
 | `resourceLoaderDelegate`  | 可选的 `AVAssetResourceLoaderDelegate`，应附加到资源加载器上。                                                                                                     |
@@ -484,4 +484,4 @@ public final class CustomVideoTransportModule: Module {
 import { VideoView, useVideoPlayer } from 'expo-video';
 ```
 
-<APISection packageName="expo-video" apiName="Video" />
+<APISection packageName="expo-video" apiName="视频" />

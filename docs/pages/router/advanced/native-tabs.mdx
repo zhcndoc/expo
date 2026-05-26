@@ -149,7 +149,9 @@ const styles = StyleSheet.create({
 
 你可以使用 `Icon` 组件来自定义显示在选项卡栏项中的图标。`Icon` 组件接受 `md` 属性用于 Android Material Symbols，接受 `sf` 属性用于 Apple 的 SF Symbols 图标，或接受 `src` 属性用于自定义图片。
 
-另外，你也可以向 `sf` 或 `src` 属性传入 `{default: ..., selected: ...}`，以指定默认状态和选中状态使用不同图标（当前不支持 Android）。
+Alternatively, you can pass `{default: ..., selected: ...}` to the `sf`, `xcasset`, `drawable`, `md`, or `src` prop to specify different icons for the default and selected states.
+
+> **info** On Android, distinct selected icons for `src`, `drawable` and `md` require SDK 56 or later (powered by `react-native-screens` 4.25+). On earlier SDKs the selected variant is ignored and the default icon is used in both states.
 
 <Tabs>
 
@@ -162,7 +164,10 @@ export default function TabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'house', selected: 'house.fill' }}
+          md={{ default: 'home', selected: 'home_filled' }}
+        />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
         <NativeTabs.Trigger.Icon src={require('../../../assets/setting_icon.png')} />
@@ -691,6 +696,48 @@ export default function TabLayout() {
 
 </Tabs>
 
+### Disabled tabs
+
+> **info** `disabled` 属性可在 SDK 56 及更高版本中使用。
+
+你可以通过在 `NativeTabs.Trigger` 组件上设置 `disabled` 属性来阻止原生选择某个选项卡。为 `true` 时，点击选项卡栏中的该选项卡不会改变当前聚焦的选项卡。该选项卡仍然可见——如果你想将其从选项卡栏中完全移除，请使用 `hidden`。
+
+> **Note:** `disabled` 仅会抑制原生点击交互。它不是“受保护”的或授权门禁——诸如 `router.push('/settings')` 或 `<Link href="/settings" />` 之类的 JavaScript 导航仍会导航到该选项卡。
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings" disabled>
+        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+你也可以在屏幕内部动态切换 `disabled`。
+
+```tsx src/app/checkout.tsx
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { View } from 'react-native';
+
+export default function CheckoutScreen() {
+  const isProcessing = useIsProcessing();
+  return (
+    <View>
+      <NativeTabs.Trigger disabled={isProcessing} />
+      {/* ... */}
+    </View>
+  );
+}
+```
+
 ### iOS 26 功能
 
 > **info** 若要使用本节所述功能，请使用 Xcode 26 或更高版本编译你的应用。
@@ -802,8 +849,8 @@ import { Stack } from 'expo-router';
 export default function SearchIndex() {
   return (
     <>
-      <Stack.Title>Search</Stack.Title>
-      <Stack.SearchBar placement="automatic" placeholder="Search" onChangeText={() => {}} />
+      <Stack.Title>搜索</Stack.Title>
+      <Stack.SearchBar placement="automatic" placeholder="搜索" onChangeText={() => {}} />
       <ScrollView>{/* 屏幕内容 */}</ScrollView>
     </>
   );
@@ -941,19 +988,24 @@ const styles = StyleSheet.create({
 });
 ```
 
-### 在 Android 上禁用键盘避让
+### Android 上的键盘规避
 
-默认情况下，当 Android 上显示键盘时，原生选项卡会自动调整以避免被遮挡。你可以在应用配置文件中将 [`android.softwareKeyboardLayoutMode`](/versions/latest/config/app/#softwarekeyboardlayoutmode) 属性改为 `pan` 来禁用此行为：
+默认情况下，在 Android 上，键盘会覆盖原生选项卡栏。若要让选项卡栏改为浮到键盘上方，请在 `NativeTabs` 上传入 `tabBarRespectsIMEInsets` 属性：
 
-```json app.json
-{
-  "expo": {
-    "android": {
-      "softwareKeyboardLayoutMode": "pan"
-    }
-  }
+```tsx app/_layout.tsx
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs tabBarRespectsIMEInsets>
+      <NativeTabs.Trigger name="index" />
+      <NativeTabs.Trigger name="profile" />
+    </NativeTabs>
+  );
 }
 ```
+
+> **info** 需要 Android 11 或更高版本，并且应用配置字段 [`android.softwareKeyboardLayoutMode`](/versions/latest/config/app/#softwarekeyboardlayoutmode) 设置为 `"resize"`（Expo 默认值）。在键盘打开时切换此属性，仅在键盘关闭后才会生效。
 
 ### 安全区域处理
 
@@ -1289,12 +1341,12 @@ export default function HomeScreen() {
 
 <Collapsible summary="在 iOS 26 上切换选项卡时白色背景闪烁">
 
-这是因为 React Navigation 的默认主题使用了白色背景色。要修复此问题，请使用合适的主题将你的应用包裹在 React Navigation 的 `ThemeProvider` 中。
+这发生的原因是默认主题使用了白色背景色。要修复此问题，请使用合适的主题将你的应用包裹在 Expo Router 的 `ThemeProvider` 中。
 
 **适用于同时支持浅色和深色模式的应用：**
 
 ```tsx src/app/_layout.tsx
-import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useColorScheme } from 'react-native';
 
@@ -1319,7 +1371,7 @@ export default function TabLayout() {
 **适用于仅支持深色模式的应用：**
 
 ```tsx src/app/_layout.tsx
-import { ThemeProvider, DarkTheme } from '@react-navigation/native';
+import { ThemeProvider, DarkTheme } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 export default function TabLayout() {
@@ -1363,14 +1415,14 @@ export default function HomeScreen() {
 
 <Collapsible summary="在 iOS 26 上，深色模式下液态玻璃头部按钮会闪烁">
 
-带有液态玻璃样式的头部按钮在 iOS 26 深色模式下切换选项卡时可能会闪烁或背景短暂出现。这是因为 React Navigation 的默认主题与系统深色模式不匹配，导致液态玻璃渲染出现视觉瑕疵。
+带有液态玻璃样式的头部按钮在 iOS 26 的深色模式下切换选项卡时，背景可能会闪烁或跳闪。这是因为默认主题与系统深色模式不匹配，导致液态玻璃渲染出现视觉伪影。
 
-解决方法与白色背景闪烁问题相同：使用 `@react-navigation/native` 中的 `<ThemeProvider>` 并搭配合适的主题包裹你的布局。
+修复方法与白色背景闪烁问题相同：使用合适的主题将你的布局包裹在 `expo-router` 的 `<ThemeProvider>` 中。
 
 **适用于同时支持浅色和深色模式的应用：**
 
 ```tsx app/_layout.tsx
-import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useColorScheme } from 'react-native';
 
@@ -1395,7 +1447,7 @@ export default function TabLayout() {
 **适用于仅支持深色模式的应用：**
 
 ```tsx app/_layout.tsx
-import { ThemeProvider, DarkTheme } from '@react-navigation/native';
+import { ThemeProvider, DarkTheme } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 export default function TabLayout() {

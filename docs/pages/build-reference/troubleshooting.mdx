@@ -107,14 +107,14 @@ EAS Build 更像是典型的 CI 服务，因为我们需要的是源代码，而
 
 ## 比较构建日志
 
-当之前成功的 EAS Build 开始失败时，找出两次构建之间发生了哪些变化，有助于定位根本原因。EAS Build 详情页面上的 **Compare** 按钮可以帮助你并排比较两个构建，显示它们在构建日志和配置上的差异。
+当之前成功的 EAS Build 开始失败时，找出两次构建之间发生了哪些变化，有助于定位根本原因。EAS Build 详情页面上的 **比较** 按钮可以帮助你并排比较两个构建，显示它们在构建日志和配置上的差异。
 
 要比较两个构建：
 
-- 在失败构建的 [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/builds) 中打开构建详情页面
-- 点击 **Compare** 按钮打开比较弹窗
+- 在失败构建的 [EAS 仪表板](https://expo.dev/accounts/[account]/projects/[project]/builds) 中打开构建详情页面
+- 点击 **比较** 按钮打开比较弹窗
 - 输入你想进行比较的构建的 build ID 或完整 build URL。这将是之前成功的构建。
-- 点击 **Compare**。
+- 点击 **比较**。
 
 <ContentSpotlight
   alt="比较构建弹窗。"
@@ -126,9 +126,9 @@ EAS Build 更像是典型的 CI 服务，因为我们需要的是源代码，而
 
 在每个构建阶段中，会使用指示标记来显示两个构建之间发生了什么变化：
 
-- **Changed (X lines)**：该阶段在两个构建中都运行了，但输出不同。
-- **+ Added**：该阶段只存在于比较构建中（原始构建在到达此阶段之前就失败了）。
-- **- Removed**：该阶段只存在于原始构建中。
+- **已更改（X 行）**：该阶段在两个构建中都运行了，但输出不同。
+- **+ 新增**：该阶段只存在于比较构建中（原始构建在到达此阶段之前就失败了）。
+- **- 已移除**：该阶段只存在于原始构建中。
 
 <ContentSpotlight
   alt="比较构建视图。"
@@ -148,11 +148,11 @@ EAS Build 更像是典型的 CI 服务，因为我们需要的是源代码，而
 
 如果日志不足以立即帮助你理解并修复根本原因，那么现在该尝试在本地复现问题了。如果你的项目能在本地以 release 模式构建并运行，那么在 EAS Build 上也同样可以构建，只要以下条件都满足：
 
-- 相关的 [Build tool versions](/build/eas-json#configuring-your-build-tools)（例如 Xcode、Node.js、npm、Yarn）在两个环境中相同。
-- 相关的 [environment variables](/eas/environment-variables) 在两个环境中相同。
+- 相关的 [构建工具版本](/build/eas-json#configuring-your-build-tools)（例如 Xcode、Node.js、npm、Yarn）在两个环境中相同。
+- 相关的 [环境变量](/eas/environment-variables) 在两个环境中相同。
 - 上传到 EAS Build 的 [archive](https://expo.fyi/eas-build-archive) 包含相同的相关源文件。
 
-你可以使用 `npx expo run:android` 和 `npx expo run:ios` 命令在本地验证项目是否能构建，并将 variant/configuration 标志设置为 release，以尽可能真实地复现 EAS Build 上的执行过程。更多信息请参阅 [Android build process](/build-reference/android-builds) 和 [iOS build process](/build-reference/ios-builds)。
+你可以使用 `npx expo run:android` 和 `npx expo run:ios` 命令在本地验证项目是否能构建，并将 variant/configuration 标志设置为 release，以尽可能真实地复现 EAS Build 上的执行过程。更多信息请参阅 [Android 构建流程](/build-reference/android-builds) 和 [iOS 构建流程](/build-reference/ios-builds)。
 
 <Terminal
   cmd={[
@@ -167,9 +167,7 @@ EAS Build 更像是典型的 CI 服务，因为我们需要的是源代码，而
 > 如果使用 [CNG](/workflow/continuous-native-generation/)，这些命令将运行 `npx expo prebuild` 来生成用于编译的原生项目。等你完成排查后，你很可能希望 [清理这些更改](https://expo.fyi/prebuild-cleanup)，除非你想直接开始管理这些项目，而不是按需生成它们。
 >
 > <br />
-> 你也可以改为运行本地构建 `eas build --local` &mdash; 该命令将执行一系列步骤，尽可能接近托管 EAS Build 服务远程运行的流程。它会将你的项目复制到临时目录，并在那里进行任何必要的更改。
-> [了解如何进行设置并将其用于
-> 调试](/build-reference/local-builds/#use-local-builds-for-debugging)。
+> 你也可以改为使用 `eas build --local` 进行本地构建——这个命令会执行一系列步骤，尽可能接近托管 EAS Build 服务上的远程执行过程。它会将你的项目复制到一个临时目录，并在那里进行任何必要的更改。[了解如何设置并使用它进行调试](/build-reference/local-builds/#use-local-builds-for-debugging)。
 
 如果你的原生工具链安装正确，但仍无法在本地机器上以 release 模式构建并运行项目，那么它在 EAS Build 上也不会构建成功。先在本地修复问题，然后再尝试 EAS Build。本文档中的其他建议可能有助于你在本地解决问题，但这通常需要一些原生工具链方面的知识，或者恰当地借助 Google、Stack Overflow 和 GitHub Issues。
 
@@ -186,7 +184,7 @@ EAS Build 更像是典型的 CI 服务，因为我们需要的是源代码，而
 默认情况下，EAS Build 会采用相对直接的流程来构建你的应用（[Android](/build-reference/android-builds) 或 [iOS](/build-reference/ios-builds)）。如果 `npx expo run:android --variant release` 和 `npx expo run:ios --configuration Release` 在本地可用，但你的构建失败了，那么现在需要缩小范围，找出你的机器上有哪些配置还没有为 EAS Build 上的项目设置好。
 
 - 在新目录中重新 `git clone` 一份你的项目，并让它运行起来，最好是在另一台机器上。留意所需的每一个步骤，并确认它们也已经为 EAS Build 配置好了。
-- 检查你的 [environment variables](/guides/environment-variables) 是否已正确配置。
+- 检查你的 [环境变量](/guides/environment-variables) 是否已正确配置。
 - 验证 Node.js、npm、Yarn、Xcode、Java 和其他工具的版本在两个环境中相同。
 - 确保你上传到 EAS Build 的 [archive](https://expo.fyi/eas-build-archive) 包含相同的相关源文件。
 

@@ -1,7 +1,7 @@
 ---
 title: 使用 Hermes 引擎
 sidebar_title: 使用 Hermes
-description: 在 Expo 项目中配置适用于 Android 和 iOS 的 Hermes 指南。
+description: 在 Expo 项目中为 Android 和 iOS 配置 Hermes 的指南。
 ---
 
 [Hermes](https://hermesengine.dev/) 是一个为 React Native 优化的 JavaScript 引擎。通过提前将 JavaScript 编译为字节码，Hermes 可以提升应用的启动时间。Hermes 的二进制大小也比其他 JavaScript 引擎（例如 JavaScriptCore (JSC)）更小。它在运行时还会使用更少的内存，这在较低端的 Android 设备上尤其有价值。
@@ -32,11 +32,11 @@ Hermes 引擎是 Expo 默认使用的 JavaScript 引擎，并且在所有 Expo �
 
 使用 `eas update` 和 `npx expo export` 发布更新时，将生成 Hermes 字节码包及其源映射。
 
-请注意，不同 Hermes 版本之间 Hermes 字节码格式可能会发生变化——为某个特定 Hermes 版本生成的更新，无法在另一个 Hermes 版本上运行。从 Expo SDK 46（React Native 0.69）开始，[Hermes 已内置于 React Native 中](https://reactnative.dev/architecture/bundled-hermes)。更新 React Native 版本或 Hermes 版本，可以视为更新其他任何原生模块一样。因此，如果你更新了 `react-native` 版本，也应该在 **app.json** 中更新 `runtimeVersion`。如果不这样做，你的应用可能会在启动时崩溃，因为该更新可能会被现有二进制文件加载，而该二进制文件使用的是与更新后的字节码格式不兼容的旧版 Hermes。更多信息请参阅 [`runtimeVersion`](/eas-update/runtime-versions/)。
+请注意，不同 Hermes 版本之间 Hermes 字节码格式可能会发生变化——针对某个特定 Hermes 版本生成的更新不能在其他 Hermes 版本上运行。从 Expo SDK 46（React Native 0.69）开始，[Hermes 已内置于 React Native 中](https://reactnative.dev/architecture/bundled-hermes)。更新 React Native 版本或 Hermes 版本可以视为与更新其他任何原生模块相同。因此，如果你更新了 `react-native` 版本，也应该更新 **app.json** 中的 `runtimeVersion`。如果你不这样做，你的应用可能会在启动时崩溃，因为该更新可能会被现有二进制文件加载，而该二进制文件使用的是与更新后的字节码格式不兼容的旧版 Hermes。更多信息请参阅 [`runtimeVersion`](/eas-update/runtime-versions/)。
 
 ## JavaScript 调试器
 
-要调试在 Hermes 下运行的 JavaScript 代码，你可以使用 `npx expo start` 启动项目，然后按 <kbd>j</kbd> 在 Google Chrome 或 Microsoft Edge 中打开调试器。开发构建和 Expo Go 的开发者菜单中也有 **Open DevTools**（以前称为 **Open JS Debugger**）选项，可以实现相同功能。
+要调试在 Hermes 下运行的 JavaScript 代码，你可以使用 `npx expo start` 启动项目，然后按 <kbd>J</kbd> 在 Google Chrome 或 Microsoft Edge 中打开调试器。开发构建和 Expo Go 的开发者菜单中也有 **Open DevTools**（以前称为 **Open JS Debugger**）选项，可执行相同操作。
 
 或者，你也可以通过手动打开 [Google Chrome DevTools](https://reactnative.dev/docs/other-debugging-methods#remote-javascript-debugging-deprecated) 来使用 JavaScript 检查器
 
@@ -44,11 +44,11 @@ Hermes 引擎是 Expo 默认使用的 JavaScript 引擎，并且在所有 Expo �
 
 > **warning** 打开调试器时提示 `No compatible apps connected. JavaScript Debugging can only be used with the Hermes engine.`。
 
-- 确保你已在 `jsEngine` 字段中[设置 Hermes](#setup)。
+- 确保你已在 `jsEngine` 字段中 [设置 Hermes](#setup)。
 - 如果你的应用是通过 `eas build`、`npx expo run:android` 或 `npx expo run:ios` 构建的，请确保它是调试构建。
-- 在内部，应用会建立 WebSocket 连接，请确保你的应用已连接到开发服务器。
-  - 尝试在 Expo CLI 终端 UI 中按 <kbd>r</kbd> 重新加载应用。
-  - 通过运行以下命令测试调试可用性：`curl http://127.0.0.1:8081/json/list`（将 `127.0.0.1:8081` 调整为与你的开发服务器 URL 匹配）。HTTP 响应应为数组，如下所示。如果返回空响应，请为 `npx expo start` 命令添加 `--localhost` 或 `--tunnel` 标志。
+- 在内部，应用会建立一个 WebSocket 连接，请确保你的应用已连接到开发服务器。
+  - 尝试在 Expo CLI 终端界面中按 <kbd>R</kbd> 重新加载应用。
+  - 通过运行以下命令测试调试可用性：`curl http://127.0.0.1:8081/json/list`（根据你的开发服务器 URL 调整 `127.0.0.1:8081`）。HTTP 响应应为数组，如下所示。如果返回空响应，请为 `npx expo start` 命令添加 `--localhost` 或 `--tunnel` 标志。
 
   ```json
   [

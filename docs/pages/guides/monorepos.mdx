@@ -99,10 +99,10 @@ packages:
 
 <Terminal
   cmd={{
-    npm: ['$ npx create-expo-app@latest --template default@sdk-55 apps/cool-app'],
-    yarn: ['$ yarn create expo-app --template default@sdk-55 apps/cool-app'],
-    pnpm: ['$ pnpm create expo-app --template default@sdk-55 apps/cool-app'],
-    bun: ['$ bun create expo --template default@sdk-55 apps/cool-app'],
+    npm: ['$ npx create-expo-app@latest --template default@sdk-56 apps/cool-app'],
+    yarn: ['$ yarn create expo-app --template default@sdk-56 apps/cool-app'],
+    pnpm: ['$ pnpm create expo-app --template default@sdk-56 apps/cool-app'],
+    bun: ['$ bun create expo --template default@sdk-56 apps/cool-app'],
   }}
 />
 
@@ -121,7 +121,7 @@ Monorepo 可以帮助我们将代码分组到一个仓库中。这包括应用�
     npm: ['$ mkdir -p packages/cool-package && cd packages/cool-package && npm init'],
     yarn: ['$ mkdir -p packages/cool-package && cd packages/cool-package && yarn init'],
     pnpm: ['$ mkdir -p packages/cool-package && cd packages/cool-package && pnpm init'],
-    bun: ['$ mkdir -p packages/cool-package && cd packages/cool-package && bun init --minimal'],
+    bun: ['$ mkdir -p packages/cool-package && cd packages/cool-package && bun init -y'],
   }}
 />
 
@@ -246,17 +246,21 @@ Expo 已改进对更完整的 **node_modules** 模式的支持，例如隔离模
 
 从 **SDK 55** 开始，这在 monorepo 中的应用里会自动启用。
 
-### Script '...' does not exist
+#### 带有 TV 项目的 Monorepo
+
+请查看 [为 TV 构建](/guides/building-for-tv/#modify-dependencies-for-tv) 文档中的依赖部分，了解当一个 TV 项目与其他 Expo 项目一起包含在 monorepo 中时，对 `react-native` 的特殊依赖要求。
+
+### 脚本“...”不存在
 
 React Native 使用包来同时提供 JavaScript 和原生文件。这些原生文件也需要被链接，就像 **android/app/build.Gradle** 中的 [**react-native/react.Gradle**](https://github.com/facebook/react-native/blob/v0.70.6/react.gradle) 文件一样。通常，这个路径会被硬编码为类似下面这样的内容：
 
-**Android** ([source](https://github.com/facebook/react-native/blob/e918362be3cb03ae9dee3b8d50a240c599f6723f/template/android/app/build.gradle#L84))
+**Android** ([来源](https://github.com/facebook/react-native/blob/e918362be3cb03ae9dee3b8d50a240c599f6723f/template/android/app/build.gradle#L84))
 
 ```groovy
 apply from: "../../node_modules/react-native/react.gradle"
 ```
 
-**iOS** ([source](https://github.com/facebook/react-native/blob/e918362be3cb03ae9dee3b8d50a240c599f6723f/template/ios/Podfile#L1))
+**iOS** ([来源](https://github.com/facebook/react-native/blob/e918362be3cb03ae9dee3b8d50a240c599f6723f/template/ios/Podfile#L1))
 
 ```ruby
 require_relative '../node_modules/react-native/scripts/react_native_pods'
@@ -264,13 +268,13 @@ require_relative '../node_modules/react-native/scripts/react_native_pods'
 
 不幸的是，由于 [hoisting](https://classic.yarnpkg.com/blog/2018/02/15/nohoist/)，在 monorepo 中这个路径可能不同。它也没有使用 [Node 模块解析](https://nodejs.org/api/modules.html#all-together)。你可以通过使用 Node 来查找包的位置，而不是把这个路径硬编码，从而避免这个问题：
 
-**Android** ([source](https://github.com/expo/expo/blob/6877c1f5cdca62b395b0d5f49d87f2f3dbb50bec/templates/expo-template-bare-minimum/android/app/build.gradle#L87))
+**Android** ([来源](https://github.com/expo/expo/blob/6877c1f5cdca62b395b0d5f49d87f2f3dbb50bec/templates/expo-template-bare-minimum/android/app/build.gradle#L87))
 
 ```groovy
 apply from: new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), "../react.gradle")
 ```
 
-**iOS** ([source](https://github.com/expo/expo/blob/61cbd9a5092af319b44c319f7d51e4093210e81b/templates/expo-template-bare-minimum/ios/Podfile#L2))
+**iOS** ([来源](https://github.com/expo/expo/blob/61cbd9a5092af319b44c319f7d51e4093210e81b/templates/expo-template-bare-minimum/ios/Podfile#L2))
 
 ```ruby
 require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")

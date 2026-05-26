@@ -1,7 +1,7 @@
 ---
-title: 设置 Expo Observe
+title: 设置 EAS Observe
 sidebar_title: 开始使用
-description: 了解如何安装 Expo Observe，并开始从你的生产应用中收集性能指标。
+description: 了解如何安装 EAS Observe，并开始从你的生产应用中收集性能指标。
 searchRank: 9
 ---
 
@@ -10,22 +10,22 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-Expo Observe 会跟踪你的应用在生产环境中的启动性能。本指南将带你完成库的安装、应用设置，以及查看你的第一批指标。
+EAS Observe 会在生产环境中跟踪你应用的启动性能。本指南将带你完成库的安装、应用设置，以及查看你的第一组指标。
 
 ## 前提条件
 
 <Prerequisites>
-  <Requirement title="可访问 Expo Observe 预览版">
-    Expo Observe 目前处于私有预览阶段，需申请后才能获得访问权限。[在此申请访问
+  <Requirement title="访问 EAS Observe 预览版">
+    EAS Observe 目前处于私有预览阶段，需申请后获得访问权限。[在此申请访问
     权限](https://expo.dev/changelog/introducing-expo-observe)。
   </Requirement>
-  <Requirement title="Expo 用户账户">
-    任何拥有 Expo 账户的人都可以使用 Expo Observe。你可以在
+  <Requirement title="一个 Expo 用户账号">
+    任何拥有 Expo 账号的人都可以使用 EAS Observe。你可以前往
     [expo.dev/signup](https://expo.dev/signup) 注册。
   </Requirement>
   <Requirement title="Expo SDK 55 或更高版本">
-    Expo Observe 需要 SDK 55 或更高版本。运行 `npx expo-doctor` 检查你的 SDK 版本，并运行 `npx
-    expo install --fix` 更新依赖项。
+    EAS Observe 需要 SDK 55 或更高版本。运行 `npx expo-doctor` 检查你的 SDK 版本，并运行 `npx
+    expo install --fix` 更新依赖。
   </Requirement>
   <Requirement title="EAS 项目">
     你的应用必须已关联到一个 EAS 项目。请确保应用配置中的 `extra.eas.projectId`
@@ -47,7 +47,11 @@ Expo Observe 会跟踪你的应用在生产环境中的启动性能。本指南�
 
 ## 包裹你的根布局
 
-使用 `AppMetricsRoot` 包裹你的根布局。这个高阶组件（HOC）会自动为你测量 [首次渲染时间（TTR）](/eas/observe/reference/metrics/#time-to-first-render)。
+使用 `AppMetricsRoot`（SDK 55）或 `ObserveRoot`（SDK 56 及更高版本）包裹你的根布局。这个高阶组件（HOC）会自动为你测量 [首次渲染时间（TTR）](/eas/observe/reference/metrics/#time-to-first-render)。
+
+<Tabs>
+
+<Tab label="SDK 55">
 
 ```tsx app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -59,6 +63,25 @@ function RootLayout() {
 
 export default AppMetricsRoot.wrap(RootLayout);
 ```
+
+</Tab>
+
+<Tab label="SDK 56 and later">
+
+```tsx app/_layout.tsx
+import { Stack } from 'expo-router';
+import { ObserveRoot } from 'expo-observe';
+
+function RootLayout() {
+  return <Stack />;
+}
+
+export default ObserveRoot.wrap(RootLayout);
+```
+
+</Tab>
+
+</Tabs>
 
 </Step>
 
@@ -75,7 +98,7 @@ export default AppMetricsRoot.wrap(RootLayout);
 
 <Tabs>
 
-<Tab label="使用 Expo Router">
+<Tab label="SDK 55">
 
 ```tsx app/_layout.tsx
 import { Stack } from 'expo-router';
@@ -123,18 +146,20 @@ export default AppMetricsRoot.wrap(RootLayout);
 
 </Tab>
 
-<Tab label="不使用 Expo Router">
+<Tab label="SDK 56">
 
-```tsx App.tsx
-import { useEffect, useState } from 'react';
+```tsx app/_layout.tsx
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { AppMetrics, AppMetricsRoot } from 'expo-observe';
+import { ObserveRoot, useObserve } from 'expo-observe';
+import { useEffect, useState } from 'react';
 
 // 在获取资源期间保持闪屏可见
 SplashScreen.preventAutoHideAsync();
 
-function App() {
+function RootLayout() {
   const [isReady, setIsReady] = useState(false);
+  const { markInteractive } = useObserve();
 
   useEffect(() => {
     async function prepare() {
@@ -153,19 +178,19 @@ function App() {
 
   useEffect(() => {
     if (isReady) {
-      SplashScreen.hideAsync();
-      AppMetrics.markInteractive();
+      SplashScreen.hide();
+      markInteractive();
     }
-  }, [isReady]);
+  }, [isReady, markInteractive]);
 
   if (!isReady) {
     return null;
   }
 
-  // 你的应用
+  return <Stack />;
 }
 
-export default AppMetricsRoot.wrap(App);
+export default ObserveRoot.wrap(RootLayout);
 ```
 
 </Tab>

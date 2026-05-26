@@ -1,10 +1,9 @@
 ---
 title: 日历
-description: 一个提供 API 用于与设备的系统日历、事件、提醒以及相关记录交互的库。
-sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-calendar'
+description: 一个提供 API 的库，用于与设备的系统日历、事件、提醒事项及相关记录交互。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-calendar/src'
 packageName: 'expo-calendar'
-platforms: ['android', 'ios', 'expo-go']
-isDeprecated: true
+platforms: ['ios*', 'android*']
 ---
 
 import APISection from '~/components/plugins/APISection';
@@ -15,13 +14,12 @@ import {
   ConfigPluginExample,
   ConfigPluginProperties,
 } from '~/ui/components/ConfigSection';
-import { SnackInline } from '~/ui/components/Snippet';
 
-> **warning** **[已弃用](/more/release-statuses/#deprecated)：** `expo-calendar` 库正在被 [`expo-calendar/next`](calendar-next.mdx) 替代。当前 API 不再接收补丁，并将在即将发布的版本中移除。
+> **important** 为了提供更快的更新，`expo-calendar` 目前在 Expo Go 和 Snack 中不受支持。要使用它，请创建一个 [development build](/develop/development-builds/create-a-build/)。
 
 `expo-calendar` 提供了一个用于与设备系统日历、事件、提醒及相关记录交互的 API。
 
-此外，它还提供了启动[系统提供的日历 UI](#launching-system-provided-calendar-dialogs) 的方法，以允许用户查看或编辑事件。在 Android 上，这些方法会通过 Intent 启动系统日历应用。在 iOS 上，它们会以模态方式呈现 [`EKEventViewController`](https://developer.apple.com/documentation/eventkitui/ekeventviewcontroller) 或 [`EKEventEditViewController`](https://developer.apple.com/documentation/eventkitui/ekeventeditviewcontroller)。
+此外，它还提供了用于启动系统提供的日历 UI 的方法，以便用户查看或编辑事件。在 iOS 上，它们会以模态窗口形式显示 [`EKEventViewController`](https://developer.apple.com/documentation/eventkitui/ekeventviewcontroller) 或 [`EKEventEditViewController`](https://developer.apple.com/documentation/eventkitui/ekeventeditviewcontroller)。
 
 ## 安装
 
@@ -64,48 +62,62 @@ import { SnackInline } from '~/ui/components/Snippet';
       description: '用于设置 [`NSRemindersUsageDescription`](#ios) 权限消息的字符串。',
       default: '"允许 $(PRODUCT_NAME) 访问你的提醒事项"',
     },
+    {
+      name: 'writeOnlyCalendarPermission',
+      platform: 'ios',
+      description:
+        '用于设置 [`NSCalendarsWriteOnlyAccessUsageDescription`](#ios) 权限消息的字符串，在请求仅写入日历访问权限时显示（iOS 17+）。仅在 `writeOnlyAccess` 为 `true` 时使用。',
+      default: '"允许 $(PRODUCT_NAME) 将事件添加到你的日历中"',
+    },
+    {
+      name: 'writeOnlyAccess',
+      platform: 'ios',
+      description:
+        '当为 `true` 时，请求仅写入日历访问权限（iOS 17+）。会设置 `NSCalendarsWriteOnlyAccessUsageDescription`，并省略 `NSCalendarsFullAccessUsageDescription`。',
+      default: 'false',
+    },
   ]}
 />
 
 <ConfigReactNative>
 
-如果你没有使用 Continuous Native Generation ([CNG](/workflow/continuous-native-generation/))（而是手动使用原生 **android** 和 **ios** 项目），那么你需要在原生项目中配置以下权限：
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)）（也就是你在手动使用原生 **ios** 项目），那么你需要在原生项目中配置以下权限：
 
-- 对于 Android，请将 `android.permission.READ_CALENDAR` 和 `android.permission.WRITE_CALENDAR` 权限添加到项目的 **android/app/src/main/AndroidManifest.xml** 中：
-
-  ```xml
-  <uses-permission android:name="android.permission.READ_CALENDAR" />
-  <uses-permission android:name="android.permission.WRITE_CALENDAR" />
-  ```
-
-- 对于 iOS，请将 `NSCalendarsUsageDescription` 和 `NSRemindersUsageDescription` 添加到项目的 **ios/[app]/Info.plist** 中：
+- 对于 iOS，请将 `NSCalendarsUsageDescription`、`NSCalendarsFullAccessUsageDescription` 和 `NSRemindersUsageDescription` 添加到项目的 **ios/[app]/Info.plist** 中：
 
   ```xml
   <key>NSCalendarsUsageDescription</key>
   <string>允许 $(PRODUCT_NAME) 访问你的日历</string>
+  <key>NSCalendarsFullAccessUsageDescription</key>
+  <string>允许 $(PRODUCT_NAME) 访问你的日历</string>
   <key>NSRemindersUsageDescription</key>
   <string>允许 $(PRODUCT_NAME) 访问你的提醒事项</string>
+  ```
+
+  当在 iOS 17+ 上请求仅写入日历访问权限时，请添加 `NSCalendarsWriteOnlyAccessUsageDescription`，而不是 `NSCalendarsFullAccessUsageDescription`：
+
+  ```xml
+  <key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+  <string>允许 $(PRODUCT_NAME) 将事件添加到你的日历中</string>
   ```
 
 </ConfigReactNative>
 
 ## 用法
 
-<SnackInline label='Basic Calendar usage' dependencies={['expo-calendar']}>
-
 ```jsx
-import { useEffect } from 'react';
-import { StyleSheet, View, Text, Button, Platform } from 'react-native';
 import * as Calendar from 'expo-calendar';
+import { useEffect } from 'react';
+import { StyleSheet, View, Text, Button } from 'react-native';
 
-export default function App() {
+const BasicUsage = () => {
   useEffect(() => {
     (async () => {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      const { status } = await Calendar.requestCalendarPermissions();
       if (status === 'granted') {
-        const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+        const calendars = Calendar.getCalendars(Calendar.EntityTypes.EVENT);
         console.log('这里是你所有的日历：');
-        console.log({ calendars });
+        console.log(JSON.stringify(calendars));
       }
     })();
   }, []);
@@ -116,29 +128,15 @@ export default function App() {
       <Button title="创建一个新日历" onPress={createCalendar} />
     </View>
   );
-}
-
-async function getDefaultCalendarSource() {
-  const defaultCalendar = await Calendar.getDefaultCalendarAsync();
-  return defaultCalendar.source;
-}
+};
 
 async function createCalendar() {
-  const defaultCalendarSource =
-    Platform.OS === 'ios'
-      ? await getDefaultCalendarSource()
-      : { isLocalAccount: true, name: 'Expo Calendar' };
-  const newCalendarID = await Calendar.createCalendarAsync({
+  const newCalendar = await Calendar.createCalendar({
     title: 'Expo Calendar',
     color: 'blue',
     entityType: Calendar.EntityTypes.EVENT,
-    sourceId: defaultCalendarSource.id,
-    source: defaultCalendarSource,
-    name: 'internalCalendarName',
-    ownerAccount: 'personal',
-    accessLevel: Calendar.CalendarAccessLevel.OWNER,
   });
-  console.log(`你的新日历 ID 是：${newCalendarID}`);
+  console.log(`你的新日历：${JSON.stringify(newCalendar)}`);
 }
 
 const styles = StyleSheet.create({
@@ -151,13 +149,13 @@ const styles = StyleSheet.create({
 });
 ```
 
-</SnackInline>
-
 ## API
 
 ```js
 import * as Calendar from 'expo-calendar';
 ```
+
+除非另有说明，所有日期都以 ISO 8601 格式返回。
 
 <APISection
   packageName="expo-calendar"
@@ -183,4 +181,19 @@ import * as Calendar from 'expo-calendar';
 
 此库使用以下用途描述键：
 
-<IOSPermissions permissions={['NSCalendarsUsageDescription', 'NSRemindersUsageDescription']} />
+<IOSPermissions
+  permissions={[
+    'NSCalendarsUsageDescription',
+    {
+      name: 'NSCalendarsFullAccessUsageDescription',
+      description:
+        '向用户说明应用为何请求对用户日历数据的完全访问权限。',
+    },
+    {
+      name: 'NSCalendarsWriteOnlyAccessUsageDescription',
+      description:
+        '向用户说明应用为何请求对用户日历数据的仅写入访问权限。',
+    },
+    'NSRemindersUsageDescription',
+  ]}
+/>

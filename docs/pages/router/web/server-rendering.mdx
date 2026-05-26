@@ -5,6 +5,7 @@ isAlpha: true
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
+import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 import { FAQ } from '~/ui/components/FAQ';
 import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
@@ -105,14 +106,14 @@ export default function Page() {
 
 你可以通过创建 **src/app/+html.tsx** 文件来自定义根 HTML 文档。此组件会包裹所有路由，并且只在服务器上运行。
 
-`expo-router/html` 中的 [`useServerDocumentContext`](/versions/unversioned/sdk/router/#useserverdocumentcontext) Hook 提供了服务器渲染器注入到文档中的元数据和资源节点。你必须将这些值展开到你的 HTML 中，以确保元数据、字体和 CSS 包含在响应中：
+来自 `expo-router/html` 的 [`useServerDocumentContext`](/versions/latest/sdk/router/#useserverdocumentcontext) hook 提供了服务器渲染器注入到文档中的元数据和资源节点。你必须将这些值展开到 HTML 中，以确保响应中包含元数据、字体和 CSS：
 
 - `htmlAttributes`：要添加到 `<html>` 元素的属性
 - `bodyAttributes`：要添加到 `<body>` 元素的属性
 - `headNodes`：用于 `<head>` 元素的 React 节点（元数据、CSS 和其他资源）
 - `bodyNodes`：用于 `<body>` 元素的 React 节点（字体和其他延迟加载的资源）
 
-> **信息** 创建自定义 **+html.tsx** 模板时，你必须使用 [`useServerDocumentContext`](/versions/unversioned/sdk/router/#useserverdocumentcontext) 返回给你的所有属性。否则，服务器端渲染的 HTML 可能会显示异常，或者你的应用可能无法正常运行。
+> **信息** 在创建自定义 **+html.tsx** 模板时，你必须使用 [`useServerDocumentContext`](/versions/latest/sdk/router/#useserverdocumentcontext) 返回给你的所有属性。否则，你的服务端渲染 HTML 可能会显示异常，或者应用可能无法正常工作。
 
 ```tsx src/app/+html.tsx
 import { ScrollViewStyleReset, useServerDocumentContext } from 'expo-router/html';
@@ -154,7 +155,7 @@ export default function Root({ children }: { children: ReactNode }) {
 **+html.tsx** 文件仅由服务器渲染器使用，客户端代码永远不会使用它。这意味着：
 
 - 它会在服务器渲染期间由 `expo-server` 运行
-- 它不会在客户端重新 hydration，并且应仅使用 [`useServerDocumentContext`](/versions/unversioned/sdk/router/#useserverdocumentcontext) React hook
+- 它不会在客户端重新 hydration，并且只能使用 [`useServerDocumentContext`](/versions/latest/sdk/router/#useserverdocumentcontext) React hook
 - 你不能在 `+html.tsx` 中导入全局 CSS（请使用 [Root Layout](/router/basics/navigation-layouts/#root-layout) 来处理样式）
 - 你不能在 `+html.tsx` 中调用 `window` 或 `document` 等浏览器 API
 
@@ -162,9 +163,9 @@ export default function Root({ children }: { children: ReactNode }) {
 
 ## 元数据
 
-路由可以导出一个 [`generateMetadata`](/versions/unversioned/sdk/server/#generatemetadatafunctionrequest-params) 函数，用于定义每个页面的元数据，例如标题、描述和 [Open Graph](https://ogp.me/) 标签。该函数会在渲染开始前在服务器上运行，其结果会通过 [Root HTML](#root-html) 组件中 [`useServerDocumentContext`](/versions/unversioned/sdk/router/#useserverdocumentcontext) 提供的 `headNodes` 注入到 HTML 文档的 `<head>` 中。
+路由可以导出一个 [`generateMetadata`](/versions/latest/sdk/server/#generatemetadatafunctionrequest-params) 函数，用于定义每个页面的元数据，例如 title、description 和 [Open Graph](https://ogp.me/) 标签。该函数在服务器上于渲染开始前运行，其结果会通过 [Root HTML](#root-html) 组件中 [`useServerDocumentContext`](/versions/latest/sdk/router/#useserverdocumentcontext) 提供的 `headNodes` 注入到 HTML 文档的 `<head>` 中。
 
-从你的路由文件中导出一个 [`generateMetadata`](/versions/unversioned/sdk/server/#generatemetadatafunctionrequest-params) 函数，并返回一个 [`Metadata`](/versions/unversioned/sdk/server/#metadata) 对象。该函数会接收传入的请求和路由参数，你可以用它们动态生成元数据：
+从你的路由文件中导出一个 [`generateMetadata`](/versions/latest/sdk/server/#generatemetadatafunctionrequest-params) 函数，并返回一个 [`Metadata`](/versions/latest/sdk/server/#metadata) 对象。该函数会接收传入的请求和路由参数，你可以利用它们动态生成元数据：
 
 ```tsx src/app/blog/[id].tsx
 import { Text } from 'react-native';
@@ -192,7 +193,7 @@ export default function BlogPost() {
 }
 ```
 
-`generateMetadata` 函数会在服务器上执行，并且会像 [数据加载器](/router/web/data-loaders) 一样从客户端 bundle 中移除。有关支持的元数据字段完整列表，请参阅 `expo-server` API 参考中的 [`Metadata`](/versions/unversioned/sdk/server/#metadata) 类型。
+`generateMetadata` 函数在服务器上执行，并会像 [数据加载器](/router/web/data-loaders) 一样从客户端包中移除。支持的元数据字段完整列表请参见 `expo-server` API 参考中的 [`Metadata`](/versions/latest/sdk/server/#metadata) 类型。
 
 ### 在服务器渲染中使用 `<Head>`
 
@@ -210,7 +211,7 @@ export default function BlogPost() {
 | Node.js/Express                       | `expo-server/adapter/express` |
 | Cloudflare Workers                    | `expo-server/adapter/workerd` |
 | Vercel Edge Functions                 | `expo-server/adapter/vercel`  |
-| Netlify Edge Functions                 | `expo-server/adapter/netlify`  |
+| Netlify Edge Functions                | `expo-server/adapter/netlify`  |
 | Bun                                   | `expo-server/adapter/bun`     |
 
 <Collapsible summary="示例：使用 EAS Hosting 部署">
@@ -225,16 +226,16 @@ EAS Hosting 开箱即支持服务器渲染。导出你的应用并使用以下�
 
 ## 与静态渲染的比较
 
-| Feature            |     | Static Rendering                                                                      | Server Rendering                |
-| ------------------ | :-- | ------------------------------------------------------------------------------------- | ------------------------------- |
-| HTML generation    |     | 构建时                                                                            | 请求时                    |
-| HTML delivery      |     | 完整文档                                                                     | 逐步流式传输          |
-| Configuration      |     | `web.output: 'static'`                                                                | `web.output: 'server'`          |
-| Dynamic routes     |     | 需要 [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) | 自动工作             |
-| Metadata           |     | [`<Head>`](/versions/latest/sdk/router/#head) 组件                               | [`generateMetadata`](#metadata) |
-| Server required    |     | 否                                                                                    | 是                             |
-| Time to First Byte |     | 最快（已缓存）                                                                      | 较慢（每次请求渲染）   |
-| Hosting            |     | 任意静态主机                                                                       | 需要服务器运行时         |
+| 功能               |     | 静态渲染                                                                             | 服务器渲染                 |
+| ------------------ | :-- | ------------------------------------------------------------------------------------- | -------------------------- |
+| HTML 生成          |     | 构建时                                                                                | 请求时                     |
+| HTML 传递          |     | 完整文档                                                                              | 逐步流式传输               |
+| 配置               |     | `web.output: 'static'`                                                                | `web.output: 'server'`     |
+| 动态路由           |     | 需要 [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams)    | 自动生效                   |
+| 元数据             |     | [`<Head>`](/versions/latest/sdk/router/#head) 组件                                  | [`generateMetadata`](#metadata) |
+| 需要服务器         |     | <NoIcon />                                                                            | <YesIcon />                |
+| 首字节时间         |     | 最快（已缓存）                                                                        | 较慢（每次请求渲染）        |
+| 托管               |     | 任何静态托管服务                                                                       | 需要服务器运行时           |
 
 ## 常见问题
 

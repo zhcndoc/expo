@@ -154,6 +154,88 @@ Expo CLI 会发出网络请求，使用你的用户凭据对 manifest 进行签�
 
 这两个文件都包含与你本地电脑相关的信息。这就是为什么在创建新项目时，默认情况下 **.expo** 目录会被包含到 **.gitignore** 文件中的原因。它并不打算与其他开发者共享。
 
+### 打开端点
+
+开发服务器会公开 `/_expo/open`，以便外部工具（例如云代理、远程预览服务、CI 脚本）能够检查 CLI 会使用的深层链接，并可选择触发与在 **终端 UI** 中按下 <kbd>I</kbd> / <kbd>A</kbd> / <kbd>W</kbd> 相同的操作。它补充了旧的 `/_expo/link` 端点，后者会返回一个 `307` 重定向到一个非移动端客户端无法跟随的深层链接方案。
+
+| 方法 | 效果                                                                                                                                             |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET`  | 试运行：以 JSON 形式返回深层链接。可安全地通过隧道调用。                                                                                         |
+| `POST` | 在本地打开项目——等同于在 **终端 UI** 中按下 <kbd>I</kbd> / <kbd>A</kbd> / <kbd>W</kbd>。仅限同源请求。 |
+
+#### 查询参数
+
+- `platform`（或 `expo-platform` 请求头）：`ios`、`android` 或 `web`。若为 `GET`，可省略以获取列出所有平台的发现响应。
+- `runtime`: 选择 URL 的解析方式。
+  - `default`（省略）：与按下 <kbd>I</kbd> / <kbd>A</kbd> 的行为一致。当服务器以 `--dev-client` 启动时，它会选择开发客户端；当项目同时具有 Expo Go 和开发构建时，它会回退到一个歧义消解页面；否则会打开 Expo Go。
+  - `expo`：强制使用 Expo Go 深层链接（`exp://…`）。
+  - `custom`：强制使用开发构建深层链接（`<scheme>://expo-development-client/?url=…`）。
+  - `unknown`：强制使用歧义消解的 `/_expo/loading` 页面，让设备自行决定使用 Expo Go 还是开发构建。
+
+该端点会反映运行中的状态变化——按下 <kbd>S</kbd> 在 Expo Go 和开发客户端之间切换，或者在服务器运行时安装 `expo-dev-client`，这些变化都会在下一次请求中体现出来。
+
+#### GET 响应
+
+针对特定平台：
+
+```json
+{
+  "runtime": "expo",
+  "url": "exp://192.168.1.71:8081",
+  "scheme": "myapp",
+  "availableRuntimes": ["expo", "custom"],
+  "appId": "com.example.app"
+}
+```
+
+- `runtime`：解析后的运行时（`expo`、`custom` 或 `web`）。当 `url` 是歧义消解页面时省略；设备将决定最终的运行时。
+- `url`：深层链接（或在 `runtime: 'unknown'` 以及 `default` 且存在两种运行时的情况下为歧义消解页面 URL）。当 `--tunnel` 处于启用状态时，会通过 ngrok 主机进行路由。
+- `scheme`：项目用于开发构建深层链接的 URL scheme；如果未配置，则为 `null`。
+- `availableRuntimes`：`['expo']`、`['custom']` 或 `['expo', 'custom']`。当 `.length > 1` 时，调用方应显式选择一个运行时，或让设备自行消歧。
+- `appId`：从项目配置（或原生文件）解析出的 iOS bundle 标识符或 Android 包名。对于 web，或当项目尚未设置 `ios.bundleIdentifier` / `android.package` 时为 `null`。在打开深层链接之前，用于验证构建是否已安装在远程设备上。
+
+如果不提供 `platform`，响应会按平台分组以供发现：
+
+```json
+{
+  "scheme": "myapp",
+  "availableRuntimes": ["expo", "custom"],
+  "platforms": {
+    "ios": {
+      "url": "http://192.168.1.71:8081/_expo/loading?platform=ios",
+      "appId": "com.example.app"
+    },
+    "android": {
+      "url": "http://192.168.1.71:8081/_expo/loading?platform=android",
+      "appId": "com.example.app"
+    },
+    "web": { "runtime": "web", "url": "http://192.168.1.71:8081", "appId": null }
+  }
+}
+```
+
+#### POST 行为
+
+`POST /_expo/open?platform=ios` 会在请求的平台上于本地打开项目（`ios` → iOS 模拟器，`android` → Android 模拟器，`web` → 桌面浏览器）。响应：
+
+- `200`：`{ "platform", "runtime", "url" }`，描述已打开的内容。
+- `403`：跨域 POST。响应体中的 `error` 会解释主机不匹配的原因，并指出 `GET /_expo/open` 作为安全替代方案。
+- `501`：主机无法启动请求的平台（例如在 Linux/Windows 上请求 `platform=ios`）。响应会包含一个 `details` 字段，解释原因并建议采用先 GET 再远程启动的工作流。
+- `500`：`openPlatformAsync` 抛出错误。响应体会转发底层错误代码和消息。
+
+#### 示例
+
+```sh
+# 获取 iOS 的深层链接（可通过隧道工作，无需安装 Expo Go）。
+curl http://localhost:8081/_expo/open?platform=ios
+
+# 强制显示歧义消解页面，让设备或外部选择器来决定。
+curl 'http://localhost:8081/_expo/open?platform=android&runtime=unknown'
+
+# 触发 iOS 模拟器启动（仅在开发服务器所在主机上有效）。
+curl -X POST http://localhost:8081/_expo/open?platform=ios
+```
+
 ## 构建
 
 一个 React Native 应用由两部分组成：一个原生运行时（[编译](#compiling)），以及静态文件，例如 JavaScript bundle 和资源文件（[导出](#exporting)）。Expo CLI 提供了执行这两项任务的命令。
@@ -519,10 +601,10 @@ Expo CLI 提供可与 `npx expo start` 命令配合使用的身份验证方法�
 
 从这里，你可以选择生成如下基础项目文件：
 
-- **babel.config.js** -- Babel 配置。如果你计划使用 Expo CLI 之外的工具来打包项目，则必须存在此文件。
-- **webpack.config.js** -- 用于 Web 开发的默认 webpack 配置。
-- **metro.config.js** -- 用于通用开发的默认 Metro 配置。`npx react-native` 需要使用它。
-- **tsconfig.json** -- 创建一个 TypeScript 配置文件并安装所需依赖。
+- **babel.config.js** — Babel 配置。如果你计划使用 Expo CLI 之外的工具来打包项目，则必须存在此文件。
+- **webpack.config.js** — 用于 Web 开发的默认 webpack 配置。
+- **metro.config.js** — 用于通用开发的默认 Metro 配置。与 `npx react-native` 一起使用时需要此文件。
+- **tsconfig.json** — 创建 TypeScript 配置文件并安装所需依赖项。
 
 ## 环境变量
 

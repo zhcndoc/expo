@@ -1,15 +1,15 @@
 ---
-title: Updating your App
-sidebar_title: Updating your App
+title: 更新你的应用
+sidebar_title: 更新你的应用
 ---
 
 > 本文档已于 2022 年 8 月归档，不会再收到任何进一步更新。请改用 EAS Update。[了解更多](/eas-update/introduction)
 
 `expo-updates` 模块为在 React Native 应用中加载更新提供了客户端实现。更新允许你在不构建新的二进制文件的情况下，将新的 JavaScript 和资源部署到应用的现有构建版本中。
 
-在本指南中，**update** 指的是一个单独的、原子性的更新，它可以由一个 JavaScript bundle、其他资源（例如图片或字体）以及关于该更新的元数据组成。
+在本指南中，**更新** 指的是一个单独的、原子性的更新，它可以由一个 JavaScript bundle、其他资源（例如图片或字体）以及关于该更新的元数据组成。
 
-## Setup
+## 设置
 
 如果可以，我们强烈建议从一个已经安装了 `expo-updates` 库的样板项目开始，例如运行：`npx create-expo-app -t bare-minimum`。
 
@@ -19,7 +19,7 @@ sidebar_title: Updating your App
 
 你也可以运行自己的服务器来托管更新，只要它符合 `expo-updates` 所期望的协议即可。你可以在下面阅读更多关于这些要求的内容。
 
-## Served update requirements
+## 已提供的更新要求
 
 > 如果你使用的是 `expo export` 或 `expo publish`，可以跳过这一节，因为这些都会由系统为你处理！
 
@@ -49,7 +49,7 @@ sidebar_title: Updating your App
 
 如果你使用 `expo export` 来创建更新的预构建包，那么 `ios-index.json` 和 `android-index.json` 中的 manifest 满足这些要求。Expo 的更新服务（如果你使用 `expo publish`，则会发布到该服务）会在每次更新请求时动态创建这些 manifest 对象。
 
-## Update compatibility
+## 更新兼容性
 
 更新的一个关键考量是 JavaScript bundle 与原生运行时之间的兼容性（即某个二进制文件中存在的原生模块及其导出的方法）。为了说明这一点，请看下面的例子：
 
@@ -71,17 +71,17 @@ sidebar_title: Updating your App
 
 由于当前 Expo 更新服务的实现高度依赖 SDK 版本（一个 managed-workflow 概念），如果你使用的是 `expo publish`，你还不能使用 Runtime Version 来管理更新与二进制文件的兼容性。相反，你可以使用[release channels](./release-channels)。一个典型的工作流是：为你构建的每一个新二进制文件创建一个新的 release channel（或者至少为每一个在原生-JavaScript 接口上存在不兼容变更的新二进制文件创建一个新的 release channel），方法是使用 `expo publish --release-channel <channel-name>` 发布到该新的 release channel。创建完一个配置了此 release channel 名称的构建版本后，只要未来的更新与该构建版本保持兼容，你就可以继续将这些更新发布到同一个 release channel。只有配置为使用该 release channel 的构建版本才会收到这些更新。
 
-### Statically hosted updates
+### 静态托管的更新
 
 由于 `expo-updates` 在请求中发送的 header 不会影响静态托管的更新（例如由 `expo export` 创建的更新包），因此你必须将不兼容的更新托管在不同的静态 URL 上，以控制兼容性。
 
-## Embedding assets
+## 嵌入资源
 
 除了从远程服务器加载更新之外，安装了 `expo-updates` 的应用还包含将更新嵌入应用二进制文件中的必要能力。这一点至关重要，它能确保你的应用在安装后立即就能让所有用户离线启动，而无需互联网连接。
 
-当你为应用创建发布构建时，构建过程会将你的 JavaScript 源代码打包成一个压缩后的 bundle，并将其嵌入二进制文件中，同时还会包含你的应用通过 `require`、`import` 或在 **app.json** 中使用的任何其他资源。`expo-updates` 会在每个平台上额外包含一个脚本，用于嵌入一些关于这些嵌入式资源的附加元数据——也就是该更新的一个最小化 manifest JSON 对象。
+When you make a release build of your app, the build process will bundle your JavaScript source code into a minified bundle and embed this in the binary, along with any other assets your app imports (with `require` or `import` or used in **app.json**). `expo-updates` includes an extra script on each platform to embed some additional metadata about the embedded assets — namely, a minimal manifest JSON object for the update.
 
-## Including assets in updates
+## 在更新中包含资源
 
 你在 JavaScript 源码中导入的资源，也可以作为已发布更新的一部分被原子性下载。`expo-updates` 不会认为某个更新已经“准备好”，也不会启动该更新，除非它已经下载了所有必需的资源。
 

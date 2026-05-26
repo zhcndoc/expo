@@ -23,9 +23,9 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 
 <Step label="2">
 
-在你的项目中安装 `babel-plugin-react-compiler` 和 React compiler runtime：
+在你的项目中安装 `babel-plugin-react-compiler` 和 React Compiler 运行时：
 
-<Tabs tabs={['SDK 54 and later', 'SDK 53', 'SDK 52 and earlier']}>
+<Tabs tabs={['SDK 54 及更高版本', 'SDK 53', 'SDK 52 及更早版本']}>
   <Tab>
 
     Expo SDK 54 及更高版本会自动配置 Babel。
@@ -61,38 +61,41 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 
 ### 启用 linter
 
-> 未来，以下所有步骤都将由 Expo CLI 自动完成。
+运行 [`npx expo lint`](/guides/using-eslint/#eslint) 来在你的应用中配置 ESLint，然后按照你的 SDK 版本说明继续操作：
 
-此外，你应该使用 ESLint 插件持续在你的项目中强制执行 React 规则。
+<Tabs tabs={['SDK 55 及更高版本', 'SDK 54 及更早版本']}>
+  <Tab>
 
-<Step label="1">
+    React Compiler 的 lint 规则会在 SDK 55 及更高版本中随 `eslint-config-expo` 默认包含。
 
-运行 [`npx expo lint`](/guides/using-eslint/#eslint) 以确保你的应用已设置好 ESLint，然后安装 React Compiler 的 ESLint 插件：
+    如果你之前安装过 `eslint-plugin-react-compiler`，可以将其卸载，并从你的 ESLint 配置中移除它。
 
-<Terminal cmd={['$ npx expo install eslint-plugin-react-compiler -- -D']} />
+  </Tab>
+  <Tab>
 
-</Step>
+    安装 React Compiler 的 ESLint 插件：
 
-<Step label="2">
+    <Terminal cmd={['$ npx expo install eslint-plugin-react-compiler -- -D']} />
 
-更新你的 [ESLint 配置](/guides/using-eslint/) 以包含该插件：
+    更新你的 [ESLint 配置](/guides/using-eslint/) 以包含该插件：
 
-```js .eslintrc.js
-// https://docs.expo.dev/guides/using-eslint/
-const { defineConfig } = require('eslint/config');
-const expoConfig = require('eslint-config-expo/flat');
-const reactCompiler = require('eslint-plugin-react-compiler');
+    ```js eslint.config.js
+    // https://docs.expo.dev/guides/using-eslint/
+    const { defineConfig } = require('eslint/config');
+    const expoConfig = require('eslint-config-expo/flat');
+    const reactCompiler = require('eslint-plugin-react-compiler');
 
-module.exports = defineConfig([
-  expoConfig,
-  reactCompiler.configs.recommended,
-  {
-    ignores: ['dist/*'],
-  },
-]);
-```
+    module.exports = defineConfig([
+      expoConfig,
+      reactCompiler.configs.recommended,
+      {
+        ignores: ['dist/*'],
+      },
+    ]);
+    ```
 
-</Step>
+  </Tab>
+</Tabs>
 
 ## 渐进式采用
 
@@ -135,7 +138,7 @@ module.exports = function (api) {
 
 <Step label="2">
 
-使用 `"use no memo"` 指令，针对特定组件或文件让 React Compiler 不生效。
+使用 `"use no memo"` 指令，让 React Compiler 对特定组件或文件不生效。
 
 ```jsx
 function MyComponent() {
@@ -149,7 +152,7 @@ function MyComponent() {
 
 ## 使用
 
-> 要更好地理解 React Compiler 的工作方式，请查看 [React Playground](https://playground.react.dev/)。
+> 为了更好地理解 React Compiler 的工作方式，请查看 [React Playground](https://playground.react.dev/)。
 
 改进主要是自动完成的。你可以移除 `useCallback`、`useMemo` 和 `React.memo` 的使用，改为依赖自动 memoization。类组件不会被优化，应改为迁移到函数组件。
 

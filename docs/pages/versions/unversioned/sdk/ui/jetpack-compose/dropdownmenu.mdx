@@ -8,15 +8,16 @@ platforms: ['android', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
-import { ComponentDiagram } from '~/ui/components/Diagram';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 Expo UI DropdownMenu 与官方 Jetpack Compose [菜单 API](https://developer.android.com/develop/ui/compose/components/menu) 保持一致，并在触发元素被按下时显示下拉菜单。
 
-<ComponentDiagram
-  mode="landscape"
-  source="/static/images/expo-ui/dropdownmenu/android-light.webp"
-  darkSource="/static/images/expo-ui/dropdownmenu/android-dark.webp"
-  alt="带有三个点的更多菜单已打开，显示编辑、分享和删除选项，并带有前导图标"
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/dropdownmenu/android-light.webp"
+  darkSrc="/static/images/expo-ui/dropdownmenu/android-dark.webp"
+  alt="三点更多菜单已打开，显示带前置图标的“编辑”、“分享”和“删除”选项"
 />
 
 ## 安装
@@ -105,6 +106,52 @@ export default function RNTriggerDropdownMenuExample() {
           <DropdownMenuItem onClick={() => setIsExpanded(false)}>
             <DropdownMenuItem.Text>
               <ComposeText>项 2</ComposeText>
+            </DropdownMenuItem.Text>
+          </DropdownMenuItem>
+        </DropdownMenu.Items>
+      </DropdownMenu>
+    </Host>
+  );
+}
+```
+
+### 长按触发器
+
+Jetpack Compose 没有专门的长按菜单原语——你可以通过触发视图上的 [`combinedClickable`](./modifiers.mdx) 修饰符，再配合现有的受控 `DropdownMenu` 来组合实现。菜单会自动锚定到触发器。
+
+```tsx LongPressDropdownMenuExample.tsx
+import { Host, DropdownMenu, DropdownMenuItem, Text } from '@expo/ui/jetpack-compose';
+import { background, combinedClickable } from '@expo/ui/jetpack-compose/modifiers';
+import { useState } from 'react';
+
+export default function LongPressDropdownMenuExample() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  return (
+    <Host matchContents>
+      <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
+        <DropdownMenu.Trigger>
+          <Text
+            modifiers={[
+              background('#e0e0e0'),
+              combinedClickable({
+                onClick: () => console.log('短按'),
+                onLongClick: () => setIsExpanded(true),
+              }),
+            ]}>
+            长按我
+          </Text>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Items>
+          <DropdownMenuItem onClick={() => setIsExpanded(false)}>
+            <DropdownMenuItem.Text>
+              <Text>复制</Text>
+            </DropdownMenuItem.Text>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            elementColors={{ textColor: '#B3261E' }}
+            onClick={() => setIsExpanded(false)}>
+            <DropdownMenuItem.Text>
+              <Text>删除</Text>
             </DropdownMenuItem.Text>
           </DropdownMenuItem>
         </DropdownMenu.Items>

@@ -1,0 +1,154 @@
+---
+title: 类型生成参考
+description: expo-type-information 包的参考文档。
+packageName: 'expo-type-information'
+---
+
+import APISection from '~/components/plugins/APISection';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { Terminal } from '~/ui/components/Snippet';
+
+> **warning** `expo-type-information` 库仅适用于 macOS。适用于 SDK 56 及更高版本。
+
+`expo-type-information` 包提供了用于自动为 Swift 模块生成 TypeScript 接口的工具。它由多个部分组成：
+
+- 基于 `sourcekitten` 的 Swift 解析器：用于从 Swift Expo 模块中检索并构造类型信息的解析器。
+- 类型抽象：对与 Expo 模块相关的类型信息进行抽象，解析器会以这种抽象后的方式返回信息。
+- TypeScript AST 生成器：一组帮助生成 TypeScript 代码的函数。
+- CLI：一个命令行工具，集成了上述功能。
+
+## 配置
+
+安装 `expo-type-information` 库：
+
+<Terminal cmd={['$ npx expo install expo-type-information']} />
+
+使用此包还需要安装 `sourcekitten`。你可以使用 macOS 包管理器，例如 Homebrew。
+
+<Terminal cmd={['$ brew install sourcekitten']} />
+
+## CLI 参考
+
+### 通用 CLI 选项
+
+该库中的每个 CLI 命令都会使用以下通用选项进行配置。唯一的例外是 `inline-modules-interface`，它的选项略有不同。
+
+| Flag                                   | Description                                                                                                                                                                                                                                                      | Default            |
+| :------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------- |
+| `-i, --input-paths <filePaths...>`     | 某个模块的 Swift 文件路径，允许使用 glob 模式。                                                                                                                                                                                                                 |                    |
+| `-m --module-path <modulePath>`        | Expo 模块根目录的路径。                                                                                                                                                                                                                                         |                    |
+| `-o, --output-path <filePath>`         | 用于保存生成输出的路径。如果未提供此选项，则会将生成的输出打印到控制台。                                                                                                                                                                                        |                    |
+| `-t, --type-inference <typeInference>` | 类型推断级别：`NO_INFERENCE`、`SIMPLE_INFERENCE` 或 `PREPROCESS_AND_INFERENCE`。请注意，`PREPROCESS_AND_INFERENCE` 选项在某些模块上偶尔会失败。如果遇到错误，请回退到 `SIMPLE_INFERENCE` 或 `NO_INFERENCE`。 | `SIMPLE_INFERENCE` |
+| `-w --watcher`                         | 启动一个监听器，用于检查 input-path 文件的更改。                                                                                                                                                                                                                |                    |
+
+### 主要命令
+
+#### `module-interface`
+
+为 Swift 模块生成完整的 TypeScript 接口。它由以下内容组成：
+
+- 包含模块中定义的所有类型的 **types.ts** 文件
+- 包含原生模块定义的 **module.ts**
+- 模块中定义的每个视图对应的 **view.tsx**
+- 重新导出某些函数的 **index.ts** 文件
+
+> 接受标准 [通用 CLI 选项](#common-cli-options)。
+
+#### `inline-modules-interface`
+
+为项目中的每个 Swift 内联模块创建 TypeScript 接口。该接口由两个文件组成：
+
+- **Module.generated.ts**：每次运行该命令都会重新生成
+- **Module.tsx**：如果你修改了它，则不会被重新生成
+
+**选项：**
+| Flag | Description | Default |
+| :--- | :--- | :--- |
+| `-a --app-json <appJsonPath>` | [应用配置](/workflow/configuration/) 文件的路径，其中定义了 `inline.modules.watchedDirectories`。 | |
+| `-w --watcher` | 启动一个监听器，用于检查内联模块文件的更改。 | |
+| `-t, --type-inference <typeInference>` | 类型推断级别：`NO_INFERENCE`、`SIMPLE_INFERENCE` 或 `PREPROCESS_AND_INFERENCE`。请注意，`PREPROCESS_AND_INFERENCE` 选项在某些模块上偶尔会失败。如果遇到错误，请回退到 `SIMPLE_INFERENCE` 或 `NO_INFERENCE`。 | `SIMPLE_INFERENCE` |
+
+---
+
+#### `short-module-interface`
+
+为 Expo 模块创建一个简短的 TypeScript 接口。会覆盖 **ModuleName.generated.ts**，并在不存在时创建 **ModuleName.ts**。可与 inline-modules 一起使用。
+
+> 接受标准 [通用 CLI 选项](#common-cli-options)。
+
+#### `generate-mocks-for-file`
+
+为给定的 expo 模块生成 mock。
+
+> 接受标准 [通用 CLI 选项](#common-cli-options)。
+
+### 其他命令
+
+这些命令是内部命令或非常特定的命令。
+
+> 本节中的所有命令都接受标准 [通用 CLI 选项](#common-cli-options)。
+
+#### `other type-information`
+
+解析 Swift 模块类型信息并输出 `FileTypeInformation` JSON。
+
+#### `other generate-module-types`
+
+生成模块的类型声明文件内容。
+
+#### `other generate-view-types`
+
+生成原生 View 的类型声明文件。
+
+#### `other generate-jsx-intrinsics`
+
+生成 View 的声明文件，并使用该 View 的 props 更新 JSX intrinsic。
+
+#### `other preprocess-file`
+
+在通过 `sourcekitten` 解析之前，打印处于预处理状态的文件。它有助于检查 `--module-path`、`--input-path` 和 `--type-inference` 选项如何影响解析后的文件。
+
+<APISection
+  forceVersion="unversioned"
+  packageName="expo-type-information"
+  headersMapping={{
+    TypeInformationAbstraction: '类型信息抽象',
+    TypescriptGeneration: 'TypeScript 生成',
+    TypeInfoTypes: '类型信息类型',
+    Mocks: 'Mock 生成',
+  }}
+/>
+
+## Swift 解析器限制
+
+`expo-type-information` 库使用 `sourcekitten` 来解析 Swift 文件。解析 Swift 文件是一项复杂的任务，目前并非所有内容都已实现。
+
+<Collapsible summary="关于当前版本 Swift 文件解析的已知问题">
+
+- 嵌套类不会被完整解析。
+
+  `Sourcekitten` 在解析嵌套闭包方面存在限制，因此你模块中定义的类可能无法被完全解析。这就是为什么如果模块中存在 DSL `Class`，其方法的返回类型会显示为 `unresolved` 的原因。
+
+- 返回类型解析，`PREPROCESS_AND_INFERENCE` 推断选项。
+
+  当闭包的返回类型未显式提供时，工具需要对其进行推断。
+  在 `sourcekitten` 中，一种做法是：当存在 `return identifier` 语句时，我们可以询问该 `identifier` 的类型。
+  第三个推断选项 `PREPROCESS_AND_INFERENCE` 会重写文件，使得对于每个 `return expression` 语句，
+  都插入一条新的 `let return_expression = expression; return return_expression;`，这样我们就可以询问标识符类型。
+  已知重写有时会出现问题（主要是由于字符串和注释），因此它不一定总能正常工作。
+  目前也没有办法解析没有 `return` 的返回，即返回表达式作为闭包尾部表达式的情况。
+
+- 不支持的 Expo Module DSL 声明。
+
+  目前并非所有 DSL 声明都会被解析，而且有些声明在任何上下文中都不会被解析。例如，`Events` 会在 `View` 内部被解析，但不会在 Module 定义中被解析。
+
+- 使用 Unicode 字符会破坏 `sourcekitten` 的偏移量。
+
+</Collapsible>
+### 支持的 Expo modules DSL 声明
+
+| Feature                      | Notes and limitations                                                                                                           |
+| :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| **Expo DSL Declarations**    | 支持解析：`AsyncFunction`、`Constant`、`Constructor`、`Events`、`Function`、`Name`、`Prop`、`Property` 和 `View`。 |
+| **Swift `struct` & `class`** | 必须符合 `Record` 协议。仅解析带有 `@Field` 注解标记的属性。                          |
+| **Swift `enum`**             | 支持基本 case。当前不会解析与 enum case 关联的值。                                          |

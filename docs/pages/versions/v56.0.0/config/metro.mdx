@@ -184,7 +184,7 @@ Expo CLI 使用内置的 [browserslist](https://browsersl.ist/) 支持自动处�
 
 #### 更新后重置缓存
 
-更改 Post CSS 或 `browserslist` 配置后，你需要清除 Metro 缓存：
+更改 PostCSS 或 `browserslist` 配置后，你需要清除 Metro 缓存：
 
 <Terminal
   cmd={['$ npx expo start --clear', '$ npx expo export --clear']}
@@ -385,6 +385,26 @@ module.exports = function (api) {
 
 始终使用 `babel-preset-expo` 作为默认的 Babel 预设，这可确保转换始终与 Expo 运行时兼容。`babel-preset-expo` 会在内部使用所有 caller 输入，为给定的平台、引擎和环境进行优化。
 
+## 按需文件系统
+
+Expo 使用 `metro-file-map` 的一个分支（[`@expo/metro-file-map`](https://github.com/expo/expo/tree/main/packages/@expo/metro-file-map)）来发现、监听并按需解析源文件。
+
+Metro 在启动时会预先遍历 `watchFolders` 中列出的每个目录。在 [monorepo](/guides/monorepos) 中，这通常意味着会遍历每个工作区。启用按需文件系统访问后，文件映射可以在解析器请求时，按需读取 `watchFolders` 之外的文件。这样你就可以安全地减少 `watchFolders` 条目的数量，在不破坏访问项目根目录之外导入的前提下，以减少文件监听覆盖范围来换取更快的启动时间。
+
+按需遍历还允许将符号链接解析到 monorepo 根目录之外，这为 Bun 和 pnpm 等包管理器增加了对 [Global Virtual Store 的支持](https://pnpm.io/global-virtual-store)。
+
+此功能默认启用，你可以在 [应用配置](/versions/latest/config/app/) 中将 `experiments.onDemandFilesystem` 设置为 `false` 来禁用它：
+
+```json app.json
+{
+  "expo": {
+    "experiments": {
+      "onDemandFilesystem": false
+    }
+  }
+}
+```
+
 ## Node.js 内置模块
 
 当为服务器环境打包时，Expo 的 Metro 配置会基于当前 Node.js 版本自动支持外部化 Node.js 内置模块（`fs`、`path`、`node:crypto` 等）。如果 CLI 正在为浏览器环境打包，那么内置模块会先检查该模块是否已在本地安装，然后回退到一个空的 shim。例如，如果你安装了 `path` 以便在浏览器中使用，那么它可以被使用；否则，该模块会自动被跳过。
@@ -424,7 +444,7 @@ import('./math').then(math => {
 
 当你运行 `npx expo export -p web` 时，bundle 会被拆分为多个文件，并且入口 bundle 会被添加到主 HTML 文件中。`@expo/metro-runtime` 会添加用于加载并执行异步 bundle 的运行时代码。
 
-## Source map debug ID
+## Source map Debug ID
 
 如果 bundle 导出时带有外部 source map，那么文件末尾会添加一个 [**Debug ID**](https://sentry.engineering/blog/the-case-for-debug-ids) 注释，同时在 source map 中添加匹配的 `debugId`，以便将这些文件对应起来。如果没有导出 source map，或者使用的是内联 source map，那么不会添加此注释。
 
@@ -603,7 +623,7 @@ self.onmessage = ({ data }) => {
 const worker = new Worker(new URL('./worker', window.location.href));
 
 worker.onmessage = ({ data }) => {
-  console.log(`Worker responded: ${data}`);
+  console.log(`Worker 响应：${data}`);
 };
 
 worker.postMessage(5);
@@ -617,7 +637,7 @@ const worker = new Worker(
 );
 ```
 
-生成的 bundle URL 会根据开发/生产环境而变化，以确保 worker 被正确加载和打包。与传统的 bundle 拆分不同，worker 文件需要包含它自身所有模块的副本，并且不能依赖主 bundle 中的公共模块。
+生成的 bundle URL 会根据开发/生产环境而变化，以确保 worker 被正确加载和打包。与传统的 bundle 拆分不同，worker 文件需要包含其自身所有模块的副本，并且不能依赖主 bundle 中的公共模块。
 
 原生 API `Worker` 传统上在 React Native 中不可用，Expo SDK 也没有提供，因此即使这个打包特性在技术上适用于所有平台，它实际上只对 web 有用。如果你希望也支持原生平台，理论上可以编写一个原生 Expo 模块来为 `Worker` API 提供 polyfill。或者，你也可以在 React Native Reanimated 中使用 "worklet" API，将工作卸载到原生上的独立线程。
 

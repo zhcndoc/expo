@@ -1,0 +1,120 @@
+---
+title: Expo Router 集成
+sidebar_title: Expo Router
+description: 通过启用 EAS Observe 的 Expo Router 集成来跟踪每个路由的渲染和交互时间。
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Step } from '~/ui/components/Step';
+
+EAS Observe 为 [Expo Router](/router/introduction/) 提供了一个可选集成，用于收集按路由标记的每路由指标（例如 `/(tabs)/sessions/[sessionId]`）。这样你就可以在仪表盘中按路由比较导航性能，而不只是查看应用整体汇总。
+
+## 前提条件
+
+<Prerequisites>
+  <Requirement title="Expo SDK 56 或更高版本">
+    Expo Router 集成适用于 SDK 56 及更高版本。在更早的 SDK 上，`expo-observe`
+    仍会跟踪应用级指标，但不会发出按路由的导航事件。
+  </Requirement>
+  <Requirement title="已在应用中使用 EAS Observe">
+    按照 [开始使用](/eas/observe/get-started/) 安装 `expo-observe` 并创建你的第一个
+    构建。
+  </Requirement>
+  <Requirement title="应用中已安装 Expo Router">
+    该集成在运行时依赖 `expo-router`。如果未安装该包，集成将静默地不执行任何操作。
+  </Requirement>
+</Prerequisites>
+
+<Step label="1">
+
+## 启用集成
+
+> **warning** 必须在挂载前启用该集成，且不能在运行时切换。应用已挂载后调用 `configure()`，或在会话中途切换该标志，都会抛出错误。
+
+在任何屏幕挂载之前，于模块作用域调用带有 `expo-router` 集成标志的 `ExpoObserve.configure()`：
+
+```tsx src/app/_layout.tsx
+import ExpoObserve from 'expo-observe';
+
+ExpoObserve.configure({
+  integrations: { 'expo-router': true },
+});
+```
+
+</Step>
+
+<Step label="2">
+
+## 在你的屏幕中调用 `useObserve()`
+
+使用 `useObserve()` Hook 获取一个会自动限定到当前路由的 `markInteractive`。发出的事件会附带该屏幕的路由模式标签。
+
+```tsx src/app/(tabs)/index.tsx
+import { useObserve } from 'expo-observe';
+import { useEffect } from 'react';
+
+export default function Home() {
+  const { markInteractive } = useObserve();
+
+  useEffect(() => {
+    markInteractive();
+  }, [markInteractive]);
+
+  return (/* 你的屏幕内容 */);
+}
+```
+
+> **info** 如果集成被禁用，或者未安装 `expo-router`，`useObserve()` 会回退到全局的 `AppMetrics.markInteractive`。无论集成状态如何，你都可以保留这个 Hook 不变。
+
+</Step>
+
+## 指标
+
+### 按路由首屏渲染（`cold_ttr`）
+
+**衡量内容：** 从发出导航动作（例如点击链接）到目标屏幕第一次获得焦点所用的时间。对于应用启动后的第一次聚焦，测量从 JS bundle 加载开始计算，并且事件包含 `isAppLaunch: true`。
+
+在单个会话中，每个屏幕实例最多发出一次。
+
+**事件参数：**
+
+| 参数          | 类型      | 描述                                                                    |
+| ------------- | --------- | ----------------------------------------------------------------------- |
+| `routeName`   | `string`  | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。                          |
+| `url`         | `string`  | 该导航解析后的 pathname。                                                |
+| `routeParams` | `object`  | 解析后的路由参数（例如 `{ sessionId: 'abc' }`）。                        |
+| `isAppLaunch` | `boolean` | 当以进程启动为基准测量时为 `true`，后续导航为 `false`。                  |
+
+### 按路由热渲染（`warm_ttr`）
+
+**衡量内容：** 与 `cold_ttr` 相同，但适用于在获得焦点之前已经渲染过的屏幕，通常是因为它们通过 [`<Link prefetch />`](/router/basics/navigation/#prefetching) 预加载，或者用户返回到了这些屏幕。
+
+**事件参数：**
+
+| 参数          | 类型     | 描述                                                  |
+| ------------- | -------- | ----------------------------------------------------- |
+| `routeName`   | `string` | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。        |
+| `url`         | `string` | 该导航解析后的 pathname。                              |
+| `routeParams` | `object` | 解析后的路由参数（例如 `{ sessionId: 'abc' }`）。      |
+
+### 按路由可交互时间（`tti`）
+
+**衡量内容：** 从发出导航动作到在目标屏幕上调用 `markInteractive()` 的时间。每次导航只记录第一次调用，因此可以安全地多次调用 `markInteractive()`。
+
+**事件参数：**
+
+| 参数          | 类型     | 描述                                                          |
+| ------------- | -------- | ------------------------------------------------------------- |
+| `routeName`   | `string` | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。               |
+| `url`         | `string` | 解析后的 pathname。                                            |
+| `routeParams` | `object` | 解析后的路由参数。                                              |
+| `...`         | `any`    | 通过 `markInteractive({ params: { ... } })` 传入的任何自定义参数。 |
+
+## 说明与故障排查
+
+- `routeName` 是一个模式（`/(tabs)/sessions/[sessionId]`），而不是解析后的 URL（`/sessions/abc`）。这可以让不同参数值之间的指标保持稳定，从而使仪表盘将它们归入同一组。解析后的值仍可通过事件中的 `url` 和 `routeParams` 获取。
+- 调用 `router.prefetch()` 不算作用户导航，也不会触发 `cold_ttr` 或 `warm_ttr` 的测量。下一个由用户触发到该路由的导航会发出 `warm_ttr`，因为该屏幕已经渲染过。
+- 只有在运行时安装了 `expo-router` 时，该集成才会激活。如果未安装，`useObserve()` 和 `ObserveRoot` 仍可正常工作，但不会发出按路由的导航指标。
+- 必须在挂载前通过 `ExpoObserve.configure({ integrations: { 'expo-router': true } })` 启用该集成。应用挂载后切换它会抛出错误。
+- 如果 `markInteractive()` 记录了 `Calling markInteractive on unmounted screen` 或 `No metadata available for the current screen`，说明调用发生在屏幕组件外部或卸载之后。请将该调用移到屏幕组件内部的 `useEffect` 中。
+- 关于 EAS Observe 的常规问题，请参阅 [故障排查](/eas/observe/reference/troubleshooting/)。

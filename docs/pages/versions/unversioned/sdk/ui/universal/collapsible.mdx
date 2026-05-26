@@ -1,0 +1,89 @@
+---
+title: 可折叠
+description: 一个带标签的可点击标题，用于切换其内容的可见性。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+`Collapsible` 是一个原语，通过点击带标签的标题来显示或隐藏其内容。可通过 [`isOpen`](#isopen) 和 [`onOpenChange`](#onopenchange) 进行控制——每个 `Collapsible` 都管理彼此独立的状态。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本折叠组件
+
+```tsx CollapsibleExample.tsx
+import { useState } from 'react';
+import { Host, Column, Collapsible, Text } from '@expo/ui';
+
+export default function CollapsibleExample() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column spacing={8} style={{ padding: 16 }}>
+        <Collapsible isOpen={open} onOpenChange={setOpen} label="关于">
+          <Text>
+            一个通过带标签且可点击的标题来切换其内容可见性的原语。
+          </Text>
+        </Collapsible>
+      </Column>
+    </Host>
+  );
+}
+```
+
+### 手风琴（同一时间只展开一个部分）
+
+将每个 `Collapsible` 的 `isOpen` 绑定到一个共享的父级值。该组件不会强制互斥——如何组合由使用者决定。
+
+```tsx CollapsibleAccordionExample.tsx
+import { useState } from 'react';
+import { Host, Column, Collapsible, Text } from '@expo/ui';
+
+type Section = 'a' | 'b' | 'c' | null;
+
+export default function CollapsibleAccordionExample() {
+  const [openSection, setOpenSection] = useState<Section>('a');
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column spacing={8} style={{ padding: 16 }}>
+        <Collapsible
+          isOpen={openSection === 'a'}
+          onOpenChange={open => setOpenSection(open ? 'a' : null)}
+          label="部分 A">
+          <Text>打开 B 或 C 会关闭此项。</Text>
+        </Collapsible>
+        <Collapsible
+          isOpen={openSection === 'b'}
+          onOpenChange={open => setOpenSection(open ? 'b' : null)}
+          label="部分 B">
+          <Text>打开 A 或 C 会关闭此项。</Text>
+        </Collapsible>
+        <Collapsible
+          isOpen={openSection === 'c'}
+          onOpenChange={open => setOpenSection(open ? 'c' : null)}
+          label="部分 C">
+          <Text>打开 A 或 B 会关闭此项。</Text>
+        </Collapsible>
+      </Column>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Collapsible } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/collapsible" apiName="Collapsible" />

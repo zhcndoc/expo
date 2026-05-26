@@ -9,7 +9,7 @@ Notification channels 是 Android Oreo 中的一项新功能，它让用户对�
 
 Notification channels 对所有 iOS 设备都没有影响，并且会被忽略。
 
-## Designing channels
+## 设计通道
 
 通道让用户可以更好地控制希望从你的应用接收的各类提醒。你应该为可能发送的每种通知类型创建一个通道，例如闹钟、聊天消息、更新通知等。
 
@@ -21,9 +21,9 @@ Notification channels 对所有 iOS 设备都没有影响，并且会被忽略�
 
 你可以在 [Android developer website](https://developer.android.com/training/notify-user/channels) 上了解更多关于通知通道的信息。认真思考如何设计出对用户有意义且有用的通道自定义方式是个好主意。
 
-## Creating and using channels
+## 创建和使用通道
 
-创建通道很简单——在创建本地通知（或接收推送通知）之前，只需调用以下方法：
+创建通道很简单——在你创建本地通知（或接收到推送通知）之前，只需调用以下方法：
 
 ```js
 if (Platform.OS === 'android') {
@@ -34,7 +34,7 @@ if (Platform.OS === 'android') {
 }
 ```
 
-创建一个已存在的通道基本上是一个空操作，因此你可以安全地在应用每次启动时调用它。例如，你的应用根组件中的 `componentDidMount` 可能就是一个不错的地方。不过请注意，一旦通知通道创建后，你将无法更改其任何设置——只有用户才能这么做。因此，请务必仔细规划你的通道。
+创建一个已存在的通道本质上不会有任何操作，因此你可以安全地在应用每次启动时都调用它。例如，在应用根组件的 `componentDidMount` 中调用就是一个不错的地方。不过请注意，通知通道一旦创建后，你就不能再更改它的任何设置——只有用户可以这样做。因此，请务必谨慎规划你的通道。
 
 然后，当你想为聊天消息发送通知时，可以在你的 [push notification message](/push-notifications/sending-notifications/#message-request-format) 中添加 `channelId: 'chat-messages'` 字段，或者像这样创建一个本地通知：
 
@@ -54,7 +54,7 @@ Notifications.presentLocalNotificationAsync({
 
 在 Android 7 及以下不支持通知通道的设备上，Expo 会记住你创建通道时所使用的相关设置（在这种情况下是 `sound: true`），并在向用户展示单个通知之前将这些设置直接应用到该通知上。
 
-## Updating an existing app to use channels
+## 更新现有应用以使用通道
 
 如果你已有的 Android 应用依赖通知的 `sound`、`vibrate` 或 `priority` 设置，那么你需要更新应用以利用通道，因为这些设置将不再对单个通知产生任何影响。如果你并不依赖这些设置，也可以考虑进行更新，以便让用户更好地控制你的应用展示的不同类型通知。（注意，这里涉及的客户端 `priority` 设置只影响通知的 UI 行为，它不同于 [推送通知的 `priority`](/push-notifications/sending-notifications/#message-request-format)，后者不受通知通道影响。）
 
@@ -110,7 +110,7 @@ _createNotificationAsync = () => {
 
 这将创建一个名为“Reminders”的通道，其默认设置为 `max` 优先级和振动模式 `[0, 250, 250, 250]`。Android 8 用户可以随时更改这些设置，甚至可以完全关闭“Reminders”通道的通知。当调用 `presentLocalNotificationAsync` 时，操作系统会读取该通道的设置并相应地展示通知。
 
-## Send channel notification with Expo API service
+## 使用 Expo API 服务发送通道通知
 
 ```js
 [

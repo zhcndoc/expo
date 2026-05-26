@@ -1,0 +1,146 @@
+---
+title: 列表
+description: 一个虚拟化的垂直行容器，与可点击的 ListItem 原语配对使用。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+`List` 提供了一个虚拟化的垂直行容器，通常由 [`ListItem`](#listitem) 子项填充。它提供平台原生的样式外壳（分隔线、内边距样式、下拉刷新）。`ListItem` 是一个可点击的行，带有 `leading`/`trailing`/`supportingText` 插槽。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基础列表
+
+```tsx ListExample.tsx
+import { useState } from 'react';
+import { Host, List, ListItem, Text } from '@expo/ui';
+
+const ITEMS = [
+  { id: 1, name: '牛油果吐司' },
+  { id: 2, name: '奶油奶酪贝果' },
+  { id: 3, name: '卡布奇诺' },
+];
+
+export default function ListExample() {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <List>
+        {ITEMS.map(item => (
+          <ListItem key={item.id} onPress={() => setSelected(item.name)}>
+            {item.name}
+          </ListItem>
+        ))}
+      </List>
+      {selected != null && <Text>已选择：{selected}</Text>}
+    </Host>
+  );
+}
+```
+
+### 带插槽的行
+
+`ListItem` 在常见场景下接受 `leading`、`trailing` 和 `supportingText` 这些简写属性。当需要更丰富的内容时，请为它们传入 `ReactNode`。
+
+```tsx ListItemSlotsExample.tsx
+import { Host, Icon, List, ListItem } from '@expo/ui';
+
+const CHEVRON = Icon.select({
+  ios: 'chevron.right',
+  android: require('@expo/material-symbols/chevron_right.xml'),
+});
+
+export default function ListItemSlotsExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <List>
+        <ListItem
+          onPress={() => {}}
+          trailing={<Icon name={CHEVRON} size={14} color="gray" />}
+          supportingText="标题下方的副标题行">
+          个人资料
+        </ListItem>
+        <ListItem onPress={() => {}} trailing={<Icon name={CHEVRON} size={14} color="gray" />}>
+          设置
+        </ListItem>
+      </List>
+    </Host>
+  );
+}
+```
+
+### 复合插槽子元素
+
+如需对插槽内容进行完全控制，请使用复合 API：`<ListItem.Leading>`、`<ListItem.Trailing>` 和 `<ListItem.Supporting>`。未被插槽包裹的内容都会成为标题行。
+
+```tsx ListItemCompoundExample.tsx
+import { Host, Icon, List, ListItem, Row, Text } from '@expo/ui';
+
+export default function ListItemCompoundExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <List>
+        <ListItem onPress={() => {}}>
+          <ListItem.Leading>
+            <Icon name="star.fill" size={20} color="#FFD60A" />
+          </ListItem.Leading>
+          <Row spacing={0}>
+            <Text textStyle={{ color: 'gray' }}>{`#42: `}</Text>
+            <Text>复合标题</Text>
+          </Row>
+          <ListItem.Supporting>更丰富的插槽内容</ListItem.Supporting>
+        </ListItem>
+      </List>
+    </Host>
+  );
+}
+```
+
+### 下拉刷新
+
+传入一个异步的 `onRefresh` 处理函数。平台原生的刷新指示器会保持可见，直到返回的 promise 结束（resolve 或 reject）。
+
+```tsx ListRefreshExample.tsx
+import { useState } from 'react';
+import { Host, List, ListItem } from '@expo/ui';
+
+export default function ListRefreshExample() {
+  const [items, setItems] = useState([1, 2, 3]);
+
+  const handleRefresh = async () => {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setItems(prev => [Math.max(...prev) + 1, ...prev]);
+  };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <List onRefresh={handleRefresh}>
+        {items.map(id => (
+          <ListItem key={id}>{`项目 #${id}`}</ListItem>
+        ))}
+      </List>
+    </Host>
+  );
+}
+```
+
+> 下拉刷新目前尚未在 web 上实现。该处理函数会被接受以保持 API 一致性，但指示器只会出现在 Android 和 iOS 上。
+
+## API
+
+```tsx
+import { List, ListItem } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/list" apiName="List" />
+
+<APISection packageName="expo-ui/universal/listitem" apiName="ListItem" />

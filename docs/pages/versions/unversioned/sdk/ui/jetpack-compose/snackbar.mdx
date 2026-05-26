@@ -1,0 +1,140 @@
+---
+title: Snackbar
+description: 一条简短的通知，会出现在屏幕底部，在不打断用户的情况下提供反馈。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI 提供了两个与 Jetpack Compose 的 [Snackbar](https://developer.android.com/develop/ui/compose/components/snackbar) API 对应的组件：
+
+- [`SnackbarHost`](#snackbarhost) 封装了 Compose 的 [SnackbarHost](https://developer.android.com/reference/kotlin/androidx/compose/material3/SnackbarHost.composable) 和 [SnackbarHostState](https://developer.android.com/reference/kotlin/androidx/compose/material3/SnackbarHostState)。将其放在布局中一次即可，然后在 `ref` 上调用 `showSnackbar`。Snackbar 会根据 `duration` 自动消失，也可以通过操作按钮或可选的关闭图标手动关闭。
+- [`Snackbar`](#snackbar) 是 [`SnackbarHost`](#snackbarhost) 的仅样式子组件。传入它可覆盖颜色，或将操作按钮放到新的一行。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/snackbar/android-light.webp"
+  darkSrc="/static/images/expo-ui/snackbar/android-dark.webp"
+  alt="Material 3 snackbar showing the message 'Item archived' with an Undo action"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 显示 snackbar
+
+在布局中放置一次 [`SnackbarHost`](#snackbarhost)，然后在它的 ref 上调用 `showSnackbar` 来显示消息。返回的 promise 会在 snackbar 消失后解析为 `'actionPerformed'` 或 `'dismissed'`。
+
+```tsx SnackbarExample.tsx
+import { useRef } from 'react';
+import {
+  Box,
+  Button,
+  Column,
+  Host,
+  SnackbarHost,
+  Text,
+  type SnackbarHostRef,
+} from '@expo/ui/jetpack-compose';
+import { align, fillMaxSize, fillMaxWidth, padding } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function SnackbarExample() {
+  const hostRef = useRef<SnackbarHostRef>(null);
+
+  const onArchive = async () => {
+    const result = await hostRef.current?.showSnackbar({
+      message: 'Item archived',
+      actionLabel: 'Undo',
+      duration: 'short',
+    });
+    if (result === 'actionPerformed') {
+      // 用户点击了 Undo，恢复该项目。
+    }
+  };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Box modifiers={[fillMaxSize()]}>
+        <Column modifiers={[padding(16, 16, 16, 16)]}>
+          <Button onClick={onArchive}>
+            <Text>Archive</Text>
+          </Button>
+        </Column>
+
+        <Box modifiers={[align('bottomCenter'), fillMaxWidth()]}>
+          <SnackbarHost ref={hostRef} />
+        </Box>
+      </Box>
+    </Host>
+  );
+}
+```
+
+### 自定义样式
+
+向 [`SnackbarHost`](#snackbarhost) 传入一个 [`Snackbar`](#snackbar) 子组件，可覆盖颜色，或将操作按钮放到新的一行。[`Snackbar`](#snackbar) 本身不包含任何内容，消息和操作都来自每次 `showSnackbar` 调用。
+
+```tsx StyledSnackbar.tsx
+import { useRef } from 'react';
+import {
+  Box,
+  Button,
+  Column,
+  Host,
+  Snackbar,
+  SnackbarHost,
+  Text,
+  type SnackbarHostRef,
+} from '@expo/ui/jetpack-compose';
+import { align, fillMaxSize, fillMaxWidth, padding } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function StyledSnackbar() {
+  const hostRef = useRef<SnackbarHostRef>(null);
+
+  const onSave = () => {
+    hostRef.current?.showSnackbar({
+      message: 'Saved',
+      actionLabel: 'Undo',
+    });
+  };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Box modifiers={[fillMaxSize()]}>
+        <Column modifiers={[padding(16, 16, 16, 16)]}>
+          <Button onClick={onSave}>
+            <Text>Save</Text>
+          </Button>
+        </Column>
+
+        <Box modifiers={[align('bottomCenter'), fillMaxWidth()]}>
+          <SnackbarHost ref={hostRef}>
+            <Snackbar
+              containerColor="#1E1E2E"
+              contentColor="#CDD6F4"
+              actionContentColor="#F38BA8"
+              dismissActionContentColor="#CDD6F4"
+            />
+          </SnackbarHost>
+        </Box>
+      </Box>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Snackbar, SnackbarHost } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/snackbar" apiName="Snackbar" />

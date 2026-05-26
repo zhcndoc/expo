@@ -1,10 +1,12 @@
 ---
 title: 指标参考
 sidebar_title: 指标
-description: Expo Observe 跟踪的每项性能指标参考，包括概念和数据处理。
+description: EAS Observe 跟踪的每个性能指标的参考，包括概念和数据处理。
 ---
 
-Expo Observe 收集的性能指标参考、用于组织事件的核心概念（会话和用户），以及收集到的数据如何保留。
+import { Tabs, Tab } from '~/ui/components/Tabs';
+
+Reference for the performance metrics EAS Observe collects, the core concepts used to organize events (sessions and users), and how collected data is retained.
 
 ## 概念
 
@@ -66,9 +68,9 @@ Expo Observe 收集的性能指标参考、用于组织事件的核心概念（�
 **如何改进：**
 
 - 减少 bundle 大小：
-  - 使用 tree shaking（从 Expo SDK 54 起默认启用），并遵循有助于 Metro 剥离不必要代码的规则。参见 [Tree shaking and code removal](/guides/tree-shaking/)。
-  - 分析你的 JavaScript bundle，移除未使用和体积较大的依赖项。参见 [Analyzing JavaScript bundles with Expo Atlas](/guides/analyzing-bundles/)。
-- 使用 `React.lazy()` 对大型屏幕和组件进行懒加载。参见 [Optimize JavaScript loading](https://reactnative.dev/docs/optimizing-javascript-loading)。
+  - 使用 tree shaking（从 Expo SDK 54 起默认启用），并遵循有助于 Metro 剥离不必要代码的规则。参见 [Tree shaking 和代码移除](/guides/tree-shaking/)。
+  - 分析你的 JavaScript bundle，移除未使用和体积较大的依赖项。参见 [使用 Expo Atlas 分析 JavaScript bundle](/guides/analyzing-bundles/)。
+- 使用 `React.lazy()` 对大型屏幕和组件进行懒加载。参见 [优化 JavaScript 加载](https://reactnative.dev/docs/optimizing-javascript-loading)。
 - 避免在顶层作用域阻塞 JavaScript 线程：
   - 不要进行重型计算。
   - 推迟任何同步 I/O 操作（存储读写）。
@@ -79,7 +81,7 @@ Expo Observe 收集的性能指标参考、用于组织事件的核心概念（�
 
 **它衡量什么：** 从应用完成原生启动到根 React 组件首次在屏幕上渲染的时间。这是 React 实际渲染出内容的时刻，发生在闪屏隐藏之后。每个应用的目标都应该是尽可能快地显示出有意义的内容，即使那只是一个骨架屏加载界面。
 
-当你用 `AppMetricsRoot` 包裹根布局时，该指标会自动收集（参见 [Get started](/eas/observe/get-started/)）。如果需要，你也可以手动调用 `AppMetrics.markFirstRender()`。
+当你使用 root HOC 包裹根布局时，此指标会自动收集（参见 [开始使用](/eas/observe/get-started/)）：
 
 **如何改进：**
 
@@ -96,7 +98,23 @@ Expo Observe 收集的性能指标参考、用于组织事件的核心概念（�
 
 **它衡量什么：** 从热/冷启动开始，到用户实际上可以点击、滚动并以其他方式与应用交互的时间。这是最重要的启动指标，因为它反映了用户感知中的“应用已准备就绪”。
 
-该指标不会自动上报。要开始测量它，请在屏幕已准备好供用户交互时调用 `AppMetrics.markInteractive()`，例如在初始数据加载完成后执行的 `useEffect` 中。如果你的应用使用深度链接，主屏幕未必总是初始屏幕，因此我们也建议在其他屏幕上调用此函数。每次启动只记录第一次调用，因此可以安全地多次调用（例如用户在屏幕之间导航时）。如果你使用 `expo-router`，该指标事件会自动包含当前路由名称。
+该指标不会自动报告。要开始衡量它，请在屏幕准备好供用户交互时调用 `markInteractive()`，例如在初始数据加载完成后的 `useEffect` 中。如果你的应用使用深度链接，主屏幕可能并不总是初始屏幕，因此我们也建议在其他屏幕上调用此函数。每次启动只记录第一次调用，因此可以安全地多次调用它（例如，用户在屏幕之间导航时）。如果你使用 `expo-router`，该指标的事件会自动包含当前路由名称。
+
+<Tabs>
+
+<Tab label="SDK 55">
+
+从应用中的任意位置调用 `AppMetrics.markInteractive()`。
+
+</Tab>
+
+<Tab label="SDK 56 及以后">
+
+在组件内的 `useObserve()` hook 中调用 `markInteractive()`。
+
+</Tab>
+
+</Tabs>
 
 **什么算作“可交互”？**
 
@@ -106,7 +124,7 @@ Expo Observe 收集的性能指标参考、用于组织事件的核心概念（�
 - 触摸处理函数已绑定且响应正常。
 - 导航可用。
 
-**如何提高测量准确性：** 仅在屏幕内容加载完成且触摸处理函数已激活后调用 `AppMetrics.markInteractive()`，不要只在组件挂载时调用。如果你的屏幕在变得可用之前需要先获取数据，请在数据准备好后再调用。
+**如何提高测量准确性：** 仅在屏幕内容已加载且触摸处理函数已激活后调用 `markInteractive()`，而不是只在组件挂载时调用。如果你的屏幕在可用之前需要先获取数据，请在数据准备好之后再调用。
 
 **如何改进：**
 
@@ -123,15 +141,15 @@ Expo Observe 收集的性能指标参考、用于组织事件的核心概念（�
 
 每个 TTI 事件都包含额外参数，以帮助排查问题：
 
-- **`expo.frameRate.slowFrames`** (count): 渲染耗时达到 17ms 或更长的帧数。如果该值相对于启动时长较高，说明主线程在启动期间持续繁忙。通常指向繁重的布局工作、同步桥调用，或一次渲染过多组件。
-- **`expo.frameRate.frozenFrames`** (count): 渲染耗时达到 700ms 或更长的帧数。这些是应用明显卡死的严重冻结。即使启动期间只有一次，也属于严重问题。通常由同步 I/O、大型 JSON 解析或主线程上的阻塞式网络调用引起。
-- **`expo.frameRate.totalDelay`** (seconds): 所有帧超出目标持续时间的累计总时长。这是衡量“流畅度”的最佳单项指标。将它与 TTI 对比：如果 TTI 为 2.5 秒而 `totalDelay` 为 0.1 秒，说明启动慢但流畅（时间花在了正当工作上）。如果 `totalDelay` 为 1.5 秒，说明在启动的大部分时间里应用都在卡顿，用户看到的是一个卡顿的屏幕。
-- **`expo.device.lowPowerMode`** (boolean): 报告 TTI 时操作系统省电模式（iOS 上的低电量模式、Android 上的省电模式）是否处于开启状态。省电模式会限制 CPU、GPU 和后台活动，因此如果过滤掉该标志后 TTI 回归消失，则问题更可能是环境因素，而不是代码变更。
-- **`expo.device.batteryLevel`** (number, 0–1): TTI 时的电池剩余百分比。可用于排除在低电量下性能管理较激进的设备上的温控/降频影响。当操作系统不报告该值时会省略。
-- **`expo.device.batteryCharging`** (boolean): 设备当时是否已接入电源或正在无线充电。充电通常会提高 iOS 和部分 Android OEM 设备上的持续 CPU 性能上限，因此非充电样本是更保守的比较对象。
-- **`expo.device.thermalState`** (string): 取值之一：`nominal`、`fair`、`serious`、`critical`、`unknown`。持续处于 `serious`/`critical` 状态会导致操作系统限制 CPU/GPU，并且可能在与应用改动无关的情况下显著拖慢启动。
-- **`expo.network.connected`** (boolean): TTI 时设备是否具有可联网的网络。如果只有在该值为 `true` 时 TTI 才变差，那么原因很可能是依赖网络的启动路径；如果在该值为 `false` 时变差，则说明应用在显示缓存内容之前做了过多工作。
-- **`expo.network.type`** (string): 取值之一：`wifi`、`cellular`、`ethernet`、`none`、`other`、`unknown`。可用于比较蜂窝网络与 Wi-Fi 用户群 &mdash; 较大的差距通常指向依赖网络的启动工作。VPN 流量会按其底层传输方式报告（通常是 `wifi` 或 `cellular`），因为 VPN 是通过这些网络隧道传输的。此值集合在 Android 和 iOS 上保持一致，因此仪表板无需按平台分支处理。
+- **`expo.frameRate.slowFrames`** (count): 渲染耗时 17ms 或更长的帧数。如果该值相对于启动时长很高，则说明主线程在启动期间持续繁忙。指向繁重的布局工作、同步桥接调用，或一次渲染过多组件。
+- **`expo.frameRate.frozenFrames`** (count): 渲染耗时 700ms 或更长的帧数。这些是严重冻结，应用会明显卡住。即使启动期间只出现一次，也说明问题非常严重。通常由同步 I/O、大型 JSON 解析，或主线程上的阻塞式网络调用引起。
+- **`expo.frameRate.totalDelay`** (seconds): 所有帧超出目标时长的累计总时间。这是单一最佳的“流畅度”指标。将其与 TTI 对比：如果 TTI 是 2.5s，而 `totalDelay` 是 0.1s，那么启动慢但流畅（时间花在了合理的工作上）。如果 `totalDelay` 是 1.5s，那么应用在大部分启动过程中都很卡顿，用户一直盯着一个抖动的屏幕。
+- **`expo.device.lowPowerMode`** (boolean): 报告 TTI 时操作系统省电模式（iOS 上的低电量模式、Android 上的省电模式）是否处于开启状态。省电模式会限制 CPU、GPU 和后台活动，因此如果过滤掉该标志后 TTI 回归消失，则原因是环境因素而不是代码变更。
+- **`expo.device.batteryLevel`** (number, 0–1): TTI 时的电池电量比例。对于在低电量时会积极管理性能的设备，排查热/限频影响很有用。如果操作系统不报告该值，则会省略。
+- **`expo.device.batteryCharging`** (boolean): 设备是否接入电源或正在无线充电。充电通常会提高 iOS 和某些 Android OEM 的持续 CPU 性能上限，因此未充电样本更适合作为保守比较对象。
+- **`expo.device.thermalState`** (string): `nominal`、`fair`、`serious`、`critical`、`unknown` 之一。持续处于 `serious`/`critical` 状态会导致操作系统限制 CPU/GPU，并可能在不依赖任何应用变更的情况下显著减慢启动。
+- **`expo.network.connected`** (boolean): TTI 时设备是否具有可访问互联网的网络。如果 TTI 仅在该值为 `true` 时变差，则原因很可能是受网络限制的启动路径；如果在 `false` 时变差，则说明应用在显示缓存内容之前做了过多工作。
+- **`expo.network.type`** (string): `wifi`、`cellular`、`ethernet`、`none`、`other`、`unknown` 之一。用于比较蜂窝网络与 Wi-Fi 人群——较大的差距通常指向受网络限制的启动工作。VPN 流量会按其底层传输方式报告（通常是 `wifi` 或 `cellular`），因为 VPN 是在其之上隧穿的。该取值集合在 Android 和 iOS 上保持一致，因此仪表盘不需要按平台分支。
 
 **如何解读它们：**
 
@@ -143,7 +161,13 @@ Expo Observe 收集的性能指标参考、用于组织事件的核心概念（�
 
 你可以通过将参数传给 `markInteractive()`，为 TTI 事件附加自己的参数。这对于按应用特定维度切分 TTI 很有用，例如用户群组、租户、功能标志变体，或屏幕加载的内容类型。
 
+<Tabs>
+
+<Tab label="SDK 55">
+
 ```tsx
+import { AppMetrics } from 'expo-observe';
+
 AppMetrics.markInteractive({
   params: {
     tenant: 'acme',
@@ -153,14 +177,61 @@ AppMetrics.markInteractive({
 });
 ```
 
-你还可以覆盖附加到事件上的路由名称；否则它会使用由 [Expo Router](/router/introduction/) 检测到的初始路由自动填充。在屏幕的逻辑名称与路由路径不同、是动态路由，或者未使用 Expo Router 时，这很有用：
+</Tab>
+
+<Tab label="SDK 56 及以后">
 
 ```tsx
+import { useObserve } from 'expo-observe';
+
+const { markInteractive } = useObserve();
+
+markInteractive({
+  params: {
+    tenant: 'acme',
+    cohort: 'beta',
+    cacheHit: true,
+  },
+});
+```
+
+</Tab>
+
+</Tabs>
+
+你还可以覆盖附加到事件上的路由名称；否则该名称会从 [Expo Router](/router/introduction/) 检测到的初始路由中填充。当屏幕的逻辑名称与路由路径不同、路由是动态路由，或者未使用 Expo Router 时，这一点很有用：
+
+<Tabs>
+
+<Tab label="SDK 55">
+
+```tsx
+import { AppMetrics } from 'expo-observe';
+
 AppMetrics.markInteractive({
   routeName: '/feed',
   params: { cacheHit: true },
 });
 ```
+
+</Tab>
+
+<Tab label="SDK 56 及以后">
+
+```tsx
+import { useObserve } from 'expo-observe';
+
+const { markInteractive } = useObserve();
+
+markInteractive({
+  routeName: '/feed',
+  params: { cacheHit: true },
+});
+```
+
+</Tab>
+
+</Tabs>
 
 参数值可以是字符串、数字、布尔值或其他可 JSON 序列化的值。
 
@@ -182,9 +253,9 @@ AppMetrics.markInteractive({
 
 所有指标按环境分组。默认情况下，环境值由 `process.env.NODE_ENV` 派生（如果未设置，则回退为 `'production'`），也可以通过 [`configure({ environment })`](/eas/observe/configuration/#configure) 覆盖。环境是附加到每个指标上的元数据标签，不会影响指标是否被发送。
 
-### Debug builds
+### 调试构建
 
-除非通过 [`configure()`](/eas/observe/configuration/#configure) 将 `dispatchInDebug` 设为 `true`（更多信息参见 [Enable metrics in development](/eas/observe/configuration/#enable-metrics-in-development)），否则从调试构建中收集的指标会在发送前被丢弃。如果原生应用是调试构建，或者 JS bundle 是开发 bundle（`__DEV__` 为 `true`），则会被视为调试构建。此检测与 `environment` 值无关。
+除非通过 [`configure()`](/eas/observe/configuration/#configure) 将 `dispatchInDebug` 设为 `true`（更多信息参见 [在开发中启用指标](/eas/observe/configuration/#enable-metrics-in-development)），否则从调试构建中收集的指标会在发送前被丢弃。如果原生应用是调试构建，或者 JS bundle 是开发 bundle（`__DEV__` 为 `true`），则会被视为调试构建。此检测与 `environment` 值无关。
 
 ### 禁用发送
 

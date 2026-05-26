@@ -1,0 +1,149 @@
+---
+title: 联系人（旧版）
+description: 一个提供访问手机系统联系人的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-contacts/src/legacy'
+packageName: 'expo-contacts'
+iconUrl: '/static/images/packages/expo-contacts.png'
+platforms: ['android', 'ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { AndroidPermissions, IOSPermissions } from '~/components/plugins/permissions';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+> **重要** `legacy` 版本的 Contacts API 包含在 `expo-contacts` 库中。它可以与从根导出的基于类的 `expo-contacts` API 一起使用。要使用 legacy API，请从 `expo-contacts/legacy` 导入。
+
+`expo-contacts` 提供对设备系统联系人的访问，允许你获取联系人信息，以及添加、编辑或删除联系人。
+
+在 iOS 上，联系人具有一个多层级的分组系统，你也可以通过此 API 访问它。
+
+## 安装
+
+<APIInstallSection />
+
+## 在 app 配置中进行配置
+
+如果你在项目中使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-contacts` 自带的 [config plugin](/config-plugins/introduction/) 来进行配置。该插件允许你配置各种无法在运行时设置、且需要重新构建新的应用二进制文件才会生效的属性。如果你的应用**没有**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "允许 $(PRODUCT_NAME) 访问你的联系人。"
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'contactsPermission',
+      platform: 'ios',
+      description: '用于设置 [`NSContactsUsageDescription`](#ios) 权限消息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的联系人"',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)）（而是手动使用原生 **android** 和 **ios** 项目），那么你需要在原生项目中配置以下权限：
+
+- 对于 Android，将 `android.permission.READ_CONTACTS` 和 `android.permission.WRITE_CONTACTS` 权限添加到项目的 **android/app/src/main/AndroidManifest.xml** 中：
+
+  ```xml
+  <uses-permission android:name="android.permission.READ_CONTACTS" />
+  <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+  ```
+
+- 对于 iOS，将 `NSContactsUsageDescription` 键添加到项目的 **ios/[app]/Info.plist** 中：
+
+  ```xml
+  <key>NSContactsUsageDescription</key>
+  <string>允许 $(PRODUCT_NAME) 访问你的联系人</string>
+  ```
+
+</ConfigReactNative>
+
+## 使用
+
+<SnackInline label='Basic Contacts Usage' dependencies={['expo-contacts']}>
+
+```jsx
+import { useEffect } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
+import * as Contacts from 'expo-contacts/legacy';
+
+export default function App() {
+  useEffect(() => {
+    (async () => {
+      const { status } = await Contacts.requestPermissionsAsync();
+      if (status === 'granted') {
+        const { data } = await Contacts.getContactsAsync({
+          fields: [Contacts.Fields.Emails],
+        });
+
+        if (data.length > 0) {
+          const contact = data[0];
+          console.log(contact);
+        }
+      }
+    })();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text>联系人模块示例</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+```
+
+</SnackInline>
+
+## API
+
+```js
+import * as Contacts from 'expo-contacts/legacy';
+```
+
+<APISection packageName="expo-contacts-legacy" apiName="Contacts (legacy)" />
+
+## 权限
+
+### Android
+
+此库会自动向你的应用添加 `READ_CONTACTS` 和 `WRITE_CONTACTS` 权限：
+
+<AndroidPermissions permissions={['READ_CONTACTS', 'WRITE_CONTACTS']} />
+
+### iOS
+
+此库使用以下用途说明键：
+
+<IOSPermissions permissions={['NSContactsUsageDescription']} />

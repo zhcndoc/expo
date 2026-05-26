@@ -1,7 +1,7 @@
 ---
-title: 迁移到 expo-calendar/next
-sidebar_title: expo-calendar/next
-description: 从旧版 expo-calendar API 迁移到新的基于类的 expo-calendar/next API，使用 ExpoCalendar、ExpoCalendarEvent 和 hooks。
+title: 迁移到新的 expo-calendar API
+sidebar_title: expo-calendar/legacy
+description: 使用 ExpoCalendar、ExpoCalendarEvent 和 hooks，从旧版 expo-calendar API 迁移到新的基于类的 expo-calendar API。
 ---
 
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
@@ -9,7 +9,7 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 
-`expo-calendar/next` API 现已稳定。旧版 `expo-calendar` 模块已弃用。请迁移到 `expo-calendar/next`，以享受新的 API 以及未来的修复。
+The new object-oriented `expo-calendar` API is now stable. The legacy API is available from `expo-calendar/legacy`. Migrate to the root `expo-calendar` import to benefit from the new API and future fixes.
 
 新 API 用类实例上的方法取代了接受 ID 的自由函数。日历、事件、提醒和参与者现在都以各自具有方法的类实例形式表示。主要变化如下：
 
@@ -18,16 +18,20 @@ import { Terminal } from '~/ui/components/Snippet';
 
 ## 安装
 
-安装包含 `expo-calendar/next` 的、与 SDK 兼容的包：
+安装包含新 `expo-calendar` API 且与 SDK 兼容的包：
 
 <Terminal cmd={['$ npx expo install expo-calendar']} />
 
 ## 导入新 API
 
-从 `expo-calendar/next` 导入：
+在迁移期间，从 `expo-calendar/legacy` 导入旧 API，并从 `expo-calendar` 导入新 API：
 
 ```ts
-import { ExpoCalendar, ExpoCalendarEvent } from 'expo-calendar/next';
+// 之前
+import * as Calendar from 'expo-calendar/legacy';
+
+// 之后
+import { ExpoCalendar, ExpoCalendarEvent } from 'expo-calendar';
 ```
 
 ## 日历
@@ -167,7 +171,7 @@ await Calendar.updateEventAsync(eventId, { title: '与 Alex 共进午餐' });
 await event.update({ title: '与 Alex 共进午餐' });
 ```
 
-旧版 `updateEventAsync` 接受 `recurringEventOptions`（仅 iOS）来定位重复事件的某一次出现或未来出现项。新 API 不支持这一点 &mdash; `update()` 始终会修改整个重复事件系列。
+旧版 `updateEventAsync` 接受 `recurringEventOptions`（仅 iOS）来定位重复事件的单次出现或未来出现项。新 API 不支持这一点 — `update()` 始终会修改整个重复事件系列。
 
 ### 删除事件
 
@@ -179,7 +183,7 @@ await Calendar.deleteEventAsync(eventId);
 await event.delete();
 ```
 
-旧版 `deleteEventAsync` 接受 `recurringEventOptions`（仅 iOS）来定位重复事件的某一次出现或未来出现项。新 API 不支持这一点 &mdash; `delete()` 始终会删除整个重复事件系列。
+旧版 `deleteEventAsync` 接受 `recurringEventOptions`（仅 iOS）来定位重复事件的单次出现或未来出现项。新 API 不支持这一点 — `delete()` 始终会删除整个重复事件系列。
 
 ### 在日历中打开事件
 
@@ -191,7 +195,7 @@ await Calendar.openEventInCalendarAsync(params);
 await event.openInCalendar(params);
 ```
 
-`id` 字段不再是参数的一部分 &mdash; 它来自事件实例。展示选项（`allowsEditing`、`allowsCalendarPreview`、`startNewActivityTask`）现在作为同一个 params 对象传入，而不是作为单独参数传入。
+`id` 字段不再是 params 的一部分 — 它来自事件实例。展示选项（`allowsEditing`、`allowsCalendarPreview`、`startNewActivityTask`）现在作为同一个 params 对象传入，而不再作为单独参数。
 
 ### 使用原生日历表单编辑事件
 
@@ -207,7 +211,7 @@ await event.editInCalendar(params);
 await calendar.addEventWithForm({ title, startDate, endDate });
 ```
 
-`id` 字段不再是参数的一部分 &mdash; 它来自事件实例。展示选项（`startNewActivityTask`）现在作为同一个 params 对象传入，而不是作为单独参数传入。
+`id` 字段不再是 params 的一部分 — 它来自事件实例。展示选项（`startNewActivityTask`）现在作为同一个 params 对象传入，而不再作为单独参数。
 
 ### 获取重复事件的某个出现项
 
@@ -354,19 +358,19 @@ await getRemindersPermissions();
 
 ## 破坏性语义变化
 
-- 日历、事件、提醒和参与者现在都是类实例。操作变成了实例上的方法，而不是接受 ID 的自由函数。如果你只有 ID，请使用对应的 `.get(id)` 静态方法获取实例。
+- 日历、事件、提醒和参与者现在都是类实例。操作变成了实例上的方法，而不是接受 ID 的自由函数。如果你只有 ID，请使用相应的 `.get(id)` 静态方法获取实例。
 - `createCalendar`、`createEvent` 和 `createReminder` 返回类实例，而不是字符串 ID。
-- 去掉了 `Async` 后缀。该库的大部分 API 都是异步的 &mdash; 只有同步函数才会使用 `Sync` 后缀（例如 `getDefaultCalendarSync`、`getSourcesSync`、`getOccurrenceSync`）。
-- `getSourcesAsync` 已被同步的 `getSourcesSync` 替代。通过 ID 获取单个数据源没有直接对应方法。
+- 去掉了 `Async` 后缀。该库的大多数方法都是异步的——只有同步函数才使用 `Sync` 后缀（例如，`getDefaultCalendarSync`、`getSourcesSync`、`getOccurrenceSync`）。
+- `getSourcesAsync` 被同步的 `getSourcesSync` 取代。按 ID 获取单个数据源没有直接对应项。
 - `createEventInCalendarAsync` 重命名为 `calendar.addEventWithForm`。
-- `openEventInCalendar`（即时执行的同步变体）已移除。请改用 `event.openInCalendar()`。
-- 参与者操作现在是实例方法：在 `ExpoCalendarEvent` 实例上通过 `event.createAttendee()` 创建参与者；更新和删除则是对生成的 `ExpoCalendarAttendee` 实例调用方法。
+- `openEventInCalendar`（即一次性执行的同步变体）已被移除。请改用 `event.openInCalendar()`。
+- 参与者操作现在是实例方法：创建参与者通过 `ExpoCalendarEvent` 实例上的 `event.createAttendee()` 完成；更新和删除是结果 `ExpoCalendarAttendee` 实例上的方法。
 
 ## 参考
 
 <BoxLink
-  title="Calendar (next)"
-  description="查看 expo-calendar/next 的完整 API 参考。"
-  href="/versions/latest/sdk/calendar-next/"
+  title="Calendar"
+  description="查看 expo-calendar 的完整 API 参考。"
+  href="/versions/latest/sdk/calendar/"
   Icon={BookOpen02Icon}
 />

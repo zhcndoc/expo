@@ -4,99 +4,74 @@ description: 使用 Convex 为你的应用添加数据库。
 ---
 
 import { BoxLink } from '~/ui/components/BoxLink';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-[Convex](https://www.convex.dev/) 是一个基于 TypeScript 的数据库，无需集群管理、SQL 或 ORM。Convex 通过 WebSocket 提供实时更新，非常适合响应式应用。
+[Convex](https://www.convex.dev/) 是一个后端平台，用于构建具有实时数据库、服务器函数、文件存储、搜索、调度以及类型安全客户端库的响应式应用，而无需集群管理、SQL 或 ORM。
+
+EAS CLI 集成可以为你创建并连接 Convex 项目。它替代了手动设置步骤，例如安装包、创建 Convex 团队和项目、复制部署 URL，以及配置 EAS 环境变量。
+
+<Prerequisites>
+  <Requirement title="Expo 账户">
+    注册一个 [Expo 账户](https://expo.dev/signup)。
+  </Requirement>
+  <Requirement title="EAS CLI">使用 `npm install -g eas-cli` 全局安装 EAS CLI。</Requirement>
+  <Requirement title="已链接到 EAS 的 Expo 项目">
+    创建一个 Expo 项目，并使用 `eas init` 将其链接到 EAS。
+  </Requirement>
+</Prerequisites>
+
+## 使用 EAS 连接 Convex
 
 <Step label="1">
 
-## 安装 Convex
+### 运行 EAS CLI 集成命令
 
-在你创建好 [Expo 项目](/get-started/create-a-project/) 后，使用以下命令安装 `convex`：
+在你的 Expo 项目目录中运行：
 
-<Terminal cmd={['$ npx expo install convex']} />
+<Terminal cmd={['$ eas integrations:convex:connect']} />
+
+在需要时，该命令会提示你输入 Convex 部署区域、项目名称和团队名称。只有在需要创建新的 Convex 团队连接时，它才会询问团队名称。
+
+你也可以显式传入这些值：
+
+<Terminal
+  cmd={[
+    '$ eas integrations:convex:connect --region aws-us-east-1 --team-name "Your-team-name" --project-name "your-app"',
+  ]}
+/>
+
+该集成命令会：
+
+- 使用 `npx expo install convex` 安装 `convex` 包
+- 为你的 EAS 账户创建一个 Convex 团队连接，或复用已有连接
+- 为当前 Expo 应用创建一个 Convex 项目和部署
+- 将 `CONVEX_DEPLOY_KEY` 和 `EXPO_PUBLIC_CONVEX_URL` 写入 **.env.local**
+- 为生产、预览和开发环境创建或更新 `EXPO_PUBLIC_CONVEX_URL` EAS 项目环境变量
+- 向你已验证的邮箱发送邀请，以便你可以认领 Convex 团队并打开 Convex 仪表盘
 
 </Step>
 
 <Step label="2">
 
-## 设置 Convex 开发部署
+### 在本地启动 Convex
 
-运行以下命令来设置你的 Convex 项目：
+集成命令完成后，启动 Convex 开发服务器：
 
 <Terminal cmd={['$ npx convex dev']} />
 
-此命令会：
-
-- 创建一个 Convex 账户，或允许你登录。
-- 在 Convex 上创建一个项目。
-- 保存你的生产环境和部署 URL。
-
-它还会创建一个 **convex/** 文件夹，你可以在其中编写由 Convex 托管的后端 API 函数。
-
-请让此命令在一个终端窗口中持续运行，这样它就能将你的函数同步到 Convex 云中的开发部署。
+如果你的项目还没有 **convex** 目录，这会创建一个本地目录，生成类型化的 API 文件，并在运行时将你的 Convex 函数与部署同步。
 
 </Step>
 
 <Step label="3">
 
-## 将 Convex URL 保存为 EAS 环境变量
+### 添加 Convex provider
 
-运行 `npx convex dev` 会将你的部署 URL 保存到 **.env.local** 文件中，名称为 `EXPO_PUBLIC_CONVEX_URL`。为了让它在你的应用构建中可用，请在新的终端会话中将其添加为 [EAS 环境变量](/eas/environment-variables/)：
+使用 EAS 集成写入 **.env.local** 的部署 URL 创建一个 Convex 客户端，然后用 `ConvexProvider` 包裹你的应用。
 
-<Terminal
-  cmd={[
-    '$ eas env:create --name EXPO_PUBLIC_CONVEX_URL --value https://YOUR_DEPLOYMENT_URL.convex.cloud --visibility plaintext --environment production --environment preview --environment development',
-  ]}
-/>
-
-将 `https://YOUR_DEPLOYMENT_URL.convex.cloud` 替换为你 **.env.local** 文件中的 `EXPO_PUBLIC_CONVEX_URL` 值。了解更多，请参阅 [环境变量](/guides/environment-variables/)。
-
-</Step>
-
-<Step label="4">
-
-## 为数据库初始化种子数据
-
-接下来，创建一个包含以下示例数据的 **sampleData.jsonl** 文件：
-
-```json sampleData.jsonl
-{"text": "Buy groceries", "isCompleted": true}
-{"text": "Go for a swim", "isCompleted": true}
-{"text": "Integrate Convex", "isCompleted": false}
-```
-
-要将这些数据发送到 Convex，请运行：
-
-<Terminal cmd={['$ npx convex import --table tasks sampleData.jsonl']} />
-
-</Step>
-
-<Step label="5">
-
-## 查询数据库
-
-Convex 中的所有查询都是 TypeScript 代码。创建一个包含以下内容的 **convex/tasks.ts** 文件：
-
-```ts convex/tasks.ts
-import { query } from './_generated/server';
-
-export const get = query({
-  args: {},
-  handler: async ctx => {
-    return await ctx.db.query('tasks').collect();
-  },
-});
-```
-
-</Step>
-
-<Step label="6">
-
-## 连接你的应用
-
-在应用顶层的 **src/app/\_layout.tsx** 文件中，创建一个 `ConvexReactClient`，并将其传递给包裹组件树的 `ConvexProvider`：
+对于 Expo Router 项目，请更新 **src/app/\_layout.tsx**：
 
 ```tsx src/app/_layout.tsx
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
@@ -109,9 +84,7 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
 export default function RootLayout() {
   return (
     <ConvexProvider client={convex}>
-      <Stack>
-        <Stack.Screen name="index" />
-      </Stack>
+      <Stack />
     </ConvexProvider>
   );
 }
@@ -119,11 +92,24 @@ export default function RootLayout() {
 
 </Step>
 
-<Step label="7">
+<Step label="4">
 
-## 在应用中显示数据
+### 从你的应用中查询 Convex
 
-在你的应用中，使用 `useQuery` 钩子从 `api.tasks.get` API 获取数据：
+在 **convex** 目录中添加一个查询函数：
+
+```ts convex/tasks.ts
+import { query } from './_generated/server';
+
+export const get = query({
+  args: {},
+  handler: async ctx => {
+    return await ctx.db.query('tasks').collect();
+  },
+});
+```
+
+然后在你的应用中使用 `useQuery` 调用它：
 
 ```tsx src/app/index.tsx
 import { api } from '@/convex/_generated/api';
@@ -134,14 +120,9 @@ export default function Index() {
   const tasks = useQuery(api.tasks.get);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-      {tasks?.map(({ _id, text }) => (
-        <Text key={_id}>{text}</Text>
+    <View>
+      {tasks?.map(task => (
+        <Text key={task._id}>{task.text}</Text>
       ))}
     </View>
   );
@@ -150,10 +131,25 @@ export default function Index() {
 
 </Step>
 
-## 下一步
+要了解 Convex 的更多工作原理，包括数据库文档、函数和客户端订阅，请参阅 Convex 概览：
 
 <BoxLink
-  title="了解如何使用 Convex"
-  description="在构建聊天应用的同时了解 Convex 的工作原理。"
-  href="https://docs.convex.dev/tutorial/"
+  title="Convex 概览"
+  description="了解数据库文档、函数和实时客户端更新背后的核心 Convex 概念。"
+  href="https://docs.convex.dev/understanding/"
 />
+
+## 管理集成
+
+之后可使用这些命令来查看或管理 Convex 集成：
+
+<Terminal
+  cmd={[
+    '$ eas integrations:convex:project',
+    '$ eas integrations:convex:dashboard',
+    '$ eas integrations:convex:team',
+    '$ eas integrations:convex:team:invite',
+  ]}
+/>
+
+如果你使用 `eas integrations:convex:project:delete` 或 `eas integrations:convex:team:delete` 移除链接，EAS 会删除其集成元数据。这些命令不会销毁 Convex 上的资源。

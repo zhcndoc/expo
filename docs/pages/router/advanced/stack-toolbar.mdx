@@ -4,6 +4,7 @@ description: 了解如何在使用 Expo Router 的堆栈导航中使用原生工
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
+import { Terminal } from '~/ui/components/Snippet';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
 > **重要** `Stack.Toolbar` 是一个 [alpha](/more/release-statuses/#alpha) API，适用于 **Expo SDK 56** 及更高版本的 Android，以及 **Expo SDK 55** 及更高版本的 iOS。该 API 可能会发生破坏性更改。
@@ -108,6 +109,41 @@ export default function NoteScreen() {
 你可以在 Apple 的 SF Symbols 应用中浏览可用符号。
 
 > **信息** SF Symbols 是仅限 iOS 的功能。
+
+### Material Symbols（仅限 Android）
+
+Android 推荐使用 [`@expo/material-symbols`](https://www.npmjs.com/package/@expo/material-symbols) 库来提供图标。它将 Google 的 [Material Symbols](https://fonts.google.com/icons) 作为独立的资源子路径提供，因此 Metro 只会打包你实际导入的图标。
+
+<Terminal cmd={['$ npx expo install @expo/material-symbols']} />
+
+直接从各自的子路径导入任意图标，并将其传递给 `icon` 属性：
+
+```tsx
+import Star from '@expo/material-symbols/star.xml';
+import Share from '@expo/material-symbols/share.xml';
+import MoreVert from '@expo/material-symbols/more_vert.xml';
+
+<Stack.Toolbar.Button icon={Star} onPress={() => {}} />
+<Stack.Toolbar.Button icon={Share} onPress={() => {}} />
+<Stack.Toolbar.Menu icon={MoreVert}>{/* ... */}</Stack.Toolbar.Menu>
+```
+
+向量可绘制对象默认会使用工具栏的 tint 颜色着色。传递 `iconRenderingMode="original"` 可保留源颜色。
+
+> **信息** Material Symbols XML 可绘制对象是仅限 Android 的功能。在 iOS 上，请改用 SF Symbols。
+
+#### 在 Android 和 iOS 上使用相同图标
+
+`Stack.Toolbar.Button` 的 `icon` 属性既接受 `ImageSourcePropType`（Android），也接受 SF Symbol 名称（iOS）。如果要在两个平台上使用同一个组件，请根据 `process.env.EXPO_OS` 分支，并传入适合平台的值。Metro 会在构建时将 `process.env.EXPO_OS` 替换为字符串字面量，然后对不匹配当前平台的分支进行 tree-shaking——因此 Material Symbols XML 可绘制对象不会出现在 iOS 包中，SF Symbol 名称也不会出现在 Android 包中：
+
+```tsx
+import Star from '@expo/material-symbols/star.xml';
+
+<Stack.Toolbar.Button
+  icon={process.env.EXPO_OS === 'ios' ? 'star.fill' : Star}
+  onPress={() => {}}
+/>;
+```
 
 ### 自定义图片
 
@@ -609,13 +645,12 @@ export default function DocumentScreen() {
 
 <Collapsible summary="iOS 26 深色模式下液态玻璃工具栏按钮闪烁">
 
-在 iOS 26 的深色模式下，带有液态玻璃样式的工具栏按钮在屏幕之间导航时可能会闪烁或在背景上出现闪白。这是因为 React Navigation 的默认主题与系统深色模式不匹配，导致液态玻璃渲染出现视觉伪影。
+采用液态玻璃样式的工具栏按钮在 iOS 26 深色模式下切换屏幕时，背景可能会出现闪烁或短暂闪白。这是因为默认主题与系统深色模式不匹配，导致液态玻璃渲染出现视觉伪影。
 
-要修复此问题，请使用来自 `@react-navigation/native` 的 `<ThemeProvider>` 包裹根布局，并使用合适的主题：
+要修复此问题，请使用合适的主题将根布局包裹在来自 `expo-router` 的 `<ThemeProvider>` 中：
 
 ```tsx src/app/_layout.tsx
-import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { ThemeProvider, DarkTheme, DefaultTheme, Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
 export default function RootLayout() {
@@ -637,11 +672,10 @@ export default function RootLayout() {
 
 屏幕切换之间出现白色闪烁通常意味着导航栈使用的是浅色背景，而你的应用使用的是深色主题。当屏幕包含工具栏项时，这种闪烁会尤其明显，因为闪烁与工具栏样式形成对比。
 
-要修复此问题，请使用 React Navigation 的 `<ThemeProvider>` 包裹根布局，并传入合适的主题：
+要修复此问题，请使用 Expo Router 的 `<ThemeProvider>` 包裹根布局，并传入合适的主题：
 
 ```tsx src/app/_layout.tsx
-import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { ThemeProvider, DarkTheme, DefaultTheme, Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
 export default function RootLayout() {
@@ -711,7 +745,7 @@ export default function Home() {
 
 </Collapsible>
 
-<Collapsible summary="Android 上仅支持自定义图标">
+<Collapsible summary="Android icons must be image sources">
 
 在 Android 上，`icon` 必须是 `ImageSourcePropType`。例如 `require('./icon.png')` 或 `{ uri: '...' }`。
 
@@ -745,7 +779,7 @@ export default function Home() {
 
 <Collapsible summary="Android 不支持 Badge 和 Label 原语">
 
-在 Android 上，`Stack.Toolbar.Button` 只会渲染其图标 —— `Stack.Toolbar.Badge` 和 `Stack.Toolbar.Label` 子元素会被忽略。如果你需要在 Android 上实现类似徽标的 UI，请使用 [`Stack.Toolbar.View`](/versions/latest/sdk/router/stack/#stacktoolbarview) 嵌入自定义组件。
+在 Android 上，`Stack.Toolbar.Button` 只会渲染图标——`Stack.Toolbar.Badge` 和 `Stack.Toolbar.Label` 子元素会被忽略。如果你需要在 Android 上实现类似徽标的界面，可以使用 [`Stack.Toolbar.View`](/versions/latest/sdk/router/stack/#stacktoolbarview) 嵌入自定义组件。
 
 </Collapsible>
 

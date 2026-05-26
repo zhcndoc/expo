@@ -70,10 +70,10 @@ import { Terminal } from '~/ui/components/Snippet';
 
 移动应用中基于浏览器的认证流程通常如下：
 
-- **发起**：用户点击登录按钮
-- **打开网页浏览器**：应用会打开一个网页浏览器，跳转到认证提供商的登录页面。打开的登录页面 URL 通常包含用于标识应用的信息，以及成功后重定向的 URL。_注意：网页浏览器应与系统浏览器共享 cookies，这样如果用户已经在系统浏览器中完成认证，就不需要再次登录——Expo 的 [WebBrowser](webbrowser.mdx) API 会负责这一点。_
-- **认证提供商重定向**：认证成功后，认证提供商应通过重定向到登录页面查询参数中由应用提供的 URL，将用户重定向回应用（[了解更多关于移动应用中链接的工作方式](/linking/overview/)），_前提是该 URL 位于允许的重定向 URL 白名单中_。对重定向 URL 进行白名单管理很重要，可以防止恶意行为者冒充你的应用。重定向会在 URL 中包含数据（例如用户 id 和 token），可以位于 location hash、查询参数中，或两者都有。
-- **应用处理重定向**：由应用处理该重定向，并从重定向 URL 中解析数据。
+- **Initiation**: 用户按下登录按钮
+- **Open web browser**: 应用会打开一个网页浏览器，进入认证提供商的登录页面。打开登录页面的 url 通常包含用于标识应用的信息，以及成功后重定向到的 URL。_注意：网页浏览器应当与系统网页浏览器共享 cookie，这样如果用户已经在系统浏览器中完成认证，就无需再次登录——Expo 的 [WebBrowser](webbrowser.mdx) API 会处理这一点。_
+- **Authentication provider redirects**: 认证成功后，认证提供商应通过重定向到应用在登录页面查询参数中提供的 URL，将用户重定向回应用（[了解更多关于移动应用中链接如何工作](/linking/overview/)），_前提是该 URL 位于允许的重定向 URL 白名单中_。将重定向 URL 加入白名单很重要，可以防止恶意行为者冒充你的应用。重定向会在 URL 中包含数据（例如用户 id 和 token），这些数据可能位于 location hash、查询参数，或两者中。
+- **App handles redirect**: 应用处理该重定向，并从重定向 URL 中解析数据。
 
 ## 安全注意事项
 
@@ -91,7 +91,7 @@ import * as AuthSession from 'expo-auth-session';
 
 ### 在 Linking 处理器中过滤掉 AuthSession 事件
 
-你可能需要处理进入应用的链接，原因有很多，例如推送通知或常规深度链接（你可以在 [Linking](/linking/overview/) 中阅读更多相关内容）；认证重定向只是深度链接的一种，`AuthSession` 会为你处理这些特定链接。在你自己的 `Linking.addEventListener` 处理器中，可以通过检查 URL 是否包含 `+expo-auth-session` 字符串来过滤掉由 `AuthSession` 处理的深度链接——如果包含，就可以忽略它。这之所以有效，是因为 `AuthSession` 会在默认的 `returnUrl` 中添加 `+expo-auth-session`；不过，如果你提供了自己的 `returnUrl`，你可能也想考虑添加类似的标识符，以便从其他处理器中过滤掉 `AuthSession` 事件。
+有许多原因会让你想要处理进入应用的链接，例如推送通知或普通的深度链接（你可以在 [Linking](/linking/overview/) 中阅读更多相关内容）；认证重定向只是深度链接的一种，而 `AuthSession` 会为你处理这些特定链接。在你自己的 `Linking.addEventListener` 处理器中，你可以通过检查 URL 是否包含 `+expo-auth-session` 字符串来过滤掉由 `AuthSession` 处理的深度链接——如果包含，你可以忽略它。这之所以有效，是因为 `AuthSession` 会把 `+expo-auth-session` 添加到默认的 `returnUrl` 中；不过，如果你提供了自己的 `returnUrl`，你可能也要考虑添加类似的标识，以便从其他处理器中过滤出 `AuthSession` 事件。
 
 ### 与 React Navigation 配合使用
 

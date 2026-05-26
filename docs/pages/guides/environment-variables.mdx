@@ -62,9 +62,11 @@ Expo CLI 会根据 [标准 .env 文件解析规则](https://github.com/bkeepers/
 
 #### 环境变量与 `NODE_ENV`
 
-我们建议不要使用 `NODE_ENV` 在不同的 **.env** 文件之间切换（例如 **.env.test** 和 **.env.production**）。虽然技术上可行（`NODE_ENV=test npx expo start` 会加载 **.env.test**）&mdash;但其行为可能与你预期不同。例如，`npx expo export` 总是强制将 `NODE_ENV` 设置为 `production`，因此 `NODE_ENV=test npx expo export` 实际上不会以 `NODE_ENV` 为 `test` 来执行命令。
+`NODE_ENV` 是标准的 Node.js 变量，用于标识你的代码正在以哪种模式运行（通常是 `development`、`production` 或 `test`）。像模块解析器、打包器和测试运行器这样的工具会读取它，以决定如何构建、安装或运行你的代码。
 
-其他基于 Expo CLI 命令构建的工具也会表现出相同的行为 &mdash; 例如，`eas update` 会调用 `npx expo export`，因此，`NODE_ENV=test eas update` 同样不会以 `NODE_ENV` 为 `test` 运行（它会是 `production`）。`NODE_ENV` 环境变量会被许多工具以不同方式使用（例如，如果你运行 `NODE_ENV=production npm install`，那么你的 `devDependencies` 将不会被安装），而我们发现，对于 React Native 项目来说，最好不要为了这个用例进一步滥用它。
+我们不建议使用 `NODE_ENV` 在不同的 **.env** 文件之间切换（例如 **.env.test** 和 **.env.production**）。虽然从技术上讲这是可行的（`NODE_ENV=test npx expo start` 会加载 **.env.test**）——但它的行为可能并不符合你的预期。例如，`npx expo export` 会始终强制将 `NODE_ENV` 设为 `production`，因此 `NODE_ENV=test npx expo export` 实际上不会以 `test` 作为 `NODE_ENV` 运行该命令。
+
+其他基于 Expo CLI 命令构建的工具也会表现出相同的行为——例如，`eas update` 会调用 `npx expo export`，因此，`NODE_ENV=test eas update` 也不会以 `test` 作为 `NODE_ENV` 运行（它会是 `production`）。`NODE_ENV` 环境变量在不同工具中有不同用途（例如，如果你运行 `NODE_ENV=production npm install`，那么你的 `devDependencies` 将不会被安装），我们发现，对于 React Native 项目，最好不要为了这个用例进一步过度使用它。
 
 如果你使用 EAS，建议改用 `eas env:pull`。这会用你选择的环境替换 **.env.local**，而不是依赖 `NODE_ENV`。如果你不使用 EAS，也可以通过编写脚本，用适合目标环境的内容覆盖 **.env.local** 或 **.env**，来实现类似的行为。
 

@@ -9,7 +9,7 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
 
-一个从屏幕底部滑上的模态弹出面板。该面板的可见性由状态控制 &mdash; 从 React state 切换 [`isPresented`](#ispresented)，并通过 [`onDismiss`](#ondismiss) 将其关闭（当用户向下滑动或点击遮罩层时触发）。
+一个从屏幕底部滑出的模态面板。该面板的可见性是受控的——从 React 状态切换 [`isPresented`](#ispresented)，并通过 [`onDismiss`](#ondismiss) 将其关闭（当用户向下滑动或点击遮罩层时触发）。
 
 ## 安装
 
@@ -65,6 +65,40 @@ export default function BottomSheetNoIndicatorExample() {
   );
 }
 ```
+
+### Snap 点
+
+传入 [`snapPoints`](#snappoints) 以便用户在多个停靠高度之间拖动面板。为了跨平台一致性，你可以使用语义值 `'half'` 和 `'full'`。`{ fraction }` 和 `{ height }` 这两种形式在 iOS 和 web 上会被精确遵循。
+
+当面板内容可能比最小的 snap 点更高时，请将其包裹在 `ScrollView` 中，以便溢出内容能够正确滚动。
+
+```tsx BottomSheetSnapPointsExample.tsx
+import { useState } from 'react';
+import { Host, BottomSheet, Button, Column, ScrollView, Text } from '@expo/ui';
+
+export default function BottomSheetSnapPointsExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Button label="Open" onPress={() => setIsPresented(true)} />
+      <BottomSheet
+        isPresented={isPresented}
+        onDismiss={() => setIsPresented(false)}
+        snapPoints={['half', 'full']}>
+        <ScrollView>
+          <Column spacing={12}>
+            <Text textStyle={{ fontSize: 20, fontWeight: '700' }}>Half / full sheet</Text>
+            <Text>Drag the sheet between half and full screen height.</Text>
+          </Column>
+        </ScrollView>
+      </BottomSheet>
+    </Host>
+  );
+}
+```
+
+> 在 Android 上，`{ fraction }` 和 `{ height }` 会吸附到 `'half'` / `'full'` 中最近的一个——底层的 `ModalBottomSheet` 只支持两种停靠状态。只有当内容足够高、超过 Material 的部分展开阈值时，部分状态才会可见；如果你需要在较短内容上使用半屏状态，请为内容设置显式高度或填充可用空间。
 
 ## API
 

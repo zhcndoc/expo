@@ -385,6 +385,26 @@ module.exports = function (api) {
 
 始终将 `babel-preset-expo` 作为默认的 Babel 预设，这能确保转换始终与 Expo 运行时兼容。`babel-preset-expo` 会在内部使用所有 caller 输入，为特定的平台、引擎和环境进行优化。
 
+## 按需文件系统
+
+Expo 使用 `metro-file-map` 的一个分支版本（[`@expo/metro-file-map`](https://github.com/expo/expo/tree/main/packages/@expo/metro-file-map)）来发现、监听并按需解析源文件。
+
+Metro 会在启动时预先遍历 `watchFolders` 中列出的每个目录。在 [monorepo](/guides/monorepos) 中，这通常意味着会遍历每个工作区。启用按需文件系统访问后，文件映射可以在解析器请求时，按需读取 `watchFolders` 之外的文件。这使你能够安全地减少 `watchFolders` 条目的数量，以牺牲一部分文件监听覆盖范围来换取更快的启动速度，而不会破坏指向项目根目录之外的导入。
+
+按需遍历还允许在 monorepo 根目录之外解析符号链接，这为 Bun 和 pnpm 等包管理器增加了 [Global Virtual Store 支持](https://pnpm.io/global-virtual-store)。
+
+此功能默认启用，可通过在你的 [app config](/versions/latest/config/app/) 中将 `experiments.onDemandFilesystem` 设置为 `false` 来禁用：
+
+```json app.json
+{
+  "expo": {
+    "experiments": {
+      "onDemandFilesystem": false
+    }
+  }
+}
+```
+
 ## Node.js 内置模块
 
 当为服务器环境打包时，Expo 的 Metro 配置会根据当前 Node.js 版本自动支持外部化 Node.js 内置模块（`fs`、`path`、`node:crypto` 等）。如果 CLI 正在为浏览器环境打包，那么内置模块会先检查该模块是否已在本地安装，然后回退到一个空的 shim。例如，如果你安装了 `path` 供浏览器使用，那么它可以被使用；否则，该模块会自动被跳过。
@@ -424,7 +444,7 @@ import('./math').then(math => {
 
 当你运行 `npx expo export -p web` 时，bundle 会被拆分为多个文件，入口 bundle 会被添加到主 HTML 文件中。`@expo/metro-runtime` 会添加用于加载并执行异步 bundle 的运行时代码。
 
-## Source map debug ID
+## Source map 调试 ID
 
 如果一个 bundle 以外部 source map 导出，那么一个 [**Debug ID**](https://sentry.engineering/blog/the-case-for-debug-ids) 注解将被添加到文件末尾，同时 source map 中会有一个匹配的 `debugId`，以便将这些文件对应起来。如果没有导出 source map，或者使用的是内联 source map，那么不会添加此注解。
 
@@ -635,7 +655,7 @@ const anotherWorker = new Worker(new URL(path, window.location.href));
 
 在 `Worker` 构造函数中使用变量不支持打包。要检查内部 URL，你可以使用内部语法 `require.unstable_resolveWorker('./path/to/worker.js')` 来获取 URL 片段。
 
-## Existing React Native apps
+## 现有的 React Native 应用
 
 > 本指南是有版本区分的，在升级/降级 Expo 时需要重新查看。或者，使用 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 进行全自动设置。
 

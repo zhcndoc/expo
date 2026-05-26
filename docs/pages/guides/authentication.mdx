@@ -51,7 +51,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri, useAuthRequest } from 'expo-auth-session';
 import { Button } from 'react-native';
 
-/* @info <strong>仅限 Web：</strong>此方法应在 Web 上认证弹出窗口被重定向到的页面中调用，它将确保身份验证正确完成。在原生端这不会执行任何操作。 */
+/* @info **仅限 Web：** 这个方法应在 web 上身份验证弹窗重定向到的页面中调用，它将确保身份验证被正确完成。在原生端这不会执行任何操作。 */
 WebBrowser.maybeCompleteAuthSession();
 /* @end */
 
@@ -68,7 +68,7 @@ export default function App() {
       clientId: 'CLIENT_ID',
       scopes: ['identity'],
       redirectUri: makeRedirectUri({
-        /* @info 要使用的 URI <code>[scheme]://</code>。如果未定义，则会改用你的 app.json 或 app.config.js 中的 <code>scheme</code> 属性。 */
+        /* @info 要使用的 URI `[scheme]://`。如果未定义，则会改用你 app.json 或 app.config.js 中的 `scheme` 属性。 */
         scheme: 'your.app'
         /* @end */
       }),
@@ -121,7 +121,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri, useAuthRequest, useAutoDiscovery } from 'expo-auth-session';
 import { Button, Platform } from 'react-native';
 
-/* @info <strong>仅限 Web：</strong>此方法应在 Web 上认证弹出窗口被重定向到的页面中调用，它将确保身份验证正确完成。在原生端这不会执行任何操作。 */
+/* @info **仅限 Web：** 这个方法应在 web 上身份验证弹窗重定向到的页面中调用，它将确保身份验证被正确完成。在原生端这不会执行任何操作。 */
 WebBrowser.maybeCompleteAuthSession();
 /* @end */
 
@@ -167,42 +167,42 @@ export default function App() {
 </Box>
 {/* End Okta */}
 
-## 重定向 URI 模式
+## Redirect URI Patterns
 
-以下是一些你最终可能会使用的常见重定向 URI 模式示例。
+Here are some common examples of redirect URI patterns you might end up using.
 
-### 独立/开发构建
+### Standalone/Development Builds
 
 > `yourscheme://path`
 
-在某些情况下，可能会有 1 到 3 个斜杠（`/`）。
+In some cases, there may be 1 to 3 slashes (`/`).
 
-- **环境：**
-  - 现有的 React Native 应用
+- **Environment:**
+  - Existing React Native app
     - `npx expo prebuild`
-  - App 或 Play Store 中的独立构建，或在本地测试
-    - Android: `eas build` 或 `npx expo run:android`
-    - iOS: `eas build` 或 `npx expo run:ios`
+  - Standalone build in the App or Play Store, or local testing
+    - Android: `eas build` or `npx expo run:android`
+    - iOS: `eas build` or `npx expo run:ios`
 
-- **创建：** 在正确的环境中运行时，使用 `AuthSession.makeRedirectUri({ native: '<YOUR_URI>' })` 来选择 native。
+- **Creation:** When running in the correct environment, use `AuthSession.makeRedirectUri({ native: '<YOUR_URI>' })` to select native.
   - `your.app://redirect` -> `makeRedirectUri({ scheme: 'your.app', path: 'redirect' })`
   - `your.app:///` -> `makeRedirectUri({ scheme: 'your.app', isTripleSlashed: true })`
   - `your.app:/authorize` -> `makeRedirectUri({ native: 'your.app:/authorize' })`
   - `your.app://auth?foo=bar` -> `makeRedirectUri({ scheme: 'your.app', path: 'auth', queryParams: { foo: 'bar' } })`
   - `exp://u.expo.dev/[project-id]?channel-name=[channel-name]&runtime-version=[runtime-version]` -> `makeRedirectUri()`
-  - 这个链接通常可以自动创建，但我们建议你至少定义 `scheme` 属性。整个 URL 都可以通过传入 `native` 属性在应用中覆盖。通常这会用于 Google 或 Okta 等提供商，它们要求你使用自定义的原生 URI 重定向。你可以使用 `npx uri-scheme` 来添加、列出和打开 URI scheme。
-  - 如果你更改了 `expo.scheme`，请运行 `npx expo prebuild --clean` 以使用新 scheme 重新生成原生项目，然后再使用 `npx expo run:android` 和 `npx expo run:ios` 重新构建。
-- **用法：** `promptAsync({ redirectUri })`
+  - This link is usually created automatically, but we recommend that you at least define the `scheme` property. The entire URL can be overridden in the app by passing the `native` property. This is usually used by providers like Google or Okta that require you to use a custom native URI redirect. You can use `npx uri-scheme` to add, list, and open URI schemes.
+  - If you change `expo.scheme`, run `npx expo prebuild --clean` to regenerate the native project with the new scheme, then rebuild with `npx expo run:android` and `npx expo run:ios`.
+- **Usage:** `promptAsync({ redirectUri })`
 
-## 改善用户体验
+## Improving User Experience
 
-“登录流程”是一个非常重要的环节，在很多情况下，这正是用户会再次 _承诺_ 使用你应用的地方。糟糕的体验可能会让用户在真正开始使用你的应用之前就放弃它。
+The “login flow” is a very important part of the process, and in many cases, it’s where users will once again _commit_ to using your app. A poor experience may cause users to abandon it before they even really start using it.
 
-以下是一些可用于让用户的身份验证更快、更简单且更安全的技巧：
+Here are some tips that can make user authentication faster, simpler, and more secure:
 
-### 预热浏览器
+### Warming Up the Browser
 
-在 Android 上，你可以选择在网页浏览器使用前先预热它。这样浏览器应用就能在后台预先初始化自身。这样做可以显著加快向用户提示身份验证的速度。
+On Android, you can optionally warm up the web browser before using it. This allows the browser app to pre-initialize itself in the background. Doing so can significantly speed up the authentication prompt shown to the user.
 
 {/* prettier-ignore */}
 ```tsx
@@ -211,12 +211,12 @@ import * as WebBrowser from 'expo-web-browser';
 
 function App() {
   useEffect(() => {
-    /* @info <strong>仅限 Android：</strong>在后台启动默认浏览器应用的预热，以改善切换时间。 */
+    /* @info **仅限 Android：** 在后台开始加载默认浏览器应用，以改善切换时间。 */
     WebBrowser.warmUpAsync();
     /* @end */
 
     return () => {
-      /* @info <strong>仅限 Android：</strong>在组件卸载时关闭浏览器，以帮助提升低端 Android 设备的内存表现。 */
+      /* @info **仅限 Android：** 在组件卸载时冷却浏览器，以帮助改善低端 Android 设备的内存使用。 */
       WebBrowser.coolDownAsync();
       /* @end */
     };
@@ -238,7 +238,7 @@ import { useEffect } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri, useAuthRequest, ResponseType } from 'expo-auth-session';
 
-/* @info <strong>仅限 Web：</strong>此方法应在 Web 上认证弹窗重定向到的页面中调用，它将确保身份验证正确完成。在原生平台上它不会执行任何操作。 */
+/* @info **仅限 Web：** 应在 auth 弹出窗口重定向到 Web 页面时调用此方法，它将确保身份验证正确完成。在原生平台上，这不会执行任何操作。 */
 WebBrowser.maybeCompleteAuthSession();
 /* @end */
 
@@ -250,13 +250,13 @@ const discovery = {
 function App() {
   const [request, response, promptAsync] = useAuthRequest(
     {
-      /* @info 请求服务器返回一个 <code>access_token</code>，并非所有提供商都支持这一点。 */
+      /* @info 请求服务器返回一个 `access_token`，并非所有提供方都支持这一点。 */
       responseType: ResponseType.Token,
       /* @end */
       clientId: 'CLIENT_ID',
       scopes: ['user-read-email', 'playlist-modify-public'],
       redirectUri: makeRedirectUri({
-        /* @info 要使用的 URI <code>[scheme]://</code>。如果未定义，则将改用 app.json 或 app.config.js 中的 <code>scheme</code> 属性。 */
+        /* @info 要使用的 URI `[scheme]://`。如果未定义，则会改用你 app.json 或 app.config.js 中的 `scheme` 属性。 */
         scheme: 'your.app'
         /* @end */
       }),

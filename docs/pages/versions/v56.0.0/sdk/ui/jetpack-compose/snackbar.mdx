@@ -1,0 +1,140 @@
+---
+title: Snackbar
+description: 一种简短的通知，会显示在屏幕底部，在不打扰用户的情况下提供反馈。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI 提供了两个组件，映射了 Jetpack Compose 的 [Snackbar](https://developer.android.com/develop/ui/compose/components/snackbar) API：
+
+- [`SnackbarHost`](#snackbarhost) 封装了 Compose 的 [SnackbarHost](https://developer.android.com/reference/kotlin/androidx/compose/material3/SnackbarHost.composable) 和 [SnackbarHostState](https://developer.android.com/reference/kotlin/androidx/compose/material3/SnackbarHostState)。只需在布局中放置一次，然后在 `ref` 上调用 `showSnackbar`。Snackbar 会根据 `duration` 自动消失，也可以通过操作按钮或可选的关闭图标将其关闭。
+- [`Snackbar`](#snackbar) 是 [`SnackbarHost`](#snackbarhost) 的仅用于样式的子组件。传入它可以覆盖颜色，或将操作放到新的一行。它对应于 Compose 中 `SnackbarHost(hostState) { data -> Snackbar(data, ...) }` 里的 `snackbar` lambda 参数。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/snackbar/android-light.webp"
+  darkSrc="/static/images/expo-ui/snackbar/android-dark.webp"
+  alt="Material 3 snackbar 显示消息 'Item archived'，并带有一个 Undo 操作"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 使用
+
+### 显示 snackbar
+
+在布局中放置一次 [`SnackbarHost`](#snackbarhost)，然后在其 ref 上调用 `showSnackbar` 来显示消息。返回的 promise 在 snackbar 消失后会解析为 `'actionPerformed'` 或 `'dismissed'`。
+
+```tsx SnackbarExample.tsx
+import { useRef } from 'react';
+import {
+  Box,
+  Button,
+  Column,
+  Host,
+  SnackbarHost,
+  Text,
+  type SnackbarHostRef,
+} from '@expo/ui/jetpack-compose';
+import { align, fillMaxSize, fillMaxWidth, padding } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function SnackbarExample() {
+  const hostRef = useRef<SnackbarHostRef>(null);
+
+  const onArchive = async () => {
+    const result = await hostRef.current?.showSnackbar({
+      message: 'Item archived',
+      actionLabel: 'Undo',
+      duration: 'short',
+    });
+    if (result === 'actionPerformed') {
+      // 用户点击了 Undo，恢复该项目。
+    }
+  };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Box modifiers={[fillMaxSize()]}>
+        <Column modifiers={[padding(16, 16, 16, 16)]}>
+          <Button onClick={onArchive}>
+            <Text>Archive</Text>
+          </Button>
+        </Column>
+
+        <Box modifiers={[align('bottomCenter'), fillMaxWidth()]}>
+          <SnackbarHost ref={hostRef} />
+        </Box>
+      </Box>
+    </Host>
+  );
+}
+```
+
+### 自定义样式
+
+向 [`SnackbarHost`](#snackbarhost) 传入一个 [`Snackbar`](#snackbar) 子组件，以覆盖颜色，或将操作放到新的一行。[`Snackbar`](#snackbar) 本身不接受内容，消息和操作都来自每次 `showSnackbar` 调用。
+
+```tsx StyledSnackbar.tsx
+import { useRef } from 'react';
+import {
+  Box,
+  Button,
+  Column,
+  Host,
+  Snackbar,
+  SnackbarHost,
+  Text,
+  type SnackbarHostRef,
+} from '@expo/ui/jetpack-compose';
+import { align, fillMaxSize, fillMaxWidth, padding } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function StyledSnackbar() {
+  const hostRef = useRef<SnackbarHostRef>(null);
+
+  const onSave = () => {
+    hostRef.current?.showSnackbar({
+      message: 'Saved',
+      actionLabel: 'Undo',
+    });
+  };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Box modifiers={[fillMaxSize()]}>
+        <Column modifiers={[padding(16, 16, 16, 16)]}>
+          <Button onClick={onSave}>
+            <Text>Save</Text>
+          </Button>
+        </Column>
+
+        <Box modifiers={[align('bottomCenter'), fillMaxWidth()]}>
+          <SnackbarHost ref={hostRef}>
+            <Snackbar
+              containerColor="#1E1E2E"
+              contentColor="#CDD6F4"
+              actionContentColor="#F38BA8"
+              dismissActionContentColor="#CDD6F4"
+            />
+          </SnackbarHost>
+        </Box>
+      </Box>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Snackbar, SnackbarHost } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/snackbar" apiName="Snackbar" />
