@@ -1,0 +1,101 @@
+---
+title: 用户定义的事件
+sidebar_title: 事件
+description: 从你的应用中记录命名事件，以跟踪在 EAS Observe 仪表板中可见的自定义信号。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Terminal } from '~/ui/components/Snippet';
+
+用户定义事件可让你从应用中记录任意命名事件。可用它们跟踪任何你的应用特有、而内置性能指标未覆盖的信号。
+
+事件会保留在设备上、批量处理，并在下次 flush 时作为 OpenTelemetry 日志记录发送。它们会显示在 EAS Observe 仪表板的 **Events** 选项卡中，并可通过 EAS CLI 查询。
+
+## 记录事件
+
+在应用中的任意位置调用 `Observe.logEvent`：
+
+```tsx
+import { Observe } from 'expo-observe';
+
+function handleOnboardingComplete() {
+  Observe.logEvent('onboarding.completed');
+}
+```
+
+第一个参数是事件名称。请使用稳定的、以点分隔的标识符。仪表板会按精确名称对事件分组。
+
+## 附加属性
+
+传入 `attributes` 映射以记录事件上下文：
+
+```tsx
+Observe.logEvent('report.exported', {
+  attributes: {
+    format: 'csv',
+    rowCount: 1248,
+    durationMs: 532,
+    filters: ['status:active', 'region:us-west'],
+  },
+});
+```
+
+支持的属性值类型：`string`、`number`、`boolean`、数组以及嵌套对象。其他 JS 值（`Date`、`undefined`、函数）会被丢弃。
+
+## 严重性
+
+事件默认使用 `"info"` 严重性。对于希望在仪表板中单独展示的警告或错误，可使用 `severity` 选项覆盖：
+
+```tsx
+Observe.logEvent('sync.failed', {
+  severity: 'error',
+  attributes: { reason: 'network_timeout' },
+});
+```
+
+支持的严重性从低到高依次为：`"trace"`、`"debug"`、`"info"`、`"warn"`、`"error"`、`"fatal"`。
+
+## 正文
+
+使用 `body` 传入自由格式消息，以补充结构化属性：
+
+```tsx
+Observe.logEvent('cache.evicted', {
+  body: '由于磁盘压力超过了配置的阈值，缓存已被驱逐。',
+  severity: 'warn',
+  attributes: { evictedItemCount: 42, freedBytes: 1048576 },
+});
+```
+
+## 命名规范
+
+- 使用小写、以点分隔的名称：`task.completed`、`onboarding.skipped`、`report.exported`。
+- 选择一套词汇并坚持使用。仪表板会按精确事件名称分组，因此 `report_exported` 和 `report.exported` 会显示为两行不同的记录。
+- 避免在事件名称、属性键和属性值中使用个人身份信息（PII）。你传入的所有内容都可以在仪表板中看到，并且会被发送到设备外。
+
+## 查看事件
+
+在仪表板中：打开你的项目并导航到 [**Observe > Events**](https://expo.dev/accounts/[account]/projects/[project]/observe?tab=events)。默认视图会列出所选时间范围内不同事件名称及其计数。点击某个事件名称可查看单个事件及其时间戳、属性，以及它们所属的会话。
+
+<ContentSpotlight
+  alt="EAS Observe 仪表板中的 Events 选项卡，列出了不同的事件名称及其计数。"
+  src="/static/images/expo-observe/observe-events-light.png"
+  darkSrc="/static/images/expo-observe/observe-events-dark.png"
+/>
+
+从 CLI：
+
+<Terminal
+  cmd={[
+    '# 列出带有计数的事件名称',
+    '$ eas observe:events',
+    '',
+    '# 显示某个特定事件名称的单个事件',
+    '$ eas observe:events report.exported',
+    '',
+    '# 显示所有名称下的全部事件（JSON 输出）',
+    '$ eas observe:events --all-events --json',
+  ]}
+/>
+
+运行 `eas observe:events --help` 查看全部标志列表（时间范围、平台、会话 ID 等更多内容）。

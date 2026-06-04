@@ -1,6 +1,6 @@
 ---
 title: 内部分发
-description: 了解 EAS Build 如何为你的构建提供可共享的 URL，以便与你的团队进行内部分发。
+description: 了解 EAS Build 如何为你的构建提供可共享的 URL，以便你与团队进行内部共享。
 ---
 
 import { GraduationHat02DuotoneIcon } from '@expo/styleguide-icons/duotone/GraduationHat02DuotoneIcon';
@@ -30,11 +30,35 @@ import { Terminal } from '~/ui/components/Snippet';
 
 ### CI 上的自动化（可选）
 
-可以使用 `--non-interactive` 标志在 CI 中以非交互方式运行内部发布构建。但是，如果你在 iOS 上使用 ad hoc provisioning，在使用此标志时将无法向 provisioning profile 添加新设备。在通过 `eas device:create` 注册设备后，你需要交互式运行 `eas build` 并使用 Apple 进行身份验证，以便 EAS 将该设备添加到你的 provisioning profile 中。[了解更多关于从 CI 触发构建的信息](/build/building-on-ci)。
+你可以使用 [`--non-interactive`](/eas/cli/#eas-build) 标志在 CI 中以非交互方式运行内部发布构建。[进一步了解如何从 CI 触发构建](/build/building-on-ci)。
+
+对于 iOS ad hoc 构建，`eas build --non-interactive` 会复用有效的 provisioning profile，但不会更新其设备列表。构建可以成功，但应用可能无法安装到在该 profile 上次更新后新增的已注册设备上。
+
+将 `--refresh-ad-hoc-provisioning-profile` 与 `--non-interactive` 一起传入，以便在构建前更新 Apple Developer Portal 上由 Expo 管理的 ad hoc provisioning profile。
+
+> **info** `--refresh-ad-hoc-provisioning-profile` 需要 EAS CLI 19.1.0 或更高版本。
+
+EAS 使用 App Store Connect API key 进行认证。它会读取为你的 Apple 团队在 EAS 上注册的设备，并在门户中注册任何缺失的 UDID，然后刷新 profile 的设备列表。
+
+当你使用此标志时，EAS 会为构建目标的 Apple 平台选择所有匹配的设备：iOS 的 iPhone 和 iPad，macOS 的 Mac。
+
+<Terminal
+  cmd={[
+    '$ eas build --platform ios --profile preview --non-interactive --refresh-ad-hoc-provisioning-profile',
+  ]}
+/>
+
+对于 [EAS Workflows](/eas/workflows/get-started)，请在构建任务的 `params` 中设置 `refresh_ad_hoc_provisioning_profile: true`，并保持相同的 profile 要求。请参阅 [构建任务参数](/eas/workflows/pre-packaged-jobs#build)。
+
+该 profile 必须设置 [`"distribution": "internal"`](/eas/json/#distribution)，并使用 [由 EAS 管理的凭据](/app-signing/app-credentials/)。你至少需要一个来自 [`eas device:create`](/eas/cli/#eas-devicecreate) 的设备，以及通过 [环境变量](/build/building-on-ci/#optional-provide-an-asc-api-token-for-your-apple-team)（`EXPO_ASC_API_KEY_PATH`、`EXPO_ASC_KEY_ID` 和 `EXPO_ASC_ISSUER_ID`）在 CI 中提供的 App Store Connect API key，或者在 EAS 中为该项目提交时存储的 key。
+
+否则，在使用 [`eas device:create`](/eas/cli/#eas-devicecreate) 注册设备后，请交互式运行 [`eas build`](/eas/cli/#eas-build)，并使用你的 Apple 账户登录，以便 EAS 可以更新 ad hoc provisioning profile。
 
 ### 管理设备
 
-你可以通过运行以下命令查看通过 `eas device:create` 注册的任何设备：
+在 [EAS Workflows](/eas/workflows/get-started) 中，你可以暂停工作流，直到测试人员注册一个 iOS 设备，并由团队成员使用 [`apple-device-registration-request`](/eas/workflows/pre-packaged-jobs#apple-device-registration-request) 任务批准它。将其与一个设置了 `refresh_ad_hoc_provisioning_profile: true` 的 `build` 任务配对，以便将新设备包含在内部发布构建中。
+
+你可以通过运行以下命令查看任何使用 `eas device:create` 注册的设备：
 
 <Terminal
   cmd={['# 列出已注册用于 ad hoc provisioning 的设备', '$ eas device:list']}

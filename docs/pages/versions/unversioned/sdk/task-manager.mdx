@@ -1,5 +1,5 @@
 ---
-title: TaskManager
+title: 任务管理器
 description: 一个为可在后台运行的任务提供支持的库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-task-manager'
 packageName: 'expo-task-manager'
@@ -34,12 +34,11 @@ import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
 
 关于如何进行配置，请阅读各个使用 `TaskManager` 的[库](#libraries-using-expo-taskmanager)的参考文档。
 
-## 示例
+## 用法
 
 <SnackInline dependencies={["expo-task-manager", "expo-location"]} platforms={['android', 'ios']}>
 
 ```jsx
-import React from 'react';
 import { Button, View, StyleSheet } from 'react-native';
 import * as TaskManager from 'expo-task-manager';
 import * as Location from 'expo-location';
@@ -64,6 +63,8 @@ const PermissionsButton = () => (
   </View>
 );
 
+// 在模块作用域中定义任务，以便后台运行时可以找到它。
+// 需要在全局作用域中调用，而不是在 React 组件中。
 TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   if (error) {
     // 发生错误 - 请检查 `error.message` 以获取更多详情。
@@ -87,6 +88,8 @@ export default PermissionsButton;
 ```
 
 </SnackInline>
+
+> **info** **注意：** [`TaskManager.defineTask`](#taskmanagerdefinetasktaskname-taskexecutor) 必须在模块作用域中调用，而不是在 React 组件内部。上面的示例将其放在屏幕文件的模块作用域中，这对非路由应用有效。在 Expo Router 项目中，请将其移到单独的文件中（例如 **tasks.ts**），并在根布局（**app/\_layout.tsx**）顶部导入该文件，这样在任何导航运行之前就会注册该任务。
 
 ## API
 

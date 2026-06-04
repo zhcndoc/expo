@@ -16,7 +16,7 @@ EAS Observe 为 [Expo Router](/router/introduction/) 提供了一个可选集成
     Expo Router 集成适用于 SDK 56 及更高版本。在更早的 SDK 上，`expo-observe`
     仍会跟踪应用级指标，但不会发出按路由的导航事件。
   </Requirement>
-  <Requirement title="已在应用中使用 EAS Observe">
+  <Requirement title="应用中已使用 EAS Observe">
     按照 [开始使用](/eas/observe/get-started/) 安装 `expo-observe` 并创建你的第一个
     构建。
   </Requirement>
@@ -29,14 +29,14 @@ EAS Observe 为 [Expo Router](/router/introduction/) 提供了一个可选集成
 
 ## 启用集成
 
-> **warning** 必须在挂载前启用该集成，且不能在运行时切换。应用已挂载后调用 `configure()`，或在会话中途切换该标志，都会抛出错误。
+> **警告** 必须在挂载前启用该集成，且不能在运行时切换。应用已挂载后调用 `configure()`，或在会话中途切换该标志，都会抛出错误。
 
-在任何屏幕挂载之前，于模块作用域调用带有 `expo-router` 集成标志的 `ExpoObserve.configure()`：
+在任何屏幕挂载之前，于模块作用域中使用 `expo-router` 集成标志调用 `Observe.configure()`：
 
 ```tsx src/app/_layout.tsx
-import ExpoObserve from 'expo-observe';
+import { Observe } from 'expo-observe';
 
-ExpoObserve.configure({
+Observe.configure({
   integrations: { 'expo-router': true },
 });
 ```
@@ -64,7 +64,7 @@ export default function Home() {
 }
 ```
 
-> **info** 如果集成被禁用，或者未安装 `expo-router`，`useObserve()` 会回退到全局的 `AppMetrics.markInteractive`。无论集成状态如何，你都可以保留这个 Hook 不变。
+> **信息** 如果集成被禁用，或者未安装 `expo-router`，`useObserve()` 会回退到全局的 `Observe.markInteractive`。无论集成状态如何，你都可以保留这个 Hook。
 
 </Step>
 
@@ -112,9 +112,9 @@ export default function Home() {
 
 ## 说明与故障排查
 
-- `routeName` 是一个模式（`/(tabs)/sessions/[sessionId]`），而不是解析后的 URL（`/sessions/abc`）。这可以让不同参数值之间的指标保持稳定，从而使仪表盘将它们归入同一组。解析后的值仍可通过事件中的 `url` 和 `routeParams` 获取。
-- 调用 `router.prefetch()` 不算作用户导航，也不会触发 `cold_ttr` 或 `warm_ttr` 的测量。下一个由用户触发到该路由的导航会发出 `warm_ttr`，因为该屏幕已经渲染过。
+- `routeName` 是一个模式（`/(tabs)/sessions/[sessionId]`），而不是解析后的 URL（`/sessions/abc`）。这样可以让不同参数值下的指标保持稳定，仪表盘也能将它们归为同一组。解析后的值仍可在事件的 `url` 和 `routeParams` 中获取。
+- 调用 `router.prefetch()` 不算作用户导航，也不会触发 `cold_ttr` 或 `warm_ttr` 的测量。随后用户对该路由发起的下一次导航会发出 `warm_ttr`，因为该屏幕已经渲染过了。
 - 只有在运行时安装了 `expo-router` 时，该集成才会激活。如果未安装，`useObserve()` 和 `ObserveRoot` 仍可正常工作，但不会发出按路由的导航指标。
-- 必须在挂载前通过 `ExpoObserve.configure({ integrations: { 'expo-router': true } })` 启用该集成。应用挂载后切换它会抛出错误。
-- 如果 `markInteractive()` 记录了 `Calling markInteractive on unmounted screen` 或 `No metadata available for the current screen`，说明调用发生在屏幕组件外部或卸载之后。请将该调用移到屏幕组件内部的 `useEffect` 中。
-- 关于 EAS Observe 的常规问题，请参阅 [故障排查](/eas/observe/reference/troubleshooting/)。
+- 必须在挂载前通过 `Observe.configure({ integrations: { 'expo-router': true } })` 启用该集成。在应用挂载后再切换它会抛出错误。
+- 如果 `markInteractive()` 记录了 `Calling markInteractive on unmounted screen` 或 `No metadata available for the current screen`，说明该调用是在屏幕组件之外运行，或是在卸载之后才运行。请将调用移到屏幕组件内部的 `useEffect` 中。
+- 有关 EAS Observe 的常规问题，请参阅 [故障排查](/eas/observe/reference/troubleshooting/)。

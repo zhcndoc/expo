@@ -1,5 +1,5 @@
 ---
-title: TextField
+title: 文本输入框
 description: 一个用于文本输入的 SwiftUI TextField 组件。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui'
 packageName: '@expo/ui'
@@ -187,27 +187,30 @@ export default function ImperativeRefExample() {
 ```tsx WorkletPhoneMaskExample.tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { keyboardType } from '@expo/ui/swift-ui/modifiers';
-import { useEffectEvent } from 'react';
+import { useCallback } from 'react';
 
 export default function WorkletPhoneMaskExample() {
   const phone = useNativeState('');
   const selection = useNativeState({ start: 0, end: 0 });
 
-  const handleTextChange = useEffectEvent((v: string) => {
-    'worklet';
-    const digits = v.replace(/\D/g, '').slice(0, 10);
-    let formatted = digits;
-    if (digits.length > 6) {
-      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-    } else if (digits.length > 3) {
-      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    }
-    if (formatted !== v) {
-      phone.value = formatted;
-      // 仅用于演示，直接跳到末尾。真正的掩码需要更智能的光标处理。
-      selection.value = { start: formatted.length, end: formatted.length };
-    }
-  });
+  const handleTextChange = useCallback(
+    (v: string) => {
+      'worklet';
+      const digits = v.replace(/\D/g, '').slice(0, 10);
+      let formatted = digits;
+      if (digits.length > 6) {
+        formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+      } else if (digits.length > 3) {
+        formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+      }
+      if (formatted !== v) {
+        phone.value = formatted;
+        // 为演示效果，光标跳到末尾。真正的掩码需要更智能的光标处理。
+        selection.value = { start: formatted.length, end: formatted.length };
+      }
+    },
+    [phone, selection]
+  );
 
   return (
     <Host matchContents>

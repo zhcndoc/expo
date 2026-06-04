@@ -26,7 +26,7 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 调试这类问题的一种方法是查看 [堆栈跟踪](/debugging/errors-and-warnings/#stack-traces)。不过，在某些情况下，仅查看堆栈跟踪还不够，因为跟踪到的错误信息可能更加晦涩。对于这类错误，请按以下步骤操作：
 
 - 在 Google 和 [Stack Overflow](https://stackoverflow.com/questions) 上搜索错误信息，很可能你不是第一个遇到这个问题的人。
-- **隔离抛出错误的代码**。这一步对于修复隐晦的错误至关重要。可以这样做：
+- **隔离抛出错误的代码**。这一步对于修复晦涩的错误至关重要。可以这样做：
   - 回退到一个可正常工作的代码版本，甚至可以是一个完全空白的 `npx create-expo-app` 项目。
   - 将你最近的改动逐步应用，直到它出错为止。
   - 如果你在每个“片段”中添加的代码都很复杂，你可能需要简化当前做的事情。例如，如果你使用了 Redux 之类的状态管理库，可以尝试完全把它从方程中移除，看看问题是否出在状态管理上（这在 React 应用中很常见）。
@@ -45,7 +45,14 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 通过运行以下命令，为你的项目生成原生代码：
 
-<Terminal cmd={['$ npx expo prebuild -p android']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo prebuild -p android'],
+    yarn: ['$ yarn expo prebuild -p android'],
+    pnpm: ['$ pnpm expo prebuild -p android'],
+    bun: ['$ bun expo prebuild -p android'],
+  }}
+/>
 
 这会在项目根目录下添加一个 **android** 目录。
 
@@ -75,7 +82,14 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 通过运行以下命令，为你的项目生成原生代码：
 
-<Terminal cmd={['$ npx expo prebuild -p ios']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo prebuild -p ios'],
+    yarn: ['$ yarn expo prebuild -p ios'],
+    pnpm: ['$ pnpm expo prebuild -p ios'],
+    bun: ['$ bun expo prebuild -p ios'],
+  }}
+/>
 
 这会在项目根目录下添加一个 **ios** 目录。
 
@@ -83,7 +97,7 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 <Step label="2">
 
-通过运行以下命令在 Xcode 中打开项目，该命令是一个快捷方式，用于从项目 **ios** 目录中打开 `.xcworkspace` 文件到 Xcode。
+通过运行以下命令在 Xcode 中打开项目，该命令是一个快捷方式，用于将项目 **ios** 目录中的 `.xcworkspace` 文件打开到 Xcode。
 
 <Terminal cmd={['$ xed ios']} />
 
@@ -127,16 +141,16 @@ Android Debug Bridge（`adb`）程序是 Android SDK 的一部分，允许你查
 
 <Step label="1">
 
-打开 Xcode 应用，然后按 <kbd>Shift</kbd> + <kbd>Cmd ⌘</kbd> + <kbd>2</kbd> 打开 **Devices and Simulators** 窗口。
+打开 Xcode 应用，然后按 <kbd>Shift</kbd> + <kbd>Cmd ⌘</kbd> + <kbd>2</kbd> 打开 **设备与模拟器** 窗口。
 
 </Step>
 
 <Step label="2">
 
-如果你连接了实体设备，请在 **Devices** 下选择它。否则，如果你正在使用模拟器，请在 **Simulators** 下选择它。
+如果你连接了实体设备，请在 **设备** 下选择它。否则，如果你正在使用模拟器，请在 **模拟器** 下选择它。
 
 <ContentSpotlight
-  alt="Xcode 中的 Devices and Simulators 窗口。"
+  alt="Xcode 中的设备与模拟器窗口。"
   src="/static/images/debugging/devices-simulators.png"
 />
 
@@ -144,10 +158,10 @@ Android Debug Bridge（`adb`）程序是 Android SDK 的一部分，允许你查
 
 <Step label="3">
 
-点击窗口中显示的 **Open Console** 按钮以打开 console 应用。
+点击窗口中显示的 **打开控制台** 按钮以打开 console 应用。
 
 <ContentSpotlight
-  alt="Xcode 中 Devices and Simulators 窗口里的 Open Console 按钮。"
+  alt="Xcode 中设备与模拟器窗口里的打开控制台按钮。"
   src="/static/images/debugging/open-console.png"
 />
 
@@ -169,7 +183,7 @@ Android Debug Bridge（`adb`）程序是 Android SDK 的一部分，允许你查
   - 对于 Google Play Store 上的 Android 应用，请参考 [Google Play Console](https://play.google.com/console/about/) 中的崩溃部分。
   - 对于 TestFlight 或 App Store 上的 iOS 应用，请在 Xcode 中使用 [Crashes Organizer](https://developer.apple.com/news/?id=nra79npr)。另请参阅 Apple 的 [Diagnosing Issues Using Crash Reports and Device Logs](https://developer.apple.com/documentation/xcode/diagnosing-issues-using-crash-reports-and-device-logs) 指南。
 - **使用原生日志工具。** 连接一个可以复现崩溃的设备，并使用 [`adb logcat` 或 Console 应用](#viewing-native-logs) 来捕获原生日志输出。当 JavaScript 错误边界未能捕获问题时，原生日志通常会揭示根本原因。
-- **尝试在本地使用生产模式。** 在本地以 **production mode** 运行应用会显示通常不会抛出的错误。为此，你可以运行 `npx expo start --no-dev --minify`。`--no-dev` 标志告诉服务器以生产模式运行，而 `--minify` 用于像生产 JavaScript bundle 一样对代码进行压缩。
+- **尝试在本地使用生产模式。** 在本地以 **生产模式** 运行应用会显示通常不会抛出的错误。为此，你可以运行 `npx expo start --no-dev --minify`。`--no-dev` 标志告诉服务器以生产模式运行，而 `--minify` 用于像生产 JavaScript bundle 一样对代码进行压缩。
 - **检查你的崩溃报告仪表盘。** 如果你使用 [Sentry](/guides/using-sentry/)、[BugSnag](/guides/using-bugsnag/) 或类似服务，请先在那里查看崩溃。这些服务会提供堆栈跟踪、设备信息以及复现上下文。
 
 ### 某些（较旧）设备上应用崩溃

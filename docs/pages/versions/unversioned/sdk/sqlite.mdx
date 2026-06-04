@@ -124,13 +124,13 @@ import { Step } from '~/ui/components/Step';
 
 从 `expo-sqlite` 导入模块。
 
-```js Import the module from expo-sqlite
+```js 从 expo-sqlite 导入模块
 import * as SQLite from 'expo-sqlite';
 ```
 
 ### 基本 CRUD 操作
 
-```js Basic CRUD operations
+```js 基本 CRUD 操作
 const db = await SQLite.openDatabaseAsync('databaseName');
 
 // `execAsync()` 适用于需要一次性执行的批量查询。
@@ -172,7 +172,7 @@ for await (const row of db.getEachAsync('SELECT * FROM test')) {
 
 > **注意：** 记得在使用完语句后调用 [`finalizeAsync()`](#finalizeasync) 或 [`finalizeSync()`](#finalizesync) 方法来释放预编译语句。推荐使用 `try-finally` 代码块，以确保预编译语句会被最终释放。
 
-```ts Prepared statements
+```ts 预编译语句
 const statement = await db.prepareAsync(
   'INSERT INTO test (value, intValue) VALUES ($value, $intValue)'
 );
@@ -224,7 +224,7 @@ try {
 
 为了方便并提升开发体验，`expo-sqlite` 通过 `db.sql` 属性提供了受 Bun 启发的标签模板字面量 API。该 API 会自动转义参数以防止 SQL 注入攻击，并根据查询类型提供自动类型推断。
 
-```ts Tagged template literals API
+```ts 标签模板字面量 API
 interface User {
   id: number;
   name: string;
@@ -262,7 +262,7 @@ const syncUser = sql<User>`SELECT * FROM users WHERE id = ${1}`.firstSync();
 
 ### `useSQLiteContext()` 钩子
 
-```tsx useSQLiteContext() hook
+```tsx `useSQLiteContext()` 钩子
 import { SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
 
 与 [`useSQLiteContext()`](#usesqlitecontext-hook) 钩子类似，你也可以将 [`SQLiteProvider`](#sqliteprovider) 与 [`React.Suspense`](https://react.dev/reference/react/Suspense) 集成，在数据库准备就绪之前显示一个回退组件。要启用这种集成，请向 `SQLiteProvider` 组件传入 `useSuspense` 属性。
 
-```tsx useSQLiteContext() hook with React.Suspense
+```tsx 带有 React.Suspense 的 `useSQLiteContext()` 钩子
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { Suspense } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -378,12 +378,12 @@ export default function App() {
 
 ### 在异步事务中执行查询
 
-```js Executing queries within an async transaction
+```js 在异步事务中执行查询
 const db = await SQLite.openDatabaseAsync('databaseName');
 
 await db.withTransactionAsync(async () => {
   const result = await db.getFirstAsync('SELECT COUNT(*) FROM USERS');
-  console.log('Count:', result.rows[0]['COUNT(*)']);
+  console.log('Count:', result['COUNT(*)']);
 });
 ```
 
@@ -418,7 +418,7 @@ Promise.all([
 
 ### 执行 PRAGMA 查询
 
-```js Executing PRAGMA queries
+```js 执行 PRAGMA 查询
 const db = await SQLite.openDatabaseAsync('databaseName');
 await db.execAsync('PRAGMA journal_mode = WAL');
 await db.execAsync('PRAGMA foreign_keys = ON');
@@ -430,7 +430,7 @@ await db.execAsync('PRAGMA foreign_keys = ON');
 
 要使用你已经拥有的现有 **.db** 文件打开一个新的 SQLite 数据库，可以使用 [`SQLiteProvider`](#sqliteprovider) 和 [`assetSource`](#assetsource)。
 
-```tsx useSQLiteContext() with existing database
+```tsx 使用现有数据库的 `useSQLiteContext()`
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { View, Text, StyleSheet } from 'react-native';
 
@@ -473,7 +473,7 @@ export default function App() {
 
 使用 [`expo-file-system`](filesystem/) 库中的 [`Paths.appleSharedContainers`](filesystem/#applesharedcontainers) 来获取共享容器的路径：
 
-```tsx Using Shared Container for SQLite Database on iOS
+```tsx 在 iOS 上为 SQLite 数据库使用共享容器
 import { SQLiteProvider, defaultDatabaseDirectory } from 'expo-sqlite';
 import { Paths } from 'expo-file-system';
 import { useMemo } from 'react';
@@ -505,7 +505,7 @@ export default function App() {
 
 使用 [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) 向数据库传递二进制数据：
 
-```ts Passing binary data
+```ts 传递二进制数据
 await db.execAsync(`
 DROP TABLE IF EXISTS blobs;
 CREATE TABLE IF NOT EXISTS blobs (id INTEGER PRIMARY KEY NOT NULL, data BLOB);
@@ -520,7 +520,7 @@ expect(row.data).toEqual(blob);
 
 ### 浏览设备上的数据库
 
-`expo-sqlite` 库包含一个内置的 DevTools 检查器插件，会在开发环境中自动启用，并且无需额外配置。它允许你直接在浏览器中浏览表、查看和编辑行、执行 SQL 查询以及导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>Shift</kbd> + <kbd>M</kbd> 打开开发工具菜单，然后选择 **Open expo-sqlite** 来启动检查器。
+`expo-sqlite` 库包含一个内置的 DevTools 检查器插件，会在开发环境中自动启用，并且无需额外配置。它允许你直接在浏览器中浏览表、查看和编辑行、执行 SQL 查询以及导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>Shift</kbd> + <kbd>M</kbd> 打开开发工具菜单，然后选择 **打开 expo-sqlite** 来启动检查器。
 
 <ContentSpotlight
   alt="SQLite 检查器，显示一个数据浏览器，其中包含表行、编辑/删除操作，以及列出表的侧边栏"
@@ -535,7 +535,7 @@ expect(row.data).toEqual(blob);
 
 [`Storage`](#sqlitestorage) 提供与 `@react-native-async-storage/async-storage` 相同的 API：
 
-```ts Using the Store
+```ts 使用存储
 // 存储 API 是默认导出，你可以将其命名为 Storage、AsyncStorage 或任何你喜欢的名称。
 import Storage from 'expo-sqlite/kv-store';
 
@@ -547,7 +547,7 @@ console.log(entity); // { entity: 'value' }
 
 使用 `expo-sqlite/kv-store` 的一个主要优势是它还提供同步 API，使用起来更方便：
 
-```ts Using the Store with synchronous APIs
+```ts 使用带同步 API 的存储
 // 存储 API 是默认导出，你可以将其命名为 Storage、AsyncStorage 或任何你喜欢的名称。
 import Storage from 'expo-sqlite/kv-store';
 
@@ -568,7 +568,7 @@ const value = Storage.getItemSync('key');
 
 > **注意：** `import 'expo-sqlite/localStorage/install';` 在 web 上不会产生任何效果，并且会被排除在生产环境的 JS 包之外。
 
-```ts Install globalThis.localStorage
+```ts 安装 globalThis.localStorage
 import 'expo-sqlite/localStorage/install';
 
 globalThis.localStorage.setItem('key', 'value');

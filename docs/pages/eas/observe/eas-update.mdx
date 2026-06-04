@@ -1,0 +1,54 @@
+---
+title: EAS Update 下载性能
+sidebar_title: EAS Update
+description: 在 EAS Observe 仪表板中跟踪 EAS Update OTA 包在真实用户设备上的下载耗时，并按每次更新进行细分。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Terminal } from '~/ui/components/Snippet';
+
+EAS Observe 会自动跟踪每个 OTA 更新在真实用户设备上的下载耗时。你无需添加任何埋点：如果你的应用使用 [EAS Update](/eas-update/introduction/) 并包含 [`expo-observe`](/eas/observe/get-started/)，EAS Observe 就会为每次更新拉取收集下载指标。
+
+更新下载时间会显示在 EAS Observe 仪表板的 **EAS Update** 选项卡中，并且可以通过 EAS CLI 进行查询。
+
+## 查看更新下载
+
+在仪表板中：打开你的项目并导航到 [**Observe > EAS Update**](https://expo.dev/accounts/[account]/projects/[project]/observe?tab=eas-update)。该选项卡包含两个部分：汇总图表和按更新划分的表格。
+
+<ContentSpotlight
+  alt="EAS Observe 仪表板中的 EAS Update 选项卡，展示更新下载时间和最近的更新。"
+  src="/static/images/expo-observe/observe-updates-light.png"
+  darkSrc="/static/images/expo-observe/observe-updates-dark.png"
+/>
+
+### 更新下载时间
+
+一张展示所选时间范围内所有已拉取更新的汇总下载时间的图表。统计分布与“应用启动”选项卡一致：**中位数**、**平均值**、**最小值**、**最大值**、**P90** 和 **P99**。可借此发现更新大小或 CDN 延迟方面的回归问题。
+
+图表上的更新标记表示每个更新首次下载的时间。点击某个标记可查看该时刻对应的更新 ID、版本和指标。
+
+### 最近的更新
+
+一张按更新划分的表格，列出时间范围内拉取的每个更新，包含以下列：
+
+- **更新**：更新 ID 和消息。
+- **下载次数**：下载该更新的唯一设备数量。
+- **下载中位数**：该更新的下载耗时中位数，以相对于表格中最慢更新的条形图形式展示。
+- **P90**：该更新下载耗时的第 90 百分位。
+- **首次下载时间**：第一台设备拉取该更新的时间。
+
+可按 **下载次数**、**下载中位数**、**P90** 或 **首次下载时间** 升序或降序排序。点击某一行可深入查看该更新的单个下载事件。
+
+在 CLI 中：
+
+<Terminal
+  cmd={[
+    '# 按应用版本分组的更新下载时间汇总',
+    '$ eas observe:metrics-summary --metric update_download',
+    '',
+    '# 最慢的单个更新下载',
+    '$ eas observe:metrics update_download --order desc',
+  ]}
+/>
+
+运行 `eas observe:metrics-summary --help` 或 `eas observe:metrics --help` 查看完整的标志列表（时间范围、平台、应用版本、更新 ID 等）。

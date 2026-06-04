@@ -33,13 +33,14 @@ import { Terminal } from '~/ui/components/Snippet';
 
 该库中的每个 CLI 命令都会使用以下通用选项进行配置。唯一的例外是 `inline-modules-interface`，它的选项略有不同。
 
-| Flag                                   | Description                                                                                                                                                                                                                                                      | Default            |
+| 标志                                   | 描述                                                                                                                                                                                                                                                      | 默认值            |
 | :------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------- |
 | `-i, --input-paths <filePaths...>`     | 某个模块的 Swift 文件路径，允许使用 glob 模式。                                                                                                                                                                                                                 |                    |
-| `-m --module-path <modulePath>`        | Expo 模块根目录的路径。                                                                                                                                                                                                                                         |                    |
-| `-o, --output-path <filePath>`         | 用于保存生成输出的路径。如果未提供此选项，则会将生成的输出打印到控制台。                                                                                                                                                                                        |                    |
+| `-m --module-path <modulePath>`        | Expo 模块根目录的路径。                                                                                                                                                                                                                               |                    |
+| `-o, --output-path <filePath>`         | 用于保存生成结果的路径。如果不提供此选项，则会将生成结果打印到控制台。                                                                                                                                                    |                    |
 | `-t, --type-inference <typeInference>` | 类型推断级别：`NO_INFERENCE`、`SIMPLE_INFERENCE` 或 `PREPROCESS_AND_INFERENCE`。请注意，`PREPROCESS_AND_INFERENCE` 选项在某些模块上偶尔会失败。如果遇到错误，请回退到 `SIMPLE_INFERENCE` 或 `NO_INFERENCE`。 | `SIMPLE_INFERENCE` |
-| `-w --watcher`                         | 启动一个监听器，用于检查 input-path 文件的更改。                                                                                                                                                                                                                |                    |
+| `-s, --skip-unicode-character-mapping` | 跳过将文件中的所有非 ASCII 字符映射为 ASCII 字符串。默认情况下会执行此映射，因为 SourceKitten 在计算非 ASCII 字符的偏移量时表现不一致。                                                                                                                                        |                    |
+| `-w --watcher`                         | 启动一个监听器，用于检查 input-path 文件的更改。                                                                                                                                                                                                     |                    |
 
 ### 主要命令
 
@@ -62,7 +63,7 @@ import { Terminal } from '~/ui/components/Snippet';
 - **Module.tsx**：如果你修改了它，则不会被重新生成
 
 **选项：**
-| Flag | Description | Default |
+| 标志 | 描述 | 默认值 |
 | :--- | :--- | :--- |
 | `-a --app-json <appJsonPath>` | [应用配置](/workflow/configuration/) 文件的路径，其中定义了 `inline.modules.watchedDirectories`。 | |
 | `-w --watcher` | 启动一个监听器，用于检查内联模块文件的更改。 | |
@@ -147,8 +148,8 @@ import { Terminal } from '~/ui/components/Snippet';
 </Collapsible>
 ### 支持的 Expo modules DSL 声明
 
-| Feature                      | Notes and limitations                                                                                                           |
+| 特性                      | 说明和限制                                                                                                           |
 | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| **Expo DSL Declarations**    | 支持解析：`AsyncFunction`、`Constant`、`Constructor`、`Events`、`Function`、`Name`、`Prop`、`Property` 和 `View`。 |
-| **Swift `struct` & `class`** | 必须符合 `Record` 协议。仅解析带有 `@Field` 注解标记的属性。                          |
-| **Swift `enum`**             | 支持基本 case。当前不会解析与 enum case 关联的值。                                          |
+| **Expo DSL 声明**    | 支持解析：`AsyncFunction`、`Constant`、`Constructor`、`Events`、`Function`、`Name`、`Prop`、`Property` 和 `View`。 |
+| **Swift `struct` 和 `class`** | 必须符合 `Record` 协议。仅解析带有 `@Field` 注解标记的属性。                          |
+| **Swift `enum`**             | 支持基础 case。当前不会解析与 enum case 关联的值。                                          |

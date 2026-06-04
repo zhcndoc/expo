@@ -84,13 +84,17 @@ PWA 可以通过 [manifest 文件进行配置](https://developer.mozilla.org/en-
 
 <Tabs>
 
-<Tab label="single">
+<Tab label="单页应用">
 
 如果你使用的是单页应用，可以先在 **public/index.html** 中创建一个模板 HTML，然后在你的 HTML 文件中链接 manifest：
 
 <Terminal
-  cmd={['$ npx expo customize public/index.html']}
-  cmdCopy="npx expo customize public/index.html"
+  cmd={{
+    npm: ['$ npx expo customize public/index.html'],
+    yarn: ['$ yarn expo customize public/index.html'],
+    pnpm: ['$ pnpm expo customize public/index.html'],
+    bun: ['$ bun expo customize public/index.html'],
+  }}
 />
 
 然后在 `<head>` 标签中添加 manifest：
@@ -101,7 +105,7 @@ PWA 可以通过 [manifest 文件进行配置](https://developer.mozilla.org/en-
 
 </Tab>
 
-<Tab label="static & server">
+<Tab label="静态 & 服务端">
 
 如果你使用静态渲染或服务端渲染，HTML 入口可以在 **src/app/+html.tsx** 中动态创建。这里我们通过向 `<head>` 组件添加一个 `<link>` 标签来链接 manifest：
 
@@ -144,11 +148,11 @@ export default function Root({ children }: PropsWithChildren) {
 
 </Step>
 
-## Service workers
+## Service Worker
 
 Service worker 主要用于为网站添加离线支持。Google 的 Workbox 是为网站添加 service worker 的最佳方式。请参考 [使用 Workbox CLI](https://developer.chrome.com/docs/workbox/modules/workbox-cli/) 的指南，并且其中凡是提到 “build script（构建脚本）” 的地方，都改为使用 `npx expo export -p web`。
 
-> **warning** 添加 service worker 时请务必小心，因为它们已知会在 Web 上引发意外行为。如果你不小心发布了一个激进缓存你网站的 service worker，用户将无法轻松请求更新。若想获得最佳的移动端离线体验，请使用 Expo 创建原生应用。与带有 service worker 的网站不同，原生应用可以通过应用商店更新来清除缓存体验。这类似于重置用户的原生浏览器（如果 service worker 足够激进，他们可能不得不这样做）。更多信息请参见 [为什么 service worker 不是最佳选择](https://github.com/facebook/create-react-app/issues/2398)。
+> **警告** 添加 service worker 时请务必小心，因为它们已知会在 Web 上引发意外行为。如果你不小心发布了一个激进缓存你网站的 service worker，用户将无法轻松请求更新。若想获得最佳的移动端离线体验，请使用 Expo 创建原生应用。与带有 service worker 的网站不同，原生应用可以通过应用商店更新来清除缓存体验。这类似于重置用户的原生浏览器（如果 service worker 足够激进，他们可能不得不这样做）。更多信息请参见 [为什么 service worker 不是最佳选择](https://github.com/facebook/create-react-app/issues/2398)。
 
 例如，下面是一个设置 Workbox 的可能流程：
 
@@ -157,8 +161,12 @@ Service worker 主要用于为网站添加离线支持。Google 的 Workbox 是�
 使用以下命令创建一个新项目：
 
 <Terminal
-  cmd={['$ npm create expo -t tabs my-app', '', '$ cd my-app']}
-  cmdCopy="npm create expo -t tabs my-app && cd my-app"
+  cmd={{
+    npm: ['$ npm create expo -t tabs my-app', '', '$ cd my-app'],
+    yarn: ['$ yarn create expo -t tabs my-app', '', '$ cd my-app'],
+    pnpm: ['$ pnpm create expo -t tabs my-app', '', '$ cd my-app'],
+    bun: ['$ bun create expo -t tabs my-app', '', '$ cd my-app'],
+  }}
 />
 
 </Step>
@@ -169,15 +177,19 @@ Service worker 主要用于为网站添加离线支持。Google 的 Workbox 是�
 
 <Tabs>
 
-<Tab label="single">
+<Tab label="单页应用">
 
 接下来在根 **index.html** 中添加一个 service worker 注册脚本。
 
 如果尚不存在，先在 **public/index.html** 中创建一个模板 HTML：
 
 <Terminal
-  cmd={['$ npx expo customize public/index.html']}
-  cmdCopy="npx expo customize public/index.html"
+  cmd={{
+    npm: ['$ npx expo customize public/index.html'],
+    yarn: ['$ yarn expo customize public/index.html'],
+    pnpm: ['$ pnpm expo customize public/index.html'],
+    bun: ['$ bun expo customize public/index.html'],
+  }}
 />
 
 然后在 `<head>` 标签中创建 service worker 注册脚本：
@@ -201,7 +213,7 @@ Service worker 主要用于为网站添加离线支持。Google 的 Workbox 是�
 
 </Tab>
 
-<Tab label="static & server">
+<Tab label="静态 & 服务端">
 
 接下来，为应用创建一个根 HTML 文件并添加 service worker 注册脚本：
 
@@ -260,7 +272,14 @@ if ('serviceWorker' in navigator) {
 
 现在在运行向导之前先构建网站：
 
-<Terminal cmd={['$ npx expo export -p web']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo export -p web'],
+    yarn: ['$ yarn expo export -p web'],
+    pnpm: ['$ pnpm expo export -p web'],
+    bun: ['$ bun expo export -p web'],
+  }}
+/>
 
 </Step>
 
@@ -269,15 +288,44 @@ if ('serviceWorker' in navigator) {
 运行向导命令，将 `dist` 设为应用的根目录，并对其他所有选项使用默认值：
 
 <Terminal
-  cmd={[
-    '$ npx workbox-cli wizard',
-    '',
-    '? What is the root of your web app (that is which directory do you deploy)? dist/',
-    '? Which file types would you like to precache? js, html, ttf, ico, json',
-    '? Where would you like your service worker file to be saved? dist/sw.js',
-    '? Where would you like to save these configuration options? workbox-config.js',
-    "? Does your web app manifest include search parameter(s) in the 'start_url', other than 'utm_' or 'fbclid' (like '?source=pwa')? No",
-  ]}
+  cmd={{
+    npm: [
+      '$ npx workbox-cli wizard',
+      '',
+      '? What is the root of your web app (that is which directory do you deploy)? dist/',
+      '? Which file types would you like to precache? js, html, ttf, ico, json',
+      '? Where would you like your service worker file to be saved? dist/sw.js',
+      '? Where would you like to save these configuration options? workbox-config.js',
+      "? Does your web app manifest include search parameter(s) in the 'start_url', other than 'utm_' or 'fbclid' (like '?source=pwa')? No",
+    ],
+    yarn: [
+      '$ yarn dlx workbox-cli wizard',
+      '',
+      '? What is the root of your web app (that is which directory do you deploy)? dist/',
+      '? Which file types would you like to precache? js, html, ttf, ico, json',
+      '? Where would you like your service worker file to be saved? dist/sw.js',
+      '? Where would you like to save these configuration options? workbox-config.js',
+      "? Does your web app manifest include search parameter(s) in the 'start_url', other than 'utm_' or 'fbclid' (like '?source=pwa')? No",
+    ],
+    pnpm: [
+      '$ pnpm dlx workbox-cli wizard',
+      '',
+      '? What is the root of your web app (that is which directory do you deploy)? dist/',
+      '? Which file types would you like to precache? js, html, ttf, ico, json',
+      '? Where would you like your service worker file to be saved? dist/sw.js',
+      '? Where would you like to save these configuration options? workbox-config.js',
+      "? Does your web app manifest include search parameter(s) in the 'start_url', other than 'utm_' or 'fbclid' (like '?source=pwa')? No",
+    ],
+    bun: [
+      '$ bunx workbox-cli wizard',
+      '',
+      '? What is the root of your web app (that is which directory do you deploy)? dist/',
+      '? Which file types would you like to precache? js, html, ttf, ico, json',
+      '? Where would you like your service worker file to be saved? dist/sw.js',
+      '? Where would you like to save these configuration options? workbox-config.js',
+      "? Does your web app manifest include search parameter(s) in the 'start_url', other than 'utm_' or 'fbclid' (like '?source=pwa')? No",
+    ],
+  }}
 />
 
 </Step>

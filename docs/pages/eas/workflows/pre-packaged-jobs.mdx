@@ -30,20 +30,22 @@ jobs:
     type: build
     runs_on: string # 可选 - 可用选项请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      platform: android | ios # 必填
-      profile: string # 可选 - 默认值：production
+      platform: android | ios # 必需
+      profile: string # 可选 - 默认值为 production
       message: string # 可选
+      refresh_ad_hoc_provisioning_profile: boolean # 可选
 ```
 
 #### 参数
 
 你可以向 `params` 列表传入以下参数：
 
-| 参数      | 类型   | 描述                                                                                                   |
-| --------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| platform  | string | **必填。** 要构建的平台。可以是 `android` 或 `ios`。                                                   |
-| profile   | string | 可选。要使用的构建配置文件。默认值为 `production`。                                                     |
-| message   | string | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。 |
+| 参数                                | 类型    | 描述                                                                                                                                                                                                                                                                                                   |
+| ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| platform                            | string  | **必需。** 要构建的平台。可以是 `android` 或 `ios`。                                                                                                                                                                                                                                                    |
+| profile                             | string  | 可选。要使用的构建配置文件。默认值为 `production`。                                                                                                                                                                                                                                                     |
+| message                             | string  | 可选。附加到构建上的自定义消息。对应运行 `eas build` 时的 `--message` 标志。                                                                                                                                                                                                                          |
+| refresh_ad_hoc_provisioning_profile | boolean | 可选。在 iOS 内部分发构建开始前刷新受管理的 ad hoc 配置文件。对应运行 `eas build` 时的 [`--refresh-ad-hoc-provisioning-profile`](/eas/cli/#eas-build) 标志。参见 [CI 上的内部分发](/build/internal-distribution/#automation-on-ci-optional)。 |
 
 #### 环境变量
 
@@ -174,6 +176,29 @@ jobs:
     params:
       platform: android
       profile: production
+```
+
+</Collapsible>
+
+<Collapsible summary="使用刷新后的 ad hoc 配置文件进行 iOS 内部构建">
+
+此工作流会为你的 iOS 应用进行内部分发构建，并在你推送到 main 分支时刷新 ad hoc 配置文件。
+
+```yaml .eas/workflows/build-ios-internal.yml
+name: Build iOS internal
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  build_ios:
+    name: Build iOS Internal
+    type: build
+    params:
+      platform: ios
+      profile: preview
+      refresh_ad_hoc_provisioning_profile: true
 ```
 
 </Collapsible>
@@ -410,7 +435,7 @@ jobs:
 | simulator            | boolean | 可选。是否获取模拟器构建。                                                       |
 | wait_for_in_progress | boolean | 可选。是否等待匹配的进行中构建。默认：`false`。                                   |
 
-If `wait_for_in_progress` is set to `true`, the job will still prioritize continuing immediately with a successful build, but it will also look for in-progress builds. If no successful build is found, the job will wait for an in-progress build to complete before continuing. If the matched build succeeds, the job will be marked as successful and will return the successful build. If the matched build fails, the job will be marked as successful and its outputs will be empty — as if the build has not been matched.
+如果将 `wait_for_in_progress` 设置为 `true`，该任务仍会优先立即继续使用一个成功的构建，但它也会查找进行中的构建。如果未找到成功的构建，任务将在继续之前等待一个进行中的构建完成。如果匹配的构建成功，任务将被标记为成功，并返回该成功构建。如果匹配的构建失败，任务仍将被标记为成功，但其输出将为空——就像没有匹配到构建一样。
 
 #### 输出
 
@@ -861,21 +886,21 @@ jobs:
     environment: production | preview | development # 可选 - 默认为 preview
     image: string # 可选 - 可用镜像列表请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      build_id: string # required
-      flow_path: string | string[] # required
-      shards: number # optional - defaults to 1
-      retries: number # optional - defaults to 0
-      retry_failed_only: boolean # optional - defaults to true
-      record_screen: boolean # optional - defaults to false
-      include_tags: string | string[] # optional
-      exclude_tags: string | string[] # optional
-      maestro_version: string # optional - defaults to latest
-      android_system_image_package: string # optional
-      device_identifier: string | { android?: string, ios?: string } # optional
-      output_format: string # optional - defaults to junit
+      build_id: string # 必需
+      flow_path: string | string[] # 必需
+      shards: number # 可选 - 默认为 1
+      retries: number # 可选 - 默认为 0
+      retry_failed_only: boolean # 可选 - 默认为 true
+      record_screen: boolean # 可选 - 默认为 false
+      include_tags: string | string[] # 可选
+      exclude_tags: string | string[] # 可选
+      maestro_version: string # 可选 - 默认为最新版本
+      android_system_image_package: string # 可选
+      device_identifier: string | { android?: string, ios?: string } # 可选
+      output_format: string # 可选 - 默认为 junit
     hooks:
-      before_maestro_tests: step[] # optional - tests start 前运行的步骤。
-      after_maestro_tests: step[] # optional - tests complete 后运行的步骤。
+      before_maestro_tests: step[] # 可选 - tests start 前运行的步骤。
+      after_maestro_tests: step[] # 可选 - tests complete 后运行的步骤。
 ```
 
 #### 参数
@@ -1596,7 +1621,104 @@ jobs:
 
 </Collapsible>
 
-## 需要审批
+## Apple 设备注册请求
+
+暂停一次工作流运行，直到某台 iOS 设备为特定 [Apple Team](https://expo.fyi/apple-team) 完成注册，并且团队成员在 [expo.dev](https://expo.dev) 上批准该注册。使用此作业可在 EAS Workflows 中自动化注册用于 [内部分发](/build/internal-distribution/) 的设备。
+
+当工作流到达此作业时，该作业和运行会进入 `action-required` 状态，并保持暂停，直到流程完成：
+
+1. 工作流运行页面会显示该设备的二维码和注册链接。
+2. 在 iPhone 或 iPad 上，设备会下载一个配置描述文件，并通过“设置”安装它。任一时刻只会有一个描述文件可用，如果未在八分钟内安装，它将被移除。
+3. 安装后，会收集唯一设备标识符（UDID）和元数据。
+4. 在工作流运行页面上，团队成员批准或拒绝该注册。批准会使作业成功，并将输出（UDID、型号等）暴露给下游作业。拒绝会使作业失败，并阻止使用 `needs` 的作业。
+
+如果 UDID 已经在你的账户中注册，该作业在继续之前仍会等待注册和批准。
+
+### 语法
+
+```yaml
+jobs:
+  register_device:
+    type: apple-device-registration-request
+    params:
+      apple_team_identifier: string # 可选
+```
+
+#### 参数
+
+你可以将以下参数传入 `params` 列表：
+
+| 参数 | 类型 | 描述 |
+| --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| apple_team_identifier | string | 可选。Apple Team ID（例如 `ABCDE12345`）。如果你省略此参数且你的 Expo 账号恰好只有一个 Apple Team，则会使用该团队。如果你的账户没有 Apple Teams，或者有两个及以上 Apple Teams，则必须设置此参数。提供后，EAS 会根据该标识符解析或创建团队。 |
+
+#### 输出
+
+在团队成员批准已注册设备后，你可以在后续作业中引用以下输出：
+
+| 输出 | 类型 | 描述 |
+| ---------------- | ------ | ---------------------------------------------------------------- |
+| apple_device_id  | string | Expo 内部设备 ID。                                         |
+| identifier       | string | 设备 UDID。                                                     |
+| name             | string | 设备名称。可能为空。                                       |
+| model            | string | 硬件型号字符串（例如 `iPhone11,2`）。可能为空。 |
+| device_class     | string | 设备类别：`iphone`、`ipad` 或 `mac`。可能为空。          |
+| software_version | string | iOS 版本字符串。可能为空。                                |
+
+如果团队成员拒绝该注册，作业会失败且不会设置输出。使用 `needs` 的下游作业将不会运行。
+
+### 示例
+
+以下是一些使用 Apple 设备注册请求作业的实际示例：
+
+<Collapsible summary="注册设备并通知 Slack">
+
+此工作流会注册一台 iOS 设备，并根据作业输出发送一条包含设备 UDID 和型号的 Slack 消息。
+
+```yaml .eas/workflows/register-device-slack.yml
+name: Register iOS device and notify Slack
+
+jobs:
+  register_device:
+    type: apple-device-registration-request
+    params:
+      apple_team_identifier: XX33YYZ44Z
+  notify_slack:
+    needs: [register_device]
+    type: slack
+    params:
+      webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+      message: 'Registered device ${{ needs.register_device.outputs.identifier }} (${{ needs.register_device.outputs.model }})'
+```
+
+</Collapsible>
+
+<Collapsible summary="注册设备，然后运行 iOS 内部构建">
+
+此工作流会注册一台设备，然后运行一个 iOS 内部分发构建，以刷新 ad hoc 配置描述文件，从而包含新设备。
+
+```yaml .eas/workflows/register-device-build.yml
+name: Register device and build iOS internal
+
+jobs:
+  register_device:
+    type: apple-device-registration-request
+    params:
+      apple_team_identifier: ABCDE12345
+  build_ios:
+    needs: [register_device]
+    type: build
+    params:
+      platform: ios
+      profile: preview
+      refresh_ad_hoc_provisioning_profile: true
+```
+
+`preview` 配置文件必须设置 [`distribution: internal`](/eas/json/#distribution)，并使用 [由 EAS 管理的凭证](/app-signing/app-credentials/)。对于 CI，你还需要一个 App Store Connect API 密钥。请参阅 [CI 上的内部分发](/build/internal-distribution/#automation-on-ci-optional) 和 [从 CI 触发构建](/build/building-on-ci/)。
+
+</Collapsible>
+
+## 请求批准
 
 在继续工作流之前，需要先获得用户的批准。用户可以批准或拒绝，这分别会转换为任务的成功或失败。
 
@@ -1614,7 +1736,7 @@ jobs:
 
 ### 示例
 
-以下是一些使用 Require Approval 任务的实际示例：
+以下是一些使用请求批准任务的实际示例：
 
 <Collapsible summary="在部署到生产环境之前请求批准">
 
@@ -1713,7 +1835,7 @@ jobs:
 
 ### 示例
 
-以下是一些使用 Doc 任务的实际示例：
+以下是一些使用文档任务的实际示例：
 
 <Collapsible summary="显示说明">
 
@@ -1780,13 +1902,13 @@ jobs:
 
 <Collapsible summary="何时使用重打包，何时不使用？">
 
-Repack 任务适用于以下场景：
+重打包任务适用于以下场景：
 
 - 通过复用现有构建来减少 CI 构建时间
 - 在需要时触发完整的原生构建
 - 为团队提供更快的反馈循环
 
-Repack 任务不适用于以下场景：
+重打包任务不适用于以下场景：
 
 - 需要完整流程才能正确完成符号化和应用签名的生产构建
 
@@ -1809,9 +1931,9 @@ Repack 任务不适用于以下场景：
 
 ### 示例
 
-以下是一些在 Repack 任务中使用 Fingerprint 的实际示例：
+以下是一些在重打包任务中使用指纹的实际示例：
 
-<Collapsible summary="结合 Fingerprint 和 Repack 的持续部署">
+<Collapsible summary="结合指纹和重打包的持续部署">
 
 此工作流首先生成指纹，然后根据该指纹是否已存在兼容构建来决定是构建还是重打包应用。最后，它运行 Maestro 测试。
 

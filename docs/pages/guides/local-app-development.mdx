@@ -12,7 +12,7 @@ import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal } from '~/ui/components/Snippet';
 import { CODE } from '~/ui/components/Text';
 
-要使用你的机器在本地将项目构建为应用，你必须在测试调试构建或创建用于提交到应用商店的生产构建之前手动生成原生代码。你可以通过两种方式在本地构建应用。本指南简要介绍这两种方法，并提供创建此工作流所需的其他指南链接。
+要使用你的机器在本地将项目构建为应用，你必须在测试、调试构建或创建用于提交到应用商店的生产构建之前手动生成原生代码。你可以通过两种方式在本地构建应用。本指南简要介绍这两种方法，并提供创建此工作流所需的其他指南链接。
 
 <Prerequisites>
   <Requirement title="Android Studio">
@@ -32,12 +32,32 @@ import { CODE } from '~/ui/components/Text';
 要在本地构建项目，你可以使用 Expo CLI 的编译命令，这些命令会生成 **android** 和 **ios** 目录：
 
 <Terminal
-  cmd={[
-    '# 构建原生 Android 项目',
-    '$ npx expo run:android',
-    '# 构建原生 iOS 项目',
-    '$ npx expo run:ios',
-  ]}
+  cmd={{
+    npm: [
+      '# 构建原生 Android 项目',
+      '$ npx expo run:android',
+      '# 构建原生 iOS 项目',
+      '$ npx expo run:ios',
+    ],
+    yarn: [
+      '# 构建原生 Android 项目',
+      '$ yarn expo run:android',
+      '# 构建原生 iOS 项目',
+      '$ yarn expo run:ios',
+    ],
+    pnpm: [
+      '# 构建原生 Android 项目',
+      '$ pnpm expo run:android',
+      '# 构建原生 iOS 项目',
+      '$ pnpm expo run:ios',
+    ],
+    bun: [
+      '# 构建原生 Android 项目',
+      '$ bun expo run:android',
+      '# 构建原生 iOS 项目',
+      '$ bun expo run:ios',
+    ],
+  }}
 />
 
 上面的命令会使用你本地安装的 Android SDK 或 Xcode 将项目编译为应用的调试构建。每个命令都会执行两个步骤：先将原生二进制文件编译并安装到你的设备或模拟器上，然后启动 Metro bundler 来提供你的 JavaScript 或 TypeScript 代码。
@@ -51,7 +71,14 @@ import { CODE } from '~/ui/components/Text';
 
 一旦应用已编译并安装到你的设备或模拟器上，你就不需要在每次修改后都重新构建。如果你只是在修改 JavaScript 或 TypeScript 代码，你可以单独启动 Metro bundler：
 
-<Terminal cmd={['$ npx expo start']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo start'],
+    yarn: ['$ yarn expo start'],
+    pnpm: ['$ pnpm expo start'],
+    bun: ['$ bun expo start'],
+  }}
+/>
 
 然后在终端中按 <kbd>A</kbd> 启动 Android，或按 <kbd>I</kbd> 启动 iOS，以打开已安装的应用。Metro 会提供你更新后的 JavaScript 包，而无需重新编译原生代码，因此应用的加载时间只需几秒，而不是几分钟。
 
@@ -78,7 +105,7 @@ import { CODE } from '~/ui/components/Text';
 />
 
 <BoxLink
-  title="Prebuild"
+  title="预构建"
   description="了解 Expo CLI 在编译前如何为你的项目生成原生代码。"
   href="/workflow/continuous-native-generation"
   Icon={BookOpen02Icon}
@@ -88,7 +115,14 @@ import { CODE } from '~/ui/components/Text';
 
 如果你将 [`expo-dev-client`](/develop/development-builds/introduction/) 安装到项目中，那么项目的调试构建将包含 `expo-dev-client` 的 UI 和工具链，我们把这类构建称为开发构建。
 
-<Terminal cmd={['$ npx expo install expo-dev-client']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install expo-dev-client'],
+    yarn: ['$ yarn expo install expo-dev-client'],
+    pnpm: ['$ pnpm expo install expo-dev-client'],
+    bun: ['$ bun expo install expo-dev-client'],
+  }}
+/>
 
 要创建开发构建，你可以使用[本地应用编译](#local-app-compilation)命令（`npx expo run:[android|ios]`），这会创建调试构建并启动开发服务器。
 
@@ -99,16 +133,40 @@ import { CODE } from '~/ui/components/Text';
 `--variant` 标志可以将 Android 构建类型从 **debug** 切换为 **release**。当以 camelCase 格式编写时，此标志还可以配置 product flavor 和构建类型。例如，如果你同时有 [**free** 和 **paid** product flavor](https://developer.android.com/build/build-variants#change-app-id)，你可以这样构建应用的开发版本：
 
 <Terminal
-  cmd={[
-    '$ npx expo run:android --variant freeDebug',
-    '',
-    '$ npx expo run:android --variant paidDebug',
-  ]}
+  cmd={{
+    npm: [
+      '$ npx expo run:android --variant freeDebug',
+      '',
+      '$ npx expo run:android --variant paidDebug',
+    ],
+    yarn: [
+      '$ yarn expo run:android --variant freeDebug',
+      '',
+      '$ yarn expo run:android --variant paidDebug',
+    ],
+    pnpm: [
+      '$ pnpm expo run:android --variant freeDebug',
+      '',
+      '$ pnpm expo run:android --variant paidDebug',
+    ],
+    bun: [
+      '$ bun expo run:android --variant freeDebug',
+      '',
+      '$ bun expo run:android --variant paidDebug',
+    ],
+  }}
 />
 
 `--app-id` 标志可用于在构建后使用自定义应用 ID 启动应用。例如，如果你的 product flavor **free** 使用 `applicationIdSuffix ".free"` 或 `applicationId "dev.expo.myapp.free"`，你可以运行以下命令来构建并启动应用：
 
-<Terminal cmd={['$ npx expo run:android --variant freeDebug --app-id dev.expo.myapp.free']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo run:android --variant freeDebug --app-id dev.expo.myapp.free'],
+    yarn: ['$ yarn expo run:android --variant freeDebug --app-id dev.expo.myapp.free'],
+    pnpm: ['$ pnpm expo run:android --variant freeDebug --app-id dev.expo.myapp.free'],
+    bun: ['$ bun expo run:android --variant freeDebug --app-id dev.expo.myapp.free'],
+  }}
+/>
 
 > **信息** 也可以自定义 Android 构建类型，但这会破坏 Expo 对生产环境使用 **release** 构建类型的假设。你可能会使用不同于 **release** 的构建类型，在应用中构建未经优化的代码。
 

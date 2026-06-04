@@ -90,7 +90,7 @@ import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
       name: 'isAndroidForegroundServiceEnabled',
       platform: 'android',
       description:
-        '一个布尔值，用于启用 [`FOREGROUND_SERVICE`](#permission-foreground_service) 权限和 [`FOREGROUND_SERVICE_LOCATION`](#permission-foreground_service_location)。如果 `isAndroidBackgroundLocationEnabled` 为 `true`，默认值为 `true`，否则为 `false`。',
+        '一个布尔值，用于启用 [`FOREGROUND_SERVICE`](#permission-foreground_service) 权限和 [`FOREGROUND_SERVICE_LOCATION`](#permission-foreground_service_location)（在 Android 14 及更高版本上运行位置前台服务时必需）。如果 `isAndroidBackgroundLocationEnabled` 为 `true`，默认值为 `true`，否则为 `false`。',
     },
     {
       name: 'androidForegroundServiceIcon',
@@ -186,17 +186,17 @@ iOS 权限分为 `When In Use` 和 `Always` 两类，并映射到 Expo 通过以
 - [`requestForegroundPermissionsAsync`](#locationrequestforegroundpermissionsasync) 映射到 `When In Use`
 - [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync) 映射到 `Always`
 
-> **注意：** 当请求 `When In Use` 授权时，用户可以在系统权限对话框中选择 `Allow Once` 来授予**临时访问**。此授权将**仅对当前应用会话有效**，并会在应用关闭时自动撤销。
+> **注意：** 当请求 `When In Use` 授权时，用户可以在系统权限对话框中选择 `仅允许一次` 来授予**临时访问**。此授权将**仅对当前应用会话有效**，并会在应用关闭时自动撤销。
 
 **区分“仅允许一次”和“在使用应用期间允许”**
 
-遗憾的是，**iOS 无法提供一种方法来检测用户选择的是 `Allow Once` 还是 `Allow While Using the App`**。这两种响应都会得到 `When In Use` 授权。
+遗憾的是，**iOS 无法提供一种方法来检测用户选择的是 `仅允许一次` 还是 `在使用应用期间允许`**。这两种响应都会得到 `When In Use` 授权。
 
-如果用户选择了 `Allow Once`，而你随后在同一会话中调用 [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync)，系统**不会显示另一个提示**。相反，请求会**静默失败**，返回的后台权限状态将为**拒绝**。
+如果用户选择了 `仅允许一次`，而你随后在同一会话中调用 [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync)，系统**不会显示另一个提示**。相反，请求会**静默失败**，返回的后台权限状态将为**拒绝**。
 
 **处理“仅允许一次”场景**
 
-如果你怀疑用户选择了 `Allow Once`，并且需要请求后台权限，他们必须在“设置”应用中**手动启用后台位置**。你可以在应用中使用 `Linking` 打开“设置”应用：
+如果你怀疑用户选择了 `仅允许一次`，并且需要请求后台权限，他们必须在“设置”应用中**手动启用后台位置**。你可以在应用中使用 `Linking` 打开“设置”应用：
 
 ```js
 import { Linking } from 'react-native';

@@ -124,13 +124,13 @@ import { Step } from '~/ui/components/Step';
 
 从 `expo-sqlite` 导入模块。
 
-```js Import the module from expo-sqlite
+```js 从 expo-sqlite 导入模块
 import * as SQLite from 'expo-sqlite';
 ```
 
 ### 基本 CRUD 操作
 
-```js Basic CRUD operations
+```js 基本 CRUD 操作
 const db = await SQLite.openDatabaseAsync('databaseName');
 
 // `execAsync()` 适用于批量查询，当你希望一次性执行它们时使用。
@@ -166,25 +166,25 @@ for await (const row of db.getEachAsync('SELECT * FROM test')) {
 }
 ```
 
-### Prepared statements
+### 预编译语句
 
-Prepared statements 允许你只编译一次 SQL 查询，然后用不同参数多次执行。它们会自动转义输入参数，以防止 SQL 注入攻击，建议用于包含用户输入的查询。你可以通过在数据库实例上调用 [`prepareAsync()`](#prepareasyncsource) 或 [`prepareSync()`](#preparesyncsource) 方法来获取 prepared statement。prepared statement 可以通过调用 [`executeAsync()`](#executeasyncparams) 或 [`executeSync()`](#executesyncparams) 方法来完成 CRUD 操作。
+预编译语句允许你只编译一次 SQL 查询，然后用不同参数多次执行。它们会自动转义输入参数，以防止 SQL 注入攻击，建议用于包含用户输入的查询。你可以通过在数据库实例上调用 [`prepareAsync()`](#prepareasyncsource) 或 [`prepareSync()`](#preparesyncsource) 方法来获取预编译语句。预编译语句可以通过调用 [`executeAsync()`](#executeasyncparams) 或 [`executeSync()`](#executesyncparams) 方法来完成 CRUD 操作。
 
-> **Note:** 记得在使用完 statement 后调用 [`finalizeAsync()`](#finalizeasync) 或 [`finalizeSync()`](#finalizesync) 方法来释放 prepared statement。建议使用 `try-finally` 块来确保 prepared statement 被 finalize。
+> **Note:** 记得在使用完 statement 后调用 [`finalizeAsync()`](#finalizeasync) 或 [`finalizeSync()`](#finalizesync) 方法来释放预编译语句。建议使用 `try-finally` 块来确保预编译语句被 finalize。
 
-```ts Prepared statements
+```ts 预编译语句
 const statement = await db.prepareAsync(
   'INSERT INTO test (value, intValue) VALUES ($value, $intValue)'
 );
 try {
   let result = await statement.executeAsync({ $value: 'bbb', $intValue: 101 });
-  console.log('bbb and 101:', result.lastInsertRowId, result.changes);
+  console.log('bbb 和 101：', result.lastInsertRowId, result.changes);
 
   result = await statement.executeAsync({ $value: 'ccc', $intValue: 102 });
-  console.log('ccc and 102:', result.lastInsertRowId, result.changes);
+  console.log('ccc 和 102：', result.lastInsertRowId, result.changes);
 
   result = await statement.executeAsync({ $value: 'ddd', $intValue: 103 });
-  console.log('ddd and 103:', result.lastInsertRowId, result.changes);
+  console.log('ddd 和 103：', result.lastInsertRowId, result.changes);
 } finally {
   await statement.finalizeAsync();
 }
@@ -220,11 +220,11 @@ try {
 }
 ```
 
-### Tagged template literals API
+### 标签模板字面量 API
 
-为了方便并提升开发体验，`expo-sqlite` 通过 `db.sql` 属性提供了受 Bun 启发的 tagged template literals API。该 API 会自动转义参数以防止 SQL 注入攻击，并根据查询类型提供自动类型推断。
+为了方便并提升开发体验，`expo-sqlite` 通过 `db.sql` 属性提供了受 Bun 启发的标签模板字面量 API。该 API 会自动转义参数以防止 SQL 注入攻击，并根据查询类型提供自动类型推断。
 
-```ts Tagged template literals API
+```ts 标签模板字面量 API
 interface User {
   id: number;
   name: string;
@@ -260,9 +260,9 @@ const syncUsers = sql<User>`SELECT * FROM users WHERE age > ${21}`.allSync();
 const syncUser = sql<User>`SELECT * FROM users WHERE id = ${1}`.firstSync();
 ```
 
-### `useSQLiteContext()` hook
+### `useSQLiteContext()` 钩子
 
-```tsx useSQLiteContext() hook
+```tsx `useSQLiteContext()` 钩子
 import { SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -353,11 +353,11 @@ const styles = StyleSheet.create({
 });
 ```
 
-### 带有 `React.Suspense` 的 `useSQLiteContext()` hook
+### 带有 `React.Suspense` 的 `useSQLiteContext()` 钩子
 
-与 [`useSQLiteContext()`](#usesqlitecontext-hook) hook 一样，你也可以将 [`SQLiteProvider`](#sqliteprovider) 与 [`React.Suspense`](https://react.dev/reference/react/Suspense) 集成，在数据库准备好之前显示一个 fallback 组件。要启用这种集成，请向 `SQLiteProvider` 组件传入 `useSuspense` 属性。
+与 [`useSQLiteContext()`](#usesqlitecontext-hook) 钩子一样，你也可以将 [`SQLiteProvider`](#sqliteprovider) 与 [`React.Suspense`](https://react.dev/reference/react/Suspense) 集成，在数据库准备好之前显示一个 fallback 组件。要启用这种集成，请向 `SQLiteProvider` 组件传入 `useSuspense` 属性。
 
-```tsx useSQLiteContext() hook with React.Suspense
+```tsx 带有 React.Suspense 的 `useSQLiteContext()` 钩子
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { Suspense } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -378,12 +378,12 @@ export default function App() {
 
 ### 在 async transaction 中执行查询
 
-```js Executing queries within an async transaction
+```js 在 async transaction 中执行查询
 const db = await SQLite.openDatabaseAsync('databaseName');
 
 await db.withTransactionAsync(async () => {
   const result = await db.getFirstAsync('SELECT COUNT(*) FROM USERS');
-  console.log('Count:', result.rows[0]['COUNT(*)']);
+  console.log('数量：', result['COUNT(*)']);
 });
 ```
 
@@ -417,7 +417,7 @@ Promise.all([
 
 ### 执行 PRAGMA 查询
 
-```js Executing PRAGMA queries
+```js 执行 PRAGMA 查询
 const db = await SQLite.openDatabaseAsync('databaseName');
 await db.execAsync('PRAGMA journal_mode = WAL');
 await db.execAsync('PRAGMA foreign_keys = ON');
@@ -429,7 +429,7 @@ await db.execAsync('PRAGMA foreign_keys = ON');
 
 要使用你已有的 **.db** 文件打开一个新的 SQLite 数据库，你可以使用带有 [`assetSource`](#assetsource) 的 [`SQLiteProvider`](#sqliteprovider)。
 
-```tsx useSQLiteContext() with existing database
+```tsx 使用现有数据库的 `useSQLiteContext()`
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { View, Text, StyleSheet } from 'react-native';
 
@@ -472,7 +472,7 @@ export default function App() {
 
 使用 [`expo-file-system`](filesystem/) 库中的 [`Paths.appleSharedContainers`](filesystem/#applesharedcontainers) 获取共享容器的路径：
 
-```tsx Using Shared Container for SQLite Database on iOS
+```tsx 在 iOS 上使用共享容器作为 SQLite 数据库
 import { SQLiteProvider, defaultDatabaseDirectory } from 'expo-sqlite';
 import { Paths } from 'expo-file-system';
 import { useMemo } from 'react';
@@ -504,7 +504,7 @@ export default function App() {
 
 使用 [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) 向数据库传递二进制数据：
 
-```ts Passing binary data
+```ts 传递二进制数据
 await db.execAsync(`
 DROP TABLE IF EXISTS blobs;
 CREATE TABLE IF NOT EXISTS blobs (id INTEGER PRIMARY KEY NOT NULL, data BLOB);
@@ -522,7 +522,7 @@ expect(row.data).toEqual(blob);
 `expo-sqlite` 库包含一个内置的 DevTools inspector 插件，它会在开发环境中自动启用，无需额外设置。它允许你浏览表格、查看和编辑行、运行 SQL 查询，并直接从浏览器导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>Shift</kbd> + <kbd>M</kbd> 打开开发工具菜单，然后选择 **Open expo-sqlite** 启动 inspector。
 
 <ContentSpotlight
-  alt="SQLite inspector showing a data browser with table rows, edit/delete actions, and a sidebar listing tables"
+  alt="SQLite 检查器展示了一个数据浏览器，包含表格行、编辑/删除操作，以及列出表格的侧边栏"
   src="/static/images/sdk/sqlite/inspector.png"
 />
 
@@ -534,7 +534,7 @@ expect(row.data).toEqual(blob);
 
 [`Storage`](#sqlitestorage) 提供了与 `@react-native-async-storage/async-storage` 相同的 API：
 
-```ts Using the Store
+```ts 使用该存储
 // 存储 API 是默认导出，你可以将其命名为 Storage、AsyncStorage 或任何你喜欢的名称。
 import Storage from 'expo-sqlite/kv-store';
 
@@ -546,7 +546,7 @@ console.log(entity); // { entity: 'value' }
 
 使用 `expo-sqlite/kv-store` 的一个主要好处是它额外提供了同步 API，更加方便：
 
-```ts Using the Store with synchronous APIs
+```ts 使用同步 API 的存储
 // 存储 API 是默认导出，你可以将其命名为 Storage、AsyncStorage 或任何你喜欢的名称。
 import Storage from 'expo-sqlite/kv-store';
 
@@ -567,7 +567,7 @@ const value = Storage.getItemSync('key');
 
 > **Note:** `import 'expo-sqlite/localStorage/install';` 在 web 上不会产生任何效果，并且会被排除在生产 JS bundle 之外。
 
-```ts Install globalThis.localStorage
+```ts 安装 globalThis.localStorage
 import 'expo-sqlite/localStorage/install';
 
 globalThis.localStorage.setItem('key', 'value');
@@ -598,11 +598,11 @@ SQL 注入是一类漏洞，攻击者会诱使你的应用将用户输入当作 
 
 > **注意：** [Expo Go](https://expo.dev/go) 不支持 SQLCipher。
 
-[SQLCipher](https://www.zetetic.net/sqlcipher/) 是 SQLite 的一个分支，为数据库添加了加密和身份验证功能。`expo-sqlite` 库支持 Android、iOS 和 macOS 上的 SQLCipher。要使用 SQLCipher，你需要像 [app 配置中的配置](#configuration-in-app-config) 部分所示，在你的 **app.json** 中添加 `useSQLCipher` 配置，然后运行 `npx expo prebuild`。
+[SQLCipher](https://www.zetetic.net/sqlcipher/) 是 SQLite 的一个分支，为数据库添加了加密和身份验证功能。`expo-sqlite` 库支持 Android、iOS 和 macOS 上的 SQLCipher。要使用 SQLCipher，你需要像 [app 配置](#configuration-in-app-config) 中的配置部分所示，在你的 **app.json** 中添加 `useSQLCipher` 配置，然后运行 `npx expo prebuild`。
 
 在你打开数据库后，需要使用 `PRAGMA key = 'password'` 语句为数据库设置密码。
 
-```ts Add a password to the database
+```ts 为数据库添加密码
 const db = await SQLite.openDatabaseAsync('databaseName');
 await db.execAsync(`PRAGMA key = 'password'`);
 ```
@@ -616,8 +616,8 @@ await db.execAsync(`PRAGMA key = 'password'`);
 | [`SQLiteDatabase`](#sqlitedatabase) 方法      | [`SQLiteStatement`](#sqlitestatement) 方法                                 | 描述                                                                                                                                                            | 使用场景                                                                                                                                                                                   |
 | ------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`runAsync()`](#runasyncsource-params)           | [`executeAsync()`](#executeasyncparams)                                       | 执行 SQL 查询，返回所做更改的信息。                                                                                                       | 适合执行 SQL 写入操作，例如 `INSERT`、`UPDATE`、`DELETE`。                                                                                                                       |
-| [`getFirstAsync()`](#getfirstasyncsource-params) | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getfirstasync) | 从查询结果中获取第一行。                                                                                                                         | 适合从数据库中获取单行。例如：`getFirstAsync('SELECT * FROM Users WHERE id = ?', userId)`。                                                            |
-| [`getAllAsync()`](#getallasyncsource-params)     | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync)   | 一次获取所有查询结果。                                                                                                                                     | 最适合结果集较小的场景，例如带有 `LIMIT` 子句的查询，如 `SELECT * FROM Table LIMIT 100`，并且你打算一次性获取全部结果。 |
+| [`getFirstAsync()`](#getfirstasyncsource-params) | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync) | 从查询结果中获取第一行。                                                                                                                         | 适合从数据库中获取单行。例如：`getFirstAsync('SELECT * FROM Users WHERE id = ?', userId)`。                                                            |
+| [`getAllAsync()`](#getallasyncsource-params)     | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync)   | 一次性获取所有查询结果。                                                                                                                                     | 最适合结果集较小的场景，例如带有 `LIMIT` 子句的查询，如 `SELECT * FROM Table LIMIT 100`，并且你打算一次性获取全部结果。 |
 | [`getEachAsync()`](#geteachasyncsource-params)   | [`executeAsync()`](#executeasyncparams) + `for-await-of` async iterator       | 提供用于遍历结果集的迭代器。此方法每次从数据库获取一行，与 `getAllAsync()` 相比，可能会减少内存使用。 | 推荐用于逐步处理大型结果集，例如无限滚动的实现。                                                                                 |
 
 <APISection packageName="expo-sqlite" apiName="SQLite" exposeAllClassPropsInSidebar />

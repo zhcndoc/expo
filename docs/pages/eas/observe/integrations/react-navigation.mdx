@@ -1,0 +1,142 @@
+---
+title: React Navigation 集成
+sidebar_title: React Navigation
+description: 通过启用 EAS Observe 的 React Navigation 集成，跟踪每个屏幕的渲染和交互耗时。
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Step } from '~/ui/components/Step';
+
+EAS Observe 为 [React Navigation](https://reactnavigation.org/) 提供了一个可选集成，用于收集按屏幕划分的指标，并按屏幕路径标记（例如 `/sessions/abc`）。这样你就可以在仪表盘中按屏幕比较导航性能，而不只是查看应用整体汇总数据。
+
+如果你的应用使用的是 [Expo Router](/router/introduction/)，请改用 [Expo Router 集成](/eas/observe/integrations/expo-router/)。本页面适用于直接使用 React Navigation 的应用。
+
+## 前提条件
+
+<Prerequisites>
+  <Requirement title="Expo SDK 56 及更高版本">
+    React Navigation 集成在 SDK 56 及更高版本中可用。在更早的 SDK 中，
+    `expo-observe` 仍会跟踪应用整体指标，但不会发出按屏幕划分的导航事件。
+  </Requirement>
+  <Requirement title="一个已经在使用 EAS Observe 的应用">
+    按照 [开始使用](/eas/observe/get-started/) 安装 `expo-observe` 并创建你的第一个
+    构建。
+  </Requirement>
+  <Requirement title="应用中已安装 @react-navigation/native 7 或更高版本">
+    该集成在运行时依赖 `@react-navigation/native`（v7.0.0 或更高版本）。如果
+    未安装该包，集成将静默无操作。
+  </Requirement>
+</Prerequisites>
+
+<Step label="1">
+
+## 启用集成
+
+> **warning** 必须在挂载前启用该集成，并且不能在运行时切换。应用挂载后调用 `configure()`，或在会话中途切换该标志，都会抛出错误。
+
+在模块作用域内、任何屏幕挂载之前，使用 `react-navigation` 集成标志调用 `Observe.configure()`：
+
+```tsx App.tsx
+import { Observe } from 'expo-observe';
+
+Observe.configure({
+  integrations: { 'react-navigation': true },
+});
+```
+
+</Step>
+
+<Step label="2">
+
+## 使用 `ObserveNavigationContainer`
+
+将顶层的 `<NavigationContainer>` 替换为 `<ObserveNavigationContainer>`。它包装了原生容器，接受相同的属性，并转发相同的 ref。它还会订阅导航状态变化，以便记录每个屏幕的渲染时长。
+
+```tsx App.tsx
+import { Observe } from 'expo-observe';
+import { ObserveNavigationContainer } from 'expo-observe/integrations/react-navigation';
+
+Observe.configure({
+  integrations: { 'react-navigation': true },
+});
+
+export default function App() {
+  return <ObserveNavigationContainer>{/* your navigators */}</ObserveNavigationContainer>;
+}
+```
+
+> **info** `ObserveNavigationContainer` 是 `NavigationContainer` 的直接替代品。如果你传入了 `linking` 配置，集成会使用它为每个屏幕解析一个人类可读的路径；否则会回退到屏幕的 `route.name`。
+
+</Step>
+
+<Step label="3">
+
+## 在屏幕中调用 `useObserve()`
+
+使用 `useObserve()` hook 获取一个会自动限定到当前屏幕的 `markInteractive`。发出的事件会带上该屏幕的路径标签。
+
+```tsx screens/Home.tsx
+import { useObserve } from 'expo-observe';
+import { useEffect } from 'react';
+
+export default function Home() {
+  const { markInteractive } = useObserve();
+
+  useEffect(() => {
+    markInteractive();
+  }, [markInteractive]);
+
+  return (/* your screen content */);
+}
+```
+
+> **info** 如果集成被禁用，或者未安装 `@react-navigation/native`，`useObserve()` 会回退到全局的 `AppMetrics.markInteractive`。无论集成状态如何，你都可以保留这个 hook。
+
+</Step>
+
+## 指标
+
+### 按屏幕首次渲染（`cold_ttr`）
+
+**它衡量的内容：** 从导航动作被派发时开始计算（例如 `navigation.navigate()`），到目标屏幕首次获得焦点为止的时间。对于应用启动后的第一次获得焦点，该测量从 JS bundle 加载时开始，且事件会包含 `isAppLaunch: true`。
+
+在单个会话中，每个屏幕实例最多发出一次。
+
+**事件参数：**
+
+| 参数          | 类型      | 描述                                                                                             |
+| ------------- | --------- | ------------------------------------------------------------------------------------------------ |
+| `routeName`   | `string`  | 解析后的屏幕路径（例如 `/sessions/abc`），如果没有 `linking` 配置解析成功，则为 `route.name`。 |
+| `routeParams` | `object`  | 当前聚焦的路由参数（例如 `{ sessionId: 'abc' }`）。                                              |
+| `isAppLaunch` | `boolean` | 当以进程启动为基准测量时为 `true`，后续导航为 `false`。                                           |
+
+### 按屏幕热渲染（`warm_ttr`）
+
+**它衡量的内容：** 与 `cold_ttr` 相同，但适用于在获得焦点之前就已经渲染过的屏幕，通常是因为它们已被预加载，或者用户返回到了这些屏幕。选项卡导航器中的兄弟屏幕只有在挂载之后才算作热渲染。使用 React Navigation v7 的默认 `lazy: true` 时，未聚焦的选项卡会保持未挂载状态，它们的首次聚焦会被记录为 `cold_ttr`。
+
+**事件参数：**
+
+| 参数         | 类型     | 描述                      |
+| ------------ | -------- | ------------------------- |
+| `routeName`  | `string` | 解析后的屏幕路径，或 `route.name`。 |
+| `routeParams` | `object` | 当前聚焦的路由参数（例如 `{ sessionId: 'abc' }`）。 |
+
+### 按屏幕交互就绪时间（`tti`）
+
+**它衡量的内容：** 从导航动作被派发时开始计算，到目标屏幕调用 `markInteractive()` 为止的时间。每次导航只记录第一次调用，因此可以安全地多次调用 `markInteractive()`。
+
+**事件参数：**
+
+| 参数         | 类型     | 描述                                              |
+| ------------ | -------- | ------------------------------------------------- |
+| `routeName`  | `string` | 解析后的屏幕路径，或 `route.name`。               |
+| `routeParams` | `object` | 当前聚焦的路由参数。                               |
+| `...`         | `any`    | 通过 `markInteractive({ ... })` 传入的任意自定义参数。 |
+
+## 注意事项和故障排查
+
+- 仅当运行时安装了 `@react-navigation/native` 时，集成才会激活。如果未安装，`useObserve()` 仍可继续工作，但不会发出按屏幕划分的导航指标。未安装 `@react-navigation/native` 时渲染 `<ObserveNavigationContainer>` 会抛出错误。
+- 必须在挂载前通过 `Observe.configure({ integrations: { 'react-navigation': true } })` 启用该集成。在应用挂载后，或在 `<ObserveNavigationContainer>` 挂载后切换它，都会抛出错误。
+- `markInteractive()` 只会在屏幕获得焦点后记录。对未聚焦屏幕的调用会更新内部状态，但在屏幕聚焦之前不会发出 `tti` 事件。
+- 请在屏幕组件内部调用 `useObserve()`，不要放在更高层的包装组件中。如果屏幕的标识在多次渲染之间发生变化，hook 会记录警告。如果 `markInteractive()` 记录了 `Calling markInteractive on unmounted screen` 或 `No metadata available for the current screen`，说明该调用发生在屏幕组件外部或卸载之后。请将调用移到屏幕组件内部的 `useEffect` 中。
+- 关于 EAS Observe 的常规问题，请参阅 [故障排查](/eas/observe/reference/troubleshooting/)。

@@ -1,17 +1,18 @@
 ---
-title: 预构建 Expo 模块
-description: 了解预构建的 Expo 模块如何缩短 Android 和 iOS 的原生构建时间。
+title: 预编译的 Expo 模块
+description: 了解预编译的 Expo 模块如何缩短 Android 和 iOS 的原生构建时间。
+hideTOC: true
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-本地构建时间可能会拖慢你的开发流程。Expo 为其最复杂的一些模块提供了预构建版本，因此你的项目链接的是预编译二进制文件，而不是在每次构建时都从源代码重新编译它们。在 Android 上，这些二进制文件以通过 Gradle 连接的 `.aar` 文件形式提供；在 iOS 上，它们以通过 CocoaPods 连接的 `XCFrameworks` 形式提供。两者都打包在常规的 Expo npm 包中，而尚未预编译的包会自动回退到从源代码构建——预编译模块和源码构建模块可以在同一个项目中共存。
+原生构建时间可能会拖慢你的开发流程。Expo 为其最复杂的模块提供了预编译版本，因此你的项目会链接预编译二进制文件，而不是在每次构建时都从源代码重新编译它们。在 Android 上，这些二进制文件以通过 Gradle 链接的 **.aar** 文件形式提供。在 iOS 上，它们以通过 CocoaPods 链接的 `XCFrameworks` 形式提供。两者都打包在常规的 Expo npm 包中，而尚未预编译的包会自动回退为从源代码构建——预编译模块和源码构建模块可以在同一个项目中共存。
 
-**大多数项目不需要做任何事情** —— 在新项目和现有项目中，只要 SDK 版本受支持，预构建的 Expo Modules 就会自动启用。
+**大多数项目不需要做任何事情**——在支持的 SDK 版本中，新的和现有的项目都会自动启用预编译的 Expo Modules。
 
-- **Android**: 自 SDK 53 起默认启用。
-- **iOS**: 自 SDK 56+ 起默认启用。在 SDK 55 中，仅在 EAS Build 上默认启用——请在你的 shell 中设置 `EXPO_USE_PRECOMPILED_MODULES=1`，以便在本地构建时启用。
+- **Android**：从 SDK 53 开始默认启用。
+- **iOS**：在 SDK 56 及更高版本中默认启用。在 SDK 55 中，仅在 EAS Build 上默认启用——在你的 shell 中设置 `EXPO_USE_PRECOMPILED_MODULES=1` 以在本地构建中启用。
 
 <Collapsible summary="在 iOS 上禁用">
 
@@ -29,7 +30,7 @@ CLI 会提示你选择该变量适用的环境（`development`、`preview`、`pr
 
 <Collapsible summary="通过 Expo Autolinking 禁用特定模块">
 
-在 **package.json** 中使用 `buildFromSource` 配置 Expo Autolinking。使用 `".*"` 可对所有预构建模块停用，或者列出特定的包名。此设置同时适用于 `android` 和 `ios`：
+在 **package.json** 中使用 `buildFromSource` 配置 Expo Autolinking。使用 `".*"` 来排除所有预编译模块，或者列出特定的包名。此设置适用于 `android` 和 `ios`：
 
 {/* prettier-ignore */}
 ```json package.json
@@ -49,5 +50,36 @@ CLI 会提示你选择该变量适用的环境（`development`、`preview`、`pr
 ```
 
 这通常只会在你自己修改模块源代码时才需要。
+
+</Collapsible>
+
+<Collapsible summary="EAS Build 故障排查">
+
+### iOS
+
+在 EAS Build 上，像 `react-native-reanimated` 和 `react-native-worklets` 这样的第三方库会自动以下编译的 XCFrameworks 形式下载。本地 `pod install` 默认不会获取它们。这些包在本地会从源代码构建，并自动应用任何 `staticFeatureFlags` 覆盖，因此标志和版本不匹配的问题主要会在 EAS Build 上暴露。请避免为本地构建启用第三方预编译下载，并将这条路径仅限定在 EAS。
+
+#### `react-native-reanimated` 和 `react-native-worklets`
+
+这两个包是紧密耦合的。`react-native-reanimated` 在原生层面链接 `react-native-worklets`。
+
+**请同时排除两者。** 如果你需要为其中任意一个包进行源码构建（例如打补丁或修改原生代码），请在 `buildFromSource` 中同时列出这两个包。只对其中一个进行源码构建会产生混合的预编译/源码链接，并且在运行时无法解析匹配的框架：
+
+{/* prettier-ignore */}
+```json package.json
+{
+  "expo": {
+    "autolinking": {
+      "ios": {
+        "buildFromSource": ["react-native-reanimated", "react-native-worklets"]
+      }
+    }
+  }
+}
+```
+
+**自定义特性标志需要源码构建。** 特性标志的值会在构建时写入预编译二进制文件，因此 **package.json** 中任何 `worklets.staticFeatureFlags` 或 `reanimated.staticFeatureFlags` 的覆盖都会被忽略。要应用它们，请使用 `EXPO_USE_PRECOMPILED_MODULES=0` 禁用预编译模块。
+
+**何时查看这里。** 在 EAS Build 上出现诸如 `Unable to recognize flag: <NAME>` 之类的运行时错误（但本地没有）意味着预编译产物的标志列表与你锁定的包版本不匹配。请使用上面的 `buildFromSource`，并[在 GitHub 上提交 issue](https://github.com/expo/expo/issues)。
 
 </Collapsible>

@@ -1,12 +1,12 @@
 ---
-title: Apple Handoff
+title: Apple 接力
 description: 了解如何使用 Expo Router 和 Apple Handoff 在 Apple 设备之间无缝继续应用导航。
 platforms: ['ios*', 'web']
 ---
 
 import { Terminal } from '~/ui/components/Snippet';
 
-Apple Handoff 是一项功能，它使用户能够在另一台设备上继续浏览您的应用或网站。Expo Router 为此功能自动处理所有运行时路由。不过，一次性配置必须手动设置。
+Apple 接力（Handoff）是一项功能，它使用户能够在另一台设备上继续浏览您的应用或网站。Expo Router 为此功能自动处理所有运行时路由。不过，一次性配置必须手动设置。
 
 在 Expo Router 中，底层的 iOS API（`NSUserActivity`）需要一个 `webpageUrl`，操作系统建议将其作为切换到您的应用时的当前 URL。`expo-router/head` 组件有一个可选的原生模块，可以自动将 `webpageUrl` 设置为 Expo Router 中当前聚焦的路由。
 
@@ -16,7 +16,7 @@ Apple Handoff 是一项功能，它使用户能够在另一台设备上继续浏
 
 - Handoff 仅适用于 Apple。
 - Handoff 不能在 Expo Go 应用中使用，因为它需要构建时配置。
-- Handoff 需要配置 [universal links](/linking/into-your-app/)，至少在 iOS 上，并且包含 `activitycontinuation` 对象。
+- Handoff 需要配置 [通用链接](/linking/into-your-app/)，至少在 iOS 上，并且包含 `activitycontinuation` 对象。
 - Handoff 需要在您希望支持的每个页面上使用 `expo-router/head` 组件；如果您希望所有页面都可连续接续，则可以在根布局中使用。
 
 为确保 **public/.well-known/apple-app-site-association** 文件配置正确，它必须包含 `activitycontinuation` 键，并带有一个 `apps` 数组，其中包含您的应用的 bundle ID 和 Team ID，格式为 `<APPLE_TEAM_ID>.<IOS_BUNDLE_ID>`。例如，`QQ57RJ5UTD.app.expo.acme`，其中 `QQ57RJ5UTD` 是 Team ID，`app.expo.acme` 是 bundle 标识符。
@@ -47,15 +47,22 @@ Apple Handoff 是一项功能，它使用户能够在另一台设备上继续浏
 
 > `webcredentials` 对象是可选的，但建议添加。
 
-您可以使用以下命令，根据您的 [app config](/versions/latest/config/app/) 生成 **apple-app-site-association** 文件：
+您可以使用以下命令，根据您的 [应用配置](/versions/latest/config/app/) 生成 **apple-app-site-association** 文件：
 
-<Terminal cmd={['$ npx setup-safari']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx setup-safari'],
+    yarn: ['$ yarn dlx setup-safari'],
+    pnpm: ['$ pnpm dlx setup-safari'],
+    bun: ['$ bunx setup-safari'],
+  }}
+/>
 
-请参阅 [测试深度链接](/linking/into-your-app/#test-the-deep-link) 指南，以在开发环境中测试 handoff。
+请参阅 [测试深度链接](/linking/into-your-app/#test-the-deep-link) 指南，以在开发环境中测试接力（Handoff）。
 
 ### Expo Head 设置
 
-请确保在 `app.config.tsx` 文件中使用 `expo-router` 配置插件设置 Handoff origin。此 URL 将在用户切换到您的应用时用作 `webpageUrl`。
+请确保在 `app.config.tsx` 文件中使用 `expo-router` 配置插件设置 Handoff 源地址。此 URL 将在用户切换到您的应用时用作 `webpageUrl`。
 
 ```tsx app.config.tsx
 // 请务必将其更改为对您的项目唯一的值。
@@ -93,17 +100,24 @@ module.exports = {
 };
 ```
 
-> 在测试 handoff 到原生端时，不要使用仅限开发环境的 `?mode=developer` 后缀。
+> 在测试接力（Handoff）到原生端时，不要使用仅限开发环境的 `?mode=developer` 后缀。
 
 配置完应用配置后，请使用以下命令重新生成您的原生项目：
 
-<Terminal cmd={['$ npx expo prebuild -p ios']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo prebuild -p ios'],
+    yarn: ['$ yarn expo prebuild -p ios'],
+    pnpm: ['$ pnpm expo prebuild -p ios'],
+    bun: ['$ bun expo prebuild -p ios'],
+  }}
+/>
 
 在开发过程中，您必须在将应用安装到设备之前先启动网站。这是因为当您安装应用时，操作系统会触发 Apple 的服务器去 ping 您的网站，以获取 **.well-known/apple-app-site-association** 文件。如果网站未运行，操作系统将无法找到该文件，handoff 也将无法工作。如果发生这种情况，请使用 `npx expo run:ios -d` 重新构建原生应用。
 
 ## 用法
 
-在任何您想支持 handoff 的路由中，使用来自 `expo-router/head` 的 `Head` 组件：
+在任何您想支持接力（Handoff）的路由中，使用来自 `expo-router/head` 的 `Head` 组件：
 
 ```tsx src/app/index.tsx
 import Head from 'expo-router/head';
@@ -127,9 +141,9 @@ export default function App() {
 
 | Meta 标签                | 描述                                                                                                                                                                                                                                               |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `expo:handoff`           | 设置为 `true` 以为当前路由启用 handoff。默认值为 `false`。（仅 iOS）                                                                                                                                                                                |
-| `og:title` 和 `<title>` | 为 `NSUserActivity` 设置标题；在 handoff 中不使用此项。                                                                                                                                                                                             |
-| `og:description`         | 为 `NSUserActivity` 设置描述；在 handoff 中不使用此项。                                                                                                                                                                                           |
+| `expo:handoff`           | 设置为 `true` 以为当前路由启用接力（Handoff）。默认值为 `false`。（仅 iOS）                                                                                                                                                                                |
+| `og:title` 和 `<title>` | 为 `NSUserActivity` 设置标题；在接力（Handoff）中不使用此项。                                                                                                                                                                                             |
+| `og:description`         | 为 `NSUserActivity` 设置描述；在接力（Handoff）中不使用此项。                                                                                                                                                                                           |
 | `og:url`                 | 设置用户切换到您的应用时应打开的 URL。默认使用应用内当前 URL，并以 `expo-router` 配置插件中的 `headOrigin` 属性作为 baseURL。传入相对路径时，会将 `headOrigin` 追加到该路径前。 |
 
 如果您想在不同平台之间切换这些值，可以使用 **Platform.select**：

@@ -1,5 +1,5 @@
 ---
-modificationDate: 2026年5月12日
+modificationDate: 2026年5月21日
 title: 构建服务器基础设施
 sidebar_title: 服务器基础设施
 maxHeadingDepth: 4
@@ -20,19 +20,20 @@ Linux 运行器托管在 Google Cloud Platform 上。macOS 运行器托管在我
 
 每个平台的镜像都包含一个特定版本的 Node.js、Yarn、CocoaPods、Xcode、Ruby、Fastlane 等。你可以在[eas.json](/build/eas-json)中覆盖其中部分版本。如果你要找的配置项不存在，你可以使用[npm hooks](/build-reference/npm-hooks)通过 `apt-get` 或 `brew` 安装或更新任何系统依赖。请注意，这些自定义配置会在构建过程中应用，并会增加构建耗时。
 
-选择构建镜像时，你可以使用下方提供的完整名称，或使用以下别名之一：`auto`、`latest`，或者某个特定的 SDK，例如 `sdk-55`。
+选择构建镜像时，你可以使用下方提供的完整名称，或使用以下别名之一：`auto`、`latest`，或者某个特定 SDK 的别名，例如 `sdk-56`。
 
-- 使用特定名称可保证环境一致，仅会有小幅更新。
-- 使用 `auto` 别名时，构建镜像将根据项目配置、Expo SDK 版本和 React Native 版本来选择。你可以在构建日志的 **Spin up build environment** 部分查看此次构建使用了哪个镜像。
-- `latest` 别名将指向包含最新软件版本的镜像。
-- `sdk-55` 别名将指向最适合 SDK 55 构建的镜像。
-- `sdk-54` 别名将指向最适合 SDK 54 构建的镜像。
-- `sdk-53` 别名将指向最适合 SDK 53 构建的镜像。
-- `sdk-52` 别名将指向最适合 SDK 52 构建的镜像。
-- SDK 别名会随着每个新 SDK 版本发布而更新。
-- `latest` 别名会随着每个新镜像版本发布而更新。
+- 使用特定名称可确保环境一致，仅会有少量更新。
+- 使用 `auto` 别名时，构建镜像会根据项目配置、Expo SDK 版本和 React Native 版本来选择。你可以在构建日志的 **启动构建环境** 部分查看此次构建使用了哪个镜像。
+- `latest` 别名会指向包含最新软件版本的镜像。
+- `sdk-56` 别名会指向最适合 SDK 56 构建的镜像。
+- `sdk-55` 别名会指向最适合 SDK 55 构建的镜像。
+- `sdk-54` 别名会指向最适合 SDK 54 构建的镜像。
+- `sdk-53` 别名会指向最适合 SDK 53 构建的镜像。
+- `sdk-52` 别名会指向最适合 SDK 52 构建的镜像。
+- SDK 别名会随着每个新的 SDK 发布而更新。
+- `latest` 别名会随着每个新的镜像版本发布而更新。
 
-> **info** **注意：** 如果你没有在 **eas.json** 中提供 `image`，默认会使用 `auto` 别名。
+> **信息** **注意：** 如果你没有在 **eas.json** 中提供 `image`，默认会使用 `auto` 别名。
 
 ## Android 构建服务器配置
 
@@ -80,13 +81,30 @@ worker 还会通过 `GRADLE_OPTS` 设置这些顶层 Gradle 属性：
 - `-Dorg.gradle.parallel=true`
 - `-Dorg.gradle.daemon=false`
 
-> **warning** worker 会通过 `GRADLE_OPTS` 设置 `org.gradle.jvmargs`，这会覆盖你项目 **gradle.properties** 中定义的任何 `org.gradle.jvmargs`。
+> **警告** worker 会通过 `GRADLE_OPTS` 设置 `org.gradle.jvmargs`，这会覆盖你项目 **gradle.properties** 中定义的任何 `org.gradle.jvmargs`。
 
 #### 覆盖 `GRADLE_OPTS`
 
 你可以在 **eas.json** 的构建配置文件 [`env`](/eas/json/#env) 中、在[工作流文件](/eas/workflows/syntax/#jobsjob_idenv)中，或通过 [EAS 环境变量](/eas/environment-variables/)设置 `GRADLE_OPTS`，以替换 worker 的默认值。项目环境变量优先于 worker 的默认值。
 
 ### Android 服务器镜像
+
+#### <CopyTextButton>`ubuntu-26.04-jdk-17-ndk-r27b` (`sdk-56`)</CopyTextButton>
+
+<Collapsible summary="详情">
+
+- GCE 镜像：`ubuntu-2604-resolute-amd64-v20260505`
+- NDK 27.1.12297006
+- Node.js 22.22.2
+- Bun 1.3.13
+- Yarn 1.22.22
+- pnpm 10.33.3
+- npm 10.9.4
+- Java 17
+- node-gyp 12.3.0
+- Maestro 2.5.1
+
+</Collapsible>
 
 #### <CopyTextButton>`ubuntu-24.04-jdk-17-ndk-r27b-sdk-55` (`latest`, `sdk-55`)</CopyTextButton>
 
@@ -340,6 +358,25 @@ iOS 构建器 VM 运行在 Mac mini 主机上的隔离环境中。每次构建�
   ```
 
 ### iOS 服务器镜像
+
+#### <CopyTextButton>`macos-tahoe-26.4-xcode-26.4` (`sdk-56`)</CopyTextButton>
+
+<Collapsible summary="详情">
+
+- macOS Tahoe 26.4.1
+- Xcode 26.4 (17E202)
+- Node.js 22.22.2
+- Bun 1.3.13
+- Yarn 1.22.22
+- pnpm 10.33.3
+- npm 10.9.4
+- fastlane 2.233.1
+- CocoaPods 1.16.2
+- Ruby 3.2
+- node-gyp 12.3.0
+- Maestro 2.5.1
+
+</Collapsible>
 
 #### <CopyTextButton>`macos-sequoia-15.6-xcode-26.2` (`latest`, `sdk-55`)</CopyTextButton>
 
@@ -623,6 +660,6 @@ iOS 构建器 VM 运行在 Mac mini 主机上的隔离环境中。每次构建�
 
 ### 支持的 Xcode 版本
 
-我们的目标是支持所有稳定版 Xcode 发布版本，只要在构建过程中使用它们时，你就能将应用提交到 App Store Connect。
+我们的目标是尽快支持所有稳定版 Xcode 发布版本，只要它们可用于构建流程，你就可以将应用提交到 App Store Connect。
 
-这通常意味着我们支持最新的稳定版 Xcode，以及前一个版本（直到 Apple 引入新的[最低 Xcode 版本要求](https://developer.apple.com/news/upcoming-requirements/?id=04292024a)）。
+这通常意味着我们会支持最新的稳定版 Xcode，以及前一个版本（直到 Apple 引入新的[最低 Xcode 版本要求](https://developer.apple.com/news/upcoming-requirements/?id=04292024a)）。

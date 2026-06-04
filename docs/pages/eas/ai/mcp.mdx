@@ -14,9 +14,7 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-> **info** Expo MCP Server 需要 [EAS 付费计划](https://expo.dev/pricing)。
-
-[模型上下文协议（MCP）](https://modelcontextprotocol.io/) 是一种标准协议，允许 AI 模型与外部数据源集成，从而提供更丰富的上下文，以获得更精确的响应。它使代理等 AI 辅助工具能够更深入地理解你的开发环境，从而更好地帮助你的代码库。
+[模型上下文协议（MCP）](https://modelcontextprotocol.io/) 是一种标准协议，允许 AI 模型与外部数据源集成，从而提供更丰富的上下文，以获得更精准的响应。它使诸如 agent 之类的 AI 辅助工具能够更深入地了解你的开发环境，从而更好地协助你的代码库。
 
 Expo MCP Server 是由 Expo 托管的远程 MCP 服务器，可与 Claude Code、Cursor、VS Code 等常见的 AI 辅助工具集成，使它们能够直接与你的 Expo 项目交互。
 
@@ -62,10 +60,10 @@ Expo MCP Server 会让你的 AI 辅助工具了解 Expo SDK，并允许它们与
 完整的 [MCP 能力](#available-mcp-capabilities) 表列出了 Expo MCP Server 为 AI 辅助工具提供的工具和提示词。
 
 <Prerequisites>
-  <Requirement title="使用 EAS 付费计划的 Expo 账户">
-    需要 [EAS 付费计划](https://expo.dev/pricing) 才能使用 Expo MCP Server。
+  <Requirement title="Expo 账户">
+    使用 Expo MCP Server 需要一个 Expo 账户。
   </Requirement>
-  <Requirement title="An Expo project on the latest SDK">
+  <Requirement title="最新 SDK 的 Expo 项目">
     使用 `npx create-expo-app@latest --template default@sdk-56` 创建一个项目，或者确保你现有的项目已安装最新的 `expo` 包。
   </Requirement>
   <Requirement title="支持远程 MCP 的 AI 辅助工具">
@@ -87,7 +85,7 @@ Expo MCP Server 支持与各种 AI 辅助工具集成。请使用下面的通用
 
 <Collapsible summary="Claude Code 设置">
 
-<Terminal cmd={['$ claude mcp add --transport http expo-mcp https://mcp.expo.dev/mcp']} />
+<Terminal cmd={['$ claude mcp add --transport http expo https://mcp.expo.dev/mcp']} />
 
 安装后，在 Claude Code 会话中运行 `/mcp` 以进行身份验证。
 
@@ -97,15 +95,15 @@ Expo MCP Server 支持与各种 AI 辅助工具集成。请使用下面的通用
 
 点击以下链接为 Cursor 安装 MCP 服务器：
 
-<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=expo-mcp&config=eyJ1cmwiOiJodHRwczovL21jcC5leHBvLmRldi9tY3AifQ%3D%3D">
+<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=expo&config=eyJ1cmwiOiJodHRwczovL21jcC5leHBvLmRldi9tY3AifQ%3D%3D">
   <img
     src="https://cursor.com/deeplink/mcp-install-light.svg"
-    alt="安装 MCP Server"
+    alt="安装 MCP 服务器"
     className="hidden max-w-48 dark:block"
   />
   <img
     src="https://cursor.com/deeplink/mcp-install-dark.svg"
-    alt="安装 MCP Server"
+    alt="安装 MCP 服务器"
     className="block max-w-48 dark:hidden"
   />
 </a>
@@ -119,13 +117,13 @@ Expo MCP Server 支持与各种 AI 辅助工具集成。请使用下面的通用
 3. 选择 **HTTP**
 4. 输入服务器详细信息：
    - **URL**：`https://mcp.expo.dev/mcp`
-   - **Name**：expo-mcp
+   - **Name**：expo
 
 </Collapsible>
 
 <Collapsible summary="Codex 设置">
 
-<Terminal cmd={['$ codex mcp add expo-mcp --url https://mcp.expo.dev/mcp']} />
+<Terminal cmd={['$ codex mcp add expo --url https://mcp.expo.dev/mcp']} />
 
 上面的命令会将 MCP 服务器添加到你的 Codex 配置文件中，并提示你使用 Expo 账户进行身份验证。
 
@@ -161,19 +159,60 @@ Expo MCP Server 支持与各种 AI 辅助工具集成。请使用下面的通用
 为了获得完整的 MCP 体验，并使用从你的 iOS 模拟器截图、打开 DevTools 和自动化功能等高级特性，请设置本地 Expo 开发服务器：
 
 <Terminal
-  cmd={[
-    '$ cd /path/to/your-project',
-    '',
-    '# 安装 expo-mcp 包',
-    '$ npx expo install expo-mcp --dev',
-    '',
-    '# 确保你已使用与用于',
-    '# 通过 MCP 服务器认证的同一 Expo 账户登录 Expo CLI',
-    '$ npx expo whoami || npx expo login',
-    '',
-    '# 使用 MCP 能力启动开发服务器',
-    '$ EXPO_UNSTABLE_MCP_SERVER=1 npx expo start',
-  ]}
+  cmd={{
+    npm: [
+      '$ cd /path/to/your-project',
+      '',
+      '# 安装 expo-mcp 包',
+      '$ npx expo install expo-mcp --dev',
+      '',
+      '# 确保你已使用与用于',
+      '# 通过 MCP 服务器进行身份验证的相同账户登录 Expo CLI',
+      '$ npx expo whoami || npx expo login',
+      '',
+      '# 启动带有 MCP 能力的开发服务器',
+      '$ EXPO_UNSTABLE_MCP_SERVER=1 npx expo start',
+    ],
+    yarn: [
+      '$ cd /path/to/your-project',
+      '',
+      '# 安装 expo-mcp 包',
+      '$ yarn expo install expo-mcp --dev',
+      '',
+      '# 确保你已使用与用于',
+      '# 通过 MCP 服务器进行身份验证的相同账户登录 Expo CLI',
+      '$ yarn expo whoami || yarn expo login',
+      '',
+      '# 启动带有 MCP 能力的开发服务器',
+      '$ EXPO_UNSTABLE_MCP_SERVER=1 yarn expo start',
+    ],
+    pnpm: [
+      '$ cd /path/to/your-project',
+      '',
+      '# 安装 expo-mcp 包',
+      '$ pnpm expo install expo-mcp --dev',
+      '',
+      '# 确保你已使用与用于',
+      '# 通过 MCP 服务器进行身份验证的相同账户登录 Expo CLI',
+      '$ pnpm expo whoami || pnpm expo login',
+      '',
+      '# 启动带有 MCP 能力的开发服务器',
+      '$ EXPO_UNSTABLE_MCP_SERVER=1 pnpm expo start',
+    ],
+    bun: [
+      '$ cd /path/to/your-project',
+      '',
+      '# 安装 expo-mcp 包',
+      '$ bun expo install expo-mcp --dev',
+      '',
+      '# 确保你已使用与用于',
+      '# 通过 MCP 服务器进行身份验证的相同账户登录 Expo CLI',
+      '$ bun expo whoami || bun expo login',
+      '',
+      '# 启动带有 MCP 能力的开发服务器',
+      '$ EXPO_UNSTABLE_MCP_SERVER=1 bun expo start',
+    ],
+  }}
 />
 
 > **important** 每当你启动或停止开发服务器时，都需要在你的 AI 辅助工具中**重新连接或重新启动** MCP 服务器连接，以确保 AI 辅助工具获得更新后的能力。
@@ -186,7 +225,7 @@ Expo MCP Server 根据你的设置提供两种类型的能力：
 
 ### 服务器能力
 
-服务器能力仅通过远程 MCP 服务器连接即可使用，无需设置本地开发服务器。**search_documentation** 工具就是服务器能力的一个示例。
+仅通过远程 MCP 服务器连接即可使用服务器能力，无需设置本地开发服务器。
 
 ### 本地能力
 
@@ -220,11 +259,25 @@ Expo MCP Server 根据你的设置提供两种类型的能力：
 - 本地能力的 iOS 支持仅限于模拟器（尚不支持实体设备）
 - 本地能力的 iOS 支持仅在 macOS 主机上可用
 
+## 数据隐私
+
+Expo 不会使用发送到 Expo MCP Server 的数据来训练 AI 模型。Expo MCP Server 本身不会运行 AI 模型。它会为你连接的 AI 辅助工具提供 MCP 工具和提示词，例如 Claude Code、Cursor 或 VS Code。
+
+对于服务器能力，Expo MCP Server 可能会访问完成所请求工具调用所需的 Expo 账户和项目数据，例如构建、工作流、文档或 TestFlight 相关数据。结果会通过 MCP 连接返回给你的 AI 辅助工具。
+
+对于本地能力，你开发机器上的数据会通过 Expo MCP Server 进行代理，并返回给你的 AI 辅助工具。例如，当 AI 辅助工具请求截取模拟器截图时，数据流如下：
+
+1. 本地 Expo 开发服务器从你的模拟器中捕获截图。
+2. 截图发送到 Expo MCP Server。
+3. Expo MCP Server 将截图返回给你的本地 MCP 客户端或 AI 辅助工具。
+
+Expo MCP Server 会将数据返回给你连接的 MCP 客户端，例如 Claude Code、Cursor、VS Code 或 Codex。之后，客户端及其模型提供方可能会应用各自的数据保留、零数据保留（ZDR）和训练策略。在为处理敏感数据的项目启用 MCP 访问之前，请先审查这些策略，包括 HIPAA、SOC 2 或其他受监管工作负载。
+
 ## 其他资源
 
 <BoxLink
   title="模型上下文协议文档"
   Icon={BookOpen02Icon}
-  description="了解更多关于 MCP 规范和协议细节。"
+  description="进一步了解 MCP 规范和协议细节。"
   href="https://modelcontextprotocol.io/"
 />

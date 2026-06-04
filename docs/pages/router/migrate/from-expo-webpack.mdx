@@ -13,7 +13,7 @@ Expo Router 是一种全新的方式，用于构建可在 web 和 native 上运�
 
 ## 介绍
 
-> **warning** `@expo/webpack-config` 已[弃用](/more/release-statuses/#deprecated)，并且不再接收任何新功能更新。
+> **警告** `@expo/webpack-config` 已[弃用](/more/release-statuses/#deprecated)，并且不再接收任何新功能更新。
 
 Expo Router 支持 [Web 静态渲染](/router/web/static-rendering)，这使得搜索引擎优化（SEO）、社交媒体预览以及更快的加载时间成为可能，这与 Expo Webpack 不同。结合 React Navigation 的优点，它支持自动深度链接、[类型安全](/router/reference/typed-routes)、[延迟打包](/router/web/async-routes)、[模块化 HTML 模板](/router/web/static-rendering#root-html)、[Web 静态渲染](/router/web/static-rendering) 等更多功能。
 
@@ -105,7 +105,7 @@ module.exports = api => {
 
 ## 基础路径和子路径托管
 
-> **important** [实验性](/more/release-statuses/#experimental) 功能。
+> **重要** [实验性](/more/release-statuses/#experimental) 功能。
 
 在 `@expo/webpack-config` 中，你可以使用 `PUBLIC_URL` 环境变量或项目 **package.json** 中的 `homepage` 字段，将网站打包后托管在子路径下：
 
@@ -157,9 +157,9 @@ module.exports = async function (env, argv) {
 
 与 `@expo/webpack-config` 类似，Expo Router 支持根据 **app.json** 中的 `web.favicon` 字段生成 **favicon.ico** 文件。
 
-## Service worker
+## Service Worker
 
-> **warning** 添加 service worker 时要小心，因为它们已知会在 web 上导致意外行为。如果你不小心发布了一个会积极缓存网站的 service worker，用户将无法轻松请求更新。若想获得最佳的离线移动体验，请使用 Expo 创建原生应用。与带有 service worker 的网站不同，原生应用可以通过应用商店更新来清除缓存体验。这类似于重置用户的原生浏览器（如果 service worker 过于激进，他们可能也需要这样做）。有关更多信息，请参阅[为什么 service worker 并不是最佳方案](https://github.com/facebook/create-react-app/issues/2398)。
+> **警告** 添加 service worker 时要小心，因为它们已知会在 web 上导致意外行为。如果你不小心发布了一个会积极缓存网站的 service worker，用户将无法轻松请求更新。若想获得最佳的离线移动体验，请使用 Expo 创建原生应用。与带有 service worker 的网站不同，原生应用可以通过应用商店更新来清除缓存体验。这类似于重置用户的原生浏览器（如果 service worker 过于激进，他们可能也需要这样做）。有关更多信息，请参阅[为什么 service worker 并不是最佳方案](https://github.com/facebook/create-react-app/issues/2398)。
 
 Expo Webpack 没有内置的 service worker 支持。不过，你可以通过使用 `workbox-webpack-plugin` 并将其添加到 **webpack.config.js** 来自行添加。
 
@@ -168,8 +168,12 @@ Workbox 没有 Metro 集成，但由于 Workbox 不需要打包器的核心功�
 例如，下面是设置 Workbox 的一个可能流程。使用以下命令创建一个新项目：
 
 <Terminal
-  cmd={['$ npm create expo -t tabs my-app', '', '$ cd my-app']}
-  cmdCopy="npm create expo -t tabs my-app && cd my-app"
+  cmd={{
+    npm: ['$ npm create expo -t tabs my-app', '', '$ cd my-app'],
+    yarn: ['$ yarn create expo -t tabs my-app', '', '$ cd my-app'],
+    pnpm: ['$ pnpm create expo -t tabs my-app', '', '$ cd my-app'],
+    bun: ['$ bun create expo -t tabs my-app', '', '$ cd my-app'],
+  }}
 />
 
 接下来，为应用创建一个根 HTML 文件，并添加 service worker 注册脚本：
@@ -221,20 +225,56 @@ if ('serviceWorker' in navigator) {
 
 现在，在运行向导之前先构建应用：
 
-<Terminal cmd={['$ npx expo export -p web']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo export -p web'],
+    yarn: ['$ yarn expo export -p web'],
+    pnpm: ['$ pnpm expo export -p web'],
+    bun: ['$ bun expo export -p web'],
+  }}
+/>
 
 运行向导命令，选择 `dist` 作为应用根目录，并对其他所有选项使用默认值：
 
 <Terminal
-  cmd={[
-    '$ npx workbox-cli wizard',
-    '',
-    '$ ? What is the root of your web app (that is which directory do you deploy)? dist/',
-    '$ ? Which file types would you like to precache? js, html, ttf, ico, json',
-    '$ ? Where would you like your service worker file to be saved? dist/sw.js',
-    '$ ? Where would you like to save these configuration options? workbox-config.js',
-    "$ ? Does your web app manifest include search parameter(s) in the 'start_url', other than 'utm_' or 'fbclid' (like '?source=pwa')? No",
-  ]}
+  cmd={{
+    npm: [
+      '$ npx workbox-cli wizard',
+      '',
+      '? 你的 Web 应用根目录是什么（也就是你要部署哪个目录）？ dist/',
+      '? 你希望预缓存哪些文件类型？ js, html, ttf, ico, json',
+      '? 你希望将 service worker 文件保存到哪里？ dist/sw.js',
+      '? 你希望将这些配置选项保存到哪里？ workbox-config.js',
+      "? 你的 Web 应用清单中的 'start_url' 是否包含除 'utm_' 或 'fbclid' 之外的查询参数（例如 '?source=pwa'）？ 否",
+    ],
+    yarn: [
+      '$ yarn dlx workbox-cli wizard',
+      '',
+      '? 你的 Web 应用根目录是什么（也就是你要部署哪个目录）？ dist/',
+      '? 你希望预缓存哪些文件类型？ js, html, ttf, ico, json',
+      '? 你希望将 service worker 文件保存到哪里？ dist/sw.js',
+      '? 你希望将这些配置选项保存到哪里？ workbox-config.js',
+      "? 你的 Web 应用清单中的 'start_url' 是否包含除 'utm_' 或 'fbclid' 之外的查询参数（例如 '?source=pwa'）？ 否",
+    ],
+    pnpm: [
+      '$ pnpm dlx workbox-cli wizard',
+      '',
+      '? 你的 Web 应用根目录是什么（也就是你要部署哪个目录）？ dist/',
+      '? 你希望预缓存哪些文件类型？ js, html, ttf, ico, json',
+      '? 你希望将 service worker 文件保存到哪里？ dist/sw.js',
+      '? 你希望将这些配置选项保存到哪里？ workbox-config.js',
+      "? 你的 Web 应用清单中的 'start_url' 是否包含除 'utm_' 或 'fbclid' 之外的查询参数（例如 '?source=pwa'）？ 否",
+    ],
+    bun: [
+      '$ bunx workbox-cli wizard',
+      '',
+      '? 你的 Web 应用根目录是什么（也就是你要部署哪个目录）？ dist/',
+      '? 你希望预缓存哪些文件类型？ js, html, ttf, ico, json',
+      '? 你希望将 service worker 文件保存到哪里？ dist/sw.js',
+      '? 你希望将这些配置选项保存到哪里？ workbox-config.js',
+      "? 你的 Web 应用清单中的 'start_url' 是否包含除 'utm_' 或 'fbclid' 之外的查询参数（例如 '?source=pwa'）？ 否",
+    ],
+  }}
 />
 
 最后，运行 `npx workbox-cli generateSW workbox-config.js` 来生成 service worker 配置。从现在开始，你可以在 **package.json** 中添加一个构建脚本，以正确顺序运行这两个脚本：

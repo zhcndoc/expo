@@ -1,6 +1,6 @@
 ---
 title: TextField
-description: 用于原生 Material3 文本输入的 Jetpack Compose TextField 组件。
+description: A Jetpack Compose TextField component for native Material3 text input.
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
 packageName: '@expo/ui'
 platforms: ['android', 'expo-go']
@@ -263,27 +263,30 @@ export default function ImperativeRefExample() {
 ```tsx WorkletPhoneMaskExample.tsx
 import { Host, TextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
 import { fillMaxWidth } from '@expo/ui/jetpack-compose/modifiers';
-import { useEffectEvent } from 'react';
+import { useCallback } from 'react';
 
 export default function WorkletPhoneMaskExample() {
   const phone = useNativeState('');
   const selection = useNativeState({ start: 0, end: 0 });
 
-  const handleValueChange = useEffectEvent((v: string) => {
-    'worklet';
-    const digits = v.replace(/\D/g, '').slice(0, 10);
-    let formatted = digits;
-    if (digits.length > 6) {
-      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-    } else if (digits.length > 3) {
-      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    }
-    if (formatted !== v) {
-      phone.value = formatted;
-      // 对演示而言吸附到末尾。真实的掩码需要更智能的光标处理。
-      selection.value = { start: formatted.length, end: formatted.length };
-    }
-  });
+  const handleValueChange = useCallback(
+    (v: string) => {
+      'worklet';
+      const digits = v.replace(/\D/g, '').slice(0, 10);
+      let formatted = digits;
+      if (digits.length > 6) {
+        formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+      } else if (digits.length > 3) {
+        formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+      }
+      if (formatted !== v) {
+        phone.value = formatted;
+        // 示例中吸附到末尾。真实的掩码需要更智能的光标处理。
+        selection.value = { start: formatted.length, end: formatted.length };
+      }
+    },
+    [phone, selection]
+  );
 
   return (
     <Host matchContents>

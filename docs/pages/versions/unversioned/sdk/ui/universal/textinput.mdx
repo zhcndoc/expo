@@ -52,15 +52,18 @@ export default function UncontrolledTextInputExample() {
 
 ```tsx ControlledTextInputExample.tsx
 import { Host, TextInput, useNativeState } from '@expo/ui';
-import { useEffectEvent } from 'react';
+import { useCallback } from 'react';
 
 export default function ControlledTextInputExample() {
   const text = useNativeState('');
 
-  const handleChangeText = useEffectEvent((value: string) => {
-    'worklet';
-    text.value = value === 'Hello' ? 'World' : value;
-  });
+  const handleChangeText = useCallback(
+    (value: string) => {
+      'worklet';
+      text.value = value === 'Hello' ? 'World' : value;
+    },
+    [text]
+  );
 
   return (
     <Host matchContents={{ vertical: true }}>
@@ -78,7 +81,7 @@ export default function ControlledTextInputExample() {
 
 ```tsx PhoneMaskExample.tsx
 import { Host, TextInput, useNativeState } from '@expo/ui';
-import { useEffectEvent } from 'react';
+import { useCallback } from 'react';
 
 function formatPhone(input: string) {
   'worklet';
@@ -92,15 +95,18 @@ export default function PhoneMaskExample() {
   const phone = useNativeState('');
   const selection = useNativeState({ start: 0, end: 0 });
 
-  const handleChangeText = useEffectEvent((value: string) => {
-    'worklet';
-    const formatted = formatPhone(value);
-    if (formatted !== value) {
-      phone.value = formatted;
-      // 演示中将光标吸附到末尾。实际的掩码需要更智能的光标处理。
-      selection.value = { start: formatted.length, end: formatted.length };
-    }
-  });
+  const handleChangeText = useCallback(
+    (value: string) => {
+      'worklet';
+      const formatted = formatPhone(value);
+      if (formatted !== value) {
+        phone.value = formatted;
+        // 为演示起见，光标会跳到末尾。真正的掩码需要更智能的光标处理。
+        selection.value = { start: formatted.length, end: formatted.length };
+      }
+    },
+    [phone, selection]
+  );
 
   return (
     <Host matchContents={{ vertical: true }}>

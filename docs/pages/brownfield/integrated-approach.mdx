@@ -1,5 +1,5 @@
 ---
-title: 如何使用集成方式将 Expo 添加到原生应用中
+title: 如何通过集成方式将 Expo 添加到原生应用中
 sidebar_title: 集成方式
 description: 一份使用集成方式将 Expo 和 React Native 添加到现有原生（brownfield）应用中的指南。
 ---
@@ -16,7 +16,7 @@ React Native 和 Expo 非常灵活，可以逐步采用，一次一个屏幕（�
 
 本指南将带你了解如何将 React Native 视图添加到现有的原生应用中。这里介绍的方法是我们所说的“集成”方式，因为 React Native 和 Expo 会像集成其他任意库一样被集成进来。
 
-> **info** 另一种流行的技术是我们所说的“隔离”方式，在这种方式下，你的 Expo 应用会被打包成一个库，并被主应用当作黑盒处理。详情请参阅 [isolated approach guide](/brownfield/isolated-approach/)。
+> **info** 另一种流行的技术是我们所说的“隔离”方式，在这种方式下，你的 Expo 应用会被打包成一个库，并被主应用当作黑盒处理。详情请参阅 [隔离方式指南](/brownfield/isolated-approach/)。
 
 <Prerequisites>
   <Requirement title="Node.js (LTS)">
@@ -42,7 +42,14 @@ React Native 和 Expo 非常灵活，可以逐步采用，一次一个屏幕（�
 
 首先，在现有原生项目的根目录内创建一个 Expo 项目。
 
-<Terminal cmd={['$ npx create-expo-app@latest my-project --template default@sdk-56']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx create-expo-app@latest my-project --template default@sdk-56'],
+    yarn: ['$ yarn create expo-app my-project --template default@sdk-56'],
+    pnpm: ['$ pnpm create expo-app my-project --template default@sdk-56'],
+    bun: ['$ bun create expo my-project --template default@sdk-56'],
+  }}
+/>
 
 此命令会创建一个名为 **my-project** 的新目录，其中包含你的新 Expo 项目。虽然你可以将项目命名为任何名称，但为了保持一致，本指南使用 **my-project**。新项目包含一个示例 TypeScript 应用，帮助你快速上手。
 
@@ -164,7 +171,7 @@ includeBuild(expoAutolinking.reactNativeGradlePlugin)
 </Step>
 
 <Step label="3">
-将以下行添加到你应用的 **build.gradle** 文件中（通常是 **app/build.gradle** — 你可以参考 [bare minimum 模板文件](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/build.gradle)）：
+将以下行添加到你应用的 **build.gradle** 文件中（通常是 **app/build.gradle** — 你可以参考 [最小模板文件](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/build.gradle)）：
 
 <DiffBlock source="/static/diffs/brownfield/android/app-build-gradle.diff" />
 
@@ -203,7 +210,7 @@ hermesEnabled=true
 
 <DiffBlock source="/static/diffs/brownfield/android/android-manifest-cleartext-traffic.diff" />
 
-这是让你的应用通过 HTTP 与本地 [Metro bundler](https://metrobundler.dev/) 通信所必需的。你可以将最小模板中的 **AndroidManifest.xml** 文件作为参考：[main](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/main/AndroidManifest.xml) 和 [debug](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/debug/AndroidManifest.xml)
+这是让你的应用通过 HTTP 与本地 [Metro bundler](https://metrobundler.dev/) 通信所必需的。你可以将最小模板中的 **AndroidManifest.xml** 文件作为参考：[主](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/main/AndroidManifest.xml) 和 [调试](https://github.com/expo/expo/blob/main/templates/expo-template-bare-minimum/android/app/src/debug/AndroidManifest.xml)
 
 </Step>
 
@@ -348,7 +355,7 @@ end
 在 Xcode 项目导航器中，选择你的项目，然后在 `TARGETS` 下选择你的应用 target。在 **Build Settings** 中，使用搜索栏查找 `ENABLE_USER_SCRIPT_SANDBOXING`。如果它尚未设置，则将其值设为 `No`。这对于在 React Native 随附的 [Hermes 引擎](https://github.com/facebook/hermes/blob/main/README.md) 的 Debug 和 Release 版本之间正确切换是必需的。
 
   <ContentSpotlight
-    alt="Xcode Build Settings"
+    alt="Xcode 构建设置"
     src="/static/images/brownfield/user-script-sandboxing.png"
   />
 </Step>
@@ -357,9 +364,9 @@ end
 
 现在切换到 **Build Phases** 选项卡，并在 `[CP] Embed Pods Frameworks` 阶段之前添加一个新的 `Run Script Phase`。这个脚本将把你的 JavaScript 代码和资源打包到 iOS 应用中。
 
-<ContentSpotlight alt="Xcode Build Phases" src="/static/images/brownfield/run-script-phase.png" />
+<ContentSpotlight alt="Xcode 构建阶段" src="/static/images/brownfield/run-script-phase.png" />
 
-```sh Build React Native code and image
+```sh 构建 React Native 代码和资源
 if [[ -f "$PODS_ROOT/../.xcode.env" ]]; then
   source "$PODS_ROOT/../.xcode.env"
 fi
@@ -457,7 +464,7 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
 }
 ```
 
-#### 在 rootViewController 中展示 React Native 视图
+#### 在根视图控制器中展示 React Native 视图
 
 最后，你可以展示你的 React Native 视图。为此，你需要一个新的 View Controller 来承载一个可加载 JS 内容的视图。你已经有了初始的 `ViewController`，并且可以让它展示 `ReactViewController`。实现方式有多种，取决于你的应用。这个例子中，我们假设你有一个按钮会以模态方式展示 React Native。
 
@@ -501,8 +508,15 @@ class ViewController: UIViewController {
 </Tabs>
 ## 测试你的集成
 
-你已经完成了将 React Native 与你的应用集成所需的所有基本步骤。现在，在 React Native 目录中运行以下命令以启动 [Metro bundler](https://metrobundler.dev/)
+你已经完成了将 React Native 与你的应用集成所需的所有基本步骤。现在，在 React Native 目录中运行以下命令以启动 [Metro 打包器](https://metrobundler.dev/)。
 
-<Terminal cmd={['$ yarn start']} />
+<Terminal
+  cmd={{
+    npm: ['$ npm run start'],
+    yarn: ['$ yarn run start'],
+    pnpm: ['$ pnpm run start'],
+    bun: ['$ bun run start'],
+  }}
+/>
 
 Metro 会将你的 TypeScript 应用代码构建成一个 bundle，通过其 HTTP 服务器提供该 bundle，并将开发环境中 `localhost` 上的 bundle 共享到模拟器或设备，从而支持 [热重载](https://reactnative.dev/blog/2016/03/24/introducing-hot-reloading)。现在你可以像往常一样构建并运行你的应用。一旦你在应用中进入由 React 驱动的 Activity，它就应该从开发服务器加载 JavaScript 代码。

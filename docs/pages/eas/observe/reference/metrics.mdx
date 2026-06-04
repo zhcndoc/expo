@@ -6,7 +6,7 @@ description: EAS Observe 跟踪的每个性能指标的参考，包括概念和�
 
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-Reference for the performance metrics EAS Observe collects, the core concepts used to organize events (sessions and users), and how collected data is retained.
+参考 EAS Observe 收集的性能指标、用于组织事件的核心概念（会话和用户），以及收集到的数据如何保留。
 
 ## 概念
 
@@ -27,7 +27,7 @@ Reference for the performance metrics EAS Observe collects, the core concepts us
 
 ## 指标
 
-> **info** 所有时长指标均以秒为单位报告。
+> **信息** 所有时长指标均以秒为单位报告。
 
 ### 冷启动时间
 
@@ -102,15 +102,15 @@ Reference for the performance metrics EAS Observe collects, the core concepts us
 
 <Tabs>
 
-<Tab label="SDK 55">
+<Tab label="SDK 56 及以后版本">
 
-从应用中的任意位置调用 `AppMetrics.markInteractive()`。
+在组件内的 `useObserve()` hook 中调用 `markInteractive()`。
 
 </Tab>
 
-<Tab label="SDK 56 及以后">
+<Tab label="SDK 55">
 
-在组件内的 `useObserve()` hook 中调用 `markInteractive()`。
+从应用中的任意位置调用 `AppMetrics.markInteractive()`。
 
 </Tab>
 
@@ -163,12 +163,14 @@ Reference for the performance metrics EAS Observe collects, the core concepts us
 
 <Tabs>
 
-<Tab label="SDK 55">
+<Tab label="SDK 56 及以后版本">
 
 ```tsx
-import { AppMetrics } from 'expo-observe';
+import { useObserve } from 'expo-observe';
 
-AppMetrics.markInteractive({
+const { markInteractive } = useObserve();
+
+markInteractive({
   params: {
     tenant: 'acme',
     cohort: 'beta',
@@ -179,14 +181,12 @@ AppMetrics.markInteractive({
 
 </Tab>
 
-<Tab label="SDK 56 及以后">
+<Tab label="SDK 55">
 
 ```tsx
-import { useObserve } from 'expo-observe';
+import { AppMetrics } from 'expo-observe';
 
-const { markInteractive } = useObserve();
-
-markInteractive({
+AppMetrics.markInteractive({
   params: {
     tenant: 'acme',
     cohort: 'beta',
@@ -203,20 +203,7 @@ markInteractive({
 
 <Tabs>
 
-<Tab label="SDK 55">
-
-```tsx
-import { AppMetrics } from 'expo-observe';
-
-AppMetrics.markInteractive({
-  routeName: '/feed',
-  params: { cacheHit: true },
-});
-```
-
-</Tab>
-
-<Tab label="SDK 56 及以后">
+<Tab label="SDK 56 及以后版本">
 
 ```tsx
 import { useObserve } from 'expo-observe';
@@ -224,6 +211,19 @@ import { useObserve } from 'expo-observe';
 const { markInteractive } = useObserve();
 
 markInteractive({
+  routeName: '/feed',
+  params: { cacheHit: true },
+});
+```
+
+</Tab>
+
+<Tab label="SDK 55">
+
+```tsx
+import { AppMetrics } from 'expo-observe';
+
+AppMetrics.markInteractive({
   routeName: '/feed',
   params: { cacheHit: true },
 });
@@ -239,7 +239,7 @@ markInteractive({
 
 ### 离线收集
 
-设备离线时收集的指标会存储在设备上。只要有网络连接，当应用进入后台时它们会自动发送到服务器。你也可以随时调用 [`ExpoObserve.dispatchEvents()`](/eas/observe/configuration/#dispatchevents) 手动刷新事件。
+在设备离线时收集的指标会保存在设备上。只要应用切到后台时设备有网络连接，它们就会自动发送到服务器。你也可以随时调用 [`Observe.dispatchEvents()`](/eas/observe/configuration/#dispatchevents) 手动刷新事件。
 
 ### 数据保留
 

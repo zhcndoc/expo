@@ -236,6 +236,57 @@ import { shadow } from '@expo/ui/jetpack-compose/modifiers';
 <Button modifiers={[shadow(8)]}>有阴影的按钮</Button>;
 ```
 
+### `dropShadow(shape, config?)`
+
+在组件后方绘制阴影，并可控制模糊半径、扩展量、偏移和颜色。与 `shadow` 不同，它不需要海拔值。
+
+| 参数             | 类型     | 描述                                                   |
+| ---------------- | -------- | ------------------------------------------------------ |
+| `shape`          | `Shape`  | 阴影的形状（见下方形状表）。                           |
+| `config.radius`  | `number` | 模糊半径，单位为 dp。                                   |
+| `config.spread`  | `number` | 扩展（正值）或收缩（负值）的量，单位为 dp。             |
+| `config.color`   | `string` | 阴影颜色（十六进制字符串）。默认为黑色。               |
+| `config.offsetX` | `number` | 水平偏移，单位为 dp。                                   |
+| `config.offsetY` | `number` | 垂直偏移，单位为 dp。                                   |
+| `config.alpha`   | `number` | 阴影不透明度（0.0–1.0）。                               |
+
+```tsx
+import { dropShadow, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button
+  modifiers={[
+    dropShadow(Shapes.RoundedCorner(24), { radius: 16, spread: 4, color: '#6200EE', offsetY: 8 }),
+  ]}>
+  Drop shadow
+</Button>;
+```
+
+### `innerShadow(shape, config?)`
+
+在组件内部绘制阴影，以创建内凹效果。请先应用 `background` 修饰符，再应用 `innerShadow`，这样阴影才会渲染出来。
+
+| 参数             | 类型     | 描述                                                   |
+| ---------------- | -------- | ------------------------------------------------------ |
+| `shape`          | `Shape`  | 阴影的形状（见下方形状表）。                           |
+| `config.radius`  | `number` | 模糊半径，单位为 dp。                                   |
+| `config.spread`  | `number` | 扩展（正值）或收缩（负值）的量，单位为 dp。             |
+| `config.color`   | `string` | 阴影颜色（十六进制字符串）。默认为黑色。               |
+| `config.offsetX` | `number` | 水平偏移，单位为 dp。                                   |
+| `config.offsetY` | `number` | 垂直偏移，单位为 dp。                                   |
+| `config.alpha`   | `number` | 阴影不透明度（0.0–1.0）。                               |
+
+```tsx
+import { innerShadow, background, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+
+<Button
+  modifiers={[
+    background('#FFFFFF'),
+    innerShadow(Shapes.RoundedCorner(24), { radius: 16, spread: 2, offsetY: 6 }),
+  ]}>
+  Inner shadow
+</Button>;
+```
+
 ### `alpha(alpha)`
 
 控制组件的不透明度。
@@ -263,6 +314,52 @@ import { blur } from '@expo/ui/jetpack-compose/modifiers';
 
 <Button modifiers={[blur(4)]}>模糊按钮</Button>;
 ```
+
+## 阴影配方
+
+常见的阴影样式通常是 `dropShadow` 和 `innerShadow` 修饰符的组合，而不是单独的 API。由于 `modifiers` prop 接受一个数组，因此你可以叠加并微调阴影修饰符来构建每种样式。
+
+### 新野兽派阴影
+
+新野兽派阴影是一种边缘硬朗、无模糊且边框较粗的投影。将 `radius` 和 `spread` 设为 `0`，然后再调整阴影偏移。
+
+```tsx
+import { dropShadow, border, background, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+
+<Box
+  modifiers={[
+    dropShadow(Shapes.Rectangle, {
+      radius: 0,
+      spread: 0,
+      offsetX: 8,
+      offsetY: 8,
+      color: '#000000',
+    }),
+    border(8, '#000000'),
+    background('#FFFFFF'),
+  ]}
+/>;
+```
+
+### 新拟态阴影
+
+新拟态阴影是在与背景同色的表面上叠加两层投影：一层朝向光源的浅色阴影，以及另一侧较深的阴影。请在 `background` 之前应用这两层阴影。
+
+```tsx
+import { dropShadow, background, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+
+const shape = Shapes.RoundedCorner(24);
+
+<Box
+  modifiers={[
+    dropShadow(shape, { radius: 15, offsetX: -10, offsetY: -10, color: '#FFFFFF' }),
+    dropShadow(shape, { radius: 15, offsetX: 10, offsetY: 10, color: '#B1B1B1' }),
+    background('#E0E0E0'),
+  ]}
+/>;
+```
+
+要创建按下去、内凹的变体，请改用两个 `innerShadow` 修饰符，并将它们放在 `background` 之后。
 
 ## 变换
 
@@ -302,12 +399,12 @@ import { zIndex } from '@expo/ui/jetpack-compose/modifiers';
 
 ### `animateContentSize(dampingRatio?, stiffness?)`
 
-使用弹簧动画为组件内容的尺寸变化添加动画。
+使用弹簧动画为组件内容尺寸变化添加动画。
 
 | 参数           | 类型     | 描述                               |
 | -------------- | -------- | ---------------------------------- |
-| `dampingRatio` | `number` | 弹簧阻尼比。控制弹性。                     |
-| `stiffness`    | `number` | 弹簧刚度。控制动画速度。                   |
+| `dampingRatio` | `number` | 弹簧阻尼比。控制弹性。             |
+| `stiffness`    | `number` | 弹簧刚度。控制动画速度。           |
 
 ```tsx
 import { animateContentSize } from '@expo/ui/jetpack-compose/modifiers';
@@ -326,7 +423,7 @@ import { animateContentSize } from '@expo/ui/jetpack-compose/modifiers';
 
 | 参数    | 类型     | 描述      |
 | ------- | -------- | --------- |
-| `weight`  | `number` | 权重因子。     |
+| `weight`  | `number` | 权重因子。 |
 
 ```tsx
 import { weight } from '@expo/ui/jetpack-compose/modifiers';
@@ -340,8 +437,8 @@ import { weight } from '@expo/ui/jetpack-compose/modifiers';
 
 设置组件在其父容器中的对齐方式。
 
-| 参数         | 类型     | 描述                  |
-| ------------ | -------- | --------------------- |
+| 参数         | 类型     | 描述                |
+| ------------ | -------- | ------------------- |
 | `alignment` | `string` | 容器内的对齐方式。 |
 
 ### `matchParentSize()`
@@ -362,9 +459,9 @@ import { matchParentSize } from '@expo/ui/jetpack-compose/modifiers';
 
 使组件响应点击事件。
 
-| 参数    | 类型         | 描述                |
-| ------- | ------------ | ------------------- |
-| `handler` | `() => void` | 点击时调用的回调。         |
+| 参数      | 类型         | 描述            |
+| --------- | ------------ | --------------- |
+| `handler` | `() => void` | 点击时调用的回调。 |
 
 ```tsx
 import { clickable } from '@expo/ui/jetpack-compose/modifiers';
@@ -378,8 +475,8 @@ import { clickable } from '@expo/ui/jetpack-compose/modifiers';
 
 | 参数                   | 类型         | 描述                                |
 | ---------------------- | ------------ | ----------------------------------- |
-| `handlers.onClick`     | `() => void` | 可选回调，在短按时触发。                |
-| `handlers.onLongClick` | `() => void` | 可选回调，在长按时触发。                |
+| `handlers.onClick`     | `() => void` | 可选回调，在短按时触发。             |
+| `handlers.onLongClick` | `() => void` | 可选回调，在长按时触发。             |
 | `options.indication`   | `boolean`    | 是否显示波纹效果。默认值为 `true`。 |
 
 ```tsx
@@ -400,10 +497,10 @@ import { combinedClickable } from '@expo/ui/jetpack-compose/modifiers';
 
 使组件可选择，类似于单选按钮。
 
-| 参数       | 类型         | 描述                              |
-| ---------- | ------------ | --------------------------------- |
-| `selected` | `boolean`    | 该组件当前是否被选中。                         |
-| `handler`  | `() => void` | 选择状态变化时调用的回调。                     |
+| 参数       | 类型         | 描述                           |
+| ---------- | ------------ | ------------------------------ |
+| `selected` | `boolean`    | 该组件当前是否被选中。         |
+| `handler`  | `() => void` | 选择状态变化时调用的回调。     |
 
 ```tsx
 import { selectable } from '@expo/ui/jetpack-compose/modifiers';
@@ -421,20 +518,20 @@ import { selectable } from '@expo/ui/jetpack-compose/modifiers';
 
 将组件裁剪为给定形状。形状边界之外的内容不会被绘制。
 
-| 参数      | 类型     | 描述             |
-| --------- | -------- | ---------------- |
-| `shape`   | `Shape` | 要裁剪到的形状。 |
+| 参数    | 类型     | 描述             |
+| ------- | -------- | ---------------- |
+| `shape` | `Shape` | 要裁剪到的形状。 |
 
 #### 可用形状
 
 | 形状                           | 描述                                                                                                                                                         |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Shapes.Rectangle`             | 一个没有圆角的矩形。                                                                                                                                                |
-| `Shapes.Circle`                | 一个完美的圆。                                                                                                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Shapes.Rectangle`             | 一个没有圆角的矩形。                                                                                                                                            |
+| `Shapes.Circle`                | 一个完美的圆。                                                                                                                                                |
 | `Shapes.RoundedCorner(radius)` | 一个具有统一圆角的矩形。传入 `number` 表示所有圆角半径相同，或传入对象 `{ topStart, topEnd, bottomStart, bottomEnd }` 为每个角分别设置圆角半径。 |
-| `Shapes.CutCorner(radius)`     | 一个具有切角（倒角）的矩形。接受与 `RoundedCorner` 相同的半径选项。                                                                       |
-| `Shapes.Material.Cookie4Sided` | Material Design 的四边 cookie 形状。                                                                                                                          |
-| `Shapes.Material.Cookie6Sided` | Material Design 的六边 cookie 形状。                                                                                                                          |
+| `Shapes.CutCorner(radius)`     | 一个具有切角（倒角）的矩形。接受与 `RoundedCorner` 相同的半径选项。                                                                                           |
+| `Shapes.Material.Cookie4Sided` | Material Design 的四边 cookie 形状。                                                                                                                           |
+| `Shapes.Material.Cookie6Sided` | Material Design 的六边 cookie 形状。                                                                                                                           |
 
 ```tsx
 import { clip } from '@expo/ui/jetpack-compose/modifiers';

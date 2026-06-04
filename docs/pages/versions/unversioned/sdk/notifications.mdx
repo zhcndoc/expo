@@ -67,7 +67,7 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 查看下面的示例 Snack，了解 Notifications 的实际运行效果。推送通知可在实体设备、带有 Google Play services 的 Android 模拟器，以及 Xcode 14 或更高版本（macOS 13+、iOS 16+）上的 iOS 模拟器中使用。
 
-<SnackInline label='Push Notifications' dependencies={['expo-constants', 'expo-notifications']}>
+<SnackInline label='推送通知' dependencies={['expo-constants', 'expo-notifications']}>
 
 ```tsx
 import { useState, useEffect } from 'react';
@@ -249,6 +249,9 @@ function useNotificationObserver() {
         /* @info 推送该 URL。导航前你可能需要先验证其格式。 */
         router.push(url);
         /* @end */
+        /* @info 清除已存储的响应，以免布局重新挂载时再次重定向到同一个 URL。 */
+        Notifications.clearLastNotificationResponse();
+        /* @end */
       }
     }
 
@@ -327,6 +330,9 @@ export default function App() {
 
             // 让 React Navigation 处理该 URL
             listener(url);
+
+            // 清除已存储的响应，以免下一次 getInitialURL 调用时再次重定向到同一个 URL
+            Notifications.clearLastNotificationResponse();
           });
 
           return () => {

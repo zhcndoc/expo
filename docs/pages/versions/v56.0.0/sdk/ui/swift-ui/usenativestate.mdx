@@ -1,5 +1,5 @@
 ---
-title: useNativeState
+title: 使用原生状态
 description: 一个 React Hook，用于创建在 JavaScript 和原生 SwiftUI 视图之间共享的可观察状态。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-56/packages/expo-ui/src/State/useNativeState.ts'
 packageName: '@expo/ui'
@@ -24,31 +24,34 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 ```tsx WorkletPhoneMaskExample.tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { keyboardType } from '@expo/ui/swift-ui/modifiers';
-import { useEffectEvent } from 'react';
+import { useCallback } from 'react';
 
 export default function WorkletPhoneMaskExample() {
   const maskedPhone = useNativeState('');
   const selection = useNativeState({ start: 0, end: 0 });
 
-  const handleTextChange = useEffectEvent((v: string) => {
-    'worklet';
-    const digits = v.replace(/\D/g, '').slice(0, 10);
-    let formatted: string;
-    if (digits.length === 0) {
-      formatted = '';
-    } else if (digits.length <= 3) {
-      formatted = digits;
-    } else if (digits.length <= 6) {
-      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    } else {
-      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-    }
-    if (formatted !== v) {
-      maskedPhone.value = formatted;
-      // 演示中会将光标跳转到末尾。实际的掩码需要更智能的光标处理。
-      selection.value = { start: formatted.length, end: formatted.length };
-    }
-  });
+  const handleTextChange = useCallback(
+    (v: string) => {
+      'worklet';
+      const digits = v.replace(/\D/g, '').slice(0, 10);
+      let formatted: string;
+      if (digits.length === 0) {
+        formatted = '';
+      } else if (digits.length <= 3) {
+        formatted = digits;
+      } else if (digits.length <= 6) {
+        formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+      } else {
+        formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+      }
+      if (formatted !== v) {
+        maskedPhone.value = formatted;
+        // 为演示起见，光标会跳到末尾。真实的掩码处理需要更智能的光标处理。
+        selection.value = { start: formatted.length, end: formatted.length };
+      }
+    },
+    [maskedPhone, selection]
+  );
 
   return (
     <Host matchContents>

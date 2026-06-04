@@ -1,5 +1,5 @@
 ---
-title: Tree shaking 和代码移除
+title: Tree shaking 与代码移除
 sidebar_title: Tree shaking
 description: 了解 Expo CLI 如何优化生产环境的 JavaScript bundle。
 platforms: ['android', 'ios', 'web', 'tvos']
@@ -20,7 +20,7 @@ Expo CLI 在应用打包时采用一种称为 **平台摇树** 的流程，它�
 
 例如，考虑以下转换输入：
 
-```js Input
+```js 输入
 import { Platform } from 'react-native';
 
 if (Platform.OS === 'ios') {
@@ -30,11 +30,11 @@ if (Platform.OS === 'ios') {
 
 生产包会移除基于平台的条件判断：
 
-```js Output (Android)
+```js 输出（Android）
 /* @hide 在 Android 上为空 */
 ```
 
-```js Output (iOS)
+```js 输出（iOS）
 console.log('Hello on iOS');
 ```
 
@@ -50,7 +50,7 @@ console.log('Hello on iOS');
 
 例如，以下代码片段会从生产包中移除：
 
-```js Input
+```js 输入
 if (process.env.NODE_ENV === 'development') {
   console.log('Hello in development');
 }
@@ -66,7 +66,7 @@ if (__DEV__) {
 
 在 _常量折叠_ 之后，这些条件可以被静态求值：
 
-```js Post constants folding
+```js 常量折叠后
 if ('production' === 'development') {
   console.log('Hello in development');
 }
@@ -82,7 +82,7 @@ if (false) {
 
 这些不可达条件会在 [压缩](/guides/minify) 过程中被移除：
 
-```js Output (production)
+```js 输出（生产环境）
 /* @hide 空文件 */
 ```
 
@@ -101,7 +101,7 @@ if (false) {
 EXPO_PUBLIC_DISABLE_FEATURE=true;
 ```
 
-```js Input
+```js 输入
 if (!process.env.EXPO_PUBLIC_DISABLE_FEATURE) {
   console.log('Hello from the feature!');
 }
@@ -113,7 +113,7 @@ if (!process.env.EXPO_PUBLIC_DISABLE_FEATURE) {
 
 经过 `babel-preset-expo` 之后，上面的输入代码片段会被转换为以下内容：
 
-```js Post babel-preset-expo
+```js babel-preset-expo 之后
 if (!'true') {
   console.log('Hello from the feature!');
 }
@@ -124,7 +124,7 @@ if (!'true') {
 <Step label="3">
 然后，上面的代码片段会被压缩，从而移除未使用的条件判断：
 
-```js Post minifier
+```js 压缩后
 // 空文件
 ```
 
@@ -144,7 +144,7 @@ if (!'true') {
 
 <Step label="1">
 
-```js Input
+```js 输入
 if (typeof window === 'undefined') {
   console.log('Hello on the server!');
 }
@@ -156,7 +156,7 @@ if (typeof window === 'undefined') {
 
 上一节中的输入代码在为服务器环境打包时，会在 `babel-preset-expo` 之后转换为以下代码片段（API 路由、服务端渲染）：
 
-```js Post babel-preset-expo (bundling for server)
+```js babel-preset-expo 之后（为服务器打包）
 if (true) {
   console.log('Hello on the server!');
 }
@@ -164,7 +164,7 @@ if (true) {
 
 为 web 或原生应用打包客户端代码时，不会替换 `typeof window`，除非设置了 `minifyTypeOfWindow: true`：
 
-```js Post babel-preset-expo
+```js babel-preset-expo 之后
 if (typeof window === 'undefined') {
   console.log('Hello on the server!');
 }
@@ -176,11 +176,11 @@ if (typeof window === 'undefined') {
 
 对于服务器环境，上面的代码片段随后会被压缩，从而移除未使用的条件判断：
 
-```js Post minifier (server)
+```js 压缩后（服务器）
 console.log('Hello on the server!');
 ```
 
-```js Post minifier (client)
+```js 压缩后（客户端）
 if (typeof window === 'undefined') {
   console.log('Hello on the server!');
 }
@@ -198,11 +198,11 @@ if (typeof window === 'undefined') {
 
 如果你使用静态 `import` 语法导入 `react-native`，barrel 文件会被移除。
 
-```js Input
+```js 输入
 import { View, Image } from 'react-native';
 ```
 
-```js Output (web)
+```js 输出（web）
 import View from 'react-native-web/dist/exports/View';
 import Image from 'react-native-web/dist/exports/Image';
 ```
@@ -213,11 +213,11 @@ import Image from 'react-native-web/dist/exports/Image';
 
 如果你使用 `require()` 导入 `react-native`，barrel 文件会原样保留在生产包中。
 
-```js Input
+```js 输入
 const { View, Image } = require('react-native');
 ```
 
-```js Output (web)
+```js 输出（web）
 const { View, Image } = require('react-native-web');
 ```
 
@@ -261,7 +261,7 @@ export function ArrowLeft() {
 
 由于在 `index.js` 中只使用了 `ArrowUp`，生产包会移除 `icons.js` 中所有其他组件。
 
-```js icons.js (Output)
+```js icons.js（输出）
 export function ArrowUp() {
   /* ... */
 }
@@ -335,7 +335,14 @@ EXPO_UNSTABLE_TREE_SHAKING=1
 
 以生产模式打包你的应用，以查看 tree shaking 的效果。
 
-<Terminal cmd={['$ npx expo export']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo export'],
+    yarn: ['$ yarn expo export'],
+    pnpm: ['$ pnpm expo export'],
+    bun: ['$ bun expo export'],
+  }}
+/>
 
 </Step>
 
@@ -347,13 +354,13 @@ EXPO_UNSTABLE_TREE_SHAKING=1
 
 借助 Expo 树摇，星号导出会根据使用情况自动展开并进行摇树优化。例如，考虑以下代码片段：
 
-```js Input
+```js 输入
 export * from './icons';
 ```
 
 优化过程会遍历 `./icons` 并将导出添加到当前模块中。如果这些导出未被使用，它们将从生产包中移除。
 
-```js Expanded
+```js 展开后
 export { ArrowRight, ArrowLeft } from './icons';
 ```
 
@@ -369,7 +376,7 @@ export { ArrowRight, ArrowLeft } from './icons';
 
 Expo 会通过对图进行穷尽式递归来优化模块，以查找未使用的导入。考虑以下代码片段：
 
-```js Input
+```js 输入
 export function foo() {
   // 因为这里使用了 bar，所以它不能被移除。
   bar();
@@ -424,7 +431,7 @@ if (process.env.NODE_ENV === 'development') {
 
 这有问题，因为你无法获得准确的 TypeScript 支持，而且由于你无法静态分析代码，图会变得模糊。启用 Expo 树摇后，你可以重构这段代码以使用 ESM 导入：
 
-```js Input
+```js 输入
 import { doSomething } from './dev-only';
 
 if (process.env.NODE_ENV === 'development') {

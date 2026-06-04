@@ -318,7 +318,7 @@ on:
 | `description` | `string`   | <NoIcon />                       | 输入的说明。                                                  |
 | `required`    | `boolean`  | <NoIcon />                       | 是否需要该输入。默认为 `false`。                         |
 | `default`     | varies     | <NoIcon />                       | 输入的默认值。必须与输入类型匹配。                     |
-| `options`     | `string[]` | <YesIcon /> (for `type: choice`) | 可用于 choice 输入的选项。                                        |
+| `options`     | `string[]` | <YesIcon /> (适用于 `type: choice`) | 可用于 choice 输入的选项。                                        |
 
 #### 提供输入
 
@@ -428,7 +428,7 @@ jobs:
 
 ### `jobs.<job_id>.env`
 
-为 job 设置环境变量。该属性可用于所有在 VM 上运行的 job（除预打包的 `require-approval`、`doc`、`get-build` 和 `slack` job 外的所有 job）。
+为该 job 设置环境变量。此属性适用于所有在 VM 上运行的 job（除预打包的 `apple-device-registration-request`、`require-approval`、`doc`、`get-build` 和 `slack` job 外的所有 job）。
 
 ```yaml
 jobs:
@@ -475,11 +475,10 @@ jobs:
     steps:
       - name: 我的第一步
         run: pwd # 打印：/home/expo/workingdir/build/my-app
-```
 
 ## `defaults`
 
-用于作为 workflow 配置中所有 job 默认值的参数。
+用于作为工作流配置中所有作业默认值的参数。
 
 ### `defaults.run.working_directory`
 
@@ -487,7 +486,7 @@ jobs:
 
 ### `defaults.tools`
 
-应为此 workflow 配置中定义的 job 使用的特定工具版本。有关可用值，请遵循各工具的文档。
+应为此工作流配置中定义的作业使用的特定工具版本。有关可用值，请遵循各工具的文档。
 
 | 工具        | 描述                                                                                                                                   |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -501,7 +500,7 @@ jobs:
 | `fastlane`  | 将传递给 `gem install -v` 的 fastlane 版本。                                                                                  |
 | `cocoapods` | 将传递给 `gem install -v` 的 CocoaPods 版本。                                                                                 |
 
-使用 `defaults.tools` 的 workflow 示例：
+使用 `defaults.tools` 的工作流示例：
 
 ```yaml .eas/workflows/publish-update.yml
 name: 设置自定义版本
@@ -530,7 +529,7 @@ jobs:
 
 ## `concurrency`
 
-并发控制配置。目前只允许为同分支 workflow 设置 `cancel_in_progress`。
+并发控制配置。目前只允许为同分支工作流设置 `cancel_in_progress`。
 
 ```yaml
 # @info #
@@ -540,18 +539,18 @@ concurrency:
 # @end #
 ```
 
-| Property             | Type     | Description                                                                                                                                             |
+| 属性                 | 类型     | 描述                                                                                                                                             |
 | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cancel_in_progress` | `true`   | 如果为 true，GitHub 新启动的 workflow 运行将取消同一分支上当前正在进行的运行。                                                |
-| `group`              | `string` | 我们暂不支持自定义并发组。请设置此占位值，以便在未来支持自定义组时，你的 workflow 仍能保持兼容。 |
+| `cancel_in_progress` | `true`   | 如果为 true，GitHub 新启动的工作流运行将取消同一分支上当前正在进行的运行。                                                |
+| `group`              | `string` | 我们暂不支持自定义并发组。请设置此占位值，以便在未来支持自定义组时，你的工作流仍能保持兼容。 |
 
 ## 控制流
 
-你可以通过 `needs` 和 `after` 关键字控制某个 job 何时运行。另外，你还可以使用 `if` 关键字基于条件控制 job 是否应运行。
+你可以通过 `needs` 和 `after` 关键字控制某个作业何时运行。另外，你还可以使用 `if` 关键字基于条件控制作业是否应运行。
 
 ### `jobs.<job_id>.needs`
 
-在此 job 运行之前必须成功完成的 job ID 列表。
+在此作业运行之前必须成功完成的作业 ID 列表。
 
 ```yaml
 jobs:
@@ -564,7 +563,7 @@ jobs:
         run: yarn tsc
   build:
     # @info #
-    needs: [test] # 只有当 'test' job 成功时，此 job 才会运行
+    needs: [test] # 只有当 'test' 作业成功时，此作业才会运行
     # @end #
     type: build
     params:
@@ -573,7 +572,7 @@ jobs:
 
 ### `jobs.<job_id>.after`
 
-在此 job 运行之前必须完成（成功或失败均可）的 job ID 列表。
+在此作业运行之前必须完成（成功或失败均可）的作业 ID 列表。
 
 ```yaml
 jobs:
@@ -583,13 +582,13 @@ jobs:
       platform: ios
   notify:
     # @info #
-    after: [build] # 此 job 将在 build 完成后运行（无论 build 成功还是失败）
+    after: [build] # 此作业将在 build 完成后运行（无论 build 成功还是失败）
     # @end #
 ```
 
 ### `jobs.<job_id>.if`
 
-`if` 条件用于决定 job 是否应运行。当 `if` 条件满足时，job 将运行；当条件不满足时，job 将被跳过。被跳过的 job 不会算作成功完成，并且任何后续 job 如果在其 `needs` 列表中包含该 job，也不会运行。
+`if` 条件用于决定作业是否应运行。当 `if` 条件满足时，作业将运行；当条件不满足时，作业将被跳过。被跳过的作业不会算作成功完成，并且任何后续作业如果在其 `needs` 列表中包含该作业，也不会运行。
 
 ```yaml
 jobs:
@@ -601,7 +600,7 @@ jobs:
 
 ## 插值
 
-你可以根据 workflow 运行的上下文，自定义 workflow 的行为——要执行的命令、控制流、环境变量、构建配置、应用版本等。
+你可以根据工作流运行的上下文，自定义工作流的行为——要执行的命令、控制流、环境变量、构建配置、应用版本等。
 
 使用 `${{ expression }}` 语法来访问上下文属性和函数。例如：`${{ github.ref_name }}` 或 `${{ needs.build_ios.outputs.build_id }}`。
 
@@ -611,12 +610,12 @@ jobs:
 
 #### `after`
 
-当前 job 的 `after` 列表中指定的所有上游 job 的记录。每个 job 提供：
+当前作业的 `after` 列表中指定的所有上游作业的记录。每个作业提供：
 
 ```json
 {
   "status": "success" | "failure" | "skipped",
-  /* @info 每个 job 会生成不同的一组输出。详情请参见特定 job 的文档。 */
+  /* @info 每个作业会生成不同的一组输出。详情请参见特定作业的文档。 */
   "outputs": {}
   /* @end */
 }
@@ -638,18 +637,18 @@ jobs:
 
 #### `needs`
 
-当前 job 的 `needs` 列表中指定的所有上游 job 的记录。每个 job 提供：
+当前作业的 `needs` 列表中指定的所有上游作业的记录。每个作业提供：
 
 ```json
 {
   "status": "success" | "failure" | "skipped",
-  /* @info 每个 job 会生成不同的一组输出。详情请参见特定 job 的文档。 */
+  /* @info 每个作业会生成不同的一组输出。详情请参见特定作业的文档。 */
   "outputs": {}
   /* @end */
 }
 ```
 
-大多数预打包 job 会暴露特定输出。你可以使用 [`set-output` 函数](#jobsjob_idoutputs) 在自定义 job 中设置输出。
+大多数预打包作业会暴露特定输出。你可以使用 [`set-output` 函数](#jobsjob_idoutputs) 在自定义作业中设置输出。
 
 示例：
 
@@ -678,9 +677,9 @@ jobs:
 
 #### `steps`
 
-当前 job 中所有步骤的记录。每个步骤提供其通过 [`set-output`](#set-output) 函数设置的输出。
+当前作业中所有步骤的记录。每个步骤提供其通过 [`set-output`](#set-output) 函数设置的输出。
 
-> **注意：** `steps` 上下文仅在 job 的 steps 内可用，而不在 workflow 级别可用。要将某个步骤的输出暴露给其他 job，请使用 [`set-output` 函数](#set-output) 和 job 的 [`outputs` 配置](#jobsjob_idoutputs)。
+> **注意：** `steps` 上下文仅在作业的 steps 内可用，而不在工作流级别可用。要将某个步骤的输出暴露给其他作业，请使用 [`set-output` 函数](#set-output) 和作业的 [`outputs` 配置](#jobsjob_idoutputs)。
 
 示例：
 
@@ -702,7 +701,7 @@ jobs:
 
 #### `inputs`
 
-手动通过 [`workflow_dispatch`](#onworkflow_dispatchinputs) 触发 workflow 时提供的输入记录。在通过 `eas workflow:run` 命令并带有输入参数触发 workflow 时可用。
+手动通过 [`workflow_dispatch`](#onworkflow_dispatchinputs) 触发工作流时提供的输入记录。在通过 `eas workflow:run` 命令并带有输入参数触发工作流时可用。
 
 示例：
 
@@ -763,7 +762,7 @@ type GitHubContext = {
 
 > **信息** `event` 对象包含完整的 [GitHub webhook payload](https://docs.github.com/en/webhooks/webhook-events-and-payloads)。对于 `pull_request` 事件，`event.pull_request` 包含 GitHub Pull Request webhook payload 中的所有字段。上面展示的是常用字段，但 `user`、`labels`、`milestone` 等其他字段也同样可用。
 
-如果 workflow 运行是通过 `eas workflow:run` 启动的，则其 `event_name` 为 `workflow_dispatch`，其余所有属性都将为空。
+如果工作流运行是通过 `eas workflow:run` 启动的，则其 `event_name` 为 `workflow_dispatch`，其余所有属性都将为空。
 
 示例：
 
@@ -788,7 +787,7 @@ jobs:
 
 #### `workflow`
 
-当前 workflow 的信息。
+当前工作流的信息。
 
 ```ts
 type WorkflowContext = {
@@ -808,13 +807,13 @@ jobs:
     type: slack
     params:
       message: |
-        Workflow 运行已完成：${{ workflow.name }}
+        工作流运行已完成：${{ workflow.name }}
         查看详情：${{ workflow.url }}
 ```
 
 #### `app_store_connect`
 
-与 workflow 运行相关联的 App Store Connect 实体信息。此上下文仅适用于由 App Store Connect 事件触发的 workflow。参见 [`on.app_store_connect`](#onapp_store_connect)。
+与工作流运行相关联的 App Store Connect 实体信息。此上下文仅适用于由 App Store Connect 事件触发的工作流。参见 [`on.app_store_connect`](#onapp_store_connect)。
 
 ```ts
 type AppStoreConnectContext = {
@@ -828,7 +827,7 @@ type AppStoreConnectContext = {
 };
 ```
 
-`app_store_connect.build_upload` 对象仅在 workflow 由 `build_upload` 事件域触发时存在。
+`app_store_connect.build_upload` 对象仅在工作流由 `build_upload` 事件域触发时存在。
 
 示例：
 
@@ -852,9 +851,9 @@ jobs:
 
 #### `env`
 
-当前 job 上下文中可用的环境变量记录。
+当前作业上下文中可用的环境变量记录。
 
-> **注意：** `env` 上下文仅在 job 的上下文中可用，而不在 workflow 级别可用。
+> **注意：** `env` 上下文仅在作业的上下文中可用，而不在工作流级别可用。
 
 示例：
 
@@ -871,26 +870,26 @@ jobs:
 
 #### `success()`
 
-返回所有先前 job 是否都已成功。
+返回所有先前作业是否都已成功。
 
 ```yaml
 jobs:
   notify:
     if: ${{ success() }}
     steps:
-      - run: echo "所有 job 都已成功"
+      - run: echo "所有作业都已成功"
 ```
 
 #### `failure()`
 
-返回是否有任意先前 job 失败。
+返回是否有任意先前作业失败。
 
 ```yaml
 jobs:
   notify:
     if: ${{ failure() }}
     steps:
-      - run: echo "有一个 job 失败了"
+      - run: echo "有一个作业失败了"
 ```
 
 #### `fromJSON(value)`
@@ -971,7 +970,7 @@ jobs:
 
 返回与提供的 glob 模式匹配的文件哈希。适用于缓存键。
 
-> **注意：** `hashFiles` 函数仅在 job 的 steps 内可用，而不在 workflow 级别可用。
+> **注意：** `hashFiles` 函数仅在作业的 steps 内可用，而不在工作流级别可用。
 
 示例：
 
@@ -1035,9 +1034,10 @@ jobs:
     type: build
     # @end #
     params:
-      platform: ios | android # 必填
-      profile: string # 可选，默认值：production
-      message: string # 可选
+      platform: ios | android # required
+      profile: string # optional, default: production
+      message: string # optional
+      refresh_ad_hoc_provisioning_profile: boolean # optional
 ```
 
 此任务输出以下属性：
@@ -1355,6 +1355,20 @@ jobs:
 {
   "comment_url": string | undefined  // 已发布的 GitHub 评论 URL
 }
+```
+
+#### `apple-device-registration-request`
+
+在一台 iOS 设备向 Apple Team 注册并且团队成员批准该注册之前，暂停工作流。有关详细信息和示例，请参阅 [Apple 设备注册请求任务文档](/eas/workflows/pre-packaged-jobs#apple-device-registration-request)。
+
+```yaml
+jobs:
+  register_device:
+    # @info #
+    type: apple-device-registration-request
+    params:
+      apple_team_identifier: string # 可选
+    # @end #
 ```
 
 #### `require-approval`
