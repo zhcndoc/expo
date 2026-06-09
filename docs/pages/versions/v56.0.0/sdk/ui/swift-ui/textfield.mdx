@@ -12,7 +12,7 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 > **info** 关于跨平台使用，请参阅通用的 [`TextInput`](../universal/textinput) —— 它会针对每个平台渲染相应的原生组件。
 
-Expo UI TextField 与官方 SwiftUI [TextField API](https://developer.apple.com/documentation/swiftui/textfield) 保持一致，支持单行和多行输入、键盘配置、提交处理，以及用于程序化控制的命令式 `ref`。
+Expo UI `TextField` 与官方 SwiftUI [TextField API](https://developer.apple.com/documentation/swiftui/textfield) 保持一致，支持单行和多行输入、键盘配置、提交处理，以及用于程序化控制的命令式 `ref`。
 
 <ContentSpotlight
   variant="component"
@@ -28,18 +28,48 @@ Expo UI TextField 与官方 SwiftUI [TextField API](https://developer.apple.com/
 
 ## 用法
 
-### 基本文本字段
+### 非受控文本字段
+
+将 [`useNativeState`](usenativestate) 可观察对象绑定到 `text`。该字段会自行跟踪用户输入，你可以从 `textState.value` 读取当前值。
 
 ```tsx BasicTextFieldExample.tsx
-import { useState } from 'react';
-import { Host, TextField } from '@expo/ui/swift-ui';
+import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 
 export default function BasicTextFieldExample() {
-  const [value, setValue] = useState('');
+  const textState = useNativeState('');
 
   return (
     <Host matchContents>
-      <TextField placeholder="用户名" onTextChange={setValue} />
+      <TextField placeholder="Username" text={textState} />
+    </Host>
+  );
+}
+```
+
+### 受控文本字段
+
+传入一个 `onTextChange` worklet 来转换或校验输入，并将结果写回 [`useNativeState`](usenativestate) 可观察状态。下面的示例会在输入时将文本转换为大写。
+
+> **注意：** Worklet 需要安装 [`react-native-reanimated`](https://docs.swmansion.com/react-native-reanimated/) 和 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。
+
+```tsx ControlledTextFieldExample.tsx
+import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
+import { useCallback } from 'react';
+
+export default function ControlledTextFieldExample() {
+  const text = useNativeState('');
+
+  const handleTextChange = useCallback(
+    (value: string) => {
+      'worklet';
+      text.value = value.toUpperCase();
+    },
+    [text]
+  );
+
+  return (
+    <Host matchContents>
+      <TextField placeholder="Name" text={text} onTextChange={handleTextChange} />
     </Host>
   );
 }
@@ -50,19 +80,18 @@ export default function BasicTextFieldExample() {
 设置 `axis="vertical"` 以允许文本字段垂直扩展。使用 [`lineLimit`](modifiers/#linelimit) 修饰符来控制可见行数。使用 `Host matchContents` 时，添加 `fixedSize({ horizontal: false, vertical: true })`，这样文本字段就能在使用理想高度的同时接受父容器的宽度。
 
 ```tsx MultilineTextFieldExample.tsx
-import { useState } from 'react';
-import { Host, TextField } from '@expo/ui/swift-ui';
+import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { lineLimit, fixedSize } from '@expo/ui/swift-ui/modifiers';
 
 export default function MultilineTextFieldExample() {
-  const [value, setValue] = useState('');
+  const textState = useNativeState('');
 
   return (
     <Host matchContents>
       <TextField
         axis="vertical"
-        placeholder="向我们介绍一下你自己..."
-        onTextChange={setValue}
+        text={textState}
+        placeholder="Tell us about yourself..."
         modifiers={[lineLimit(5), fixedSize({ horizontal: false, vertical: true })]}
       />
     </Host>
@@ -75,18 +104,17 @@ export default function MultilineTextFieldExample() {
 使用 [`keyboardType`](modifiers/#keyboardtypekeyboardtype) 修饰符来显示特定的键盘布局。
 
 ```tsx KeyboardTypeExample.tsx
-import { useState } from 'react';
-import { Host, TextField } from '@expo/ui/swift-ui';
+import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { keyboardType, autocorrectionDisabled } from '@expo/ui/swift-ui/modifiers';
 
 export default function KeyboardTypeExample() {
-  const [value, setValue] = useState('');
+  const textState = useNativeState('');
 
   return (
     <Host matchContents>
       <TextField
-        placeholder="邮箱"
-        onTextChange={setValue}
+        placeholder="Email"
+        text={textState}
         modifiers={[keyboardType('email-address'), autocorrectionDisabled()]}
       />
     </Host>
@@ -99,19 +127,21 @@ export default function KeyboardTypeExample() {
 使用 [`submitLabel`](modifiers/#submitlabelsubmitlabel) 修饰符来自定义回车键，并使用 [`onSubmit`](modifiers/#onsubmithandler) 来处理提交操作。
 
 ```tsx SubmitHandlingExample.tsx
-import { useState } from 'react';
-import { Host, TextField } from '@expo/ui/swift-ui';
+import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { submitLabel, onSubmit } from '@expo/ui/swift-ui/modifiers';
 
 export default function SubmitHandlingExample() {
-  const [value, setValue] = useState('');
+  const textState = useNativeState('');
 
   return (
     <Host matchContents>
       <TextField
-        placeholder="搜索..."
-        onTextChange={setValue}
-        modifiers={[submitLabel('search'), onSubmit(() => console.log('已提交：', value))]}
+        placeholder="Search..."
+        text={textState}
+        modifiers={[
+          submitLabel('search'),
+          onSubmit(() => console.log('Submitted:', textState.value)),
+        ]}
       />
     </Host>
   );
@@ -122,7 +152,7 @@ export default function SubmitHandlingExample() {
 
 使用 `ref` 可以以命令式方式设置文本、聚焦、失焦或选择文本。
 
-> **注意：** `setSelection` 需要 iOS 18.0+ / tvOS 18.0+。其他 ref 方法可在所有受支持的版本上使用。
+> **注意：** `setSelection` 需要 iOS 18.0+ / tvOS 18.0+。其他 `ref` 方法可在所有受支持的版本上使用。
 
 ```tsx ImperativeRefExample.tsx
 import { useRef } from 'react';
@@ -139,12 +169,12 @@ import { buttonStyle } from '@expo/ui/swift-ui/modifiers';
 
 export default function ImperativeRefExample() {
   const ref = useRef<TextFieldRef>(null);
-  const text = useNativeState('Select me!');
+  const textState = useNativeState('Select me!');
 
   return (
     <Host matchContents>
       <VStack>
-        <TextField ref={ref} text={text} placeholder="命令式字段" />
+        <TextField ref={ref} text={textState} placeholder="Imperative field" />
         <HStack spacing={12}>
           <Button
             modifiers={[buttonStyle('bordered')]}
