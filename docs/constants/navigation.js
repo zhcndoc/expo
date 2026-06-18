@@ -85,6 +85,9 @@ export const home = [
         expanded: false,
       }
     ),
+    makeGroup('Agent toolkits', [makePage('agents/argent.mdx')], {
+      expanded: false,
+    }),
     makePage('llms.mdx'),
   ]),
   makeSection('Develop', [
@@ -371,6 +374,7 @@ export const general = [
       makePage('guides/using-bugsnag.mdx'),
       makePage('guides/using-logrocket.mdx'),
       makePage('guides/using-vexo.mdx'),
+      makePage('guides/using-posthog.mdx'),
     ]),
     makeGroup('Authentication', [
       makePage('guides/using-authentication.mdx'),
