@@ -6,7 +6,7 @@ description: EAS Observe 跟踪的每个性能指标的参考，包括概念和�
 
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-参考 EAS Observe 收集的性能指标、用于组织事件的核心概念（会话和用户），以及收集到的数据如何保留。
+Reference the performance metrics collected by EAS Observe, the core concepts used to organize events (sessions and users), and how the collected data is retained.
 
 ## 概念
 
@@ -234,6 +234,31 @@ AppMetrics.markInteractive({
 </Tabs>
 
 参数值可以是字符串、数字、布尔值或其他可 JSON 序列化的值。
+
+#### 以声明式方式标记可交互
+
+你无需从 effect 中调用 `markInteractive()`，而是在屏幕变为可交互的那个位置渲染 `<ObserveInteractiveMarker />` 组件，例如在初始数据加载完成后。它会在挂载时调用一次 `markInteractive()`，并且不渲染任何内容。
+
+> **信息** `ObserveInteractiveMarker` 在 SDK 56 及以后版本中可用。
+
+```tsx
+import { ObserveInteractiveMarker } from 'expo-observe';
+
+function Feed({ items }) {
+  if (!items) {
+    return <Spinner />;
+  }
+
+  return (
+    <>
+      <FeedList items={items} />
+      <ObserveInteractiveMarker />
+    </>
+  );
+}
+```
+
+该标记器只会在挂载时触发一次，因此其 `params` 取自首次渲染。之后修改它们不会产生任何效果，并且会在开发环境中记录警告。如果你需要附加那些只会在稍后才知道的参数，请改为直接调用 `useObserve().markInteractive(...)`。
 
 ## 数据处理
 

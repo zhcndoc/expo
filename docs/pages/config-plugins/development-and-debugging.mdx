@@ -301,7 +301,7 @@ class CustomReactActivityLifecycleListener(activityContext: Context) : ReactActi
 </resources>
 ```
 
-在这一点上，bare 用户可以通过在本地 **strings.xml** 文件中创建一个字符串来配置这个值（前提是他们也已经设置了 `expo-modules-core` 支持）：
+此时，已有 [React Native 项目](/bare/overview/) 的用户可以通过在本地 **strings.xml** 文件中创建一个字符串来配置这个值（前提是他们也已设置 `expo-modules-core` 支持）：
 
 ```xml ./android/app/src/main/res/values/strings.xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -310,7 +310,7 @@ class CustomReactActivityLifecycleListener(activityContext: Context) : ReactActi
 </resources>
 ```
 
-对于 managed 用户，我们可以通过 Expo config plugin（安全地！）暴露这个功能：
+借助 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)，我们可以通过 Expo config plugin 安全地暴露这个功能：
 
 ```js expo-custom/app.plugin.js
 const { AndroidConfig, withStringsXml } = require('expo/config-plugins');
@@ -335,7 +335,7 @@ function setStrings(strings, value) {
 }
 ```
 
-现在，managed Expo 用户可以这样与这个 API 交互：
+使用 CNG 的开发者现在可以这样使用这个 API：
 
 ```json app.json
 {
@@ -345,7 +345,7 @@ function setStrings(strings, value) {
 }
 ```
 
-通过重新运行 `npx expo prebuild -p`（`eas build -p android`，或 `npx expo run:ios`），用户现在就可以看到这些更改，并且它们已经安全地应用到他们的 managed 项目中！
+重新运行 `npx expo prebuild -p`（`eas build -p android`，或 `npx expo run:ios`）后，用户现在就可以看到这些更改，并且它们已安全地应用到自己的 CNG 项目中！
 
 正如你从这个示例中看到的那样，我们在很大程度上依赖应用代码（expo-modules-core）与应用代码（原生项目）进行交互。这确保了我们的 config plugins 安全且可靠，希望能长期如此！
 
@@ -386,7 +386,7 @@ Expo CLI 命令可以使用 `EXPO_PROFILE=1` 进行性能分析。
 它们不会持久化，而是将结果保存到应用配置中的 `_internal.modResults` 下，后接 mod 的名称
 例如 `ios.infoPlist` mod 会保存到 `_internal.modResults.ios.infoPlist: {}`。
 
-作为一个真实世界的例子，`eas-cli` 使用内省来确定托管应用中最终的 iOS entitlements 将是什么，这样它就可以在构建之前将它们与 Apple Developer Portal 同步。内省也可以作为一个方便的调试和开发工具。
+作为一个现实世界中的例子，`eas-cli` 会使用内省来确定 CNG 项目中最终的 iOS entitlements 将是什么，以便在构建之前将它们与 Apple Developer Portal 同步。内省也可以作为一个便捷的调试和开发工具。
 
 {/* TODO: Link to VS Code extension after preview feature lands */}
 
@@ -440,7 +440,7 @@ Gradle 文件可以用 Groovy 或 Kotlin 编写。它们用于管理 Android 应
 `gradle.properties` 是一组静态的键/值对，groovy 文件可以从中读取。例如，假设你想在 Groovy 中控制某个开关：
 
 ```properties gradle.properties
-# @info Safely modified using the `withGradleProperties()` mod. #
+# @info 使用 `withGradleProperties()` mod 安全修改。 #
 expo.react.jsEngine=hermes
 # @end #
 ```
@@ -510,7 +510,7 @@ export function withAppDelegateHeaderBaseMod(config) {
   return BaseMods.withGeneratedBaseMods<'appDelegateHeader'>(config, {
     platform: 'ios',
     providers: {
-      // 添加一条自定义规则，为 mods.ios.appDelegateHeader 上的 mods 提供 AppDelegate header 数据
+      // 添加一条自定义规则，为 mods.ios.appDelegateHeader 上的 mods 提供 AppDelegate 头文件数据
       appDelegateHeader: BaseMods.provider<IOSConfig.Paths.AppDelegateProjectFile>({
         // 获取传递给 read 方法的本地文件路径。
         getFilePath({ modRequest: { projectRoot } }) {
@@ -536,7 +536,7 @@ export function withAppDelegateHeaderBaseMod(config) {
 }
 
 /**
- * （工具）提供用于修改的 AppDelegate header 文件。
+ * （工具）提供用于修改的 AppDelegate 头文件。
  */
 export const withAppDelegateHeader: ConfigPlugin<Mod<IOSConfig.Paths.AppDelegateProjectFile>> = (
   config,
@@ -552,7 +552,7 @@ export const withAppDelegateHeader: ConfigPlugin<Mod<IOSConfig.Paths.AppDelegate
 // （示例）输出 modifier 的内容。
 export const withSimpleAppDelegateHeaderMod = config => {
   return withAppDelegateHeader(config, config => {
-    console.log('modify header:', config.modResults);
+    console.log('修改头文件：', config.modResults);
     return config;
   });
 };

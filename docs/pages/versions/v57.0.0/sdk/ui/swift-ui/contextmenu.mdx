@@ -1,0 +1,271 @@
+---
+title: ContextMenu
+description: 一个用于显示上下文菜单的 SwiftUI ContextMenu 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI ContextMenu 与官方 SwiftUI [contextMenu API](<https://developer.apple.com/documentation/swiftui/view/contextmenu(menuitems:)>) 保持一致，并会在长按时显示菜单。对于单击菜单交互，请改用 [`Menu`](menu)。
+
+<ContentSpotlight
+  variant="component"
+  aspect="portrait"
+  src="/static/images/expo-ui/contextmenu/ios-light.webp"
+  darkSrc="/static/images/expo-ui/contextmenu/ios-dark.webp"
+  alt="一个长按后的磁贴，以放大的预览形式显示，下面有“分享”、“收藏”、“删除”菜单"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基础上下文菜单
+
+```tsx BasicContextMenuExample.tsx
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+
+export default function BasicContextMenuExample() {
+  return (
+    <Host matchContents>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button label="编辑" onPress={() => console.log('Edit')} />
+          <Button label="删除" role="destructive" onPress={() => console.log('Delete')} />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>长按我</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+### 带系统图标的上下文菜单
+
+```tsx ContextMenuWithImagesExample.tsx
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+
+export default function ContextMenuWithImagesExample() {
+  return (
+    <Host matchContents>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button
+            label="分享"
+            systemImage="square.and.arrow.up"
+            onPress={() => console.log('Share')}
+          />
+          <Button label="收藏" systemImage="heart" onPress={() => console.log('Favorite')} />
+          <Button
+            label="删除"
+            systemImage="trash"
+            role="destructive"
+            onPress={() => console.log('Delete')}
+          />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>长按我</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+### 带预览的上下文菜单
+
+使用 `ContextMenu.Preview` 可在打开菜单时在菜单上方显示自定义预览。
+
+```tsx ContextMenuWithPreviewExample.tsx
+import { View, Text as RNText } from 'react-native';
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+
+export default function ContextMenuWithPreviewExample() {
+  return (
+    <Host matchContents>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button label="编辑" onPress={() => console.log('Edit')} />
+          <Button label="删除" role="destructive" onPress={() => console.log('Delete')} />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>长按我</Text>
+        </ContextMenu.Trigger>
+        <ContextMenu.Preview>
+          <View style={{ width: 200, height: 100, backgroundColor: '#f0f0f0', padding: 16 }}>
+            <RNText>预览内容</RNText>
+          </View>
+        </ContextMenu.Preview>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+### 带选择器的上下文菜单
+
+```tsx ContextMenuWithPickerExample.tsx
+import { useState } from 'react';
+import { Host, ContextMenu, Button, Text, Picker } from '@expo/ui/swift-ui';
+import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
+
+export default function ContextMenuWithPickerExample() {
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>(0);
+
+  return (
+    <Host matchContents>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button label="操作" onPress={() => console.log('Action')} />
+          <Picker
+            label="大小"
+            modifiers={[pickerStyle('menu')]}
+            selection={selectedIndex}
+            onSelectionChange={setSelectedIndex}>
+            {['小', '中', '大'].map((option, index) => (
+              <Text key={index} modifiers={[tag(index)]}>
+                {option}
+              </Text>
+            ))}
+          </Picker>
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>长按我</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+### 带分组的上下文菜单
+
+使用 `Section` 和 `Divider` 组件来组织菜单项。
+
+```tsx ContextMenuWithSectionsExample.tsx
+import { Host, ContextMenu, Button, Text, Section, Divider } from '@expo/ui/swift-ui';
+
+export default function ContextMenuWithSectionsExample() {
+  return (
+    <Host matchContents>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Section title="操作">
+            <Button label="编辑" onPress={() => console.log('Edit')} />
+            <Button label="复制" onPress={() => console.log('Duplicate')} />
+          </Section>
+          <Divider />
+          <Button label="删除" role="destructive" onPress={() => console.log('Delete')} />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>长按我</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+### 禁用项
+
+在菜单 `Button` 上使用 [`disabled(true)`](modifiers/#disableddisabled) 修饰符，可将其显示为灰色且不可交互。
+
+```tsx DisabledContextMenuItemExample.tsx
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+import { disabled } from '@expo/ui/swift-ui/modifiers';
+
+export default function DisabledContextMenuItemExample() {
+  return (
+    <Host matchContents>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button label="编辑" onPress={() => console.log('Edit')} />
+          <Button
+            label="已锁定"
+            systemImage="lock"
+            modifiers={[disabled(true)]}
+            onPress={() => console.log('This never fires')}
+          />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>长按我</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+### 可选项（勾选标记）
+
+`ContextMenu.Items` 中的 SwiftUI [`Toggle`](toggle) 在 `isOn` 为 `true` 时，会自动渲染为左侧带 SF Symbol、右侧带勾选标记的一行。
+
+```tsx CheckmarkContextMenuItemExample.tsx
+import { Host, ContextMenu, Toggle, Text } from '@expo/ui/swift-ui';
+import { useState } from 'react';
+
+export default function CheckmarkContextMenuItemExample() {
+  const [pinned, setPinned] = useState(false);
+
+  return (
+    <Host matchContents>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Toggle isOn={pinned} label="固定" systemImage="pin" onIsOnChange={setPinned} />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>长按我</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+### 嵌套上下文菜单
+
+使用嵌套的 `ContextMenu` 组件来创建子菜单。
+
+```tsx NestedContextMenuExample.tsx
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+
+export default function NestedContextMenuExample() {
+  return (
+    <Host matchContents>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button label="操作" onPress={() => console.log('Action')} />
+          <ContextMenu>
+            <ContextMenu.Items>
+              <Button label="子操作 1" onPress={() => console.log('Sub 1')} />
+              <Button label="子操作 2" onPress={() => console.log('Sub 2')} />
+            </ContextMenu.Items>
+            <ContextMenu.Trigger>
+              <Button label="更多选项" />
+            </ContextMenu.Trigger>
+          </ContextMenu>
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>长按我</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { ContextMenu } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/contextmenu" apiName="ContextMenu" />

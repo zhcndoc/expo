@@ -32,7 +32,7 @@ export function JoinTheCommunity() {
           title="Discord 和论坛"
           description="加入我们的 Discord 聊天、提问或参加活动。"
           link="https://chat.expo.dev"
-          icon={<DiscordIcon className="icon-xl text-palette-white" />}
+          icon={<DiscordIcon aria-hidden="true" className="icon-xl text-palette-white" />}
           iconClassName="bg-[#3131E8]"
           shouldLeakReferrer
         />
@@ -41,48 +41,48 @@ export function JoinTheCommunity() {
           description="查看 SDK 和文档代码、提交 PR 或报告问题。"
           link="https://github.com/expo/expo"
           iconClassName="bg-palette-gray11 dark:bg-palette-gray7"
-          icon={<GithubIcon className="icon-xl text-palette-white" />}
+          icon={<GithubIcon aria-hidden="true" className="icon-xl text-palette-white" />}
         />
         <CommunityGridCell
           title="YouTube"
           description="关注我们的频道，浏览教程和其他内容。"
           link="https://www.youtube.com/channel/UCx_YiR733cfqVPRsQ1n8Fag"
           iconClassName="bg-[#FF0033]"
-          icon={<YoutubeIcon className="icon-xl text-palette-white" />}
+          icon={<YoutubeIcon aria-hidden="true" className="icon-xl text-palette-white" />}
         />
         <CommunityGridCell
           title="LinkedIn"
           description="在 LinkedIn 上关注 Expo 获取新闻和更新。"
           link="https://www.linkedin.com/company/expo-dev/"
           iconClassName="bg-[#0B66C2]"
-          icon={<LinkedinIcon className="icon-xl text-palette-white" />}
+          icon={<LinkedinIcon aria-hidden="true" className="icon-xl text-palette-white" />}
         />
         <CommunityGridCell
           title="Bluesky"
           description="在 Bluesky 上关注 Expo 获取新闻和更新。"
           link="https://bsky.app/profile/expo.dev"
-          icon={<BlueskyIcon className="icon-xl text-palette-white" />}
+          icon={<BlueskyIcon aria-hidden="true" className="icon-xl text-palette-white" />}
           iconClassName="bg-[#1083fe]"
         />
         <CommunityGridCell
           title="X"
           description="在 X 上关注 Expo 获取新闻和更新。"
           link="https://x.com/expo"
-          icon={<XLogoIcon className="size-7! text-palette-white" />}
+          icon={<XLogoIcon aria-hidden="true" className="size-7! text-palette-white" />}
           iconClassName="bg-[#000000]"
         />
         <CommunityGridCell
           title="Reddit"
           description="在 r/expo 获取最新动态。"
           link="https://www.reddit.com/r/expo"
-          icon={<RedditIcon className="icon-xl text-palette-white" />}
+          icon={<RedditIcon aria-hidden="true" className="icon-xl text-palette-white" />}
           iconClassName="bg-[#FC471E]"
         />
         <CommunityGridCell
           title="Canny"
           description="提交反馈或功能请求。"
           link="https://expo.canny.io/"
-          icon={<Lightbulb02Icon className="icon-xl text-palette-white" />}
+          icon={<Lightbulb02Icon aria-hidden="true" className="icon-xl text-palette-white" />}
           iconClassName="bg-[#525df9]"
         />
       </div>
@@ -134,7 +134,7 @@ function CommunityGridCell({
           {description}
         </CALLOUT>
       </div>
-      <ArrowUpRightIcon className="shrink-0 self-center text-icon-tertiary" />
+      <ArrowUpRightIcon aria-hidden="true" className="shrink-0 self-center text-icon-tertiary" />
     </A>
   );
 }

@@ -1,0 +1,487 @@
+---
+title: 视频（expo-video）
+description: 一个提供用于在应用中实现视频播放的 API 的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-video'
+packageName: 'expo-video'
+iconUrl: '/static/images/packages/expo-video.png'
+platforms: ['android', 'ios', 'web', 'tvos', 'expo-go']
+searchRank: 10
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+import { SnackInline } from '~/ui/components/Snippet';
+import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { CODE } from '~/ui/components/Text';
+
+`expo-video` 是一个适用于 React Native 和 Expo、支持 Web 的跨平台高性能视频组件。
+
+#### 已知问题&ensp;<PlatformTags platforms={['android']} />
+
+当两个 [`VideoView`](#videoview) 组件重叠，并且它们的 [`contentFit`](#contentfit) 属性设置为 [`cover`](#videocontentfit) 时，其中一个视频可能会显示到边界之外。这是一个 [已知的上游问题](https://github.com/androidx/media/issues/1107)。要解决此问题，请使用 [`surfaceType`](#surfacetype) 属性，并将其设置为 [`textureView`](#surfacetype-1)。
+
+## 安装
+
+<APIInstallSection />
+
+## app 配置中的配置
+
+如果你在项目中使用 config plugin（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），则可以使用 `expo-video` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置运行时无法设置的各种属性，这些属性需要构建新的应用二进制文件后才会生效。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+
+<ConfigPluginExample>
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
+        }
+      ]
+    ],
+  }
+}
+```
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'supportsBackgroundPlayback',
+      description:
+        '一个布尔值，用于启用后台播放支持。如果为 `true`，在 iOS 上，`audio` 键会被添加到 **Info.plist** 文件中的 `UIBackgroundModes` 数组中。如果为 `false`，则会移除该键。当为 `undefined` 时，不会修改该键。在 Android 上，当为 `true` 时，会添加前台服务权限，并在 AndroidManifest.xml 中创建一个 expo-video 前台服务。',
+      default: 'undefined',
+    },
+    {
+      name: 'supportsPictureInPicture',
+      description:
+        '一个布尔值，用于在 Android 和 iOS 上启用画中画。如果为 `true`，会在 Android 上启用 `android:supportsPictureInPicture` 属性，并在 iOS 的 **Info.plist** 文件中将 `audio` 键添加到 `UIBackgroundModes` 数组中。如果为 `false`，则会移除该键。当为 `undefined` 时，不会修改配置。',
+      default: 'undefined',
+    },
+  ]}
+/>
+
+## 使用
+
+这里有一个带播放和暂停按钮的视频简单示例。
+
+<SnackInline label='视频' dependencies={['expo-video']}>
+
+```jsx
+import { useEvent } from 'expo';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { StyleSheet, View, Button } from 'react-native';
+
+const videoSource =
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+export default function VideoScreen() {
+  const player = useVideoPlayer(videoSource, player => {
+    player.loop = true;
+    player.play();
+  });
+
+  const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
+
+  return (
+    <View style={styles.contentContainer}>
+      <VideoView
+        style={styles.video}
+        player={player}
+        fullscreenOptions={{ enable: true }}
+        allowsPictureInPicture
+      />
+      <View style={styles.controlsContainer}>
+        <Button
+          title={isPlaying ? '暂停' : '播放'}
+          onPress={() => {
+            if (isPlaying) {
+              player.pause();
+            } else {
+              player.play();
+            }
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 50,
+  },
+  video: {
+    width: 350,
+    height: 275,
+  },
+  controlsContainer: {
+    padding: 10,
+  },
+});
+```
+
+</SnackInline>
+
+### 接收事件
+
+[`VideoPlayer`](#videoplayer) 属性的变化不会更新 React 状态。因此，要显示有关 `VideoPlayer` 当前状态的信息，有必要监听它触发的[事件](#videoplayerevents)。
+事件系统基于 [`expo`](../sdk/expo) 包中的 [`EventEmitter`](../sdk/expo/#eventemitter) 类和 [hooks](../sdk/expo/#hooks)。监听事件有几种方式：
+
+#### `useEvent` hook
+
+创建一个监听器，并返回可在组件中使用的状态值。组件卸载时也会自动清理。
+
+```tsx useEvent
+import { useEvent } from 'expo';
+// ... 其他导入、组件定义、创建 player 等。
+
+const { status, error } = useEvent(player, 'statusChange', { status: player.status });
+// 组件的其余部分...
+```
+
+#### `useEventListener` hook
+
+基于 `Player.addListener` 和 `Player.removeListener` 方法构建，创建一个带自动清理的事件监听器。
+
+```tsx useEventListener
+import { useEventListener } from 'expo';
+// ...其他导入、组件定义、创建 player 等。
+
+useEventListener(player, 'statusChange', ({ status, error }) => {
+  setPlayerStatus(status);
+  setPlayerError(error);
+  console.log('Player status changed: ', status);
+});
+// 组件的其余部分...
+```
+
+#### `Player.addListener` 方法
+
+监听事件最灵活的方式，但需要手动清理，并且样板代码更多。
+
+```tsx Player.addListener
+// ...导入、组件定义、创建 player 等。
+
+useEffect(() => {
+  const subscription = player.addListener('statusChange', ({ status, error }) => {
+    setPlayerStatus(status);
+    setPlayerError(error);
+    console.log('Player status changed: ', status);
+  });
+
+  return () => {
+    subscription.remove();
+  };
+}, []);
+// 组件的其余部分...
+```
+
+### 从 assets 目录播放本地媒体
+
+`expo-video` 支持播放使用 `require` 函数加载的本地媒体。你可以直接使用其结果作为源，也可以将其分配给 [`VideoSource`](#videosource) 的 `assetId` 参数，如果你还想配置其他属性的话。
+
+```tsx Playing local media
+import { VideoSource } from 'expo-video';
+
+const assetId = require('./assets/bigbuckbunny.mp4');
+
+const videoSource: VideoSource = {
+  assetId,
+  metadata: {
+    title: 'Big Buck Bunny',
+    artist: 'The Open Movie Project',
+  },
+};
+
+const player1 = useVideoPlayer(assetId); // 你可以直接使用 `asset` 作为视频源
+const player2 = useVideoPlayer(videoSource);
+```
+
+### 从媒体库播放媒体
+
+`expo-video` 支持使用 [`expo-media-library/legacy`](../sdk/media-library-legacy/) 中选取的视频，或任何带有相应权限的有效 `PHAsset` URI。
+
+要从媒体库播放视频，你应当通过 [`MediaLibrary.getAssetsAsync()`](../sdk/media-library-legacy/#medialibrarygetassetsasyncassetsoptions) 获取一个 [`Asset`](../sdk/asset/#asset) 对象，并将其 [`uri`](../sdk/asset/#uri) 属性用作视频源的 [`uri`](#videosource)。
+在播放前，请确保使用 [`MediaLibrary.requestPermissionsAsync()`](../sdk/media-library-legacy/#medialibraryrequestpermissionsasyncwriteonly-granularpermissions) 请求必要的权限。
+
+在 iOS 上，请务必**不要**使用 asset info 的 `localUri` 属性，因为它不包含读取该资源所需的权限。
+
+```tsx Playing media from media library
+import * as MediaLibrary from 'expo-media-library/legacy';
+import { VideoSource, useVideoPlayer, VideoView } from 'expo-video';
+
+// ...组件定义、创建 player 等。
+
+const loadAssetAndReplace = async () => {
+  const { granted } = await MediaLibrary.requestPermissionsAsync(false, ['video']);
+  if (!granted) {
+    return;
+  }
+
+  const pagedAssets = await MediaLibrary.getAssetsAsync({
+    mediaType: 'video',
+  });
+
+  if (pagedAssets.assets.length > 0) {
+    const [asset] = pagedAssets.assets;
+    const videoSource: VideoSource = {
+      uri: asset.uri,
+      metadata: {
+        title: asset.filename,
+      },
+    };
+
+    await player.replaceAsync(videoSource);
+    await player.replaceAsync(asset.uri); // 你也可以直接使用 asset uri
+    player.play();
+  }
+};
+
+// 现在你可以使用 loadAssetAndReplace 来加载并播放媒体库中的第一个视频
+```
+
+### 预加载视频
+
+在另一个视频播放时，可以在将某个视频显示到视图中之前先加载它。这能让后续视频之间切换更快，并带来更好的用户体验。
+
+要预加载视频，你必须使用视频源创建一个 `VideoPlayer`。即使该 player 没有连接到 `VideoView`，它也会填充缓冲区。一旦它连接到 `VideoView`，就可以在不经缓冲的情况下开始播放。
+
+在某些情况下，在屏幕生命周期的后期再预加载视频更有利。此时，应创建一个源为 `null` 的 `VideoPlayer`。要开始预加载，可以使用 `replace()` 函数将 player 的源替换为视频源。
+
+下面是一个预加载视频的示例：
+
+<SnackInline label='预加载视频' dependencies={['expo-video']}>
+
+```tsx
+import { useVideoPlayer, VideoView, VideoSource } from 'expo-video';
+import { useState, useCallback } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+const bigBuckBunnySource: VideoSource =
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+const elephantsDreamSource: VideoSource =
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4';
+
+export default function PreloadingVideoPlayerScreen() {
+  const player1 = useVideoPlayer(bigBuckBunnySource, player => {
+    player.play();
+  });
+
+  const player2 = useVideoPlayer(elephantsDreamSource, player => {
+    player.currentTime = 20;
+  });
+
+  const [currentPlayer, setCurrentPlayer] = useState(player1);
+
+  const replacePlayer = useCallback(async () => {
+    currentPlayer.pause();
+    if (currentPlayer === player1) {
+      setCurrentPlayer(player2);
+      player1.pause();
+      player2.play();
+    } else {
+      setCurrentPlayer(player1);
+      player2.pause();
+      player1.play();
+    }
+  }, [player1, currentPlayer]);
+
+  return (
+    <View style={styles.contentContainer}>
+      <VideoView player={currentPlayer} style={styles.video} nativeControls={false} />
+      <TouchableOpacity style={styles.button} onPress={replacePlayer}>
+        <Text style={styles.buttonText}>替换播放器</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 50,
+  },
+  button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 3,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#4630ec',
+  },
+  buttonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#eeeeee',
+    textAlign: 'center',
+  },
+  video: {
+    width: 300,
+    height: 168.75,
+    marginVertical: 20,
+  },
+});
+```
+
+</SnackInline>
+
+### 直接使用 VideoPlayer
+
+在大多数情况下，应使用 [`useVideoPlayer`](#usevideoplayersource-setup) hook 创建 `VideoPlayer` 实例。它会管理 player 的生命周期，并确保在组件卸载时正确释放。不过，在某些高级用例中，可能需要创建一个不会在组件卸载时自动销毁的 `VideoPlayer`。
+在这些情况下，可以使用 [`createVideoPlayer`](#videocreatevideoplayersource) 函数创建 `VideoPlayer`。你需要注意这种方式带来的风险，因为当不再需要 player 时，调用 [`release()`](../sdk/expo/#release) 方法是你的责任。如果处理不当，这种方式可能会导致内存泄漏。
+
+```tsx Creating player instance
+import { createVideoPlayer } from 'expo-video';
+const player = createVideoPlayer(videoSource);
+```
+
+> **warning** 在 Android 上，由于[平台限制](https://github.com/expo/expo/issues/35012)，同时挂载多个使用同一个 `VideoPlayer` 实例的 `VideoView` 组件将无法工作。
+
+### 缓存视频
+
+如果你的应用经常重复播放同一个视频，可以利用缓存来尽量减少网络流量并提升用户体验，不过代价是增加设备存储占用。`expo-video` 支持在 `Android` 和 `iOS` 平台上进行视频缓存。可以通过将 [`VideoSource`](#videosource) 对象的 [`useCaching`](#videosource) 属性设为 `true` 来启用此功能。
+
+缓存是持久性的，并且一旦超过首选大小，就会按照最近最少使用原则清除。此外，系统也可能因为存储空间不足而清除缓存，因此不建议依赖缓存来存储关键数据。
+
+缓存可离线工作。如果视频的部分或全部内容已被缓存，那么在设备离线时也可以从缓存中播放，直到缓存数据耗尽为止。
+
+> 由于平台限制，iOS 上的 HLS 视频源不能使用缓存。Android 和 iOS 均不支持对受 DRM 保护的视频进行缓存。
+
+### 管理缓存
+
+- 可以使用 [`setVideoCacheSizeAsync`](#videosetvideocachesizeasyncsizebytes) 函数定义首选缓存大小（以字节为单位）。默认缓存大小为 1GB。
+- 可以使用 [`getCurrentVideoCacheSize`](#videogetcurrentvideocachesize) 获取当前缓存占用的字节数。
+- 可以使用 [`clearVideoCacheAsync`](#videoclearvideocacheasync) 函数清除所有已缓存的视频。
+
+### 拦截原生资源加载
+
+<Collapsible summary={<>这是一个面向高级用户的原生 <CODE>expo-video</CODE> 功能。展开了解更多。</>}>
+#### 简介
+
+`expo-video` 在 iOS 上包含一个名为 `VideoAssetTransportProvider` 的原生扩展点。它允许你拦截特定视频源，自定义底层 `AVURLAsset` 的创建方式，并覆盖其加载数据的方式。
+
+当某个源无法被 `AVKit` 直接处理且需要原生预处理时，这非常有用。例如，provider 可以重写 URL、附加自定义的 `AVAssetResourceLoaderDelegate`、启动本地代理服务器，或在播放开始前将一种流格式转换为另一种。
+
+providers 会在模块启动时注册到 `VideoAssetTransportRegistry` 中。当 `expo-video` 加载某个源时，它会创建一个 `VideoAssetSourceDescriptor`，并按优先级顺序询问已注册的 provider 是否要处理它。第一个返回 `VideoAssetLoadPlan` 的 provider 会被使用。
+
+此 API 面向高级原生集成。它需要自定义原生模块，因此在 Expo Go 中不可用。请改用开发构建。
+
+#### 可自定义的属性
+
+主要的自定义点是 `VideoAssetTransportProvider` 上的字段，以及它返回的 `VideoAssetLoadPlan` 上的字段。
+
+`VideoAssetTransportProvider` 允许你控制以下属性：
+
+| 属性 | 描述 |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `identifier`         | provider 的稳定名称。用于替换或取消注册 provider。                                      |
+| `priority`           | 当多个 provider 匹配同一源时，哪个 provider 优先。数值越高优先级越高。                             |
+| `makeLoadPlan(for:)` | 匹配和配置入口。返回 `nil` 表示忽略某个源，或返回 `VideoAssetLoadPlan` 来处理它。 |
+
+`VideoAssetLoadPlan` 允许你通过以下属性控制 `expo-video` 如何构建和管理该资源：
+
+| 属性                  | 描述                                                                                                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `assetURL`                | 用于初始化底层 `AVURLAsset` 的 URL。它可以是原始源 URL，也可以是特定传输方式的替代 URL，例如重写后的 scheme、本地代理 URL，或生成的播放列表 URL。 |
+| `assetOptions`            | 可选的 `AVURLAsset` 初始化选项。用于覆盖 `expo-video` 通常会根据源自动推导出的默认选项。                                                         |
+| `reportedContentTypeHint` | 用于描述 `assetURL` 实际播放格式的可选内容类型。当传输层改变了源类型时设置此项，例如将 DASH 转换为 HLS。                            |
+| `resourceLoaderDelegate`  | 可选的 `AVAssetResourceLoaderDelegate`，应附加到资源加载器上。                                                                                                     |
+| `resourceLoaderQueue`     | `resourceLoaderDelegate` 接收回调的可选调度队列。                                                                                                                     |
+| `prepareAsset`            | 在 `expo-video` 预先加载资源属性之前运行的可选异步工作。可用于传输初始化，例如获取清单或启动本地服务器。                                  |
+| `retainedObjects`         | 必须在资源生命周期内保持存活的可选辅助对象数组，例如本地 HTTP 服务器、解析器或传输状态持有者。                                                    |
+| `attachErrorHandler`      | 一个可选 hook，允许传输在加载计划应用后将异步错误转发回 `expo-video`。                                                                       |
+| `onAssetDeinit`           | 当 `VideoAsset` 被释放时运行的可选清理逻辑。                                                                                                                                           |
+
+#### 实现与使用
+
+典型设置如下：
+
+1. 使用 [`create-expo-module`](/modules/get-started/) 创建一个 Expo 模块。
+2. 添加一个符合 `VideoAssetTransportProvider` 的类。
+3. 在模块的 `OnCreate` 块中注册该 provider。
+4. 构建应用，使原生模块被编译进你的项目。
+
+如果你只需要在单个应用中使用该 provider，请使用 [本地 Expo 模块](/modules/get-started/#add-a-new-module-to-an-existing-application) 流程。
+
+如果你希望在多个应用之间复用该 provider，请改用 [独立 Expo 模块](/modules/get-started/#create-a-new-module-with-an-example-project) 流程。
+
+#### 基本使用示例
+
+1. 定义 provider 和 load plan。创建模块后，添加一个符合 `VideoAssetTransportProvider` 的类。在 `makeLoadPlan(for:)` 中检查 `VideoAssetSourceDescriptor`，并对你不想处理的源返回 `nil`。
+
+```swift
+import ExpoVideo
+
+final class ExampleVideoTransportProvider: VideoAssetTransportProvider {
+  static let providerIdentifier = "com.example.video-transport"
+
+  let identifier = Self.providerIdentifier
+  let priority = 500
+
+  func makeLoadPlan(for source: VideoAssetSourceDescriptor) -> VideoAssetLoadPlan? {
+    guard source.contentTypeHint == .dash, source.url.pathExtension == "mpd" else {
+      return nil
+    }
+
+    let transformedURL = URL(string: "http://127.0.0.1:8080/master.m3u8")!
+
+    return VideoAssetLoadPlan(
+      assetURL: transformedURL,
+      reportedContentTypeHint: .hls
+    )
+  }
+}
+```
+
+2. 要注册该 provider，推荐在 Expo 模块的 `OnCreate` 块中注册。这样可以确保在视频开始加载之前 provider 已可用。
+
+```swift
+import ExpoModulesCore
+import ExpoVideo
+
+public final class CustomVideoTransportModule: Module {
+  public func definition() -> ModuleDefinition {
+    Name("CustomVideoTransport")
+
+    OnCreate {
+      VideoAssetTransportRegistry.registerProvider(ExampleVideoTransportProvider())
+    }
+
+    OnDestroy {
+      VideoAssetTransportRegistry.unregisterProvider(
+        withId: ExampleVideoTransportProvider.providerIdentifier
+      )
+    }
+  }
+}
+```
+
+#### 完整示例
+
+你可以使用以下完整示例，更好地理解如何使用此 API。
+
+- [基础 DASH 支持 provider](https://github.com/expo/expo/tree/main/apps/bare-expo/modules/expo-video-dash-support-module) - Bare Expo 中的本地模块，为 iOS 上的 `expo-video` 提供有限的 DASH 支持。
+- [`expo-video` iOS 缓存](https://github.com/expo/expo/blob/main/packages/expo-video/ios/Cache/CacheVideoAssetTransportProvider.swift) - 内置缓存 provider 的实现。
+
+</Collapsible>
+
+## API
+
+```js
+import { VideoView, useVideoPlayer } from 'expo-video';
+```
+
+<APISection packageName="expo-video" apiName="视频" />

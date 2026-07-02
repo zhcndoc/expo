@@ -1,0 +1,95 @@
+---
+title: 气压计
+description: 一个提供访问设备气压传感器的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-sensors'
+packageName: 'expo-sensors'
+iconUrl: '/static/images/packages/expo-sensors.png'
+platforms: ['android', 'ios*', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { NoIcon } from '~/ui/components/DocIcons';
+import { SnackInline } from '~/ui/components/Snippet';
+
+`expo-sensors` 中的 `Barometer` 提供了访问设备气压计传感器的能力，以响应空气压力的变化，空气压力的测量单位为百帕（`hPa`）。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+<SnackInline label='基础气压计用法' dependencies={['expo-sensors']} platforms={['android', 'ios']}>
+
+```jsx
+import { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { Barometer } from 'expo-sensors';
+
+export default function App() {
+  const [{ pressure, relativeAltitude }, setData] = useState({ pressure: 0, relativeAltitude: 0 });
+  const [subscription, setSubscription] = useState(null);
+
+  const toggleListener = () => {
+    subscription ? unsubscribe() : subscribe();
+  };
+
+  const subscribe = () => {
+    setSubscription(Barometer.addListener(setData));
+  };
+
+  const unsubscribe = () => {
+    subscription && subscription.remove();
+    setSubscription(null);
+  };
+
+  return (
+    <View style={styles.wrapper}>
+      <Text>气压计：监听器 {subscription ? 'ACTIVE' : 'INACTIVE'}</Text>
+      <Text>气压：{pressure} hPa</Text>
+      <Text>
+        相对海拔：{' '}
+        {Platform.OS === 'ios' ? `${relativeAltitude} m` : `仅在 iOS 上可用`}
+      </Text>
+      <TouchableOpacity onPress={toggleListener} style={styles.button}>
+        <Text>切换监听器</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#eee',
+    padding: 10,
+    marginTop: 15,
+  },
+  wrapper: {
+    flex: 1,
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+});
+```
+
+</SnackInline>
+
+## API
+
+```js
+import { Barometer } from 'expo-sensors';
+```
+
+<APISection packageName="expo-barometer" />
+
+## 单位和提供方
+
+| OS      | Units      | Provider                                                                                                | Description                                                                                                                         |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| iOS     | _`hPa`_    | [`CMAltimeter`](https://developer.apple.com/documentation/coremotion/cmaltimeter)                       | 海拔事件反映的是当前海拔的变化，而不是绝对海拔。                                              |
+| Android | _`hPa`_    | [`Sensor.TYPE_PRESSURE`](https://developer.android.com/reference/android/hardware/Sensor#TYPE_PRESSURE) | 监测气压变化。                                                                                                    |
+| Web     | <NoIcon /> | <NoIcon />                                                                                              | 此传感器在 Web 上不可用，无法访问。如果你尝试获取数据，将抛出 `UnavailabilityError`。 |

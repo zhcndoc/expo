@@ -130,18 +130,18 @@ jest.mock('../ExpoMyModule', () => ({
 }));
 
 describe('useMyHook', () => {
-  it('在挂载和卸载时调用原生方法', () => {
-    const hook = renderHook(useMyHook);
+  it('在挂载和卸载时调用原生方法', async () => {
+    const hook = await renderHook(useMyHook);
     expect(ExpoMyModule.startOperation).toHaveBeenCalledTimes(1);
 
-    hook.unmount();
+    await hook.unmount();
     expect(ExpoMyModule.stopOperation).toHaveBeenCalledTimes(1);
   });
 
-  it('处理参数变化', () => {
-    const hook = renderHook(useMyHook, { initialProps: 'param1' });
+  it('处理参数变化', async () => {
+    const hook = await renderHook(useMyHook, { initialProps: 'param1' });
 
-    hook.rerender('param2');
+    await hook.rerender('param2');
 
     expect(ExpoMyModule.startOperation).toHaveBeenCalledTimes(2);
     expect(ExpoMyModule.stopOperation).toHaveBeenCalledTimes(1);

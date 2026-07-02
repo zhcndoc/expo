@@ -12,6 +12,8 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 一个懒加载的垂直列表组件，它只渲染可见项，以实现高效滚动。有关更多信息，请参阅 [Jetpack Compose 官方文档](https://developer.android.com/develop/ui/compose/lists)。
 
+> **信息** `LazyColumn` 目前还不是真正的懒加载：原生端只会组合可见项，但 React 仍会一次性创建所有子项，因此大型列表在挂载时可能会很慢。我们正在改进这一点。对于大型列表，我们建议使用 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)。
+
 <ContentSpotlight
   variant="component"
   aspect="landscape"
@@ -29,7 +31,7 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 ### 基础懒加载列
 
 ```tsx BasicLazyColumn.tsx
-import { Host, LazyColumn, ListItem } from '@expo/ui/jetpack-compose';
+import { Host, LazyColumn, ListItem, Text } from '@expo/ui/jetpack-compose';
 
 const items = Array.from({ length: 100 }, (_, i) => `项目 ${i + 1}`);
 
@@ -38,7 +40,11 @@ export default function BasicLazyColumn() {
     <Host style={{ height: 400 }}>
       <LazyColumn>
         {items.map(item => (
-          <ListItem key={item} headline={item} />
+          <ListItem key={item}>
+            <ListItem.HeadlineContent>
+              <Text>{item}</Text>
+            </ListItem.HeadlineContent>
+          </ListItem>
         ))}
       </LazyColumn>
     </Host>

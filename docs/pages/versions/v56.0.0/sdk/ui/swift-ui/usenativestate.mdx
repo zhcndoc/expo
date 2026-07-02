@@ -11,13 +11,15 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 `useNativeState` 返回一个 [`ObservableState`](#observablestate)，它在原生端映射到 SwiftUI 的 [`ObservableObject`](https://developer.apple.com/documentation/combine/observableobject)，因此对 `.value` 的读写会直接被 SwiftUI 观察到，而不会经过 React 的渲染周期。这使你可以在 UI 线程上的 worklet 中同步更新原生视图。
 
+> **注意：** 当使用 [React Compiler](https://react.dev/learn/react-compiler) 时，应避免直接访问和修改 `value` 属性。请改用 [`get`](#observablestate) 和 [`set`](#observablestate) 方法，因为它们符合 React Compiler 标准。
+
 ## 安装
 
 <APIInstallSection />
 
 ## 用法
 
-> **注意：** 使用 worklet 需要在你的项目中安装 [`react-native-reanimated`](https://docs.swmansion.com/react-native-reanimated/) 和 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。`useNativeState` 本身无需它们即可工作，但下面展示的 UI 线程同步更新依赖于 worklet 运行时。
+> **注意：** 使用 worklets 需要在你的项目中安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。`useNativeState` 本身即使没有它也能工作，但下面展示的同步 UI 线程更新依赖于 worklet 运行时。
 
 下面的示例会在用户输入时对电话号码进行掩码处理。格式化以及对 `maskedPhone.value`（文本）和 `selection.value`（光标位置）的写入都在 UI 线程上同步发生，因此输入值和掩码后的值之间不会出现闪烁。
 

@@ -1,0 +1,358 @@
+---
+title: 添加手势
+description: 本教程将学习如何使用 React Native Gesture Handler 和 Reanimated 库实现手势。
+hasVideoLink: true
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Step } from '~/ui/components/Step';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+手势是为应用带来直观用户体验的绝佳方式。[React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/docs/) 库内置提供了可处理手势的原生组件。它使用平台原生的触摸处理系统来识别平移、点击、旋转等手势。本章中，我们将使用这个库添加两种手势。
+
+- 通过双击放大表情贴纸的大小，再次双击可恢复到原始大小。
+- 通过平移在屏幕上移动表情贴纸，使其可以放置在图像的任意位置。
+
+我们还将使用 [Reanimated](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/handling-gestures/) 库在手势状态之间进行动画过渡。
+
+<VideoBoxLink
+  videoId="0q48LLvTGDU"
+  title="观看：向通用 Expo 应用添加手势"
+  description="使用 React Native Gesture Handler 和 Reanimated，为表情贴纸添加双击和平移动作。"
+/>
+
+---
+
+<Step label="1">
+
+## 添加 GestureHandlerRootView
+
+为了让应用中的手势交互生效，请在 `Index` 组件的最顶层渲染 `react-native-gesture-handler` 的 `<GestureHandlerRootView>`。将 **app/(tabs)/index.tsx** 中根级别的 `<View>` 组件替换为 `<GestureHandlerRootView>`。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx
+// ... rest of the import statements remain same
+/* @tutinfo 从 `react-native-gesture-handler-library` 导入 `GestureHandlerRootView`。 */import { GestureHandlerRootView } from 'react-native-gesture-handler';/* @end */
+
+export default function Index() {
+  return (
+    /* @tutinfo 将根级别的 `View` 组件替换为 `GestureHandlerRootView`。 */
+    <GestureHandlerRootView style={styles.container}>
+    /* @end */
+      {/* ...rest of the code remains */}
+    /* @tutinfo */
+    </GestureHandlerRootView>
+    /* @end */
+  )
+}
+```
+
+</Step>
+
+<Step label="2">
+
+## 使用支持动画的组件
+
+`Animated` 组件会根据组件的 `style` 属性来判断需要动画化的值，并应用更新来创建动画。Reanimated 导出了诸如 `<Animated.View>`、`<Animated.Text>`、`<Animated.ScrollView>` 等支持动画的组件。这里我们将把动画应用到 `<Animated.Image>` 组件上，以实现双击手势。
+
+1. 打开 **components** 目录中的 **EmojiSticker.tsx** 文件。为了使用支持动画的组件，请从 `react-native-reanimated` 库导入 `Animated`。
+2. 将 `Image` 组件替换为 `<Animated.Image>`。
+
+{/* prettier-ignore */}
+```tsx components/EmojiSticker.tsx
+import { ImageSourcePropType, View } from 'react-native';
+/* @tutinfo 从 `react-native-reanimated` 导入 `Animated`。 */import Animated from 'react-native-reanimated';/* @end */
+
+type Props = {
+  imageSize: number;
+  stickerSource: ImageSourcePropType;
+};
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  return (
+    <View style={{ top: -350 }}>
+      /* @tutinfo 将 `Image` 组件替换为 `Animated.Image`。 */
+      <Animated.Image
+        source={stickerSource}
+        resizeMode="contain"
+        style={{ width: imageSize, height: imageSize }}
+      />
+      /* @end */
+    </View>
+  );
+}
+```
+
+> 关于支持动画的组件 API 的完整参考，请参阅 [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/docs/core/createAnimatedComponent) 文档。
+
+</Step>
+
+<Step label="3">
+
+## 添加点击手势
+
+使用 React Native Gesture Handler，可以在检测到双击等触摸输入时添加相应行为。
+
+在 **EmojiSticker.tsx** 文件中：
+
+1. 从 `react-native-gesture-handler` 导入 `Gesture` 和 `GestureDetector`。
+2. 为了使贴纸点击生效，从 `react-native-reanimated` 导入 `useAnimatedStyle`、`useSharedValue`、`withSpring`，并为 `<Animated.Image>` 的样式添加动画。
+3. 在 `EmojiSticker` 组件中，使用 `useSharedValue()` 钩子创建一个名为 `scaleImage` 的引用。初始值使用 `imageSize`。
+
+{/* prettier-ignore */}
+```tsx components/EmojiSticker.tsx
+// ...rest of the import statements remain same
+/* @tutinfo 从 `react-native-gesture-handler` 导入 `Gesture` 和 `GestureDetector`。 */import { Gesture, GestureDetector } from 'react-native-gesture-handler';/* @end */
+/* @tutinfo 从 `react-native-reanimated` 导入 `useAnimatedStyle`、`useSharedValue`、`withSpring`。 */import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';/* @end */
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  /* @tutinfo 创建名为 `scaleImage` 的 shared value，并将初始值设置为 `imageSize`。 */const scaleImage = useSharedValue(imageSize);/* @end */
+
+  return (
+    // ...rest of the code remains same
+  )
+}
+```
+
+使用 `useSharedValue()` 钩子创建共享值有很多好处。它有助于修改数据，并根据当前值执行动画。可以通过 `.value` 属性访问和修改共享值。创建一个用于缩放初始值的 `doubleTap` 对象，并使用 `Gesture.Tap()` 在缩放贴纸图像时执行动画。通过 `numberOfTaps()` 指定所需的点击次数。
+
+在 `EmojiSticker` 组件内创建如下对象：
+
+```tsx components/EmojiSticker.tsx
+const doubleTap = Gesture.Tap()
+  .numberOfTaps(2)
+  .onStart(() => {
+    if (scaleImage.value !== imageSize * 2) {
+      scaleImage.value = scaleImage.value * 2;
+    } else {
+      scaleImage.value = Math.round(scaleImage.value / 2);
+    }
+  });
+```
+
+为了实现动画，我们使用基于弹簧的动画。由于它基于真实世界中的弹簧物理，因此会带来更有生命力的感觉。使用 `react-native-reanimated` 提供的 `withSpring()` 函数。
+
+对于贴纸图像，使用 `useAnimatedStyle()` 钩子创建样式对象。这样就可以在动画过程中使用共享值来更新样式。另外，通过操作 `width` 和 `height` 属性来缩放图像大小。这些属性的初始值设置为 `imageSize`。
+
+创建 `imageStyle` 变量，并将其添加到 `EmojiSticker` 组件中。
+
+```tsx components/EmojiSticker.tsx
+const imageStyle = useAnimatedStyle(() => {
+  return {
+    width: withSpring(scaleImage.value),
+    height: withSpring(scaleImage.value),
+  };
+});
+```
+
+接下来，在 JSX 代码中：
+
+1. 更新 `<EmojiSticker>` 组件，将 `<GestureDetector>` 组件作为最顶层组件。
+2. 将 `containerStyle` 添加到 `<Animated.View>` 组件中，以应用变换样式。
+
+{/* prettier-ignore */}
+```tsx components/EmojiSticker.tsx
+import { ImageSourcePropType, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+
+type Props = {
+  imageSize: number;
+  stickerSource: ImageSourcePropType;
+};
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  const scaleImage = useSharedValue(imageSize);
+
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onStart(() => {
+      if (scaleImage.value !== imageSize * 2) {
+        scaleImage.value = scaleImage.value * 2;
+      } else {
+        scaleImage.value = Math.round(scaleImage.value / 2);
+      }
+    });
+
+  const imageStyle = useAnimatedStyle(() => {
+    return {
+      width: withSpring(scaleImage.value),
+      height: withSpring(scaleImage.value),
+    };
+  });
+
+  return (
+    <View style={{ top: -350 }}>
+      /* @tutinfo 使用 `GestureDetector` 包裹 `Animated.Image` 组件。*/ <GestureDetector gesture={doubleTap}>/* @end */
+        <Animated.Image
+          source={stickerSource}
+          resizeMode="contain"
+          style={/* @tutinfo 为 `Animated.Image` 的 `style` 属性传入 `imageStyle`。 */[imageStyle, { width: imageSize, height: imageSize }]/* @end */}
+        />
+      /* @tutinfo */
+      </GestureDetector>
+      /* @end */
+    </View>
+  );
+}
+```
+
+在上面的代码片段中，`gesture` 属性接收 `doubleTap` 的值，当用户双击贴纸图像时触发该手势。
+
+在 Android、iOS 和 web 上查看应用效果。
+
+<ContentSpotlight file="tutorial/tap-gesture.mp4" />
+
+> 有关点击手势 API 的完整参考，请参阅 [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/docs/2.x/gestures/tap-gesture) 文档。
+
+</Step>
+
+<Step label="4">
+
+## 添加平移手势
+
+为了识别贴纸上的拖拽手势并跟踪其移动，我们使用平移手势。在 **components/EmojiSticker.tsx** 中：
+
+1. 新建两个共享值 `translateX` 和 `translateY`。
+2. 将 `<View>` 替换为 `<Animated.View>` 组件。
+
+{/* prettier-ignore */}
+```tsx components/EmojiSticker.tsx
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  const scaleImage = useSharedValue(imageSize);
+  /* @tutinfo 添加 `translateX` 和 `translateY` 的 shared values。*/
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  /* @end */
+  // ...rest of the code remains same
+
+  return (
+    /* @tutinfo 将 `View` 组件替换为 `Animated.View`。 */<Animated.View style={{ top: -350 }}>/* @end */
+      <GestureDetector gesture={doubleTap}>
+        {/* ...rest of the code remains same */}
+      </GestureDetector>
+    /* @tutinfo */</Animated.View>/* @end */
+  );
+}
+```
+
+让我们看看上面的代码在做什么。
+
+- 使用我们定义的移动量值，在屏幕上移动贴纸。由于贴纸会沿两个轴移动，因此需要跟踪 X 值和 Y 值。
+- 在 `useSharedValue()` 钩子中，将移动变量的初始位置都设置为 `0`。这就是贴纸的初始位置，也是起点。该值用于设置手势开始时贴纸的初始位置。
+
+在前面的步骤中，我们使用链式调用的 `Gesture.Tap()` 方法触发了点击手势的 `onStart()` 回调。对于平移手势，我们指定 `onChange()` 回调，它会在手势处于激活且移动过程中执行。
+
+1. 创建处理平移手势的 `drag` 对象。`onChange()` 回调会接收 `event` 作为参数。`changeX` 和 `changeY` 属性保存自上次事件以来的位置变化量，并用于更新存储在 `translateX` 和 `translateY` 中的值。
+2. 使用 `useAnimatedStyle()` 钩子定义 `containerStyle` 对象。它会返回一个变换数组。在 `<Animated.View>` 组件中，需要将 `transform` 属性设置为 `translateX` 和 `translateY` 的值。这样在手势激活时贴纸的位置就会改变。
+
+```tsx components/EmojiSticker.tsx
+const drag = Gesture.Pan().onChange(event => {
+  translateX.value += event.changeX;
+  translateY.value += event.changeY;
+});
+
+const containerStyle = useAnimatedStyle(() => {
+  return {
+    transform: [
+      {
+        translateX: translateX.value,
+      },
+      {
+        translateY: translateY.value,
+      },
+    ],
+  };
+});
+```
+
+接下来，在 JSX 代码中：
+
+1. 更新 `<EmojiSticker>` 组件，使 `<GestureDetector>` 组件成为最顶层组件。
+2. 为 `<Animated.View>` 组件添加 `containerStyle`，以应用变换样式。
+
+{/* prettier-ignore */}
+```tsx components/EmojiSticker.tsx
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { ImageSourcePropType } from 'react-native';
+
+type Props = {
+  imageSize: number;
+  stickerSource: ImageSourcePropType;
+};
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  const scaleImage = useSharedValue(imageSize);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onStart(() => {
+      if (scaleImage.value !== imageSize * 2) {
+        scaleImage.value = scaleImage.value * 2;
+      } else {
+        scaleImage.value = Math.round(scaleImage.value / 2);
+      }
+    });
+
+  const imageStyle = useAnimatedStyle(() => {
+    return {
+      width: withSpring(scaleImage.value),
+      height: withSpring(scaleImage.value),
+    };
+  });
+
+  const drag = Gesture.Pan().onChange(event => {
+    translateX.value += event.changeX;
+    translateY.value += event.changeY;
+  });
+
+  const containerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: translateX.value,
+        },
+        {
+          translateY: translateY.value,
+        },
+      ],
+    };
+  });
+
+  return (
+    /* @tutinfo 使用 `GestureDetector` 包裹所有组件。 */<GestureDetector gesture={drag}>/* @end */
+      <Animated.View style={/* @tutinfo 在 `Animated.View` 的 style 属性中添加 `containerStyle`。 */[containerStyle, { top: -350 }]/* @end */}>
+        <GestureDetector gesture={doubleTap}>
+          <Animated.Image
+            source={stickerSource}
+            resizeMode="contain"
+            style={[imageStyle, { width: imageSize, height: imageSize }]}
+          />
+        </GestureDetector>
+      </Animated.View>
+    /* @tutinfo */</GestureDetector>/* @end */
+  );
+}
+```
+
+在 Android、iOS 和 web 上查看应用效果。
+
+<ContentSpotlight file="tutorial/pan-gesture.mp4" />
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  currentChapterIndex={5}
+  name="GET_STARTED"
+  chapterTitle="第 6 章：添加手势"
+  summary="平移和点击手势的实现已经完成。"
+  nextChapterDescription="在下一章中，你将学习如何拍摄图像和贴纸的截图，并将其保存到设备的图库中。"
+  nextChapterTitle="拍摄截图"
+  nextChapterLink="/ja/tutorial/screenshot"
+/>

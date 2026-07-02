@@ -22,6 +22,8 @@ Expo UI BottomSheet 与官方 SwiftUI [sheet API](<https://developer.apple.com/d
   alt="一个中等 detent 的 BottomSheet，显示一个排序列表，并选中了最近"
 />
 
+> **info** 在 iOS 上，如果要在另一个底部弹窗上方再显示一个底部弹窗，请将第二个 `BottomSheet` 嵌套在第一个弹窗的内容中，而不是并列放置。这是底层 SwiftUI [`sheet`](<https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)>) 修饰符的限制。有关更多信息，请参阅[如何展示多个 sheet](https://www.hackingwithswift.com/quick-start/swiftui/how-to-present-multiple-sheets)。
+
 ## 安装
 
 <APIInstallSection />
@@ -323,6 +325,48 @@ export default function BottomSheetWithFlexRNContentExample() {
                 <RNText style={{ color: 'white', marginTop: 8 }}>
                   此内容会填满弹窗中的可用空间。
                 </RNText>
+              </View>
+            </RNHostView>
+          </Group>
+        </BottomSheet>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+### 可滚动的 React Native 内容
+
+将可滚动的 React Native 列表（如 `FlatList`、`ScrollView`，或像 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list) 这样的高性能列表）嵌入到带有 `RNHostView` 的弹窗中。使用 [`presentationDetents`](modifiers/#presentationdetentsdetents-options) 设置弹窗尺寸，列表将在该高度内滚动。
+
+```tsx BottomSheetWithScrollableContentExample.tsx
+import { useState } from 'react';
+import { FlatList, Text as RNText, View } from 'react-native';
+import { Host, BottomSheet, Button, Group, RNHostView, VStack } from '@expo/ui/swift-ui';
+import { presentationDetents, presentationDragIndicator } from '@expo/ui/swift-ui/modifiers';
+
+const DATA = Array.from({ length: 50 }, (_, i) => `条目 ${i + 1}`);
+
+export default function BottomSheetWithScrollableContentExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host matchContents>
+      <VStack>
+        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
+        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+          <Group
+            modifiers={[
+              presentationDetents(['medium', 'large']),
+              presentationDragIndicator('visible'),
+            ]}>
+            <RNHostView>
+              <View style={{ padding: 16 }}>
+                <FlatList
+                  data={DATA}
+                  keyExtractor={item => item}
+                  renderItem={({ item }) => <RNText style={{ paddingVertical: 16 }}>{item}</RNText>}
+                />
               </View>
             </RNHostView>
           </Group>

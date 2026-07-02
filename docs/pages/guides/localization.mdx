@@ -6,17 +6,17 @@ description: 了解如何在 Expo 项目中使用 expo-localization 开始并配
 import { Collapsible } from '~/ui/components/Collapsible';
 import { SnackInline, Terminal } from '~/ui/components/Snippet';
 
-如果你希望你的应用对使用不同语言或来自不同文化背景的用户来说更易用，就应该对其进行本地化。对应用进行本地化会使其适配用户设备的地区设置。应用会显示用户熟悉并能够理解的翻译和货币。数字、列表等内容也会按照用户习惯的方式进行格式化。
+If you want your app to be easier to use for users who speak different languages or come from different cultural backgrounds, you should localize it. Localizing an app makes it adapt to the region settings of the user's device. The app will display translations and currency that users are familiar with and can understand. Numbers, lists, and other content will also be formatted in the way users are accustomed to.
 
-本指南使用 `expo-localization` 库来获取用户语言设置并添加对多种语言的支持。它以 `i18n-js` 作为添加多语言支持的示例。
+This guide uses the `expo-localization` library to get the user's language settings and add support for multiple languages. It uses `i18n-js` as an example of adding multilingual support.
 
-## 获取用户的语言
+## Get the user's language
 
-使用 [`expo-localization`](/versions/latest/sdk/localization/) 库获取用户当前语言。通过运行以下命令安装该包：
+Use the [`expo-localization`](/versions/latest/sdk/localization/) library to get the user's current language. Install the package by running the following command:
 
 <Terminal cmd={['$ npx expo install expo-localization']} />
 
-然后，你就可以在应用中访问本地化方法和数据：
+Then, you can access localization methods and data in your app:
 
 ```tsx
 import { getLocales } from 'expo-localization';
@@ -24,19 +24,19 @@ import { getLocales } from 'expo-localization';
 const deviceLanguage = getLocales()[0].languageCode;
 ```
 
-`getLocales` 方法会根据设备的系统设置返回当前地区设置。在较新的 Android 和 iOS 版本中，应用语言可以按应用单独设置，因此你通常不需要构建自定义 UI 来允许用户在应用内更改当前地区设置。
+The `getLocales` method returns the current locale based on the device's system settings. On newer Android and iOS versions, app language can be set per app, so you usually don't need to build a custom UI to let users change the current locale in the app.
 
-有时，为了让用户能够按应用单独设置其他本地化偏好，构建一个 UI 是有意义的。通常来说，你应该允许用户更改以下内容：
+Sometimes, it makes sense to build a UI so users can set other localization preferences per app. Generally, you should allow users to change the following:
 
-- 如果你的应用对本地化单位有中等以上程度的使用，应允许更改本地化单位（例如公制/英制、货币、温度等）
-- 如果你支持的平台没有获取默认值的 API，则应允许更改其他偏好设置（有关详情，请查看 [`expo-localization`](/versions/latest/sdk/localization) API 文档）
+- If your app makes moderate or greater use of localized units, allow changing localized units (for example, metric/imperial, currency, temperature, etc.)
+- If the platforms you support don't have an API for retrieving default values, allow changing other preference settings (for details, see the [`expo-localization`](/versions/latest/sdk/localization) API docs)
 
-### 通过系统设置启用按应用语言选择
+### Enable per-app language selection through system settings
 
-Android 和 iOS 都允许用户通过系统设置为单个应用选择首选语言。要支持此功能，你的应用必须向系统声明其支持的地区设置。
+Both Android and iOS allow users to select a preferred language for a single app through system settings. To support this feature, your app must declare its supported locales to the system.
 
-为此，请使用 [`expo-localization`](/versions/latest/sdk/localization/#installation) 配置插件，并将 `supportedLocales` 属性传递给 `expo-localization` 配置插件。
-你可以直接提供一个支持地区设置的数组，也可以使用 `supportedLocales.ios` 和 `supportedLocales.android` 字段来指定平台相关的值：
+To do this, use the [`expo-localization`](/versions/latest/sdk/localization/#installation) config plugin and pass the `supportedLocales` property to the `expo-localization` config plugin.
+You can provide an array of supported locales directly, or use the `supportedLocales.ios` and `supportedLocales.android` fields to specify platform-specific values:
 
 ```json app.json
 {
@@ -56,9 +56,9 @@ Android 和 iOS 都允许用户通过系统设置为单个应用选择首选语�
 }
 ```
 
-> 在 Android 上，请参考 [地区名称命名指南](https://developer.android.com/guide/topics/resources/app-languages#locale-names) 和 [最常用地区设置列表](https://developer.android.com/guide/topics/resources/app-languages#sample-config)。
+> On Android, refer to the [locale names naming guide](https://developer.android.com/guide/topics/resources/app-languages#locale-names) and the [most common locale list](https://developer.android.com/guide/topics/resources/app-languages#sample-config).
 >
-> 在 iOS 上，请使用语言名称或 ISO 语言标识符。
+> On iOS, use language names or ISO language identifiers.
 
 ## 翻译应用
 
@@ -78,7 +78,7 @@ import { I18n } from 'i18n-js';
 
 // 为你想支持的不同语言设置键值对。
 const i18n = new I18n({
-  en: { welcome: 'Hello' },
+  en: { welcome: '你好' },
   ja: { welcome: 'こんにちは' },
 });
 
@@ -327,9 +327,9 @@ return <View dir={getLocales()[0].textDirection || 'ltr'}>...</View>;
 
 ### 文本对齐
 
-React Native 的 `textDirection` 属性不接受你可以在 flex 属性中使用的 `start` 或 `end` 值。相反，`left` 实际上可作为 `start` 使用（在 LTR 中对齐到左侧，在 RTL 中对齐到右侧），而 `right` 可作为 `end` 使用。
+React Native 的 `textAlign` 属性不接受你可以在 flex 属性中使用的 `start` 或 `end` 值。相反，`left` 实际上相当于 `start`（在 LTR 中左对齐，在 RTL 中右对齐），而 `right` 相当于 `end`。
 
-不过，`textDirection` 属性默认的未设置值表示真正的 left（在 LTR 和 RTL 中都对齐到左侧）。这意味着如果你希望每个 `<Text>` 标签都能正确对齐，就应该将 `textDirection: left` 或 `textDirection: right` 样式设置到它上面。
+不过，`textAlign` 属性默认未设置时表示实际的左侧（在 LTR 和 RTL 中都左对齐）。这意味着，如果你希望每个 `<Text>` 标签都能正确对齐，就应该为它设置 `textAlign: left` 或 `textAlign: right` 样式。
 
 最好在你自定义的可复用 `<Text>` 组件中定义这个样式，然后在需要渲染文本字符串的所有地方导入它。
 

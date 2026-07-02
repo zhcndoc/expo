@@ -1,0 +1,109 @@
+---
+title: 底部弹出面板
+description: 一种从屏幕底部滑出的模态弹出面板。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+一个从屏幕底部滑出的模态面板。该面板的可见性是受控的——从 React 状态切换 [`isPresented`](#ispresented)，并通过 [`onDismiss`](#ondismiss) 将其关闭（当用户向下滑动或点击遮罩层时会调用）。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基础底部弹窗
+
+```tsx BottomSheetExample.tsx
+import { useState } from 'react';
+import { Host, Column, Button, BottomSheet, Text } from '@expo/ui';
+
+export default function BottomSheetExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
+      <BottomSheet isPresented={isPresented} onDismiss={() => setIsPresented(false)}>
+        <Column spacing={12}>
+          <Text textStyle={{ fontSize: 18, fontWeight: '700' }}>弹窗内容</Text>
+          <Text>向下拖动或点击遮罩层即可关闭。</Text>
+          <Button label="关闭" onPress={() => setIsPresented(false)} />
+        </Column>
+      </BottomSheet>
+    </Host>
+  );
+}
+```
+
+### 隐藏拖拽指示器
+
+对于没有把手的弹窗，传入 [`showDragIndicator={false}`](#showdragindicator)。
+
+```tsx BottomSheetNoIndicatorExample.tsx
+import { useState } from 'react';
+import { Host, Button, BottomSheet, Text } from '@expo/ui';
+
+export default function BottomSheetNoIndicatorExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Button label="打开" onPress={() => setIsPresented(true)} />
+      <BottomSheet
+        isPresented={isPresented}
+        onDismiss={() => setIsPresented(false)}
+        showDragIndicator={false}>
+        <Text>没有拖拽把手。</Text>
+      </BottomSheet>
+    </Host>
+  );
+}
+```
+
+### 吸附点
+
+传入 [`snapPoints`](#snappoints) 让用户可以在多个静止高度之间拖动弹窗。你可以使用语义值 `'half'` 和 `'full'` 以获得跨平台一致性。`{ fraction }` 和 `{ height }` 形式会在 iOS 和 web 上被精确应用。
+
+当弹窗内容可能比最小吸附点更高时，请将其包裹在 `ScrollView` 中，以便溢出内容能够正确滚动。
+
+```tsx BottomSheetSnapPointsExample.tsx
+import { useState } from 'react';
+import { Host, BottomSheet, Button, Column, ScrollView, Text } from '@expo/ui';
+
+export default function BottomSheetSnapPointsExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Button label="打开" onPress={() => setIsPresented(true)} />
+      <BottomSheet
+        isPresented={isPresented}
+        onDismiss={() => setIsPresented(false)}
+        snapPoints={['half', 'full']}>
+        <ScrollView>
+          <Column spacing={12}>
+            <Text textStyle={{ fontSize: 20, fontWeight: '700' }}>半屏 / 全屏弹窗</Text>
+            <Text>在半屏和全屏高度之间拖动弹窗。</Text>
+          </Column>
+        </ScrollView>
+      </BottomSheet>
+    </Host>
+  );
+}
+```
+
+> 在 Android 上，`{ fraction }` 和 `{ height }` 会吸附到 `'half'` / `'full'` 中最接近的状态——底层的 `ModalBottomSheet` 只支持两种静止状态。只有当内容足够高、超过 Material 的部分展开阈值时，部分展开状态才会可见；如果你希望在内容较短时也能显示半屏状态，请为内容指定明确高度或让其填充可用空间。
+
+## API
+
+```tsx
+import { BottomSheet } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/bottomsheet" apiName="BottomSheet" />

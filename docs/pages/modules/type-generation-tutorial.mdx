@@ -7,7 +7,7 @@ description: 一篇关于使用 expo-type-information 包为 Expo 模块创建 T
 import { FileTree } from '~/ui/components/FileTree';
 import { Terminal } from '~/ui/components/Snippet';
 
-> **warning** 本教程适用于 macOS 用户，因为 `expo-type-information` 包仅能在 macOS 上运行。
+> **警告** 本教程适用于 macOS 用户，因为 `expo-type-information` 包仅能在 macOS 上运行。
 
 编写 Expo Modules 往往意味着需要多次编写模块接口：在 Swift 中、在 Kotlin 中以及在 TypeScript 中。`expo-type-information` 包通过直接从你的 Swift 代码中提取类型定义来生成 TypeScript 接口，从而自动化这一过程。
 
@@ -17,7 +17,14 @@ import { Terminal } from '~/ui/components/Snippet';
 
 首先安装 `expo-type-information` 包。
 
-<Terminal cmd={['$ npm install expo-type-information']} />
+<Terminal
+  cmd={{
+    npm: ['$ npm install expo-type-information'],
+    yarn: ['$ yarn add expo-type-information'],
+    pnpm: ['$ pnpm add expo-type-information'],
+    bun: ['$ bun add expo-type-information'],
+  }}
+/>
 
 要使用此包，你还需要安装 sourcekitten。
 
@@ -67,8 +74,16 @@ const styles = StyleSheet.create({
 现在我们将使用 `expo-type-information` 包为这些模块生成 TS 接口。在项目根目录运行以下命令：
 
 <Terminal
-  cmd={['$ npx expo-type-information inline-modules-interface --app-json ./app.json --watcher']}
-  cmdCopy="npx expo-type-information inline-modules-interface --app-json ./app.json --watcher"
+  cmd={{
+    npm: ['$ npx expo-type-information inline-modules-interface --app-json ./app.json --watcher'],
+    yarn: [
+      '$ yarn dlx expo-type-information inline-modules-interface --app-json ./app.json --watcher',
+    ],
+    pnpm: [
+      '$ pnpm dlx expo-type-information inline-modules-interface --app-json ./app.json --watcher',
+    ],
+    bun: ['$ bunx expo-type-information inline-modules-interface --app-json ./app.json --watcher'],
+  }}
 />
 
 `--app-json`（简写 `-a`）用于指定应用配置文件的路径，其中定义了 inline modules 的 `watchedDirectories`。使用 `--watcher`（简写 `-w`）选项时，应用配置文件以及所有 `watchedDirectories` 都会被监听，当它们发生变化时，TS 接口将被重新生成。
@@ -114,7 +129,7 @@ const FirstInlineModule: FirstInlineModuleNativeModuleType =
 export const Hello: string = FirstInlineModule.Hello;
 ```
 
-这个文件应该是你的模块的“stable”接口。CLI 使用文件哈希来检测手动修改。如果你自定义了这个文件，CLI 将停止覆盖它，从而允许你添加自定义逻辑或辅助函数，同时让你的原生类型在“generated”文件中保持同步。
+这个文件应该是你的模块的“稳定”接口。CLI 使用文件哈希来检测手动修改。如果你自定义了这个文件，CLI 将停止覆盖它，从而允许你添加自定义逻辑或辅助函数，同时让你的原生类型在“generated”文件中保持同步。
 
 在我们的例子中，我们只是将原生模块中的 `Hello` 常量重新导出。
 
@@ -164,7 +179,7 @@ export default function ExpoWebViewComponent(props: ExpoWebViewProps) {
 }
 ```
 
-“stable” 文件在这里也与前一个例子略有不同。它现在有一个默认导出，包含一个包裹原生 `FirstInlineView` 视图的 `ExpoWebViewComponent`。不过请注意，由于这是一个默认导出，为了让这个“stable”文件正常工作，inline-module 中只能定义一个视图。
+“稳定”文件在这里也与前一个例子略有不同。它现在有一个默认导出，包含一个包裹原生 `FirstInlineView` 视图的 `ExpoWebViewComponent`。不过请注意，由于这是一个默认导出，为了让这个“稳定”文件正常工作，inline-module 中只能定义一个视图。
 
 有了这些生成文件后，我们现在就可以轻松地在 TypeScript 中使用 inline modules 和 inline views 了。`app/index.tsx` 之前是这样的
 
@@ -194,7 +209,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-现在我们可以去掉 `requireNativeModule`，并从“stable”文件中导入模块和视图。
+现在我们可以去掉 `requireNativeModule`，并从“稳定”文件中导入模块和视图。
 
 ```tsx app/index.tsx
 import { StyleSheet, Text, View } from 'react-native';
@@ -225,8 +240,16 @@ const styles = StyleSheet.create({
 要查看监听器的实际效果，请确保前面的命令仍在运行
 
 <Terminal
-  cmd={['$ npx expo-type-information inline-modules-interface --app-json ./app.json --watcher']}
-  cmdCopy="npx expo-type-information inline-modules-interface --app-json ./app.json --watcher"
+  cmd={{
+    npm: ['$ npx expo-type-information inline-modules-interface --app-json ./app.json --watcher'],
+    yarn: [
+      '$ yarn dlx expo-type-information inline-modules-interface --app-json ./app.json --watcher',
+    ],
+    pnpm: [
+      '$ pnpm dlx expo-type-information inline-modules-interface --app-json ./app.json --watcher',
+    ],
+    bun: ['$ bunx expo-type-information inline-modules-interface --app-json ./app.json --watcher'],
+  }}
 />
 
 然后我们给 FirstInlineModule 添加一个新函数：
@@ -248,7 +271,7 @@ class FirstInlineModule: Module {
 
 ```
 
-在 Swift 模块文件中添加新的 `ConcatStrings` 函数后，你应该会看到“generated”和“stable”文件已更新，并且现在也包含了 `ConcatStrings` 函数。
+在 Swift 模块文件中添加新的 `ConcatStrings` 函数后，你应该会看到“generated”和“稳定”文件已更新，并且现在也包含了 `ConcatStrings` 函数。
 
 ```tsx app/FirstInlineModule.generated.ts
 /*由 expo-type-information 自动生成。*/
@@ -359,15 +382,23 @@ public class ExpoSettingsModule: Module {
 然后运行一条命令来生成接口
 
 <Terminal
-  cmd={['$ npx expo-type-information module-interface --module ./expo-settings']}
-  cmdCopy="npx expo-type-information module-interface --module ./expo-settings"
+  cmd={{
+    npm: ['$ npx expo-type-information module-interface --module ./expo-settings'],
+    yarn: ['$ yarn dlx expo-type-information module-interface --module ./expo-settings'],
+    pnpm: ['$ pnpm dlx expo-type-information module-interface --module ./expo-settings'],
+    bun: ['$ bunx expo-type-information module-interface --module ./expo-settings'],
+  }}
 />
 
 如果你打算修改文件，并想看看接口会如何变化，请在命令中添加 `--watcher`（简写 `-w`）标志。
 
 <Terminal
-  cmd={['$ npx expo-type-information module-interface --module ./expo-settings -w']}
-  cmdCopy="npx expo-type-information module-interface --module ./expo-settings -w"
+  cmd={{
+    npm: ['$ npx expo-type-information module-interface --module ./expo-settings -w'],
+    yarn: ['$ yarn dlx expo-type-information module-interface --module ./expo-settings -w'],
+    pnpm: ['$ pnpm dlx expo-type-information module-interface --module ./expo-settings -w'],
+    bun: ['$ bunx expo-type-information module-interface --module ./expo-settings -w'],
+  }}
 />
 
 `--module` 选项（简写 `-m`）是模块根目录的路径。运行该命令后，你应该会在模块包中看到 3 个新生成的文件。

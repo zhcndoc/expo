@@ -10,7 +10,7 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { FileTree } from '~/ui/components/FileTree';
-import { DiffBlock } from '~/ui/components/Snippet';
+import { DiffBlock, Terminal } from '~/ui/components/Snippet';
 import { TabsGroup, Tabs, Tab } from '~/ui/components/Tabs';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
@@ -50,8 +50,8 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 上面的文件结构会生成一个在屏幕底部带有选项卡栏的布局。该选项卡栏会有两个选项卡：**Home** 和 **Settings**。
 
 <ContentSpotlight
-  alt="两个选项卡的选项卡栏截图：Home 和 Settings。"
-  src="/static/images/expo-router/native-tabs.png"
+  alt="A screenshot of a tab bar with two tabs: Home and Settings."
+  src="/static/images/expo-router/native-tabs.webp"
   className="max-w-[540px]"
 />
 
@@ -398,7 +398,65 @@ export default function TabLayout() {
 
 > **info** 资源目录图标支持 `renderingMode` 属性，就像 `src` 图标一样。当设置了 `iconColor` 时，图标默认使用 `template` 渲染。否则，默认使用 `original`。
 
-### 标签
+#### Vector icons
+
+You can render icons from an icon font, such as the ones provided by [`react-native-vector-icons`](https://github.com/oblador/react-native-vector-icons), by passing an image source to the `src` prop. Each icon set exposes a `getImageSourceSync` method that rasterizes a glyph to an image source you can pass directly to `src`.
+
+This is useful on Android, where the built-in `md` prop only renders outlined Material Symbols. An icon font like Material Design Icons provides both outlined and filled glyphs (for example, `home-outline` and `home`), so you can show distinct default and selected icons.
+
+To start, install the icon set you want to use along with `@react-native-vector-icons/get-image`, which provides the native module that `getImageSourceSync` relies on. The example below uses the `@react-native-vector-icons/material-design-icons` icon set:
+
+<Terminal
+  cmd={{
+    npm: [
+      '$ npx expo install @react-native-vector-icons/material-design-icons @react-native-vector-icons/get-image',
+    ],
+    yarn: [
+      '$ yarn expo install @react-native-vector-icons/material-design-icons @react-native-vector-icons/get-image',
+    ],
+    pnpm: [
+      '$ pnpm expo install @react-native-vector-icons/material-design-icons @react-native-vector-icons/get-image',
+    ],
+    bun: [
+      '$ bun expo install @react-native-vector-icons/material-design-icons @react-native-vector-icons/get-image',
+    ],
+  }}
+/>
+
+> **info** `getImageSourceSync` requires a development build. Rebuild your app after installing the packages so the native module and icon font are bundled.
+
+`getImageSourceSync` is synchronous, so compute the image sources once at module scope rather than on each render. Combine `src` with `sf` to use the vector icon on Android and SF Symbols on iOS. On iOS, `sf` takes precedence over `src`; on Android, the icon falls back to `src`.
+
+```tsx src/app/_layout.tsx
+import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+
+const homeIcon = MaterialDesignIcons.getImageSourceSync('home', 24, 'black');
+const starOutlineIcon = MaterialDesignIcons.getImageSourceSync('star-outline', 24, 'black');
+const starIcon = MaterialDesignIcons.getImageSourceSync('star', 24, 'black');
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        {/* `sf` is used on iOS, `src` (the vector icon) on Android. */}
+        <NativeTabs.Trigger.Icon sf="house" src={homeIcon} />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="explore">
+        {/* Outlined when unselected, filled when selected. */}
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'star', selected: 'star.fill' }}
+          src={{ default: starOutlineIcon, selected: starIcon }}
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+> **info** Distinct selected icons for `src` on Android require SDK 56 or later. See the note at the [start of this section](#icon).
+
+### Label
 
 你可以使用 `Label` 组件来自定义显示在选项卡栏项中的标签。`Label` 组件接受一个作为子元素传入的字符串标签。如果未提供标签，选项卡栏项将使用路由名称作为标签。
 
@@ -501,8 +559,8 @@ export default function TabLayout() {
 </Tabs>
 
 <ContentSpotlight
-  alt="带有消息和设置选项卡徽标的选项卡栏截图。"
-  src="/static/images/expo-router/native-tabs-badges.png"
+  alt="A screenshot of a tab bar with badges on the Messages and Settings tabs."
+  src="/static/images/expo-router/native-tabs-badges.webp"
   className="max-w-[540px]"
 />
 
@@ -745,8 +803,8 @@ export default function CheckoutScreen() {
 #### 独立搜索选项卡
 
 <ContentSpotlight
-  alt="带有独立搜索选项卡的选项卡栏截图。"
-  src="/static/images/expo-router/ios-26-search-tab.png"
+  alt="A screenshot of a tab bar with separate search tab."
+  src="/static/images/expo-router/ios-26-search-tab.webp"
   className="max-w-[540px]"
 />
 
@@ -801,8 +859,8 @@ export default function TabLayout() {
 #### 选项卡栏搜索输入框
 
 <ContentSpotlight
-  alt="选项卡栏搜索的截图。"
-  src="/static/images/expo-router/ios-26-search-bar.png"
+  alt="A screenshot of a tab bar search."
+  src="/static/images/expo-router/ios-26-search-bar.webp"
   className="max-w-[540px]"
 />
 

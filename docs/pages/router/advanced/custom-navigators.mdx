@@ -1,0 +1,220 @@
+---
+title: 自定义导航器
+description: 了解如何在 Expo Router 中构建自己的导航器，以及库作者如何将现有导航器与路由器集成。
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { FileTree } from '~/ui/components/FileTree';
+
+> **重要** 本页描述的自定义导航器 API 处于 [alpha](/more/release-statuses/#alpha) 状态，并且可在 SDK 56 及更高版本中使用。该 API 可能会有破坏性更改。
+
+Expo Router 提供了最常见模式的导航器——[Stack](/router/advanced/stack/)、[Tabs](/router/advanced/tabs/)、[Native tabs](/router/advanced/native-tabs/) 和 [Drawer](/router/advanced/drawer/)。当它们都不适用时，你可以构建自己的导航器，并将其作为布局使用，同时文件式路由、深度链接和类型化路由都能像在内置导航器中一样正常工作。
+
+请选择与你的目标相匹配的入口点：
+
+- **应用开发者** 为单个应用构建导航器时，使用 [`unstable_createStandardRouterNavigator`](#create-a-navigator-in-your-app)。
+- **库作者** 为 Expo Router 和 React Navigation 提供可复用导航器时，使用 [`unstable_integrateWithRouter`](#integrate-an-existing-navigator-library-authors)。
+
+## 在应用中创建导航器
+
+使用 `unstable_createStandardRouterNavigator` 可以将内容组件转换为一个导航器，你可以将其作为布局来渲染。它需要两个必需参数：
+
+- **`NavigatorContent`**：一个渲染导航器 UI 的组件。它会接收当前的导航 `state`、每个屏幕的 `descriptors`、用于导航的 `actions`，以及用于发送事件的 `emitter`。
+- **`router`**：要使用的路由行为。从 `expo-router` 中导入 `StackRouter` 以实现类似栈的导航，或导入 `TabRouter` 以实现类似标签页的导航。
+
+下面的示例构建了一个最小的标签页导航器：
+
+```tsx components/Tabs.tsx
+import {
+  unstable_createStandardRouterNavigator,
+  TabRouter,
+  type NavigatorContentProps,
+} from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
+
+// 第一个类型参数是你可以为每个屏幕设置的选项
+type TabsContentProps = NavigatorContentProps<{ title?: string }>;
+
+function TabsContent({ state, descriptors, actions }: TabsContentProps) {
+  const focusedRoute = state.routes[state.index];
+
+  return (
+    <View style={{ flex: 1 }}>
+      {/* 渲染当前聚焦路由对应的屏幕。 */}
+      <View style={{ flex: 1 }}>{descriptors[focusedRoute.key].render()}</View>
+
+      {/* 一个简单的标签栏。 */}
+      <View style={{ flexDirection: 'row' }}>
+        {state.routes.map(route => (
+          <Pressable
+            key={route.key}
+            style={{ flex: 1, padding: 16 }}
+            onPress={() => actions.navigate(route.name)}>
+            <Text>{descriptors[route.key].options.title ?? route.name}</Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+export const Tabs = unstable_createStandardRouterNavigator(TabsContent, TabRouter);
+```
+
+返回的导航器有一个用于声明屏幕的 `.Screen` 子组件，因此你可以像其他布局一样在 `_layout` 文件中使用它：
+
+```tsx app/_layout.tsx
+import { Tabs } from '../components/Tabs';
+
+export default function Layout() {
+  return (
+    <Tabs>
+      <Tabs.Screen name="index" options={{ title: '主页' }} />
+      <Tabs.Screen name="settings" options={{ title: '设置' }} />
+    </Tabs>
+  );
+}
+```
+
+### `NavigatorContent` 接收什么
+
+| 属性           | 说明                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `state`        | 当前导航状态：`{ index, routes }`，其中每个路由都有 `key`、`name`、`params` 和 `href`。                                                  |
+| `descriptors`  | 以 `route.key` 为键的映射。每个 descriptor 都暴露该屏幕解析后的 `options` 以及一个用于渲染该屏幕的 `render()` 函数。                       |
+| `actions`      | 用于更改导航状态的函数：`navigate(name, params?)` 和 `back()`。                                                                           |
+| `emitter`      | 一个带有 `emit()` 方法的对象，用于向屏幕发送事件。                                                                                         |
+
+### 类型化事件
+
+如果你的导航器会发出事件，请在 `NavigatorContentProps` 的第二个类型参数中声明它们。每个键都是一个事件名，其值描述了该事件的 `data` 以及它是否 `canPreventDefault`。随后 `emitter.emit` 就会基于该映射进行类型检查——未知事件名和不匹配的负载都会被拒绝：
+
+```tsx
+type TabsContentProps = NavigatorContentProps<
+  { title?: string },
+  { tabPress: { data: undefined; canPreventDefault: true } }
+>;
+
+function TabsContent({ emitter }: TabsContentProps) {
+  emitter.emit({ type: 'tabPress', canPreventDefault: true });
+  // ...
+}
+```
+
+`unstable_createStandardRouterNavigator` 会从组件中推断事件映射，因此你无需在调用处再次传入。对于不发出任何事件的导航器，可以省略第二个类型参数。
+
+### 选项
+
+`unstable_createStandardRouterNavigator` 和 `unstable_integrateWithRouter` 都接受一个可选的 `options` 对象作为第三个参数：
+
+- **`useOnlyUserDefinedScreens`**：当为 `true` 时，只会渲染你通过 `<Navigator.Screen>` 声明的屏幕。Expo Router 会忽略那些从文件系统中发现但你未声明的路由。默认值为 `false`，此时 Expo Router 也会渲染从文件系统中发现的路由，并将其与您声明的屏幕一起显示。
+- **`createProps`**：从底层路由状态中为 `NavigatorContent` 派生额外的 props。用于那些不属于标准 `state` 和 `actions` 的、特定于路由器的信息。
+
+```tsx
+export const Tabs = unstable_createStandardRouterNavigator(TabsContent, TabRouter, {
+  useOnlyUserDefinedScreens: true,
+  createProps: ({ state, dispatch }) => ({
+    activeRouteKey: state.routes[state.index].key,
+    preload: (name: string) => dispatch({ type: 'PRELOAD', payload: { name } }),
+  }),
+});
+```
+
+将 `createProps` 返回的 props 声明在 `NavigatorContentProps` 的第三个类型参数中，这样 `NavigatorContent` 就能以类型安全的方式接收它们：
+
+```tsx
+type TabsContentProps = NavigatorContentProps<
+  { title?: string },
+  // 本示例中没有自定义事件。
+  Record<string, never>,
+  // 由 `createProps` 注入的 props。
+  { activeRouteKey: string; preload: (name: string) => void }
+>;
+
+function TabsContent({ activeRouteKey, preload }: TabsContentProps) {
+  // ...
+}
+```
+
+> **info** `createProps` 接收原始的 Expo Router `state` 和 `dispatch`。这些属于内部实现，可能会在不同版本之间发生破坏性变更，因此当 `NavigatorContent` 所提供的 `state` 和 `actions` 已经足够时，优先使用它们。如果你构建导航器所需的某些内容在标准的 `state`、`actions` 或 `emitter` 中缺失，请 [在 GitHub 上提交 issue](https://github.com/expo/expo/issues)。
+
+## 集成现有导航器（库作者）
+
+### 标准导航器 API
+
+上面展示的 `NavigatorContent` 组件是一个 [标准导航器](https://github.com/react-navigation/standard-navigation)。它实现了由 [`standard-navigation`](https://www.npmjs.com/package/standard-navigation) 包定义的最小化、与框架无关的契约。你的内容接收到的 `state`、`descriptors`、`actions` 和 `emitter`，与上面的应用内导航器所使用的 [同一 API](#what-navigatorcontent-receives) 完全一致。唯一的区别在于是谁创建了这个导航器。
+
+`unstable_createStandardRouterNavigator` 是一个快捷方式，它会替你调用 `createStandardNavigator`（来自 `standard-navigation`），并将结果与 Expo Router 一步集成。作为库作者，你应自己调用 `createStandardNavigator` 并保留对该导航器的引用：
+
+```tsx src/index.ts
+import { createStandardNavigator } from 'standard-navigation';
+import { TabsContent } from './TabsContent';
+
+// 与框架无关：此导航器面向标准契约，而不是任何单一宿主。
+// 第一个类型参数是每个屏幕的选项；第二个是事件映射。
+export const navigator = createStandardNavigator<
+  { title?: string },
+  { tabPress: { data: undefined; canPreventDefault: true } }
+>(TabsContent);
+```
+
+由于 `TabsContent` 和 `navigator` 只依赖标准契约，同样的代码可以运行在 Expo Router、React Navigation 或任何其他实现了该契约的宿主上。你只需编写一次导航器，然后为每个框架提供一个轻量的集成入口点。
+
+### 与 Expo Router 集成
+
+使用 `unstable_integrateWithRouter` 将你的导航器接入 Expo Router：
+
+```tsx src/expo-router.ts
+import { unstable_integrateWithRouter, TabRouter } from 'expo-router';
+import { navigator } from './index';
+
+export const Tabs = unstable_integrateWithRouter(navigator, TabRouter);
+```
+
+返回的组件的工作方式与 `unstable_createStandardRouterNavigator` 完全一致，包括 `.Screen` 子组件以及相同的 [选项](#options)。
+
+### 库入口点
+
+保持导航器内容和标准导航器与框架无关，然后为每个框架暴露一个入口点，这样使用者就可以导入与其应用匹配的集成方式：
+
+<FileTree
+  files={[
+    ['./src/TabsContent.tsx', '实现标准导航器 API 的导航器 UI'],
+    ['./src/index.ts', '根入口 — 导出与框架无关的导航器'],
+    ['./src/react-navigation.ts', 'React Navigation 入口 — 集成相同的导航器'],
+    ['./src/expo-router.ts', 'Expo Router 入口 — unstable_integrateWithRouter(navigator, ...)'],
+    ['./package.json', '将子路径导出映射到各个框架入口'],
+  ]}
+/>
+
+在库的 **package.json** 中，将每个入口点映射为一个 [子路径导出](https://nodejs.org/api/packages.html#subpath-exports)，并指向你的构建输出：
+
+```json package.json
+{
+  "exports": {
+    ".": {
+      "types": "./lib/typescript/index.d.ts",
+      "default": "./lib/module/index.js"
+    },
+    "./react-navigation": {
+      "types": "./lib/typescript/react-navigation.d.ts",
+      "default": "./lib/module/react-navigation.js"
+    },
+    "./expo-router": {
+      "types": "./lib/typescript/expo-router.d.ts",
+      "default": "./lib/module/expo-router.js"
+    }
+  }
+}
+```
+
+然后，使用者就可以根据自己的框架导入相应的集成方式（例如，`import { Tabs } from 'my-tabs/expo-router'`），而你则只需在一个地方维护导航器逻辑。
+
+<BoxLink
+  title="React Navigation 集成"
+  href="https://reactnavigation.org/docs/standard-navigator/"
+  description="了解如何将同一个标准导航器与 React Navigation 集成，并阅读定义 NavigatorContent 接收到的 state、descriptors、actions 和 emitter 的契约。"
+  Icon={BookOpen02Icon}
+/>

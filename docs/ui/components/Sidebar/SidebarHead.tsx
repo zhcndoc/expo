@@ -5,6 +5,7 @@ import { GraduationHat02DuotoneIcon } from '@expo/styleguide-icons/duotone/Gradu
 import { Home02DuotoneIcon } from '@expo/styleguide-icons/duotone/Home02DuotoneIcon';
 import { Stars02DuotoneIcon } from '@expo/styleguide-icons/duotone/Stars02DuotoneIcon';
 import { ArrowLeftIcon } from '@expo/styleguide-icons/outline/ArrowLeftIcon';
+import { useIntl } from 'react-intl';
 
 import { shouldShowFeaturePreviewLink } from '~/constants/FeatureFlags.cjs';
 import { Search } from '~/ui/components/Search';
@@ -17,13 +18,19 @@ type SidebarHeadProps = {
 };
 
 export const SidebarHead = ({ sidebarActiveGroup }: SidebarHeadProps) => {
+  const intl = useIntl();
   const isPreviewVisible = shouldShowFeaturePreviewLink();
+  const homeLabel = intl.formatMessage({ id: 'navHome' });
+  const guidesLabel = intl.formatMessage({ id: 'navGuides' });
+  const easLabel = intl.formatMessage({ id: 'navEas' });
+  const referenceLabel = intl.formatMessage({ id: 'navReference' });
+  const learnLabel = intl.formatMessage({ id: 'navLearn' });
   const mainSectionMap: Record<string, string> = {
-    home: '首页',
-    general: '指南',
-    eas: 'Expo 应用服务',
-    reference: '参考',
-    learn: '学习',
+    home: homeLabel,
+    general: guidesLabel,
+    eas: 'Expo Application Services',
+    reference: referenceLabel,
+    learn: learnLabel,
   };
   const mainSection = mainSectionMap[sidebarActiveGroup];
 
@@ -33,7 +40,7 @@ export const SidebarHead = ({ sidebarActiveGroup }: SidebarHeadProps) => {
         <LinkBase
           href="/"
           className="flex items-center gap-3 rounded-md p-2.5 text-secondary hocus:bg-element">
-          <ArrowLeftIcon className="text-icon-secondary" />
+          <ArrowLeftIcon aria-hidden="true" className="text-icon-secondary" />
           返回
         </LinkBase>
       </div>
@@ -52,43 +59,43 @@ export const SidebarHead = ({ sidebarActiveGroup }: SidebarHeadProps) => {
           )}>
           <SidebarSingleEntry
             href="/"
-            title="首页"
+            title={homeLabel}
             Icon={Home02DuotoneIcon}
             isActive={sidebarActiveGroup === 'home'}
             allowCompactDisplay
-            mainSection="首页"
+            mainSection={homeLabel}
           />
           <SidebarSingleEntry
             href="/guides/overview/"
-            title="指南"
+            title={guidesLabel}
             Icon={BookOpen02DuotoneIcon}
             isActive={sidebarActiveGroup === 'general'}
             allowCompactDisplay
-            mainSection="指南"
+            mainSection={guidesLabel}
           />
           <SidebarSingleEntry
             href="/eas/"
-            title="EAS"
+            title={easLabel}
             Icon={PlanEnterpriseIcon}
             isActive={sidebarActiveGroup === 'eas'}
             allowCompactDisplay
-            mainSection="EAS"
+            mainSection={easLabel}
           />
           <SidebarSingleEntry
             href="/versions/latest/"
-            title="参考"
+            title={referenceLabel}
             Icon={DocsLogo}
             isActive={sidebarActiveGroup === 'reference'}
             allowCompactDisplay
-            mainSection="参考"
+            mainSection={referenceLabel}
           />
           <SidebarSingleEntry
             href="/tutorial/overview/"
-            title="学习"
+            title={learnLabel}
             Icon={GraduationHat02DuotoneIcon}
             isActive={sidebarActiveGroup === 'learn'}
             allowCompactDisplay
-            mainSection="学习"
+            mainSection={learnLabel}
           />
           {isPreviewVisible && (
             <SidebarSingleEntry

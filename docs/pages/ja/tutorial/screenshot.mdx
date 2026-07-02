@@ -1,0 +1,283 @@
+---
+title: 截取屏幕截图
+description: 本教程将教你如何使用第三方库和 Expo Media Library 拍摄屏幕截图。
+hasVideoLink: true
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { CODE } from '~/ui/components/Text';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+在这一章中，你将学习如何使用第三方库拍摄屏幕截图，并将其保存到设备的媒体库中。我们将使用 [`react-native-view-shot`](https://github.com/gre/react-native-view-shot) 来拍摄屏幕截图，并使用 [`expo-media-library`](/versions/latest/sdk/media-library/) 将图像保存到设备的媒体库中。
+
+> **info** 到目前为止，我们已经使用了 `react-native-gesture-handler` 和 `react-native-reanimated` 等第三方库。根据不同用途，你还可以在 [React Native Directory](https://reactnative.directory/) 中找到另外数百个第三方库。
+
+<VideoBoxLink
+  videoId="Jft3_Yfr-p4"
+  title="观看：在通用 Expo 应用中拍摄屏幕截图"
+  description="使用 react-native-view-shot 拍摄屏幕截图，并使用 expo-media-library 将其保存到设备的媒体库中。"
+/>
+
+---
+
+<Step label="1">
+
+## 安装库
+
+要安装 `react-native-view-shot` 和 `expo-media-library`，请运行以下命令。
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install react-native-view-shot expo-media-library'],
+    yarn: ['$ yarn expo install react-native-view-shot expo-media-library'],
+    pnpm: ['$ pnpm expo install react-native-view-shot expo-media-library'],
+    bun: ['$ bun expo install react-native-view-shot expo-media-library'],
+  }}
+/>
+
+</Step>
+
+<Step label="2">
+
+## 请求权限
+
+对于需要访问设备媒体库等敏感信息的应用，你需要请求权限，以便用户允许或拒绝访问。使用 `expo-image-picker` 的 `useMediaLibraryPermissions()` 钩子，你可以通过 `permissionResponse` 和 `requestPermission()` 方法来请求访问权限。这个钩子会同时请求读取和写入权限，因此既适用于从媒体库中选择图片，也适用于保存屏幕截图。
+
+当应用首次启动且权限状态既未被允许也未被拒绝时，`permissionResponse` 的值为 `null`。当请求权限时，用户可以选择允许或拒绝权限。添加一个条件来判断是否未被允许。如果未被允许，则调用 `requestPermission()` 方法。获得访问权限后，`permissionResponse` 的值会变为 `granted`。
+
+将以下代码片段添加到 **src/app/(tabs)/index.tsx** 中。
+
+{/* prettier-ignore */}
+```tsx src/app/(tabs)/index.tsx
+import { /* @tutinfo 从 `react` 中导入 `useEffect` 钩子。 */useEffect/* @end */, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+
+// ...rest of the code remains same
+
+export default function Index() {
+  /* @tutinfo 添加这一行，以便从钩子中导入权限响应和 `requestPermission()` 方法。 */const [permissionResponse, requestPermission] = ImagePicker.useMediaLibraryPermissions();/* @end */
+  // ...rest of the code remains same
+
+  /* @tutinfo 添加一个 if 语句来检查权限状态。requestPermission() 方法会显示一个对话框，让用户允许或拒绝权限。 */
+  useEffect(() => {
+    if (!permissionResponse?.granted) {
+      requestPermission();
+    }
+  }, []);
+  /* @end */
+
+  // ...rest of the code remains same
+}
+```
+
+</Step>
+
+<Step label="3">
+
+## 创建一个 ref 来保存当前视图
+
+为了让用户能够在应用中拍摄屏幕截图，我们将使用 `react-native-view-shot`。该库通过 `captureRef()` 方法对 `<View>` 截图并将其作为图像返回。拍摄到的截图图像文件的 URI 会被返回。
+
+1. 从 `react-native-view-shot` 中导入 `captureRef`，并从 React 中导入 `useRef`。
+2. 创建一个 `imageRef` 引用变量，用于保存拍摄的截图图像引用。
+3. 使用 `<View>` 包裹 `<ImageViewer>` 和 `<EmojiSticker>` 组件，并将引用变量传给它。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx|collapseHeight=440
+import { useState, /* @tutinfo 从 `react` 中导入 `useRef` 钩子。 */useRef/* @end */ } from 'react';
+/* @tutinfo 从 `react-native-view-shot` 导入 `captureRef`。 */import { captureRef } from 'react-native-view-shot';/* @end */
+
+export default function Index() {
+  /* @tutinfo 创建 imageRef 变量。 */ const imageRef = useRef<View>(null);/* @end */
+
+  // ...rest of the code remains same
+
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      <View style={styles.imageContainer}>
+        /* @tutinfo 添加一个 View 组件，用于包裹 ImageViewer 和 EmojiSticker。 */<View ref={imageRef} collapsable={false}>/* @end */
+          <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+          {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        /* @tutinfo */</View>/* @end */
+      </View>
+      {/* ...rest of the code remains same */}
+    </GestureHandlerRootView>
+  );
+}
+```
+
+在上面的代码片段中，我们将 `collapsable` 属性设置为 `false`。这样 `<View>` 组件就可以只对背景图片和表情贴纸进行截图。
+
+</Step>
+
+<Step label="4">
+
+## 拍摄并保存截图
+
+你可以在 `onSaveImageAsync()` 函数中调用 `react-native-view-shot` 的 `captureRef()` 方法来拍摄视图截图。该方法接受可选参数，你可以传入截图区域的 `width` 和 `height`。有关可用选项的更多详情，请参阅[库文档](https://github.com/gre/react-native-view-shot#capturerefview-options-lower-level-imperative-api)。
+
+此外，`captureRef()` 方法会返回一个 Promise，并在其中解析出截图的 URI。将这个 URI 作为参数传递给 [`MediaLibrary.saveToLibraryAsync()`](/versions/latest/sdk/media-library/#medialibrarysavetolibraryasynclocaluri)，即可将截图保存到设备的媒体库中。
+
+在 **app/(tabs)/index.tsx** 中，将 `onSaveImageAsync()` 函数更新为以下代码。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx|collapseHeight=440
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library/legacy';
+import { useEffect, useRef, useState } from 'react';
+import { ImageSourcePropType, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { captureRef } from 'react-native-view-shot';
+
+import Button from '@/components/Button';
+import CircleButton from '@/components/CircleButton';
+import EmojiList from '@/components/EmojiList';
+import EmojiPicker from '@/components/EmojiPicker';
+import IconButton from '@/components/IconButton';
+import ImageViewer from '@/components/ImageViewer';
+
+import EmojiSticker from '@/components/EmojiSticker';
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(
+    undefined
+  );
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [pickedEmoji, setPickedEmoji] = useState<
+    ImageSourcePropType | undefined
+  >(undefined);
+  const [permissionResponse, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+  const imageRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!permissionResponse?.granted) {
+      requestPermission();
+    }
+  }, []);
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    setIsModalVisible(true);
+  };
+
+  const onModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  /* @tutinfo 用于拍摄截图并保存图像的代码，用注释替换。 */
+  const onSaveImageAsync = async () => {
+    try {
+      const localUri = await captureRef(imageRef, {
+        height: 440,
+        quality: 1,
+      });
+
+      await MediaLibrary.saveToLibraryAsync(localUri);
+      if (localUri) {
+        alert('Saved!');
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  /* @end */
+
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      <View style={styles.imageContainer}>
+        <View ref={imageRef} collapsable={false}>
+          <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+          {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        </View>
+      </View>
+      {showAppOptions ? (
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
+      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+      </EmojiPicker>
+    </GestureHandlerRootView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+});
+```
+
+现在，尝试在应用中选择一张照片，添加贴纸，然后点击“Save”按钮。你应该会在 Android 和 iOS 上看到如下结果。
+
+<ContentSpotlight file="tutorial/saving-screenshot.mp4" />
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  currentChapterIndex={6}
+  name="GET_STARTED"
+  chapterTitle="第 7 章：拍摄截图"
+  summary={
+    <>
+      使用 <CODE>react-native-view-shot</CODE> 和 <CODE>expo-media-library</CODE>{' '}
+      成功拍摄了截图并将其保存到了设备的媒体库中。
+    </>
+  }
+  nextChapterDescription="在下一章中，你将学习如何处理移动端和 web 平台之间的差异，并在 web 上实现相同的功能。"
+  nextChapterTitle="处理平台差异"
+  nextChapterLink="/ja/tutorial/platform-differences"
+/>

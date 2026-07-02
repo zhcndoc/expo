@@ -32,12 +32,15 @@ export const Logo = ({ subgroup }: Props) => (
           'text-lg font-medium text-default select-none',
           subgroup && 'max-md:hidden'
         )}>
-        Docs
+        文档
       </span>
     </LinkBase>
     {subgroup && (
       <>
-        <ChevronRightIcon className={mergeClasses('-mx-2 text-icon-secondary', 'max-md:hidden')} />
+        <ChevronRightIcon
+          aria-hidden="true"
+          className={mergeClasses('-mx-2 text-icon-secondary', 'max-md:hidden')}
+        />
         <span className="text-lg font-medium text-default select-none">{subgroup}</span>
       </>
     )}

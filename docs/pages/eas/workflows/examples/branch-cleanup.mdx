@@ -1,0 +1,55 @@
+---
+title: 使用 EAS Workflows 清理 EAS Update 分支
+sidebar_title: 清理更新分支
+description: 了解如何在删除 GitHub 分支时，使用 EAS Workflows 删除 EAS Update 分支。
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+
+你可能会将更新发布到以 GitHub 分支命名的 EAS Update 分支，例如使用 [`eas update --auto`](/eas-update/eas-cli/#create-a-new-update-and-publish-it)、带有 `branch: ${{ github.ref_name }}` 的 [`update` 工作流作业](/eas/workflows/pre-packaged-jobs#update)，或者 [在每个分支上预览更新](/eas/workflows/examples/publish-preview-update)。当你这样做时，删除 GitHub 分支会留下相应的 EAS Update 分支。此工作流会在 Git 分支被删除时清理这个孤立的 EAS Update 分支。
+
+## 开始使用
+
+<Prerequisites>
+  <Requirement title="设置 EAS Update">
+    你的项目需要已配置 [EAS Update](/eas-update/introduction/)。你可以通过以下方式设置你的项目：
+
+    <Terminal cmd={['$ eas update:configure']} />
+
+  </Requirement>
+  <Requirement title="连接你的 GitHub 仓库">
+    你的 EAS 项目必须链接到一个 GitHub 仓库。请参阅 [使用 EAS Workflows 入门](/eas/workflows/get-started/#automate-workflows-with-github-events)。
+  </Requirement>
+  <Requirement title="默认分支上的工作流文件">
+    请将此工作流文件保留在仓库的默认分支上。当某个分支被删除时，EAS 会从默认分支的 HEAD 读取工作流配置，而不是从已删除的引用读取。
+  </Requirement>
+</Prerequisites>
+
+以下工作流会删除与已删除的 GitHub 分支同名的 EAS Update 分支：
+
+```yaml .eas/workflows/branch-cleanup.yml
+name: 分支清理
+
+on:
+  ref_delete:
+    branches: ['*', '!main']
+
+jobs:
+  delete-update-branch:
+    type: branch-delete
+    params:
+      branch_name: ${{ github.ref_name }}
+```
+
+## 其工作原理
+
+1. [`on.ref_delete`](/eas/workflows/syntax/#onref_delete) 会在匹配模式的 GitHub 分支被删除时运行。上面的示例会在除 `main` 之外的所有分支上触发。
+2. [`branch-delete`](/eas/workflows/pre-packaged-jobs#branch-delete) 作业会删除名为 `${{ github.ref_name }}` 的 EAS Update 分支，该名称与被删除的 Git 分支相同。
+3. 使用默认的 `fail_on_missing: false` 时，即使 EAS Update 分支已经被删除或从未存在过，作业也会成功。
+
+## 重要说明
+
+- `github.sha` 是默认分支，而不是已删除引用的最后一次提交。有关 `ref_delete` 运行中的插值细节，请参阅 [`github` 上下文参考](/eas/workflows/syntax/#github)。
+- 渠道映射会阻止删除：如果某个渠道指向 EAS Update 分支，删除将失败，并报出与渠道映射相关的错误。
+- 对于你永远不想清理的分支，可在 `on.ref_delete.branches` 中使用取反模式（例如 `!main` 或 `!release/**`）来保护它们。

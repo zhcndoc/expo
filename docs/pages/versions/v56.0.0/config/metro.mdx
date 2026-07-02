@@ -11,43 +11,43 @@ import { DiffBlock, Terminal } from '~/ui/components/Snippet';
 
 查看更多关于 **metro.config.js** 的信息，请参阅 [自定义 Metro 指南](/guides/customizing-metro/)。
 
-## 环境变量
+## Environment Variables
 
-Expo CLI 可以从 **.env** 文件中加载环境变量。要了解更多关于如何在 Expo CLI 中使用环境变量的信息，请参阅 [环境变量指南](/guides/environment-variables/)。
+Expo CLI can load environment variables from **.env** files. To learn more about how to use environment variables in Expo CLI, see the [Environment Variables guide](/guides/environment-variables/).
 
-EAS CLI 使用一种不同的环境变量机制，除非它在编译和打包时调用 Expo CLI。要了解更多关于 [EAS 中的环境变量](/eas/environment-variables/) 的信息。
+EAS CLI uses a different environment variable mechanism, unless it invokes Expo CLI during compilation and bundling. To learn more about [environment variables in EAS](/eas/environment-variables/).
 
-如果你正在迁移一个较旧的项目，那么应通过将以下内容添加到你的 **.gitignore** 中来忽略本地 env 文件：
+If you are migrating an older project, you should ignore local env files by adding the following to your **.gitignore**:
 
 ```sh .gitignore
-# 本地 env 文件
+# Local env files
 .env*.local
 ```
 
-### 禁用 dotenv 文件
+### Disable dotenv files
 
-可以通过在调用任何 Expo CLI 命令之前启用 `EXPO_NO_DOTENV` 环境变量，来完全禁用 Expo CLI 对 dotenv 文件的加载。
+You can completely disable Expo CLI from loading dotenv files by enabling the `EXPO_NO_DOTENV` environment variable before calling any Expo CLI command.
 
 <Terminal
   cmd={[
-    '# 所有用户都可以运行 cross-env，然后接着运行 Expo CLI 命令',
+    '# All users can run cross-env, then run an Expo CLI command',
     '$ npx cross-env EXPO_NO_DOTENV=1 expo start',
-    '# 或者，macOS 和 Linux 用户可以先定义环境变量，然后运行 npx，再接着运行 Expo CLI 命令',
+    '# Or, macOS and Linux users can define the environment variable first, then run npx, then run an Expo CLI command',
     '$ EXPO_NO_DOTENV=1 npx expo start',
   ]}
 />
 
-### 禁用以 `EXPO_PUBLIC_` 为前缀的客户端环境变量
+### Disable client environment variables prefixed with `EXPO_PUBLIC_`
 
-以 `EXPO_PUBLIC_` 为前缀的环境变量会在构建时暴露给应用。例如，`EXPO_PUBLIC_API_KEY` 将可通过 `process.env.EXPO_PUBLIC_API_KEY` 访问。
+Environment variables prefixed with `EXPO_PUBLIC_` are exposed to the app at build time. For example, `EXPO_PUBLIC_API_KEY` will be accessible via `process.env.EXPO_PUBLIC_API_KEY`.
 
-可以通过环境变量 `EXPO_NO_CLIENT_ENV_VARS=1` 来禁用客户端环境变量内联，这必须在执行任何打包之前定义。
+You can disable client environment variable inlining by using the `EXPO_NO_CLIENT_ENV_VARS=1` environment variable, which must be defined before running any bundling.
 
 <Terminal
   cmd={[
-    '# 所有用户都可以运行 cross-env，然后接着运行 Expo CLI 命令',
+    '# All users can run cross-env, then run an Expo CLI command',
     '$ npx cross-env EXPO_NO_CLIENT_ENV_VARS=1 expo start',
-    '# 或者，macOS 和 Linux 用户可以先定义环境变量，然后运行 npx，再接着运行 Expo CLI 命令',
+    '# Or, macOS and Linux users can define the environment variable first, then run npx, then run an Expo CLI command',
     '$ EXPO_NO_CLIENT_ENV_VARS=1 npx expo start',
   ]}
 />
@@ -92,7 +92,7 @@ export default function App() {
   return (
     <>
       {/* 使用 `className` 将样式分配给 React DOM 组件。 */}
-      <div className="container">Hello World</div>
+      <div className="container">你好，世界</div>
 
       {/* 在 React Native for web 中，使用以下语法的 `style` 来追加类名。 */}
       <View
@@ -100,7 +100,7 @@ export default function App() {
           $$css: true,
           _: 'container',
         }}>
-        Hello World
+        你好，世界
       </View>
     </>
   );
@@ -147,11 +147,11 @@ export default function Page() {
           $$css: true,
           _: styles.text,
         }}>
-        Hello World
+        你好，世界
       </Text>
-      <Text style={unstable_styles.text}>Hello World</Text>
+      <Text style={unstable_styles.text}>你好，世界</Text>
       {/* 仅 web 端使用： */}
-      <p className={styles.text}>Hello World</p>
+      <p className={styles.text}>你好，世界</p>
     </>
   );
 }
@@ -417,13 +417,13 @@ Expo 的 Metro 配置会注入构建设置，这些设置可以通过环境变�
 
 - `process.env.EXPO_BASE_URL` 暴露了在 `experiments.baseUrl` 中定义的基础 URL。这在 Expo Router 中用于在部署时遵循生产基础 URL。
 
-## Bundle 拆分
+## Bundle Splitting
 
-Expo CLI 会在生产环境中根据异步导入自动将 web bundle 拆分为多个 chunk。此功能要求安装并在入口 bundle 的某处导入 `@expo/metro-runtime`（在 Expo Router 中默认可用）。
+Expo CLI will automatically split the web bundle into multiple chunks in production based on asynchronous imports. This feature requires installing and importing `@expo/metro-runtime` somewhere in the entry bundle (available by default in Expo Router).
 
-异步 bundle 的共享依赖会合并为单个 chunk，以减少请求数量。例如，如果你有两个导入了 `lodash` 的异步 bundle，那么该库会被合并到一个初始 chunk 中。
+Shared dependencies in asynchronous bundles will be merged into a single chunk to reduce the number of requests. For example, if you have two asynchronous bundles that import `lodash`, the library will be merged into one initial chunk.
 
-chunk 拆分启发式规则无法自定义。例如：
+The chunk splitting heuristics cannot be customized. For example:
 
 <FileTree files={['math.js', 'index.js']} />
 
@@ -436,15 +436,15 @@ export function add(a, b) {
 ```js index.js
 import '@expo/metro-runtime';
 
-// 这将被拆分到一个单独的 chunk 中。
+// This will be split into a separate chunk.
 import('./math').then(math => {
   console.log(math.add(1, 2));
 });
 ```
 
-当你运行 `npx expo export -p web` 时，bundle 会被拆分为多个文件，并且入口 bundle 会被添加到主 HTML 文件中。`@expo/metro-runtime` 会添加用于加载并执行异步 bundle 的运行时代码。
+When you run `npx expo export -p web`, the bundle will be split into multiple files, and the entry bundle will be added to the main HTML file. `@expo/metro-runtime` adds the runtime code used to load and execute asynchronous bundles.
 
-## Source map Debug ID
+## 源映射 Debug ID
 
 如果 bundle 导出时带有外部 source map，那么文件末尾会添加一个 [**Debug ID**](https://sentry.engineering/blog/the-case-for-debug-ids) 注释，同时在 source map 中添加匹配的 `debugId`，以便将这些文件对应起来。如果没有导出 source map，或者使用的是内联 source map，那么不会添加此注释。
 
@@ -705,7 +705,7 @@ Android 的 **app/build.gradle** 必须配置为在生产打包时使用 Expo CL
 
 ### 自定义入口文件
 
-默认情况下，React Native 仅支持使用根目录下的 `index.js` 文件作为入口文件（或平台特定变体，例如 `index.ios.js`）。Expo 项目允许使用任意入口文件，但这需要额外的裸工作流配置。
+默认情况下，React Native 仅支持将根目录下的 `index.js` 文件作为入口文件（或平台特定变体，如 `index.ios.js`）。Expo 项目允许使用任意入口文件，但这在现有 React Native 项目中需要额外配置。
 
 #### 开发
 

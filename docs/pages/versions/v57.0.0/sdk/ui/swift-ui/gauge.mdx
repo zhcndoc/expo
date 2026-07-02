@@ -1,0 +1,141 @@
+---
+title: 进度仪表
+description: 一个用于通过可视化指示器显示进度的 SwiftUI 进度仪表组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI Gauge 与官方 SwiftUI [Gauge API](https://developer.apple.com/documentation/swiftui/gauge) 保持一致，并支持通过 [`gaugeStyle`](modifiers/#gaugestylestyle) 修饰符进行样式设置。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/gauge/ios-light.webp"
+  darkSrc="/static/images/expo-ui/gauge/ios-dark.webp"
+  alt="显示 70% 的圆形容量仪表"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本仪表
+
+```tsx BasicGaugeExample.tsx
+import { Host, Gauge } from '@expo/ui/swift-ui';
+
+export default function BasicGaugeExample() {
+  return (
+    <Host matchContents>
+      <Gauge value={0.5} />
+    </Host>
+  );
+}
+```
+
+### 带标签
+
+你可以将自定义组件作为 `children` 传入，为仪表提供标签。
+
+```tsx LabelExample.tsx
+import { Host, Gauge, Text } from '@expo/ui/swift-ui';
+
+export default function LabelExample() {
+  return (
+    <Host matchContents>
+      <Gauge value={0.7}>
+        <Text>进度</Text>
+      </Gauge>
+    </Host>
+  );
+}
+```
+
+### 带数值标签
+
+使用 `currentValueLabel`、`minimumValueLabel` 和 `maximumValueLabel` 属性来显示数值信息。
+
+```tsx ValueLabelsExample.tsx
+import { Host, Gauge, Text } from '@expo/ui/swift-ui';
+
+export default function ValueLabelsExample() {
+  return (
+    <Host matchContents>
+      <Gauge
+        value={50}
+        min={0}
+        max={100}
+        currentValueLabel={<Text>50%</Text>}
+        minimumValueLabel={<Text>0</Text>}
+        maximumValueLabel={<Text>100</Text>}>
+        <Text>用量</Text>
+      </Gauge>
+    </Host>
+  );
+}
+```
+
+### 仪表样式
+
+使用 `gaugeStyle` 修饰器来更改仪表的外观。可用样式有：`automatic`、`circular`、`circularCapacity`、`linear` 和 `linearCapacity`。
+
+```tsx GaugeStylesExample.tsx
+import { Host, Gauge, Text, VStack } from '@expo/ui/swift-ui';
+import { gaugeStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function GaugeStylesExample() {
+  return (
+    <Host matchContents>
+      <VStack spacing={16}>
+        <Gauge value={0.5} modifiers={[gaugeStyle('circular')]}>
+          <Text>圆形</Text>
+        </Gauge>
+        <Gauge value={0.5} modifiers={[gaugeStyle('circularCapacity')]}>
+          <Text>圆形容量</Text>
+        </Gauge>
+        <Gauge value={0.5} modifiers={[gaugeStyle('linear')]}>
+          <Text>线性</Text>
+        </Gauge>
+        <Gauge value={0.5} modifiers={[gaugeStyle('linearCapacity')]}>
+          <Text>线性容量</Text>
+        </Gauge>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+### 着色仪表
+
+使用 `tint` 修饰器来更改仪表的颜色。
+
+```tsx TintedGaugeExample.tsx
+import { Host, Gauge, VStack } from '@expo/ui/swift-ui';
+import { gaugeStyle, tint } from '@expo/ui/swift-ui/modifiers';
+
+export default function TintedGaugeExample() {
+  return (
+    <Host matchContents>
+      <VStack spacing={16}>
+        <Gauge value={0.7} modifiers={[gaugeStyle('circular'), tint('green')]} />
+        <Gauge value={0.3} modifiers={[gaugeStyle('linear'), tint('red')]} />
+      </VStack>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Gauge } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/gauge" apiName="Gauge" />

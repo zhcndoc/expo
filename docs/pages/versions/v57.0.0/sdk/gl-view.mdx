@@ -1,0 +1,189 @@
+---
+title: GLView
+description: 一个提供 GLView 的库，GLView 可作为 OpenGL ES 渲染目标并提供 GLContext。适用于渲染 2D 和 3D 图形。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-gl'
+packageName: 'expo-gl'
+iconUrl: '/static/images/packages/expo-gl.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+`expo-gl` 提供了一个 `View`，它充当 OpenGL ES 渲染目标，适用于渲染 2D 和 3D 图形。挂载时，会创建一个 OpenGL ES 上下文。其绘图缓冲区会在每一帧作为 `View` 的内容呈现。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+<SnackInline label='Basic GL usage' dependencies={['expo-gl']}>
+
+```jsx
+import { View } from 'react-native';
+import { GLView } from 'expo-gl';
+
+export default function App() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <GLView style={{ width: 300, height: 300 }} onContextCreate={onContextCreate} />
+    </View>
+  );
+}
+
+function onContextCreate(gl) {
+  gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+  gl.clearColor(0, 1, 1, 1);
+
+  // 创建顶点着色器（形状和位置）
+  const vert = gl.createShader(gl.VERTEX_SHADER);
+  gl.shaderSource(
+    vert,
+    `
+    void main(void) {
+      gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+      gl_PointSize = 150.0;
+    }
+  `
+  );
+  gl.compileShader(vert);
+
+  // 创建片段着色器（颜色）
+  const frag = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(
+    frag,
+    `
+    void main(void) {
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+  `
+  );
+  gl.compileShader(frag);
+
+  // 将它们链接成一个程序
+  const program = gl.createProgram();
+  gl.attachShader(program, vert);
+  gl.attachShader(program, frag);
+  gl.linkProgram(program);
+  gl.useProgram(program);
+
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.POINTS, 0, 1);
+
+  gl.flush();
+  gl.endFrameEXP();
+}
+```
+
+</SnackInline>
+
+## 高级 API
+
+由于 WebGL API 相当底层，使用通过底层 `GLView` 渲染的更高级图形 API 会很有帮助。以下库集成了流行的图形 API：
+
+- [expo-three](https://github.com/expo/expo-three) 用于 [three.js](https://threejs.org)
+- [expo-processing](https://github.com/expo/expo-processing) 用于 [Processing](https://processing.org/reference)
+
+任何支持 WebGL 且期望使用 [WebGLRenderingContext](https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14) 的库都可以使用。有时这类库会假设运行在 Web 的 JavaScript 环境中（例如假设存在 `document`）。通常这是用于资源加载或事件处理，而主要的渲染逻辑仍然只使用纯 WebGL。因此，这些库通常仍然可以通过一些变通方法来使用。上面这些针对 Expo 的集成已经为一些流行库包含了相应的变通处理。
+
+## 与 Reanimated worklet 集成
+
+要在 Reanimated worklet 中使用此 API，你需要将 GL 上下文 ID 传递给 worklet，并像下面的示例那样重新创建 GL 对象。
+
+<SnackInline label='Reanimated worklet 中的 GL 用法' dependencies={['expo-gl', 'react-native-reanimated']}>
+
+```jsx
+import { View } from 'react-native';
+import { runOnUI } from 'react-native-reanimated';
+import { GLView } from 'expo-gl';
+
+function render(gl) {
+  'worklet';
+  // 在这里添加你的 WebGL 代码
+}
+
+function onContextCreate(gl) {
+  runOnUI((contextId: number) => {
+    'worklet';
+    const gl = GLView.getWorkletContext(contextId);
+    render(gl);
+  })(gl.contextId);
+}
+
+export default function App() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <GLView
+        style={{ width: 300, height: 300 }}
+        enableExperimentalWorkletSupport
+        onContextCreate={onContextCreate}
+      />
+    </View>
+  );
+}
+```
+
+</SnackInline>
+
+如果你想查看更多关于如何将 `expo-gl` 与 Reanimated 和 Gesture Handler 一起使用的深入示例，可以查看[这个示例](https://github.com/expo/expo/tree/main/apps/native-component-list/src/screens/GL/GLReanimatedExample.tsx)。
+
+### 限制
+
+Worklet 运行时会对其中运行的代码施加一些限制，因此如果你已有 WebGL 代码，可能需要做一些修改才能在 worklet 线程中运行。
+
+- 像 Pixi.js 或 Three.js 这样的第三方库无法在 worklet 内部工作，你只能使用在开头添加了 `'worklet'` 的函数。
+- 如果你需要加载一些要传递给 WebGL 代码的资源，需要在主线程中完成，并通过某种引用传递给 worklet。如果你正在使用 `expo-assets`，你可以直接将由 `Asset.fromModule` 或 hook `useAssets` 返回的资源对象传递给 `runOnUI` 函数。
+- 要实现渲染循环，你需要使用 `requestAnimationFrame`，`setTimeout` 之类的 API 不受支持。
+
+更多信息请查看[Reanimated 文档](https://docs.swmansion.com/react-native-reanimated/docs/guides/worklets/)。
+
+## 远程调试和 GLView
+
+启用远程调试时，此 API 无法按预期工作。React Native 调试器在你的电脑上运行 JavaScript，而不是在移动设备上。GLView 需要同步的原生调用，而 Chrome 不支持这些调用。
+
+## API
+
+```js
+import { GLView } from 'expo-gl';
+```
+
+<APISection packageName="expo-gl" apiName="GLView" />
+
+## WebGL API
+
+一旦组件挂载完成并且 OpenGL ES 上下文已创建，通过 `onContextCreate` 属性接收到的 `gl` 对象就会成为 OpenGL ES 上下文的接口，并提供 WebGL API。它类似于 WebGL 2 规范中的 [WebGL2RenderingContext](https://registry.khronos.org/webgl/specs/latest/2.0/#3.7)。
+
+某些较旧的 Android 设备可能不支持 WebGL2 功能。要检查设备是否支持 WebGL2，建议使用 `gl instanceof WebGL2RenderingContext`。
+
+此外，还提供了一个 `gl.endFrameEXP()` 方法，用于通知上下文当前帧已准备好呈现。这类似于其他 OpenGL 平台中的“交换缓冲区”API 调用。
+
+以下 WebGL2RenderingContext 方法目前尚未实现：
+
+- `getFramebufferAttachmentParameter()`
+- `getRenderbufferParameter()`
+- `compressedTexImage2D()`
+- `compressedTexSubImage2D()`
+- `getTexParameter()`
+- `getUniform()`
+- `getVertexAttrib()`
+- `getVertexAttribOffset()`
+- `getBufferSubData()`
+- `getInternalformatParameter()`
+- `renderbufferStorageMultisample()`
+- `compressedTexImage3D()`
+- `compressedTexSubImage3D()`
+- `fenceSync()`
+- `isSync()`
+- `deleteSync()`
+- `clientWaitSync()`
+- `waitSync()`
+- `getSyncParameter()`
+- `getActiveUniformBlockParameter()`
+
+[`texImage2D()`](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D) 的 `pixels` 参数必须是 `null`、包含像素数据的 `ArrayBuffer`，或形如 `{ localUri }` 的对象，其中 `localUri` 是设备文件系统中某个图像的 `file://` URI。因此，当对 `Asset` 对象调用 `.downloadAsync()` 并且完成后，就会使用该对象来获取资源。
+
+出于效率考虑，目前这些方法的实现不会对其参数进行类型或边界检查。因此，传入无效参数可能会导致原生崩溃。计划在即将发布的 SDK 版本中更新 API，以执行参数检查。
+
+目前，错误检查的优先级较低，因为引擎通常不会依赖 OpenGL API 来进行参数检查；否则，由底层 OpenGL ES 实现执行的检查通常已足够。

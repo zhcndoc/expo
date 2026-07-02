@@ -7,6 +7,7 @@ description: 了解如何在同一设备上安装应用的多个变体。
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
 
 在创建[开发、预览和生产构建](/build/eas-json/#common-use-cases)时，通常会在同一设备上同时安装这些构建变体。这使你能够进行开发、预览应用的下一个版本，并在设备上运行生产版本，而无需卸载并重新安装应用。
 
@@ -153,7 +154,51 @@ plugins: [
 
 > **注意**：如果你使用 EAS Update 发布应用的 JavaScript 更新，在运行 `eas update` 命令时，应谨慎为你发布的应用变体设置正确的环境变量。更多信息请参阅 EAS Build 的 [环境变量和密钥](/build/updates)。
 
-### 在现有（裸）React Native 项目中
+### 本地构建并运行多个应用变体
+
+如果你使用 [`expo run:android|ios`](/workflow/continuous-native-generation/#usage) 在本地[构建应用](/guides/local-app-overview/)，在运行 `expo run` 命令时请设置 `APP_VARIANT` 环境变量。例如，要将 `development` 变体作为 iOS 的调试构建进行编译，请运行：
+
+<Terminal
+  cmd={{
+    npm: ['$ APP_VARIANT=development npx expo run:ios'],
+    yarn: ['$ APP_VARIANT=development yarn expo run:ios'],
+    pnpm: ['$ APP_VARIANT=development pnpm expo run:ios'],
+    bun: ['$ APP_VARIANT=development bun expo run:ios'],
+  }}
+/>
+
+`APP_VARIANT` 只会更改 Android 上应用的名称和包名，以及 iOS 上的 bundle identifier。它不会影响二进制文件的编译方式。当你切换变体时，现有的 **android** 和 **ios** 目录仍然反映上一个变体。如果原生目录已经存在，`expo run` 会跳过重新生成，并按原样编译。
+
+要切换变体，你需要在编译应用之前，使用 `prebuild --clean` 重新生成原生目录。下面的示例中，`development` 变体（现有的调试构建）切换为 `test`，它也是另一个调试构建。要重新生成 **android** 和 **ios** 目录，然后编译 `test` 变体，请在两个命令上都设置 `APP_VARIANT`，以确保清理预构建和编译使用相同的变体：
+
+<Terminal
+  cmd={{
+    npm: [
+      '$ APP_VARIANT=test npx expo prebuild --clean',
+      '',
+      '$ APP_VARIANT=test npx expo run:ios',
+    ],
+    yarn: [
+      '$ APP_VARIANT=test yarn expo prebuild --clean',
+      '',
+      '$ APP_VARIANT=test yarn expo run:ios',
+    ],
+    pnpm: [
+      '$ APP_VARIANT=test pnpm expo prebuild --clean',
+      '',
+      '$ APP_VARIANT=test pnpm expo run:ios',
+    ],
+    bun: [
+      '$ APP_VARIANT=test bun expo prebuild --clean',
+      '',
+      '$ APP_VARIANT=test bun expo run:ios',
+    ],
+  }}
+/>
+
+**android** 和 **ios** 目录由 [Continuous Native Generation](/workflow/continuous-native-generation/) 管理，因此当它们已列在你的 **.gitignore** 中时，重新生成它们是安全的。
+
+### 在现有的 React Native 项目中
 
 > **info** 如果你希望将你的 [应用配置文件](/workflow/configuration/) 作为应用配置的唯一可信来源（包括变体的 bundle identifier 和 package name），你需要迁移到 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 并将 **android** 和 **ios** 目录添加到 **.gitignore** 文件中。如果你最初是从 React Native CLI 项目开始，并添加了自定义原生代码，这一点尤其重要。这可以确保原生项目配置不会优先于你的应用配置，尤其是在使用 bundle ID 查找行为时。否则，你可能会遇到运行了错误的应用变体或开发构建未被正确检测的问题。或者，你也可以按下文所述显式使用 Android flavors 和 iOS schemes。
 

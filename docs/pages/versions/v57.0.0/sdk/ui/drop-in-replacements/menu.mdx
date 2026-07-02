@@ -1,0 +1,175 @@
+---
+title: 菜单
+description: 与 @react-native-menu/menu 兼容的菜单。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+一个与 [`@react-native-menu/menu`](https://www.npmjs.com/package/@react-native-menu/menu) 兼容 API 的 `MenuView` 组件。支持单击（默认）和长按（`shouldOpenOnLongPress`）两种触发方式。
+
+在内部，此组件封装了平台特定的 `@expo/ui` 原语：
+
+- **Android**：[Jetpack Compose DropdownMenu](../jetpack-compose/dropdownmenu)，锚定到一个 `Pressable` 触发器。
+- **iOS**：用于点击触发的 [SwiftUI Menu](../swift-ui/menu)，以及用于长按触发的 [SwiftUI ContextMenu](../swift-ui/contextmenu)。
+
+如果你需要更底层的控制，请直接使用这些原语。
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@react-native-menu/menu` 迁移
+
+- 将导入从 `import { MenuView } from '@react-native-menu/menu'` 改为 `import { MenuView } from '@expo/ui/community/menu'`。
+- Android 上的 `action.image` 与上游不同。`@react-native-menu/menu` 期望的是一个 **drawable 资源名称** 字符串（例如 `'ic_menu_add'`），它会将其解析到 `android/app/src/main/res/drawable/`。此即插即用实现**不会**解析 drawable 资源名称——请改为传入 `ImageSourcePropType`（例如 `require('@expo/material-symbols/edit.xml')`）。字符串值在 iOS 上作为 SF Symbol 名称是被接受的。使用 [`Icon.select`](../universal/icon) 在每个调用点同时定义两者，这样未使用的一侧就会按平台被 tree-shake 掉。
+- `title` 仅在 iOS 上作为分组标题渲染；Android 的 Material `DropdownMenu` 没有 title 槽位。
+- 在 Android 上，`MenuView` 会用自己的 `Pressable` 包裹触发器来打开菜单，因此你传入作为 `children` 的 `Pressable` 上绑定的 `onPress`/`onLongPress` 处理器不会触发——外层包装会接管该手势。请将该处理器移到你的 `onPressAction` 分支中，或者如果你需要在触发器上保留单击和长按两个独立动作，请使用更底层的 [`DropdownMenu`](../jetpack-compose/dropdownmenu) 原语。
+- 命令式的 `ref.show()` API **仅限 Android**。SwiftUI 的 `Menu`/`ContextMenu` 没有程序化打开 API，因此在 iOS 上该调用是 no-op（并会在开发环境中提示一次警告）。
+- 以下来自 `@react-native-menu/menu` 的 props 不受支持：`themeVariant`、`hitSlop`、`isAnchoredToRight`、`subtitle`、`keepsMenuPresented`、`preferredElementSize`，以及 `state: 'mixed'`。
+
+## 基本用法
+
+```tsx MenuExample.tsx
+import { Icon } from '@expo/ui';
+import { MenuView } from '@expo/ui/community/menu';
+import { Pressable, Text } from 'react-native';
+
+const editIcon = Icon.select({
+  ios: 'pencil',
+  android: import('@expo/material-symbols/edit.xml'),
+});
+
+const deleteIcon = Icon.select({
+  ios: 'trash',
+  android: import('@expo/material-symbols/delete.xml'),
+});
+
+export default function MenuExample() {
+  return (
+    <MenuView
+      actions={[
+        { id: 'edit', title: '编辑', image: editIcon },
+        { id: 'delete', title: '删除', image: deleteIcon, attributes: { destructive: true } },
+      ]}
+      onPressAction={e => console.log(e.nativeEvent.event)}>
+      <Pressable>
+        <Text>打开菜单</Text>
+      </Pressable>
+    </MenuView>
+  );
+}
+```
+
+## 长按（上下文菜单）
+
+将 `shouldOpenOnLongPress` 设置为以上下文菜单形式渲染。在 Android 上，相同受控的 `DropdownMenu` 会从 `Pressable` 的 `onLongPress` 打开，而不是 `onPress`。在 iOS 上，这会使用 SwiftUI 的 `ContextMenu`，并将触发器显示为模糊预览。
+
+```tsx LongPressMenuExample.tsx
+import { Icon } from '@expo/ui';
+import { MenuView } from '@expo/ui/community/menu';
+import { Pressable, Text } from 'react-native';
+
+const copyIcon = Icon.select({
+  ios: 'doc.on.doc',
+  android: import('@expo/material-symbols/content_copy.xml'),
+});
+
+const shareIcon = Icon.select({
+  ios: 'square.and.arrow.up',
+  android: import('@expo/material-symbols/share.xml'),
+});
+
+export default function LongPressMenuExample() {
+  return (
+    <MenuView
+      shouldOpenOnLongPress
+      actions={[
+        { id: 'copy', title: '复制', image: copyIcon },
+        { id: 'share', title: '分享', image: shareIcon },
+      ]}
+      onPressAction={e => console.log(e.nativeEvent.event)}>
+      <Pressable>
+        <Text>长按我</Text>
+      </Pressable>
+    </MenuView>
+  );
+}
+```
+
+## 子菜单和内联分组
+
+`subactions` 默认会将嵌套操作渲染为子菜单。将父项上的 `displayInline: true` 设置为以内联分组的形式渲染子项，这对于分组很有用。在 Android 上，只会显示分隔线（Material 的 `DropdownMenu` 没有分组原语）。在 iOS 上，父项的 `title` 会变成分组标题。
+
+```tsx SubmenuExample.tsx
+import { MenuView } from '@expo/ui/community/menu';
+import { Pressable, Text } from 'react-native';
+
+export default function SubmenuExample() {
+  return (
+    <MenuView
+      actions={[
+        { id: 'rename', title: '重命名' },
+        {
+          id: 'sort',
+          title: '排序依据',
+          subactions: [
+            { id: 'sort-name', title: '名称' },
+            { id: 'sort-date', title: '日期' },
+            { id: 'sort-size', title: '大小' },
+          ],
+        },
+        {
+          id: 'share-section',
+          title: '分享',
+          displayInline: true,
+          subactions: [
+            { id: 'share-airdrop', title: '隔空投送' },
+            { id: 'share-message', title: '信息' },
+          ],
+        },
+      ]}
+      onPressAction={e => console.log(e.nativeEvent.event)}>
+      <Pressable>
+        <Text>打开菜单</Text>
+      </Pressable>
+    </MenuView>
+  );
+}
+```
+
+## 带勾选标记的切换项
+
+将 `state` 设置为 `'on'` 或 `'off'`，即可将某个操作渲染为可切换项目；当为 on 时，会在前面显示一个勾选标记。选择该操作会触发 `onPressAction`，而调用方负责更新该状态。
+
+```tsx ToggleMenuExample.tsx
+import { MenuView } from '@expo/ui/community/menu';
+import { useState } from 'react';
+import { Pressable, Text } from 'react-native';
+
+export default function ToggleMenuExample() {
+  const [pinned, setPinned] = useState(false);
+  return (
+    <MenuView
+      actions={[{ id: 'pin', title: '置顶', state: pinned ? 'on' : 'off' }]}
+      onPressAction={e => {
+        if (e.nativeEvent.event === 'pin') setPinned(p => !p);
+      }}>
+      <Pressable>
+        <Text>{pinned ? '已置顶' : '未置顶'}</Text>
+      </Pressable>
+    </MenuView>
+  );
+}
+```
+
+## API
+
+```tsx
+import { MenuView } from '@expo/ui/community/menu';
+```
+
+<APISection packageName="expo-ui/community/menu" apiName="MenuView" />

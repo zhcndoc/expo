@@ -160,6 +160,72 @@ export default function App() {
 }
 ```
 
+### 自定义标记图标
+
+你可以使用来自 `expo-image` 的 [`useImage`](/versions/v56.0.0/sdk/image/#useimage) 钩子来加载自定义标记和注释图标。
+
+<Tabs>
+<Tab label="Google Maps">
+
+以下示例展示了如何在 Android 上使用 Google Maps 显示自定义标记图标。
+
+```tsx
+import { useImage } from 'expo-image';
+import { GoogleMaps } from 'expo-maps';
+
+export default function Map() {
+  const icon = useImage('https://example.com/marker.svg', { maxWidth: 48, maxHeight: 48 });
+
+  return (
+    <GoogleMaps.View
+      style={{ flex: 1 }}
+      markers={[
+        {
+          coordinates: { latitude: 37.78825, longitude: -122.4324 },
+          icon: icon ?? undefined,
+          anchor: { x: 0.5, y: 0.5 },
+        },
+      ]}
+    />
+  );
+}
+```
+
+`GoogleMaps.Marker.icon` 期望接收一个图像引用，例如 `expo-image` 包中 `useImage` 钩子返回的值。它不直接接受图像源。
+
+加载后的图像尺寸决定标记大小，而不是某个 marker style 属性。对于 SVG 图标，请在 SVG 中设置 `width`、`height` 和 `viewBox`，或将 `maxWidth` 和 `maxHeight` 传递给 `useImage` 钩子。你可以使用 `anchor` 将自定义图标与其坐标对齐。
+
+</Tab>
+<Tab label="Apple Maps">
+
+以下示例展示了如何在 iOS 上使用 Apple Maps 显示自定义注释图标。
+
+```tsx
+import { useImage } from 'expo-image';
+import { AppleMaps } from 'expo-maps';
+
+export default function Map() {
+  const icon = useImage('https://example.com/marker.svg');
+
+  return (
+    <AppleMaps.View
+      style={{ flex: 1 }}
+      annotations={[
+        {
+          coordinates: { latitude: 37.78825, longitude: -122.4324 },
+          icon: icon ?? undefined,
+        },
+      ]}
+    />
+  );
+}
+```
+
+`AppleMaps.Annotation.icon` 期望接收一个图像引用，例如 `expo-image` 库中 `useImage` 钩子返回的值。你可以将 `AppleMaps.Annotation` 用于自定义图像图标。`AppleMaps.Marker` 支持特定于标记的选项，例如 `systemImage`、`monogram` 和 `tintColor`。
+
+</Tab>
+</Tabs>
+
 ## API
 
 ```js

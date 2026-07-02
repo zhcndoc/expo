@@ -1,15 +1,15 @@
 ---
-title: Android build process
+title: Android 构建流程
 description: 了解 Android 项目如何在 EAS Build 上构建。
 ---
 
 此页面描述了使用 EAS Build 构建 Android 项目的过程。如果你对构建服务的实现细节感兴趣，可以阅读这篇文章。
 
-## Build process
+## 构建流程
 
 让我们更详细地了解使用 EAS Build 构建 Android 项目的各个步骤。我们会先在你的本地机器上运行一些步骤来准备项目，然后再在远程服务上构建项目。
 
-### Local steps
+### 本地步骤
 
 第一阶段发生在你的电脑上。EAS CLI 负责完成以下步骤：
 
@@ -20,7 +20,7 @@ description: 了解 Android 项目如何在 EAS Build 上构建。
 1. 创建一个包含仓库副本的 tarball。实际行为取决于你所使用的 [VCS workflow](https://expo.fyi/eas-vcs-workflow)。
 1. 将项目 tarball 上传到一个私有的 Google Cloud Storage（GCS）bucket，并将构建请求发送到 EAS Build。
 
-### Remote steps
+### 远程步骤
 
 接下来，这是 EAS Build 接收到你的请求后发生的事情：
 
@@ -28,17 +28,17 @@ description: 了解 Android 项目如何在 EAS Build 上构建。
    - 每次构建都会获得自己全新的容器，其中安装了所有构建工具（Java JDK、Android SDK、NDK 等）。
 
 1. 从私有 GCS bucket 下载项目 tarball 并解压。
-1. 如果设置了 `NPM_TOKEN`，则[创建 **.npmrc**](/build-reference/private-npm-packages)。
+1. 如果设置了 `NPM_TOKEN`，则 [创建 **.npmrc**](/build-reference/private-npm-packages)。
 1. 如果 **package.json** 中定义了 `eas-build-pre-install` 脚本，则运行它。
 1. 在项目根目录中运行 `npm install`（如果存在 `yarn.lock`，则运行 `yarn install`）。
-1. 运行 `npx expo-doctor` 来诊断项目配置中的潜在问题。
-1. **managed** 项目的额外步骤：运行 `npx expo prebuild` 将项目转换为 bare 项目。此步骤将使用版本化的 Expo CLI。
-1. 恢复之前保存的缓存，该缓存由 [构建配置](/build/eas-json) 中的 `cache.key` 值标识。
+1. 运行 `npx expo-doctor`，诊断项目配置中可能存在的问题。
+1. 对于使用 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 的项目，还会额外执行一步：运行 `npx expo prebuild` 生成 **android** 和 **ios** 目录。这一步会使用带版本号的 Expo CLI。
+1. 恢复之前保存的缓存，该缓存由 [构建配置文件](/build/eas-json) 中的 `cache.key` 值标识。
 1. 如果 **package.json** 中定义了 `eas-build-post-install` 脚本，则运行它。
 1. 恢复 keystore（如果它包含在构建请求中）。
-1. 将签名[配置注入到 **build.gradle** 中](#configuring-gradle)。
+1. 将签名[配置注入到 **build.gradle**](#configuring-gradle) 中。
 1. 在项目内的 **android** 目录中运行 `./gradlew COMMAND`。
-   - `COMMAND` 是你在 **eas.json** 中 `builds.android.PROFILE_NAME.gradleCommand` 定义的命令。其默认值为 `:app:bundleRelease`，会生成 AAB（Android App Bundle）。
+   - `COMMAND` 是你在 **eas.json** 中 `builds.android.PROFILE_NAME.gradleCommand` 所定义的命令。默认值为 `:app:bundleRelease`，它会生成 AAB（Android App Bundle）。
 
 1. **已弃用：** 如果 **package.json** 中定义了 `eas-build-pre-upload-artifacts` 脚本，则运行它。
 1. 存储 [构建配置](/build/eas-json/) 中定义的文件和目录缓存。后续构建将恢复此缓存。
@@ -50,9 +50,9 @@ description: 了解 Android 项目如何在 EAS Build 上构建。
 1. 如果 **package.json** 中定义了 `eas-build-on-complete` 脚本，则运行它。`EAS_BUILD_STATUS` 环境变量会被设置为 `finished` 或 `errored`。
 1. 如果在构建配置中指定了 `buildArtifactPaths`，则将构建产物归档文件上传到一个私有 GCS bucket。
 
-## Project auto-configuration
+## 项目自动配置
 
-每次你想构建一个新的 Android 应用二进制文件时，我们都会验证项目是否已正确设置，以便我们可以在服务器上无缝运行构建过程。这主要适用于 bare 项目，但在构建 managed 项目时也会运行类似的步骤。
+每当你想构建一个新的 Android 应用二进制文件时，我们都会验证项目是否正确设置，以便我们能够在服务器上无缝运行构建流程。这主要适用于[现有的 React Native 项目](/bare/overview/)，但在构建使用 Continuous Native Generation（CNG）的项目时也会执行类似步骤。
 
 ### Android keystore
 
@@ -60,7 +60,7 @@ Android 要求你使用证书对应用进行签名。该证书存储在你的 ke
 
 你的应用 keystore 应妥善保密。**在任何情况下都不应将其提交到你的仓库中。** Debug keystore 是唯一的例外，因为我们不会使用它们将应用上传到 Google Play 商店。
 
-### Configuring Gradle
+### 配置 Gradle
 
 你的应用二进制文件需要使用 keystore 进行签名。由于我们是在远程服务器上构建项目，因此我们必须想出一种方式，为 Gradle 提供凭据；出于安全原因，这些凭据不会提交到你的仓库中。在远程步骤之一中，我们会将签名配置注入到你的 **build.gradle** 中。EAS Build 创建 **android/app/eas-build.gradle** 文件，其内容如下：
 

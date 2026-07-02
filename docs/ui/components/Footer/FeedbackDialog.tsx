@@ -72,16 +72,16 @@ export const FeedbackDialog = ({ pathname }: Props) => {
               <>
                 <div className="flex flex-col items-center px-6 py-12">
                   <div className="flex size-18 items-center justify-center rounded-full border-2 border-success bg-success">
-                    <CheckIcon className="icon-2xl text-icon-success" />
+                    <CheckIcon aria-hidden="true" className="icon-2xl text-icon-success" />
                   </div>
-                  <RawH2 className="mt-5! mb-2!">Feedback received</RawH2>
+                  <RawH2 className="mt-5! mb-2!">已收到反馈</RawH2>
                   <CALLOUT theme="secondary">
-                    Your feedback will help us make our docs better. Thanks for sharing!
+                    你的反馈将帮助我们改进文档，感谢分享！
                   </CALLOUT>
                 </div>
                 <div className="flex min-h-14 items-center justify-end gap-2 bg-subtle px-3">
                   <Dialog.Close asChild>
-                    <Button type="submit">Done</Button>
+                    <Button type="submit">完成</Button>
                   </Dialog.Close>
                 </div>
               </>
@@ -93,17 +93,21 @@ export const FeedbackDialog = ({ pathname }: Props) => {
                 }}>
                 <div className="px-6 py-5">
                   <div className="flex justify-between">
-                    <RawH2 className="my-0!">Share your feedback</RawH2>
+                    <RawH2 className="my-0!">分享反馈</RawH2>
                     <Dialog.Close asChild>
-                      <Button theme="quaternary" leftSlot={<XIcon className="icon-md" />} />
+                      <Button
+                        aria-label="关闭"
+                        theme="quaternary"
+                        leftSlot={<XIcon aria-hidden="true" className="icon-md" />}
+                      />
                     </Dialog.Close>
                   </div>
                   <CALLOUT theme="secondary">
-                    Add your feedback to help us improve this doc.
+                    欢迎留下反馈，帮助我们改进这篇文档。
                   </CALLOUT>
                   <div className="mt-4 grid gap-4">
                     <div>
-                      <LABEL>Feedback</LABEL>
+                      <LABEL>反馈内容</LABEL>
                       <Textarea
                         autoFocus
                         className="h-45 resize-none"
@@ -115,9 +119,9 @@ export const FeedbackDialog = ({ pathname }: Props) => {
                       />
                     </div>
                     <div>
-                      <LABEL>Email (optional)</LABEL>
+                      <LABEL>邮箱（可选）</LABEL>
                       <CALLOUT theme="secondary">
-                        We might reach out to you about your feedback.
+                        如有需要，我们可能会就你的反馈与你联系。
                       </CALLOUT>
                       <Input
                         type="email"
@@ -142,9 +146,9 @@ export const FeedbackDialog = ({ pathname }: Props) => {
                 </div>
                 <div className="flex min-h-14 items-center justify-end gap-2 bg-subtle px-3">
                   <Dialog.Close asChild>
-                    <Button theme="quaternary">No Thanks</Button>
+                    <Button theme="quaternary">暂不提交</Button>
                   </Dialog.Close>
-                  <Button type="submit">Submit</Button>
+                  <Button type="submit">提交</Button>
                 </div>
               </form>
             )}

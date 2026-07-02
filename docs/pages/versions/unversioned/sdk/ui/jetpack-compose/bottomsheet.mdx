@@ -12,7 +12,7 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 > **info** 有关跨平台用法，请参阅通用的 [`BottomSheet`](../universal/bottomsheet) — 它会为每个平台渲染合适的原生组件。
 
-Expo UI ModalBottomSheet 与官方 Jetpack Compose [Bottom Sheet API](https://developer.android.com/develop/ui/compose/components/bottom-sheets) 保持一致，并以从底部滑入的模态底部抽屉形式显示内容。
+Expo UI ModalBottomSheet 与官方 Jetpack Compose [底部抽屉 API](https://developer.android.com/develop/ui/compose/components/bottom-sheets) 保持一致，并以从底部滑入的模态底部抽屉形式显示内容。
 
 <ContentSpotlight
   variant="component"
@@ -76,7 +76,7 @@ export default function BasicBottomSheetExample() {
 import { useRef, useState } from 'react';
 import { Host, ModalBottomSheet, Button, Column, Text } from '@expo/ui/jetpack-compose';
 import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
-import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+import { paddingAll, height } from '@expo/ui/jetpack-compose/modifiers';
 
 export default function SkipPartiallyExpandedExample() {
   const [visible, setVisible] = useState(false);
@@ -97,9 +97,55 @@ export default function SkipPartiallyExpandedExample() {
           ref={sheetRef}
           onDismissRequest={() => setVisible(false)}
           skipPartiallyExpanded>
-          <Column verticalArrangement={{ spacedBy: 12 }} modifiers={[paddingAll(24)]}>
+          <Column verticalArrangement={{ spacedBy: 12 }} modifiers={[paddingAll(24), height(600)]}>
             <Text>这个底部抽屉会跳过部分展开状态。</Text>
             <Text>它会直接以完全展开的位置打开。</Text>
+            <Button onClick={hideSheet}>
+              <Text>关闭</Text>
+            </Button>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+### 初始完全展开状态
+
+当 `initialFullyExpanded` 为 `true` 时，底部抽屉会在首次组合时直接以完全展开状态打开，同时仍保留部分状态可达。与 `skipPartiallyExpanded` 不同，用户仍然可以向下拖拽到部分状态。`partialExpand()` 方法也仍然可用。
+
+```tsx InitialFullyExpandedExample.tsx
+import { useRef, useState } from 'react';
+import { Host, ModalBottomSheet, Button, Column, Text } from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function InitialFullyExpandedExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>打开抽屉</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}
+          initialFullyExpanded>
+          <Column verticalArrangement={{ spacedBy: 12 }} modifiers={[paddingAll(24)]}>
+            <Text>这个抽屉已完全展开打开。</Text>
+            <Text>你仍然可以向下拖拽到部分状态。</Text>
+            <Button onClick={() => sheetRef.current?.partialExpand()}>
+              <Text>折叠到部分展开</Text>
+            </Button>
             <Button onClick={hideSheet}>
               <Text>关闭</Text>
             </Button>
@@ -238,8 +284,8 @@ export default function RNContentBottomSheetExample() {
           onDismissRequest={() => setVisible(false)}
           skipPartiallyExpanded={false}>
           <Column verticalArrangement={{ spacedBy: 16 }} modifiers={[padding(16, 16, 16, 16)]}>
-            <Text>在底部抽屉中混合使用 Compose + RN</Text>
-            <RNHostView matchContents>
+            <Text>底部抽屉中的 Compose + RN 混合</Text>
+            <RNHostView>
               <View>
                 <RNText style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>
                   React Native 内容
@@ -308,6 +354,46 @@ export default function FlexRNContentExample() {
                   React Native 内容（flex: 1）
                 </RNText>
               </View>
+            </RNHostView>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+### 可滚动的 React Native 内容
+
+使用 `RNHostView` 将可滚动的 React Native 列表（例如 `FlatList`、`ScrollView`，或高性能列表如 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)）嵌套到抽屉中。为可滚动组件设置 `nestedScrollEnabled`，使其先滚动自身内容。当它滚动到顶部边缘后，剩余的拖拽会移动抽屉。没有 `nestedScrollEnabled` 时，列表会消耗手势，抽屉则保持不动。
+
+```tsx ScrollableContentBottomSheetExample.tsx
+import { useState } from 'react';
+import { Host, ModalBottomSheet, Button, Column, RNHostView, Text } from '@expo/ui/jetpack-compose';
+import { fillMaxHeight, padding } from '@expo/ui/jetpack-compose/modifiers';
+import { FlatList, Text as RNText } from 'react-native';
+
+const DATA = Array.from({ length: 50 }, (_, i) => `项目 ${i + 1}`);
+
+export default function ScrollableContentBottomSheetExample() {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>打开可滚动抽屉</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet onDismissRequest={() => setVisible(false)}>
+          <Column modifiers={[fillMaxHeight(), padding(16, 16, 16, 16)]}>
+            <RNHostView>
+              <FlatList
+                nestedScrollEnabled
+                style={{ flex: 1 }}
+                data={DATA}
+                keyExtractor={item => item}
+                renderItem={({ item }) => <RNText style={{ paddingVertical: 16 }}>{item}</RNText>}
+              />
             </RNHostView>
           </Column>
         </ModalBottomSheet>

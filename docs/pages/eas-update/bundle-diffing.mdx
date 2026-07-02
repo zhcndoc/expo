@@ -6,6 +6,7 @@ description: 使你的项目在可用时接受 bundle diff。
 
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Terminal } from '~/ui/components/Snippet';
 
 > **重要** Bundle diffing 处于 [**beta**](/more/release-statuses/#beta) 阶段，可能存在一些限制。详情请参见[当前限制](#current-limitations)。
 
@@ -17,23 +18,73 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 ## 启用 bundle diffing
 
-从 SDK 56 开始，Bundle diffing 默认已启用。若要选择退出，请在项目的 [app config](/workflow/configuration/) 中将 `updates.enableBsdiffPatchSupport` 设置为 `false`。在 SDK 55 中，将其设置为 `true` 以选择启用。
+Bundle diffing 在两种情况下可用。默认情况下，已经运行已发布更新的设备在有更新版本可用时会获取补丁。启用（实验性）后，进行全新安装的设备在第一次检查更新时也可以获取补丁，而不是下载完整的新 bundle。
+
+### 更新之间的补丁
+
+在 SDK 56 及更高版本中默认启用。在 SDK 55 中，请在项目的 [app config](/workflow/configuration/) 中将 `updates.enableBsdiffPatchSupport` 设置为 `true` 以启用。
 
 ```json app.json
 {
   "expo": {
     "updates": {
-      "enableBsdiffPatchSupport": false
+      "enableBsdiffPatchSupport": true
     }
   }
 }
 ```
 
-## 验证是否正在提供 bundle diff
+要在 SDK 56 及更高版本中禁用，请将 `enableBsdiffPatchSupport` 设置为 `false`。
+
+### 来自内嵌 bundle 的补丁
+
+> **info** 此模式为实验性且需要手动启用。该标志和行为可能会发生变化。
+
+要启用，请在 **eas.json** 的构建配置中，将 `EAS_UPDATE_EXPERIMENTAL_UPLOAD_EMBEDDED_BUNDLE` 环境变量设置在 `env` 下：
+
+```json eas.json
+{
+  "build": {
+    "production": {
+      "env": {
+        "EAS_UPDATE_EXPERIMENTAL_UPLOAD_EMBEDDED_BUNDLE": "1"
+      }
+    }
+  }
+}
+```
+
+构建完成后，EAS 会上传内嵌 bundle。随后，稍后发布到同一频道的更新就可以作为相对于它的补丁来提供。如果你不使用 EAS Build，也可以自行上传内嵌 bundle。将 `--bundle` 指向 JavaScript bundle，将 `--manifest` 指向原生构建生成的 **app.manifest**：
+
+<Terminal
+  cmd={[
+    '$ eas update:embedded:upload --platform [platform] --bundle [path] --manifest [path] --channel [name]',
+  ]}
+/>
+
+## 管理已上传的嵌入式包
+
+使用 `eas update:embedded:list` 查找 ID，然后将它们传递给查看或删除命令。
+
+列出为你的项目注册的嵌入式包：
+
+<Terminal cmd={['$ eas update:embedded:list']} />
+
+查看单个嵌入式包：
+
+<Terminal cmd={['$ eas update:embedded:view [id]']} />
+
+删除一个嵌入式包：
+
+<Terminal cmd={['$ eas update:embedded:delete [id]']} />
+
+该命令可以安全重试。
+
+## 验证 bundle diff 是否正在被提供
 
 ### Expo 网站
 
-你可以在 [Update Details](https://expo.dev/accounts/[account]/projects/[project]/updates) 页面上确认是否正在提供 bundle diff。打开你发布的 Update Group，然后选择你想检查的平台。
+你可以在 [更新详情](https://expo.dev/accounts/[account]/projects/[project]/updates) 页面上确认是否正在提供 bundle diff。打开你发布的 Update Group，然后选择你想检查的平台。
 
 <ContentSpotlight
   alt="Bundle diffing 下载"
@@ -55,6 +106,6 @@ EAS Update 使用 [bsdiff 算法](https://en.wikipedia.org/wiki/Bsdiff) 来生�
 
 ## 当前限制
 
-- **嵌入式 bundle 不符合条件。** 嵌入式 bundle 绝不会被用作打补丁的基础。设备必须已经在运行某个已发布的更新，才能接收补丁。
-- **并非每一对可能的更新都会立即有补丁。** 当一个更新发布后，EAS Update 只会针对该 channel 上第二新的更新预计算一个补丁。如果设备在运行另一个已发布更新时请求新更新，最初会收到完整 bundle。随后会按需为该特定基础更新生成补丁，并向未来类似请求提供。
-- **补丁会在发布后不久生成。** 从发布一个更新到补丁准备就绪之间可能需要几分钟。在这段时间内，设备可能会收到完整 bundle。
+- **全新安装在首次更新时会接收完整 bundle，除非你选择启用[来自嵌入式 bundle 的补丁](#patches-from-the-embedded-bundle)。**
+- **并非每一种可能的更新配对都会立即保证提供补丁。** 当发布一个更新时，EAS Update 只会预先针对该 channel 上第二新的更新计算一个补丁。如果设备在运行另一个已发布的更新时请求新更新，起初将收到完整 bundle。随后会按需为该特定基础更新生成补丁，并提供给未来类似的请求。
+- **补丁会在发布后不久生成。** 从发布一个更新到补丁就绪之间，可能需要几分钟。在这段时间内，设备可能会收到完整 bundle。

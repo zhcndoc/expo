@@ -1,0 +1,122 @@
+---
+title: PullToRefreshBox
+description: 一个用于下拉刷新交互的 Jetpack Compose PullToRefreshBox 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+> **info** 有关带下拉刷新功能的跨平台列表，请参阅 [`List`](../universal/list) — 在 Android 上基于 `PullToRefreshBox` 构建。
+
+Expo UI PullToRefreshBox 与官方 Jetpack Compose [PullToRefreshBox](<https://developer.android.com/reference/kotlin/androidx/compose/material3/pulltorefresh/package-summary#PullToRefreshBox(kotlin.Boolean,kotlin.Function0,androidx.compose.ui.Modifier,androidx.compose.material3.pulltorefresh.PullToRefreshState,androidx.compose.ui.Alignment,kotlin.Function1,kotlin.Function1)>) API 一致。它会包装可滚动内容，并在下拉时显示刷新指示器。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/pulltorefreshbox/android-light.webp"
+  darkSrc="/static/images/expo-ui/pulltorefreshbox/android-dark.webp"
+  alt="显示在列表上方的 Material 3 加载指示器的 PullToRefreshBox"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本下拉刷新
+
+将可滚动内容包裹在 `PullToRefreshBox` 中，以添加下拉刷新行为。
+
+```tsx BasicPullToRefresh.tsx
+import { useState, useCallback } from 'react';
+import { Host, PullToRefreshBox, LazyColumn, ListItem } from '@expo/ui/jetpack-compose';
+
+export default function BasicPullToRefresh() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
+  return (
+    <Host style={{ height: 400 }}>
+      <PullToRefreshBox isRefreshing={refreshing} onRefresh={onRefresh}>
+        <LazyColumn>
+          <ListItem>
+            <ListItem.HeadlineContent>项目 1</ListItem.HeadlineContent>
+          </ListItem>
+          <ListItem>
+            <ListItem.HeadlineContent>项目 2</ListItem.HeadlineContent>
+          </ListItem>
+          <ListItem>
+            <ListItem.HeadlineContent>项目 3</ListItem.HeadlineContent>
+          </ListItem>
+          <ListItem>
+            <ListItem.HeadlineContent>项目 4</ListItem.HeadlineContent>
+          </ListItem>
+          <ListItem>
+            <ListItem.HeadlineContent>项目 5</ListItem.HeadlineContent>
+          </ListItem>
+        </LazyColumn>
+      </PullToRefreshBox>
+    </Host>
+  );
+}
+```
+
+### 自定义指示器颜色
+
+使用 `indicator` 属性来自定义加载旋转器和容器颜色。
+
+```tsx CustomIndicatorColors.tsx
+import { useState, useCallback } from 'react';
+import { Host, PullToRefreshBox, LazyColumn, ListItem } from '@expo/ui/jetpack-compose';
+
+export default function CustomIndicatorColors() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
+  return (
+    <Host style={{ height: 400 }}>
+      <PullToRefreshBox
+        isRefreshing={refreshing}
+        onRefresh={onRefresh}
+        indicator={{ color: '#6200EE', containerColor: '#F5F5F5' }}>
+        <LazyColumn>
+          <ListItem>
+            <ListItem.HeadlineContent>项目 1</ListItem.HeadlineContent>
+          </ListItem>
+          <ListItem>
+            <ListItem.HeadlineContent>项目 2</ListItem.HeadlineContent>
+          </ListItem>
+          <ListItem>
+            <ListItem.HeadlineContent>项目 3</ListItem.HeadlineContent>
+          </ListItem>
+        </LazyColumn>
+      </PullToRefreshBox>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { PullToRefreshBox } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/pulltorefreshbox" apiName="PullToRefreshBox" />

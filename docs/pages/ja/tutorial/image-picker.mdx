@@ -1,0 +1,434 @@
+---
+title: 使用图像选择器
+description: 本教程将学习如何使用 Expo Image Picker。
+hasVideoLink: true
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { Tabs, Tab } from '~/ui/components/Tabs';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+React Native 以 `<View>`、`<Text>`、`<Pressable>` 等内置组件作为标准构成元素提供支持。这里要实现的是从设备的媒体图库中选择图片的功能。仅靠核心组件无法实现这一点，因此需要借助库来为应用添加此功能。
+
+我们将使用 Expo SDK 的库 [`expo-image-picker`](/versions/latest/sdk/imagepicker)。
+
+> `expo-image-picker` 提供了访问系统 UI 的能力，用于从设备的媒体库中选择图片和视频。
+
+<VideoBoxLink
+  videoId="iEQZU58naS8"
+  title="观看：在通用 Expo 应用中使用图片选择器"
+  description="了解如何使用 expo-image-picker 从设备的媒体库中选择图片。"
+/>
+
+---
+
+<Step label="1">
+
+## 安装 expo-image-picker
+
+要安装 `expo-image-picker` 库，请先在终端中按下 <kbd>Ctrl</kbd> + <kbd>C</kbd> 停止开发服务器，然后运行以下命令。
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install expo-image-picker'],
+    yarn: ['$ yarn expo install expo-image-picker'],
+    pnpm: ['$ pnpm expo install expo-image-picker'],
+    bun: ['$ bun expo install expo-image-picker'],
+  }}
+/>
+
+[`npx expo install`](/more/expo-cli/#installation) 命令会安装该库，并将其添加到 **package.json** 中的项目依赖里。
+
+> **info** **提示：** 当你为项目安装新库时，请先在终端中按下 <kbd>Ctrl</kbd> + <kbd>C</kbd> 停止开发服务器，然后再运行安装命令。安装完成后，运行 `npx expo start` 重新启动开发服务器。
+
+</Step>
+
+<Step label="2">
+
+## 从设备的媒体图库中选择图片
+
+`expo-image-picker` 提供了 `launchImageLibraryAsync()` 方法，用于显示系统 UI 以从设备的媒体库中选择图片或视频。我们将使用上一章中创建的 primary 主题按钮来从设备的媒体库中选择图片，并创建一个用于启动设备图片库的函数，以实现该功能。
+
+在 **app/(tabs)/index.tsx** 中导入 `expo-image-picker` 库，并在 `Index` 组件内创建 `pickImageAsync()` 函数。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx|collapseHeight=440
+// ...其余导入语句保持不变
+/* @tutinfo 导入 `ImagePicker`。 */ import * as ImagePicker from 'expo-image-picker';/* @end */
+
+export default function Index() {
+  /* @tutinfo 向 `launchImageLibraryAsync()` 传递图片选择器选项 */
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      /* @tutinfo 如果选择了图片，将其信息输出到终端窗口。 */
+      console.log(result);
+      /* @end */
+    } else {
+      /* @tutinfo 如果用户没有选择图片，则显示警告。 */
+      alert('You did not select any image.');
+      /* @end */
+    }
+  };
+  /* @end */
+
+  // ...其余代码保持不变
+}
+```
+
+让我们确认一下上面这段代码在做什么。
+
+- `launchImageLibraryAsync()` 接受一个对象，用于指定各种选项。这个对象是一个 [`ImagePickerOptions`](/versions/latest/sdk/imagepicker/#imagepickeroptions) 对象，你在调用该方法时传入它。
+- 将 `allowsEditing` 设为 `true` 时，在 Android 和 iOS 上可以在选择时裁剪图片。
+
+</Step>
+
+<Step label="3">
+
+## 更新按钮组件
+
+当按下 primary 按钮时，从 `Button` 组件中调用 `pickImageAsync()` 函数。在 **components/Button.tsx** 中更新 `Button` 组件的 `onPress` 属性。
+
+{/* prettier-ignore */}
+```tsx components/Button.tsx
+import { StyleSheet, View, Pressable, Text } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+type Props = {
+  label: string;
+  theme?: 'primary';
+  /* @tutinfo 定义 `onPress` 属性的类型。 */
+  onPress?: () => void;
+  /* @end */
+};
+
+export default function Button({ label, theme, /* @tutinfo 传递该属性，以便从父组件触发处理方法。 */onPress/* @end */ }: Props) {
+  if (theme === 'primary') {
+    return (
+      <View
+        style={[
+          styles.buttonContainer,
+          { borderWidth: 4, borderColor: '#ffd33d', borderRadius: 18 },
+        ]}>
+        <Pressable style={[styles.button, { backgroundColor: '#fff' }]} onPress={/* @tutinfo */onPress/* @end */}>
+          <FontAwesome name="picture-o" size={18} color="#25292e" style={styles.buttonIcon} />
+          <Text style={[styles.buttonLabel, { color: '#25292e' }]}>{label}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.buttonContainer}>
+      <Pressable style={styles.button} onPress={() => alert('You pressed a button.')}>
+        <Text style={styles.buttonLabel}>{label}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  buttonContainer: {
+    width: 320,
+    height: 68,
+    marginHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 3,
+  },
+  button: {
+    borderRadius: 10,
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  buttonIcon: {
+    paddingRight: 8,
+  },
+  buttonLabel: {
+    color: '#fff',
+    fontSize: 16,
+  },
+});
+```
+
+在 **app/(tabs)/index.tsx** 中，把 `pickImageAsync()` 函数添加到第一个 `<Button>` 的 `onPress` 属性中。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx
+import { View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+
+import Button from '@/components/Button';
+import ImageViewer from '@/components/ImageViewer';
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      console.log(result);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} />
+      </View>
+      <View style={styles.footerContainer}>
+        <Button theme="primary" label="Choose a photo" onPress={/* @tutinfo 添加这个。 */pickImageAsync/* @end */} />
+        <Button label="Use this photo" />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+});
+```
+
+`pickImageAsync()` 函数会调用 `ImagePicker.launchImageLibraryAsync()` 并处理其结果。`launchImageLibraryAsync()` 方法返回一个包含所选图片信息的对象。
+
+下面是 `result` 对象及其属性的示例。
+
+<Tabs>
+
+<Tab label="Android">
+
+```json collapseHeight=280
+{
+  "assets": [
+    {
+      "assetId": null,
+      "base64": null,
+      "duration": null,
+      "exif": null,
+      "fileName": "ea574eaa-f332-44a7-85b7-99704c22b402.jpeg",
+      "fileSize": 4513577,
+      "height": 4570,
+      "mimeType": "image/jpeg",
+      "rotation": null,
+      "type": "image",
+      "uri": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252FStickerSmash-13f21121-fc9d-4ec6-bf89-bf7d6165eb69/ImagePicker/ea574eaa-f332-44a7-85b7-99704c22b402.jpeg",
+      "width": 2854
+    }
+  ],
+  "canceled": false
+}
+```
+
+</Tab>
+
+<Tab label="iOS">
+
+```json collapseHeight=280
+{
+  "assets": [
+    {
+      "assetId": "99D53A1F-FEEF-40E1-8BB3-7DD55A43C8B7/L0/001",
+      "base64": null,
+      "duration": null,
+      "exif": null,
+      "fileName": "IMG_0004.JPG",
+      "fileSize": 2548364,
+      "height": 1669,
+      "mimeType": "image/jpeg",
+      "type": "image",
+      "uri": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252FStickerSmash-13f21121-fc9d-4ec6-bf89-bf7d6165eb69/ImagePicker/ea574eaa-f332-44a7-85b7-99704c22b402.jpeg",
+      "width": 1668
+    }
+  ],
+  "canceled": false
+}
+```
+
+</Tab>
+
+<Tab label="web">
+
+```json
+{
+  "assets": [
+    {
+      "fileName": "some-image.png",
+      "height": 720,
+      "mimeType": "image/png",
+      "uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABQAA"
+    }
+  ],
+  "canceled": false
+}
+```
+
+</Tab>
+
+</Tabs>
+
+</Step>
+
+<Step label="4">
+
+## 使用选中的图片
+
+`result` 对象包含一个 `assets` 数组，其中包含所选图片的 `uri`。我们将从图片选择器中获取这个值，并在应用中显示所选图片。
+
+修改 **app/(tabs)/index.tsx** 文件。
+
+1. 使用 React 的 [`useState`](https://react.dev/learn/state-a-components-memory#adding-a-state-variable) 钩子声明一个名为 `selectedImage` 的状态变量。这个状态变量用于保存所选图片的 URI。
+2. 更新 `pickImageAsync()` 函数，将图片的 URI 保存到 `selectedImage` 状态变量中。
+3. 将 `selectedImage` 作为属性传递给 `ImageViewer` 组件。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx
+import { View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+/* @tutinfo 从 `react` 导入 `useState` 钩子。*/
+import { useState } from 'react';
+/* @end */
+
+import Button from '@/components/Button';
+import ImageViewer from '@/components/ImageViewer';
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  /* @tutinfo 创建一个 state 变量，用于保存所选图片的值。 */
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  /* @end */
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      /* @tutinfo 从 `assets` 数组中获取第一个 uri。并且一次只会选择一张图片，所以这里不需要修改。 */
+      setSelectedImage(result.assets[0].uri);
+      /* @end */
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        /* @tutinfo 将所选图片的 URI 传递给 `ImageViewer` 组件。 */
+        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+        /* @end */
+      </View>
+      <View style={styles.footerContainer}>
+        <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+        <Button label="Use this photo" />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+});
+```
+
+为了用所选图片替换占位图片，将 `selectedImage` 属性传递给 `ImageViewer` 组件。
+
+1. 修改 **components/ImageViewer.tsx** 文件，使其能够接收 `selectedImage` 属性。
+2. 由于图片源的写法变得较长，将其提取到名为 `imageSource` 的单独变量中。
+3. 将 `imageSource` 作为 `Image` 组件 `source` 属性的值传入。
+
+{/* prettier-ignore */}
+```tsx components/ImageViewer.tsx
+import { ImageSourcePropType, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
+
+type Props = {
+  imgSource: ImageSourcePropType;
+  /* @tutinfo */
+  selectedImage?: string;
+  /* @end */
+};
+
+export default function ImageViewer({ imgSource, /* @tutinfo 传递 `selectedImage` 属性。*/selectedImage/* @end */ }: Props) {
+  /* @tutinfo 如果所选图片不为 null，则显示来自设备的图片；否则显示占位图片。 */
+  const imageSource = selectedImage ? { uri: selectedImage } : imgSource;
+  /* @end */
+
+  /* @tutinfo 用 `imageSource` 替换 `imgSource`。 */
+  return <Image source={imageSource} style={styles.image} />;
+  /* @end */
+}
+
+const styles = StyleSheet.create({
+  image: {
+    width: 320,
+    height: 440,
+    borderRadius: 18,
+  },
+});
+```
+
+在上面的片段中，Image 组件使用条件运算符来加载图片源。所选图片是一个 [`uri` 字符串](https://reactnative.dev/docs/images#network-images)，而不是像占位图片那样的本地资源。
+
+让我们查看一下应用的状态。
+
+<ContentSpotlight file="tutorial/03-image-picker-demo.mp4" />
+
+> 本教程示例应用中使用的图片来自 [Unsplash](https://unsplash.com)。
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  currentChapterIndex={3}
+  name="GET_STARTED"
+  chapterTitle="第 4 章：使用图片选择器"
+  summary="已完成从设备媒体库中选择图片功能的添加。"
+  nextChapterDescription="在下一章中，你将学习如何创建表情符号选择器的模态组件。"
+  nextChapterTitle="创建表情选择器模态框"
+  nextChapterLink="/ja/tutorial/create-a-modal"
+/>

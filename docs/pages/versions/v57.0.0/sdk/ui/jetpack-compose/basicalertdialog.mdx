@@ -1,0 +1,89 @@
+---
+title: 基本警报对话框
+description: 一个用于显示自定义内容对话框的 Jetpack Compose BasicAlertDialog 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI BasicAlertDialog 与官方 Jetpack Compose [BasicAlertDialog](https://developer.android.com/develop/ui/compose/components/dialog) API 保持一致，并显示一个最简对话框，允许将自定义子组件作为其内容，从而让你完全控制对话框布局。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/basicalertdialog/android-light.webp"
+  darkSrc="/static/images/expo-ui/basicalertdialog/android-dark.webp"
+  alt="带有自定义内容的 Material 3 基本警报对话框"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 带自定义内容的基本对话框
+
+```tsx BasicAlertDialogExample.tsx
+import { useState } from 'react';
+import {
+  Host,
+  BasicAlertDialog,
+  Button,
+  TextButton,
+  Text,
+  Surface,
+  Column,
+  Spacer,
+} from '@expo/ui/jetpack-compose';
+import {
+  padding,
+  wrapContentWidth,
+  wrapContentHeight,
+  clip,
+  height,
+  align,
+  Shapes,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function BasicAlertDialogExample() {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>打开对话框</Text>
+      </Button>
+      {visible && (
+        <BasicAlertDialog onDismissRequest={() => setVisible(false)}>
+          <Surface
+            tonalElevation={6}
+            modifiers={[wrapContentWidth(), wrapContentHeight(), clip(Shapes.RoundedCorner(28))]}>
+            <Column modifiers={[padding(16, 16, 16, 16)]}>
+              <Text>
+                此区域通常包含支持性文本，用于展示有关对话框用途的详细信息。
+              </Text>
+              <Spacer modifiers={[height(24)]} />
+              <TextButton onClick={() => setVisible(false)} modifiers={[align('centerEnd')]}>
+                <Text>确认</Text>
+              </TextButton>
+            </Column>
+          </Surface>
+        </BasicAlertDialog>
+      )}
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { BasicAlertDialog } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/basicalertdialog" apiName="BasicAlertDialog" />

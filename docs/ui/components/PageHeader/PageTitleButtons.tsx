@@ -4,6 +4,7 @@ import { NpmIcon } from '@expo/styleguide-icons/custom/NpmIcon';
 import { ClockRefreshIcon } from '@expo/styleguide-icons/outline/ClockRefreshIcon';
 import { Edit05Icon } from '@expo/styleguide-icons/outline/Edit05Icon';
 import { useRouter } from 'next/compat/router';
+import { useIntl } from 'react-intl';
 
 import { githubUrl } from '~/ui/components/Footer/utils';
 import { FOOTNOTE } from '~/ui/components/Text';
@@ -17,6 +18,7 @@ type Props = {
 
 export function PageTitleButtons({ packageName, sourceCodeUrl }: Props) {
   const router = useRouter();
+  const intl = useIntl();
   const showEditButton = !sourceCodeUrl && !packageName && router?.pathname;
 
   return (
@@ -29,9 +31,9 @@ export function PageTitleButtons({ packageName, sourceCodeUrl }: Props) {
           href={githubUrl(router.pathname)}
           aria-label="在 GitHub 上编辑此页内容">
           <div className="flex flex-row items-center gap-2">
-            <Edit05Icon className="icon-sm text-icon-secondary" />
+            <Edit05Icon aria-hidden="true" className="icon-sm text-icon-secondary" />
             <FOOTNOTE crawlable={false} theme="secondary">
-              编辑页面
+              {intl.formatMessage({ id: 'editPage' })}
             </FOOTNOTE>
           </div>
         </Button>

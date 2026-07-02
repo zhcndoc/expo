@@ -1,0 +1,161 @@
+---
+title: Argent 和 Expo
+sidebar_title: Argent
+description: 使用 Argent，让你的 AI 代理在 Android 模拟器和 iOS 模拟器上控制、调试并分析你的 Expo 项目。
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Step } from '~/ui/components/Step';
+import { Terminal } from '~/ui/components/Snippet';
+
+[Argent](https://argent.swmansion.com) 是 Software Mansion 推出的一款 agentic 工具包。就像 Claude Code 或 Codex 这样的 AI agent 会读取你的代码和文档一样，Argent 让同一个 agent 直接访问你正在运行的应用：它可以在 Android 模拟器或 iOS 模拟器上 **控制、调试和分析** 你的 Expo 应用。你只需设置一次，然后通过 [Model Context Protocol (MCP)](/mcp/) 将它连接到你的编辑器。
+
+> **info** Argent 由 [Software Mansion](https://swmansion.com) 构建并维护，可免费使用。有关其全部功能，请参阅 [Argent 网站](https://argent.swmansion.com)。
+
+<Prerequisites>
+  <Requirement title="Node.js 18 或更高版本">
+    Argent 的 CLI 需要 Node.js 18 或更新版本。
+  </Requirement>
+  <Requirement title="正在运行的 Android 模拟器或 iOS 模拟器">
+    对于 Android，请安装 [Android SDK Platform Tools
+    (`adb`)](/workflow/android-studio-emulator/#set-up-android-studio)，确保 `adb` 已添加到你的
+    `PATH` 中，并且有可用的模拟器。对于 iOS，请使用已安装 [Xcode
+    的 macOS](/workflow/ios-simulator/#setup-xcode-and-watchman)。
+  </Requirement>
+</Prerequisites>
+
+## 快速开始
+
+<Step label="1">
+
+### 设置 Argent
+
+在你的 Expo 项目根目录中，运行初始化命令。向导会检测你的编辑器，注册 Argent MCP 服务器，并将其技能和代理定义复制到你的工作区。
+
+<Terminal
+  cmd={{
+    npm: ['$ npx @swmansion/argent init'],
+    yarn: ['$ yarn dlx @swmansion/argent init'],
+    pnpm: ['$ pnpm dlx @swmansion/argent init'],
+    bun: ['$ bunx @swmansion/argent init'],
+  }}
+/>
+
+你的编辑器会使用 `argent` 命令启动 Argent MCP 服务器，因此请全局安装 Argent，并确保该命令已添加到你的 `PATH` 中。然后重启编辑器，以便它获取新的配置。
+
+<Terminal
+  cmd={{
+    npm: ['$ npm install -g @swmansion/argent'],
+    yarn: ['$ yarn global add @swmansion/argent'],
+    pnpm: ['$ pnpm add -g @swmansion/argent'],
+    bun: ['$ bun add -g @swmansion/argent'],
+  }}
+/>
+
+</Step>
+
+<Step label="2">
+
+### 在模拟器或仿真器上运行你的应用
+
+Argent 作用于正在运行的应用，因此请在 Android 模拟器或 iOS 仿真器上启动你的 Expo 应用。使用 [development build](/develop/development-builds/introduction/) 或在 Expo Go 中进行测试，并保持开发服务器运行。
+
+<Terminal
+  cmd={[
+    '# 在模拟器或仿真器上运行开发构建',
+    '$ npx expo run:android',
+    '$ npx expo run:ios',
+    '',
+    '# 或启动开发服务器并在 Expo Go 中测试',
+    '$ npx expo start',
+  ]}
+/>
+
+</Step>
+
+<Step label="3">
+
+### 向你的代理发出指令
+
+在编辑器中打开你的项目，然后打开其代理面板，描述你希望对正在运行的应用执行的操作。例如，让它启动应用、点击按钮并读取日志。
+
+</Step>
+
+<Step label="4">
+
+### 验证设置
+
+在代理面板中输入以下提示，以确认 Argent 可以访问正在运行的应用：
+
+```text Example prompt
+Take a screenshot of the running app and describe what's on screen.
+```
+
+如果代理返回了一张截图并描述了你应用当前的屏幕内容，说明 Argent 已正确连接。
+
+</Step>
+
+## Argent 允许你的 agent 执行什么操作
+
+一旦连接成功，你的 agent 就可以在模拟器或仿真器上的实时应用中进行操作：
+
+- **控制**：启动应用、点击、滑动、在输入框中输入、打开深层链接，并通过辅助功能树进行导航，以运行多步骤流程。
+- **调试**：读取控制台日志、浏览视图层级结构、检查 React 组件树，并在 JavaScript 层和原生层查看网络请求及其负载。
+- **性能分析**：同时记录 React 和原生性能分析，追踪慢速的 React 提交到其背后的原生堆栈帧，并发现 UI 卡顿、渲染级联和内存泄漏。
+
+## 示例提示
+
+设置完成后，用自然语言描述任务。例如：
+
+| 任务                 | 示例提示                                                                     |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| 冒烟测试流程    | 启动应用，逐步完成引导流程，并从日志中告诉我它在哪一步出错。 |
+| 验证 UI        | 截取主屏幕的截图，并确认商品列表已正确渲染。        |
+| 调试网络请求 | 打开购物车屏幕，向我展示失败的请求及其响应负载。     |
+| 检查 React 状态  | 打开设置屏幕，向我展示切换开关所在行的 React 组件树。  |
+| 分析卡顿问题   | 对商品列表滚动进行性能分析，并指出最慢的提交。            |
+| 测试深度链接   | 通过深度链接打开应用，并确认加载了正确的屏幕。             |
+
+## 将 Argent 与其余 Expo AI 工具配合使用
+
+Argent 通过 MCP 连接，因此它可以与 Expo 自有的代理工具配合使用。将它与 Expo Skills 和 Expo MCP Server 搭配使用，这样你的代理就能了解 Expo 约定，同时由 Argent 驱动应用。
+
+<BoxLink
+  title="Expo MCP Server"
+  description="连接远程 Expo MCP Server，让代理实时访问 Expo 文档和 EAS。"
+  href="/mcp/#installation-and-setup"
+  Icon={BookOpen02Icon}
+/>
+
+<BoxLink
+  title="Expo Skills"
+  description="安装该插件，为代理传授已知良好的 Expo 模式。"
+  href="/skills/#install-expo-skills"
+  Icon={BookOpen02Icon}
+/>
+
+## 管理 Argent
+
+<Terminal
+  cmd={[
+    '# 刷新到最新版本和配置',
+    '$ argent update',
+    '',
+    '# 列出功能标志及其状态',
+    '$ argent flags',
+    '',
+    '# 注销 MCP 服务器并移除 Argent',
+    '$ argent remove',
+  ]}
+/>
+
+## 限制和提示
+
+- Argent 支持 Android 模拟器和 iOS 模拟器。
+- 让 Argent 在可以时于设备上启动或重新启动应用。如果你自己启动设备，Argent 可能无法看到系统对话框或原生模态框。
+- 在 Expo Go 中，Argent 可以控制应用、读取 React 组件树并运行 React 性能分析器。原生性能分析需要开发构建，因为在 Expo Go 中，它分析的是 Expo Go 宿主应用，而不是你的代码。
+- React 组件树和 React 性能分析器依赖于 JavaScript 调试连接，因此请保持开发服务器运行。
+- 有关完整且最新的功能列表，请参阅 [Argent 文档](https://argent.swmansion.com)。

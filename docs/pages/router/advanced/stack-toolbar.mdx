@@ -274,28 +274,28 @@ export default function EmailScreen() {
         <Stack.Toolbar.Menu icon={require('./assets/menu.png')}>
           <Stack.Toolbar.MenuAction
             icon={require('./assets/reply.png')}
-            onPress={() => Alert.alert('Reply')}>
-            Reply
+            onPress={() => Alert.alert('回复')}>
+            回复
           </Stack.Toolbar.MenuAction>
 
           <Stack.Toolbar.MenuAction
             icon={require('./assets/forward.png')}
-            onPress={() => Alert.alert('Forward')}>
-            Forward
+            onPress={() => Alert.alert('转发')}>
+            转发
           </Stack.Toolbar.MenuAction>
 
           <Stack.Toolbar.MenuAction
             icon={isArchived ? require('./assets/unarchive.png') : require('./assets/archive.png')}
             isOn={isArchived}
             onPress={() => setIsArchived(!isArchived)}>
-            {isArchived ? 'Unarchive' : 'Archive'}
+            {isArchived ? '取消归档' : '归档'}
           </Stack.Toolbar.MenuAction>
 
           <Stack.Toolbar.MenuAction
             icon={require('./assets/trash.png')}
             destructive
-            onPress={() => Alert.alert('Delete')}>
-            Delete
+            onPress={() => Alert.alert('删除')}>
+            删除
           </Stack.Toolbar.MenuAction>
         </Stack.Toolbar.Menu>
       </Stack.Toolbar>
@@ -522,12 +522,13 @@ export default function PhotosScreen() {
 - **Android**：`Stack.Toolbar.Spacer` 始终需要显式的 `width`。目前没有可伸缩填充的间隔器。
 - **iOS**：不带 `width` 的 `Stack.Toolbar.Spacer` 会在项目之间创建可伸缩空白，将它们推到两侧。这对于类似工具栏两端放按钮的布局很有用。传入 `width` 可实现固定大小的间距。
 
-## 为按钮添加徽标（仅限 iOS）
+## 为按钮添加徽标
 
 在标题栏工具栏中，你可以添加徽标来表示数量或状态。使用 [`Stack.Toolbar.Icon`](/versions/latest/sdk/router/stack/#stacktoolbaricon)、[`Stack.Toolbar.Label`](/versions/latest/sdk/router/stack/#stacktoolbarlabel) 和 [`Stack.Toolbar.Badge`](/versions/latest/sdk/router/stack/#stacktoolbarbadge) 来组合按钮内容：
 
 ```tsx src/app/inbox.tsx
 import { Stack } from 'expo-router';
+import bellIcon from '@/assets/bell.png';
 
 export default function InboxScreen() {
   const unreadCount = 5;
@@ -535,8 +536,9 @@ export default function InboxScreen() {
   return (
     <>
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button onPress={() => {}}>
-          <Stack.Toolbar.Icon sf="bell" />
+        <Stack.Toolbar.Button
+          icon={process.env.EXPO_OS === 'ios' ? 'bell' : bellIcon}
+          onPress={() => {}}>
           <Stack.Toolbar.Label>通知</Stack.Toolbar.Label>
           {unreadCount > 0 && <Stack.Toolbar.Badge>{String(unreadCount)}</Stack.Toolbar.Badge>}
         </Stack.Toolbar.Button>
@@ -547,7 +549,7 @@ export default function InboxScreen() {
 }
 ```
 
-> **信息** 徽标仅适用于 iOS 标题栏位置（`left` 或 `right`），不适用于底部工具栏，也不适用于 Android。
+> **info** 徽标仅适用于标题栏位置（`left` 或 `right`），不适用于底部工具栏。
 
 ## 嵌入自定义视图
 
@@ -784,9 +786,9 @@ export default function Home() {
 
 </Collapsible>
 
-<Collapsible summary="Android 不支持 Badge 和 Label 原语">
+<Collapsible summary="Android 上不支持 Label 原语">
 
-在 Android 上，`Stack.Toolbar.Button` 只会渲染图标——`Stack.Toolbar.Badge` 和 `Stack.Toolbar.Label` 子元素会被忽略。如果你需要在 Android 上实现类似徽标的界面，可以使用 [`Stack.Toolbar.View`](/versions/latest/sdk/router/stack/#stacktoolbarview) 嵌入自定义组件。
+在 Android 上，`Stack.Toolbar.Button` 只会渲染其图标和徽标——`Stack.Toolbar.Label` 的子元素会被丢弃。如果你需要在 Android 上实现类似标签的 UI，请使用 [`Stack.Toolbar.View`](/versions/latest/sdk/router/stack/#stacktoolbarview) 嵌入自定义组件。
 
 </Collapsible>
 

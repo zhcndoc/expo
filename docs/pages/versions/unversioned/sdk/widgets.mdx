@@ -12,7 +12,12 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
 
 > **important** 此库在 Expo Go 应用中不可用 — 请使用 [开发构建](/develop/development-builds/introduction) 来试用它。
 
-`expo-widgets` 使您能够使用 Expo UI 组件创建 iOS 主屏幕小组件和 Live Activities，而无需编写原生代码。它提供了一个简单的 API，用于创建和更新小组件时间线，以及启动和管理 Live Activities。布局可以使用 [`expo/ui`](/versions/latest/sdk/ui/swift-ui/) 组件和修饰器构建。
+`expo-widgets` enables the creation of iOS home screen widgets and Live Activities using Expo UI components, without writing native code. It provides a simple API for creating and updating a widget's timeline, as well as starting and managing Live Activities. You can build the layout using [`expo/ui`](/versions/latest/sdk/ui/swift-ui/) components and modifiers.
+
+## Known limitations
+
+- **Frequent Live Activity updates.** To raise the budget for frequent push updates, set `NSSupportsLiveActivitiesFrequentUpdates` to `true` in your **Info.plist**. The system may still throttle updates, and the user can disable frequent updates in Settings.
+- **Widget runtime.** Code inside a `'widget'`-marked component runs in an isolated runtime and can only use `@expo/ui/swift-ui` components, with no React hooks, app state, or asynchronous work. See [The `'widget'` directive](#the-widget-directive).
 
 ## 安装
 
@@ -36,7 +41,9 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
               "name": "MyWidget",
               "displayName": "My Widget",
               "description": "A sample home screen widget",
-              "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
             }
           ]
         }
@@ -59,7 +66,7 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
     {
       name: 'groupIdentifier',
       description:
-        '用于主应用与小组件之间通信和数据共享的 app group 标识符。这是小组件正常工作所必需的。如果未指定，默认为 `group.<main app bundle identifier>`。',
+        'The app group identifier used for communication and data sharing between the main app and widgets, which widgets require to work. If not specified, it defaults to `group.<main app bundle identifier>`. If `ios.bundleIdentifier` is also unset, prebuild fails because the bundle identifier is required to derive this value.',
       default: '"group.<app bundle identifier>"',
     },
     {
@@ -76,7 +83,7 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
     {
       name: 'widgets[].name',
       description:
-        '小组件的内部名称（标识符）。这将用作 Swift 结构体名称，并且应为有效的 Swift 标识符（不能包含空格或特殊字符）。',
+        'The internal name (identifier) of the widget. This is used as the Swift struct name and should be a valid Swift identifier (no spaces or special characters). It must match the `name` passed to `createWidget`.',
     },
     {
       name: 'widgets[].displayName',
@@ -89,13 +96,7 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
         '对小组件功能的简短描述。它会显示在小组件库中，帮助用户了解该小组件的用途。',
     },
     {
-      name: 'widgets[].contentMarginsDisabled',
-      description:
-        '当您为小组件禁用内容边距时，系统不会自动在小组件内容周围添加边距，您需要负责为每种上下文指定小组件内容周围的边距和内边距。',
-      default: 'false',
-    },
-    {
-      name: 'widgets[].supportedFamilies',
+      name: 'widgets[].ios.supportedFamilies',
       description: [
         '此小组件支持的小组件尺寸数组。可用选项：',
         '* `systemSmall` - 小型方形小组件（2x2 网格）',
@@ -107,10 +108,32 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
         '* `accessoryInline` - 锁屏内联文本小组件',
       ].join('\n'),
     },
+    {
+      name: 'widgets[].ios.contentMarginsDisabled',
+      description:
+        "When you disable content margins for a widget, the system doesn't automatically add margins around the widget's content, and you are responsible for specifying margins and padding around your widget content for each context.",
+      default: 'false',
+    },
+    {
+      name: 'widgets[].ios.initialLayout',
+      description:
+        'A path to the file that registers this widget with `createWidget`. The path is relative to the project root. Set this so the widget appears in the widget gallery before the app is open for the first time.',
+    },
+    {
+      name: 'widgets[].ios.configuration',
+      description: [
+        'Makes the widget [configurable](#configurable-widgets). The values the user picks are passed to your widget at runtime through `environment.configuration`. An object with:',
+        '* `title` - The title shown when the user edits the widget.',
+        '* `description` - An optional description shown when the user edits the widget.',
+        '* `parameters` - A map of parameter keys to parameter definitions. Each parameter has a `title`, a `type` (`string`, `number`, `boolean`, or `enum`), and a `default`. An `enum` parameter additionally takes a `values` array of `{ name, value }` options.',
+      ].join('\n'),
+    },
   ]}
 />
 
-### 包含所有选项的完整示例
+> **info** The top-level `supportedFamilies` and `contentMarginsDisabled` options are deprecated aliases for `ios.supportedFamilies` and `ios.contentMarginsDisabled`. Prefer the nested `ios` form shown above.
+
+### Full example with all options
 
 ```json app.json
 {
@@ -127,20 +150,45 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
               "name": "StatusWidget",
               "displayName": "Status",
               "description": "Shows your current status at a glance",
-              "contentMarginsDisabled": true,
-              "supportedFamilies": ["systemSmall", "systemMedium"]
+              "ios": {
+                "contentMarginsDisabled": true,
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
             },
             {
-              "name": "DetailWidget",
-              "displayName": "Details",
-              "description": "Shows detailed information",
-              "supportedFamilies": ["systemMedium", "systemLarge"]
+              "name": "WeatherWidget",
+              "displayName": "Weather",
+              "description": "Shows the weather for a city you choose",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"],
+                "configuration": {
+                  "title": "Choose a city",
+                  "description": "Pick which city to show the weather for",
+                  "parameters": {
+                    "city": {
+                      "title": "City",
+                      "type": "enum",
+                      "default": "sf",
+                      "values": [
+                        { "name": "San Francisco", "value": "sf" },
+                        { "name": "New York", "value": "nyc" }
+                      ]
+                    }
+                  }
+                }
+              }
             },
             {
               "name": "LockScreenWidget",
               "displayName": "Quick View",
               "description": "View info on your Lock Screen",
-              "supportedFamilies": ["accessoryCircular", "accessoryRectangular", "accessoryInline"]
+              "ios": {
+                "supportedFamilies": [
+                  "accessoryCircular",
+                  "accessoryRectangular",
+                  "accessoryInline"
+                ]
+              }
             }
           ]
         }
@@ -152,11 +200,42 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
 
 ## 使用
 
-### 小组件
+### The `'widget'` directive
 
-#### 前提条件：创建小组件
+Components passed to `createWidget` and `createLiveActivity` must start with the `'widget'` directive. The directive tells the bundler to compile that component into a separate JavaScript bundle that runs in an isolated runtime inside the widget extension, not in your app's React Native runtime.
 
-首先使用 `createWidget` 函数创建一个 Widget，并传入带有 `'widget'` 指令标记的小组件组件。该组件会将您的 widget props 作为第一个参数，将 `WidgetEnvironment` 对象作为第二个参数。
+Because of this isolation, code inside a `'widget'`-marked component is limited:
+
+- It can only render [`@expo/ui/swift-ui`](/versions/latest/sdk/ui/swift-ui/) components and modifiers. Standard React Native components (such as `View` and `Text` from `react-native`) are not available.
+- It cannot use React hooks (`useState`, `useEffect`, and others), component state, or context. The function must be pure and return its layout synchronously.
+- It cannot perform asynchronous work, import other modules, or access your app's runtime or in-memory state.
+- It cannot reference anything declared outside the component function, including plain top-level `const`s in the **same file**. The bundler serializes only the function body, so module-scope values are not present at runtime. Declare every constant and helper **inside** the widget function, or pass it in through props.
+
+All data a widget needs must come in through its props (set with `updateSnapshot`, `updateTimeline`, or a Live Activity's `start` and `update`) and the `environment` argument. To use images, write them to [`widgetsDirectory`](#sharing-images-with-widgetsdirectory) from your app and reference them by path.
+
+```tsx
+import { Text } from '@expo/ui/swift-ui';
+import { createWidget, type WidgetEnvironment } from 'expo-widgets';
+
+// Declared at module scope — not included in the widget bundle.
+const CITY_NAMES: Record<string, string> = { sf: 'San Francisco' };
+
+const CityWidget = (props: object, environment: WidgetEnvironment<{ city: string }>) => {
+  'widget';
+  // Throws at runtime: Can't find variable: CITY_NAMES
+  return <Text>{CITY_NAMES[environment.configuration.city]}</Text>;
+};
+
+export default createWidget('CityWidget', CityWidget);
+```
+
+Move `CITY_NAMES` inside `CityWidget` (or pass the resolved value through props) to fix it.
+
+### Widgets
+
+#### Prerequisite: Creating a widget
+
+Start by creating a widget using the `createWidget` function and pass the widget component marked with the `'widget'` directive. The component receives your widget props as the first argument and a `WidgetEnvironment` object as the second.
 
 ```tsx
 import { Text, VStack } from '@expo/ui/swift-ui';
@@ -179,16 +258,17 @@ const MyWidget = (props: MyWidgetProps, environment: WidgetEnvironment) => {
   );
 };
 
-export default createWidget('MyWidget', MyWidget);
+export default createWidget('MyWidget', MyWidget, { count: 0 });
 ```
 
-小组件名称（`'MyWidget'`）必须与 [app config](/workflow/configuration/) 中小组件配置里的 `name` 字段一致。
+The widget name (`'MyWidget'`) must match the `name` field in your widget configuration in the [app config](/workflow/configuration/).
+The optional third argument provides the initial props used before the widget timeline is updated.
 
 #### 基础小组件
 
 更新小组件的一个有效方式是使用 `updateSnapshot` 方法。这会创建一个仅包含单个条目的小组件时间线，并立即显示。
 
-下面的示例延续自 [创建小组件](#prerequisite-creating-widget)。
+The example below continues from [Creating a widget](#prerequisite-creating-a-widget).
 
 ```tsx
 import MyWidget from './MyWidget';
@@ -199,9 +279,9 @@ MyWidget.updateSnapshot({ count: 5 });
 
 #### 时间线小组件
 
-使用 `updateTimeline` 方法在特定时间安排小组件更新。系统会根据时间线自动更新小组件。
+Use the `updateTimeline` method to schedule widget updates at a specific time. The system automatically updates the widget based on the timeline.
 
-下面的示例延续自 [创建小组件](#prerequisite-creating-widget)。
+The example below continues from [Creating a widget](#prerequisite-creating-a-widget).
 
 ```tsx
 import MyWidget from './MyWidget';
@@ -214,7 +294,28 @@ MyWidget.updateTimeline([
 ]);
 ```
 
-#### 响应式小组件
+#### Reading the current timeline
+
+Use `getTimeline` to read the entries currently scheduled for a widget, including past and future entries.
+
+```tsx
+import MyWidget from './MyWidget';
+
+const entries = await MyWidget.getTimeline();
+// [{ date: Date, props: { count: number } }, ...]
+```
+
+#### Reloading a widget
+
+Use `reload` to force the system to refresh a widget's content and timeline immediately, for example after the underlying data changes.
+
+```tsx
+import MyWidget from './MyWidget';
+
+MyWidget.reload();
+```
+
+#### Responsive widget
 
 使用 `environment` 参数使布局适配当前小组件尺寸和渲染上下文。
 
@@ -266,13 +367,111 @@ Widget.updateSnapshot({
 });
 ```
 
+#### Adapting to the rendering environment
+
+Beyond `widgetFamily` and `date`, the `environment` object describes how and where the system is drawing the widget so you can adapt the layout:
+
+- `colorScheme`: `'light'` or `'dark'`.
+- `widgetRenderingMode`: `'fullColor'` for home screen widgets, `'vibrant'` for Lock Screen widgets (the system desaturates them into an adaptive monochrome look), and `'accented'` for tinted widgets on iOS 18 and later. Use this to choose colors that read well in each mode.
+- `isLuminanceReduced`: `true` when the display requires reduced brightness (such as Always-On). Lower the overall brightness of your content, for example by using stroked rather than filled shapes.
+- `widgetContentMargins`: The system-suggested margins (`top`, `bottom`, `leading`, `trailing`) when content margins are not disabled.
+- `showsWidgetLabel`: For accessory widgets, whether an accessory label can be displayed.
+
+#### Interactive widgets
+
+Widgets can include interactive controls such as `Button`. The value a button's `onPress` callback returns becomes the widget's new props. The runtime persists it and reloads the widget on device, with no running app process required. This is the primary way to make a widget update itself in response to a tap. Interactive widgets require iOS 17 or later.
+
+```tsx CounterWidget.tsx
+import { Button, Text, VStack } from '@expo/ui/swift-ui';
+import { createWidget } from 'expo-widgets';
+
+type CounterProps = {
+  count: number;
+};
+
+const CounterWidget = (props: CounterProps) => {
+  'widget';
+  return (
+    <VStack>
+      <Text>Count: {props.count}</Text>
+      <Button label="Increment" target="increment" onPress={() => ({ count: props.count + 1 })} />
+    </VStack>
+  );
+};
+
+export default createWidget('CounterWidget', CounterWidget, { count: 0 });
+```
+
+To also keep your running app in sync with widget interactions, give the control a `target` identifier (as above) and listen for taps with `addUserInteractionListener`. The listener receives the widget's `name` as `source` and the control's `target`. Unlike `onPress`, it only fires while the app process is alive, so use it to mirror interactions into app state, not as the widget's update mechanism.
+
+```tsx App.tsx
+import { addUserInteractionListener } from 'expo-widgets';
+
+const subscription = addUserInteractionListener(event => {
+  if (event.source === 'CounterWidget' && event.target === 'increment') {
+    // The widget already updated itself via onPress; mirror the change in app state here.
+    console.log('Counter incremented from the widget');
+  }
+});
+
+// Later, when you no longer need updates:
+subscription.remove();
+```
+
+#### Sharing images with `widgetsDirectory`
+
+A widget can't access files inside your app's sandbox, so to display an image in a widget you must place it in the shared app group container. `widgetsDirectory` is a `file://` URL string pointing to a directory that both your app and its widgets can read. Write the image there from your app, then reference it by path in the widget.
+
+```tsx
+import { widgetsDirectory } from 'expo-widgets';
+
+// `widgetsDirectory` is a file:// URL to a directory shared with your widgets.
+console.log(widgetsDirectory);
+```
+
+> **info** `widgetsDirectory` is `null` only when no app group is configured. The `groupIdentifier` config plugin option sets one up automatically (falling back to `group.<bundle identifier>`), so it is available in normal use.
+
+#### Configurable widgets
+
+When you add an [`ios.configuration`](#configuration-in-app-config) to a widget, users can long-press the widget and edit its parameters. The values they choose are delivered to your widget through `environment.configuration`. Type the configuration by passing a second type argument to `createWidget` (and `WidgetEnvironment`). Configurable widgets require iOS 17 or later.
+
+```tsx
+import { Text, VStack } from '@expo/ui/swift-ui';
+import { createWidget, type WidgetEnvironment } from 'expo-widgets';
+
+type WeatherProps = {
+  temperature: number;
+};
+
+type WeatherConfiguration = {
+  city: string;
+};
+
+const WeatherWidget = (
+  props: WeatherProps,
+  environment: WidgetEnvironment<WeatherConfiguration>
+) => {
+  'widget';
+  return (
+    <VStack>
+      <Text>{environment.configuration.city}</Text>
+      <Text>{props.temperature}°</Text>
+    </VStack>
+  );
+};
+
+export default createWidget<WeatherProps, WeatherConfiguration>('WeatherWidget', WeatherWidget);
+```
+
 ### Live Activities
 
 Live Activities 会在受支持的设备上于锁屏和灵动岛中显示实时信息。
 
-#### 前提条件：创建 Live Activity
+#### Prerequisite: Creating a Live Activity
 
-Live Activity 布局必须先使用 `createLiveActivity` 创建一次，并标记为 `'widget'` 指令。该组件会将您的 props 作为第一个参数，将 `LiveActivityEnvironment` 对象作为第二个参数。
+Live Activity layouts must be created once using `createLiveActivity` and marked with the `'widget'` directive. The component receives your props as the first argument and a `LiveActivityEnvironment` object as the second. It returns an object describing the layout for each presentation: the Lock Screen `banner`, the compact and minimal Dynamic Island states, and the expanded Dynamic Island regions.
+
+> **important** `createLiveActivity` registers a Live Activity entirely at runtime, and the library's built-in Live Activity target renders it. Do **not** add a `widgets[]` entry for it in the [app config](#configuration-in-app-config). The `widgets[]` array is only for home screen and Lock Screen widgets, and an entry without `supportedFamilies` generates an invalid widget target that fails to build. The `name` you pass to `createLiveActivity` only has to match this `createLiveActivity` call, not an app-config widget.
 
 ```tsx
 import { Image, Text, VStack } from '@expo/ui/swift-ui';
@@ -286,7 +485,7 @@ type DeliveryActivityProps = {
 
 const DeliveryActivity = (props: DeliveryActivityProps, environment: LiveActivityEnvironment) => {
   'widget';
-  const accentColor = environment.colorScheme === 'dark' ? '#FFFFFF' : '#007AFF';
+  const accentColor = environment.isLuminanceReduced ? '#FFFFFF' : '#007AFF';
 
   return {
     banner: (
@@ -324,9 +523,18 @@ const DeliveryActivity = (props: DeliveryActivityProps, environment: LiveActivit
 export default createLiveActivity('DeliveryActivity', DeliveryActivity);
 ```
 
-#### 启动 Live Activity
+The layout object supports these regions:
 
-下面的示例延续自 [创建 Live Activity](#prerequisite-creating-live-activity)。
+- `banner`: The main Lock Screen presentation.
+- `bannerSmall`: A compact Lock Screen presentation used on CarPlay and watchOS. Falls back to `banner` when omitted.
+- `compactLeading`, `compactTrailing`, `minimal`: The compact and minimal Dynamic Island states.
+- `expandedLeading`, `expandedTrailing`, `expandedCenter`, `expandedBottom`: The regions of the expanded Dynamic Island.
+
+The `environment` object also exposes `isLuminanceReduced`, `isActivityFullscreen`, `isActivityUpdateReduced`, and `activityFamily` so you can adapt the layout to the current presentation.
+
+#### Starting a Live Activity
+
+The example below continues from [Creating a Live Activity](#prerequisite-creating-a-live-activity).
 
 ```tsx
 import { Button, View } from 'react-native';
@@ -354,7 +562,9 @@ function App() {
 export default App;
 ```
 
-#### 更新 Live Activity
+The optional second argument is a URL associated with the Live Activity. When the user taps the activity, the system opens your app with that URL, so you can route to the relevant screen using [linking](/linking/into-your-app/) (for example with Expo Router's deep linking).
+
+#### Updating a Live Activity
 
 下面的示例延续自 [启动 Live Activity](#starting-a-live-activity)。
 
@@ -369,7 +579,21 @@ function updateDelivery(instance: LiveActivity<DeliveryActivityProps>) {
 }
 ```
 
-#### 结束 Live Activity
+#### Recovering active Live Activities
+
+A Live Activity can outlive the app process that started it. Use `getInstances` on the factory to retrieve the activities of that type that are currently active, for example to update or end them after your app relaunches.
+
+```tsx
+import DeliveryActivity from './DeliveryActivity';
+
+const activeInstances = DeliveryActivity.getInstances();
+
+for (const instance of activeInstances) {
+  await instance.update({ etaMinutes: 5, status: 'Almost there' });
+}
+```
+
+#### Ending a Live Activity
 
 使用 `end` 来结束 Live Activity。您可以选择关闭策略，按需提供最终内容状态，并传入 `contentDate`，以便系统忽略过期更新。
 
@@ -390,9 +614,12 @@ async function completeDelivery(instance: LiveActivity<DeliveryActivityProps>) {
 
 您也可以在关闭策略中使用 `'default'` 或 `'immediate'` 来替代 `after(date)`。
 
-#### 用于远程更新的推送令牌
+#### Remote updates with push notifications
 
-当 `enablePushNotifications` 为 `true` 时，使用 `addPushToStartTokenListener` 接收应用级的 push-to-start 令牌，并使用 `instance.getPushToken()` 或 `instance.addPushTokenListener()` 处理特定的 Live Activity 实例。
+When `enablePushNotifications` is `true`, you can update Live Activities remotely from your server through Apple Push Notification service (APNs).
+
+- Use `addPushToStartTokenListener` to receive the app-wide push-to-start token, which lets your server start a Live Activity remotely (requires iOS 17.2 or later).
+- Use `instance.getPushToken()` or `instance.addPushTokenListener()` to obtain the token for a specific running Live Activity, which lets your server send updates to that activity.
 
 ```tsx
 import { addPushToStartTokenListener } from 'expo-widgets';
@@ -422,6 +649,64 @@ async function startDeliveryTracking() {
 // 稍后，当您不再需要更新时：
 pushToStartSubscription.remove();
 ```
+
+Send the token to your server and use it to push updates. The notification must use the `liveactivity` push type (the `apns-push-type` header) and an `apns-topic` of `<your bundle identifier>.push-type.liveactivity`. Its `aps` payload carries an `event` (`start`, `update`, or `end`), a `timestamp`, and a `content-state` that matches your activity's props. The `content-state` must match the internal content state used by `expo-widgets`: set `name` to the name you passed to `createLiveActivity`, and set `props` to a JSON string of that activity's props. Use `apns-priority: 10` for immediate updates and `apns-priority: 5` for lower-priority updates. The `timestamp`, `dismissal-date`, and other APNs date fields are Unix timestamps in seconds.
+
+To start a Live Activity remotely, send a `start` event to the push-to-start token:
+
+```json
+{
+  "aps": {
+    "timestamp": 1778832000,
+    "event": "start",
+    "attributes-type": "LiveActivityAttributes",
+    "attributes": {},
+    "content-state": {
+      "name": "DeliveryActivity",
+      "props": "{\"etaMinutes\":15,\"status\":\"Your delivery is on the way\"}"
+    },
+    "alert": {
+      "title": "Delivery started",
+      "body": "Your delivery is on the way"
+    }
+  }
+}
+```
+
+Remote start requires iOS 17.2 or later. Include `input-push-token: 1` in the `aps` payload on iOS 18 or later if you want APNs to provide a new per-activity token for future updates.
+
+To update a Live Activity remotely, send an `update` event to that activity's per-activity token:
+
+```json
+{
+  "aps": {
+    "timestamp": 1778832300,
+    "event": "update",
+    "content-state": {
+      "name": "DeliveryActivity",
+      "props": "{\"etaMinutes\":2,\"status\":\"Delivery arriving soon!\"}"
+    }
+  }
+}
+```
+
+To end a Live Activity remotely, send an `end` event with the final content state:
+
+```json
+{
+  "aps": {
+    "timestamp": 1778832600,
+    "event": "end",
+    "content-state": {
+      "name": "DeliveryActivity",
+      "props": "{\"etaMinutes\":0,\"status\":\"Delivered\"}"
+    },
+    "dismissal-date": 1778833200
+  }
+}
+```
+
+For the exact payload shape and headers, follow Apple's [Starting and updating Live Activities with ActivityKit push notifications](https://developer.apple.com/documentation/activitykit/starting-and-updating-live-activities-with-activitykit-push-notifications).
 
 ## API
 

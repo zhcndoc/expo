@@ -6,21 +6,21 @@ import { Terminal } from '~/ui/components/Snippet';
 
 > 本文档已于 2022 年 8 月归档，今后将不再接收任何更新。请改用 EAS Update。[了解更多](/eas-update/introduction)
 
-## 更新中包含什么
+## What’s included in an update
 
-Expo 应用的一个更新包括 JavaScript、manifest、图片以及其他资源，这些内容可由兼容的 Expo 客户端应用（例如 Expo Go 和生产环境应用）下载并运行。
+An update to an Expo app includes JavaScript, the manifest, images, and other assets, which can be downloaded and run by compatible Expo client apps such as Expo Go and production apps.
 
-在 Android 和 iOS 上，你提交到应用商店的独立应用就是运行你的更新的客户端应用示例。在 Web 上，Web 浏览器就是运行更新的客户端应用。事实上，在 Web 上，Expo 更新本质上就是 Web 应用。
+On Android and iOS, the standalone app you submit to the app stores is an example of the client app that runs your updates. On the web, the web browser is the client app that runs the update. In fact, on the web, an Expo update is essentially a web app.
 
-更新会内置在独立应用中，而后续更新会在独立应用构建完成后通过互联网传送。由于通过互联网下载更新会消耗带宽并花费时间，因此优化更新交付最有效的方法之一就是让它更小。本指南介绍了一些减少更新体积的方法。
+Updates are bundled into the standalone app, and subsequent updates are delivered over the internet after the standalone app is built. Because downloading updates over the internet consumes bandwidth and takes time, one of the most effective ways to optimize update delivery is to make it smaller. This guide introduces several ways to reduce the size of updates.
 
-### 估算更新的大小
+### Estimating the size of an update
 
-估算更新大小的一种方法是运行 `expo export`，它会为每个平台导出一个可自行托管的更新。该更新包括一个 JSON manifest、一个 JavaScript bundle，以及若干资源，例如图片和自定义字体。
+One way to estimate update size is to run `expo export`, which exports a self-hostable update for each platform. That update includes a JSON manifest, a JavaScript bundle, and several assets, such as images and custom fonts.
 
-导出的更新包含未压缩文件，除非这些文件格式本身就是压缩格式，例如 JPEG 和 PNG。嵌入在独立应用中的更新大小通常是该更新文件大小的总和。
+The exported update contains uncompressed files unless the file format itself is compressed, such as JPEG and PNG. The size of the update embedded in a standalone app is typically the sum of the file sizes for that update.
 
-当更新通过 updates service 提供时，会使用 gzip 进行压缩。要估算通过 updates service 提供的 manifest 或 JavaScript bundle 的大小，请运行 `gzip <file>`。其他文件，例如 JPEG 图片和 MP3 音频文件，由于其文件格式本身已经压缩，CDN 不需要再对它们进行进一步压缩。
+When updates are served through the updates service, they are compressed with gzip. To estimate the size of a manifest or JavaScript bundle served through the updates service, run `gzip <file>`. Other files, such as JPEG images and MP3 audio files, are not further compressed by the CDN because their file formats are already compressed.
 
 ## updates service 的限制
 
@@ -40,7 +40,7 @@ Expo 当前的 updates service 设计用于容纳大约 50 MiB 的更新，这�
   cmd={['$ npm install -g sharp-cli', '$ npx expo-optimize <project-directory> [options]']}
 />
 
-你还可以使用许多其他图片优化工具，例如 [jpegoptim](https://github.com/tjko/jpegoptim)、[guetzli](https://github.com/google/guetzli)、[pngcrush](https://pmt.sourceforge.io/pngcrush/) 或 [optipng](http://optipng.sourceforge.net/)。[imagemin](https://github.com/imagemin/imagemin) 也是另一个支持多种优化器插件的程序和 JS 库。也有许多在线服务可以帮你优化图片。
+还有许多其他你可能会喜欢使用的图片优化器，例如 [jpegoptim](https://github.com/tjko/jpegoptim)、[guetzli](https://github.com/google/guetzli)、[pngcrush](https://pmt.sourceforge.io/pngcrush/) 或 [optipng](https://optipng.sourceforge.net/)。[imagemin](https://github.com/imagemin/imagemin) 也是一个支持各种优化器插件的程序和 JS 库。还有许多在线服务可以为你优化图片。
 
 有些图片优化器是无损的。这意味着它们会重新编码你的图片，使其更小，同时不会改变所显示像素中的任何内容，也不会造成任何信息损失。当你需要每个像素都与原始图片保持一致时，无损优化器和 PNG 这类无损图片格式是不错的选择。  
 另一些图片优化器是有损的，这意味着优化后的图片与原始图片不同。通常，有损优化器更高效，因为它们会丢弃一些视觉信息，从而减小文件大小，同时让图片对人眼看起来几乎相同。像 `imagemagick` 这样的工具可以使用 [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) 等比较算法来判断两张图片看起来有多相似。一个经过优化、与原图相似度超过 95% 的图片，其文件大小远低于原文件大小的 95% 是很常见的！

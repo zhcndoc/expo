@@ -16,7 +16,28 @@ import { Terminal } from '~/ui/components/Snippet';
 
 <Collapsible summary="在 iOS 上禁用">
 
-将 `EXPO_USE_PRECOMPILED_MODULES` 设置为 `0`。对于本地构建，请在你的 shell 中导出该环境变量。
+将 [`expo-build-properties`](/versions/latest/sdk/build-properties/) 配置插件的 `ios.usePrecompiledModules` 属性设置为 `false`，即可从源代码构建每个 Expo Module。这同时适用于本地构建和 EAS Build，并会在你下次运行 `npx expo prebuild` 时生效：
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "usePrecompiledModules": false
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+或者，你也可以直接通过 `EXPO_USE_PRECOMPILED_MODULES` 环境变量来控制，该变量会在 `pod install` 期间被读取。对于本地构建，请在运行 `pod install`（或 `npx expo run:ios`）之前在你的 shell 中导出它：
+
+<Terminal cmd={['$ export EXPO_USE_PRECOMPILED_MODULES=0']} />
 
 对于 EAS Build，创建一个 [EAS 环境变量](/eas/environment-variables/manage/)：
 

@@ -1,0 +1,108 @@
+---
+title: Cursor 和 Expo
+sidebar_title: Cursor
+description: 使用 Cursor 来构建、升级、调试和部署你的 Expo 和 React Native 项目。
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Step } from '~/ui/components/Step';
+import { Terminal } from '~/ui/components/Snippet';
+
+Cursor 是一款以 AI 为先的代码编辑器，基于 VS Code 构建。它可以跨多个文件进行编辑、运行终端命令，并通过其代理自主工作。使用 `create-expo-app` 创建的 Expo 项目会附带一个 **AGENTS.md** 文件，Cursor 会直接读取该文件。它还可以查看 EAS 和 Expo CLI 日志、从 Expo Model Context Protocol（MCP）Server 获取文档、使用 Expo Skills 获取最佳实践、管理你的 EAS 部署工作流等等。
+
+## 快速开始
+
+<Step label="1">
+
+### 下载 Cursor
+
+从 [Cursor 网站](https://cursor.com) 下载并安装 Cursor。有关设置详情，请参阅 [Cursor 文档](https://cursor.com/docs)。
+
+</Step>
+
+<Step label="2">
+
+### 创建一个新的 Expo 项目
+
+使用以下命令创建一个项目，或者确保你现有的项目已安装最新的 expo 包。
+
+<Terminal
+  cmd={{
+    npm: ['$ npx create-expo-app@latest --template default@sdk-57'],
+    yarn: ['$ yarn create expo-app --template default@sdk-57'],
+    pnpm: ['$ pnpm create expo-app --template default@sdk-57'],
+    bun: ['$ bun create expo --template default@sdk-57'],
+  }}
+/>
+
+</Step>
+
+<Step label="3">
+
+### 设置 Expo Skills 和 Expo MCP Server
+
+安装 Expo Skills，并连接 Expo MCP Server，这样 Cursor 就能了解 Expo 约定并访问你的 EAS。
+
+<BoxLink
+  title="Expo Skills"
+  description="安装这个插件，它会向 agents 教授经过验证的 Expo 模式，并浏览可用 skills 的完整列表。"
+  href="/skills/#install-expo-skills"
+  Icon={BookOpen02Icon}
+/>
+
+<BoxLink
+  title="Expo MCP Server"
+  description="连接远程 Expo MCP Server，让 agents 可以实时访问 Expo 文档和 EAS。"
+  href="/mcp/#installation-and-setup"
+  Icon={BookOpen02Icon}
+/>
+
+</Step>
+
+<Step label="4">
+
+### 打开你的项目并开始提问
+
+在 Cursor 中打开你的项目，然后打开 Agent 面板并描述你想要做什么。
+
+</Step>
+
+<Step label="5">
+
+### 验证设置
+
+在 Cursor 的 Agent 面板中输入以下提示，以确认它可以读取你的项目：
+
+```text Example prompt
+Open package.json and tell me which Expo SDK version this project targets.
+```
+
+如果 agent 用 **package.json** 中的 SDK 版本进行回复，那么说明 agent 正在正确读取你的项目。
+
+</Step>
+
+## Cursor 如何读取你的 Expo 项目
+
+当你在 Cursor 中打开项目时，它会读取项目根目录下生成的 **AGENTS.md** 文件，以及子目录中任何嵌套的 **AGENTS.md** 文件。**AGENTS.md** 会将 Cursor 指向与你项目的 Expo SDK 版本相对应的文档，并保存你添加的任何项目级说明。**AGENTS.md** 会被提交到你的项目中，因此开发者的会话会在 Cursor 中从相同的上下文开始。
+
+你也可以在 **.cursor/rules/** 下添加仅适用于 Cursor 的规则。
+
+## 示例提示词
+
+设置完成后，用自然语言描述 Expo 任务。例如：
+
+| 任务              | 示例提示词                                                                    |
+| ----------------- | --------------------------------------------------------------------------------- |
+| 升级 SDK         | 将此项目升级到最新的 Expo SDK，并修复所有破坏性变更。         |
+| 添加导航         | 使用 Expo Router 添加一个标签页导航器和一个新的设置屏幕。                   |
+| 自动化构建       | 创建一个 EAS 工作流，在每次拉取请求时构建应用。                 |
+| 调试构建         | 我最新的 iOS 构建失败了。请阅读 EAS Build 日志并告诉我出了什么问题。  |
+| 添加通知         | 配置 expo-notifications，并在应用启动时显示本地通知。 |
+| 设置 CI/CD       | 创建一个在每个 PR 上构建的 CI/CD 工作流。                                  |
+| 添加原生 UI      | 向我的 Expo 应用添加一个 SwiftUI 选择器组件。                                    |
+| 检查反馈         | 显示我应用的 TestFlight 反馈。                                              |
+| 验证 UI          | 截取屏幕截图并验证蓝色圆圈视图。                                |
+
+更多示例请参见 [Expo Skills](/skills/#example-prompts) 和 [Expo MCP Server](/mcp/#what-does-expo-mcp-server-do) 中的示例提示词部分。

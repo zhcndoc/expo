@@ -36,32 +36,32 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: Check for EXPO_TOKEN
+      - name: 检查 EXPO_TOKEN
         run: |
           if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
             echo "你必须在此仓库的 secrets 中提供一个与该项目的 Expo 账号关联的 EXPO_TOKEN secret。了解更多：https://docs.expo.dev/eas-update/github-actions"
             exit 1
           fi
 
-      - name: Checkout repository
+      - name: 检出仓库
         uses: actions/checkout@v5
 
-      - name: Setup Node
+      - name: 设置 Node
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: yarn
 
-      - name: Setup EAS
+      - name: 设置 EAS
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Install dependencies
+      - name: 安装依赖项
         run: yarn install
 
-      - name: Create preview
+      - name: 创建预览
         uses: expo/expo-github-action/preview@v8
         with:
           command: eas update --auto

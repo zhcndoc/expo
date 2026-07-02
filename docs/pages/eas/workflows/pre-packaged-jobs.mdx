@@ -8,7 +8,7 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { FAQ } from '~/ui/components/FAQ';
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 
-预打包作业是即用型工作流作业，可帮助你自动化构建、提交和测试应用等常见任务。它们提供了一种标准化方式来处理这些操作，而无需从头编写自定义作业配置。本指南将介绍可用的预打包作业，以及如何在工作流中使用它们。
+Prepackaged actions are ready-to-use workflow tasks that help you automate common tasks such as building, submitting, and testing applications. They provide a standardized way to handle these operations without having to write custom task configurations from scratch. This guide will introduce the available prepackaged actions and how to use them in your workflows.
 
 ## 构建
 
@@ -228,9 +228,9 @@ jobs:
 
 你可以向 `params` 列表传入以下参数：
 
-| 参数  | 类型    | 描述                                                                 |
-| ----- | ------- | -------------------------------------------------------------------- |
-| alias | string  | 可选。要部署到的 [别名](/eas/hosting/deployments-and-aliases/#aliases)。 |
+| 参数  | 类型   | 描述                                                                 |
+| ----- | ------ | -------------------------------------------------------------------- |
+| alias | string | 可选。要部署到的 [别名](/eas/hosting/deployments-and-aliases/#aliases)。 |
 | prod  | boolean | 可选。是否部署到生产环境。                                           |
 
 #### 输出
@@ -310,7 +310,7 @@ jobs:
 
 计算你的项目指纹。
 
-> **注意：** 此作业类型仅支持 [CNG（托管）](/workflow/continuous-native-generation/) 工作流。如果你提交了 **android** 或 **ios** 目录，指纹作业将无法工作。
+> **注意：** 此作业类型仅支持 [CNG](/workflow/continuous-native-generation/) 工作流。如果你提交了 **android** 或 **ios** 目录，指纹作业将无法工作。
 
 > **注意：** 为确保指纹与你的构建匹配，请使用与构建配置文件相同的 `environment` 设置。对于环境变量，我们建议使用 [EAS 环境变量](/eas/environment-variables/) 而不是 [`env`](/eas/workflows/syntax/#jobsjob_idenv) 字段，以获得更好的一致性。
 
@@ -355,11 +355,11 @@ jobs:
 此工作流会为 Android 和 iOS 构建都计算指纹。`environment` 应与构建配置文件匹配，以实现准确的指纹匹配。
 
 ```yaml .eas/workflows/fingerprint-basic.yml
-name: Basic Fingerprint
+name: 基础指纹
 
 jobs:
   fingerprint:
-    name: Calculate Fingerprint
+    name: 计算指纹
     type: fingerprint
     # @info 将你的构建配置文件的 environment 匹配起来 #
     environment: production
@@ -636,6 +636,31 @@ jobs:
 
 将 iOS 构建分发到 TestFlight 内部和外部测试组。这是 iOS submit 任务的替代方案，适用于你需要更高级的 TestFlight 功能时。如果你需要控制测试组、更新日志或 Beta App Review 提交，请使用 `testflight` 任务而不是 submit。
 
+The job supports two approaches: upload a build and submit it to TestFlight (`build_id`), or submit an already uploaded build (`asc_build_id`). In both cases, you can add the build to groups, set "What to Test" notes, and submit for Beta App Review. Provide exactly one of `build_id` or `asc_build_id`.
+
+<Prerequisites>
+  <Requirement title="面向外部分发的 TestFlight 测试信息">
+    当分发到外部组或提交 Beta App Review（`external_groups` 和/或
+    `submit_beta_review: true`）时，构建必须先在 App Store Connect 中完成所需的 TestFlight 测试信息，
+    作业才可能成功。请参阅 Apple 文档中的 [提供测试信息](https://developer.apple.com/help/app-store-connect/test-a-beta-version/provide-test-information/)。
+  </Requirement>
+</Prerequisites>
+
+### Shared parameters
+
+Both approaches accept the following parameters in `params`:
+
+| Parameter          | Type     | Description                                                                                                                                                                                                                                                             |
+| ------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| internal_groups    | string[] | Optional. An array of TestFlight internal group names to add the build to. Only include groups without automatic distribution enabled.                                                                                                                                  |
+| external_groups    | string[] | Optional. An array of TestFlight external group names to add the build to.                                                                                                                                                                                              |
+| changelog          | string   | Optional. Test notes ("What to Test") for TestFlight testers.                                                                                                                                                                                                           |
+| submit_beta_review | boolean  | Optional. Whether to submit for Beta App Review. If not specified, defaults to `true` when `external_groups` are provided, `false` otherwise. Set to `false` to update the changelog or groups on an already-submitted build without re-submitting for Beta App Review. |
+
+### Upload build and submit to TestFlight
+
+上传一个 EAS iOS 构建，并在一个工作流任务中将其提交到 TestFlight。
+
 <Prerequisites>
   <Requirement title="一个 iOS 商店构建和 Apple Developer 账户">
     TestFlight 作业需要使用 `distribution: store` 创建的 iOS 构建，并已配置 Apple Developer
@@ -644,7 +669,7 @@ jobs:
   </Requirement>
 </Prerequisites>
 
-### 语法
+#### Syntax
 
 ```yaml
 jobs:
@@ -665,15 +690,13 @@ jobs:
 
 你可以将以下参数传入 `params` 列表：
 
-| 参数                           | 类型      | 描述                                                                                                                                     |
-| ------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id                       | string    | 必需。要分发的 iOS 构建 ID。                                                                                                              |
-| profile                        | string    | 可选。要使用的提交配置文件。默认是 `production`。                                                                                         |
-| internal_groups                | string[]  | 可选。要将构建添加到的 TestFlight 内部组名称数组。仅包含未启用自动分发的组。                                                            |
-| external_groups                | string[]  | 可选。要将构建添加到的 TestFlight 外部组名称数组。                                                                                      |
-| changelog                      | string    | 可选。TestFlight 测试者的测试说明（“要测试什么”）。                                                                                      |
-| submit_beta_review             | boolean   | 可选。是否提交进行 Beta App Review。如果未指定，当提供 external_groups 时默认为 `true`，否则为 `false`。                                |
-| wait_processing_timeout_seconds | number    | 可选。等待 App Store Connect 构建处理完成的超时时间（秒）。默认为 `1800`（30 分钟）。                                                   |
+| Parameter                       | Type     | Description                                                                                                                                                           |
+| ------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| build_id                        | string | Required. The ID of the iOS EAS Build to distribute.                                                                                                                  |
+| profile                         | string | Optional. The submit profile to use. Defaults to `production`.                                                                                                        |
+| wait_processing_timeout_seconds | number | Optional. Timeout in seconds to wait for App Store Connect build processing. Defaults to `1800` (30 minutes). Only applies when distributing via groups or changelog. |
+
+You can also pass any of the [shared parameters](#shared-parameters).
 
 #### 输出
 
@@ -684,7 +707,7 @@ jobs:
 | apple_app_id          | string | 已提交构建的 Apple App ID。         |
 | ios_bundle_identifier | string | 已提交构建的 iOS 包标识符。         |
 
-### 示例
+#### Examples
 
 以下是一些使用 TestFlight 任务的实际示例：
 
@@ -738,6 +761,112 @@ jobs:
 
 </Collapsible>
 
+### Submit an already uploaded build
+
+将已存在于 App Store Connect 中的构建提交到 TestFlight 组，设置“要测试的内容”说明，并提交进行 Beta App Review。Beta App Review 提交是可选的。将 `submit_beta_review: false` 设为不重新提交审核，即可在现有构建上更新更新日志或分组。
+
+<Prerequisites>
+  <Requirement title="App Store Connect 集成">
+    在 [项目设置 > 常规 >
+    连接](https://expo.dev/accounts/[account]/projects/[project]/settings) 中配置你的 App Store Connect 连接。构建必须
+    已经存在于 App Store Connect 中，并且已准备好提交。
+  </Requirement>
+</Prerequisites>
+
+#### Syntax
+
+```yaml
+jobs:
+  testflight_distribution:
+    type: testflight
+    params:
+      asc_build_id: string # 必需
+      internal_groups: string[]
+      external_groups: string[]
+      changelog: string
+      submit_beta_review: boolean
+```
+
+#### Parameters
+
+| Parameter    | Type     | Description                                                           |
+| ------------ | -------- | --------------------------------------------------------------------- |
+| asc_build_id | string | Required. The ID of a build that already exists in App Store Connect. |
+
+You can also pass any of the [shared parameters](#shared-parameters).
+
+#### Outputs
+
+| Output       | Type     | Description                     |
+| ------------ | ------ | ------------------------------- |
+| asc_build_id | string | The App Store Connect build ID. |
+
+#### Examples
+
+<Collapsible summary="在 App Store Connect 上传后自动分发到 TestFlight">
+
+当构建上传到 App Store Connect 后，此工作流会自动将构建添加到 TestFlight 组，设置“要测试的内容”说明，并提交进行 Beta App Review。使用此触发器前请先配置你的 App Store Connect 连接。参见 [从 App Store Connect 事件触发工作流](/eas/workflows/get-started/#trigger-workflows-from-app-store-connect-events)。
+
+`${{ app_store_connect.build_upload.build.id }}` 仅在工作流由 `build_upload` 事件触发且 App Store Connect 已将某个构建与该上传关联时可用。`build_upload.state: complete` 表示上传已完成，而不是 App Store Connect 已完成构建处理。使用 `external_groups` 时，请先在 App Store Connect 中完成所需的 TestFlight 测试信息。
+
+```yaml .eas/workflows/testflight-after-asc-upload.yml
+name: Distribute to TestFlight after ASC upload
+
+on:
+  app_store_connect:
+    build_upload:
+      states:
+        - complete
+
+jobs:
+  distribute_to_testflight:
+    name: Distribute to TestFlight
+    type: testflight
+    params:
+      asc_build_id: ${{ app_store_connect.build_upload.build.id }}
+      internal_groups:
+        - QA Team
+      external_groups:
+        - Public Beta
+      changelog: Build from CI
+      submit_beta_review: true
+```
+
+</Collapsible>
+
+<Collapsible summary="在不重新提交 Beta App Review 的情况下更新更新日志">
+
+对于已存在于 App Store Connect 中的构建，你可以更新“要测试的内容”说明或组成员关系，而无需触发 Beta App Review。将 `submit_beta_review: false` 设为在保留构建现有审核状态不变的同时应用这些更改。
+
+此工作流将构建 ID 和新的更新日志作为 [手动输入](/eas/workflows/syntax/#onworkflow_dispatchinputs)，因此你可以使用 `eas workflow:run` 按需运行它。
+
+```yaml .eas/workflows/testflight-update-changelog.yml
+name: Update TestFlight changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      asc_build_id:
+        type: string
+        required: true
+        description: 要更新的 App Store Connect 构建 ID。
+      changelog:
+        type: string
+        required: true
+        description: 新的“要测试的内容”说明。
+
+jobs:
+  update_changelog:
+    name: Update changelog
+    type: testflight
+    params:
+      asc_build_id: ${{ inputs.asc_build_id }}
+      changelog: ${{ inputs.changelog }}
+      submit_beta_review: false
+```
+
+</Collapsible>
+
 ## 更新
 
 使用 [EAS Update](/eas-update/introduction/) 发布更新。
@@ -765,8 +894,9 @@ jobs:
       platform: string # 可选 - android | ios | all，默认为 all
       branch: string # 可选
       channel: string # 可选 - 不能与 branch 同时使用
+      rollout_percentage: number # 可选 - 0 到 100，默认为 100
       private_key_path: string # 可选
-      upload_sentry_sourcemaps: boolean # 可选 - 默认为“尝试上传，但如果失败不使作业失败”
+      upload_sentry_sourcemaps: boolean # 可选 - 默认为“尝试上传，但如果失败则不让作业失败”
 ```
 
 #### 环境变量
@@ -781,10 +911,11 @@ jobs:
 | ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | message                  | string  | 可选。用于更新的消息。如果未提供，将使用提交信息。                                                                                                                                                                                                                                                                                                                                                                   |
 | platform                 | string  | 可选。用于更新的平台。可以是 `android`、`ios` 或 `all`。默认为 `all`。                                                                                                                                                                                                                                                                                                                                                              |
-| branch                   | string  | 可选。用于更新的分支。如果未提供，将使用工作流运行中的分支。对于手动运行的工作流，你需要提供一个值。示例：`${{ github.ref_name \|\| 'testing' }}`。请提供 _branch_ 或 _channel_ 其一，不要同时提供。                                                                                                                                                                                          |
-| channel                  | string  | 可选。用于更新的频道。请提供 _branch_ 或 _channel_ 其一，不要同时提供。                                                                                                                                                                                                                                                                                                                                                                   |
-| private_key_path         | string  | 可选。包含与 [EAS Update 配置](/eas-update/code-signing/#publish-a-signed-update-for-your-app) 中证书对应的、经 PEM 编码的私钥文件路径。你可以使用 `"$VARIABLE_NAME"` 语法引用一个文件类型的 [EAS 环境变量](/eas/environment-variables/)。这等同于向 EAS CLI 传递 `--private-key-path`。                                                                   |
-| upload_sentry_sourcemaps | boolean | 可选。是否上传 Sentry sourcemaps。如果值为 `true`，作业将上传 Sentry source maps，并在上传失败时使作业失败。如果值为 `false`，作业将不会上传 sourcemaps 到 Sentry。如果未提供该值，作业将检查是否安装了 `@sentry/react-native`，如果已安装，则尝试上传 sourcemaps。如果失败，则只会打印错误信息，并继续执行，且作业仍会被标记为成功。 |
+| branch                   | string  | 可选。用于更新的分支。如果未提供，将使用工作流运行中的分支。对于手动运行的工作流，你需要提供一个值。例如：`${{ github.ref_name \|\| 'testing' }}`。请只提供 _分支_ 或 _频道_ 其中之一，不要同时提供。                                                                                                                                                                                          |
+| channel                  | string  | 可选。用于更新的频道。请只提供 _分支_ 或 _频道_ 其中之一，不要同时提供。                                                                                                                                                                                                                                                                                                                                                                   |
+| rollout_percentage       | number  | 可选。该更新应立即对多少比例的用户可用。必须是介于 `0` 和 `100` 之间的整数。这相当于向 EAS CLI 传递 `--rollout-percentage`。                                                                                                                                                                                                                                                                 |
+| private_key_path         | string  | 可选。包含与 [EAS Update 配置](/eas-update/code-signing/#publish-a-signed-update-for-your-app) 中证书对应的 PEM 编码私钥的文件路径。你可以使用 `"$VARIABLE_NAME"` 语法引用文件类型的 [EAS 环境变量](/eas/environment-variables/)。这相当于向 EAS CLI 传递 `--private-key-path`。                                                                   |
+| upload_sentry_sourcemaps | boolean | 可选。是否上传 Sentry sourcemaps。如果值为 `true`，作业将上传 Sentry source maps，并在上传失败时使作业失败。如果值为 `false`，作业不会将 sourcemaps 上传到 Sentry。如果未提供该值，作业将检查是否安装了 `@sentry/react-native`；如果已安装，则尝试上传 sourcemaps。如果失败，则只会打印错误信息，并继续执行，且作业仍标记为成功。 |
 
 #### 输出
 
@@ -866,10 +997,47 @@ jobs:
     type: update
     params:
       branch: ${{ github.ref_name }}
-      message: 'Update for branch: ${{ github.ref_name }}'
+      message: '分支更新：${{ github.ref_name }}'
 ```
 
 </Collapsible>
+
+## 分支删除
+
+在当前项目中删除一个 [EAS Update](/eas-update/introduction/) 分支。与 [`eas branch:delete`](/eas-update/eas-cli/#delete-a-branch) 相同。在 `branch_name` 中传入 EAS Update 分支名称。
+
+### 语法
+
+```yaml
+jobs:
+  delete_branch:
+    type: branch-delete
+    params:
+      branch_name: string # 必填
+      fail_on_missing: boolean # 可选，默认值：false
+```
+
+#### 参数
+
+你可以将以下参数传入 `params` 列表：
+
+| 参数            | 类型      | 描述                                                                                                                                                    |
+| --------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| branch_name     | string    | 必填。要删除的 EAS Update 分支名称。                                                                                                                         |
+| fail_on_missing | boolean   | 如果为 `false`，当分支不存在时，任务成功完成。如果为 `true`，当分支缺失时，任务会因校验错误而失败。默认值为 `false`。 |
+
+#### 输出
+
+你可以在后续任务中引用以下输出：
+
+| 输出        | 类型   | 描述                                                                                       |
+| ----------- | ------ | ------------------------------------------------------------------------------------------ |
+| branch_id   | string | 已删除分支的 UUID；如果分支缺失且 `fail_on_missing` 为 `false`，则为 `null`。               |
+| branch_name | string | 来自 `params.branch_name` 的分支名称。                                                     |
+
+### 示例
+
+参见 [清理更新分支示例](/eas/workflows/examples/branch-cleanup)，了解一个使用 [`on.ref_delete`](/eas/workflows/syntax/#onref_delete) 和 `branch-delete` 任务的工作流。
 
 ## Maestro
 
@@ -1111,7 +1279,7 @@ jobs:
       maestro_version: string # 可选 - 用于测试的 Maestro 版本。如果未提供，将使用最新版本。
       maestro_config: string # 可选 - 用于测试的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
       device_locale: string # 可选 - 用于测试的设备区域设置。将作为 `--device-locale` 传递给 Maestro。
-      device_model: string # 可选 - 用于测试的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
+      device_model: string # 可选 - 用于测试的设备型号。运行 `maestro list-cloud-devices` 可查看支持的值列表。
       device_os: string # 可选 - 用于测试的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
       name: string # 可选 - Maestro Cloud 上传名称。对应 `maestro cloud` 的 `--name` 参数。
       branch: string # 可选 - 覆盖 Maestro Cloud 上传来源分支。默认情况下，如果工作流运行是从 GitHub 触发的，则会使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。
@@ -1142,7 +1310,7 @@ jobs:
 | branch             | string  | 可选。覆盖 Maestro Cloud 上传来源分支。默认情况下，如果工作流运行是从 GitHub 触发的，则会使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。 |
 | async              | boolean | 可选。异步运行 Maestro Cloud 测试。如果为 true，作业状态只表示上传是否成功，而不表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。               |
 
-> **重要** 你需要在作业环境中设置 `maestro_api_key` 参数或 `MAESTRO_CLOUD_API_KEY` 环境变量。前往 [Maestro Cloud](https://app.maestro.dev/) 的“Settings”生成 API 密钥，然后前往 [环境变量](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 将其添加到你的项目中。
+> **重要** 你需要在作业环境中设置 `maestro_api_key` 参数或 `MAESTRO_CLOUD_API_KEY` 环境变量。前往 [Maestro Cloud](https://app.maestro.dev/) 的“设置”生成 API 密钥，然后前往 [环境变量](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 将其添加到你的项目中。
 
 #### Hooks
 
@@ -1179,7 +1347,7 @@ jobs:
 此工作流使用默认设置在 iOS 模拟器构建上运行 Maestro 测试。
 
 ```yaml .eas/workflows/maestro-basic.yml
-name: Basic Maestro Test
+name: 基础 Maestro 测试
 
 jobs:
   test:
@@ -1199,7 +1367,7 @@ jobs:
 当工作流中的变量以 `MAESTRO_` 为前缀时，Maestro 可以自动读取该环境变量。有关更多信息，请参阅 [Maestro 关于 shell 变量的文档](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/parameters-and-constants#accessing-shell-variables)。
 
 ```yaml .eas/workflows/maestro-basic.yml
-name: Basic Maestro Test
+name: 基础 Maestro 测试
 
 jobs:
   test:
@@ -1264,11 +1432,11 @@ jobs:
 
 你可以将以下参数传入 `params` 列表：
 
-| 参数 | 类型 | 描述                                                                                                                                                               |
-| ---- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| webhook_url | string | 必需。用于发送消息的 Slack webhook URL。目前仅支持硬编码字符串。使用存储在 `env` 中的 webhook 即将支持，但尚未支持。 |
-| message | string | 如果未提供 payload，则必需。要发送的消息。                                                                                                                  |
-| payload | object | 如果未提供 message，则必需。要发送的 [Slack Block Kit](https://docs.slack.dev/block-kit) payload。                                                              |
+| 参数 | 类型   | 描述                                                                                                                                                                                 |
+| ---- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| webhook_url | string | 必需。用于发送消息的 Slack webhook URL。使用 [环境变量](/eas/environment-variables/manage/#manage-environment-variables) `${{ env.SLACK_WEBHOOK_URL }}`。 |
+| message     | string | 如果未提供 payload，则必需。要发送的消息。                                                                                                                                   |
+| payload     | object | 如果未提供 message，则必需。要发送的 [Slack Block Kit](https://docs.slack.dev/block-kit) payload。                                                                               |
 
 ### 示例
 
@@ -1276,7 +1444,7 @@ jobs:
 
 <Collapsible summary="基础构建通知">
 
-此工作流构建一个 iOS 应用，然后使用构建作业输出中的应用标识符和版本发送通知。
+此工作流构建一个 iOS 应用，然后使用构建作业输出中的应用标识符和版本发送通知。webhook URL 从作业的 `environment` 中设置的 `SLACK_WEBHOOK_URL` [环境变量](/eas/environment-variables/manage/#manage-environment-variables) 读取。
 
 ```yaml .eas/workflows/slack-build-notification.yml
 name: Build Notification
@@ -1293,9 +1461,10 @@ jobs:
     name: 通知构建状态
     needs: [build_ios]
     type: slack
+    environment: production
     params:
-      webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
-      message: '针对应用 ${{ needs.build_ios.outputs.app_identifier }}（版本 ${{ needs.build_ios.outputs.app_version }}）的构建已完成'
+      webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
+      message: '为应用 ${{ needs.build_ios.outputs.app_identifier }}（版本 ${{ needs.build_ios.outputs.app_version }}）完成构建'
 ```
 
 </Collapsible>
@@ -1319,8 +1488,9 @@ jobs:
     name: 通知构建状态
     needs: [build_android]
     type: slack
+    environment: production
     params:
-      webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+      webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
       payload:
         blocks:
           - type: header
@@ -1686,8 +1856,9 @@ jobs:
   notify_slack:
     needs: [register_device]
     type: slack
+    environment: production
     params:
-      webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+      webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
       message: 'Registered device ${{ needs.register_device.outputs.identifier }} (${{ needs.register_device.outputs.model }})'
 ```
 
@@ -1920,14 +2091,16 @@ jobs:
 
 你可以向 `params` 列表传入以下参数：
 
-| 参数                | 类型    | 描述                                                                                                                                 |
-| ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| build_id            | string  | 必需。要重打包的构建的源构建 ID。                                                                                                   |
-| profile             | string  | 可选。要使用的构建配置文件。默认使用从 `build_id` 获取的源构建配置文件。                                                            |
-| embed_bundle_assets | boolean | 可选。是否将 bundle 资源嵌入到重打包后的构建中。默认会根据源构建自动确定。                                                           |
-| js_bundle_only      | boolean | 可选。是否只重打包 JavaScript bundle。默认值为 false，表示会更新整个应用元数据。                                                   |
-| message             | string  | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。                                                      |
-| repack_version      | string  | 可选。要使用的 `@expo/repack-app` 版本。默认使用最新版本。                                                                         |
+| Parameter                               | Type    | Description                                                                                                                                                                                                     |
+| --------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| build_id                                | string  | 必需。要重新打包的构建的源构建 ID。                                                                                                                                                                             |
+| profile                                 | string  | 可选。要使用的构建配置文件。默认使用从 `build_id` 获取的源构建配置文件。                                                                                                                                         |
+| embed_bundle_assets                     | boolean | 可选。是否将 bundle 资源嵌入到重打包后的构建中。默认会根据源构建自动确定。                                                                                                                                       |
+| js_bundle_only                          | boolean | 可选。是否仅重新打包 JavaScript bundle。默认值为 false，这意味着将更新整个应用元数据。                                                                                                                            |
+| message                                 | string  | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。                                                                                                                                   |
+| repack_version                          | string  | 可选。要使用的 `@expo/repack-app` 版本。默认使用最新版本。                                                                                                                                                        |
+| ios_signing_use_source_app_entitlements | boolean | 可选。是否使用 fastlane resign 的 `use_app_entitlements` 行为：提取应用包代码签名 entitlements，并将其与新 provisioning profile 中的 entitlements 合并。默认值为 false。 |
+| ios_signing_app_entitlements_path       | string  | 可选。要使用的 entitlements 文件路径，例如 `myApp/MyApp.entitlements`。此项与 `ios_signing_use_source_app_entitlements` 互斥 |
 
 ### 示例
 

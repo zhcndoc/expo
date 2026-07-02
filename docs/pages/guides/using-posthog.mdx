@@ -1,0 +1,281 @@
+---
+title: 使用 PostHog
+description: 一份关于安装和配置 PostHog 以用于产品分析、会话回放和错误跟踪的指南。
+platforms: ['android', 'ios']
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+[PostHog](https://posthog.com/) 是一个产品分析平台，提供会话回放、功能标志和错误跟踪。
+
+EAS CLI 集成会自动完成标准的 PostHog React Native 设置：安装 SDK、创建 PostHog 组织和项目，以及配置你的环境变量。你也可以[手动设置](#manual-setup)它，并且其余部分可保持本指南不变。
+
+<Prerequisites>
+  <Requirement title="Expo account">
+    注册一个 [Expo account](https://expo.dev/signup)。
+  </Requirement>
+  <Requirement title="EAS CLI">使用 `npm install -g eas-cli` 全局安装 EAS CLI。</Requirement>
+  <Requirement title="Expo project linked to EAS">
+    创建一个 Expo 项目，并使用 `eas init` 将其链接到 EAS。
+  </Requirement>
+</Prerequisites>
+
+## 你将学到什么
+
+本指南涵盖将 PostHog 集成到你的 Expo 项目中：
+
+- 在你的 React Native 应用中[安装和配置 PostHog](#install-and-configure-posthog)
+- 使用源映射和原生崩溃符号化进行[错误追踪](#error-tracking)
+- [发布标记](#release-tagging)、[功能标志](#feature-flags)和[故障排查](#troubleshooting)
+
+## 安装并配置 PostHog
+
+<Step label="1">
+
+### 运行 `connect` 命令
+
+在你的项目目录中运行以下命令：
+
+<Terminal cmd={['$ eas integrations:posthog:connect']} />
+
+此命令会：
+
+- 提示你选择 PostHog **区域**（US 或 EU）。该区域会设置你的数据驻留位置，并且在连接后无法更改。
+- 为你创建一个 PostHog 组织和项目；如果你之前已经连接过，则会重用现有的组织和项目。如果你的邮箱已经有 PostHog 账户，`connect` 会打开浏览器请求你批准关联，然后继续执行。
+- 询问要设置哪些功能：**Analytics**、**Session replay** 和 **Error tracking** 的多选项，默认全部启用。
+- 如果你启用了 **error tracking**，会提示你粘贴一个 PostHog **personal API key**。请在 PostHog 的 **Settings → Personal API keys** 中使用 “Source map upload” 预设创建一个。（在非交互模式下，请通过 `--posthog-cli-api-key` 传入。）
+- 安装 PostHog SDK 和所需的 Expo 模块（如果你保留该功能，还会安装 session-replay 包）。
+- 将 `posthog-react-native/expo` 配置插件添加到你的应用配置中。该插件会为 PostHog 的 SDK、session replay 和错误符号化所依赖的原生模块完成接线。它会为你编辑一个静态的 [app config](/workflow/configuration/) 文件，但无法编辑 [动态 app config](/workflow/configuration/#dynamic-configuration)，因此它会打印出插件条目供你手动添加。
+- 将 `EXPO_PUBLIC_POSTHOG_API_KEY` 和 `EXPO_PUBLIC_POSTHOG_HOST` 写入 **.env.local**，并写入你在 Production、Preview 和 Development 环境中的 EAS 环境变量。启用 error tracking 后，它还会将个人 API key 以 `POSTHOG_CLI_API_KEY`（使用 [敏感可见性](/eas/environment-variables/#visibility-settings-for-environment-variables)）保存，并保存公开的 `POSTHOG_CLI_PROJECT_ID` 和 `POSTHOG_CLI_HOST`。
+
+重新运行 `connect` 是安全的：它会重用你现有的组织和项目，并在覆盖环境变量前提示你确认。
+
+<Collapsible summary="在 CI 中或非交互模式下运行">
+
+传入 `--non-interactive` 并同时指定 `--region US` 或 `--region EU`（这是必需的，因为数据驻留没有安全的默认值）。使用 `--session-replay` / `--no-session-replay` 和 `--error-tracking` / `--no-error-tracking` 来控制功能；error tracking 还需要 `--posthog-cli-api-key`。使用 `--overwrite` 可在不提示的情况下替换现有环境变量。
+
+</Collapsible>
+
+</Step>
+
+<Step label="2">
+
+### 将你的应用包裹在 `<PostHogProvider>` 中
+
+在你的根布局文件中（使用 Expo Router 时为 **src/app/\_layout.tsx**），用 `<PostHogProvider>` 包裹你的应用，并从命令写入的环境变量中读取密钥。有关所有选项（包括 [error-tracking autocapture](https://posthog.com/docs/error-tracking/installation/react-native)），请参阅 [PostHog React Native 文档](https://posthog.com/docs/libraries/react-native)。
+
+```tsx src/app/_layout.tsx
+import { PostHogProvider } from 'posthog-react-native';
+import { Slot } from 'expo-router';
+
+export default function RootLayout() {
+  return (
+    <PostHogProvider
+      apiKey={process.env.EXPO_PUBLIC_POSTHOG_API_KEY}
+      options={{
+        host: process.env.EXPO_PUBLIC_POSTHOG_HOST,
+        enableSessionReplay: false, // 如果你启用了 session replay，则设为 true
+        // 捕获 JS 异常（如果你没有启用 error tracking，请移除）：
+        errorTracking: {
+          autocapture: { uncaughtExceptions: true, unhandledRejections: true },
+        },
+        // disabled: __DEV__, // 取消注释可停止从开发构建发送事件
+      }}>
+      <Slot />
+    </PostHogProvider>
+  );
+}
+```
+
+</Step>
+
+<Step label="3">
+
+### 创建开发构建
+
+Session replay 和原生崩溃符号化需要使用 [development build](/develop/development-builds/introduction/)，因为它们在 Expo Go 中不工作。产品分析在 Expo Go 中可用。
+
+<Terminal cmd={['$ eas build --profile development']} />
+
+</Step>
+
+<Step label="4">
+
+### 验证配置
+
+添加一个临时按钮来捕获测试事件，运行你的开发构建，然后点击它：
+
+{/* prettier-ignore */}
+```tsx
+import { Button } from 'react-native';
+import { usePostHog } from 'posthog-react-native';
+
+// 在组件内部
+const posthog = usePostHog();
+<Button title="发送测试事件" onPress={() => posthog?.capture('test_event')} />
+```
+
+打开你的 PostHog 项目（根据你的区域，在 `https://us.posthog.com` 或 `https://eu.posthog.com`），并确认事件已到达。
+
+</Step>
+
+## 错误追踪
+
+如果你启用了错误追踪，PostHog 会对两种独立的内容进行符号化处理，并且它们需要分别配置：
+
+- **JavaScript 源映射**：用于 JS/TS 异常，包括 Hermes 字节码。参见 [源映射](#source-maps)。
+- **原生调试符号**：用于原生 Android 和 iOS 崩溃（ProGuard/R8 映射和 dSYM）。可选。参见 [原生崩溃符号化](#native-crash-symbolication)。
+
+### 源映射
+
+源映射会让 JavaScript 堆栈跟踪（包括 Hermes 字节码）指向你的原始源码，而不是压缩后的输出。
+
+首先，设置注入，使每个 bundle 都带有上传标记。将以下内容添加到项目根目录中的 **metro.config.js**（如果文件不存在就创建一个）：
+
+```js metro.config.js
+const { getPostHogExpoConfig } = require('posthog-react-native/metro');
+
+const config = getPostHogExpoConfig(__dirname);
+
+module.exports = config;
+```
+
+如果你已经自定义了 Metro 配置（例如使用 NativeWind 或在 monorepo 中），请对 `getPostHogExpoConfig` 返回的 `config` 对象进行修改，而不是自己调用 `getDefaultConfig`。
+
+PostHog 的 CLI 使用 `connect` 设置的 `POSTHOG_CLI_*` 环境变量进行身份验证。如果要从你自己的机器上传，请改为运行 `posthog-cli login`。
+
+**在 EAS Build 中**，`posthog-react-native/expo` 配置插件会在 Android（Gradle）和 iOS（Xcode）构建阶段自动上传源映射，因此无需额外运行命令。
+
+**在 EAS Update 中**，空中更新只会发布 JavaScript，因此每次更新后只需上传它们的源映射（原生符号在构建时固定）。[安装 PostHog 的 CLI](https://posthog.com/docs/error-tracking/upload-source-maps/cli)，然后：
+
+<Terminal cmd={['$ eas update', '', '$ posthog-cli hermes upload --directory dist']} />
+
+`dist` 是默认的 EAS Update 输出目录。
+
+<Collapsible summary="使用 EAS Workflows 自动上传">
+
+EAS Build 会在原生构建过程中上传源映射，因此构建工作流不需要额外操作。对于更新，请在发布后添加一个重新导出并上传的作业：
+
+```yaml .eas/workflows/publish-update.yml
+name: 发布更新
+on:
+  push:
+    branches: ['main']
+jobs:
+  publish_update:
+    name: 发布更新
+    type: update
+    params:
+      channel: production
+  upload_update_sourcemaps:
+    name: 将 OTA 源映射上传到 PostHog
+    needs: [publish_update]
+    environment: production
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - name: 导出 JS bundle 和源映射
+        run: npx expo export --dump-sourcemap --output-dir dist
+      - name: 将源映射上传到 PostHog
+        run: npx --yes @posthog/cli@latest hermes upload --directory dist
+```
+
+`environment: production` 会为该作业提供 `connect` 存储的 `POSTHOG_CLI_*` 变量。由 `getPostHogExpoConfig` 注入的 chunk ID 使重新导出的源映射能够与该更新发布的 bundle 匹配。如果是外部 CI，请自行设置 `POSTHOG_CLI_*` 变量。
+
+</Collapsible>
+
+### 原生崩溃符号化
+
+可选。原生崩溃（不同于 JavaScript 异常）需要在构建时上传原生调试符号。`posthog-react-native/expo` 插件在 EAS Build 中启用后即可执行此操作：
+
+```json app.json
+{
+  "expo": {
+    "plugins": [["posthog-react-native/expo", { "uploadNativeSymbols": true }]]
+  }
+}
+```
+
+这只是端到端所需的三个组成部分之一：构建时符号上传（上文）、在你的提供商中进行原生崩溃自动捕获，以及你在 PostHog 项目中的异常自动捕获设置。完整配置请参见 [PostHog 的原生崩溃自动捕获](https://posthog.com/docs/libraries/react-native#native-crash-autocapture)。
+
+## 发布标记
+
+通过从 [`expo-updates`](/versions/latest/sdk/updates/) 注册[超级属性](https://posthog.com/docs/libraries/react-native#super-properties)，将每个捕获的事件关联回特定的空中更新：
+
+```tsx
+import { useEffect } from 'react';
+import * as Updates from 'expo-updates';
+import { usePostHog } from 'posthog-react-native';
+
+function ReleaseTagger() {
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    posthog?.register({
+      expo_update_id: Updates.updateId,
+      expo_channel: Updates.channel,
+      expo_runtime_version: Updates.runtimeVersion,
+    });
+  }, [posthog]);
+
+  return null;
+}
+```
+
+在 `<PostHogProvider>` 内渲染 `<ReleaseTagger />`。之后每次 `capture()` 都会携带这些属性，因此你可以在 PostHog 中按 `expo_update_id` 过滤或分组事件。
+
+## 功能标记
+
+一旦提供程序设置完成，功能标记即可工作，无需额外配置。请参阅 [PostHog 的 React Native 功能标记](https://posthog.com/docs/feature-flags/installation/react-native) 和 [引导加载](https://posthog.com/docs/feature-flags/bootstrapping)，以避免应用启动时进行一次网络往返。
+
+## 管理集成
+
+之后可使用以下命令来管理该集成：
+
+<Terminal
+  cmd={['$ eas integrations:posthog:dashboard', '', '$ eas integrations:posthog:disconnect']}
+/>
+
+`dashboard` 会打开你关联的 PostHog 项目。`disconnect` 仅会移除 Expo 端的关联。你的 PostHog 组织、项目和数据都会保留不变。
+
+## 手动设置
+
+`connect` 是标准 PostHog React Native 设置的快捷方式。要手动进行设置，请遵循 [PostHog 的 React Native 安装指南](https://posthog.com/docs/libraries/react-native)，然后设置 `EXPO_PUBLIC_POSTHOG_API_KEY` 和 `EXPO_PUBLIC_POSTHOG_HOST`（以及用于源码映射的 `POSTHOG_CLI_*` 变量）。按照 [步骤 2](#wrap-your-app-in-posthogprovider) 所示，将你的应用包裹在 `<PostHogProvider>` 中。关于源码映射，请参见 [源码映射](#source-maps)。
+
+## 故障排查
+
+<Collapsible summary="没有事件到达">
+
+确认 `EXPO_PUBLIC_POSTHOG_API_KEY` 已设置在构建所使用的环境配置文件中。请注意，`disabled: __DEV__` 会阻止来自开发构建的事件，因此请在预览或生产构建中进行测试（或暂时移除它）。如果在 `connect` 写入环境变量时开发服务器已经在运行，请执行完整重载（不是 Fast Refresh），以便应用获取新的 `EXPO_PUBLIC_*` 值。
+
+</Collapsible>
+
+<Collapsible summary="会话回放不起作用">
+
+会话回放需要开发构建，因为它无法在 Expo Go 中工作。如果你的项目使用 [持续原生生成](/workflow/continuous-native-generation/)，请在本地使用 `npx expo run:android` 或 `npx expo run:ios` 创建一个，或者使用 `eas build --profile development`。
+
+</Collapsible>
+
+<Collapsible summary="源映射无法进行符号化">
+
+确认你的 **metro.config.js** 已使用 `getPostHogExpoConfig` 包裹（参见 [源映射](#source-maps)），并且已设置 `POSTHOG_CLI_*` 环境变量（启用错误跟踪时，`connect` 会添加这些变量）。对于空中更新，请确保在 `eas update` 之后运行了 `posthog-cli hermes upload --directory dist`。
+
+</Collapsible>
+
+<Collapsible summary="'你已经有一个 PostHog 账户'">
+
+如果你的邮箱已经有一个 PostHog 账户，`connect` 会打开浏览器，请求你批准将其链接到 Expo，然后继续。请在它打开的浏览器标签页中批准该请求。如果你拒绝了或关闭了标签页，请重新运行 `connect`。
+
+</Collapsible>
+
+## 了解更多
+
+- [PostHog React Native 库](https://posthog.com/docs/libraries/react-native)
+- [React Native 的产品分析](https://posthog.com/docs/product-analytics/installation/react-native)
+- [React Native 的错误追踪](https://posthog.com/docs/error-tracking/installation/react-native)
+- [React Native 的会话回放](https://posthog.com/docs/session-replay/installation/react-native)
+- [为 React Native 上传源映射](https://posthog.com/docs/error-tracking/upload-source-maps/react-native)
+- [React Native 的功能开关](https://posthog.com/docs/feature-flags/installation/react-native)

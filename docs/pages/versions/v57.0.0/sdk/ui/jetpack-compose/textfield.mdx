@@ -1,0 +1,363 @@
+---
+title: TextField
+description: 用于原生 Material3 文本输入的 Jetpack Compose TextField 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+> **信息** 有关跨平台使用，请参阅通用的 [`TextInput`](../universal/textinput) —— 它会针对每个平台渲染相应的原生组件。
+
+Expo UI 提供了三个文本字段组件，与官方 Jetpack Compose [TextField API](https://developer.android.com/develop/ui/compose/text/user-input) 保持一致：`TextField`（填充式）、`OutlinedTextField`（带轮廓边框）和 `BasicTextField`（无样式）。Material 变体 `TextField` 和 `OutlinedTextField` 共享相同的 props，并支持用于标签、占位符、图标、前缀、后缀以及辅助文本的可组合插槽子元素。`BasicTextField` 没有 Material 外观，因此需要你自行提供装饰。
+
+| 类型     | 外观                                                   | 用途                                                                                                       |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| 填充式   | 带底部指示线的实心背景。               | 遵循 Material3 设计的默认文本输入样式。适用于大多数表单和输入字段。                     |
+| 轮廓式   | 带边框轮廓的透明背景。                | 提供清晰视觉边界的替代样式。当填充式字段与背景融为一体时使用。 |
+| 基础     | 无容器、指示线或内边距。仅显示可编辑文本。 | 完全自定义样式的输入框。自行设置样式，并通过 `DecorationBox` 添加装饰。                     |
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/textfield/android-light.webp"
+  darkSrc="/static/images/expo-ui/textfield/android-dark.webp"
+  alt="填充式、轮廓式和基础（无样式）文本字段"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 非受控文本字段
+
+将一个 [`useNativeState`](usenativestate) 可观察对象绑定到 `value`。该字段会自行跟踪用户输入，你可以从 `text.value` 读取当前值。此处显示的填充样式是默认的 Material3 文本输入样式。
+
+```tsx UncontrolledTextFieldExample.tsx
+import { Host, TextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
+
+export default function UncontrolledTextFieldExample() {
+  const text = useNativeState('');
+
+  return (
+    <Host matchContents>
+      <TextField value={text}>
+        <TextField.Label>
+          <Text>用户名</Text>
+        </TextField.Label>
+      </TextField>
+    </Host>
+  );
+}
+```
+
+### 受控文本字段
+
+将一个 [`useNativeState`](usenativestate) 可观察对象作为 `value` 传入，并使用 `onValueChange` worklet 在写回之前转换或验证输入。下面的示例会在输入时将文本转换为大写。
+
+> **注意：** Worklet 需要安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。
+
+```tsx ControlledTextFieldExample.tsx
+import { Host, TextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
+import { useCallback } from 'react';
+
+export default function ControlledTextFieldExample() {
+  const text = useNativeState('');
+
+  const handleValueChange = useCallback(
+    (value: string) => {
+      'worklet';
+      text.value = value.toUpperCase();
+    },
+    [text]
+  );
+
+  return (
+    <Host matchContents>
+      <TextField value={text} onValueChange={handleValueChange}>
+        <TextField.Label>
+          <Text>姓名</Text>
+        </TextField.Label>
+      </TextField>
+    </Host>
+  );
+}
+```
+
+### 描边文本字段
+
+当你想要一个带边框描边而不是填充背景的文本字段时，请使用 `OutlinedTextField`。
+
+```tsx OutlinedTextFieldExample.tsx
+import { Host, OutlinedTextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
+
+export default function OutlinedTextFieldExample() {
+  const text = useNativeState('');
+
+  return (
+    <Host matchContents>
+      <OutlinedTextField value={text}>
+        <OutlinedTextField.Label>
+          <Text>电子邮件</Text>
+        </OutlinedTextField.Label>
+        <OutlinedTextField.Placeholder>
+          <Text>you@example.com</Text>
+        </OutlinedTextField.Placeholder>
+      </OutlinedTextField>
+    </Host>
+  );
+}
+```
+
+### 基础文本字段
+
+`BasicTextField` 是未加样式的 Compose 原语，没有容器、指示器或内边距。你可以使用 [modifiers](modifiers) 自行设置样式，并通过 `DecorationBox` 提供装饰内容，将 `InnerTextField` 放在可编辑文本应当渲染的位置。将占位符内容包裹在 `Placeholder` 中，这样它只会在字段为空时显示，并由字段文本在原生层面切换显示状态。
+
+```tsx BasicTextFieldExample.tsx
+import { Host, BasicTextField, Box, Text, useNativeState } from '@expo/ui/jetpack-compose';
+import {
+  background,
+  clip,
+  fillMaxWidth,
+  padding,
+  Shapes,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function BasicTextFieldExample() {
+  const value = useNativeState('');
+
+  return (
+    <Host matchContents>
+      <BasicTextField
+        cursorColor="#7c3aed"
+        value={value}
+        modifiers={[
+          fillMaxWidth(),
+          clip(Shapes.RoundedCorner(12)),
+          background('#f3f4f6'),
+          padding(12, 10, 12, 10),
+        ]}>
+        <BasicTextField.DecorationBox>
+          <Box>
+            <BasicTextField.Placeholder>
+              <Text color="#9ca3af">搜索…</Text>
+            </BasicTextField.Placeholder>
+            <BasicTextField.InnerTextField />
+          </Box>
+        </BasicTextField.DecorationBox>
+      </BasicTextField>
+    </Host>
+  );
+}
+```
+
+### 插槽
+
+`TextField` 和 `OutlinedTextField` 都支持 7 个可组合插槽，对应 Compose API：`Label`、`Placeholder`、`LeadingIcon`、`TrailingIcon`、`Prefix`、`Suffix` 和 `SupportingText`。
+
+```tsx TextFieldSlotsExample.tsx
+import { Host, TextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
+
+export default function TextFieldSlotsExample() {
+  const text = useNativeState('');
+
+  return (
+    <Host matchContents>
+      <TextField value={text}>
+        <TextField.Label>
+          <Text>价格</Text>
+        </TextField.Label>
+        <TextField.Placeholder>
+          <Text>0.00</Text>
+        </TextField.Placeholder>
+        <TextField.LeadingIcon>
+          <Text>💰</Text>
+        </TextField.LeadingIcon>
+        <TextField.Prefix>
+          <Text>$</Text>
+        </TextField.Prefix>
+        <TextField.Suffix>
+          <Text>美元</Text>
+        </TextField.Suffix>
+        <TextField.SupportingText>
+          <Text>请输入金额</Text>
+        </TextField.SupportingText>
+      </TextField>
+    </Host>
+  );
+}
+```
+
+### 键盘选项
+
+使用 `keyboardOptions` 属性来配置键盘类型、首字母大写、自动纠错和 IME 操作。
+
+```tsx KeyboardOptionsExample.tsx
+import { Host, TextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
+
+export default function KeyboardOptionsExample() {
+  const text = useNativeState('');
+
+  return (
+    <Host matchContents>
+      <TextField
+        value={text}
+        singleLine
+        keyboardOptions={{
+          keyboardType: 'email',
+          capitalization: 'none',
+          autoCorrectEnabled: false,
+          imeAction: 'done',
+        }}>
+        <TextField.Label>
+          <Text>电子邮件</Text>
+        </TextField.Label>
+      </TextField>
+    </Host>
+  );
+}
+```
+
+### 键盘操作
+
+使用 `keyboardActions` 属性来处理 IME 操作按钮的按下事件。触发的回调取决于 `keyboardOptions` 中设置的 `imeAction`。每个回调都会接收当前文本值。
+
+```tsx KeyboardActionsExample.tsx
+import { Host, TextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
+
+export default function KeyboardActionsExample() {
+  const text = useNativeState('');
+
+  return (
+    <Host matchContents>
+      <TextField
+        value={text}
+        singleLine
+        keyboardOptions={{ imeAction: 'search' }}
+        keyboardActions={{
+          onSearch: value => console.log('已搜索：', value),
+        }}>
+        <TextField.Label>
+          <Text>搜索</Text>
+        </TextField.Label>
+      </TextField>
+    </Host>
+  );
+}
+```
+
+### 命令式 ref
+
+使用 ref 可以以命令式方式设置文本、清空字段、更改选择范围或移动焦点。
+
+```tsx ImperativeRefExample.tsx
+import { useRef } from 'react';
+import {
+  Host,
+  TextField,
+  TextFieldRef,
+  Button,
+  Row,
+  Text,
+  Column,
+  useNativeState,
+} from '@expo/ui/jetpack-compose';
+import { padding } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function ImperativeRefExample() {
+  const ref = useRef<TextFieldRef>(null);
+  const text = useNativeState('');
+
+  return (
+    <Host matchContents>
+      <Column>
+        <TextField ref={ref} value={text} singleLine>
+          <TextField.Label>
+            <Text>姓名</Text>
+          </TextField.Label>
+        </TextField>
+        <Row horizontalArrangement={{ spacedBy: 8 }} modifiers={[padding(8, 0, 0, 0)]}>
+          <Button onClick={() => ref.current?.setText('Hello world')}>
+            <Text>设置文本</Text>
+          </Button>
+          <Button onClick={() => ref.current?.clear()}>
+            <Text>清空</Text>
+          </Button>
+          <Button onClick={() => ref.current?.setSelection(0, 5)}>
+            <Text>选择第一个单词</Text>
+          </Button>
+        </Row>
+        <Row horizontalArrangement={{ spacedBy: 8 }} modifiers={[padding(8, 0, 0, 0)]}>
+          <Button onClick={() => ref.current?.focus()}>
+            <Text>聚焦</Text>
+          </Button>
+          <Button onClick={() => ref.current?.blur()}>
+            <Text>失焦</Text>
+          </Button>
+        </Row>
+      </Column>
+    </Host>
+  );
+}
+```
+
+### Worklet 文本遮罩
+
+当 `onValueChange` 使用 `'worklet'` 指令标记时，它会在 UI 线程上同步运行，因此在回调中对 [`useNativeState`](usenativestate) 可观察对象的写入会在下一帧之前生效。输入文本与遮罩文本之间不会出现闪烁。下面的示例会在用户输入时遮罩电话号码，并在 worklet 中同时写入 `value` 和 `selection`，以保持光标位于格式化后值的末尾。
+
+> **注意：** Worklet 需要安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。
+
+```tsx WorkletPhoneMaskExample.tsx
+import { Host, TextField, Text, useNativeState } from '@expo/ui/jetpack-compose';
+import { fillMaxWidth } from '@expo/ui/jetpack-compose/modifiers';
+import { useEffectEvent } from 'react';
+
+export default function WorkletPhoneMaskExample() {
+  const phone = useNativeState('');
+  const selection = useNativeState({ start: 0, end: 0 });
+
+  const handleValueChange = useEffectEvent((v: string) => {
+    'worklet';
+    const digits = v.replace(/\D/g, '').slice(0, 10);
+    let formatted = digits;
+    if (digits.length > 6) {
+      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    } else if (digits.length > 3) {
+      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    }
+    if (formatted !== v) {
+      phone.value = formatted;
+      // 为演示而吸附到末尾。实际的遮罩需要更智能的光标处理。
+      selection.value = { start: formatted.length, end: formatted.length };
+    }
+  });
+
+  return (
+    <Host matchContents>
+      <TextField
+        value={phone}
+        selection={selection}
+        keyboardOptions={{ keyboardType: 'phone' }}
+        modifiers={[fillMaxWidth()]}
+        onValueChange={handleValueChange}>
+        <TextField.Placeholder>
+          <Text>(555) 123-4567</Text>
+        </TextField.Placeholder>
+      </TextField>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { TextField, OutlinedTextField, BasicTextField } from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/textfield" apiName="TextField" />

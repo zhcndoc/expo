@@ -19,7 +19,14 @@ Expo 对 [TypeScript](https://www.typescriptlang.org/) 提供一流支持。Expo
 
 要创建新项目，请使用默认模板，其中包含基础 TypeScript 配置、示例代码和基础导航结构：
 
-<Terminal cmd={['$ npx create-expo-app@latest --template default@sdk-56']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx create-expo-app@latest --template default@sdk-57'],
+    yarn: ['$ yarn create expo-app --template default@sdk-57'],
+    pnpm: ['$ pnpm create expo-app --template default@sdk-57'],
+    bun: ['$ bun create expo --template default@sdk-57'],
+  }}
+/>
 
 在使用上述命令创建新项目后，请务必按照以下内容中的说明进行操作：
 
@@ -52,13 +59,27 @@ Expo 对 [TypeScript](https://www.typescriptlang.org/) 提供一流支持。Expo
 
 <Tab label="macOS/Linux">
 
-<Terminal cmd={['$ npx expo install typescript @types/react --dev']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install typescript @types/react --dev'],
+    yarn: ['$ yarn expo install typescript @types/react --dev'],
+    pnpm: ['$ pnpm expo install typescript @types/react --dev'],
+    bun: ['$ bun expo install typescript @types/react --dev'],
+  }}
+/>
 
 </Tab>
 
 <Tab label="Windows">
 
-<Terminal cmd={['$ npx expo install typescript @types/react "--" --dev']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install typescript @types/react "--" --dev'],
+    yarn: ['$ yarn expo install typescript @types/react "--" --dev'],
+    pnpm: ['$ pnpm expo install typescript @types/react "--" --dev'],
+    bun: ['$ bun expo install typescript @types/react "--" --dev'],
+  }}
+/>
 
 </Tab>
 
@@ -70,7 +91,14 @@ Expo 对 [TypeScript](https://www.typescriptlang.org/) 提供一流支持。Expo
 
 要对项目文件进行类型检查，请在项目目录根目录中运行 `tsc` 命令：
 
-<Terminal cmd={['# 对于 npm', '$ npm run tsc', '', '# 对于 yarn', '$ yarn tsc']} />
+<Terminal
+  cmd={{
+    npm: ['$ npm run tsc'],
+    yarn: ['$ yarn run tsc'],
+    pnpm: ['$ pnpm run tsc'],
+    bun: ['$ bun run tsc'],
+  }}
+/>
 
 </Collapsible>
 
@@ -82,7 +110,14 @@ Expo 对 [TypeScript](https://www.typescriptlang.org/) 提供一流支持。Expo
 
 项目的 **tsconfig.json** 默认应继承 `expo/tsconfig.base`。你可以通过运行以下命令自动生成 **tsconfig.json** 文件：
 
-<Terminal cmd={['$ npx expo customize tsconfig.json']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo customize tsconfig.json'],
+    yarn: ['$ yarn expo customize tsconfig.json'],
+    pnpm: ['$ pnpm expo customize tsconfig.json'],
+    bun: ['$ bun expo customize tsconfig.json'],
+  }}
+/>
 
 **tsconfig.json** 中的默认配置对用户友好，并鼓励采用。如果你更喜欢 **严格类型检查** 并减少运行时错误的可能性，可以在 [`compilerOptions`](https://www.typescriptlang.org/docs/handbook/compiler-options.html) 下启用 `strict`：
 
@@ -137,11 +172,11 @@ Expo CLI 会自动支持 **tsconfig.json** 中的 [路径别名](https://www.typ
 
 使用路径别名时，请考虑以下内容：
 
-- 修改 **tsconfig.json** 后重启 Expo CLI 以更新路径别名。别名变更时无需清除 Metro 缓存。
+- 修改 **tsconfig.json** 后，重启 Expo CLI 以更新路径别名。别名变更时无需清除 Metro 缓存。
 - 如果不使用 TypeScript，**jsconfig.json** 可以作为 **tsconfig.json** 的替代方案。
-- 定义路径别名会增加额外的解析时间。
-- 路径别名仅被 Metro（包括 Metro web）支持，不被已弃用的 `@expo/webpack-config` 支持。
-- 裸工作流项目需要为此功能进行额外设置。更多信息请参见 [Metro 设置指南](/versions/latest/config/metro#bare-workflow-setup)。
+- 定义路径别名后，会增加额外的解析时间。
+- 路径别名仅由 Metro（包括 Metro web）支持，不受已弃用的 `@expo/webpack-config` 支持。
+- [现有的 React Native 项目](/bare/overview/) 需要为此功能进行额外设置。更多信息请参阅 [Metro 设置指南](/versions/latest/config/metro#existing-react-native-apps)。
 
 </Step>
 
@@ -170,12 +205,12 @@ import Button from 'src/components/Button';
 
 使用绝对导入时，请考虑以下内容：
 
-- 如果定义了 `compilerOptions.baseUrl`，则 `compilerOptions.paths` 会相对于它进行解析，否则将相对于项目根目录进行解析。
-- `compilerOptions.baseUrl` 的解析优先于 node modules。这意味着如果你有一个名为 `./path.ts` 的文件，它可能会被导入而不是名为 `path` 的 node module。
+- 如果定义了 `compilerOptions.paths`，它们会相对于 `compilerOptions.baseUrl` 进行解析；否则，它们会相对于项目根目录进行解析。
+- `compilerOptions.baseUrl` 会在 node modules 之前解析。这意味着如果你有一个名为 `./path.ts` 的文件，它可能会被导入，而不是名为 `path` 的 node 模块。
 - 修改 **tsconfig.json** 后，需要重启 Expo CLI 以更新 [`compilerOptions.baseUrl`](https://www.typescriptlang.org/docs/handbook/module-resolution.html#base-url)。
 - 如果你不使用 TypeScript，**jsconfig.json** 可以作为 **tsconfig.json** 的替代方案。
-- 绝对导入仅被 Metro（包括 Metro web）支持，不被 `@expo/webpack-config` 支持。
-- 裸工作流项目需要为此功能进行额外设置。更多信息请参见 [版本化的 Metro 设置指南](/versions/latest/config/metro#bare-workflow-setup)。
+- 绝对导入仅由 Metro（包括 Metro web）支持，不受 `@expo/webpack-config` 支持。
+- 现有的 React Native 项目需要为此功能进行额外设置。更多信息请参阅 [版本化 Metro 设置指南](/versions/latest/config/metro#existing-react-native-apps)。
 
 </Step>
 
@@ -193,13 +228,27 @@ import Button from 'src/components/Button';
 
 <Tab label="macOS/Linux">
 
-<Terminal cmd={['$ npx expo install tsx --dev']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install tsx --dev'],
+    yarn: ['$ yarn expo install tsx --dev'],
+    pnpm: ['$ pnpm expo install tsx --dev'],
+    bun: ['$ bun expo install tsx --dev'],
+  }}
+/>
 
 </Tab>
 
 <Tab label="Windows">
 
-<Terminal cmd={['$ npx expo install tsx "--" --dev']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install tsx "--" --dev'],
+    yarn: ['$ yarn expo install tsx "--" --dev'],
+    pnpm: ['$ pnpm expo install tsx "--" --dev'],
+    bun: ['$ bun expo install tsx "--" --dev'],
+  }}
+/>
 
 </Tab>
 

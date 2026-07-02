@@ -1,0 +1,133 @@
+---
+title: 设置状态栏、启动画面和应用图标
+description: 本教程将学习设置状态栏、应用图标和启动画面的基础知识。
+hasVideoLink: true
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Step } from '~/ui/components/Step';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+在本章中，我们将在应用发布到应用商店之前完善应用的细节，例如状态栏主题设置、应用图标以及启动画面的自定义。
+
+<VideoBoxLink
+  videoId="OgGCYdElcZo"
+  title="观看：完成通用 Expo 应用"
+  description="在将应用部署到应用商店之前，设置状态栏、自定义应用图标并准备启动画面。"
+/>
+
+---
+
+<Step label="1">
+
+## 设置状态栏
+
+[`expo-status-bar`](/versions/latest/sdk/status-bar/) 库已预装在所有使用 `create-expo-app` 创建的项目中。该库提供了 `StatusBar` 组件，用于设置应用状态栏的样式。
+
+在 **app/\_layout.tsx** 中执行以下步骤：
+
+1. 从 `expo-status-bar` 导入 `StatusBar`。
+2. 使用 [React 的 Fragment 组件](https://react.dev/reference/react/Fragment) 将 `StatusBar` 与现有的 `Stack` 组件包裹起来。
+
+{/* prettier-ignore */}
+```tsx app/_layout.tsx
+import { Stack } from 'expo-router';
+/* @tutinfo */
+import { StatusBar } from 'expo-status-bar';
+/* @end */
+
+export default function RootLayout() {
+  return (
+    /* @tutinfo `StatusBar` と既存の `Stack` コンポーネントを React の Fragment コンポーネントでまとめます。 */
+    <>
+    /* @end */
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+      /* @tutinfo */<StatusBar style="light" />
+    </>
+    /* @end */
+  );
+}
+```
+
+接下来，让我们看看应用在 Android 和 iOS 上的样子。
+
+<ContentSpotlight
+  alt="在 Android 和 iOS 上显示的 light 样式 StatusBar。"
+  src="/static/images/tutorial/statusbar-example.webp"
+  className="max-w-[480px]"
+/>
+
+</Step>
+
+<Step label="2">
+
+## 应用图标
+
+项目中的 **assets/images** 目录下有一个 **icon.png** 文件。这就是应用图标。它是一张 1024px × 1024px 的图片，外观如下：
+
+<ContentSpotlight
+  alt="默认应用图标。深色圆角方形中显示白色的图像图标和黄色笑脸。"
+  src="/static/images/tutorial/icon.webp"
+  className="max-w-[150px]"
+/>
+
+与启动画面图片一样，应用图标的路径在 **app.json** 文件的 `"icon"` 属性中进行设置。默认情况下，新的 Expo 项目已经配置了正确的路径 `"./assets/images/icon.png"`，因此无需进行任何更改。
+
+> 当你进入为应用商店构建应用的阶段时，[Expo Application Services (EAS)](/eas/) 会使用这张图片为每种设备生成经过优化的图标。
+
+应用图标可以在 Expo Go 的多个位置看到。下面是 Expo Go 开发者菜单中显示应用图标的示例：
+
+<ContentSpotlight
+  alt="Expo Go 应用开发者菜单中显示的启动画面。"
+  src="/static/images/tutorial/app-icon-visible.webp"
+  className="max-w-[240px]"
+/>
+
+</Step>
+
+<Step label="3">
+
+## 启动画面
+
+启动画面会在应用内容加载之前显示。它通常会在中央显示一张较小的图片，例如应用图标，并在应用内容准备好显示时隐藏。
+
+[`expo-splash-screen`](/versions/latest/sdk/splash-screen/) 插件已预装在所有使用 `create-expo-app` 创建的项目中。该库提供了用于配置启动画面的配置插件。
+
+在 **app.json** 中，`expo-splash-screen` 插件已经在下面的代码片段中配置为使用应用图标（包含在 [可下载资源](/ja/tutorial/create-your-first-app/#download-assets) 中）作为启动画面图片。你无需进行任何更改。
+
+```json app.json
+{
+  "plugins": [
+    /* @hide ... */ /* @end */
+    [
+      "expo-splash-screen",
+      {
+        "image": "./assets/images/splash-icon.png"
+        /* @hide ... */ /* @end */
+      }
+    ]
+  ]
+}
+```
+
+不过，**要测试启动画面，不能使用 Expo Go 或 [开发构建](/develop/development-builds/introduction/)**。你需要创建应用的预览构建或生产构建才能进行测试。有关启动画面设置和测试方法的更多信息，请参阅以下资源：
+
+- 在 [创建启动画面图标](/develop/user-interface/splash-screen-and-app-icon/#splash-screen) 指南中，你可以了解如何配置启动画面图标。
+- 有关如何创建预览构建，请参阅 EAS 教程中的 [内部分发](/tutorial/eas/internal-distribution-builds/) 指南。若要创建生产构建，请参阅 [Android](/tutorial/eas/android-production-build/) 和 [iOS](/tutorial/eas/ios-production-build/) 指南。
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  currentChapterIndex={8}
+  name="GET_STARTED"
+  chapterTitle="第 9 章：设置状态栏、启动画面和应用图标"
+  summary="干得好！你已经用同一套代码库构建出了可在 Android、iOS 和 web 上运行的应用。"
+  nextChapterDescription="在下一节中，我们将介绍更多资源，帮助你进一步学习这里涉及的概念以及我们简要提到的主题。"
+  nextChapterTitle="学习资源"
+  nextChapterLink="/ja/tutorial/follow-up"
+/>

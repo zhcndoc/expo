@@ -1,0 +1,118 @@
+---
+title: DisclosureGroup
+description: 用于显示可展开内容的 SwiftUI DisclosureGroup 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI DisclosureGroup 与官方 SwiftUI [DisclosureGroup API](https://developer.apple.com/documentation/swiftui/disclosuregroup) 保持一致，并显示一个展开指示器，用于显示或隐藏内容。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/disclosuregroup/ios-light.webp"
+  darkSrc="/static/images/expo-ui/disclosuregroup/ios-dark.webp"
+  alt="位于 Form 内部展开的 DisclosureGroup"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本折叠组
+
+`DisclosureGroup` 最常用于 [`Form`](form) 中，这样它就会采用带有展开指示箭头的标准 iOS 列表样式。
+
+```tsx BasicDisclosureGroupExample.tsx
+import { useState } from 'react';
+import { DisclosureGroup, Form, Host, Section, Text } from '@expo/ui/swift-ui';
+
+export default function BasicDisclosureGroupExample() {
+  const [isExpanded, setIsExpanded] = useState(true);
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section>
+          <DisclosureGroup
+            label="高级设置"
+            isExpanded={isExpanded}
+            onIsExpandedChange={setIsExpanded}>
+            <Text>自动更新应用</Text>
+            <Text>应用下载</Text>
+            <Text>卸载未使用的应用</Text>
+          </DisclosureGroup>
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+### 初始展开
+
+将 `isExpanded` 初始设置为 `true`，即可默认显示内容。
+
+```tsx InitiallyExpandedExample.tsx
+import { useState } from 'react';
+import { Host, DisclosureGroup, Text } from '@expo/ui/swift-ui';
+
+export default function InitiallyExpandedExample() {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  return (
+    <Host matchContents>
+      <DisclosureGroup label="详情" isExpanded={isExpanded} onIsExpandedChange={setIsExpanded}>
+        <Text>此内容默认可见。</Text>
+      </DisclosureGroup>
+    </Host>
+  );
+}
+```
+
+### 自定义标签
+
+当标签需要自定义 SwiftUI 内容或修饰符，而不是 `label` 字符串属性时，请使用 `DisclosureGroup.Label`。
+
+```tsx CustomLabelDisclosureGroupExample.tsx
+import { useState } from 'react';
+import { DisclosureGroup, Form, Host, Section, Text } from '@expo/ui/swift-ui';
+import { font, foregroundStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function CustomLabelDisclosureGroupExample() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section>
+          <DisclosureGroup isExpanded={isExpanded} onIsExpandedChange={setIsExpanded}>
+            <DisclosureGroup.Label>
+              <Text modifiers={[font({ weight: 'semibold' }), foregroundStyle('#0a7ea4')]}>
+                网络选项
+              </Text>
+            </DisclosureGroup.Label>
+            <Text>Wi-Fi</Text>
+            <Text>蓝牙</Text>
+            <Text>蜂窝数据</Text>
+          </DisclosureGroup>
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { DisclosureGroup } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/disclosuregroup" apiName="DisclosureGroup" />

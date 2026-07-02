@@ -11,15 +11,17 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 `useNativeState` 返回一个 [`ObservableState`](#observablestate)，它在原生端映射到 SwiftUI 的 [`ObservableObject`](https://developer.apple.com/documentation/combine/observableobject)，因此对 `.value` 的读取和写入会被 SwiftUI 直接观察到，而不会经过 React 的渲染周期。这使你可以在 UI 线程上的 worklet 中同步更新原生视图。
 
+> **注意：** 当使用 [React 编译器](https://react.dev/learn/react-compiler) 时，你应避免直接访问和修改 `value` 属性。相反，请使用 [`get`](#observablestate) 和 [`set`](#observablestate) 方法，它们符合 React 编译器标准。
+
 ## 安装
 
 <APIInstallSection />
 
-## 用法
+## Usage
 
-> **注意：** 使用 worklet 需要在你的项目中安装 [`react-native-reanimated`](https://docs.swmansion.com/react-native-reanimated/) 和 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。`useNativeState` 本身无需它们也能工作，但下面展示的同步 UI 线程更新依赖于 worklet 运行时。
+> **Note:** Using worklets requires installing [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/) in your project. `useNativeState` itself works without it, but the synchronous UI-thread updates shown below depend on the worklet runtime.
 
-下面的示例会在用户输入时对电话号码进行掩码处理。格式化以及对 `maskedPhone.value`（文本）和 `selection.value`（光标位置）的写入都在 UI 线程上同步发生，因此输入值和掩码后的值之间不会出现闪烁。
+The following example masks a phone number as the user types. Both the formatting and the writes to `maskedPhone.value` (text) and `selection.value` (cursor position) happen synchronously on the UI thread, so there is no flicker between the raw input and the masked value.
 
 ```tsx WorkletPhoneMaskExample.tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
@@ -46,7 +48,7 @@ export default function WorkletPhoneMaskExample() {
       }
       if (formatted !== v) {
         maskedPhone.value = formatted;
-        // 演示中直接跳到末尾。真正的掩码需要更智能的光标处理。
+        // The demo jumps straight to the end. Real masking needs smarter cursor handling.
         selection.value = { start: formatted.length, end: formatted.length };
       }
     },

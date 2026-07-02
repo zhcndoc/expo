@@ -11,14 +11,14 @@ import { Terminal } from '~/ui/components/Snippet';
 在 Expo 和 React Native 中，你已经通过安装来自 [npm](https://www.npmjs.com) 仓库的包在 **package.json** 文件中完成了这一步。由于大多数 React Native 库都带有一些原生（平台相关）代码，
 安装一个库甚至需要配置多达三个不同的包管理器！
 
-Expo Autolinking 是一种自动化这一过程的机制，它将库的安装流程简化到最少——通常只需从 `npm` 安装包并重新运行 `pod install`。
+Expo 自动链接是一种自动化这一过程的机制，它将库的安装流程简化到最少——通常只需从 `npm` 安装包并重新运行 `pod install`。
 其核心实现可以在 [`expo-modules-autolinking`](https://github.com/expo/expo/tree/main/packages/expo-modules-autolinking) 包中找到，并分为三部分：
 
 1. 带有模块解析算法的 CLI 命令
 2. 与 Android 的 Gradle 构建系统集成的代码
 3. 与 iOS 的 CocoaPods 集成的代码
 
-Expo Autolinking 同时链接 Expo 模块和 React Native 模块。若要改用 React Native 社区 CLI 的自动链接，请参见“[为 React Native 模块停用 Expo Autolinking](#opting-out-of-expo-autolinking-for-react-native-modules)”部分。
+Expo 自动链接同时链接 Expo 模块和 React Native 模块。若要改用 React Native 社区 CLI 的自动链接，请参见“[为 React Native 模块停用 Expo 自动链接](#opting-out-of-expo-autolinking-for-react-native-modules)”部分。
 
 ## 链接行为
 
@@ -192,7 +192,14 @@ use_expo_modules!({
 
 构建系统会在自动链接的第一阶段调用此命令来解析 Expo 模块。其实现对所有平台共享。`search` 的输出会包含每个包的 `duplicates` 列表（如果发现重复项）。
 
-<Terminal cmd={['$ npx expo-modules-autolinking search']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo-modules-autolinking search'],
+    yarn: ['$ yarn dlx expo-modules-autolinking search'],
+    pnpm: ['$ pnpm dlx expo-modules-autolinking search'],
+    bun: ['$ bunx expo-modules-autolinking search'],
+  }}
+/>
 
 上述命令会返回一个 JSON 格式的对象，其中包含 Expo Autolinking 找到的 Expo 模块：
 
@@ -217,7 +224,14 @@ use_expo_modules!({
 
 构建系统会在自动链接的第二阶段调用此命令。它会为每个 Expo 模块输出一个包含更多（平台相关）细节的对象，例如 **build.gradle** 或 podspec 文件的路径，以及要链接的模块类。
 
-<Terminal cmd={['$ npx expo-modules-autolinking resolve --platform <apple|android>']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo-modules-autolinking resolve --platform <apple|android>'],
+    yarn: ['$ yarn dlx expo-modules-autolinking resolve --platform <apple|android>'],
+    pnpm: ['$ pnpm dlx expo-modules-autolinking resolve --platform <apple|android>'],
+    bun: ['$ bunx expo-modules-autolinking resolve --platform <apple|android>'],
+  }}
+/>
 
 例如，使用 `--platform apple` 选项时，它会返回一个 JSON 格式的对象，其中包含一个模块数组以及该平台的解析详情：
 
@@ -249,7 +263,14 @@ use_expo_modules!({
 
 通过检查重复项来验证自动链接的原生模块。每个冲突的重复安装都会显示警告。
 
-<Terminal cmd={['$ npx expo-modules-autolinking verify']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo-modules-autolinking verify'],
+    yarn: ['$ yarn dlx expo-modules-autolinking verify'],
+    pnpm: ['$ pnpm dlx expo-modules-autolinking verify'],
+    bun: ['$ bunx expo-modules-autolinking verify'],
+  }}
+/>
 
 传递 `--verbose` 选项可列出所有自动链接的原生模块。
 
@@ -258,7 +279,14 @@ use_expo_modules!({
 
 当自动链接 React Native 模块时，构建系统会调用此命令。它会为每个 React Native 模块输出一个包含更多平台相关细节的对象，例如 gradle 或 podspec 文件的路径。
 
-<Terminal cmd={['$ npx expo-modules-autolinking react-native-config']} />
+<Terminal
+  cmd={{
+    npm: ['$ npx expo-modules-autolinking react-native-config'],
+    yarn: ['$ yarn dlx expo-modules-autolinking react-native-config'],
+    pnpm: ['$ pnpm dlx expo-modules-autolinking react-native-config'],
+    bun: ['$ bunx expo-modules-autolinking react-native-config'],
+  }}
+/>
 
 例如，使用 `--platform ios` 选项时，它会返回一个 **react-native.config.js** 输出格式的对象，其中包含每个 React Native 依赖项的信息以及 React Native 安装路径。
 

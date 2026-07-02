@@ -1,0 +1,454 @@
+---
+title: 构建界面
+description: 在本教程中，你将学习如何使用 React Native 的 Pressable 和 Expo Image 等组件来构建界面。
+hasVideoLink: true
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Step } from '~/ui/components/Step';
+import { CODE } from '~/ui/components/Text';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+在本章中，我们将创建 StickerSmash 应用的第一个界面。
+
+<ContentSpotlight
+  alt="初始布局。"
+  src="/static/images/tutorial/initial-layout.webp"
+  className="max-w-[300px]"
+/>
+
+上面的界面显示了一张图片和两个按钮。用户可以使用任意一个按钮来选择图片。第一个按钮允许用户从设备中选择图片，第二个按钮则直接使用应用提供的默认图片。
+
+当用户选择图片后，就可以在该图片上添加贴纸。现在，让我们开始制作这个界面吧。
+
+<VideoBoxLink
+  videoId="3rcOP8xDwTQ"
+  title="观看：在通用 Expo 应用中构建界面"
+  description="使用 Pressable、Expo Image 等核心组件构建 StickerSmash 应用的第一个界面，并创建图片选择布局。"
+/>
+
+---
+
+<Step label="1">
+
+## 拆解界面
+
+在编写代码构建界面之前，先将其拆解为几个主要元素。
+
+<ContentSpotlight
+  alt="初始布局的拆解。"
+  src="/static/images/tutorial/breakdown-of-layout.webp"
+  className="max-w-[300px]"
+/>
+
+主要元素有两个：
+
+- 画面中央显示一张大图
+- 画面下半部分有两个按钮
+
+第一个按钮由多个组件组成。其父元素带有黄色边框，内部以行布局放置了图标和文本组件。
+
+<ContentSpotlight
+  alt="行布局按钮组件的拆解。"
+  src="/static/images/tutorial/breakdown-of-buttons.webp"
+  className="max-w-[400px]"
+/>
+
+既然已经把 UI 拆分成更小的部分，就可以开始编码了。
+
+</Step>
+
+<Step label="2">
+
+## 显示图片
+
+为了在应用中显示图片，我们使用 `expo-image` 库。该库提供了一个跨平台的 `<Image>` 组件，用于加载和渲染图片。它已经包含在你使用的默认项目模板中。
+
+Image 组件接收图片源作为值。图片源可以是 [静态资源](https://reactnative.dev/docs/images#static-image-resources) 或 URL。例如，从 **assets/images** 目录加载的源就是静态资源。也可以使用 `uri` 属性从 [网络](https://reactnative.dev/docs/images#network-images) 获取。
+
+<ContentSpotlight
+  alt="教程中用作占位符的背景图片。"
+  src="/static/images/tutorial/background-image.webp"
+  className="max-w-[250px]"
+/>
+
+要在 **app/(tabs)/index.tsx** 文件中使用 Image 组件：
+
+1. 从 `expo-image` 库中导入 `Image`。
+2. 创建 `PlaceholderImage` 变量，用于将 **assets/images/background-image.png** 作为 `Image` 组件 `source` 属性的值。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx|collapseHeight=380
+import { View, StyleSheet } from 'react-native';
+/* @tutinfo 导入 `Image` 组件。 */ import { Image } from 'expo-image'; /* @end */
+
+/* @tutinfo 从 "assets/images/" 目录导入图片。由于该图片是静态资源，因此需要使用 `require` 来引用。 */
+const PlaceholderImage = require('@/assets/images/background-image.png');
+/* @end */
+
+export default function Index() {
+  return (
+    <View style={styles.container}>
+      /* @tutinfo 将 `Image` 组件包裹在容器内部。同时添加图片组件以显示占位图片。 */
+      <View style={styles.imageContainer}>
+        <Image source={PlaceholderImage} style={styles.image} />
+      </View>
+      /* @end */
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    /* @tutinfo 修改容器样式，移除 `justifyContent` 属性。 */
+    alignItems: 'center',
+    /* @end */
+  },
+  /* @tutinfo 添加图片容器和图片的样式。 */
+  imageContainer: {
+    flex: 1,
+  },
+  image: {
+    width: 320,
+    height: 440,
+    borderRadius: 18,
+  },
+  /* @end */
+});
+```
+
+</Step>
+
+<Step label="3">
+
+## 将组件拆分到文件中
+
+随着我们为这个界面添加更多组件，先把代码拆分到多个文件中吧。在整个教程中，我们将使用 components 目录来创建自定义组件。
+
+1. 在顶层创建 **components** 目录，并在其中创建 **ImageViewer.tsx** 文件。
+2. 将显示图片的代码和 `image` 样式移动到该文件中。
+
+{/* prettier-ignore */}
+```tsx components/ImageViewer.tsx|collapseHeight=280
+import { ImageSourcePropType, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
+
+type Props = {
+  imgSource: ImageSourcePropType;
+};
+
+export default function ImageViewer({ imgSource }: Props) {
+  return <Image source={imgSource} style={styles.image} />;
+}
+
+const styles = StyleSheet.create({
+  image: {
+    width: 320,
+    height: 440,
+    borderRadius: 18,
+  },
+});
+```
+
+> **info** 由于 **ImageViewer** 是自定义组件，因此将其放在了不同于 **app** 目录的位置。**app** 目录中的文件全部都是布局文件或路由文件。更多详情请参阅 [导航组件之外的组件应放在 app 目录之外](/router/basics/core-concepts/#5-non-navigation-components-live-outside-of-app-directory)。
+
+导入 `ImageViewer`，并在 **app/(tabs)/index.tsx** 中使用它。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx|collapseHeight=320
+import { StyleSheet, View } from 'react-native';
+
+/* @tutinfo */import ImageViewer from '@/components/ImageViewer'; /* @end */
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        /* @tutinfo 将 `Image` 组件替换为 `ImageViewer`。 */
+        <ImageViewer imgSource={PlaceholderImage} />
+        /* @end */
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+});
+```
+
+<Collapsible summary={<>import 文中的 <CODE>@</CODE> 是什么？</>}>
+
+`@` 符号是一个自定义的 [路径别名](/guides/typescript/#path-aliases-optional)，用于导入自定义组件或其他模块，而不是使用相对路径。Expo CLI 会在 **tsconfig.json** 中自动设置它。
+
+</Collapsible>
+
+</Step>
+
+<Step label="4">
+
+## 使用 Pressable 创建按钮
+
+React Native 提供了多个处理触摸事件的组件，但更推荐使用灵活性更高的 [`<Pressable>`](https://reactnative.dev/docs/pressable)。它可以检测单击、长按，以及按下和松开时分别触发不同事件等多种操作。
+
+从设计上看，需要创建两个按钮。它们的样式和标签都不同。首先，为这些按钮创建一个可复用组件。在 **components** 目录中创建 **Button.tsx** 文件，并编写以下代码。
+
+{/* prettier-ignore */}
+```tsx components/Button.tsx|collapseHeight=280
+import { StyleSheet, View, Pressable, Text } from 'react-native';
+
+type Props = {
+  label: string;
+};
+
+export default function Button({ label }: Props) {
+  return (
+    <View style={styles.buttonContainer}>
+      <Pressable style={styles.button} onPress={() => alert('You pressed a button.')}>
+        <Text style={styles.buttonLabel}>{label}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  buttonContainer: {
+    width: 320,
+    height: 68,
+    marginHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 3,
+  },
+  button: {
+    borderRadius: 10,
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  buttonLabel: {
+    color: '#fff',
+    fontSize: 16,
+  },
+});
+```
+
+当点击屏幕上的任意一个按钮时，应用都会显示一个警告框。这是因为 `<Pressable>` 在 `onPress` 属性中调用了 `alert()`。将该组件导入到 **app/(tabs)/index.tsx** 文件中，并为包裹这些按钮的 `<View>` 添加样式。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx
+import { View, StyleSheet } from 'react-native';
+
+/* @tutinfo */import Button from '@/components/Button'; /* @end */
+import ImageViewer from '@/components/ImageViewer';
+
+const PlaceholderImage = require("@/assets/images/background-image.png");
+
+export default function Index() {
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} />
+      </View>
+      /* @tutinfo 使用可复用的 `Button` 组件创建两个按钮，并将它们封装在 `View` 组件中。 */
+      <View style={styles.footerContainer}>
+        <Button label="Choose a photo" />
+        <Button label="Use this photo" />
+      </View>
+      /* @end */
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+    paddingTop: 28,
+  },
+  /* @tutinfo 添加以下样式。 */
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+  /* @end */
+});
+```
+
+在 Android、iOS 和 web 上查看应用。
+
+<ContentSpotlight
+  alt="初始布局。"
+  src="/static/images/tutorial/buttons-created.webp"
+  className="max-w-[720px]"
+/>
+
+带有 “Use this photo” 标签的第二个按钮看起来已经接近设计稿了。而第一个按钮还需要额外的样式调整才能匹配设计。
+
+</Step>
+
+<Step label="5">
+
+## 增强可复用按钮组件
+
+“Choose a photo” 按钮需要与 “Use this photo” 按钮不同的样式，因此我们添加一个新的 `theme` 属性，以便应用 `primary` 主题。这个按钮还会在标签前显示一个图标。图标将使用 `@expo/vector-icons` 库中的组件。
+
+为了为按钮加载并显示图标，我们使用该库中的 `FontAwesome`。修改 **components/Button.tsx**，添加以下代码片段。
+
+{/* prettier-ignore */}
+```tsx components/Button.tsx
+import { StyleSheet, View, Pressable, Text } from 'react-native';
+/* @tutinfo 导入 FontAwesome。 */import FontAwesome from '@expo/vector-icons/FontAwesome';/* @end */
+
+type Props = {
+  label: string;
+  /* @tutinfo 添加 theme 属性。 */theme?: 'primary';/* @end */
+};
+
+export default function Button({ label, /* @tutinfo 使用 `theme` 属性来判断按钮的变体。 */theme/* @end */ }: Props) {
+  /* @tutinfo 条件渲染 primary 主题的按钮。 */
+  if (theme === 'primary') {
+  /* @end */
+  /* @tutinfo */
+    return (
+      <View
+        style={[
+          styles.buttonContainer,
+          { borderWidth: 4, borderColor: '#ffd33d', borderRadius: 18 },
+        ]}>
+        <Pressable
+          style={[styles.button, { backgroundColor: '#fff' }]}
+          onPress={() => alert('You pressed a button.')}>
+          <FontAwesome name="picture-o" size={18} color="#25292e" style={styles.buttonIcon} />
+          <Text style={[styles.buttonLabel, { color: '#25292e' }]}>{label}</Text>
+        </Pressable>
+      </View>
+    );
+  /* @end */
+  /* @tutinfo */
+  }
+  /* @end */
+
+  return (
+    <View style={styles.buttonContainer}>
+      <Pressable style={styles.button} onPress={() => alert('You pressed a button.')}>
+        <Text style={styles.buttonLabel}>{label}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  buttonContainer: {
+    width: 320,
+    height: 68,
+    marginHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 3,
+  },
+  button: {
+    borderRadius: 10,
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  /* @tutinfo 条件渲染 primary 主题的按钮。 */
+  buttonIcon: {
+    paddingRight: 8,
+  },
+  /* @end */
+  buttonLabel: {
+    color: '#fff',
+    fontSize: 16,
+  },
+});
+```
+
+来看看上面的代码做了什么。
+
+- primary 主题的按钮使用 **行内样式**，在 `style` 属性中直接传入对象，以覆盖 `StyleSheet.create()` 中定义的样式。
+- primary 主题的 `<Pressable>` 组件通过在 `backgroundColor` 属性中指定 `#fff`，将按钮背景设置为白色。如果把这个属性添加到 `styles.button` 中，那么 primary 主题和未指定主题的按钮都会应用该背景色。
+- 行内样式使用 JavaScript，可对特定值覆盖默认样式。
+
+接下来，修改 **app/(tabs)/index.tsx** 文件，为第一个按钮设置 `theme="primary"` 属性。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/index.tsx
+import { View, StyleSheet } from 'react-native';
+
+import Button from '@/components/Button';
+import ImageViewer from '@/components/ImageViewer';
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} />
+      </View>
+      <View style={styles.footerContainer}>
+        /* @tutinfo 为第一个按钮添加 `"primary"` 主题。 */
+        <Button theme="primary" label="Choose a photo" />
+        /* @end */
+        <Button label="Use this photo" />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+});
+```
+
+在 Android、iOS 和 web 上查看应用。
+
+<ContentSpotlight file="tutorial/04-complete-layout.mp4" />
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  currentChapterIndex={2}
+  name="GET_STARTED"
+  chapterTitle="第 3 章：构建界面"
+  summary="面向应用首个界面的构建，初始设计的实现已完成。"
+  nextChapterDescription="在下一章中，我们将添加从设备媒体库中选择图片的功能。"
+  nextChapterTitle="使用图像选择器"
+  nextChapterLink="/ja/tutorial/image-picker"
+/>

@@ -12,6 +12,8 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 一种懒加载的垂直列表组件，只渲染可见项以实现高效滚动。更多信息请参阅 [官方 Jetpack Compose 文档](https://developer.android.com/develop/ui/compose/lists)。
 
+> **信息** `LazyColumn` 目前还不是真正的懒加载：原生端只会组合可见项，但 React 仍然会提前创建所有子项，因此大型列表在挂载时可能会很慢。我们正在改进这一点。对于大型列表，我们建议使用 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)。
+
 <ContentSpotlight
   variant="component"
   aspect="landscape"
@@ -24,12 +26,12 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 <APIInstallSection />
 
-## 用法
+## Usage
 
-### 基础懒加载列
+### Basic Lazy Column
 
 ```tsx BasicLazyColumn.tsx
-import { Host, LazyColumn, ListItem } from '@expo/ui/jetpack-compose';
+import { Host, LazyColumn, ListItem, Text } from '@expo/ui/jetpack-compose';
 
 const items = Array.from({ length: 100 }, (_, i) => `Item ${i + 1}`);
 
@@ -38,7 +40,11 @@ export default function BasicLazyColumn() {
     <Host style={{ height: 400 }}>
       <LazyColumn>
         {items.map(item => (
-          <ListItem key={item} headline={item} />
+          <ListItem key={item}>
+            <ListItem.HeadlineContent>
+              <Text>{item}</Text>
+            </ListItem.HeadlineContent>
+          </ListItem>
         ))}
       </LazyColumn>
     </Host>
@@ -46,9 +52,9 @@ export default function BasicLazyColumn() {
 }
 ```
 
-### 带排列方式
+### With Arrangement
 
-使用 `verticalArrangement` 属性来控制列表中各项之间的间距。传入像 `'spaceBetween'` 这样的字符串值，或像 `{ spacedBy: 8 }` 这样的对象，以按 dp 设置固定间距。
+Use the `verticalArrangement` property to control the spacing between items in the list. Pass a string value like `'spaceBetween'`, or an object like `{ spacedBy: 8 }`, to set fixed spacing in dp.
 
 ```tsx LazyColumnArrangement.tsx
 import { Host, LazyColumn, ListItem, Text } from '@expo/ui/jetpack-compose';
@@ -59,17 +65,17 @@ export default function LazyColumnArrangement() {
       <LazyColumn verticalArrangement={{ spacedBy: 8 }} horizontalAlignment="center">
         <ListItem>
           <ListItem.HeadlineContent>
-            <Text>间隔项 1</Text>
+            <Text>Item with spacing 1</Text>
           </ListItem.HeadlineContent>
         </ListItem>
         <ListItem>
           <ListItem.HeadlineContent>
-            <Text>间隔项 2</Text>
+            <Text>Item with spacing 2</Text>
           </ListItem.HeadlineContent>
         </ListItem>
         <ListItem>
           <ListItem.HeadlineContent>
-            <Text>间隔项 3</Text>
+            <Text>Item with spacing 3</Text>
           </ListItem.HeadlineContent>
         </ListItem>
       </LazyColumn>
@@ -78,9 +84,9 @@ export default function LazyColumnArrangement() {
 }
 ```
 
-### 带内容内边距
+### With Content Padding
 
-使用 `contentPadding` 属性为列表内容四周添加 dp 内边距。
+Use the `contentPadding` property to add dp padding around the list content.
 
 ```tsx LazyColumnPadding.tsx
 import { Host, LazyColumn, ListItem } from '@expo/ui/jetpack-compose';

@@ -1,0 +1,115 @@
+---
+title: 创建你的第一个应用
+description: 在本章中，指示你的 AI 代理创建一个新的 Expo 应用，并在你的手机上查看它运行。
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+在这一章中，你的代理会创建一个新的 Expo 应用，你会在手机上运行它，并进行第一次修改。这就是你在本教程剩余部分会反复执行的循环。
+
+<Step label="1">
+
+## 在新文件夹中启动你的代理
+
+你的代理一次只在一个文件夹内工作，因此为这个项目创建一个专用文件夹，并在其中启动代理。在终端中运行：
+
+<Terminal
+  cmd={['$ mkdir StickerSmash', '', '$ cd StickerSmash']}
+  cmdCopy={['$ mkdir StickerSmash && cd StickerSmash']}
+/>
+
+然后在该文件夹中启动你的代理：运行 `claude` 或 `codex`。如果你使用的是 Cursor，创建一个名为 **StickerSmash** 的新文件夹，用 **File** > **Open Folder** 将其打开，然后打开代理面板。
+
+</Step>
+
+<Step label="2">
+
+## 创建应用
+
+将以下提示粘贴到你的代理中：
+
+```text Prompt|wrap
+在这个文件夹（当前目录）中通过运行 npx create-expo-app@latest 并选择 SDK 54 模板来创建一个新的 Expo 应用——我会用手机上的 Expo Go 测试这个应用，它使用的是 SDK 54。创建完成后，运行项目的 reset-project 脚本，这样我们就从一个最小应用开始，并删除脚本留下的 app-example 文件夹。不要启动开发服务器；我会自己运行它。
+```
+
+代理需要几分钟来下载模板并安装其依赖项。完成后，它应该会报告项目已准备就绪，并且有一个包含少量文件的最小化 **app** 文件夹。
+
+</Step>
+
+<Step label="3">
+
+## 在手机上运行应用
+
+这是你在本教程中自己会运行的唯一命令。它会启动开发服务器，将你的应用流式传输到手机上。打开一个**新的终端窗口**（让你的代理继续运行在第一个窗口中），然后运行：
+
+<Terminal
+  cmd={['$ cd StickerSmash', '', '$ npx expo start']}
+  cmdCopy={['$ cd StickerSmash && npx expo start']}
+/>
+
+终端中会出现一个二维码。要打开应用：
+
+- **Android**：打开 Expo Go，然后点击 **Scan QR code**。
+- **iOS**：打开默认相机应用，并将其对准二维码。
+
+你应该会在手机上看到一个几乎空白的屏幕。那就是你的应用。请保持这个终端窗口打开，并在本教程剩余部分把手机放在附近。
+
+<Collapsible summary="手机无法连接？">
+
+你的手机和电脑必须连接到同一个 Wi-Fi 网络。如果已经连接但应用仍然无法加载，请用 <kbd>Ctrl</kbd> + <kbd>C</kbd> 停止服务器，然后以隧道模式重新启动，这种方式可跨网络工作：
+
+<Terminal cmd={['$ npx expo start --tunnel']} />
+
+当你在手机和终端中登录同一个 Expo 账户时，也可以在 Expo Go 的 **Projects** 选项卡下找到你的项目。
+
+</Collapsible>
+
+</Step>
+
+<Step label="4">
+
+## 做出你的第一次修改
+
+现在把这个循环闭合起来：向代理请求一个可见的变化，并观察它出现在你的手机上。将以下提示粘贴到你的代理中：
+
+```text Prompt|wrap
+将主页屏幕改为在深色背景 #25292e 上显示白色、居中的文本 "Home screen"。
+```
+
+**你应该看到的效果**：在代理完成后的几秒内，你手机上的应用会重新加载，显示一个深色屏幕，中间有白色的 "Home screen" 文本：
+
+<ContentSpotlight
+  alt="带有更新后的文本和背景颜色的应用"
+  src="/static/images/tutorial/02-index-screen-changes.webp"
+  className="max-w-[720px]"
+/>
+
+这就是整个工作流程——你提出需求，代理构建，手机显示结果。
+
+</Step>
+
+## 当某些东西看起来不对时
+
+迟早会有结果和你要求的不一致。这很正常，修正它也是工作流程的一部分：
+
+- **描述，不要诊断。** 直接告诉代理你看到了什么，以及你期望看到什么：“文本是居中的，但背景仍然是白色。” 你不需要去猜原因。
+- **逐字粘贴错误信息。** 如果你的手机显示红色错误屏幕，或者终端打印出错误，把完整消息复制给代理。错误信息是写给程序员看的，而你的代理也是。
+- **让代理检查它的工作。** 像“有些地方坏了——请检查你刚刚做的更改，找出问题并修复它”这样的提示会很有帮助。
+- **如果应用卡住了**，摇一摇手机，然后在出现的菜单中点按 **Reload**。如果这还不行，使用 <kbd>Ctrl</kbd> + <kbd>C</kbd> 停止开发服务器，然后再次运行 `npx expo start`。
+
+接下来的章节末尾都会有一个简短的提醒，链接回本节。
+
+## 摘要
+
+<ProgressTracker
+  currentChapterIndex={1}
+  name="BUILD_WITH_AI"
+  summary="你创建了一个应用，在手机上运行了它，并通过一个提示词对其进行了修改。"
+  nextChapterDescription="在下一章中，你将把这个空白屏幕变成真正的应用：导航标签、照片查看器和图片选择器。"
+  nextChapterTitle="构建主屏幕"
+  nextChapterLink="/tutorial/build-with-ai/build-the-home-screen/"
+/>

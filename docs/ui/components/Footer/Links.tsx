@@ -4,6 +4,8 @@ import { Edit05Icon } from '@expo/styleguide-icons/outline/Edit05Icon';
 import { File02Icon } from '@expo/styleguide-icons/outline/File02Icon';
 import { MessageTextSquare02Icon } from '@expo/styleguide-icons/outline/MessageTextSquare02Icon';
 import * as Dialog from '@radix-ui/react-dialog';
+import type { ReactNode } from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
 
 import { A, CALLOUT, LI } from '../Text';
 import { FeedbackDialog } from './FeedbackDialog';
@@ -21,18 +23,19 @@ export const IssuesLink = ({ title, repositoryUrl }: { title: string; repository
         repositoryUrl ? `${repositoryUrl}/issues` : `https://github.com/expo/expo/labels/${title}`
       }
       className={LINK_CLASSES}>
-      <GithubIcon className={ICON_CLASSES} />
-      <CALLOUT theme="secondary">查看 {title} 的公开问题</CALLOUT>
+      <GithubIcon aria-hidden="true" className={ICON_CLASSES} />
+      <CALLOUT theme="secondary">查看 {title} 的未解决问题报告</CALLOUT>
     </A>
   </LI>
 );
 
-export const ForumsLink = ({ isAPIPage, title }: { isAPIPage: boolean; title: string }) =>
-  isAPIPage ? (
+export const ForumsLink = ({ isAPIPage, title }: { isAPIPage: boolean; title: string }) => {
+  const intl = useIntl();
+  return isAPIPage ? (
     <LI>
       <A isStyled openInNewTab href="https://chat.expo.dev/" className={LINK_CLASSES}>
-        <DiscordIcon className={ICON_CLASSES} />
-        <CALLOUT theme="secondary">在论坛上询问有关 {title} 的问题</CALLOUT>
+        <DiscordIcon aria-hidden="true" className={ICON_CLASSES} />
+        <CALLOUT theme="secondary">在论坛中提问：{title}</CALLOUT>
       </A>
     </LI>
   ) : (
@@ -43,20 +46,24 @@ export const ForumsLink = ({ isAPIPage, title }: { isAPIPage: boolean; title: st
         href="https://chat.expo.dev/"
         className={LINK_CLASSES}
         shouldLeakReferrer>
-        <DiscordIcon className={ICON_CLASSES} />
-        <CALLOUT theme="secondary">在论坛上提问</CALLOUT>
+        <DiscordIcon aria-hidden="true" className={ICON_CLASSES} />
+        <CALLOUT theme="secondary">{intl.formatMessage({ id: 'footerAskOnForums' })}</CALLOUT>
       </A>
     </LI>
   );
+};
 
-export const EditPageLink = ({ pathname }: { pathname: string }) => (
-  <LI>
-    <A isStyled openInNewTab href={githubUrl(pathname)} className={LINK_CLASSES}>
-      <Edit05Icon className={ICON_CLASSES} />
-      <CALLOUT theme="secondary">编辑此页</CALLOUT>
-    </A>
-  </LI>
-);
+export const EditPageLink = ({ pathname }: { pathname: string }) => {
+  const intl = useIntl();
+  return (
+    <LI>
+      <A isStyled openInNewTab href={githubUrl(pathname)} className={LINK_CLASSES}>
+        <Edit05Icon aria-hidden="true" className={ICON_CLASSES} />
+        <CALLOUT theme="secondary">{intl.formatMessage({ id: 'footerEditPage' })}</CALLOUT>
+      </A>
+    </LI>
+  );
+};
 
 type LlmsTxtLinkProps = {
   fullVersionHref: string;
@@ -65,28 +72,37 @@ type LlmsTxtLinkProps = {
 
 export const LlmsTxtLink = ({ fullVersionHref, fullVersionLabel }: LlmsTxtLinkProps) => (
   <LI className="flex items-center">
-    <File02Icon className={ICON_CLASSES} />
+    <File02Icon aria-hidden="true" className={ICON_CLASSES} />
     <CALLOUT theme="secondary" tag="span">
-      查看{' '}
-      <A openInNewTab href="/llms.txt" className="focus-visible:outline-offset-4">
-        llms.txt
-      </A>{' '}
-      和{' '}
-      <A openInNewTab href={fullVersionHref} className="focus-visible:outline-offset-4">
-        {fullVersionLabel}
-      </A>
+      <FormattedMessage
+        id="footerLlmsView"
+        values={{
+          llmsLink: (chunks: ReactNode) => (
+            <A openInNewTab href="/llms.txt" className="focus-visible:outline-offset-4">
+              {chunks}
+            </A>
+          ),
+          fullLink: (chunks: ReactNode) => (
+            <A openInNewTab href={fullVersionHref} className="focus-visible:outline-offset-4">
+              {chunks}
+            </A>
+          ),
+          fullName: fullVersionLabel,
+        }}
+      />
     </CALLOUT>
   </LI>
 );
 
 export const ShareFeedbackLink = ({ pathname }: { pathname?: string }) => {
+  const intl = useIntl();
   return (
     <LI>
       <Dialog.Root>
         <Dialog.Trigger className="h-5.5 focus-visible:outline-offset-4">
           <A isStyled className={LINK_CLASSES}>
-            <MessageTextSquare02Icon className={ICON_CLASSES} />
-            <CALLOUT theme="secondary">分享反馈</CALLOUT>
+            <MessageTextSquare02Icon aria-hidden="true" className={ICON_CLASSES} />
+            <CALLOUT theme="secondary">{intl.formatMessage({ id: 'footerShareFeedback' })}</CALLOUT>
           </A>
         </Dialog.Trigger>
         <FeedbackDialog pathname={pathname} />

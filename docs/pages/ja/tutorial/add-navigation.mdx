@@ -1,0 +1,377 @@
+---
+title: 添加导航
+description: 在本章中，您将学习如何向 Expo 应用添加导航。
+hasVideoLink: true
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { FileTree } from '~/ui/components/FileTree';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Step } from '~/ui/components/Step';
+import { CODE } from '~/ui/components/Text';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+在本章中，您将学习 Expo Router 的基础知识，并创建一个带有堆栈导航和两个标签页的底部标签栏。
+
+<VideoBoxLink
+  videoId="8336fcFV_T4"
+  title="观看：向通用 Expo 应用添加导航"
+  description="使用 Expo Router 设置基于文件的路由，创建屏幕之间的堆栈导航，并构建底部标签栏。"
+/>
+
+## Expo Router 的基础
+
+Expo Router 是一个面向 React Native 和 web 应用的基于文件的路由框架。它用于管理屏幕之间的导航，并且可以在多个平台上使用相同的组件。开始之前，你需要了解以下约定。
+
+- **app 目录：** 这是一个特殊目录，只包含路由及其布局。添加到此目录中的文件，在原生应用中会被视为屏幕，在 web 中会被视为页面。
+- **根布局：** 指 **app/\_layout.tsx** 文件。它定义诸如标题栏、标签栏之类的共享 UI 元素，这些元素需要在多个路由之间保持一致。
+- **文件名约定：** **index.tsx** 等 _Index_ 文件名会与父目录匹配，不会额外添加路径段。例如，**app** 目录中的 **index.tsx** 对应 `/` 路由。
+- **路由** 文件默认导出 React 组件。可以使用 `.js`、`.jsx`、`.ts`、`.tsx` 中的任意一种扩展名。
+- Android、iOS、web 共享统一的导航结构。
+
+> 上面的列表已经足够开始了。有关所有功能的完整列表，请参阅 [Expo Router 简介](/router/introduction/)。
+
+<Step label="1">
+
+## 向堆栈中添加新屏幕
+
+让我们在 **app** 目录中创建一个名为 **about.tsx** 的新文件。当用户导航到 `/about` 路由时，显示屏幕名称。
+
+```tsx app/about.tsx|collapseHeight=300
+import { Text, View, StyleSheet } from 'react-native';
+
+export default function AboutScreen() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>关于屏幕</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    color: '#fff',
+  },
+});
+```
+
+在 **app/\_layout.tsx** 中：
+
+1. 添加 `<Stack.Screen />` 组件和 `options` 属性，以更新 `/about` 路由的标题。
+2. 添加 `options` 属性，将 `/index` 路由的标题更新为 `Home`。
+
+{/* prettier-ignore */}
+```tsx app/_layout.tsx
+import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return (
+    /* @tutinfo 将屏幕包裹在 `Stack` 导航器内部。为 `/index` 路由添加 `options` 属性。再添加另一个 `Stack.Screen` 组件以加入 `/about` 路由。 */
+    <Stack>
+      <Stack.Screen name="index" options={{ title: 'Home' }} />
+      <Stack.Screen name="about" options={{ title: 'About' }} />
+    </Stack>
+    /* @end */
+  );
+}
+```
+
+<Collapsible summary={<><CODE>Stack</CODE> 是什么？</>}>
+
+堆栈导航器是应用内在不同屏幕之间移动的基础。在 Android 上，堆栈路由会以动画形式覆盖在当前屏幕之上。在 iOS 上，堆栈路由会从右侧滑入。Expo Router 提供了 `Stack` 组件，用于创建导航堆栈并添加新的路由。
+
+</Collapsible>
+
+</Step>
+
+<Step label="2">
+
+## 在屏幕之间移动
+
+使用 Expo Router 的 `Link` 组件，从 `/index` 路由跳转到 `/about` 路由。它是一个 React 组件，会渲染一个带有指定 `href` 属性的 `<Text>`。
+
+1. 在 **index.tsx** 中，从 `expo-router` 导入 `Link` 组件。
+2. 在 `<Text>` 组件之后添加 `Link` 组件，并将 `/about` 路由传给 `href` 属性。
+3. 为 `Link` 组件添加 `fontSize`、`textDecorationLine`、`color` 样式。它接收与 `<Text>` 组件相同的属性。
+
+{/* prettier-ignore */}
+```tsx app/index.tsx|collapseHeight=300
+import { Text, View, StyleSheet } from 'react-native';
+/* @tutinfo 从 `expo-router` 导入 `Link` 组件。 */ import { Link } from 'expo-router'; /* @end */
+
+export default function Index() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Home screen</Text>
+      /* @tutinfo 在 `Text` 组件之后添加 `Link` 组件，并将 `/about` 路由传给 `href` 属性。 */
+      <Link href="/about" style={styles.button}>
+        前往关于屏幕
+      </Link>
+      /* @end */
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    color: '#fff',
+  },
+  /* @tutinfo 为 `Link` 组件添加 `fontSize`、`textDecorationLine`、`color` 样式。 */
+  button: {
+    fontSize: 20,
+    textDecorationLine: 'underline',
+    color: '#fff',
+  },
+  /* @end */
+});
+```
+
+来看看应用的变化。点击 `Link` 前往 `/about` 路由。
+
+<ContentSpotlight file="tutorial/01-navigating-between-screens.mp4" />
+
+</Step>
+
+<Step label="3">
+
+## 添加 not-found 路由
+
+当路由不存在时，可以使用 `+not-found` 路由来显示回退屏幕。这在移动端访问无效路由时避免应用崩溃，以及在 web 上希望显示自定义页面而不是 _404_ 错误时非常有用。Expo Router 使用一个特殊的 **+not-found.tsx** 文件来处理这种情况。
+
+1. 在 app 目录中创建一个名为 **+not-found.tsx** 的新文件，并添加 `NotFoundScreen` 组件。
+2. 添加 `Stack.Screen` 的 `options` 属性，以显示此路由的自定义标题。
+3. 添加 `Link` 组件，跳转到回退路由 `/`。
+
+{/* prettier-ignore */}
+```tsx app/+not-found.tsx
+import { View, StyleSheet } from 'react-native';
+import { Link, Stack } from 'expo-router';
+
+export default function NotFoundScreen() {
+  return (
+    <>
+      /* @tutinfo 添加带有 `options` 属性的 `Stack.Screen` 组件，以更新 `+not-found` 路由的标题。 */
+      <Stack.Screen options={{ title: 'Oops! Not Found' }} />
+      /* @end */
+      <View style={styles.container}>
+        /* @tutinfo 添加一个回退路由，让用户可以导航到那个屏幕。这里的回退路由是 Home 屏幕。 */
+        <Link href="/" style={styles.button}>
+          返回 Home 屏幕！
+        </Link>
+        /* @end */
+      </View>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  button: {
+    fontSize: 20,
+    textDecorationLine: 'underline',
+    color: '#fff',
+  },
+});
+```
+
+要测试这一点，请在 web 浏览器中打开 `http:localhost:8081/123`，因为在浏览器中更容易更改 URL 路径。应用应该会显示 `NotFoundScreen` 组件。
+
+<ContentSpotlight file="tutorial/02-not-found-route.mp4" />
+
+</Step>
+
+<Step label="4">
+
+## 添加底部标签导航器
+
+到目前为止，**app** 目录的文件结构如下：
+
+<FileTree
+  files={[
+    ['app/_layout.tsx', '根布局'],
+    ['app/index.tsx', "匹配路由 '/'"],
+    ['app/about.tsx', "匹配路由 '/about'"],
+    ['app/+not-found.tsx', '匹配所有 404 路由'],
+  ]}
+/>
+
+为应用添加底部标签导航器，并复用现有的 Home 和 About 屏幕来创建标签布局（这是 X 或 BlueSky 等许多社交媒体应用中常见的导航模式）。同时，在根布局中使用堆栈导航器，确保 `+not-found` 路由显示在其他嵌套导航器之上。
+
+1. 在 **app** 目录中添加 **(tabs)** 子目录。这个特殊目录用于对路由进行分组，并将其显示在底部标签栏中。
+2. 在该目录中创建 **(tabs)/\_layout.tsx** 文件。它用于定义一个不同于根布局的标签布局。
+3. 将现有的 **index.tsx** 和 **about.tsx** 文件移动到 **(tabs)** 目录中。**app** 目录的结构将如下所示。
+
+<FileTree
+  files={[
+    ['app/_layout.tsx', '根布局'],
+    ['app/+not-found.tsx', '匹配所有 404 路由'],
+    ['app/(tabs)/_layout.tsx', '标签布局'],
+    ['app/(tabs)/index.tsx', "匹配路由 '/'"],
+    ['app/(tabs)/about.tsx', "匹配路由 '/about'"],
+  ]}
+/>
+
+更新根布局文件，添加 `(tabs)` 路由。
+
+{/* prettier-ignore */}
+```tsx app/_layout.tsx
+import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return (
+    <Stack>
+      /* @tutinfo 这就是如何将标签导航器嵌套在堆栈导航器内部，尤其是在 Root 布局由父级堆栈导航器组成时。我们还将 `headerShown` 选项设置为 `false`，以隐藏标签导航器的标题。否则，每个屏幕都会显示两个标题。 */
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      /* @end */
+    </Stack>
+  );
+}
+```
+
+在 **(tabs)/\_layout.tsx** 中添加 `Tabs` 组件，以定义底部标签布局。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/_layout.tsx
+import { Tabs } from 'expo-router';
+
+export default function TabLayout() {
+  return (
+    <Tabs>
+      /* @tutinfo `Tabs.Screen` 组件的行为与 `Stack.Screen` 组件类似，并且接收相同的属性。唯一的区别在于设备上的导航模式。 */
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="about" options={{ title: 'About' }} />
+      /* @end */
+    </Tabs>
+  );
+}
+```
+
+来看看带有新底部标签的应用。
+
+<ContentSpotlight
+  alt="所有平台上显示的底部标签导航器"
+  src="/static/images/tutorial/03-bottom-tab-navigator.webp"
+  className="max-w-[720px]"
+/>
+
+</Step>
+
+<Step label="5">
+
+## 更新底部标签导航器的外观
+
+目前，底部标签导航器在所有平台上外观相同，但它与应用的样式并不匹配。例如，标签栏和标题栏没有显示自定义图标，底部标签的背景色也与应用背景色不一致。
+
+修改 **(tabs)/\_layout.tsx** 文件，为标签栏添加图标。
+
+1. 从 [`@expo/vector-icons`](/guides/icons/#expovector-icons) —— 一个包含流行图标集的库 —— 中导入 `Ionicons` 图标集。
+2. 为 `index` 和 `about` 两个路由都添加 `tabBarIcon`。这个函数接收 `focused` 和 `color` 作为参数，并渲染一个图标组件。你可以从图标集中指定自定义图标名称。
+3. 为 `Tabs` 组件添加 `screenOptions.tabBarActiveTintColor`，并将值设为 `#ffd33d`。这会改变激活状态下标签栏图标和标签文字的颜色。
+
+{/* prettier-ignore */}
+```tsx app/(tabs)/_layout.tsx
+import { Tabs } from 'expo-router';
+/* @tutinfo 导入 `Ionicons` 图标集。*/
+import Ionicons from '@expo/vector-icons/Ionicons';
+/* @end */
+
+export default function TabLayout() {
+  return (
+    <Tabs
+      /* @tutinfo 可用于自定义标签栏的 `screenOptions` 有很多。这里我们将活动标签的颜色改为自定义值，这个值也会在应用后面的部分中使用。 */
+      screenOptions={{
+        tabBarActiveTintColor: '#ffd33d',
+      }}
+      /* @end */
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, focused }) => (
+            /* @tutinfo 使用 `focused` 参数可以在标签处于活动或非活动状态时更改图标和标签的行为。*/
+            <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+            /* @end */
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="about"
+        options={{
+          title: 'About',
+          tabBarIcon: ({ color, focused }) => (
+            /* @tutinfo */
+            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24}/>
+            /* @end */
+          ),
+        }}
+      />
+    </Tabs>
+  );
+}
+```
+
+再使用 `screenOptions` 属性来更改标签栏和标题栏的背景色。
+
+```tsx app/(tabs)/_layout.tsx
+<Tabs
+  screenOptions={{
+    tabBarActiveTintColor: '#ffd33d',
+    headerStyle: {
+      backgroundColor: '#25292e',
+    },
+    headerShadowVisible: false,
+    headerTintColor: '#fff',
+    tabBarStyle: {
+      backgroundColor: '#25292e',
+    },
+  }}
+>
+```
+
+在上面的代码中：
+
+- 使用 `headerStyle` 属性将标题栏背景设置为 `#25292e`。同时使用 `headerShadowVisible` 禁用标题栏阴影。
+- 使用 `headerTintColor` 将 `#fff` 应用于标题栏标签
+- 使用 `tabBarStyle.backgroundColor` 将 `#25292e` 应用于标签栏
+
+现在，应用已经添加了自定义底部标签导航器。
+
+<ContentSpotlight
+  alt="自定义底部标签导航器"
+  src="/static/images/tutorial/04-tab-navigator-complete.webp"
+  className="max-w-[720px]"
+/>
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  currentChapterIndex={1}
+  name="GET_STARTED"
+  chapterTitle="第 2 章：添加导航"
+  summary="您已向应用添加了堆栈和标签导航器。"
+  nextChapterDescription="在下一章中，您将学习如何构建应用的第一个屏幕。"
+  nextChapterTitle="构建应用的第一个屏幕"
+  nextChapterLink="/ja/tutorial/build-a-screen"
+/>

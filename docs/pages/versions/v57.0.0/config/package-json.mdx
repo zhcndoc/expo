@@ -1,0 +1,115 @@
+---
+title: package.json
+description: package.json 文件中可使用的 Expo 特定属性参考。
+---
+
+import { PaddedAPIBox } from '~/components/plugins/PaddedAPIBox';
+
+**package.json** 是一个 JSON 文件，包含 JavaScript 项目的元数据。这是对可通过在 **package.json** 文件中添加 `expo` 字段来使用的 Expo 特定属性的参考说明。
+
+<PaddedAPIBox>
+
+## `install.exclude`
+
+以下命令会对项目中已安装的库执行版本检查，并在某个库的版本与 Expo 推荐版本不同时给出警告：
+
+- `npx expo start` 和 `npx expo-doctor`
+- `npx expo install`（在安装该库的新版本或使用 `--check` 或 `--fix` 选项时）
+
+通过在 **package.json** 文件中的 `install.exclude` 数组下添加该库，你可以将其排除在版本检查之外：
+
+```json package.json
+{
+  "expo": {
+    "install": {
+      "exclude": ["expo-updates", "expo-splash-screen"]
+    }
+  }
+}
+```
+
+</PaddedAPIBox>
+
+<PaddedAPIBox>
+
+## `autolinking`
+
+允许通过使用 **package.json** 中的 `autolinking` 属性来配置模块解析行为。
+
+```json package.json
+{
+  "expo": {
+    "autolinking": {
+      "nativeModulesDir": "./modules"
+    }
+  }
+}
+```
+
+完整参考请参见 [Autolinking 配置](/modules/autolinking/#configuration)。
+
+</PaddedAPIBox>
+
+<PaddedAPIBox>
+
+## `doctor`
+
+允许配置 [`npx expo-doctor`](/develop/tools/#expo-doctor) 命令的行为。
+
+<PaddedAPIBox>
+
+### `reactNativeDirectoryCheck`
+
+默认情况下，Expo Doctor 会将你项目中的包与 [React Native directory](https://reactnative.directory/) 进行校验。此检查会对未包含在 React Native Directory 中的包列表发出警告。
+
+你可以通过在项目的 **package.json** 文件中添加以下配置来自定义此检查：
+
+```json package.json
+{
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        /* @info 使用此选项来禁用/启用检查。 */
+        "enabled": true,
+        /* @end */
+        /* @info 使用此选项来排除特定包。 */
+        "exclude": ["/foo/", "bar"],
+        /* @end */
+        /* @info 使用此选项来禁用/启用未知包列表。 */
+        "listUnknownPackages": true
+        /* @end */
+      }
+    }
+  }
+}
+```
+
+默认情况下，该检查已启用，并且会列出未知包。
+
+</PaddedAPIBox>
+
+<PaddedAPIBox>
+
+### `appConfigFieldsNotSyncedCheck`
+
+Expo Doctor 会检查你的项目是否包含原生项目目录，例如 **android** 或 **ios**。如果这些目录存在，但未在你的 **.gitignore** 或 [**.easignore**](/build-reference/easignore) 文件中列出，Expo Doctor 会验证是否存在 app 配置文件。如果该文件存在，则表示你的项目已配置为使用 [Prebuild](/more/glossary-of-terms/#prebuild)。
+
+当 **android** 或 **ios** 目录存在时，EAS Build 不会将 app 配置属性同步到原生项目。如果这些条件为真，Expo Doctor 会发出警告。
+
+你可以通过在项目的 **package.json** 文件中添加以下配置来禁用或启用此检查：
+
+```json package.json
+{
+  "expo": {
+    "doctor": {
+      "appConfigFieldsNotSyncedCheck": {
+        "enabled": false
+      }
+    }
+  }
+}
+```
+
+</PaddedAPIBox>
+
+</PaddedAPIBox>

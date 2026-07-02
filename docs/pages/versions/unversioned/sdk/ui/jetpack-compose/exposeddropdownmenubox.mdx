@@ -30,7 +30,7 @@ Expo UI `ExposedDropdownMenuBox` 与官方 Jetpack Compose [`ExposedDropdownMenu
 
 ### 基础
 
-> 当将未受控的 `TextField` 作为锚点时，请传入 `key={selected}`，以便在所选值更改时强制重新挂载——`defaultValue` 只会在挂载时读取。
+> 锚点是一个只读的 `TextField`，它绑定到一个 [`useNativeState`](usenativestate) 可观察对象。在每个项目的 `onClick` 中更新该可观察对象，以反映所选值。
 
 ```tsx BasicExposedDropdownMenuBoxExample.tsx
 import {
@@ -40,6 +40,7 @@ import {
   Host,
   Text,
   TextField,
+  useNativeState,
 } from '@expo/ui/jetpack-compose';
 import { menuAnchor } from '@expo/ui/jetpack-compose/modifiers';
 import { useState } from 'react';
@@ -51,26 +52,19 @@ const LANGUAGES = [
 ];
 
 export default function BasicExposedDropdownMenuBoxExample() {
-  const [selected, setSelected] = useState('java');
+  const selectedLabel = useNativeState('Java');
   const [expanded, setExpanded] = useState(false);
-
-  const selectedLabel = LANGUAGES.find(l => l.value === selected)?.label ?? '';
 
   return (
     <Host matchContents>
       <ExposedDropdownMenuBox expanded={expanded} onExpandedChange={setExpanded}>
-        <TextField
-          defaultValue={selectedLabel}
-          key={selected}
-          readOnly
-          modifiers={[menuAnchor()]}
-        />
+        <TextField value={selectedLabel} readOnly modifiers={[menuAnchor()]} />
         <ExposedDropdownMenu expanded={expanded} onDismissRequest={() => setExpanded(false)}>
           {LANGUAGES.map(lang => (
             <DropdownMenuItem
               key={lang.value}
               onClick={() => {
-                setSelected(lang.value);
+                selectedLabel.value = lang.label;
                 setExpanded(false);
               }}>
               <DropdownMenuItem.Text>

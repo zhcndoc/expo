@@ -19,7 +19,7 @@ Expo UI ModalBottomSheet 与官方 Jetpack Compose [Bottom Sheet API](https://de
   aspect="portrait"
   src="/static/images/expo-ui/bottomsheet/android-light.webp"
   darkSrc="/static/images/expo-ui/bottomsheet/android-dark.webp"
-  alt="Modal bottom sheet with title, description, and action buttons"
+  alt="带有标题、描述和操作按钮的模态底部抽屉"
 />
 
 ## 安装
@@ -50,7 +50,7 @@ export default function BasicBottomSheetExample() {
   return (
     <Host matchContents>
       <Button onClick={() => setVisible(true)}>
-        <Text>Open Sheet</Text>
+        <Text>打开抽屉</Text>
       </Button>
       {visible && (
         <ModalBottomSheet ref={sheetRef} onDismissRequest={() => setVisible(false)}>
@@ -76,7 +76,7 @@ export default function BasicBottomSheetExample() {
 import { useRef, useState } from 'react';
 import { Host, ModalBottomSheet, Button, Column, Text } from '@expo/ui/jetpack-compose';
 import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
-import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+import { paddingAll, height } from '@expo/ui/jetpack-compose/modifiers';
 
 export default function SkipPartiallyExpandedExample() {
   const [visible, setVisible] = useState(false);
@@ -90,16 +90,62 @@ export default function SkipPartiallyExpandedExample() {
   return (
     <Host matchContents>
       <Button onClick={() => setVisible(true)}>
-        <Text>Open Sheet</Text>
+        <Text>打开抽屉</Text>
       </Button>
       {visible && (
         <ModalBottomSheet
           ref={sheetRef}
           onDismissRequest={() => setVisible(false)}
           skipPartiallyExpanded>
-          <Column verticalArrangement={{ spacedBy: 12 }} modifiers={[paddingAll(24)]}>
-            <Text>这个抽屉会跳过部分展开状态。</Text>
+          <Column verticalArrangement={{ spacedBy: 12 }} modifiers={[paddingAll(24), height(600)]}>
+            <Text>此抽屉会跳过部分展开状态。</Text>
             <Text>它会直接以完全展开的位置打开。</Text>
+            <Button onClick={hideSheet}>
+              <Text>关闭</Text>
+            </Button>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+### 初始完全展开状态
+
+当 `initialFullyExpanded` 为 `true` 时，抽屉在首次组合时会直接以完全展开状态打开，同时仍然保留可达的部分展开状态。与 `skipPartiallyExpanded` 不同，用户仍然可以向下拖动到部分展开状态。`partialExpand()` 方法也仍然可用。
+
+```tsx InitialFullyExpandedExample.tsx
+import { useRef, useState } from 'react';
+import { Host, ModalBottomSheet, Button, Column, Text } from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function InitialFullyExpandedExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>打开抽屉</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}
+          initialFullyExpanded>
+          <Column verticalArrangement={{ spacedBy: 12 }} modifiers={[paddingAll(24)]}>
+            <Text>此抽屉已完全展开打开。</Text>
+            <Text>你仍然可以将其向下拖动到部分展开状态。</Text>
+            <Button onClick={() => sheetRef.current?.partialExpand()}>
+              <Text>折叠到部分展开</Text>
+            </Button>
             <Button onClick={hideSheet}>
               <Text>关闭</Text>
             </Button>
@@ -133,7 +179,7 @@ export default function CustomColorsExample() {
   return (
     <Host matchContents>
       <Button onClick={() => setVisible(true)}>
-        <Text>Open Colored Sheet</Text>
+        <Text>打开彩色抽屉</Text>
       </Button>
       {visible && (
         <ModalBottomSheet
@@ -186,7 +232,7 @@ export default function CustomDragHandleExample() {
   return (
     <Host matchContents>
       <Button onClick={() => setVisible(true)}>
-        <Text>Open Custom Handle Sheet</Text>
+        <Text>打开自定义把手抽屉</Text>
       </Button>
       {visible && (
         <ModalBottomSheet ref={sheetRef} onDismissRequest={() => setVisible(false)}>
@@ -230,7 +276,7 @@ export default function RNContentBottomSheetExample() {
   return (
     <Host matchContents>
       <Button onClick={() => setVisible(true)}>
-        <Text>Open RN Content Sheet</Text>
+        <Text>打开 RN 内容抽屉</Text>
       </Button>
       {visible && (
         <ModalBottomSheet
@@ -239,7 +285,7 @@ export default function RNContentBottomSheetExample() {
           skipPartiallyExpanded={false}>
           <Column verticalArrangement={{ spacedBy: 16 }} modifiers={[padding(16, 16, 16, 16)]}>
             <Text>在底部抽屉中混合使用 Compose + RN</Text>
-            <RNHostView matchContents>
+            <RNHostView>
               <View>
                 <RNText style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>
                   React Native 内容
@@ -287,7 +333,7 @@ export default function FlexRNContentExample() {
   return (
     <Host matchContents>
       <Button onClick={() => setVisible(true)}>
-        <Text>Open Flex Content Sheet</Text>
+        <Text>打开 flex 内容抽屉</Text>
       </Button>
       {visible && (
         <ModalBottomSheet
@@ -308,6 +354,46 @@ export default function FlexRNContentExample() {
                   React Native 内容（flex: 1）
                 </RNText>
               </View>
+            </RNHostView>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+### 可滚动的 React Native 内容
+
+使用 `RNHostView` 在抽屉中嵌套可滚动的 React Native 列表，例如 `FlatList`、`ScrollView`，或高性能列表如 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)。在可滚动组件上设置 `nestedScrollEnabled`，使其优先滚动自身内容。到达顶部边缘后，剩余的拖动会移动抽屉。不设置 `nestedScrollEnabled` 时，列表会吞掉手势，抽屉将保持不动。
+
+```tsx ScrollableContentBottomSheetExample.tsx
+import { useState } from 'react';
+import { Host, ModalBottomSheet, Button, Column, RNHostView, Text } from '@expo/ui/jetpack-compose';
+import { fillMaxHeight, padding } from '@expo/ui/jetpack-compose/modifiers';
+import { FlatList, Text as RNText } from 'react-native';
+
+const DATA = Array.from({ length: 50 }, (_, i) => `Item ${i + 1}`);
+
+export default function ScrollableContentBottomSheetExample() {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>打开可滚动抽屉</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet onDismissRequest={() => setVisible(false)}>
+          <Column modifiers={[fillMaxHeight(), padding(16, 16, 16, 16)]}>
+            <RNHostView>
+              <FlatList
+                nestedScrollEnabled
+                style={{ flex: 1 }}
+                data={DATA}
+                keyExtractor={item => item}
+                renderItem={({ item }) => <RNText style={{ paddingVertical: 16 }}>{item}</RNText>}
+              />
             </RNHostView>
           </Column>
         </ModalBottomSheet>
@@ -339,7 +425,7 @@ export default function NonDismissibleExample() {
   return (
     <Host matchContents>
       <Button onClick={() => setVisible(true)}>
-        <Text>Open Non-Dismissible Sheet</Text>
+        <Text>打开不可关闭抽屉</Text>
       </Button>
       {visible && (
         <ModalBottomSheet

@@ -47,7 +47,7 @@ export default function BottomSheetExample() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Button title="Open" onPress={() => sheetRef.current?.snapToIndex(0)} />
+      <Button title="打开" onPress={() => sheetRef.current?.snapToIndex(0)} />
 
       <BottomSheet
         ref={sheetRef}
@@ -57,7 +57,7 @@ export default function BottomSheetExample() {
           console.log('onChange', index);
         }}
         onClose={() => {
-          console.log('closed');
+          console.log('已关闭');
         }}
         enablePanDownToClose>
         <BottomSheetView style={{ flex: 1, padding: 24, alignItems: 'center' }}>
@@ -83,12 +83,12 @@ export default function BottomSheetModalExample() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Button title="Present" onPress={() => modalRef.current?.present()} />
+      <Button title="显示" onPress={() => modalRef.current?.present()} />
 
       <BottomSheetModal ref={modalRef} snapPoints={['50%', '90%']} enablePanDownToClose>
         <BottomSheetView style={{ padding: 24 }}>
           <Text>Modal 内容</Text>
-          <Button title="Dismiss" onPress={() => modalRef.current?.dismiss()} />
+          <Button title="关闭" onPress={() => modalRef.current?.dismiss()} />
         </BottomSheetView>
       </BottomSheetModal>
     </View>
@@ -122,6 +122,39 @@ export default function DynamicBottomSheetExample() {
 }
 ```
 
+### 可滚动的 React Native 内容
+
+底部 sheet 支持将 React Native 的 `FlatList` 或 `ScrollView`（或者像 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list) 这样的高性能列表）作为子组件，用于可滚动内容。启用 `nestedScrollEnabled` 后，列表会先滚动自身内容；当滚动到顶部边缘后，剩余的拖拽会移动 sheet。为了兼容 `@gorhom/bottom-sheet`，`BottomSheetFlatList` 和 `BottomSheetScrollView` 也已导出，但它们只是对 React Native 组件的直接重新导出。
+
+```tsx BottomSheetScrollableExample.tsx
+import { useRef } from 'react';
+import { Button, FlatList, Text, View } from 'react-native';
+import BottomSheet from '@expo/ui/community/bottom-sheet';
+
+const DATA = Array.from({ length: 50 }, (_, i) => `Item ${i + 1}`);
+
+export default function BottomSheetScrollableExample() {
+  const sheetRef = useRef<BottomSheet>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Open" onPress={() => sheetRef.current?.snapToIndex(0)} />
+
+      <BottomSheet ref={sheetRef} snapPoints={['50%', '90%']} index={-1} enablePanDownToClose>
+        <FlatList
+          nestedScrollEnabled
+          style={{ flex: 1 }}
+          data={DATA}
+          keyExtractor={item => item}
+          contentContainerStyle={{ padding: 24 }}
+          renderItem={({ item }) => <Text style={{ paddingVertical: 16 }}>{item}</Text>}
+        />
+      </BottomSheet>
+    </View>
+  );
+}
+```
+
 ## 平台行为
 
 `@gorhom/bottom-sheet` 会以内联方式渲染在其父视图底部。这个组件在 Android 和 iOS 上使用原生模态呈现，在 web 上使用抽屉覆盖层。
@@ -136,9 +169,11 @@ export default function DynamicBottomSheetExample() {
 | 下滑关闭             | 同时启用返回按钮和遮罩点击关闭               | 同时启用背景点击关闭             | 启用抽屉关闭                 |
 | 持久的内联预览       | 不支持                                       | 不支持                           | 不支持                      |
 
+> **信息** 在 iOS 上，如果要在另一个底部 sheet 上方显示一个底部 sheet，应将第二个 `BottomSheet` 嵌套在第一个 sheet 的内容内部，而不是并列放置。这是底层 SwiftUI [`sheet`](<https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)>) 修饰符的限制。更多信息请参阅 [如何展示多个 sheet](https://www.hackingwithswift.com/quick-start/swiftui/how-to-present-multiple-sheets)。
+
 ## 支持的导出
 
-| Export                     | Supported   | Notes                                                     |
+| 导出                       | 支持        | 说明                                                     |
 | -------------------------- | ----------- | --------------------------------------------------------- |
 | `BottomSheet`              | <YesIcon /> | Android 和 iOS 上为 Modal，web 上为 drawer              |
 | `BottomSheetModal`         | <YesIcon /> | 默认关闭，并通过 `present()` 打开                        |

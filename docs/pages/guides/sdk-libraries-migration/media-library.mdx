@@ -106,6 +106,48 @@ await asset.delete();
 await Asset.delete([asset1, asset2]);
 ```
 
+### 在新 API 中同时使用旧版资产
+
+> 如果可能，请将你的应用迁移为端到端使用新 API。下面这些辅助方法是为渐进式迁移准备的，即旧版 API 和新版 API 会同时使用。
+
+如果你内存中有一个旧版 `Asset` 对象，并且需要一个新版 `Asset` 实例，在 iOS 上使用 `asset.uri`（它已经是新 API 接受的 `ph://` URI），在 Android 上使用 `getAssetContentUriAsync` 将数值型 MediaStore ID 转换为 `content://` URI。
+
+```ts
+import { Asset } from 'expo-media-library';
+import * as LegacyMediaLibrary from 'expo-media-library/legacy';
+import { Platform } from 'react-native';
+
+async function toNewAsset(legacyAsset: LegacyMediaLibrary.Asset): Promise<Asset> {
+  switch (Platform.OS) {
+    case 'ios':
+      return new Asset(legacyAsset.uri);
+    case 'android': {
+      const contentUri = await LegacyMediaLibrary.getAssetContentUriAsync(legacyAsset);
+      return new Asset(contentUri);
+    }
+    default:
+      throw new Error(`不支持的平台：${Platform.OS}`);
+  }
+}
+```
+
+如果你的应用存储了旧版 API 返回的资产 ID（例如在数据库中），在创建 `Asset` 实例之前先进行转换。在 iOS 上，将旧版 ID 前加上 `ph://`。在 Android 上，使用 `getAssetContentUriAsync` 将数值型 MediaStore ID 解析为 `content://` URI。
+
+```ts
+async function convertStoredId(legacyId: string): Promise<Asset> {
+  switch (Platform.OS) {
+    case 'ios':
+      return new Asset(`ph://${legacyId}`);
+    case 'android': {
+      const contentUri = await LegacyMediaLibrary.getAssetContentUriAsync(legacyId);
+      return new Asset(contentUri);
+    }
+    default:
+      throw new Error(`不支持的平台：${Platform.OS}`);
+  }
+}
+```
+
 ## 相册
 
 ### 通过名称获取相册

@@ -59,7 +59,7 @@ Observe.configure({
 - 样本外设备会丢弃待处理的指标，而不是累积它们。稍后降低抽样率不会追溯发送更早的会话。
 - 抽样依赖于 [`dispatchingEnabled`](#configure)。如果 `dispatchingEnabled` 为 `false`，无论 `sampleRate` 是多少，都不会分发任何内容。
 
-## 在开发中启用指标
+## 开发中启用指标
 
 默认情况下，从调试构建中收集的指标不会被分发。不过，如果你想仍然分发它们（例如，在测试 EAS Observe 集成时），请在调用 `configure()` 时将 `dispatchInDebug` 设置为 `true`：
 
@@ -79,7 +79,9 @@ Observe.configure({
 
 ## 自定义端点
 
-如果你需要更改可观测性 API 的端点，请在你的 **应用配置** 中设置 `endpointUrl` 值：
+EAS Observe 使用 OpenTelemetry Protocol (OTLP) 通过 HTTP 发送带有 JSON 负载的数据。它会将指标发送到 `<endpointUrl>/<project-id>/v1/metrics`，并将日志发送到 `<endpointUrl>/<project-id>/v1/logs`，其中 `<project-id>` 是你的 EAS 项目 ID。这意味着你可以将 `endpointUrl` 设置为兼容 OpenTelemetry 的后端或 OpenTelemetry Collector，以便将可观测性数据路由到那里。
+
+要更改端点，请在你的 **app config** 中设置 `endpointUrl` 的值：
 
 ```json app.json
 {
@@ -96,6 +98,8 @@ Observe.configure({
 ```
 
 端点 URL 会在构建时被写入应用的原生层，因此更改它需要重新生成原生代码。更新应用配置后，请运行 `npx expo prebuild` 并创建一个新构建以应用更改。
+
+路径中会在标准的 `/v1/metrics` 和 `/v1/logs` OTLP 路径之前包含你的项目 ID。如果你的后端期望的是不带该前缀的标准 OTLP 路径，请将数据发送到一个 OpenTelemetry Collector，由它接收数据并重新导出到你的后端。
 
 ## 环境
 
