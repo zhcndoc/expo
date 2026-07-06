@@ -6,7 +6,7 @@ description: 了解如何在运行时覆盖更新 URL 和请求头，以控制�
 
 import { Collapsible } from '~/ui/components/Collapsible';
 
-使用 EAS Update 的典型方式是在你的应用构建中嵌入单一的更新 URL 和一组请求头（例如更新通道名称）。要控制加载哪个更新，你可以通过 `eas update` 命令或 EAS 控制台在服务器端进行更改。例如，你将一个新更新发布到你的构建所指向的通道，然后该构建会在下次启动时获取该更新。使用这种方法，发布到与你的构建所指向通道不同的更新将不会被下载。
+使用 EAS Update 的典型方式是在你的应用构建中嵌入单一的更新 URL 和一组请求头（例如更新通道名称）。要控制加载哪个更新，你可以通过 `eas update` 命令或 EAS 控制台在服务器端进行更改。例如，你将一个新更新发布到与你的构建所指向的通道，然后该构建会在下次启动时获取该更新。使用这种方法，发布到与你的构建所指向通道不同的更新将不会被下载。
 
 本指南解释了如何在运行时更改更新 URL 和请求头，从而可以通过 ID 加载特定更新，或者更改从哪个通道拉取更新，而无需创建并安装新的构建。
 
@@ -14,25 +14,13 @@ import { Collapsible } from '~/ui/components/Collapsible';
 
 > **warning** 本节描述的功能可在 Expo SDK 54 中使用，且需要 `expo-updates` 0.29.0 及更高版本。
 
-此功能的主要用例是 [channel surfing](#what-is-channel-surfing)，它允许在生产构建中于运行时切换更新通道。这使得非技术相关方能够测试和验证进行中的更新（例如来自拉取请求或不同功能分支的更新），而无需使用开发构建或为每次更改创建单独的预览构建。
+此功能的主要使用场景是[通道切换](/eas-update/channel-surfing/)，它会在完整的通道切换工作流中于运行时切换 `expo-channel-name` 请求头。
 
 例如，如果你有一个用于生产更新的 `default` 通道，以及一个用于预览更新的 `preview` 通道，你可以覆盖 `expo-channel-name` 请求头，使其指向 `preview` 通道。这样就可以在当前生产构建中测试预览更新。
 
 另一种潜在用例是向不同用户提供不同更新，例如让一组内部用户（如员工）在最终用户之前先接收更新。
 
-### 什么是 channel surfing？
-
-Channel surfing 是指在运行时切换已安装应用从哪个更新通道拉取更新。运行中的应用不再永久绑定到构建时配置的通道，而是可以被重定向到另一个通道（例如 `preview` 通道）并从那里加载更新。
-
-你可以使用 channel surfing 来：
-
-- 允许单个已安装应用按需在通道之间切换。应用可以在运行时切换通道，而不是永久锁定到构建时定义的通道。
-- 在真实构建上启用预览和测试流程，使开发者、QA 或其他相关方能够使用用户已安装的同一个生产构建来尝试进行中的更新。
-- 加快迭代和验证：通过将应用重定向到另一个通道，可以立即测试、审查或验证更新，而无需等待新的构建。
-
-有关 channel surfing 所解决的问题以及如何应用它的更多信息，请阅读 [关于 channel surfing 的博客文章](https://expo.dev/blog/channel-surfing-for-expo-updates-how-to-switch-update-channels-at-runtime)。
-
-### 工作原理
+### 它是如何工作的
 
 你可以通过调用 [`Updates.setUpdateRequestHeadersOverride`](/versions/latest/sdk/updates/#updatessetupdaterequestheadersoverriderequestheaders) 来覆盖 `expo-channel-name` 请求头。这将覆盖更新请求，使其从指定通道获取更新。
 

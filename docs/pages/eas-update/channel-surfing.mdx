@@ -1,0 +1,133 @@
+---
+title: 频道切换
+description: 了解如何在运行时切换 EAS Update 频道。
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Step } from '~/ui/components/Step';
+import { Terminal } from '~/ui/components/Snippet';
+
+**频道切换**允许已安装的发行构建在运行时向不同的 EAS Update 频道请求更新。
+
+在默认的 EAS Update 流程中，更新 URL 和更新频道在构建时就已固定。在 EAS 上构建时，此频道会在你的 **eas.json** 构建配置文件中设置。它会作为 `expo-channel-name` 请求头发送到更新 URL，并决定你的应用从哪个频道接收更新。频道切换允许你在 JavaScript 代码中覆盖该请求头，从而让你的应用可以从不同的频道请求更新。
+
+频道切换不会更改原生代码，也不会绕过更新兼容性规则。所选频道上的更新仍然必须与已安装应用的平台和 [运行时版本](/eas-update/runtime-versions/) 匹配。
+
+> **warning** 使用 `Updates.setUpdateRequestHeadersOverride()` 进行频道切换，可在 Expo SDK 54 中通过 `expo-updates` 0.29.0 及更高版本使用。
+
+## 何时使用 channel surfing
+
+你可以使用 channel surfing 来：
+
+- 允许单个已安装应用按需在各个 channel 之间切换。应用可以在运行时切换 channel，而不是始终绑定到构建时定义的 channel。
+- 在真实构建版本上启用预览和测试。开发者、QA 以及其他相关方可以使用用户已安装的同一生产构建版本，试用进行中的更新。
+- 通过将应用重定向到另一个 channel 来加快迭代和验证，而无需等待新的构建版本。
+
+对于面向开发者的测试以及预览兼容更新，请使用安装了 [expo-dev-client](/eas-update/expo-dev-client/) 库的[开发构建]。这不会使用 `Updates.setUpdateRequestHeadersOverride()`，因为它不受开发构建支持。
+
+<Prerequisites>
+  <Requirement title="已配置 EAS Update">
+    请参阅 [开始使用 EAS Update](/eas-update/getting-started/)。
+  </Requirement>
+  <Requirement title="已安装发布构建">
+    使用发布构建，或启用了
+    [`EX_UPDATES_NATIVE_DEBUG`](/eas-update/debug/#debugging-of-native-code-while-loading-the-app-through-expo-updates)
+    的调试构建。这与安装了 `expo-dev-client` 的开发构建不同。大多数 `expo-updates` API 在普通开发构建中不可用。
+  </Requirement>
+  <Requirement title="构建时已配置 channel">
+    `Updates.setUpdateRequestHeadersOverride()` 只能覆盖构建中嵌入的请求头键。对于 channel surfing，这意味着构建必须包含
+    `expo-channel-name`。[EAS Build](/build/introduction/) 会在构建时将 **eas.json** 中的 channel 添加到
+    你的原生项目中。如果你不使用 EAS Build，请使用
+    [`updates.requestHeaders`](/eas-update/getting-started/#configure-update-channels-in-appjson) 或
+    在你的原生项目中配置 channel。
+  </Requirement>
+  <Requirement title="目标 channel 上有兼容更新">
+    目标 channel 必须具有适用于已安装应用的平台和运行时版本的更新。
+  </Requirement>
+</Prerequisites>
+
+## 切换频道
+
+提供一个应用级触发器，用于更改频道，例如为受信任用户提供的隐藏菜单，或者其他适合你工作流程的机制。当选择某个频道时，使用 [`Updates.setUpdateRequestHeadersOverride()`](/versions/latest/sdk/updates/#updatessetupdaterequestheadersoverriderequestheaders) 来覆盖 `expo-channel-name` 请求头。设置覆盖后，检查是否有可用更新；如果有，则获取更新，然后重新加载应用：
+
+```tsx
+import * as Updates from 'expo-updates';
+
+export async function switchUpdateChannelAsync(channel: string) {
+  Updates.setUpdateRequestHeadersOverride({
+    'expo-channel-name': channel,
+  });
+
+  const update = await Updates.checkForUpdateAsync();
+
+  if (update.isAvailable) {
+    await Updates.fetchUpdateAsync();
+  }
+
+  await Updates.reloadAsync();
+}
+```
+
+该覆盖会保留在设备上。设置后，后续的更新检查会使用所选频道，直到应用清除或替换该覆盖，或直到应用被卸载。
+
+## 切换回构建中的频道
+
+将 `null` 传递给 `Updates.setUpdateRequestHeadersOverride()` 以清除请求头覆盖，并返回到构建中配置的频道：
+
+```tsx
+import * as Updates from 'expo-updates';
+
+export async function clearUpdateChannelOverrideAsync() {
+  Updates.setUpdateRequestHeadersOverride(null);
+
+  const update = await Updates.checkForUpdateAsync();
+
+  if (update.isAvailable) {
+    await Updates.fetchUpdateAsync();
+  }
+
+  await Updates.reloadAsync();
+}
+```
+
+`Updates.channel` 反映的是应用启动时处于活动状态的频道。调用 `Updates.setUpdateRequestHeadersOverride()` 后它不会立即更新，但在应用重新加载后，它会反映新的频道。
+
+## 测试频道切换
+
+<Step label="1">
+
+安装一个指向你要开始使用的频道的发布版本构建。如果你使用 [EAS Build](/build/introduction/)，请使用包含起始 `channel` 的配置文件来创建构建。对于本地测试，你可以使用 Android [APK build](/build-reference/apk/) 或 [iOS Simulator build](/build-reference/simulators/)。
+
+</Step>
+
+<Step label="2">
+
+向另一个兼容频道发布一个带有可见更改的更新：
+
+<Terminal cmd={['$ eas update --channel preview']} />
+
+</Step>
+
+<Step label="3">
+
+打开已安装的应用并触发你的频道切换器，选择 `preview`。应用应检查是否有更新，获取来自 `preview` 频道的兼容更新，并重新加载到该更新中。
+
+</Step>
+
+## 切换频道时的风险与注意事项
+
+切换频道会改变应用运行的 JavaScript bundle。如果你的应用依赖于在不同频道之间不兼容的迁移或数据结构，来回切换可能会导致问题。
+
+例如，如果某个 beta 更新应用了数据库迁移，生产版本可能无法识别新的 schema。请确保你的更新在频道之间切换时始终是安全的；如有需要，也可以限制为仅允许单向切换。
+
+## 其他资源
+
+<BoxLink
+  title="Expo 更新的频道切换"
+  description="阅读 Expo 关于在 EAS Update 中进行频道切换的博客文章。"
+  href="https://expo.dev/blog/channel-surfing-for-expo-updates-how-to-switch-update-channels-at-runtime"
+  Icon={BookOpen02Icon}
+/>
