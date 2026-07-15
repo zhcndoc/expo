@@ -52,15 +52,18 @@ export default function UncontrolledTextInputExample() {
 
 ```tsx ControlledTextInputExample.tsx
 import { Host, TextInput, useNativeState } from '@expo/ui';
-import { useEffectEvent } from 'react';
+import { useCallback } from 'react';
 
 export default function ControlledTextInputExample() {
   const text = useNativeState('');
 
-  const handleChangeText = useEffectEvent((value: string) => {
-    'worklet';
-    text.value = value === 'Hello' ? 'World' : value;
-  });
+  const handleChangeText = useCallback(
+    (value: string) => {
+      'worklet';
+      text.value = value === 'Hello' ? 'World' : value;
+    },
+    [text]
+  );
 
   return (
     <Host matchContents={{ vertical: true }}>
@@ -78,7 +81,7 @@ export default function ControlledTextInputExample() {
 
 ```tsx PhoneMaskExample.tsx
 import { Host, TextInput, useNativeState } from '@expo/ui';
-import { useEffectEvent } from 'react';
+import { useCallback } from 'react';
 
 function formatPhone(input: string) {
   'worklet';
@@ -92,15 +95,18 @@ export default function PhoneMaskExample() {
   const phone = useNativeState('');
   const selection = useNativeState({ start: 0, end: 0 });
 
-  const handleChangeText = useEffectEvent((value: string) => {
-    'worklet';
-    const formatted = formatPhone(value);
-    if (formatted !== value) {
-      phone.value = formatted;
-      // 为演示直接将光标跳到末尾。真实的遮罩需要更智能的光标处理。
-      selection.value = { start: formatted.length, end: formatted.length };
-    }
-  });
+  const handleChangeText = useCallback(
+    (value: string) => {
+      'worklet';
+      const formatted = formatPhone(value);
+      if (formatted !== value) {
+        phone.value = formatted;
+        // 示例中会跳到末尾。真正的遮罩需要更智能的光标处理。
+        selection.value = { start: formatted.length, end: formatted.length };
+      }
+    },
+    [phone, selection]
+  );
 
   return (
     <Host matchContents={{ vertical: true }}>
@@ -118,7 +124,7 @@ export default function PhoneMaskExample() {
 
 ## 不支持的 React Native props
 
-由于 Compose 的 `TextField` 或 SwiftUI 的 `TextField` 没有提供等效能力，或者该 prop 已被不同机制替代，因此某些 React Native `TextInput` props 不受支持。有关受支持的 props，请参见下方的 [API](#api) 部分。如果缺少的 prop 阻碍了你的使用场景，请 [提交 issue](https://github.com/expo/expo/issues/new/choose)，以便将其优先处理。
+由于 Compose 的 `TextField` 或 SwiftUI 的 `TextField` 没有提供等效功能，或者该 prop 已被不同机制替代，因此某些 React Native `TextInput` props 不受支持。有关受支持的 props，请参见下方的 [API](#api) 部分。如果缺少的 prop 阻碍了你的使用场景，请 [提交 issue](https://github.com/expo/expo/issues/new/choose)，以便将其优先处理。
 
 ## API
 

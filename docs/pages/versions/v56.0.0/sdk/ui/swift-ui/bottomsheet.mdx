@@ -79,7 +79,48 @@ export default function BottomSheetFitsContentExample() {
 }
 ```
 
-### 带展示 detent 的底部弹窗
+### 自定义背景颜色
+
+默认情况下，sheet 使用系统的半透明材质背景（iOS 26 上为 Liquid Glass）。可以在 `Group` 上使用 [`presentationBackground`](modifiers/#presentationbackgroundcolor) 修饰符，将 sheet 改为纯色背景，同时也会让 sheet 不再使用这种半透明材质。
+
+> **info** 优先使用 `presentationBackground`，而不是在 sheet 内容上使用 `background` 修饰符。`background` 位于内容自身背景的 _后面_，因此 `Form` 或 `List` 会把它遮住，而且当 sheet 在不同 detent 之间切换时，颜色显示会不一致。`presentationBackground` 直接为 sheet 表面着色，所以在每个 detent 下都能保持一致。当内容是 `Form` 或 `List` 时，还要添加 [`scrollContentBackground('hidden')`](modifiers/#scrollcontentbackgroundvisible)，这样 sheet 颜色才能透过分组背景显示出来。
+
+```tsx BottomSheetBackgroundColorExample.tsx
+import { useState } from 'react';
+import { Host, BottomSheet, Button, Group, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  presentationBackground,
+  presentationDetents,
+  padding,
+  foregroundStyle,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function BottomSheetBackgroundColorExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack>
+        <Button label="打开 Sheet" onPress={() => setIsPresented(true)} />
+        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+          <Group
+            modifiers={[
+              presentationDetents(['medium', 'large']),
+              presentationBackground('#ffffff'),
+            ]}>
+            <VStack modifiers={[padding({ all: 20 })]}>
+              <Text modifiers={[foregroundStyle('#000000')]}>纯白色 sheet 背景。</Text>
+              <Button label="关闭" onPress={() => setIsPresented(false)} />
+            </VStack>
+          </Group>
+        </BottomSheet>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+### 具有展示锚点的底部弹窗
 
 在 `Group` 上使用 [`presentationDetents`](modifiers/#presentationdetentsdetents-options) 修饰符来控制可用高度。你可以使用：
 

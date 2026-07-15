@@ -1,7 +1,7 @@
 ---
 title: EAS 工作流语法
 sidebar_title: 语法
-description: EAS Workflows 配置文件语法参考指南。
+description: EAS 工作流配置文件语法参考指南。
 maxHeadingDepth: 5
 ---
 
@@ -18,7 +18,7 @@ import { Terminal } from '~/ui/components/Snippet';
 
 ## Workflow 文件
 
-Workflow 文件使用 YAML 语法，且必须具有 `.yml` 或 `.yaml` 文件扩展名。如果你刚接触 YAML，并想了解更多，请参阅 [在 1 分钟内学习 YAML](https://learnxinyminutes.com/docs/yaml/)。
+Workflow 文件使用 YAML 语法，且必须具有 `.yml` 或 `.yaml` 文件扩展名。如果你刚接触 YAML，并想了解更多，请参阅 [1 分钟学会 YAML](https://learnxinyminutes.com/docs/yaml/)。
 
 Workflow 文件位于项目中的 **.eas/workflows** 目录下。**.eas** 目录应与 [**eas.json**](/build/eas-json/) 文件位于同一级别。
 
@@ -69,13 +69,13 @@ on:
 
 当你向匹配的分支和/或标签推送提交时运行你的 workflow。
 
-With the `branches` list, you can trigger the workflow only when those specified branches are pushed to. For example, if you use `branches: ['main']`, only pushes to the `main` branch trigger the workflow. Supports globs. By using the `!` prefix you can specify branches to ignore (you still need to provide at least one branch pattern without it).
+使用 `branches` 列表时，你可以仅在将提交推送到这些指定分支时触发 workflow。例如，如果你使用 `branches: ['main']`，只有推送到 `main` 分支时才会触发 workflow。支持 glob。通过使用 `!` 前缀，你可以指定要忽略的分支（但你仍然需要提供至少一个不带该前缀的分支模式）。
 
-With the `tags` list, you can trigger the workflow only when those specified tags are pushed. For example, if you use `tags: ['v1']`, only the `v1` tag being pushed triggers the workflow. Supports globs. By using the `!` prefix you can specify tags to ignore (you still need to provide at least one tag pattern without it).
+使用 `tags` 列表时，你可以仅在推送这些指定标签时触发 workflow。例如，如果你使用 `tags: ['v1']`，只有推送 `v1` 标签时才会触发 workflow。支持 glob。通过使用 `!` 前缀，你可以指定要忽略的标签（但你仍然需要提供至少一个不带该前缀的标签模式）。
 
-With the `paths` list, you can trigger the workflow only when changes are made to files matching the specified paths. For example, if you use `paths: ['apps/mobile/**']`, only changes to files in the `apps/mobile` directory trigger the workflow. Supports globs. By default, changes to any path trigger the workflow.
+使用 `paths` 列表时，你可以仅在对匹配指定路径的文件进行更改时触发 workflow。例如，如果你使用 `paths: ['apps/mobile/**']`，只有对 `apps/mobile` 目录中文件的更改才会触发 workflow。支持 glob。默认情况下，对任意路径的更改都会触发 workflow。
 
-When neither `branches` nor `tags` are provided, `branches` defaults to `['*']` and `tags` defaults to `[]`, which means the workflow triggers on push events to all branches and does not trigger on tag pushes. If only one of the two lists is provided the other defaults to `[]`.
+当既未提供 `branches` 也未提供 `tags` 时，`branches` 默认为 `['*']`，`tags` 默认为 `[]`，这意味着 workflow 会在所有分支的 push 事件上触发，而不会在 tag push 时触发。如果只提供了这两个列表中的一个，另一个默认为 `[]`。
 
 ```yaml
 on:
@@ -103,17 +103,17 @@ on:
 
 ### `on.ref_delete`
 
-Runs your workflow when a GitHub branch or tag is deleted. Requires a [linked GitHub repository](/eas/workflows/get-started/#automate-workflows-with-github-events) on your EAS project.
+当 GitHub 分支或标签被删除时运行你的工作流。你的 EAS 项目需要一个[已关联的 GitHub 仓库](/eas/workflows/get-started/#automate-workflows-with-github-events)。
 
-With the `branches` list, you can trigger the workflow only when those specified branches are deleted. For example, if you use `branches: ['feat/**']`, only deletion of branches matching `feat/**` triggers the workflow. Supports globs. By using the `!` prefix you can specify branches to ignore (you still need to provide at least one branch pattern without it). See [`on.push`](#onpush) for details on glob and negation pattern matching.
+使用 `branches` 列表，你可以仅在删除这些指定分支时触发工作流。例如，如果你使用 `branches: ['feat/**']`，只有删除与 `feat/**` 匹配的分支时才会触发工作流。支持 glob。通过使用 `!` 前缀，你可以指定要忽略的分支（但你仍然需要提供至少一个不带该前缀的分支模式）。有关 glob 和否定模式匹配的详细信息，请参阅 [`on.push`](#onpush)。
 
-With the `tags` list, you can trigger the workflow only when those specified tags are deleted. Supports globs and `!` negation with the same rules as branches.
+使用 `tags` 列表，你可以仅在删除这些指定标签时触发工作流。支持 glob 和 `!` 否定，规则与分支相同。
 
-When neither `branches` nor `tags` are provided, `branches` defaults to `['*']` and `tags` defaults to `[]`, which means the workflow triggers when any branch is deleted and does not trigger on tag deletions. If only one of the two lists is provided the other defaults to `[]`.
+当未提供 `branches` 和 `tags` 时，`branches` 默认为 `['*']`，`tags` 默认为 `[]`，这意味着工作流会在任意分支被删除时触发，但不会在标签删除时触发。如果只提供其中一个列表，另一个会默认为 `[]`。
 
-> **info** Workflow files are read from the default branch HEAD at the time of deletion, not from the deleted ref.
+> **info** 工作流文件会在删除发生时从默认分支的 HEAD 读取，而不是从被删除的 ref 读取。
 
-Pair this trigger with the [`branch-delete`](/eas/workflows/pre-packaged-jobs#branch-delete) job to remove EAS Update branches when GitHub branches are deleted. See the [Clean up update branches example](/eas/workflows/examples/branch-cleanup) for a complete workflow.
+将此触发器与 [`branch-delete`](/eas/workflows/pre-packaged-jobs#branch-delete) 作业配合使用，可在 GitHub 分支被删除时移除 EAS Update 分支。有关完整工作流，请参阅[清理更新分支示例](/eas/workflows/examples/branch-cleanup)。
 
 ```yaml
 on:
@@ -122,12 +122,12 @@ on:
     # @end #
     branches:
       - feat/**
-      - !main # other branch names and globs
+      - !main # 其他分支名称和 glob
 
 
     tags:
       - v*
-      - !v2-preview** # other tag names and globs
+      - !v2-preview** # 其他标签名称和 glob
 
 ```
 
@@ -135,9 +135,9 @@ on:
 
 当你创建或更新一个目标分支匹配的 pull request 时运行你的 workflow。
 
-With the `branches` list, you can trigger the workflow only when those specified branches are the target of the pull request. For example, if you use `branches: ['main']`, only pull requests to merge into the main branch trigger the workflow. Supports globs. Defaults to `['*']` when not provided, which means the workflow triggers on pull request events to all branches. By using the `!` prefix you can specify branches to ignore (you still need to provide at least one branch pattern without it).
+使用 `branches` 列表时，你可以仅在这些指定分支作为 pull request 的目标时触发 workflow。例如，如果你使用 `branches: ['main']`，只有合并到 main 分支的 pull request 才会触发 workflow。支持 glob。未提供时默认为 `['*']`，这意味着 workflow 会在针对所有分支的 pull request 事件上触发。通过使用 `!` 前缀，你可以指定要忽略的分支（但你仍然需要提供至少一个不带 `!` 的分支模式）。
 
-With the `types` list, you can trigger the workflow only on the specified pull request event types. For example, if you use `types: ['opened']`, only the `pull_request.opened` event (sent when a pull request is first opened) triggers the workflow. Defaults to `['opened', 'reopened', 'synchronize']` when not provided. Supported event types:
+使用 `types` 列表时，你可以仅在指定的 pull request 事件类型上触发 workflow。例如，如果你使用 `types: ['opened']`，则只有 `pull_request.opened` 事件（在 pull request 首次打开时发送）会触发 workflow。未提供时默认为 `['opened', 'reopened', 'synchronize']`。支持的事件类型：
 
 - `opened`
 - `edited`
@@ -147,11 +147,11 @@ With the `types` list, you can trigger the workflow only on the specified pull r
 - `synchronize`
 - `labeled`
 
-The `edited` type follows GitHub's `pull_request.edited` behavior and triggers when the pull request title, body, or base branch changes. To trigger only when the pull request's base branch changes, use `base_ref_changed`.
+`edited` 类型遵循 GitHub 的 `pull_request.edited` 行为，并且会在 pull request 的标题、正文或基础分支发生变化时触发。如果你只想在 pull request 的基础分支变化时触发，请使用 `base_ref_changed`。
 
-The `branches` filter matches the pull request's current base branch, so retargeting a pull request to a matching branch can trigger a workflow.
+`branches` 过滤器匹配的是 pull request 当前的基础分支，因此将 pull request 重新指向一个匹配的分支也可能触发 workflow。
 
-With the `paths` list, you can trigger the workflow only when changes are made to files matching the specified paths. For example, if you use `paths: ['apps/mobile/**']`, only changes to files in the `apps/mobile` directory trigger the workflow. Supports globs. By default, changes to any path trigger the workflow.
+使用 `paths` 列表时，你可以仅在更改了匹配指定路径的文件时触发 workflow。例如，如果你使用 `paths: ['apps/mobile/**']`，则只有 `apps/mobile` 目录中的文件更改才会触发 workflow。支持 glob。默认情况下，任何路径的更改都会触发 workflow。
 
 ```yaml
 on:
@@ -179,7 +179,7 @@ on:
 
 当 pull request 被匹配的标签标记时运行你的 workflow。
 
-With the `labels` list, you can specify which labels, when assigned to your pull request, trigger the workflow. For example, if you use `labels: ['Test']`, only labeling a pull request with the `Test` label triggers the workflow. Defaults to `[]` when not provided, which means no labels trigger the workflow.
+使用 `labels` 列表，你可以指定当哪些标签被分配到你的 pull request 时触发 workflow。例如，如果你使用 `labels: ['Test']`，则只有当 pull request 被标记为 `Test` 标签时才会触发 workflow。未提供时默认为 `[]`，这意味着没有任何标签会触发该 workflow。
 
 你也可以直接向 `on.pull_request_labeled` 提供匹配标签列表，以获得更简洁的语法。
 
@@ -464,7 +464,7 @@ jobs:
 
 ### `jobs.<job_id>.env`
 
-为该 job 设置环境变量。该属性可用于所有运行在 VM 上的 job（除预封装的 `apple-device-registration-request`、`require-approval`、`doc`、`get-build` 和 `slack` jobs 外的所有 job）。
+为该 job 设置环境变量。该属性可用于所有运行在 VM 上的 job（除预封装的 `apple-device-registration-request`、`branch-delete`、`doc`、`get-build`、`github-comment`、`require-approval` 和 `slack` job 外的所有 job）。
 
 ```yaml
 jobs:
@@ -516,6 +516,15 @@ jobs:
 ## `defaults`
 
 用于作为 workflow 配置中所有 job 默认值的参数。
+
+### `defaults.image`
+
+为 workflow 中所有 job 使用的默认 VM 镜像。建议使用 `sdk-XX` 镜像标签。可用镜像请参阅 [Infrastructure](/build-reference/infrastructure/)。单个 job 可以通过 [`jobs.<job_id>.image`](#jobsjob_idimage) 覆盖此值。
+
+```yaml
+defaults:
+  image: sdk-57
+```
 
 ### `defaults.run.working_directory`
 
@@ -733,7 +742,7 @@ jobs:
   another_job:
     needs: [my_job]
     steps:
-      - run: echo "Value: ${{ needs.my_job.outputs.value }}"
+      - run: echo "值：${{ needs.my_job.outputs.value }}"
 ```
 
 #### `inputs`
@@ -805,7 +814,7 @@ type GitHubContext = {
 };
 ```
 
-> **info** The `event` object contains the full [GitHub webhook payload](https://docs.github.com/en/webhooks/webhook-events-and-payloads). For `pull_request` events, `event.pull_request` includes fields from GitHub's Pull Request webhook payload, such as `github.event.pull_request.title` and `github.event.pull_request.body`. For edited pull request events, `github.event.changes` contains the fields that changed, such as `github.event.changes.base.ref.from` when the base branch changed. The type above lists a few useful fields, but additional fields such as `user`, `labels`, `milestone`, and others are also available.
+> **info** `event` 对象包含完整的 [GitHub webhook payload](https://docs.github.com/en/webhooks/webhook-events-and-payloads)。对于 `pull_request` 事件，`event.pull_request` 包含来自 GitHub Pull Request webhook payload 的字段，例如 `github.event.pull_request.title` 和 `github.event.pull_request.body`。对于已编辑的 pull request 事件，`github.event.changes` 包含已更改的字段，例如当基础分支变更时的 `github.event.changes.base.ref.from`。上面的类型列出了一些有用字段，但其他字段（例如 `user`、`labels`、`milestone` 等）也同样可用。
 
 如果 workflow 运行是通过 `eas workflow:run` 启动的，那么其 `event_name` 将是 `workflow_dispatch`，其余所有属性都将为空。
 
@@ -911,10 +920,10 @@ jobs:
         上传状态：${{ app_store_connect.build_upload.state }}
 ```
 
-Use `build_upload.build.id` as the `asc_build_id` for a `testflight` job:
+将 `build_upload.build.id` 用作 `testflight` job 的 `asc_build_id`：
 
 ```yaml .eas/workflows/testflight-after-asc-upload.yml
-name: Distribute to TestFlight after ASC upload
+name: 在 ASC 上传后分发到 TestFlight
 
 on:
   app_store_connect:
@@ -924,7 +933,7 @@ on:
 
 jobs:
   distribute_to_testflight:
-    name: Distribute to TestFlight
+    name: 分发到 TestFlight
     type: testflight
     params:
       asc_build_id: ${{ app_store_connect.build_upload.build.id }}
@@ -1161,6 +1170,7 @@ jobs:
     params:
       alias: string # 可选
       prod: boolean # 可选
+      source_maps: boolean # 可选
 ```
 
 此作业输出以下属性：
@@ -1277,7 +1287,7 @@ jobs:
 
 #### `testflight`
 
-Distributes iOS builds to TestFlight internal and external testing groups. Provide exactly one of `build_id` (upload a build and submit to TestFlight) or `asc_build_id` (submit an already uploaded build). See [TestFlight job documentation](/eas/workflows/pre-packaged-jobs#testflight) for detailed information and examples.
+将 iOS 构建分发到 TestFlight 内部和外部测试组。请准确提供 `build_id`（上传构建并提交到 TestFlight）或 `asc_build_id`（提交一个已上传的构建）中的一个。有关详细信息和示例，请参阅 [TestFlight 作业文档](/eas/workflows/pre-packaged-jobs#testflight)。
 
 ```yaml
 jobs:
@@ -1286,17 +1296,17 @@ jobs:
     type: testflight
     # @end #
     params:
-      build_id: string # required to upload and submit to TestFlight; mutually exclusive with asc_build_id
-      profile: string # optional, default: production; only when uploading and submitting
-      wait_processing_timeout_seconds: number # optional, default: 1800 (30 minutes); only when uploading and submitting in one job
-      asc_build_id: string # required to submit an already uploaded build; mutually exclusive with build_id
-      internal_groups: string[] # optional
-      external_groups: string[] # optional
-      changelog: string # optional
-      submit_beta_review: boolean # optional
+      build_id: string # 上传并提交到 TestFlight 所必需；与 `asc_build_id` 互斥
+      profile: string # 可选，默认值：production；仅在上传并提交时使用
+      wait_processing_timeout_seconds: number # 可选，默认值：1800（30 分钟）；仅在单个作业中上传并提交时使用
+      asc_build_id: string # 提交一个已上传的构建所必需；与 `build_id` 互斥
+      internal_groups: string[] # 可选
+      external_groups: string[] # 可选
+      changelog: string # 可选
+      submit_beta_review: boolean # 可选
 ```
 
-When uploading and submitting with `build_id`, this job outputs the following properties:
+当使用 `build_id` 上传并提交时，此作业输出以下属性：
 
 ```json
 {
@@ -1305,11 +1315,11 @@ When uploading and submitting with `build_id`, this job outputs the following pr
 }
 ```
 
-When submitting an already uploaded build with `asc_build_id`, this job outputs the following properties:
+当使用 `asc_build_id` 提交一个已上传的构建时，此作业输出以下属性：
 
 ```json
 {
-  "asc_build_id": string | null // App Store Connect build ID
+  "asc_build_id": string | null // App Store Connect 构建 ID
 }
 ```
 
@@ -1324,13 +1334,13 @@ jobs:
     type: update
     # @end #
     params:
-      message: string # optional
-      platform: string # optional - android | ios | all, defaults to all
-      branch: string # optional
-      channel: string # optional - cannot be used with branch
-      rollout_percentage: number # optional - 0 to 100, defaults to 100
-      private_key_path: string # optional
-      upload_sentry_sourcemaps: boolean # optional - defaults to "try uploading, but don't fail the job if it fails"
+      message: string # 可选
+      platform: string # 可选 - android | ios | all，默认值为 all
+      branch: string # 可选
+      channel: string # 可选 - 不能与 branch 一起使用
+      rollout_percentage: number # 可选 - 0 到 100，默认值为 100
+      private_key_path: string # 可选
+      upload_sentry_sourcemaps: boolean # 可选 - 默认情况下为“尝试上传，但如果失败则不让作业失败”
 ```
 
 此作业输出以下属性：
@@ -1344,7 +1354,7 @@ jobs:
 
 #### `branch-delete`
 
-Deletes an EAS Update branch and all of its updates. See [Branch delete job documentation](/eas/workflows/pre-packaged-jobs#branch-delete) for detailed information and examples.
+删除一个 EAS Update 分支及其所有更新。有关详细信息和示例，请参阅 [Branch delete 作业文档](/eas/workflows/pre-packaged-jobs#branch-delete)。
 
 ```yaml
 jobs:
@@ -1353,11 +1363,11 @@ jobs:
     type: branch-delete
     # @end #
     params:
-      branch_name: string # required
-      fail_on_missing: boolean # optional, default: false
+      branch_name: string # 必需
+      fail_on_missing: boolean # 可选，默认值：false
 ```
 
-This job outputs the following properties:
+此作业输出以下属性：
 
 ```json
 {
@@ -1379,20 +1389,22 @@ jobs:
     type: maestro
     # @end #
     environment: production | preview | development # 可选，默认值为 preview
-    image: string # 可选。有关可用镜像列表，请参阅 https://docs.expo.dev/eas/workflows/syntax/#jobsjob_idruns_on
+    image: string # 可选。请参阅 https://docs.expo.dev/build-reference/infrastructure/ 获取可用镜像列表。
+    runs_on: string # 可选。对 Android Emulator 测试使用 linux-*-nested-virtualization worker。可用选项请参阅 https://docs.expo.dev/eas/workflows/syntax/#jobsjob_idruns_on。
     params:
       build_id: string # 必需
       flow_path: string | string[] # 必需
       shards: number # 可选，默认值为 1
       retries: number # 可选，默认值为 0
-      retry_failed_only: boolean # 可选，默认值为 true。为 true 时，在适用情况下，重试只会重新运行上一次尝试中失败的流程。
-      record_screen: boolean # 可选，默认值为 false。为 true 时，会上传测试的录屏。
+      retry_failed_only: boolean # 可选，默认值为 true。为 true 时，在适用情况下，重试将仅尝试重新运行上一次尝试中失败的流程。
+      record_screen: boolean # 可选，默认值为 false。若为 true，则上传测试的屏幕录制。
       include_tags: string | string[] # 可选。要包含在测试中的标签。将作为 `--include-tags` 传递给 Maestro。
       exclude_tags: string | string[] # 可选。要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
-      maestro_version: string # 可选。测试要使用的 Maestro 版本。如果未提供，则使用最新版本。
+      maestro_version: string # 可选。用于测试的 Maestro 版本。如果未提供，将使用最新版本。
       android_system_image_package: string # 可选。要使用的 Android Emulator 系统镜像包。
-      device_identifier: string | { android?: string, ios?: string } # 可选。测试要使用的设备标识符。
-      output_format?: string # 可选，默认值为 junit。Maestro 测试报告格式。将作为 `--format` 传递给 Maestro。可以是 `junit` 或其他受支持的格式。
+      device_identifier: string | { android?: string, ios?: string } # 可选。要用于测试的设备标识符。
+      output_format: string # 可选，默认值为 junit。Maestro 测试报告格式。将作为 `--format` 传递给 Maestro。可以是 `junit` 或其他受支持的格式。
+      skip_build_check: boolean # 可选，默认值为 false。跳过构建校验（例如 iOS 构建是否为模拟器构建）。
     hooks:
       before_maestro_tests: step[] # 可选
       after_maestro_tests: step[] # 可选
@@ -1411,22 +1423,23 @@ jobs:
     type: maestro-cloud
     # @end #
     environment: production | preview | development # 可选，默认值为 preview
-    image: string # 可选。有关可用镜像列表，请参阅 https://docs.expo.dev/eas/workflows/syntax/#jobsjob_idruns_on
+    image: string # 可选。请参阅 https://docs.expo.dev/build-reference/infrastructure/ 获取可用镜像列表。
     params:
       build_id: string # 必需。要测试的构建 ID。
       maestro_project_id: string # 必需。Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
-      flows: string # 必需。Maestro flow 文件或包含要运行的 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。
-      maestro_api_key: string # 可选。用于 Maestro 项目的 API 密钥。默认情况下，将使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。
+      flows: string # 必需。Maestro flow 文件的路径，或包含要运行的 flows 的目录。对应 `maestro cloud` 的 `--flows` 参数。
+      maestro_api_key: string # 可选。用于 Maestro 项目的 API key。默认情况下，将使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。
       include_tags: string | string[] # 可选。要包含在测试中的标签。将作为 `--include-tags` 传递给 Maestro。
       exclude_tags: string | string[] # 可选。要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
-      maestro_version: string # 可选。测试要使用的 Maestro 版本。如果未提供，则使用最新版本。
-      maestro_config: string # 可选。测试要使用的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
-      device_locale: string # 可选。测试要使用的设备区域设置。将作为 `--device-locale` 传递给 Maestro。
-      device_model: string # 可选。测试要使用的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro list-cloud-devices` 查看支持的值列表。
-      device_os: string # 可选。测试要使用的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 查看支持的值列表。
+      maestro_version: string # 可选。用于测试的 Maestro 版本。如果未提供，将使用最新版本。
+      maestro_config: string # 可选。用于测试的 Maestro `config.yaml` 文件的路径。将作为 `--config` 传递给 Maestro。
+      device_locale: string # 可选。要用于测试的设备语言区域。将作为 `--device-locale` 传递给 Maestro。
+      device_model: string # 可选。要用于测试的设备型号。将作为 `--device-model` 传递给 Maestro。请运行 `maestro list-cloud-devices` 查看支持的值列表。
+      device_os: string # 可选。要用于测试的设备操作系统。将作为 `--device-os` 传递给 Maestro。请运行 `maestro list-cloud-devices` 查看支持的值列表。
+      skip_build_check: boolean # 可选，默认值为 false。跳过构建校验（例如 iOS 构建是否为模拟器构建）。
       name: string # 可选。Maestro Cloud 上传的名称。对应 `maestro cloud` 的 `--name` 参数。
-      branch: string # 可选。覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是从 GitHub 触发的，则使用工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。
-      async: boolean # 可选。异步运行 Maestro Cloud 测试。如果为 true，则作业状态仅表示上传是否成功，*不*表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。
+      branch: string # 可选。覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是从 GitHub 触发的，则使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。
+      async: boolean # 可选。异步运行 Maestro Cloud 测试。如果为 true，则作业状态只表示上传是否成功，*而不表示*测试是否成功。对应 `maestro cloud` 的 `--async` 参数。
     hooks:
       before_maestro_cloud: step[] # 可选。在上传到 Maestro Cloud 之前运行的步骤。
       after_maestro_cloud: step[] # 可选。在上传到 Maestro Cloud 之后运行的步骤。
@@ -1529,11 +1542,15 @@ jobs:
     # @info #
     type: repack
     params:
-      build_id: string # 必需
-      profile: string # 可选
-      embed_bundle_assets: boolean # 可选
-      message: string # 可选
-      repack_version: string # 可选
+      build_id: string # required
+      profile: string # optional
+      embed_bundle_assets: boolean # optional
+      js_bundle_only: boolean # optional
+      ios_signing_use_source_app_entitlements: boolean # optional
+      ios_signing_app_entitlements_path: string # optional
+      message: string # optional
+      repack_version: string # optional
+      repack_package: string # optional
     # @end #
 ```
 
@@ -1557,7 +1574,7 @@ jobs:
   my_job:
     # @info #
     steps:
-      - name: My first step
+      - name: 我的第一步
         run: echo "Hello World"
     # @end #
 ```
@@ -1604,13 +1621,13 @@ jobs:
 jobs:
   my_job:
     # @info #
-    image: auto | string # optional, defaults to 'auto'
+    image: auto | string # 可选，默认为 'auto'
     # @end #
 ```
 
 ### `jobs.<job_id>.runs_on`
 
-指定将执行该任务的 worker。仅适用于自定义任务。
+指定将执行该任务的 worker。可用于自定义任务以及 `build`、`maestro`、`maestro-cloud` 和 `repack` 预打包任务。
 
 ```yaml
 jobs:
@@ -1619,7 +1636,7 @@ jobs:
     runs_on: linux-medium | linux-large |
       linux-medium-nested-virtualization |
       linux-large-nested-virtualization |
-      macos-medium | macos-large # optional, defaults to linux-medium
+      macos-medium | macos-large # 可选，默认为 linux-medium
     # @end #
 ```
 
@@ -1686,7 +1703,7 @@ jobs:
 
 ### `jobs.<job_id>.steps.<step>.shell`
 
-用于运行命令的 shell。默认值为 `bash`。
+Shell 用于运行命令。默认值为 `bash`。
 
 ```yaml
 jobs:
@@ -1968,16 +1985,16 @@ jobs:
       # @info #
       - uses: eas/send_slack_message
         # @end #
-        with:
+      with:
           message: 'This is a message sent to a Slack channel'
           slack_hook_url: ${{ env.ANOTHER_SLACK_HOOK_URL }}
 ```
 
-| Property         | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `message`        | `string` | The text of the message you want to send. For example, `'This is the content of the message'`.<br /> <br />**Note:** Either `message` or `payload` needs to be provided, but not both.                                                                                                                                                                                                                                                                  |
-| `payload`        | `json`   | The contents of the message you want to send which are defined using [Slack Block Kit](https://docs.slack.dev/block-kit) layout.<br /> <br />**Note:** Either `message` or `payload` needs to be provided, but not both.                                                                                                                                                                                                                                |
-| `slack_hook_url` | `string` | The previously configured Slack webhook URL, which will post your message to the specified channel. Provide it using [EAS Environment Variables](/eas/environment-variables/manage/#manage-environment-variables) like `slack_hook_url: ${{ env.ANOTHER_SLACK_HOOK_URL }}`, or set the `SLACK_HOOK_URL` Environment Variable, which will serve as a default webhook URL (in this last case, there is no need to provide the `slack_hook_url` property). |
+| 属性            | 类型   | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `message`        | `string` | 要发送的消息文本。例如，`'This is the content of the message'`。<br /> <br />**注意：** 必须提供 `message` 或 `payload` 其一，但不能同时提供两者。                                                                                                                                                                                                                                                                  |
+| `payload`        | `json`   | 你想发送的消息内容，使用 [Slack Block Kit](https://docs.slack.dev/block-kit) 布局定义。<br /> <br />**注意：** 必须提供 `message` 或 `payload` 其一，但不能同时提供两者。                                                                                                                                                                                                                                |
+| `slack_hook_url` | `string` | 之前配置好的 Slack webhook URL，它会将你的消息发布到指定频道。请通过 [EAS 环境变量](/eas/environment-variables/manage/#manage-environment-variables) 提供，例如 `slack_hook_url: ${{ env.ANOTHER_SLACK_HOOK_URL }}`，或者设置 `SLACK_HOOK_URL` 环境变量，作为默认 webhook URL（在后一种情况下，无需提供 `slack_hook_url` 属性）。 |
 
 <BoxLink
   title="eas/send_slack_message 源代码"
@@ -2014,9 +2031,9 @@ jobs:
 
 #### `eas/upload_artifact`
 
-Uploads files from the job's workspace as an artifact attached to the workflow run. Uploaded artifacts appear in the run's **Artifacts** section and can be retrieved in a later job with [`eas/download_artifact`](#easdownload_artifact).
+将作业工作区中的文件作为附加到工作流运行的工件上传。上传的工件会显示在运行的 **Artifacts** 部分，并可在后续作业中通过 [`eas/download_artifact`](#easdownload_artifact) 获取。
 
-> **info** In a custom (non-build) job, set `type: other` to upload a generic artifact. The `application-archive` and `build-artifact` types are reserved for build jobs — using them in a custom job fails with an error like `Uploading application archives outside of builds is not supported`.
+> **信息** 在自定义（非构建）作业中，将 `type: other` 设为上传通用工件。`application-archive` 和 `build-artifact` 类型为构建作业保留——在自定义作业中使用它们会报错，例如 `Uploading application archives outside of builds is not supported`。
 
 ```yaml
 jobs:
@@ -2024,10 +2041,10 @@ jobs:
     steps:
       - uses: eas/checkout
       - name: Run tests
-        run: ./scripts/run-tests.sh # writes results into ./results
-      # @info Upload whatever the previous step produced. #
+        run: ./scripts/run-tests.sh # 将结果写入 ./results
+      # @info 上传前一步生成的内容。 #
       - uses: eas/upload_artifact
-        # @info `if: always()` uploads results even when a previous step failed. #
+        # @info `if: always()` 即使前一步失败也会上传结果。 #
         if: ${{ always() }}
         with:
           type: other
@@ -2036,25 +2053,25 @@ jobs:
             results/**/*
 ```
 
-##### Properties
+##### 属性
 
-| Property       | Type    | Required    | Description                                                                                                                                                                                                                                                     |
-| -------------- | ------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `path`         | string  | <YesIcon /> | Path or newline-delimited list of paths to upload. Supports `*` and other [glob patterns](https://github.com/isaacs/node-glob#glob-primer).                                                                                                                     |
-| `type`         | string  | <NoIcon />  | Artifact type. In custom jobs use `other` (a generic artifact). Defaults to `other` when the job has no build platform, and to `application-archive` in build jobs. The build-scoped values `application-archive` and `build-artifact` only work in build jobs. |
-| `name`         | string  | <NoIcon />  | Name for the artifact, used to reference it from [`eas/download_artifact`](#easdownload_artifact).                                                                                                                                                              |
-| `metadata`     | json    | <NoIcon />  | Arbitrary metadata to attach to a generic (`other`) artifact.                                                                                                                                                                                                   |
-| `ignore_error` | boolean | <NoIcon />  | When `true`, an upload failure is logged but does not fail the step. Defaults to `false`.                                                                                                                                                                       |
+| 属性           | 类型    | 必需        | 描述                                                                                                                                                                                                                                                     |
+| -------------- | ------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `path`         | string  | <YesIcon /> | 要上传的路径或按行分隔的路径列表。支持 `*` 和其他 [glob patterns](https://github.com/isaacs/node-glob#glob-primer)。                                                                                                                     |
+| `type`         | string  | <NoIcon />  | 工件类型。在自定义作业中使用 `other`（通用工件）。当作业没有构建平台时默认为 `other`，在构建作业中默认为 `application-archive`。构建作用域的值 `application-archive` 和 `build-artifact` 仅在构建作业中有效。 |
+| `name`         | string  | <NoIcon />  | 工件名称，用于在 [`eas/download_artifact`](#easdownload_artifact) 中引用它。                                                                                                                                                              |
+| `metadata`     | json    | <NoIcon />  | 可附加到通用（`other`）工件的任意元数据。                                                                                                                                                                                                   |
+| `ignore_error` | boolean | <NoIcon />  | 当为 `true` 时，上传失败会被记录，但不会使步骤失败。默认为 `false`。                                                                                                                                                                       |
 
-##### Outputs
+##### 输出
 
-| Property      | Type   | Description                                                                                         |
-| ------------- | ------ | --------------------------------------------------------------------------------------------------- |
-| `artifact_id` | string | The ID of the uploaded artifact. Can be passed to [`eas/download_artifact`](#easdownload_artifact). |
+| 属性          | 类型   | 描述                                                                                         |
+| ------------- | ------ | -------------------------------------------------------------------------------------------- |
+| `artifact_id` | string | 已上传工件的 ID。可传递给 [`eas/download_artifact`](#easdownload_artifact)。 |
 
 <BoxLink
-  title="eas/upload_artifact source code"
-  description="View the source code for the eas/upload_artifact function on GitHub."
+  title="eas/upload_artifact 源代码"
+  description="在 GitHub 上查看 eas/upload_artifact 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/uploadArtifact.ts"
 />

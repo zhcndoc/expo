@@ -8,7 +8,7 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { FAQ } from '~/ui/components/FAQ';
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 
-Prepackaged actions are ready-to-use workflow tasks that help you automate common tasks such as building, submitting, and testing applications. They provide a standardized way to handle these operations without having to write custom task configurations from scratch. This guide will introduce the available prepackaged actions and how to use them in your workflows.
+预打包操作是可直接使用的工作流任务，可帮助你自动化常见任务，例如构建、提交和测试应用程序。它们提供了一种标准化的方式来处理这些操作，而无需从头编写自定义任务配置。本指南将介绍可用的预打包操作以及如何在工作流中使用它们。
 
 ## 构建
 
@@ -17,8 +17,9 @@ Prepackaged actions are ready-to-use workflow tasks that help you automate commo
 构建作业可以自定义，因此你可以在构建过程中执行自定义命令。更多信息请参见 [自定义构建](/custom-builds/get-started/)。
 
 <Prerequisites>
-  <Requirement title="已完成的本地构建">
-    使用与预打包作业相同的平台和配置文件，通过 EAS CLI 完成一次构建。了解如何 [创建你的第一个构建](/build/setup/) 以开始使用。
+  <Requirement title="EAS Build 的项目配置">
+    你的项目必须已为 EAS Build 完成设置：**eas.json** 必须包含作业使用的构建配置文件，并且必须为该平台配置应用签名凭据。你可以先运行构建而不执行它，通过运行 `eas credentials:configure-build -p <platform> -e
+    <profile>`，使用与作业相同的平台和配置文件来设置凭据。了解更多关于 [为 EAS Build 配置你的项目](/build/setup/) 的信息。
   </Requirement>
 </Prerequisites>
 
@@ -40,8 +41,8 @@ jobs:
 
 你可以向 `params` 列表传入以下参数：
 
-| 参数                                | 类型    | 描述                                                                                                                                                                                                                                                                                                   |
-| ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 参数                                | 类型  | 描述                                                                                                                                                                                                                                                                                                   |
+| ----------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | platform                            | string  | **必需。** 要构建的平台。可以是 `android` 或 `ios`。                                                                                                                                                                                                                                                    |
 | profile                             | string  | 可选。要使用的构建配置文件。默认值为 `production`。                                                                                                                                                                                                                                                     |
 | message                             | string  | 可选。附加到构建上的自定义消息。对应运行 `eas build` 时的 `--message` 标志。                                                                                                                                                                                                                          |
@@ -222,16 +223,18 @@ jobs:
     params:
       alias: string # 可选
       prod: boolean # 可选
+      source_maps: boolean # 可选
 ```
 
 #### 参数
 
 你可以向 `params` 列表传入以下参数：
 
-| 参数  | 类型   | 描述                                                                 |
-| ----- | ------ | -------------------------------------------------------------------- |
-| alias | string | 可选。要部署到的 [别名](/eas/hosting/deployments-and-aliases/#aliases)。 |
-| prod  | boolean | 可选。是否部署到生产环境。                                           |
+| 参数        | 类型    | 描述                                                                        |
+| ----------- | ------- | --------------------------------------------------------------------------- |
+| alias       | string  | 可选。要部署到的 [别名](/eas/hosting/deployments-and-aliases/#aliases)。   |
+| prod        | boolean | 可选。是否部署到生产环境。                                                   |
+| source_maps | boolean | 可选。是否随部署一起上传 source maps。                                       |
 
 #### 输出
 
@@ -539,10 +542,10 @@ jobs:
 jobs:
   submit_to_store:
     type: submit
-    runs_on: string # 可选 - 可用选项见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      build_id: string # 必需
-      profile: string # 可选 - 默认：production
+      build_id: string # 必填
+      profile: string # 可选 - 默认值：production
+      groups: string[] # 可选
     hooks:
       before_submit: step[] # 可选 - 在提交开始前运行的步骤。
       after_submit: step[] # 可选 - 在提交完成后运行的步骤。
@@ -552,10 +555,11 @@ jobs:
 
 你可以将以下参数传入 `params` 列表：
 
-| 参数      | 类型   | 描述                                         |
-| --------- | ------ | -------------------------------------------- |
-| build_id  | string | 必需。要提交的构建 ID。                      |
-| profile   | string | 可选。要使用的提交配置文件。默认是 `production`。 |
+| 参数 | 类型     | 描述                                                                                                                                     |
+| ---- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| build_id  | string | 必填。要提交的构建 ID。                                                                                                                       |
+| profile   | string | 可选。要使用的提交配置文件。默认值为 `production`。                                                                                          |
+| groups    | string[] | 可选。要将构建添加到的 TestFlight 内部组名称。有关更多 TestFlight 分发选项，请参见 [TestFlight 任务](#testflight)。 |
 
 #### 输出
 
@@ -636,7 +640,7 @@ jobs:
 
 将 iOS 构建分发到 TestFlight 内部和外部测试组。这是 iOS submit 任务的替代方案，适用于你需要更高级的 TestFlight 功能时。如果你需要控制测试组、更新日志或 Beta App Review 提交，请使用 `testflight` 任务而不是 submit。
 
-The job supports two approaches: upload a build and submit it to TestFlight (`build_id`), or submit an already uploaded build (`asc_build_id`). In both cases, you can add the build to groups, set "What to Test" notes, and submit for Beta App Review. Provide exactly one of `build_id` or `asc_build_id`.
+该任务支持两种方式：上传一个构建并将其提交到 TestFlight（`build_id`），或提交一个已经上传的构建（`asc_build_id`）。在这两种情况下，你都可以将构建添加到分组、设置“要测试的内容”说明，并提交 Beta App Review。请且仅提供 `build_id` 或 `asc_build_id` 其中之一。
 
 <Prerequisites>
   <Requirement title="面向外部分发的 TestFlight 测试信息">
@@ -648,14 +652,14 @@ The job supports two approaches: upload a build and submit it to TestFlight (`bu
 
 ### Shared parameters
 
-Both approaches accept the following parameters in `params`:
+两种方式都在 `params` 中接受以下参数：
 
 | Parameter          | Type     | Description                                                                                                                                                                                                                                                             |
 | ------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| internal_groups    | string[] | Optional. An array of TestFlight internal group names to add the build to. Only include groups without automatic distribution enabled.                                                                                                                                  |
-| external_groups    | string[] | Optional. An array of TestFlight external group names to add the build to.                                                                                                                                                                                              |
-| changelog          | string   | Optional. Test notes ("What to Test") for TestFlight testers.                                                                                                                                                                                                           |
-| submit_beta_review | boolean  | Optional. Whether to submit for Beta App Review. If not specified, defaults to `true` when `external_groups` are provided, `false` otherwise. Set to `false` to update the changelog or groups on an already-submitted build without re-submitting for Beta App Review. |
+| internal_groups    | string[] | 可选。要将构建添加到的 TestFlight 内部组名称数组。仅包含未启用自动分发的组。                                                                                                                                                                                          |
+| external_groups    | string[] | 可选。要将构建添加到的 TestFlight 外部组名称数组。                                                                                                                                                                                                                      |
+| changelog          | string   | 可选。TestFlight 测试者的测试说明（“要测试的内容”）。                                                                                                                                                                                                                  |
+| submit_beta_review | boolean  | 可选。是否提交 Beta App Review。若未指定，当提供 `external_groups` 时默认为 `true`，否则默认为 `false`。若要在不重新提交 Beta App Review 的情况下，更新已提交构建的更新日志或分组，请设为 `false`。 |
 
 ### Upload build and submit to TestFlight
 
@@ -675,7 +679,6 @@ Both approaches accept the following parameters in `params`:
 jobs:
   testflight_distribution:
     type: testflight
-    runs_on: string # 可选 - 可用选项见 https://docs.expo.dev/build-reference/infrastructure/
     params:
       build_id: string # 必需
       profile: string # 可选 - 默认：production
@@ -690,13 +693,13 @@ jobs:
 
 你可以将以下参数传入 `params` 列表：
 
-| Parameter                       | Type     | Description                                                                                                                                                           |
+| Parameter                       | Type   | Description                                                                                                                                                           |
 | ------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id                        | string | Required. The ID of the iOS EAS Build to distribute.                                                                                                                  |
-| profile                         | string | Optional. The submit profile to use. Defaults to `production`.                                                                                                        |
-| wait_processing_timeout_seconds | number | Optional. Timeout in seconds to wait for App Store Connect build processing. Defaults to `1800` (30 minutes). Only applies when distributing via groups or changelog. |
+| build_id                        | string | 必需。要分发的 iOS EAS 构建的 ID。                                                                                                                                     |
+| profile                         | string | 可选。要使用的 submit 配置文件。默认为 `production`。                                                                                                                 |
+| wait_processing_timeout_seconds | number | 可选。等待 App Store Connect 构建处理完成的超时时间（秒）。默认为 `1800`（30 分钟）。仅在通过分组或更新日志进行分发时适用。 |
 
-You can also pass any of the [shared parameters](#shared-parameters).
+你也可以传入任意 [共享参数](#shared-parameters)。
 
 #### 输出
 
@@ -789,17 +792,17 @@ jobs:
 
 #### Parameters
 
-| Parameter    | Type     | Description                                                           |
-| ------------ | -------- | --------------------------------------------------------------------- |
-| asc_build_id | string | Required. The ID of a build that already exists in App Store Connect. |
+| Parameter    | Type   | Description                                                           |
+| ------------ | ------ | --------------------------------------------------------------------- |
+| asc_build_id | string | 必需。已存在于 App Store Connect 中的构建 ID。 |
 
-You can also pass any of the [shared parameters](#shared-parameters).
+你也可以传入任意 [共享参数](#shared-parameters)。
 
 #### Outputs
 
-| Output       | Type     | Description                     |
+| Output       | Type   | Description                     |
 | ------------ | ------ | ------------------------------- |
-| asc_build_id | string | The App Store Connect build ID. |
+| asc_build_id | string | App Store Connect 构建 ID。      |
 
 #### Examples
 
@@ -888,7 +891,6 @@ jobs:
     environment: production | preview | development # 可选，默认为 production
     env: # 可选的环境变量列表
       ENV_VAR_NAME: value
-    runs_on: string # 可选 - 可用选项请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
       message: string # 可选
       platform: string # 可选 - android | ios | all，默认为 all
@@ -985,7 +987,7 @@ jobs:
 此工作流会根据分支名称发布更新，从而可以基于分支使用不同的环境（staging/production）。
 
 ```yaml .eas/workflows/update-branches.yml
-name: Branch-based Updates
+name: 基于分支的更新
 
 on:
   push:
@@ -993,7 +995,7 @@ on:
 
 jobs:
   update_branch:
-    name: Update Branch
+    name: 按分支更新
     type: update
     params:
       branch: ${{ github.ref_name }}
@@ -1051,8 +1053,9 @@ jobs:
 jobs:
   run_maestro_tests:
     type: maestro
-    environment: production | preview | development # 可选 - 默认为 preview
-    image: string # 可选 - 可用镜像列表请参见 https://docs.expo.dev/build-reference/infrastructure/
+    environment: 生产 | 预览 | 开发 # 可选 - 默认为预览
+    image: string # 可选 - 可用镜像列表请参见 https://docs.expo.dev/build-reference/infrastructure/。
+    runs_on: string # 可选 - 对于 Android Emulator 测试，请使用 linux-*-nested-virtualization worker。可用选项请参见 https://docs.expo.dev/eas/workflows/syntax/#jobsjob_idruns_on。
     params:
       build_id: string # 必需
       flow_path: string | string[] # 必需
@@ -1062,10 +1065,11 @@ jobs:
       record_screen: boolean # 可选 - 默认为 false
       include_tags: string | string[] # 可选
       exclude_tags: string | string[] # 可选
-      maestro_version: string # 可选 - 默认为最新版本
+      maestro_version: string # 可选 - 默认为最新
       android_system_image_package: string # 可选
       device_identifier: string | { android?: string, ios?: string } # 可选
       output_format: string # 可选 - 默认为 junit
+      skip_build_check: boolean # 可选 - 默认为 false
     hooks:
       before_maestro_tests: step[] # 可选 - tests start 前运行的步骤。
       after_maestro_tests: step[] # 可选 - tests complete 后运行的步骤。
@@ -1100,7 +1104,7 @@ Maestro 作业支持以下 hooks：
 
 有关通用 hooks 语法，请参见 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
-### Examples
+### 示例
 
 以下是一些使用 Maestro 作业的实际示例：
 
@@ -1113,7 +1117,7 @@ name: Basic Maestro Test
 
 jobs:
   test:
-    name: Run Maestro Tests
+    name: 运行 Maestro 测试
     type: maestro
     environment: preview
     params:
@@ -1132,7 +1136,7 @@ name: Sharded Maestro Test
 
 jobs:
   test:
-    name: Run Sharded Maestro Tests
+    name: 运行分片 Maestro 测试
     type: maestro
     environment: preview
     runs_on: linux-large-nested-virtualization
@@ -1181,7 +1185,7 @@ jobs:
       flow_path: ./maestro_tests
     hooks:
       before_maestro_tests:
-        - name: Generate Maestro flows
+        - name: 生成 Maestro flows
           run: npx tsx scripts/generate-maestro-tests.ts
 ```
 
@@ -1255,11 +1259,11 @@ jobs:
 
 </Collapsible>
 
-## Maestro Cloud
+## Maestro 云
 
-在 Maestro Cloud 上运行 Maestro 测试。
+在 Maestro 云上运行 Maestro 测试。
 
-> **重要** 这需要一个 Maestro Cloud 账户和 Cloud Plan 订阅。前往 [Maestro 文档](https://docs.maestro.dev/maestro-cloud/run-tests-on-maestro-cloud) 了解更多。
+> **重要** 这需要一个 Maestro 云账户和 Cloud Plan 订阅。前往 [Maestro 文档](https://docs.maestro.dev/maestro-cloud/run-tests-on-maestro-cloud) 了解更多。
 
 ### 语法
 
@@ -1270,20 +1274,21 @@ jobs:
     environment: production | preview | development # 可选 - 默认为 preview
     image: string # 可选 - 请参阅 https://docs.expo.dev/build-reference/infrastructure/ 了解可用镜像列表。
     params:
-      build_id: string # 必需 - 要测试的构建 ID。
+      build_id: string # 必需 - 要测试的构建的 ID。
       maestro_project_id: string # 必需 - Maestro Cloud 项目 ID。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。
-      flows: string # 必需 - 要运行的 Maestro flow 文件或包含 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。
-      maestro_api_key: string # 可选 - 默认值为 `$MAESTRO_CLOUD_API_KEY`
-      include_tags: string | string[] # 可选 - 要包含在测试中的标签。将作为 `--include-tags` 传递给 Maestro。
+      flows: string # 必需 - 要运行的 Maestro flow 文件或包含 flow 的目录路径。对应于 `maestro cloud` 的 `--flows` 参数。
+      maestro_api_key: string # 可选 - 默认为 `$MAESTRO_CLOUD_API_KEY`
+      include_tags: string | string[] # 可选 - 要在测试中包含的标签。将作为 `--include-tags` 传递给 Maestro。
       exclude_tags: string | string[] # 可选 - 要从测试中排除的标签。将作为 `--exclude-tags` 传递给 Maestro。
-      maestro_version: string # 可选 - 用于测试的 Maestro 版本。如果未提供，将使用最新版本。
+      maestro_version: string # 可选 - 测试所使用的 Maestro 版本。如果未提供，将使用最新版本。
       maestro_config: string # 可选 - 用于测试的 Maestro `config.yaml` 文件路径。将作为 `--config` 传递给 Maestro。
-      device_locale: string # 可选 - 用于测试的设备区域设置。将作为 `--device-locale` 传递给 Maestro。
-      device_model: string # 可选 - 用于测试的设备型号。运行 `maestro list-cloud-devices` 可查看支持的值列表。
-      device_os: string # 可选 - 用于测试的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 可查看支持的值列表。
-      name: string # 可选 - Maestro Cloud 上传名称。对应 `maestro cloud` 的 `--name` 参数。
-      branch: string # 可选 - 覆盖 Maestro Cloud 上传来源分支。默认情况下，如果工作流运行是从 GitHub 触发的，则会使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。
-      async: boolean # 可选 - 异步运行 Maestro Cloud 测试。如果为 true，作业状态只表示上传是否成功，而不表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。
+      device_locale: string # 可选 - 要用于测试的设备区域设置。将作为 `--device-locale` 传递给 Maestro。
+      device_model: string # 可选 - 要用于测试的设备型号。将作为 `--device-model` 传递给 Maestro。运行 `maestro list-cloud-devices` 查看支持的值列表。
+      device_os: string # 可选 - 要用于测试的设备操作系统。将作为 `--device-os` 传递给 Maestro。运行 `maestro list-cloud-devices` 查看支持的值列表。
+      skip_build_check: boolean # 可选 - 跳过构建验证（iOS 构建是否为模拟器构建）。默认为 false。
+      name: string # 可选 - Maestro Cloud 上传名称。对应于 `maestro cloud` 的 `--name` 参数。
+      branch: string # 可选 - 覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是从 GitHub 触发的，则使用该工作流运行所在的分支。对应于 `maestro cloud` 的 `--branch` 参数。
+      async: boolean # 可选 - 异步运行 Maestro Cloud 测试。如果为 true，作业状态将只表示上传是否成功，_不表示_ 测试是否成功。对应于 `maestro cloud` 的 `--async` 参数。
     hooks:
       before_maestro_cloud: step[] # 可选 - 在 Maestro Cloud 上传之前运行的步骤。
       after_maestro_cloud: step[] # 可选 - 在 Maestro Cloud 上传之后运行的步骤。
@@ -1295,20 +1300,21 @@ jobs:
 
 | 参数               | 类型    | 描述                                                                                                                                                                                                                                  |
 | ------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id           | string  | 必需。要测试的构建 ID。示例：`${{ needs.build_android.outputs.build_id }}`。                                                                                                                                               |
-| maestro_project_id | string  | 必需。要使用的 Maestro Cloud 项目 ID。对应 `maestro cloud` 的 `--project-id` 参数。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。前往 [Maestro Cloud](https://app.maestro.dev/) 查找你的项目。                     |
-| flows              | string  | 必需。要运行的 Maestro flow 文件或包含 flows 的目录路径。对应 `maestro cloud` 的 `--flows` 参数。                                                                                                     |
-| maestro_api_key    | string  | 可选。用于 Maestro 项目的 API 密钥。默认会使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应 `maestro cloud` 的 `--api-key` 参数。                                                            |
-| include_tags       | string  | 可选。要在测试中包含的标签。对应 `maestro cloud` 的 `--include-tags` 参数。示例：`"pull,push"`。                                                                                                                |
-| exclude_tags       | string  | 可选。要从测试中排除的标签。对应 `maestro cloud` 的 `--exclude-tags` 参数。示例：`"disabled"`。                                                                                                               |
+| build_id           | string  | 必需。要测试的构建的 ID。示例：`${{ needs.build_android.outputs.build_id }}`。                                                                                                                                               |
+| maestro_project_id | string  | 必需。要使用的 Maestro Cloud 项目 ID。对应于 `maestro cloud` 的 `--project-id` 参数。示例：`proj_01jw6hxgmdffrbye9fqn0pyzm0`。前往 [Maestro Cloud](https://app.maestro.dev/) 查找你的项目 ID。                     |
+| flows              | string  | 必需。要运行的 Maestro flow 文件或包含 flow 的目录路径。对应于 `maestro cloud` 的 `--flows` 参数。                                                                                                     |
+| maestro_api_key    | string  | 可选。用于 Maestro 项目的 API 密钥。默认将使用 `MAESTRO_CLOUD_API_KEY` 环境变量。对应于 `maestro cloud` 的 `--api-key` 参数。                                                            |
+| include_tags       | string  | 可选。要在测试中包含的标签。对应于 `maestro cloud` 的 `--include-tags` 参数。示例：`"pull,push"`。                                                                                                                |
+| exclude_tags       | string  | 可选。要从测试中排除的标签。对应于 `maestro cloud` 的 `--exclude-tags` 参数。示例：`"disabled"`。                                                                                                               |
 | maestro_version    | string  | 可选。要使用的 Maestro 版本。示例：`1.30.0`。                                                                                                                                                                                  |
-| maestro_config     | string  | 可选。要使用的 Maestro `config.yaml` 文件路径。对应 `maestro cloud` 的 `--config` 参数。示例：`.maestro/config.yaml`。                                                                                            |
-| device_locale      | string  | 可选。将在测试所用设备上设置的区域设置。对应 `maestro cloud` 的 `--device-locale` 参数。示例：`pl_PL`。                                                                                            |
-| device_model       | string  | 可选。要用于测试的设备型号。对应 `maestro cloud` 的 `--device-model` 参数。示例：`iPhone-11`。运行 `maestro list-cloud-devices` 可查看支持的值列表。                                     |
-| device_os          | string  | 可选。要用于测试的设备操作系统。对应 `maestro cloud` 的 `--device-os` 参数。示例：`iOS-18-2`。运行 `maestro list-cloud-devices` 可查看支持的值列表。                                            |
-| name               | string  | 可选。Maestro Cloud 上传的名称。对应 `maestro cloud` 的 `--name` 参数。                                                                                                                                               |
-| branch             | string  | 可选。覆盖 Maestro Cloud 上传来源分支。默认情况下，如果工作流运行是从 GitHub 触发的，则会使用该工作流运行的分支。对应 `maestro cloud` 的 `--branch` 参数。 |
-| async              | boolean | 可选。异步运行 Maestro Cloud 测试。如果为 true，作业状态只表示上传是否成功，而不表示测试是否成功。对应 `maestro cloud` 的 `--async` 参数。               |
+| maestro_config     | string  | 可选。要使用的 Maestro `config.yaml` 文件路径。对应于 `maestro cloud` 的 `--config` 参数。示例：`.maestro/config.yaml`。                                                                                            |
+| device_locale      | string  | 可选。将设置在用于测试的设备上的区域设置。对应于 `maestro cloud` 的 `--device-locale` 参数。示例：`pl_PL`。                                                                                            |
+| device_model       | string  | 可选。要用于测试的设备型号。对应于 `maestro cloud` 的 `--device-model` 参数。示例：`iPhone-11`。运行 `maestro list-cloud-devices` 查看支持的值列表。                                     |
+| device_os          | string  | 可选。要用于测试的设备操作系统。对应于 `maestro cloud` 的 `--device-os` 参数。示例：`iOS-18-2`。运行 `maestro list-cloud-devices` 查看支持的值列表。                                            |
+| skip_build_check   | boolean | 可选。跳过构建验证（iOS 构建是否为模拟器构建）。默认为 false。                                                                                                                                       |
+| name               | string  | 可选。Maestro Cloud 上传名称。对应于 `maestro cloud` 的 `--name` 参数。                                                                                                                                               |
+| branch             | string  | 可选。覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是从 GitHub 触发的，则使用该工作流运行所在的分支。对应于 `maestro cloud` 的 `--branch` 参数。 |
+| async              | boolean | 可选。异步运行 Maestro Cloud 测试。如果为 true，作业状态将只表示上传是否成功，_不表示_ 测试是否成功。对应于 `maestro cloud` 的 `--async` 参数。               |
 
 > **重要** 你需要在作业环境中设置 `maestro_api_key` 参数或 `MAESTRO_CLOUD_API_KEY` 环境变量。前往 [Maestro Cloud](https://app.maestro.dev/) 的“设置”生成 API 密钥，然后前往 [环境变量](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 将其添加到你的项目中。
 
@@ -1388,7 +1394,7 @@ jobs:
 此工作流运行 Maestro Cloud 测试，然后在 Slack 通知中使用测试结果。
 
 ```yaml .eas/workflows/maestro-with-notification.yml
-name: Maestro Cloud with Notification
+name: 带通知的 Maestro Cloud
 
 jobs:
   maestro_test:
@@ -1557,7 +1563,7 @@ jobs:
 
 | 参数 | 类型 | 描述                                                                                                                                                      |
 | ---- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| message | string | 可选。要包含在评论顶部的自定义消息。默认为 "Your builds, updates, and deployments are ready for testing!"                        |
+| message | string | 可选。要包含在评论顶部的自定义消息。默认为 "你的构建、更新和部署已准备好进行测试！"                        |
 | build_ids | string[] | 可选。要包含的特定构建 ID 数组。如果未指定，则自动发现所有已完成/失败/已取消的构建。使用空数组 `[]` 可排除构建。 |
 | update_group_ids | string[] | 可选。要包含的特定更新组 ID 数组。如果未指定，则自动发现所有成功的更新。使用空数组 `[]` 可排除更新。       |
 | deployment_ids | string[] | 可选。要包含的特定部署 ID 数组。如果未指定，则自动发现所有成功的部署。使用空数组 `[]` 可排除部署。 |
@@ -1600,7 +1606,7 @@ jobs:
   # ...
 
   comment_on_pr:
-    name: Post Results to PR
+    name: 在 PR 中发布结果
     after: [build_ios, build_android, publish_update, deploy]
     type: github-comment
     # 无需 params - 自动发现所有构建、更新和部署
@@ -1622,7 +1628,7 @@ jobs:
   # ...
 
   comment_on_pr:
-    name: Post Build to PR
+    name: 在 PR 中发布构建结果
     after: [build_ios, build_android, publish_update, deploy]
     type: github-comment
     params:
@@ -1645,7 +1651,7 @@ on:
 jobs:
   deploy:
     type: deploy
-    name: Deploy PR Preview
+    name: 部署 PR 预览
 
   comment:
     needs: [deploy]
@@ -1668,7 +1674,7 @@ jobs:
   # ...
 
   comment_update:
-    name: Post Update to PR
+    name: 在 PR 中发布更新
     after: [build_ios, build_android, publish_update]
     type: github-comment
     params:
@@ -1696,7 +1702,7 @@ jobs:
   # ...
 
   comment_updates_only:
-    name: Post Updates Only
+    name: 仅发布更新
     after: [publish_update]
     type: github-comment
     params:
@@ -1724,7 +1730,7 @@ jobs:
   # ...
 
   custom_comment:
-    name: Post Custom Comment
+    name: 发布自定义评论
     needs: [build_ios]
     type: github-comment
     params:
@@ -1768,7 +1774,7 @@ jobs:
       profile: preview
 
   comment_success:
-    name: Post Success Comment
+    name: 发布成功评论
     needs: [build_android]
     if: ${{ needs.build_android.status == 'success' }}
     type: github-comment
@@ -1778,7 +1784,7 @@ jobs:
         - ${{ needs.build_android.outputs.build_id }}
 
   comment_failure:
-    name: Post Failure Comment
+    name: 发布失败评论
     after: [build_android]
     if: ${{ after.build_android.status == 'failure' }}
     type: github-comment
@@ -2061,8 +2067,12 @@ jobs:
       build_id: string # 必需
       profile: string # 可选
       embed_bundle_assets: boolean # 可选
+      js_bundle_only: boolean # 可选
+      ios_signing_use_source_app_entitlements: boolean # 可选
+      ios_signing_app_entitlements_path: string # 可选
       message: string # 可选
       repack_version: string # 可选
+      repack_package: string # 可选
 ```
 
 > **注意：** 如果构建可能仍在进行中，请使用 [`get-build`](#get-build) 并设置 `wait_for_in_progress: true`，然后将其 `build_id` 传递给 `repack`。
@@ -2093,14 +2103,15 @@ jobs:
 
 | Parameter                               | Type    | Description                                                                                                                                                                                                     |
 | --------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id                                | string  | 必需。要重新打包的构建的源构建 ID。                                                                                                                                                                             |
-| profile                                 | string  | 可选。要使用的构建配置文件。默认使用从 `build_id` 获取的源构建配置文件。                                                                                                                                         |
-| embed_bundle_assets                     | boolean | 可选。是否将 bundle 资源嵌入到重打包后的构建中。默认会根据源构建自动确定。                                                                                                                                       |
-| js_bundle_only                          | boolean | 可选。是否仅重新打包 JavaScript bundle。默认值为 false，这意味着将更新整个应用元数据。                                                                                                                            |
-| message                                 | string  | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。                                                                                                                                   |
-| repack_version                          | string  | 可选。要使用的 `@expo/repack-app` 版本。默认使用最新版本。                                                                                                                                                        |
-| ios_signing_use_source_app_entitlements | boolean | 可选。是否使用 fastlane resign 的 `use_app_entitlements` 行为：提取应用包代码签名 entitlements，并将其与新 provisioning profile 中的 entitlements 合并。默认值为 false。 |
-| ios_signing_app_entitlements_path       | string  | 可选。要使用的 entitlements 文件路径，例如 `myApp/MyApp.entitlements`。此项与 `ios_signing_use_source_app_entitlements` 互斥 |
+| build_id                                | string  | 必需。要重新打包的构建的源构建 ID。                                                                                                                                                                            |
+| profile                                 | string  | 可选。要使用的构建配置文件。默认使用从 `build_id` 检索到的源构建配置文件。                                                                                                                                    |
+| embed_bundle_assets                     | boolean | 可选。是否将 bundle 资源嵌入到重新打包的构建中。默认会根据源构建自动确定。                                                                                                                                    |
+| js_bundle_only                          | boolean | 可选。是否仅重新打包 JavaScript bundle。默认值为 false，表示将更新整个应用元数据。                                                                                                                          |
+| message                                 | string  | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。                                                                                                                               |
+| repack_version                          | string  | 可选。要使用的 `@expo/repack-app` 版本。默认使用最新版本。                                                                                                                                                |
+| repack_package                          | string  | 可选。要使用的 repack npm 包。默认值为 `@expo/repack-app`。                                                                                                                                                  |
+| ios_signing_use_source_app_entitlements | boolean | 可选。是否使用 fastlane resign 的 `use_app_entitlements` 行为：提取应用包代码签名 entitlements，并将其与新配置文件中的 entitlements 组合。默认值为 false。                                                 |
+| ios_signing_app_entitlements_path       | string  | 可选。要使用的 entitlements 文件路径，例如 `myApp/MyApp.entitlements`。此项与 `ios_signing_use_source_app_entitlements` 互斥。                                                                                  |
 
 ### 示例
 

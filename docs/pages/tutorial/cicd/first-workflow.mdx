@@ -1,0 +1,253 @@
+---
+title: '运行你的第一个 EAS Workflows 作业'
+sidebar_title: 第一个 EAS Workflows 作业
+description: 通过为 Expo 应用创建工作流文件、作业、触发器以及将作业串联起来，了解 EAS Workflows 的基础知识。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { JobTypes } from '~/ui/components/FlowDiagram/Diagrams/JobTypes';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+在本章中，我们创建我们的第一个 EAS Workflows 作业。
+
+## 学习目标
+
+- 创建并运行一个自定义工作流，在 EAS 仪表板上打印一条消息
+- 设置自动触发器，使每次推送到 `main` 时都会运行该工作流
+- 将多个作业串联起来，使一个作业的输出传递给下一个作业
+- 在 EAS 仪表板中查看工作流日志和作业图表
+
+## 工作流文件如何工作
+
+工作流文件是存储在我们项目 **.eas/workflows/** 目录中的 YAML 文件。每个文件定义要运行的作业以及每个作业遵循的步骤。
+
+<JobTypes />
+
+工作流文件包含一个或多个作业，以及一个可选的触发器。当它运行时，EAS 会读取该文件，配置环境，并在该环境中执行这些作业。
+
+## EAS Workflows 中的作业类型
+
+EAS Workflows 有两种类型的作业：
+
+- **预打包作业：** 这种作业使用 `type` 字段。它告诉 EAS 要运行哪个操作，例如 `build`、`submit` 或 `update`。然后 EAS 会为该操作运行预先配置好的步骤。
+- **自定义作业：** 这种类型的作业使用 `steps`，而不是 `type` 字段。我们为每个步骤使用 `run` 编写自己的命令。自定义作业允许我们控制工作流运行时会发生什么，以及何时运行特定命令。
+
+## 创建我们的第一个工作流
+
+让我们使用一个自定义作业创建第一个工作流，并在 EAS 上运行它。
+
+<Step label="1">
+
+### 创建工作流目录
+
+在 Expo 项目根目录下创建 **.eas/workflows/** 目录。EAS 只会在这个位置查找工作流文件。
+
+<Terminal cmd={['$ mkdir -p .eas/workflows']} />
+
+</Step>
+
+<Step label="2">
+
+### 添加 hello.yml 文件
+
+在 **.eas/workflows/** 内创建一个名为 **hello.yml** 的文件。此文件使用一个单独的自定义作业定义我们的第一个工作流。该作业运行一条 shell 命令，输出 `"Hello, Workflows"`：
+
+```yaml .eas/workflows/hello.yml
+name: Hello
+
+jobs:
+  greet:
+    steps:
+      - run: echo "Hello, Workflows" # 这里可以使用任何 shell 命令
+```
+
+上面的工作流使用以下语法：
+
+- `name` 是工作流的名称，会显示在 EAS 仪表板上。
+- `jobs` 包含一个或多个要运行的作业。每个作业都有一个唯一的 ID（在这里是 `greet`）。
+- `steps` 是作业按顺序执行的一系列任务。只有 `steps` 但没有 `type` 字段的作业是自定义作业。
+- `run` 是在某个步骤中要执行的 shell 命令。这里它运行 `echo` 来打印一条消息。任何 shell 命令都可以。
+
+</Step>
+
+<Step label="3">
+
+### 手动运行工作流
+
+要在 EAS 仪表板上运行该工作流，请在终端窗口中运行以下命令：
+
+<Terminal cmd={['$ eas workflow:run .eas/workflows/hello.yml']} />
+
+`eas workflow:run` 命令会将工作流文件上传到 EAS。随后它会运行文件中定义的任何作业，EAS CLI 会打印一个指向 EAS 仪表板的 URL，我们可以在那里查看该作业。
+
+</Step>
+
+<Step label="4">
+
+### 查看作业日志
+
+在浏览器窗口中打开上一步得到的 URL。在工作流页面上，我们可以看到 `greet` 作业及其状态。作业完成后，展开步骤输出即可看到记录的消息：`Hello, Workflows`。
+
+<ContentSpotlight
+  alt="EAS Workflows dashboard showing expanded job logs for a Hello World workflow run."
+  src="/static/images/tutorial/cicd/eas-workflows-job-logs-dashboard.png"
+  className="max-w-160"
+/>
+
+EAS 仪表板是我们查看和调试任何工作流作业的地方。**Workflow graph** 会显示是什么触发了我们的作业，以及该作业的唯一 ID。
+
+切换到 **Workflow file** 选项卡。这就是我们在第 2 步编写的工作流文件，会随这次运行一起保留。
+
+> **info** **提示：** 在 [Workflows 页面](https://expo.dev/accounts/[account]/projects/[project]/workflows) 上查看我们项目的所有工作流，并按状态或类型进行筛选。
+
+</Step>
+
+## 自动运行工作流
+
+在终端中运行 `eas workflow:run` 可以完成一次性执行，但大多数团队希望工作流能够在 GitHub 事件发生时自动触发。自动触发意味着无需任何人记得手动运行工作流。工作流的配置与它所构建的代码一起保存在仓库中。
+
+> **info** **注意：** 触发器是一条规则，用于告诉 CI/CD 流水线何时开始。它定义了某个事件（例如代码推送或拉取请求），使流水线自动运行，而无需手动执行。
+
+我们在工作流文件中使用 `on` 键来定义触发器。EAS 会监听匹配的 GitHub 事件，并自动运行工作流。
+
+<Step label="1">
+
+### 添加自动触发器
+
+让我们在现有的工作流文件中添加一个 `on.push.branches` 触发器。
+
+- `on` 键定义哪个 GitHub 事件会触发工作流
+- `push` 字段定义何时触发
+- `branches` 字段允许我们指定：只要代码推送到 `main` 分支，工作流就应自动运行
+
+```yaml .eas/workflows/hello.yml
+name: Hello
+
+# @info #
+on:
+  push:
+    branches: ['main'] # 每次推送到 main 分支时触发
+# @end #
+
+jobs:
+  greet:
+    steps:
+      - run: echo "Hello, Workflows"
+```
+
+`branches` 字段可以包含 GitHub 仓库中存在的任何分支名称。我们可以指定多个分支，例如 `['main', 'develop', 'staging']`，以便在推送到这些分支中的任意一个时触发工作流。
+
+</Step>
+
+<Step label="2">
+
+### 提交更改并推送到 GitHub
+
+提交工作流文件并将其推送到 `main` 分支：
+
+<Terminal
+  cmd={[
+    '$ git add .eas/workflows/hello.yml',
+    '$ git commit -m "Add hello workflow"',
+    '$ git push origin main',
+  ]}
+  cmdCopy="git add .eas/workflows/hello.yml && git commit -m 'Add hello workflow' && git push origin main"
+/>
+
+</Step>
+
+<Step label="3">
+
+### 验证自动触发器
+
+> **info** **提示：** 此步骤依赖于我们的本地 Expo 项目已推送到 GitHub，并且 GitHub 仓库已连接到 EAS。确认方法：运行 `git remote -v` 检查本地仓库是否指向 GitHub URL，并打开项目的 [EAS 上 GitHub 设置](https://expo.dev/accounts/[account]/projects/[projectName]/github) 以确认已连接仓库。
+
+让我们在 EAS 仪表板上打开项目的 [Workflows 页面](https://expo.dev/accounts/[account]/projects/[project]/workflows)，查看新的任务。
+
+<ContentSpotlight
+  alt="EAS Workflows 仪表板显示一个工作流运行，该运行由推送到 GitHub 仓库 main 分支的操作自动触发。"
+  src="/static/images/tutorial/cicd/eas-workflows-github-triggered-run.png"
+  className="max-w-160"
+/>
+
+在 EAS 仪表板中，注意 **Workflow graph** 选项卡会显示这次推送的提交信息和分支引用。在工作流标题下方的状态中，**Trigger** 和 **Triggered by** 也会反映相同的信息。
+
+</Step>
+
+## 其他触发器类型
+
+本教程后面我们会用到的其他触发器类型：
+
+- `on.pull_request`：当拉取请求针对匹配的分支打开或更新时运行
+- `on.push` 搭配 `tags`：当匹配的标签模式被推送到 GitHub 仓库时运行
+- `on.pull_request_labeled`：当特定标签被添加到拉取请求时运行
+
+## 将作业串联起来
+
+到目前为止，我们已经在工作流文件中实现了一个单独的作业。一个工作流文件可以包含多个作业。一个作业的输入可以依赖于前一个作业的输出。现在让我们在工作流文件中把多个作业串联起来。
+
+<Step label="1">
+
+### 更新 hello.yml
+
+让我们更新 **hello.yml** 文件，添加一个自定义作业和一个预打包作业。这个预打包作业叫做 [`doc`](/eas/workflows/pre-packaged-jobs/#doc)，它会在 EAS 仪表板上渲染 Markdown：
+
+```yaml .eas/workflows/hello.yml
+name: Hello
+
+jobs:
+  greet:
+    # @info #
+    outputs:
+      greeting: ${{ steps.set_greeting.outputs.greeting }} # 在作业级别暴露步骤输出
+    # @end #
+    steps:
+      - id: set_greeting
+        run: set-output greeting "Hello from EAS Workflows"
+  show_info:
+    # @info #
+    needs: [greet] # 等待 greet 完成，然后读取其输出
+    type: doc # 在仪表板上渲染 Markdown 的预打包作业
+    # @end #
+    params:
+      md: |
+        # Workflow Output
+        **${{ needs.greet.outputs.greeting }}**
+```
+
+上面的工作流文件执行以下操作：
+
+- 定义了一个 `greet` 作业，这是一个自定义作业。它使用 [`set-output`](/eas/workflows/syntax/#set-output) shell 函数设置一个名为 `greeting` 的值。作业级别的 `outputs` 字段会暴露该步骤输出，以便其他作业引用它。
+- 定义了一个 `show_info` 作业，它使用 `needs: [greet]` 等待 `greet` 作业完成并访问其输出。然后，它使用预打包的 `doc` 作业类型在 EAS 仪表板中渲染一个 Markdown 文档。Markdown 内容包含在前一个作业中设置的 `greeting` 值。
+
+> **info** **提示：** 在 EAS Workflows 中，作业默认是并行运行的。`needs` 字段决定了一个作业必须等待什么：它列出在使用 `needs` 的作业启动之前必须成功完成的作业 ID。如果 `needs` 列表中的某个作业失败，依赖作业将被跳过。
+
+</Step>
+
+<Step label="2">
+
+### 运行串联的工作流
+
+在终端窗口中运行以下命令，查看串联作业的实际效果：
+
+<Terminal cmd={['$ eas workflow:run .eas/workflows/hello.yml']} />
+
+从 EAS CLI 打开 EAS 仪表板链接。在 **Logs** 下，注意 `greet` 作业会先运行。完成后，`show_info` 作业会运行，并使用前一个作业的输出渲染 Markdown 内容。
+
+<ContentSpotlight
+  alt="EAS Workflows dashboard showing two chained jobs running sequentially after the first job completes."
+  src="/static/images/tutorial/cicd/eas-workflows-chained-jobs.png"
+  className="max-w-160"
+/>
+
+</Step>
+
+## 清理
+
+在本章之后，请删除 **hello.yml** 文件，因为我们在后面的章节中不会用到它。如果我们更愿意保留它，请移除 `on.push` 触发器，这样它就不会在每次推送到 `main` 时都触发。
+
+## 摘要
+
+<ProgressTracker name="CICD_TUTORIAL" currentChapterSlug="/tutorial/cicd/first-workflow" />

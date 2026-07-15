@@ -13,8 +13,8 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 在内部，此组件封装了平台特定的 `@expo/ui` 原语：
 
-- **Android**：[Jetpack Compose DropdownMenu](../jetpack-compose/dropdownmenu)，锚定到一个 `Pressable` 触发器。
-- **iOS**：用于点击触发的 [SwiftUI Menu](../swift-ui/menu)，以及用于长按触发的 [SwiftUI ContextMenu](../swift-ui/contextmenu)。
+- **Android**: [Jetpack Compose 下拉菜单](../jetpack-compose/dropdownmenu) 锚定到内部的 `Pressable` 触发器。
+- **iOS**: [SwiftUI 菜单](../swift-ui/menu) 用于点击触发，以及 [SwiftUI 上下文菜单](../swift-ui/contextmenu) 用于长按触发。
 
 如果你需要更底层的控制，请直接使用这些原语。
 
@@ -33,10 +33,12 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 ## 基本用法
 
+将任意视图作为触发器传入。`MenuView` 会自动附加其自身的点击或长按处理。
+
 ```tsx MenuExample.tsx
 import { Icon } from '@expo/ui';
 import { MenuView } from '@expo/ui/community/menu';
-import { Pressable, Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 const editIcon = Icon.select({
   ios: 'pencil',
@@ -56,9 +58,9 @@ export default function MenuExample() {
         { id: 'delete', title: '删除', image: deleteIcon, attributes: { destructive: true } },
       ]}
       onPressAction={e => console.log(e.nativeEvent.event)}>
-      <Pressable>
+      <View>
         <Text>打开菜单</Text>
-      </Pressable>
+      </View>
     </MenuView>
   );
 }
@@ -66,12 +68,12 @@ export default function MenuExample() {
 
 ## 长按（上下文菜单）
 
-将 `shouldOpenOnLongPress` 设置为以上下文菜单形式渲染。在 Android 上，相同受控的 `DropdownMenu` 会从 `Pressable` 的 `onLongPress` 打开，而不是 `onPress`。在 iOS 上，这会使用 SwiftUI 的 `ContextMenu`，并将触发器显示为模糊预览。
+将 `shouldOpenOnLongPress` 设置为以上下文菜单形式渲染。在 Android 上，同一个受控的 `DropdownMenu` 会在长按触发器时打开，而不是轻触。在 iOS 上，这使用了 SwiftUI 的 `ContextMenu`，并将触发器显示为模糊预览。
 
 ```tsx LongPressMenuExample.tsx
 import { Icon } from '@expo/ui';
 import { MenuView } from '@expo/ui/community/menu';
-import { Pressable, Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 const copyIcon = Icon.select({
   ios: 'doc.on.doc',
@@ -92,9 +94,9 @@ export default function LongPressMenuExample() {
         { id: 'share', title: '分享', image: shareIcon },
       ]}
       onPressAction={e => console.log(e.nativeEvent.event)}>
-      <Pressable>
+      <View>
         <Text>长按我</Text>
-      </Pressable>
+      </View>
     </MenuView>
   );
 }
@@ -106,7 +108,7 @@ export default function LongPressMenuExample() {
 
 ```tsx SubmenuExample.tsx
 import { MenuView } from '@expo/ui/community/menu';
-import { Pressable, Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 export default function SubmenuExample() {
   return (
@@ -133,9 +135,9 @@ export default function SubmenuExample() {
         },
       ]}
       onPressAction={e => console.log(e.nativeEvent.event)}>
-      <Pressable>
+      <View>
         <Text>打开菜单</Text>
-      </Pressable>
+      </View>
     </MenuView>
   );
 }
@@ -148,7 +150,7 @@ export default function SubmenuExample() {
 ```tsx ToggleMenuExample.tsx
 import { MenuView } from '@expo/ui/community/menu';
 import { useState } from 'react';
-import { Pressable, Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 export default function ToggleMenuExample() {
   const [pinned, setPinned] = useState(false);
@@ -158,9 +160,9 @@ export default function ToggleMenuExample() {
       onPressAction={e => {
         if (e.nativeEvent.event === 'pin') setPinned(p => !p);
       }}>
-      <Pressable>
+      <View>
         <Text>{pinned ? '已置顶' : '未置顶'}</Text>
-      </Pressable>
+      </View>
     </MenuView>
   );
 }

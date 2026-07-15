@@ -1,0 +1,188 @@
+---
+title: '在 EAS Workflows 上使用 Maestro 运行 E2E 测试'
+sidebar_title: E2E 测试
+description: 了解如何在 EAS Workflows 中使用 Android 和 iOS 开发构建，通过 Maestro 自动化端到端（E2E）测试。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+破损的导航流程和崩溃的界面常常会在代码审查中被忽略，因为审查者无法在每个拉取请求上运行应用程序。
+
+## 学习成果
+
+- 编写用于导航和屏幕内容测试的 [Maestro](https://maestro.mobile.dev/) 流文件
+- 在工作流中针对 Android 和 iOS [开发构建](/develop/development-builds/introduction/) 运行 E2E 测试
+- 使用 `on.pull_request` 在拉取请求时自动触发 E2E 测试，或使用 `on.pull_request_labeled` 按需触发
+
+> **重要** EAS Workflows 中的 Maestro 作业类型目前处于 [alpha](/more/release-statuses/#alpha) 阶段。
+
+## 为什么 E2E 测试很有用？
+
+前几章中的流水线会构建我们的项目并交付更新，同时发送 Slack 通知。然而，损坏的导航流程或崩溃的屏幕仍然可能悄无声息地进入生产环境。E2E 测试可以通过模拟真实用户交互并验证应用是否按预期运行，帮助在这些问题到达生产环境之前将其捕获。
+
+[Maestro](https://maestro.mobile.dev/) 会在 Android 模拟器或 iOS 模拟器上针对已构建的应用运行自动化流程。它可以点击按钮、输入文本、断言屏幕内容，并在不同屏幕之间导航。EAS Workflows 会在为 Android 构建 APK 或为 iOS Simulator 构建后，在云端运行这些流程。
+
+## 设置 E2E 测试
+
+对于 Android 和 iOS，我们需要为 E2E 测试添加一个特殊的 [构建配置文件](/build/eas-json/)。此配置文件会跳过 Android 的凭据设置，并允许我们在模拟器中运行 iOS 构建。
+
+<Step label="1">
+
+### 添加 e2e-test 构建配置文件
+
+在 **eas.json** 中添加一个 `e2e-test` 配置文件。此配置文件会为 Android 创建一个未签名的 APK，并为 iOS 创建一个模拟器构建：
+
+```json eas.json
+{
+  /* @hide ... */ /* @end */
+  "build": {
+    "e2e-test": {
+      "withoutCredentials": true,
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "ios": {
+        "simulator": true,
+        "image": "latest"
+      }
+    }
+  }
+}
+```
+
+</Step>
+
+<Step label="2">
+
+### 添加 Maestro flow 文件
+
+在 Expo 项目的根目录下创建一个 **.maestro/** 目录，然后添加以下测试文件。
+
+例如，下面的代码片段添加了一个基础的主屏幕测试，它会启动应用并检查 "Welcome" 文本是否可见。将 `appId` 中的 `com.yourname.yourapp` 替换为我们应用在 Android 上的 [`android.package`](/versions/latest/config/app/#package) 或在 iOS 上的 [`ios.bundleIdentifier`](/versions/latest/config/app/#bundleidentifier)，这两个值都在 **app.json** 中定义：
+
+```yaml .maestro/home.yml
+appId: com.yourname.yourapp # 用应用配置文件中的包名/Bundle 标识符替换
+---
+- launchApp
+- assertVisible: 'Welcome'
+```
+
+然后，我们可以再添加一个针对设置页面的测试：
+
+```yaml .maestro/navigate.yml
+appId: com.yourname.yourapp # 用应用配置文件中的包名/Bundle 标识符替换
+---
+- launchApp
+- tapOn: 'Settings'
+- assertVisible: 'Settings'
+```
+
+</Step>
+
+## 为 E2E 测试创建工作流
+
+<Step label="1">
+
+### 创建一个 e2e-tests.yml
+
+在 **.eas/workflows/** 中，添加一个名为 **e2e-tests.yml** 的新文件，内容如下：
+
+```yaml .eas/workflows/e2e-tests.yml
+name: E2E 测试
+
+jobs:
+  build_android:
+    name: 为 E2E 构建 Android
+    type: build
+    params:
+      platform: android
+      profile: e2e-test
+  build_ios:
+    name: 为 E2E 构建 iOS
+    type: build
+    params:
+      platform: ios
+      profile: e2e-test
+  test_android:
+    name: 运行 Maestro 测试（Android）
+    needs: [build_android]
+    type: maestro
+    params:
+      build_id: ${{ needs.build_android.outputs.build_id }}
+      flow_path: ['.maestro/home.yml', '.maestro/navigate.yml']
+  test_ios:
+    name: 运行 Maestro 测试（iOS）
+    needs: [build_ios]
+    type: maestro
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      flow_path: ['.maestro/home.yml', '.maestro/navigate.yml']
+```
+
+在上述工作流中，有两个分别用于 Android 和 iOS 的构建任务：`build_android` 和 `build_ios`。每次构建完成后，对应的 Maestro 任务（`test_android` 或 `test_ios`）会运行该平台的测试。
+
+每个 Maestro 任务都通过 `build_id` 引用构建，并通过 `flow_path` 指向 Maestro 流程文件。
+
+</Step>
+
+<Step label="2">
+
+### 手动运行工作流
+
+使用 `eas workflow:run` 命令手动运行该工作流：
+
+<Terminal cmd={['$ eas workflow:run .eas/workflows/e2e-tests.yml']} />
+
+在 EAS 仪表板上，可以看到 Android 和 iOS 构建同时开始。每个构建完成后，对应的 Maestro 测试任务会运行这些流程文件进行测试。
+
+<ContentSpotlight
+  alt="EAS 工作流仪表板显示一次 Maestro E2E 测试运行，其中 Android 和 iOS 测试任务在开发构建上并行执行。"
+  src="/static/images/tutorial/cicd/eas-workflows-maestro-e2e-run.png"
+  className="max-w-160"
+/>
+
+<ContentSpotlight
+  alt="EAS 工作流仪表板显示 Android 和 iOS 开发构建的 Maestro E2E 测试任务成功完成。"
+  src="/static/images/tutorial/cicd/eas-workflows-maestro-e2e-success.webp"
+  className="max-w-160"
+/>
+
+</Step>
+
+## 自动触发 E2E 测试
+
+到目前为止，我们都是手动运行该工作流。我们可以通过 GitHub 事件来触发它，这样它就会在每个 pull request 上运行，或者在需要时通过 pull request 标签按需运行。
+
+### 在每个 pull request 上运行
+
+要在每个 pull request 上运行 E2E 测试，请向工作流添加一个 `on.pull_request` 触发器：
+
+```yaml .eas/workflows/e2e-tests.yml
+on:
+  pull_request:
+    branches: ['*']
+```
+
+### 使用标签按需运行
+
+要仅在需要时运行 E2E 测试，请使用 [`on.pull_request_labeled`](/eas/workflows/syntax/#onpull_request_labeled) 触发器。它接受一个 `labels` 参数，并且只有当有人向 pull request 添加了这些标签之一时，工作流才会运行。例如，我们可以使用 `test` 标签来触发我们的 E2E 测试工作流：
+
+```yaml .eas/workflows/e2e-tests.yml
+on:
+  pull_request_labeled:
+    labels: ['test']
+```
+
+<ContentSpotlight
+  alt="由 GitHub pull request 标签触发的 EAS Workflows 运行，使用 Maestro 对 Android 和 iOS 开发构建执行 E2E 测试。"
+  src="/static/images/tutorial/cicd/eas-workflows-maestro-e2e-pull-request-label.png"
+  className="max-w-160"
+/>
+
+## 总结
+
+<ProgressTracker name="CICD_TUTORIAL" currentChapterSlug="/tutorial/cicd/e2e-tests" />

@@ -1,0 +1,43 @@
+---
+title: EAS 工作流故障排查
+sidebar_title: 故障排查
+description: 了解如何诊断并修复运行 EAS 工作流时的常见问题。
+---
+
+import { Terminal } from '~/ui/components/Snippet';
+
+此页面列出了常见的 EAS Workflows 失败模式以及如何修复它们。如果某个工作流没有启动，或者某个作业失败，请先查看你项目的 [workflows 页面](https://expo.dev/accounts/[account]/projects/[projectName]/workflows) 上该工作流运行的详情页。这里会显示每个作业的状态、日志和错误。
+
+## 验证工作流文件
+
+在运行之前检查工作流文件是否存在 YAML 语法和 schema 错误：
+
+<Terminal cmd={['$ eas workflow:validate .eas/workflows/my-workflow.yml']} />
+
+[Expo Tools VS Code 扩展](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools) 在你编辑工作流文件时，也会提供描述和自动补全。
+
+## 工作流未在 GitHub 事件上启动
+
+如果带有 [`on` 触发器](/eas/workflows/syntax/#on) 的工作流始终未启动，请检查以下内容：
+
+- **GitHub 连接**：`push`、`pull_request` 和 `ref_delete` 等触发器要求你的 EAS 项目已[关联到 GitHub 仓库](/eas/workflows/get-started/#automate-workflows-with-github-events)。
+- **工作流文件位置和 ref**：文件必须位于 **.eas/workflows** 目录中。对于 `push` 和 `pull_request` 事件，EAS 会从触发提交中读取工作流文件，因此该文件必须存在于该分支上。对于 `schedule` 和 `ref_delete` 事件，EAS 会从默认分支读取工作流文件。
+- **触发器筛选条件**：`branches`、`tags`、`paths`、`types` 和 `labels` 筛选条件必须与事件匹配。例如，`on.push.branches: ['main']` 会忽略对其他所有分支的推送。
+- **提交消息跳过标记**：由 `push` 和 `pull_request` 事件触发的运行，在提交消息包含 `[eas skip]`、`[skip eas]` 或 `[no eas]` 时会被跳过。
+- **计划工作流**：`on.schedule` 工作流仅从仓库的默认分支运行，使用 GMT 时区运行，并且在高负载期间可能会延迟。
+
+## 构建任务失败，提示“在 eas.json 中缺少构建配置文件”
+
+预打包的 [构建任务](/eas/workflows/pre-packaged-jobs/#build) 需要它们所使用的构建配置文件存在于项目的 **eas.json** 中。构建任务默认使用 `production` 配置文件，除非该任务的 `params.profile` 指定了其他配置，因此一个空的或缺失的 **eas.json** 会导致此错误。
+
+将该配置文件添加到 **eas.json** 中，或者运行 `eas build:configure` 以使用默认配置文件生成该文件。构建还需要为每个平台提供应用签名凭据。使用 EAS CLI 并在相同的平台和配置文件下完成一次构建，会同时完成这两项设置。请参阅 [创建你的第一个构建](/build/setup/)。
+
+## 环境变量为空或缺失
+
+[EAS 环境变量](/eas/environment-variables/) 作用域限定于某个环境：`production`、`preview` 或 `development`。某个作业只能看到由其 [`environment` 键](/eas/workflows/syntax/#jobsjob_idenvironment) 所设置的环境中的变量，该键默认值为 `production`。如果作业中的某个变量为空，请确认该变量存在于作业所使用的环境中，或者将作业的 `environment` 设置为与变量定义所在的环境一致。
+
+另请注意，[`env` 键](/eas/workflows/syntax/#jobsjob_idenv) 不适用于 `apple-device-registration-request`、`branch-delete`、`doc`、`get-build`、`github-comment`、`require-approval` 和 `slack` 作业。
+
+## 更多帮助
+
+如果你仍然遇到问题，请将你的工作流文件和失败运行的链接通过邮件发送到 [workflows@expo.dev](mailto:workflows@expo.dev)，或者在 [Expo Discord](https://chat.expo.dev/) 中提问。

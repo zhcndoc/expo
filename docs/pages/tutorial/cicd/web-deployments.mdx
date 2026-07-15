@@ -1,0 +1,181 @@
+---
+title: '使用 EAS Workflows 将 Web 应用部署到 EAS Hosting'
+sidebar_title: Web 部署
+description: 了解如何将 Web 构建与 Android 和 iOS 发布一起部署到现有的 EAS Workflows 中的 EAS Hosting。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+我们前几章中的工作流涵盖了 Android 和 iOS。让我们扩展它们，使其在同一版本发布的同时，也将 Web 构建部署到 [EAS Hosting](/eas/hosting/introduction/)。
+
+## 学习目标
+
+- 配置 Expo 项目以导出静态 Web 构建
+- 在 **preview.yml** 中添加 Web 部署作业，以生成非生产环境的 Web 构建
+- 在 **production.yml** 中添加 Web 部署作业，以生成生产环境的 Web 构建
+
+## EAS 托管和部署作业
+
+**EAS 托管** 是一项用于托管和部署 Expo 应用 Web 构建的服务。每次部署都会获得自己唯一的 URL，而一个项目有一个单独的生产 URL，用于提供我们最后一次部署到生产环境的内容。
+
+EAS Workflows 中的 [`deploy`](/eas/workflows/pre-packaged-jobs/#deploy) 预打包作业会运行 web 导出，将导出步骤的输出上传到 EAS 托管，并将部署 URL 作为作业输出返回。`deploy` 作业有两个参数：
+
+| 参数 | 类型 | 描述 |
+| ---- | ---- | ---- |
+| `prod` | boolean | 可选。如果为 `true`，则部署到项目的生产 URL。若省略，则作为预览部署。 |
+| `alias` | string | 可选。为一个稳定的别名 URL 命名，例如 `awesome-project--staging.expo.app`。 |
+
+## 为静态导出配置 web.output
+
+在我们将 web 部署作业添加到工作流之前，需要先配置 Expo 项目以导出 [静态 Web 构建](/router/web/static-rendering/)。在 **app.json** 中，将 [`web.output`](/versions/latest/config/app/#web) 字段设置为 `static`：
+
+```json app.json
+{
+  "expo": {
+    /* @hide ... */ /* @end */
+    "web": {
+      "output": "static"
+    }
+  }
+}
+```
+
+`static` 会告诉 Expo CLI 生成一个包含静态 HTML、JavaScript 和资源文件的目录，EAS Hosting 可以对其进行托管。Expo 也支持 `single` 和 `server` 输出；`static` 会生成任何主机都可以提供服务的普通文件，而这正是我们这里所需要的。
+
+在使用上述配置更新 **app.json** 之后，请提交更改并将其推送到仓库的 `main` 分支。
+
+## 添加 Web 预览部署
+
+设置 `prod: true` 是预览部署与生产部署之间的区别。预览会获得每次部署各不相同的 URL。我们在 [第 3 章第 1 步](/tutorial/cicd/preview-builds/#add-a-previewyml) 中创建了一个预览工作流。让我们为该工作流添加一个 `deploy_web` 作业，这样每当我们创建一个新的预览构建时，也会得到一个新的 Web 部署。
+
+<Step label="1">
+
+### 添加一个 deploy_web 作业
+
+打开 **.eas/workflows/preview.yml** 并添加一个 `deploy_web` 作业。这个新作业会与现有的构建作业并行运行，因为它没有 `needs` 依赖。
+
+```yaml .eas/workflows/preview.yml
+name: Preview builds
+
+jobs:
+  # ... 现有的 fingerprint、get-build、build_android、build_ios、notify 作业
+
+  deploy_web:
+    name: Deploy web (preview)
+    type: deploy
+```
+
+由于没有 `prod` 参数，它会以非生产版本进行部署。每次推送都会获得一个唯一的 URL，例如 `https://awesome-project--abc123.expo.app`。
+
+</Step>
+
+<Step label="2">
+
+### 将工作流更改推送到仓库
+
+将 **preview.yml** 的更改提交并推送到 GitHub 仓库的 `main` 分支。EAS Workflows 会从默认分支读取工作流文件，所以这就是使更改生效的方式。
+
+<Terminal
+  cmd={[
+    '$ git add .eas/workflows/preview.yml',
+    '',
+    '$ git commit -m "Add web preview deploy job to preview workflow"',
+    '',
+    '$ git push origin main',
+  ]}
+  cmdCopy="git add .eas/workflows/preview.yml && git commit -m 'Add web preview deploy job to preview workflow' && git push origin main"
+/>
+
+</Step>
+
+<Step label="3">
+
+### 测试工作流
+
+现在，使用以下命令手动运行预览工作流：
+
+<Terminal cmd={['$ eas workflow:run .eas/workflows/preview.yml']} />
+
+在 EAS 仪表板上，预览工作流运行会将 `deploy_web` 作业与构建作业一起显示。
+
+<ContentSpotlight
+  alt="EAS Workflows preview run showing a deploy_web job running in parallel with Android and iOS build jobs."
+  src="/static/images/tutorial/cicd/eas-workflows-web-deploy-preview-job.png"
+  className="max-w-160"
+/>
+
+在 **Deploy web (preview)** 下，点击 **View Deployment** 链接，在浏览器中打开已部署的 Web 构建。
+
+<ContentSpotlight
+  alt="EAS Hosting deployment URL output from a deploy_web job, showing a unique per-deployment preview URL."
+  src="/static/images/tutorial/cicd/eas-hosting-deployment-url-output.webp"
+  className="max-w-160"
+/>
+
+</Step>
+
+## 添加一个 Web 生产部署
+
+来自 [第 6 章，第 1 步](/tutorial/cicd/tag-based-releases/#change-the-trigger) 的生产工作流会在我们推送新的 Git tag 时运行，并构建或更新原生应用。让我们为该工作流添加一个 `deploy_web` 作业，这样在发布应用新版本时，也会更新生产 URL 上的 Web 版本。
+
+<Step label="1">
+
+### 添加一个 deploy_web 作业
+
+打开 **.eas/workflows/production.yml** 并添加一个 `deploy_web` 作业。这个新作业会与现有的构建作业并行运行，因为它没有 `needs` 依赖。
+
+```yaml .eas/workflows/production.yml
+name: Deploy to production
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+jobs:
+  # ... 现有的 fingerprint、get-build、build、update 作业 ...
+
+  deploy_web:
+    name: Deploy web (production)
+    type: deploy
+    params:
+      prod: true
+```
+
+在上面的工作流中，`['v*.*.*']` 会匹配严格的三段式语义化版本。`params.prod: true` 会将 Web 应用部署到生产 URL，例如 `https://awesome-project.expo.app`。
+
+</Step>
+
+<Step label="2">
+
+### 创建一个 tag 来测试工作流
+
+将工作流更改提交到仓库的 `main` 分支：
+
+<Terminal
+  cmd={[
+    '$ git add .eas/workflows/production.yml',
+    '',
+    '$ git commit -m "Add web production deploy to production workflow"',
+    '',
+    '$ git push origin main',
+  ]}
+  cmdCopy="git add .eas/workflows/production.yml && git commit -m 'Add web production deploy to production workflow' && git push origin main"
+/>
+
+要运行该工作流，请创建一个新的 tag 并将其推送到仓库：
+
+<Terminal
+  cmd={['$ git tag v0.2.0', '', '$ git push origin v0.2.0']}
+  cmdCopy="git tag v0.2.0 && git push origin v0.2.0"
+/>
+
+现在，生产工作流会在发布 `v0.2.0` tag 时运行。`deploy_web` 作业会将 Web 构建部署到生产 URL。
+
+</Step>
+
+## 摘要
+
+<ProgressTracker name="CICD_TUTORIAL" currentChapterSlug="/tutorial/cicd/web-deployments" />

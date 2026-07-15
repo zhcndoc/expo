@@ -15,7 +15,7 @@ import { FAQ } from '~/ui/components/FAQ';
 import { Terminal } from '~/ui/components/Snippet';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-**EAS Workflows** 是 EAS（Expo Application Services）提供的一项 CI/CD 服务，可帮助团队自动化重复任务，例如构建 Android 和 iOS 二进制文件、发布空中更新、提交到应用商店、使用 Maestro 运行 E2E 测试，以及将 Web 应用部署到 EAS Hosting。
+**EAS Workflows** 是 EAS（Expo Application Services）提供的一项 CI/CD 服务，用于自动化重复任务，例如构建 Android 和 iOS 二进制文件、发布空中更新、提交到应用商店、运行 E2E 测试以及将 Web 应用部署到 EAS Hosting。
 
 EAS Workflows 运行在托管的云环境中，提供专为移动应用开发设计的预打包任务类型。当你的 EAS 项目关联到 GitHub 后，团队可以通过 GitHub 事件（push、pull request、labels）或计划（cron）触发工作流，也可以通过 EAS CLI 手动运行。
 
@@ -31,68 +31,39 @@ EAS Workflows 运行在托管的云环境中，提供专为移动应用开发设
 
 > **info** 下面的 `eas` 命令需要 EAS CLI。有关更多信息，请参阅[如何安装 EAS CLI](/eas/cli/#installation)。
 
-工作流定义为项目根目录下 **.eas/workflows/** 目录中的 YAML 文件。每个文件指定一个 `name`、可选的触发器（`on`），以及一个或多个在云端运行的 `jobs`。你可以使用以下命令通过 EAS CLI 运行工作流：
+要创建您的第一个工作流，请运行以下命令并按照提示操作：
 
-<Terminal cmd={['$ eas workflow:run .eas/workflows/your-workflow.yml']} />
+<Terminal cmd={['$ eas workflow:create']} />
+
+## 开始使用
+
+工作流定义为位于项目根目录下 **.eas/workflows/** 目录中的 YAML 文件。每个文件都指定一个 `name`、可选的触发器（`on`），以及一个或多个在云端运行的 `jobs`。开始使用指南将带你了解先决条件以及你的第一次工作流运行：
+
+<BoxLink
+  title="创建你的第一个工作流"
+  description="设置你的项目，并使用工作流创建开发构建。"
+  href="/eas/workflows/get-started"
+  Icon={Dataflow03Icon}
+/>
 
 ## 主要特性
 
-- **为 React Native/Expo 预打包**：提供可直接使用的任务类型（`build`、`submit`、`update`、`maestro`、`deploy` 等），抽象掉实现复杂性
-- **无需管理基础设施**：在带有 macOS 和 Linux 工作节点的 EAS 上运行，因此你无需维护 CI 服务器或配置 Android Studio/Xcode
-- **统一的制品管理**：所有构建制品、更新和日志都会显示在 EAS 仪表盘上
-- **GitHub 集成**：可在 push、pull request、label 或 ref 删除事件时，结合分支和路径过滤自动触发工作流
-- **更快的迭代**：组合 Fingerprint、Get Build 和 Update 任务，避免重复的原生构建，并在可能时发布 OTA（空中）更新
-- **内置 E2E 测试**：直接在工作流中于 Android 模拟器和 iOS 模拟器上运行 Maestro 测试
-- **Slack 通知**：当工作流成功运行或失败时，向 Slack 频道发送通知
-- **Repack**：重用现有构建的元数据和 JavaScript bundle，更快创建兼容构建
-
-## 工作流触发类型
-
-### Push 工作流
-
-当提交被推送到匹配的分支或标签时运行。支持使用 glob 模式进行分支、标签和路径过滤。
-
-### Ref 删除工作流
-
-当 GitHub 分支或标签被删除时运行。支持使用 glob 模式进行分支和标签过滤。对于清理与 Git 分支同名的 EAS Update 分支很有用。
-
-参见 [`on.ref_delete` 语法参考](/eas/workflows/syntax/#onref_delete)。
-
-### Pull request 工作流
-
-当 pull request 被打开、更新或添加标签时运行。适用于预览构建以及合并前的自动化测试。
-
-### 定时工作流
-
-按 cron 计划运行（例如夜间构建或每周回归测试）。定时工作流仅在默认分支上运行。
-
-### 手动工作流
-
-使用 `eas workflow:run` 命令按需运行。支持参数化输入，便于灵活执行。
-
-### App Store Connect 工作流
-
-当发生选定的 App Store Connect 事件时运行（例如应用版本状态变更、构建上传状态、外部测试版状态或测试反馈事件）。
-
-要使用 App Store Connect 触发器，请在 EAS 仪表板中配置 App Store Connect 连接：**[项目设置 > 常规 > 连接](https://expo.dev/accounts/[account]/projects/[project]/settings)**。
-
-有关配置细节和受支持值，请参阅 [`on.app_store_connect` 语法参考](/eas/workflows/syntax/#onapp_store_connect)。
+- **预打包任务**：可直接使用的[任务](/eas/workflows/pre-packaged-jobs/)，用于构建、提交和更新你的应用，运行 Maestro E2E 测试，发送 Slack 消息等。[自定义任务](/eas/workflows/syntax/#custom-jobs)可运行你需要的任何命令。
+- **灵活的触发器**：可在 [GitHub 事件](/eas/workflows/syntax/#on)（push、pull request、label、分支或标签删除）、cron 计划、[App Store Connect 事件](/eas/workflows/syntax/#onapp_store_connect)上运行工作流，也可以使用 `eas workflow:run` 手动运行，或通过 [REST API](/eas/workflows/rest-api/) 触发。
+- **无需管理基础设施**：任务运行在 EAS 托管的 macOS 和 Linux 工作节点上，因此你无需维护 CI 服务器或配置 Android Studio 和 Xcode。
+- **一切尽在一个仪表盘**：构建、更新、测试结果、制品和日志都会显示在 [expo.dev](https://expo.dev/) 上。
+- **更快的发布**：组合使用 `fingerprint`、`get-build` 和 `update` 任务，在可能的情况下跳过多余的原生构建，并发布空中更新。
 
 ## 何时使用 EAS Workflows
 
-| 场景                                                                           | 推荐 |
-| ---------------------------------------------------------------------------------- | -------------- |
-| 为你的 Expo 和 React Native 应用自动化 Android 和 iOS 构建                | <YesIcon />    |
-| 自动将构建提交到 App Store 和 Google Play                           | <YesIcon />    |
-| 在每次提交或合并时发布空中更新                              | <YesIcon />    |
-| 将 Maestro E2E 测试作为 CI 的一部分运行                                           | <YesIcon />    |
-| 通过 GitHub push 或 pull request 事件触发构建和更新                 | <YesIcon />    |
-| 将 Web 应用部署到 EAS Hosting                                                     | <YesIcon />    |
-| 使用基于 fingerprint 的逻辑跳过重复的原生构建                        | <YesIcon />    |
-| 无需管理自己的基础设施或 macOS 机器即可实现 CI/CD                   | <YesIcon />    |
-| 使用非 EAS 服务（如 Docker、自定义 runner）构建高度定制化的流水线 | <NoIcon />     |
-| 具有多种配置变体并行运行的矩阵构建                   | <NoIcon />     |
-| 用于非 React Native 项目的 CI/CD                                                | <NoIcon />     |
+| 场景                                                                                 | 推荐 |
+| ------------------------------------------------------------------------------------ | -------------- |
+| 自动化构建、应用商店提交、OTA 更新和 Web 部署                                       | <YesIcon />    |
+| 将 Web 应用部署到 EAS Hosting                                                      | <YesIcon />    |
+| 在 CI 中使用 Maestro 运行 E2E 测试                                                 | <YesIcon />    |
+| 从 GitHub 的 push 或 pull request 事件触发构建和更新                                 | <YesIcon />    |
+| 无需管理自己的基础设施或 macOS 机器的 CI/CD                                       | <YesIcon />    |
+| 依赖非 EAS 服务（Docker、自定义运行器）的高度定制化流水线                          | <NoIcon />     |
 
 ## 常见问题（FAQ）
 
@@ -168,14 +139,7 @@ EAS Workflows 非常适合与你的 Expo 应用相关的操作，而其他 CI/CD
 
 </FAQ>
 
-## 开始使用
-
-<BoxLink
-  title="创建你的第一个工作流"
-  description="了解如何创建并运行你的第一个工作流。"
-  href="/eas/workflows/get-started"
-  Icon={Dataflow03Icon}
-/>
+## 其他资源
 
 <BoxLink
   title="预打包任务"

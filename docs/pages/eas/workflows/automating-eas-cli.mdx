@@ -8,9 +8,9 @@ import { Dataflow03Icon } from '@expo/styleguide-icons/outline/Dataflow03Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 
-如果你正在使用 EAS CLI 来构建、提交和更新你的应用，你可以借助 EAS Workflows 自动化执行一系列命令。EAS Workflows 可以构建、提交和更新你的应用，同时还可以运行其他任务，例如 Maestro 测试、单元测试、自定义脚本等。
+If you’re using EAS CLI to build, submit, and update your app, you can automate a series of commands with EAS Workflows. EAS Workflows can build, submit, and update your app, and it can also run other tasks such as Maestro tests, unit tests, custom scripts, and more.
 
-下面你将看到如何设置项目以使用 EAS Workflows，随后是常见的 EAS CLI 命令示例，以及如何使用 EAS Workflows 来运行它们。
+Below, you’ll see how to set up your project to use EAS Workflows, followed by common EAS CLI command examples and how to use EAS Workflows to run them.
 
 ## 配置你的项目
 
@@ -31,7 +31,7 @@ EAS Workflows 可选择支持一个与你的 EAS 项目关联的 GitHub 仓库�
 在 **build-ios-production.yml** 中，你可以使用以下工作流来启动一个创建使用 `production` 构建配置文件的 iOS 构建的任务。
 
 ```yaml .eas/workflows/build-ios-production.yml
-name: iOS production build
+name: iOS 生产构建
 
 on:
   push:
@@ -39,7 +39,7 @@ on:
 
 jobs:
   build_ios:
-    name: Build iOS
+    name: 构建 iOS
     type: build
     params:
       platform: ios
@@ -48,7 +48,7 @@ jobs:
 
 一旦你有了这个工作流文件，你可以通过向 `main` 分支推送提交来启动它，或者运行以下 EAS CLI 命令：
 
-<Terminal cmd={['$ eas workflow:run build-ios-production.yml']} />
+<Terminal cmd={['$ eas workflow:run .eas/workflows/build-ios-production.yml']} />
 
 你可以提供参数来创建 Android 构建，或者使用其他构建配置文件。有关构建任务参数的更多信息，请参阅 [构建任务文档](/eas/workflows/syntax/#build)。
 
@@ -60,41 +60,50 @@ jobs:
 
 要将此命令写成工作流，请在项目根目录下创建一个名为 **.eas/workflows/submit-ios.yml** 的工作流文件。
 
-在 **submit-ios.yml** 中，你可以使用以下工作流来启动一个提交 iOS 应用的任务。
+提交任务需要要提交的构建 ID。在 **submit-ios.yml** 中，你可以使用以下工作流来创建一个 iOS 构建，然后再提交它：
 
 ```yaml .eas/workflows/submit-ios.yml
-name: Submit iOS app
+name: 提交 iOS 应用
 
 on:
   push:
     branches: ['main']
 
 jobs:
-  submit_ios:
-    name: Submit iOS
-    type: submit
+  build_ios:
+    name: 构建 iOS
+    type: build
     params:
       platform: ios
+      profile: production
+  submit_ios:
+    name: 提交 iOS
+    needs: [build_ios]
+    type: submit
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
 ```
 
-一旦你有了这个工作流文件，你可以通过向 `main` 分支推送提交来启动它，或者运行以下 EAS CLI 命令：
+如果你想提交一个现有构建而不是创建新的构建，可以直接将它的 `build_id` 传给提交任务，或者使用 [`get-build`](/eas/workflows/pre-packaged-jobs/#get-build) 任务动态查找它，并传递其 `build_id` 输出。
 
-<Terminal cmd={['$ eas workflow:run submit-ios.yml']} />
+有了这个工作流文件后，你可以通过向 `main` 分支推送提交来启动它，或者运行以下 EAS CLI 命令：
 
-你可以提供参数来提交其他平台，或者使用其他提交配置文件。有关提交任务参数的更多信息，请参阅 [提交任务文档](/eas/workflows/syntax/#submit)。
+<Terminal cmd={['$ eas workflow:run .eas/workflows/submit-ios.yml']} />
 
-## 发布更新
+你可以提供参数来使用其他提交配置文件。有关提交任务参数的更多信息，请参阅 [提交任务文档](/eas/workflows/syntax/#submit)。
 
-你可以使用 EAS CLI 的 `eas update` 命令来更新你的应用。要更新你的应用，你可以运行以下 EAS CLI 命令：
+## Release updates
+
+You can use the EAS CLI `eas update` command to update your app. To update your app, you can run the following EAS CLI command:
 
 <Terminal cmd={['$ eas update --auto']} />
 
-要将此命令写成工作流，请在项目根目录下创建一个名为 **.eas/workflows/publish-update.yml** 的工作流文件。
+To write this command as a workflow, create a workflow file named **.eas/workflows/publish-update.yml** in the project root.
 
-在 **publish-update.yml** 中，你可以使用以下工作流来启动一个发送空中更新的任务。
+In **publish-update.yml**, you can use the following workflow to start a task that sends an over-the-air update.
 
 ```yaml .eas/workflows/publish-update.yml
-name: Publish update
+name: 发布更新
 
 on:
   push:
@@ -102,17 +111,17 @@ on:
 
 jobs:
   update:
-    name: Update
+    name: 更新
     type: update
     params:
       branch: ${{ github.ref_name || 'test'}}
 ```
 
-一旦你有了这个工作流文件，你可以通过向任意分支推送提交来启动它，或者运行以下 EAS CLI 命令：
+Once you have this workflow file, you can trigger it by pushing a commit to any branch, or run the following EAS CLI command:
 
-<Terminal cmd={['$ eas workflow:run publish-update.yml']} />
+<Terminal cmd={['$ eas workflow:run .eas/workflows/publish-update.yml']} />
 
-你可以提供参数来更新特定分支或频道，并配置更新消息。有关更新任务参数的更多信息，请参阅 [更新任务文档](/eas/workflows/syntax/#update)。
+You can provide parameters to update a specific branch or channel, and configure the update message. For more information about update task parameters, see [更新任务文档](/eas/workflows/syntax/#update).
 
 ## 下一步
 

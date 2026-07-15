@@ -1,0 +1,270 @@
+---
+title: 受控组件
+description: 了解如何在 React Native 中使用受控组件来控制 TextInput，在应用用户输入时格式化文本，限制输入，并保持光标稳定。
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { UpdateLoopDiagram } from '~/scenes/guides/controlled-components/UpdateLoopDiagram';
+import { WorkletPathDiagram } from '~/scenes/guides/controlled-components/WorkletPathDiagram';
+
+每个输入都有一个当前值，例如输入框中的文本、开关的位置，或者选择器中的选项。**受控组件**将值保存在你管理的 state 中。输入会显示 state 中保存的任何内容，而用户进行的每一次更改都会更新该 state。这个 state 是唯一的真实来源。
+
+受控组件将设置值的 prop 与报告更改的回调配对。本页重点介绍 [`TextInput`](https://reactnative.dev/docs/textinput)，它是 React Native 中用于输入文本的组件，因为文本输入是最适合控制值、也最难正确实现的场景。关于 `Switch`、`Checkbox` 和 `Picker`，请参阅 [控制其他组件](#control-other-components)。
+
+## 控制文本输入
+
+React Native 的 `TextInput` 组件默认是非受控的。它会在内部保存文本，并且无需 [`value`](https://reactnative.dev/docs/textinput#value) 属性也能工作。传入 `value` 会使其变为受控。从那时起，React 会强制原生输入框与该属性保持一致。
+
+下面的示例在状态中保存一个名字。`value` 用于显示状态，而 [`onChangeText`](https://reactnative.dev/docs/textinput#onchangetext) 会在每次按键时更新它：
+
+```tsx
+import { useState } from 'react';
+import { TextInput } from 'react-native';
+
+export default function NameInput() {
+  const [name, setName] = useState('');
+
+  return <TextInput value={name} onChangeText={setName} placeholder="Name" />;
+}
+```
+
+在 React Native 中，这个更新循环是异步的：每次更新都要往返经过 JavaScript 线程。一次按键会先更新原生输入框，然后触发 `onChangeText`。你的状态更新会触发重新渲染，新的值再传回原生输入框。在网页端，React 会针对 DOM 同步协调输入框。大多数受控输入问题都源于这次往返。
+
+下图展示了一次按键如何在更新循环中传递：
+
+<UpdateLoopDiagram />
+
+<Collapsible summary="与网页端受控输入的差异">
+
+如果你写过 [网页端的受控输入](https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable)，在 React Native 中有三点不同：
+
+- 常用的变更处理函数是 `onChangeText`，它会直接接收新文本，而不是事件对象。
+- React Native 没有 [`preventDefault`](https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)，所以你无法在按键出现之前阻止它。相反，应在 `onChangeText` 中清理文本，并通过 `value` 将结果传回去。
+- 更新是异步的，因此输入框会在一次往返之后才反映你的状态。
+
+下面的示例展示了两个平台上相同的输入方式：
+
+```tsx
+// Web (react-dom)
+<input value={text} onChange={event => setText(event.target.value)} />
+
+// React Native
+<TextInput value={text} onChangeText={setText} />
+```
+
+</Collapsible>
+
+## 在受控输入和非受控输入之间进行选择
+
+当某些内容需要对每一次按键都做出响应时，受控输入很有用：例如实时校验、统计字符数、仅在字段有效后启用提交按钮，或者在用户输入时格式化输入内容。
+
+当你只需要在交互结束时获取值时，非受控输入很有用，例如用户提交搜索时。它还避免了每次按键都触发重新渲染。要构建一个非受控输入，使用 [`defaultValue`](https://reactnative.dev/docs/textinput#defaultvalue) 属性设置初始文本，并通过 [`onSubmitEditing`](https://reactnative.dev/docs/textinput#onsubmitediting) 属性读取最终值：
+
+```tsx
+import { TextInput } from 'react-native';
+
+export default function SearchInput({ onSearch }: { onSearch: (query: string) => void }) {
+  return (
+    <TextInput
+      defaultValue=""
+      onSubmitEditing={event => onSearch(event.nativeEvent.text)}
+      placeholder="搜索"
+      returnKeyType="search"
+    />
+  );
+}
+```
+
+下表比较了受控输入和非受控输入：
+
+|                          | 受控                                  | 非受控                                                                                               |
+| ------------------------ | ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 值存储在                 | React state                           | 原生输入组件                                                                                         |
+| 通过以下方式设置         | `value` 和 `onChangeText`             | `defaultValue`                                                                                       |
+| 通过以下方式读取         | React state                           | `onChangeText`、`onSubmitEditing`、[`onEndEditing`](https://reactnative.dev/docs/textinput#onendediting) |
+| 每次按键都会重新渲染吗   | 是                                     | 否                                                                                                   |
+| 适用场景                 | 实时校验、格式化、依赖式 UI            | 搜索框、提交时读取的表单                                                                             |
+
+### 在用户输入时格式化输入内容
+
+要在用户输入时格式化电话号码、金额或日期等文本，可以在 `onChangeText` 中转换字符串，并将格式化后的结果重新保存到 state 中。
+
+以下示例会在用户输入时格式化电话号码：
+
+```tsx
+import { useState } from 'react';
+import { TextInput } from 'react-native';
+
+function formatPhone(input: string) {
+  const digits = input.replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+export default function PhoneInput() {
+  const [phone, setPhone] = useState('');
+
+  return (
+    <TextInput
+      value={phone}
+      onChangeText={text => setPhone(formatPhone(text))}
+      keyboardType="phone-pad"
+      placeholder="(555) 123-4567"
+    />
+  );
+}
+```
+
+由于格式化后的字符串与用户输入的内容不同，在上面图示中的第 2 步和第 5 步之间，字段会短暂显示原始文本。
+
+### 限制用户可以输入的内容
+
+格式化会重写整个字符串。限制输入则是移除字符，连接方式相同。让 `onChangeText` 触发，剔除不需要的字符，再通过 `value` 将干净的值写回去。
+
+以下示例只保留字段中的数字：
+
+```tsx
+<TextInput
+  value={amount}
+  onChangeText={text => setAmount(text.replace(/[^0-9]/g, ''))}
+  keyboardType="number-pad"
+/>
+```
+
+对于长度限制和只读字段，优先使用 [`maxLength`](https://reactnative.dev/docs/textinput#maxlength) 和 [`editable`](https://reactnative.dev/docs/textinput#editable) 属性。它们在原生端生效，不会闪烁：
+
+```tsx
+// 限制长度
+<TextInput value={code} onChangeText={setCode} maxLength={6} />
+
+// 禁止所有编辑
+<TextInput value={value} editable={false} />
+```
+
+设置 [`keyboardType`](https://reactnative.dev/docs/textinput#keyboardtype)（例如 `number-pad`、`decimal-pad` 或 `phone-pad`）会显示匹配的键盘，但它并不能强制限制输入：硬件键盘和粘贴文本仍然可以插入其他字符，因此仍需保留 `onChangeText` 过滤逻辑。
+
+### 强制输入大写
+
+强制大写与格式化使用的是同样的模式。将转换逻辑与 [`autoCapitalize`](https://reactnative.dev/docs/textinput#autocapitalize) 配对使用，这样屏幕键盘一开始就会生成大写字母。
+
+以下示例将优惠码以大写形式保存：
+
+```tsx
+<TextInput
+  value={code}
+  onChangeText={text => setCode(text.toUpperCase())}
+  autoCapitalize="characters"
+  placeholder="优惠码"
+/>
+```
+
+### 在格式化时保持光标位置不变
+
+在 React Native 的[新架构](/guides/new-architecture/)出现之前，在 `onChangeText` 中重格式化值会把光标吸到字段末尾，这使得在输入中间编辑变得困难。
+
+在使用新架构的 React Native 和 Expo 应用中，只要 `onChangeText` 将文本原样传回，在字段中间输入时光标就会保持在原位。当它返回转换后的文本时，原生字段必须将旧的光标位置映射到新的字符串上，而当转换插入或删除字符时，这种映射可能会出错。
+
+要在格式化时保持光标稳定：
+
+- 优先使用诸如 `maxLength` 和 `editable` 之类的原生属性，而不是用 JavaScript 重新实现它们。参见[限制用户可以输入的内容](#restrict-what-users-can-type)。
+- 使用能够为你处理光标计算的掩码库。参见[何时使用库](#when-to-use-a-library)。
+- 将格式化移到 UI 线程上。参见[使用 worklet 消除格式化闪烁](#remove-formatting-flicker-with-worklets)。
+
+### 使用 worklet 消除格式化闪烁
+
+在 JavaScript 中进行格式化时，会先经过 state 和一次重新渲染，然后原生字段才会更新，因此字段可能会短暂显示原始文本，之后才被格式化后的值替换。来自 [`@expo/ui`](/versions/latest/sdk/ui/) 的通用 [`TextInput`](/versions/latest/sdk/ui/universal/textinput/) 去除了这一来回过程。它的 `value` 是一个通过 `useNativeState` 创建的可观察 state 对象，而 `onChangeText` 可以是一个在 UI 线程上同步运行的 worklet。格式化后的值会和按键发生在同一帧内落地。
+
+下图展示了 worklet 路径中的同一次按键：
+
+<WorkletPathDiagram />
+
+以下示例会在用户输入时于 UI 线程上格式化电话号码。它需要：
+
+- `@expo/ui`：通用 `TextInput` 从 SDK 56 起可用。参见[安装说明](/versions/latest/sdk/ui/universal/textinput/#installation)。
+- [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)：worklet 函数需要它的运行时环境。
+
+```tsx
+import { Host, TextInput, useNativeState } from '@expo/ui';
+import { useCallback } from 'react';
+
+function formatPhone(input: string) {
+  'worklet';
+  const digits = input.replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+export default function PhoneMaskExample() {
+  const phone = useNativeState('');
+  const selection = useNativeState({ start: 0, end: 0 });
+
+  const handleChangeText = useCallback(
+    (value: string) => {
+      'worklet';
+      const formatted = formatPhone(value);
+      if (formatted !== value) {
+        phone.value = formatted;
+        // 为演示起见，直接跳到末尾。实际的掩码需要更智能的光标处理。
+        selection.value = { start: formatted.length, end: formatted.length };
+      }
+    },
+    [phone, selection]
+  );
+
+  return (
+    <Host matchContents={{ vertical: true }}>
+      <TextInput
+        value={phone}
+        selection={selection}
+        keyboardType="phone-pad"
+        placeholder="(555) 123-4567"
+        onChangeText={handleChangeText}
+      />
+    </Host>
+  );
+}
+```
+
+`formatted !== value` 这个检查会在格式化后文本未发生变化时跳过重写。当掩码确实重写了字符串时，请将 `selection.value` 与 `phone.value` 一起写入。否则，光标会与重写后的文本不同步，快速输入会把字符放到错误的位置。当用户在字段末尾输入时，将光标移动到末尾是最简单且正确的行为。支持字符串中间编辑的生产级掩码需要更智能的光标处理。
+
+来自 `@expo/ui` 的平台特定文本字段也支持相同的受控和 worklet 模式。请参阅 [Jetpack Compose](/versions/latest/sdk/ui/jetpack-compose/textfield/#controlled-text-field) 和 [SwiftUI](/versions/latest/sdk/ui/swift-ui/textfield/#controlled-text-field) 的受控文本字段示例，以及通用 `TextInput` 的[worklet 掩码示例](/versions/latest/sdk/ui/universal/textinput/#worklet-masking)。
+
+## 何时使用库
+
+手动编写格式化适用于一两个字段。库会处理光标计算和区域设置规则，以应对国际电话号码、货币分隔符、信用卡号和日期等边缘情况：
+
+- 用于掩码：[`react-native-mask-input`](https://github.com/CaioQuirinoMedeiros/react-native-mask-input) 或 [`react-native-mask-text`](https://github.com/akinncar/react-native-mask-text)。
+- 用于跨多个字段的表单状态和校验：[React Hook Form](https://react-hook-form.com/) 或 [Formik](https://formik.org/docs/guides/react-native)。使用 React Hook Form 时，请将 `TextInput` 包装在其 `Controller` 组件中，因为 `register` 不会绑定到原生输入。
+
+## 控制其他组件
+
+受控模式不仅适用于文本输入框。任何将值属性与变更回调配对的组件，都遵循与 `TextInput` 相同的模式。
+
+[`Switch`](https://reactnative.dev/docs/switch) 是最严格的示例。`TextInput` 在你传入 `value` 时会切换到受控模式，但 `Switch` 始终是受控的。除非 `onValueChange` 更新了 `value` 属性，否则开关会回到你传入的值。你可以将状态传给 `value`，并通过 `onValueChange` 更新它；`onValueChange` 返回的是布尔值而不是字符串：
+
+```tsx
+import { useState } from 'react';
+import { Switch } from 'react-native';
+
+export default function NotificationsToggle() {
+  const [enabled, setEnabled] = useState(false);
+
+  return <Switch value={enabled} onValueChange={setEnabled} />;
+}
+```
+
+同样的模式也出现在其他组件中：
+
+- [`RefreshControl`](https://reactnative.dev/docs/refreshcontrol) 将 `refreshing` 视为受控属性。在 `onRefresh` 中将其设为 `true`，在刷新完成时再设回 `false`。如果它从不改变，指示器会立即停止。
+- 来自 `expo-checkbox` 的 [`Checkbox`](/versions/latest/sdk/checkbox/) 将 `value` 与 `onValueChange` 配对。
+- 来自 `@react-native-picker/picker` 的 [`Picker`](/versions/latest/sdk/picker/) 将 `selectedValue` 与 `onValueChange` 配对。
+
+这些组件在每次交互中只会发出一个离散值，因此不会出现格式化文本时带来的光标和闪烁问题。
+
+## 其他资源
+
+- [`@expo/ui` 参考中的 `TextInput`](/versions/latest/sdk/ui/universal/textinput/)：基于 worklet 的输入组件、其安装方式以及完整的属性列表。
+- [键盘处理](/guides/keyboard-handling/)：管理屏幕键盘周围的布局。
+- [React Native 文档中的 `TextInput`](https://reactnative.dev/docs/textinput)：核心组件的完整属性列表。

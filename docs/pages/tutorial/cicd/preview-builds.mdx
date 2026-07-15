@@ -1,0 +1,304 @@
+---
+title: '为拉取请求创建预览构建，使用 EAS Workflows'
+sidebar_title: 预览构建
+description: 了解如何使用 EAS Workflows 为 Slack 通知和 PR 预览创建预览构建工作流。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { PreviewPipeline } from '~/ui/components/FlowDiagram/Diagrams/PreviewPipeline';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+与队友和拉取请求（PR）审阅者共享正在进行中的移动端更改，通常需要他们检出一个分支并在本地运行开发服务器。
+
+## 学习成果
+
+- 使用指纹识别自动化预览构建，用于内部分发
+- 在构建完成时发送 Slack 通知
+- 在每个拉取请求上发布一个 [OTA 更新](/deploy/send-over-the-air-updates/)，并在 PR 上评论一个用于测试的链接
+
+<Prerequisites>
+
+<Requirement title="已安装 expo-updates">
+
+安装 [`expo-updates`](/versions/latest/sdk/updates/) 库：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install expo-updates'],
+    yarn: ['$ yarn dlx expo install expo-updates'],
+    pnpm: ['$ pnpm dlx expo install expo-updates'],
+    bun: ['$ bunx expo install expo-updates'],
+  }}
+/>
+
+</Requirement>
+
+<Requirement title="已配置 EAS Update">
+
+要配置 EAS Update，运行：
+
+<Terminal cmd={['$ eas update:configure']} />
+
+上面的命令会将更新 URL 和运行时版本添加到 **app.json**，并将一个 [`channel`](/eas-update/deployment/) 字段添加到 **eas.json** 中的每个构建配置文件。
+
+</Requirement>
+
+<Requirement title="已创建预览构建">
+
+要接收 PR 预览更新，审阅者设备上需要安装带有 `expo-updates` 和 EAS Update channel 的预览构建。要创建一个：
+
+<Terminal cmd={['$ eas build --profile preview --platform all']} />
+
+由于 `expo-updates` 是一个原生库，此构建会嵌入其原生代码以及来自 **eas.json** 的 channel。运行上面的命令还会让 EAS CLI 在我们首次触发预览构建时生成 [凭据](/app-signing/app-credentials/)。
+
+</Requirement>
+
+</Prerequisites>
+
+## `build` 作业类型用于预览构建
+
+团队使用预览构建进行利益相关者测试。成员通过内部分发将构建安装到他们的设备/模拟器/仿真器上。他们无需运行开发服务器或检出分支即可测试更改。
+
+<PreviewPipeline />
+
+与[开发构建](/tutorial/cicd/development-builds/#skip-unnecessary-builds-with-fingerprints)一样，我们会添加指纹，以避免在原生代码未更改时进行不必要的重新构建。
+
+<Step label="1">
+
+### 添加一个 preview.yml
+
+在 **.eas/workflows/** 中，让我们添加一个名为 **preview.yml** 的新文件。此工作流文件使用 `preview` 配置文件。
+
+```yaml .eas/workflows/preview.yml
+name: 预览构建
+
+jobs:
+  fingerprint:
+    name: 指纹
+    type: fingerprint
+    # @info #
+    environment: preview
+    # @end #
+  get_android_build:
+    name: 检查现有的 Android 构建
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      # @info #
+      profile: preview
+      # @end #
+  get_ios_build:
+    name: 检查现有的 iOS 构建
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      # @info #
+      profile: preview
+      # @end #
+  build_android:
+    name: 构建 Android
+    needs: [get_android_build]
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    type: build
+    params:
+      platform: android
+      # @info #
+      profile: preview
+      # @end #
+  build_ios:
+    name: 构建 iOS
+    needs: [get_ios_build]
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    type: build
+    params:
+      platform: ios
+      # @info #
+      profile: preview
+      # @end #
+```
+
+</Step>
+
+<Step label="2">
+
+### 运行工作流
+
+使用以下命令手动运行工作流：
+
+<Terminal cmd={['$ eas workflow:run .eas/workflows/preview.yml']} />
+
+在 EAS 仪表板中，可以看到该工作流遵循了我们在[开发构建](/tutorial/cicd/development-builds/#skip-unnecessary-builds-with-fingerprints)中实现的相同指纹模式。由于我们是第一次创建预览构建，因此它会运行 Android 和 iOS 的构建作业。如果我们在不更改原生代码的情况下向 `main` 分支推送另一个提交，工作流将跳过构建作业，因为已经存在兼容的构建。
+
+<ContentSpotlight
+  alt="EAS 工作流预览运行，其中指纹和 get-build 作业会跳过构建作业，因为已存在兼容的 Android 和 iOS 构建。"
+  src="/static/images/tutorial/cicd/eas-workflows-preview-fingerprint-skip.png"
+  className="max-w-160"
+/>
+
+</Step>
+
+## Slack 通知
+
+> **info** 本节为可选。如果你不使用 Slack？请跳到下一节关于 PR 预览的内容。
+
+许多团队使用 Slack 发送构建通知，这样团队成员无需查看 EAS 仪表板就能看到构建状态。当构建完成（或跳过）时，[`slack`](/eas/workflows/pre-packaged-jobs/#slack) 预打包任务会将状态发布到某个频道。
+
+<Step label="1">
+
+### 创建 Slack webhook URL
+
+要将 EAS Workflows 中的消息发送到我们的 Slack 频道，我们需要一个来自 Slack 设置的 webhook URL：
+
+1. 前往 [api.slack.com/apps](https://api.slack.com/apps) 并创建一个新的 Slack 应用（或使用现有应用）。
+2. 在 **Features** 下，选择 **Incoming Webhooks** 并将其开启。
+3. 点击 **Add New Webhook**，并选择要发布通知的频道。
+4. 复制 webhook URL。它看起来像这样：`https://hooks.slack.com/services/TD000/B000/XXXXXXXXXX`
+5. 将该 webhook URL 作为名为 `SLACK_WEBHOOK_URL` 的 EAS 环境变量添加。打开 EAS 仪表板中我们项目的 [Environment variables](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 页面，为 `preview` 环境创建该变量，并将其 [visibility](/eas/environment-variables/#visibility-settings-for-environment-variables) 设置为 **secret**，因为只有 EAS 服务器需要读取它。或者，也可以使用 [EAS CLI](/eas/environment-variables/manage/) 创建它：
+
+<Terminal
+  cmd={[
+    '$ eas env:create --name SLACK_WEBHOOK_URL --value https://hooks.slack.com/services/TD000/B000/XXXXXXXXXX --environment preview --visibility secret',
+  ]}
+/>
+
+</Step>
+
+<Step label="2">
+
+### 添加 Slack 通知任务
+
+让我们更新 **preview.yml**，在构建任务之后添加一个 `notify` 任务。`notify` 任务使用 `webhook_url` 和 `message` 参数，或者使用 `payload` 参数，通过 [Slack Block Kit](https://docs.slack.dev/block-kit) 实现更丰富的格式。该任务通过其 `environment` 字段从我们之前创建的 [`SLACK_WEBHOOK_URL` 环境变量](#create-a-slack-webhook-url) 中读取 webhook URL。任务默认使用 `production` 环境，因此这里设置 `environment: preview` 才能让该变量可用。
+
+```yaml .eas/workflows/preview.yml
+name: Preview builds
+
+jobs:
+  fingerprint: # ...
+  get_android_build: # ...
+  get_ios_build: # ...
+  build_android: # ...
+  build_ios: # ...
+  # @info #
+  notify:
+    name: Notify on Slack
+    after: [build_android, build_ios]
+    type: slack
+    environment: preview
+    params:
+      webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
+      message: 'Preview builds are ready - Android: ${{ after.build_android.status }}, iOS: ${{ after.build_ios.status }}'
+  # @end #
+```
+
+`after` 字段确保通知会在构建完成后触发，无论结果如何。`message` 使用 `${{ after.build_android.status }}` 和 `${{ after.build_ios.status }}` 来包含每个平台的结果（成功、失败或跳过）。团队无需离开 Slack 就能看到发生了什么。
+
+</Step>
+
+<Step label="3">
+
+### 运行工作流
+
+使用以下命令手动运行工作流：
+
+<Terminal cmd={['$ eas workflow:run .eas/workflows/preview.yml']} />
+
+在 EAS 仪表板上，我们可以验证 `Notify on Slack` 任务是否成功运行。
+
+<ContentSpotlight
+  alt="EAS Workflows 预览运行，显示在 Android 和 iOS 构建任务完成后，Notify on Slack 任务成功完成。"
+  src="/static/images/tutorial/cicd/eas-workflows-preview-slack-notify-job.png"
+  className="max-w-160"
+/>
+
+我们也可以在与该应用集成的 Slack 频道中验证这一点。
+
+<ContentSpotlight
+  alt="EAS Workflows 发送的一条 Slack 消息，显示 Expo 项目的 Android 和 iOS 预览构建完成状态。"
+  src="/static/images/tutorial/cicd/eas-workflows-preview-slack-notification.webp"
+  className="max-w-90"
+/>
+
+</Step>
+
+## 使用 EAS Update 的 PR 预览
+
+PR 审阅者可以阅读差异，但无法直观看到更改，也无法在设备上测试它们。
+
+Web 团队通过部署预览来解决这个问题。当有人打开拉取请求时，CI/CD 工作流会生成一个预览链接。审阅者打开该链接，无需检出分支即可测试这些更改。
+
+对于移动端，我们可以使用 [EAS Update](/eas-update/introduction/) 设置等效方案。它会将 JavaScript bundle 传送到已经安装了兼容构建的设备上，跳过原生编译步骤。对于 PR 预览来说，update 是非常合适的，因为审阅者可以快速打开并测试，然后在 PR 上留下反馈。
+
+EAS Workflows 提供了一个 [`github-comment`](/eas/workflows/pre-packaged-jobs/#github-comment) 预置作业来完成这件事。它会在更新发布后在拉取请求上发表评论，为审阅者提供一个链接或二维码，以便在他们的设备上打开该更新。
+
+<Step label="1">
+
+### 创建 pr-preview.yml
+
+在 **.eas/workflows/** 中，添加一个名为 **pr-preview.yml** 的新文件。此工作流会在使用 `on.pull_request` 触发器创建拉取请求时运行。它只会使用 `update` 作业类型发布更新，然后在 PR 上发布一条带有更新链接的评论。
+
+```yaml .eas/workflows/pr-preview.yml
+name: PR 预览
+
+on:
+  pull_request:
+    branches: ['*']
+
+jobs:
+  publish_preview:
+    name: 发布 PR 预览更新
+    type: update
+    environment: preview
+    params:
+      channel: preview
+  comment:
+    needs: [publish_preview]
+    type: github-comment
+```
+
+> **重要** 在测试上述工作流之前，请提交 **pr-preview.yml** 并将其推送到 GitHub 仓库的 `main` 分支。**EAS Workflows 会从默认分支读取工作流文件。**
+
+</Step>
+
+<Step label="2">
+
+### 通过拉取请求进行测试
+
+让我们通过在 GitHub 仓库中创建一个拉取请求来测试该工作流。拉取请求需要一个与 `main` 不同的分支。运行以下命令来创建并切换到一个新分支：
+
+<Terminal cmd={['$ git checkout -b test-preview']} />
+
+现在，让我们在 Expo 项目中做一个可见的改动（例如，修改一个文本字符串或背景颜色）。然后，提交并推送该分支：
+
+<Terminal
+  cmd={['$ git add .', '$ git commit -m "Test PR preview"', '$ git push origin test-preview']}
+  cmdCopy="git add . && git commit -m 'Test PR preview' && git push origin test-preview"
+/>
+
+在 GitHub 上创建一个从 `test-preview` 到 `main` 的拉取请求。创建拉取请求后，工作流会自动运行。在 EAS 控制台中，我们可以确认 `publish_preview` 作业会先运行，随后 `comment` 作业在其成功后运行。
+
+<ContentSpotlight
+  alt="EAS Workflows 拉取请求预览运行，显示 publish_preview 作业，随后是向 GitHub 发布更新链接的 comment 作业。"
+  src="/static/images/tutorial/cicd/eas-workflows-preview-pr-publish-comment.png"
+  className="max-w-160"
+/>
+
+在 GitHub 拉取请求中，应会出现一条评论，其中包含用于在设备上测试该更新的链接或二维码。
+
+<ContentSpotlight
+  alt="EAS Workflows 发布的 GitHub 拉取请求评论，链接到一个用于提议更改的 EAS Update 预览。"
+  src="/static/images/tutorial/cicd/eas-workflows-preview-github-pr-comment.png"
+  className="max-w-160"
+/>
+
+使用评论中的链接或二维码，我们现在可以在设备或模拟器/仿真器上打开该更新，并测试这些更改。
+
+</Step>
+
+## 摘要
+
+<ProgressTracker name="CICD_TUTORIAL" currentChapterSlug="/tutorial/cicd/preview-builds" />

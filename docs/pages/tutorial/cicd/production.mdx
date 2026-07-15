@@ -1,0 +1,273 @@
+---
+title: '使用 EAS Workflows 自动化生产环境部署'
+sidebar_title: 生产环境部署
+description: 了解如何使用来自发布分支的 EAS Workflows 为 Android 和 iOS 自动化生产构建和空中更新。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { BuildOrUpdate } from '~/ui/components/FlowDiagram/Diagrams/BuildOrUpdate';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+每次生产环境变更都重建应用是浪费的，因为大多数变更只是 TypeScript/JavaScript。
+
+## 学习成果
+
+- 从 `release/*` 分支触发生产部署，而不是在每次推送到 `main` 时都触发
+- 根据项目指纹在原生构建和 [OTA 更新](/deploy/send-over-the-air-updates/) 之间进行分支选择
+- 将应用商店提交自动化，作为生产工作流中的后续步骤
+
+<Prerequisites>
+
+<Requirement title="已为生产环境配置 EAS Build">
+
+[EAS CLI](/eas/cli/) 在我们首次为某个配置文件触发构建时，会提示生成凭据。请先手动为 Android 和 iOS 触发生产构建，以便在工作流运行前凭据已经存在：
+
+<Terminal cmd={['$ eas build --profile production --platform all']} />
+
+</Requirement>
+
+</Prerequisites>
+
+## 使用发布分支
+
+在之前的开发构建中，我们已经看到，使用 `on.push.branches` 触发器会让我们的工作流在每次推送到指定的 `main` 分支时都运行。对于生产环境部署来说，在每次推送到 `main` 分支时触发工作流，意味着每一次合并的变更都会成为一个新的发布版本。团队通常希望采用更有计划的发布流程，因此会改用发布分支或标签。
+
+在发布分支策略中，我们通常会使用类似 `release/*` 这样的模式来指定分支，其中 `*` 是功能或版本名称。这就是持续集成（CI）与持续交付（CD）的区别。CI 会在每次推送到 `main` 分支时运行，而 CD 会在团队准备好部署到生产环境时，在发布分支上运行。
+
+下表展示了各个工作流的触发器如何定义其用途：
+
+| 工作流文件                        | 触发器                            | 构建配置 | 用途                                                                                                                                           |
+| --------------------------------- | --------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **.eas/workflows/build.yml**      | `on.push.branches: ['main']`      | `development` | 在每次推送到 `main` 分支时运行的 CI 工作流。它可以运行单元测试并生成开发构建。                                  |
+| **.eas/workflows/preview.yml**    | `on.push.branches: ['main']`      | `preview`     | 在每次推送到 `main` 分支时运行的预览工作流。它可以生成用于内部测试以及与相关人员共享的预览构建。 |
+| **.eas/workflows/production.yml** | `on.push.branches: ['release/*']` | `production`  | 在每次推送到发布分支时运行的 CD 工作流。                                                                                          |
+
+上述文件可以在项目的 GitHub 仓库中共存，而不会产生任何冲突。每个文件使用不同的构建配置和触发器。
+
+<BuildOrUpdate />
+
+## 生产构建的 `build` 作业类型
+
+让我们先创建一个生产工作流。它使用 EAS Workflows 中的[预打包](/tutorial/cicd/first-workflow/#types-of-jobs-in-eas-workflows) `build` 作业类型，并同时适用于 Android 和 iOS。
+
+<Step label="1">
+
+### 添加一个 production.yml
+
+在 **.eas/workflows/** 中，创建一个名为 **production.yml** 的新文件，使用 **eas.json** 中的 `production` 构建配置文件：
+
+```yaml .eas/workflows/production.yml
+name: 部署到生产环境
+
+on:
+  push:
+    branches: ['release/*']
+
+jobs:
+  build_android:
+    name: 构建 Android
+    type: build
+    params:
+      platform: android
+      profile: production
+  build_ios:
+    name: 构建 iOS
+    type: build
+    params:
+      platform: ios
+      profile: production
+```
+
+当推送到任何匹配 `release/*` 模式的分支时，这会为 Android 生成一个 **.aab** 工件，为 iOS 生成一个 **.ipa** 工件。
+
+</Step>
+
+<Step label="2">
+
+### 为工作流添加 fingerprints
+
+让我们向工作流中添加一个 [`fingerprint`](/eas/workflows/pre-packaged-jobs/#fingerprint) 作业，用于检查是否有原生代码变更，并据此更新现有的 `build_android` 和 `build_ios` 作业。我们还要添加 [`get-build`](/eas/workflows/pre-packaged-jobs/#get-build) 作业，用于查找 Android 和 iOS 的现有构建。
+
+使用以下代码更新 **production.yml** 文件：
+
+```yaml .eas/workflows/production.yml
+name: 部署到生产环境
+
+on:
+  push:
+    branches: ['release/*']
+
+jobs:
+  # @info #
+  fingerprint:
+    name: 指纹
+    type: fingerprint
+    environment: production
+  # @end #
+  # @info #
+  get_android_build:
+    name: 检查是否存在现有的 Android 构建
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      profile: production
+  get_ios_build:
+    name: 检查是否存在现有的 iOS 构建
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      profile: production
+  # @end #
+  build_android:
+    name: 构建 Android
+    needs: [get_android_build]
+    # @info #
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    # @end #
+    type: build
+    params:
+      platform: android
+      profile: production
+  build_ios:
+    name: 构建 iOS
+    needs: [get_ios_build]
+    # @info #
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    # @end #
+    type: build
+    params:
+      platform: ios
+      profile: production
+```
+
+在上述工作流中，`fingerprint` 作业会先运行，并根据代码库中的变更生成一个哈希值。然后，`get-build` 作业会检查是否存在具有相同 fingerprint 哈希的 Android 和 iOS 构建。如果不存在现有构建，`build` 作业就会运行并为生产环境创建新的构建。
+
+`fingerprint` 作业上的 [`environment`](/eas/workflows/syntax/#jobsjob_idenvironment) 字段告诉 EAS 在计算 fingerprint 时加载哪些环境变量。我们的生产环境可能具有不同的变量值，例如 `API_URL` 或功能标志。这些值在 EAS 将它们烘焙进构建时，可能会影响原生层。设置 `environment: production` 可确保 fingerprint 能反映最终实际发布的内容。
+
+`build_android` 和 `build_ios` 作业上使用的 [`if`](/eas/workflows/syntax/#jobsjob_idif) 字段是一个布尔表达式。当它求值为 `false` 时，这些构建作业会被跳过。`!` 操作符表示只有在 `get-build` 没有找到匹配构建时，构建作业才会运行。
+
+</Step>
+
+<Step label="3">
+
+### 添加一个用于更新的作业
+
+目前，我们的工作流只会在有原生代码变更时创建生产构建。如果只有 TypeScript/JavaScript 文件发生变化，我们希望触发一个 OTA 更新，而不是原生构建。
+
+让我们添加两个作业 `update_android` 和 `update_ios`：它们会在没有原生代码变更时运行，并使用 `update` 作业类型触发 OTA 更新：
+
+```yaml .eas/workflows/production.yml
+name: 部署到生产环境
+
+on:
+  push:
+    branches: ['release/*']
+
+jobs:
+  fingerprint:
+    # ...
+  get_android_build:
+    # ...
+  get_ios_build:
+    # ...
+  build_android:
+    # ...
+  build_ios:
+    # ...
+  update_android:
+    name: 发布 Android 更新
+    needs: [get_android_build]
+    if: ${{ needs.get_android_build.outputs.build_id }}
+    type: update
+    params:
+      branch: production
+      platform: android
+  update_ios:
+    name: 发布 iOS 更新
+    needs: [get_ios_build]
+    if: ${{ needs.get_ios_build.outputs.build_id }}
+    type: update
+    params:
+      branch: production
+      platform: ios
+```
+
+我们的工作流只会构建可直接发布到生产环境的应用二进制文件，或者发布 OTA 更新。自动化提交到应用商店是下面 [自动化应用商店提交](#automate-app-store-submissions) 部分讨论的常见下一步。
+
+</Step>
+
+<Step label="4">
+
+### 创建一个 release 分支并推送更改
+
+> **info** **注意：** 请确保工作流文件此时已经位于我们的 GitHub 仓库中，并且在 `main` 分支上可用。
+
+为了测试我们的工作流，让我们创建一个 release 分支，并通过终端窗口将其推送到我们的 GitHub 仓库：
+
+<Terminal
+  cmd={['$ git checkout -b release/1.0.0', '', '$ git push origin release/1.0.0']}
+  cmdCopy="git checkout -b release/1.0.0 && git push origin release/1.0.0"
+/>
+
+打开 EAS 仪表盘并找到该工作流运行。由于这个 fingerprint 还没有对应的构建存在，`build` 作业应该会运行，而 `update` 作业应该会变成灰色。
+
+<ContentSpotlight
+  alt="EAS Workflows dashboard showing a release-branch production run with fingerprint, get-build, and Android plus iOS build jobs."
+  src="/static/images/tutorial/cicd/eas-workflows-production-build-jobs.png"
+  className="max-w-160"
+/>
+
+Android 和 iOS 构建会并行运行。每个作业完成后，我们都会收到 Android 和 iOS 的新工件。
+
+现在，让我们在同一个 release 分支上对示例项目仅做 TypeScript/JavaScript 方面的修改，然后使用下面的命令再次推送：
+
+<Terminal
+  cmd={['$ git add .', '$ git commit -m "Update welcome text"', '$ git push origin release/1.0.0']}
+  cmdCopy="git add . && git commit -m 'Update welcome text' && git push origin release/1.0.0"
+/>
+
+工作流运行后，请注意 EAS 仪表盘中的 fingerprint 与上一次推送时的构建匹配。`build` 作业会被完全跳过，而 `update` 作业会发布一个 OTA 更新。
+
+<ContentSpotlight
+  alt="EAS Workflows production run reusing existing native builds via fingerprint match and publishing Android and iOS over-the-air updates."
+  src="/static/images/tutorial/cicd/eas-workflows-production-update-jobs.png"
+  className="max-w-160"
+/>
+
+</Step>
+
+## 自动化应用商店提交
+
+我们在本章中构建的工作流只能生成可用于生产环境的应用二进制文件，或者向现有的生产应用发布 OTA 更新。[自动化商店提交](/build/automate-submissions/) 是生产发布工作流中常见的下一步。
+
+EAS Workflows 提供了一个预打包的 `submit` 作业，用于自动化应用商店提交。它要求我们使用 EAS CLI 管理应用商店凭据。同时，它还要求我们满足应用商店的要求，例如手动将首个 Android 版本（**.aab**）上传到 Google Play Store。iOS 也有自己需要设置的 Apple Developer Program 注册和签名凭据。
+
+在满足应用商店要求后，我们可以在工作流中添加两个新作业 `submit_android` 和 `submit_ios`，它们会在 `build` 作业之后运行：
+
+```yaml .eas/workflows/production.yml
+# 工作流文件的其余部分
+
+submit_android:
+  name: 提交 Android
+  needs: [build_android]
+  type: submit
+  params:
+    build_id: ${{ needs.build_android.outputs.build_id }}
+submit_ios:
+  name: 提交 iOS
+  needs: [build_ios]
+  type: submit
+  params:
+    build_id: ${{ needs.build_ios.outputs.build_id }}
+```
+
+上面的 `submit_android` 和 `submit_ios` 作业需要一个 `build_id` 参数，以便知道要将哪个构建提交到应用商店。它们只会在 `build_android` 和 `build_ios` 作业运行时运行，这意味着会创建一个新的生产构建。如果只有 TypeScript/JavaScript 文件发生了更改，那么由于没有创建新的构建，`submit` 作业也会被跳过。
+
+## 摘要
+
+<ProgressTracker name="CICD_TUTORIAL" currentChapterSlug="/tutorial/cicd/production" />
