@@ -116,12 +116,10 @@ export const home = [
       'Development builds',
       [
         makePage('develop/development-builds/introduction.mdx'),
-        makePage('develop/development-builds/expo-go-to-dev-build.mdx'),
-        makePage('develop/development-builds/create-a-build.mdx'),
         makePage('develop/development-builds/use-development-builds.mdx'),
         makePage('develop/development-builds/share-with-your-team.mdx'),
         makePage('develop/development-builds/development-workflows.mdx'),
-        makePage('develop/development-builds/next-steps.mdx'),
+        makePage('develop/development-builds/faq.mdx'),
       ],
       { expanded: false }
     ),
@@ -554,9 +552,10 @@ export const eas = [
     ),
   ]),
   makeSection('EAS Submit', [
-    makePage('submit/introduction.mdx'),
     makePage('submit/android.mdx'),
     makePage('submit/ios.mdx'),
+    makePage('submit/android-manual.mdx'),
+    makePage('submit/ios-manual.mdx'),
     makePage('submit/eas-json.mdx'),
   ]),
   makeSection('EAS Hosting', [
