@@ -22,9 +22,9 @@ import { Step } from '~/ui/components/Step';
 
 <APIInstallSection />
 
-## 在 app config 中配置
+## 在应用配置中配置
 
-如果你的项目使用了 config plugins，你可以借助 `expo-sqlite` 内置的 [config plugin](/config-plugins/introduction/) 进行高级配置（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)）。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件才会生效的属性。如果你的应用**没有**使用 CNG，那么你需要手动配置该库。
+如果你的项目使用了配置插件，你可以借助 `expo-sqlite` 内置的 [配置插件](/config-plugins/introduction/) 进行高级配置（[持续原生生成（CNG）](/workflow/continuous-native-generation/)）。该插件允许你配置一些无法在运行时设置、且需要重新构建新的应用二进制文件才会生效的属性。如果你的应用**没有**使用 CNG，那么你需要手动配置该库。
 
 <ConfigPluginExample>
 
@@ -43,7 +43,7 @@ import { Step } from '~/ui/components/Step';
             "useSQLCipher": false
           },
           "ios": {
-            // You can also override the shared configurations for iOS
+            // 你也可以覆盖 iOS 的共享配置
             "customBuildFlags": "-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1"
           }
         }
@@ -92,13 +92,13 @@ import { Step } from '~/ui/components/Step';
 
 > **重要** Web 支持处于 [alpha](/more/release-statuses/#alpha) 阶段，可能不稳定。如果你遇到任何问题，请 [在 GitHub 上创建 issue](https://github.com/expo/expo/issues)。
 
-要在 web 上使用 `expo-sqlite`，你需要配置 Metro bundler 以支持 **wasm** 文件，并添加 HTTP 头以允许使用 [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)。
+要在 Web 上使用 `expo-sqlite`，你需要配置 Metro 打包器以支持 **wasm** 文件，并添加 HTTP 头以允许使用 [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)。
 
 将以下配置添加到你的 **metro.config.js** 中。如果你还没有 **metro.config.js**，可以运行 `npx expo customize metro.config.js`。[了解更多](/guides/customizing-metro/)。
 
 <DiffBlock source="/static/diffs/sqlite-web-metro-config.diff" />
 
-如果你将应用部署到 web 托管服务，你还需要在 web 服务器中添加 `Cross-Origin-Embedder-Policy` 和 `Cross-Origin-Opener-Policy` 头。[进一步了解 `COEP`、`COOP` 头以及 `SharedArrayBuffer`](https://developer.chrome.com/blog/enabling-shared-array-buffer/)。
+如果你将应用部署到 Web 托管服务，你还需要在 Web 服务器中添加 `Cross-Origin-Embedder-Policy` 和 `Cross-Origin-Opener-Policy` 头。[进一步了解 `COEP`、`COOP` 头以及 `SharedArrayBuffer`](https://developer.chrome.com/blog/enabling-shared-array-buffer/)。
 
 如果你将应用部署在 [EAS Hosting](/eas/hosting/introduction/) 上，你可以在应用配置中设置这些头：
 
@@ -220,7 +220,7 @@ try {
 }
 ```
 
-### Tagged template literals API
+### 带标签的模板字面量 API
 
 为了方便并提升开发体验，`expo-sqlite` 通过 `db.sql` 属性提供了受 Bun 启发的 tagged template literals API。该 API 会自动转义参数以防止 SQL 注入攻击，并根据查询类型提供自动类型推断。
 
@@ -423,7 +423,7 @@ await db.execAsync('PRAGMA journal_mode = WAL');
 await db.execAsync('PRAGMA foreign_keys = ON');
 ```
 
-> **信息** **提示：** 在创建新数据库时启用 [WAL journal mode](https://www.sqlite.org/wal.html)，通常可以提升性能。
+> **信息** **提示：** 在创建新数据库时启用 [WAL 日志模式](https://www.sqlite.org/wal.html)，通常可以提升性能。
 
 ### 导入现有数据库
 
@@ -451,7 +451,7 @@ export default function App() {
 
 <Step label="1">
 
-在 app config 中配置 App Group：
+在应用配置中配置 App Group：
 
 ```json app.json
 {
@@ -519,14 +519,14 @@ expect(row.data).toEqual(blob);
 
 ### 浏览设备上的数据库
 
-`expo-sqlite` 库内置了一个 DevTools 检查器插件，它会在开发环境中自动启用，无需额外设置。你可以直接在浏览器中浏览表、查看和编辑行、运行 SQL 查询以及导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>Shift</kbd> + <kbd>M</kbd> 打开开发者工具菜单，然后选择 **Open expo-sqlite** 启动检查器。
+`expo-sqlite` 库内置了一个 DevTools 检查器插件，它会在开发环境中自动启用，无需额外设置。你可以直接在浏览器中浏览表、查看和编辑行、运行 SQL 查询以及导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>Shift</kbd> + <kbd>M</kbd> 打开开发者工具菜单，然后选择 **打开 expo-sqlite** 启动检查器。
 
 <ContentSpotlight
-  alt="SQLite inspector showing a data browser with table rows, edit/delete actions, and a sidebar listing tables"
-  src="/static/images/sdk/sqlite/inspector.png"
+  alt="SQLite 检查器显示数据浏览器、表格行、编辑/删除操作，以及列出表格的侧边栏"
+  src="/static/images/sdk/sqlite/inspector.webp"
 />
 
-另外，你也可以使用 [`drizzle-studio-expo` dev tools 插件](https://github.com/drizzle-team/drizzle-studio-expo) 来从 Expo CLI 直接启动 [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview)，并连接到你应用中的数据库。该插件可用于任何 `expo-sqlite` 配置，并且不需要 [Drizzle ORM](#drizzle-orm)。[了解如何安装和使用该插件](https://github.com/drizzle-team/drizzle-studio-expo)。
+另外，你也可以使用 [`drizzle-studio-expo` 开发工具插件](https://github.com/drizzle-team/drizzle-studio-expo) 来从 Expo CLI 直接启动 [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview)，并连接到你应用中的数据库。该插件可用于任何 `expo-sqlite` 配置，并且不需要 [Drizzle ORM](#drizzle-orm)。[了解如何安装和使用该插件](https://github.com/drizzle-team/drizzle-studio-expo)。
 
 ### 键值存储
 
@@ -563,9 +563,9 @@ const value = Storage.getItemSync('key');
 
 ### `localStorage` API
 
-`expo-sqlite/localStorage/install` 模块提供了 [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) API 的直接实现。如果你已经熟悉 web 上的这个 API，或者希望能够在 web 和其他平台之间共享存储代码，这会很有用。要使用它，你只需要导入 `expo-sqlite/localStorage/install` 模块：
+`expo-sqlite/localStorage/install` 模块提供了 [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) API 的直接实现。如果你已经熟悉 Web 上的这个 API，或者希望能够在 Web 和其他平台之间共享存储代码，这会很有用。要使用它，你只需要导入 `expo-sqlite/localStorage/install` 模块：
 
-> **注意：** `import 'expo-sqlite/localStorage/install';` 在 web 上不会产生任何作用，并且会被排除在生产环境的 JS 包之外。
+> **注意：** `import 'expo-sqlite/localStorage/install';` 在 Web 上不会产生任何作用，并且会被排除在生产环境的 JS 包之外。
 
 ```ts 安装 globalThis.localStorage
 import 'expo-sqlite/localStorage/install';
@@ -620,4 +620,4 @@ await db.execAsync(`PRAGMA key = 'password'`);
 | [`getAllAsync()`](#getallasyncsource-params)     | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync)   | 一次性获取所有查询结果。                                                                                                                                     | 最适合结果集较小的场景，例如带有 LIMIT 子句的查询，如 `SELECT * FROM Table LIMIT 100`，当你希望一次性获取所有结果时。 |
 | [`getEachAsync()`](#geteachasyncsource-params)   | [`executeAsync()`](#executeasyncparams) + `for-await-of` async iterator       | 提供一个用于遍历结果集的迭代器。此方法一次从数据库获取一行，因此与 `getAllAsync()` 相比可能会减少内存使用。 | 推荐用于逐步处理大型结果集，例如无限滚动的实现。                                                                                 |
 
-<APISection packageName="expo-sqlite" apiName="SQLite" exposeAllClassPropsInSidebar />
+<APISection packageName="expo-sqlite" apiName="SQLite" exposeAllClassPropsInSidebar />】【。

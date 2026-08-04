@@ -1,19 +1,23 @@
 ---
 title: 提交到应用商店
-description: 了解如何使用 EAS Submit 从命令行将你的应用提交到 Google Play 商店和 Apple App Store。
+description: 概述如何将您的应用提交到 Google Play 商店和 Apple App Store。
 hasVideoLink: true
 ---
 
 import { AppleAppStoreIcon } from '@expo/styleguide-icons/custom/AppleAppStoreIcon';
-import { EasSubmitIcon } from '@expo/styleguide-icons/custom/EasSubmitIcon';
 import { GoogleAppStoreIcon } from '@expo/styleguide-icons/custom/GoogleAppStoreIcon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
-import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
+import { FAQ } from '~/ui/components/FAQ';
+import { RelatedSkills } from '~/ui/components/RelatedSkills';
 import { Terminal } from '~/ui/components/Snippet';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-**EAS Submit** 是一项托管服务，允许使用 EAS CLI 将应用二进制文件上传并提交到应用商店。本指南介绍如何使用 EAS Submit 将你的应用提交到 Google Play Store 和 Apple App Store。
+发布应用意味着将已签名的二进制文件（Android 使用 **.aab**，iOS 使用 **.ipa**）上传到 Google Play Console 或 App Store Connect。之后，Google 和 Apple 会负责审核、测试轨道以及生产环境发布。
+
+将二进制文件上传到各个应用商店有两种方式：使用 **EAS Submit** 提交，或通过应用商店自有工具手动上传。**推荐使用 EAS Submit**，因为它支持在任何操作系统上运行（包括在 Windows 和 Linux 上发布 iOS 应用），与 [EAS Build](/build/introduction/) 和 [EAS Workflows](/eas/workflows/introduction/) 集成，并且可以从 CI/CD 服务中运行。如果你不使用 EAS，或者更倾向于直接在 Play Console 中创建 Android 应用的首次发布版本，手动上传会很有用。
 
 <VideoBoxLink
   videoId="-KZjr576tuE"
@@ -21,184 +25,125 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
   description="EAS Submit 让你只需一条简单命令即可轻松将应用发布到 App Store 和 Play Store。"
 />
 
-## Apple App Store
+## EAS Submit 的工作原理
 
-<Prerequisites>
-  <Requirement title="注册 Apple Developer 账户">
-    提交你的应用到 Apple App Store 需要一个 Apple Developer 账户。你可以在 [Apple 开发者门户](https://developer.apple.com/account/) 注册 Apple Developer 账户。
-  </Requirement>
-  <Requirement title="在 app.json 中包含 bundle identifier">
-    在 **app.json** 中包含你应用的 bundle identifier：
+### Android（Google Play 商店）
 
-    ```json app.json
-    {
-      "ios": {
-        "bundleIdentifier": "com.yourcompany.yourapp"
-      }
-    }
-    ```
+EAS Submit 会将你的 **.aab** 上传到 Google Play Console，并将其放置在你选择的发布轨道中（内部测试、Alpha、Beta 或正式版）。对于全新应用，默认的 `eas submit` 命令会在 [内部测试轨道](/eas/json/#track) 中创建首个版本，即使你尚未完成商店信息的填写。要将应用分发到内部测试之外，请在 Play Console 中完成设置任务并提升版本。若要上传构建版本但不将其发布到对应轨道，请在 **eas.json** 中将 [`releaseStatus`](/eas/json/#releasestatus) 设置为 `draft`。
 
-  </Requirement>
-  <Requirement title="安装 EAS CLI 并使用你的 Expo 账户进行身份验证">
-    安装 EAS CLI 并使用你的 Expo 账户登录：
+### iOS（Apple App Store）
 
-    <Terminal
-      cmd={{
-        npm: ['$ npm install --global eas-cli && eas login'],
-        yarn: ['$ yarn global add eas-cli && eas login'],
-        pnpm: ['$ pnpm add --global eas-cli && eas login'],
-        bun: ['$ bun add --global eas-cli && eas login'],
-      }}
-    />
+EAS Submit 会将你的 **.ipa** 上传到 App Store Connect，处理完成后（通常需要 10-15 分钟）即可在 [TestFlight](/submit/testflight/) 中使用。TestFlight 构建版本不会自动发布到 App Store。要将其发布到正式环境，请登录 App Store Connect，完成应用元数据和屏幕截图的填写，选择构建版本，然后提交以供 App 审核。
 
-  </Requirement>
-  <Requirement title="构建生产版本应用">
-    你需要一个可用于提交到应用商店的生产构建版本。你可以使用 [EAS Build](/build/introduction/) 创建一个：
+## 何时使用 EAS Submit
 
-    <Terminal cmd={['$ eas build --platform ios --profile production']} />
+| 场景                                                                                                                                                   | 建议 |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| 将应用二进制文件上传到 [Google Play Console](https://play.google.com/console/about/) 和 [Apple App Store](https://developer.apple.com/app-store-connect/) | <YesIcon />    |
+| 从 Windows 或 Linux 上传 iOS 应用二进制文件                                                                                                              | <YesIcon />    |
+| 避免通过 Play Console、App Store Connect 或 Transporter 手动上传                                                                               | <YesIcon />    |
+| 从 [CI 或自动化工作流](/eas/workflows/pre-packaged-jobs/#submit) 提交构建                                                                   | <YesIcon />    |
+| 通过 [eas.json](/eas/json/) 配置标准化发布流程                                                                                            | <YesIcon />    |
+| 开发期间测试                                                                                                                                               | <NoIcon />     |
 
-    或者，你也可以在自己的电脑上使用 `eas build --platform ios --profile production --local` 或使用 Xcode 构建应用。
+## 选择提交路径
 
-  </Requirement>
-</Prerequisites>
+<BoxLink
+  title="使用 EAS Submit 提交到 Google Play 商店"
+  description="推荐。只需一条命令，即可从计算机或 CI 将 Android 构建版本上传到 Google Play Console。"
+  href="/submit/android/"
+  Icon={GoogleAppStoreIcon}
+/>
 
-完成所有先决条件后，你就可以开始提交流程了。
+<BoxLink
+  title="使用 EAS Submit 提交到 Apple App Store"
+  description="推荐。从任何操作系统（包括 Windows 和 Linux）将 iOS 构建版本上传到 App Store Connect 和 TestFlight。"
+  href="/submit/ios/"
+  Icon={AppleAppStoreIcon}
+/>
 
-运行以下命令将构建提交到 Apple App Store：
+<BoxLink
+  title="首次手动提交 Android 应用"
+  description="按照 Play Console 分步指南创建 Android 应用的首个版本。"
+  href="/submit/android-manual/"
+  Icon={GoogleAppStoreIcon}
+/>
 
-<Terminal cmd={['$ eas submit --platform ios']} />
+<BoxLink
+  title="使用 Xcode 手动提交 iOS 应用"
+  description="在 macOS 上使用 Xcode 构建、归档并将 iOS 应用上传到 App Store Connect。"
+  href="/submit/ios-manual/"
+  Icon={AppleAppStoreIcon}
+/>
 
-该命令会一步一步引导你完成应用提交流程。
+### 面向 AI 代理的 Expo Skills
 
-## Google Play Store
+如果你使用 AI 代理，请安装 [Expo Skills](/skills/)，教它如何提交和发布你的应用：
 
-<Prerequisites>
-  <Requirement title="注册 Google Play Developer 账户">
-    提交你的应用到 Google Play Store 需要一个 Google Play Developer 账户。你可以在 [Google Play Console 注册页面](https://play.google.com/apps/publish/signup/) 注册 Google Play Developer 账户。
-  </Requirement>
-  <Requirement title="创建 Google Service Account">
-    EAS 要求你上传并配置一个 Google Service Account Key，以便将你的 Android 应用提交到 Google Play Store。你可以参考 [为 Play Store 提交通过 EAS 上传 Google Service Account Key](https://github.com/expo/fyi/blob/main/creating-google-service-account.md) 指南来创建。
-  </Requirement>
-  <Requirement title="在 Google Play Console 中创建一个应用">
-    在 [Google Play Console](https://play.google.com/apps/publish/) 中点击 **创建应用** 来创建应用。
-  </Requirement>
-  <Requirement title="安装 EAS CLI 并使用你的 Expo 账户进行身份验证">
-    安装 EAS CLI 并使用你的 Expo 账户登录：
+<RelatedSkills names={['eas-app-stores']} />
 
-    <Terminal
-      cmd={{
-        npm: ['$ npm install --global eas-cli && eas login'],
-        yarn: ['$ yarn global add eas-cli && eas login'],
-        pnpm: ['$ pnpm add --global eas-cli && eas login'],
-        bun: ['$ bun add --global eas-cli && eas login'],
-      }}
-    />
+## 常见问题
 
-  </Requirement>
-  <Requirement title="在 app.json 中包含 package name">
-    在 **app.json** 中包含你应用的 package name：
+<FAQ>
 
-    ```json app.json
-    {
-      "android": {
-        "package": "com.yourcompany.yourapp"
-      }
-    }
-    ```
+<Collapsible summary="我可以提交不是使用 EAS Build 构建的构建产物吗？">
 
-  </Requirement>
-  <Requirement title="构建生产版本应用">
-    你需要一个可用于提交到应用商店的生产构建版本。你可以使用 [EAS Build](/build/introduction/) 创建一个：
+可以。EAS Submit 接受任何有效的 **.aab**（Android App Bundle）或 **.ipa**（iOS App Archive）文件。
 
-    <Terminal cmd={['$ eas build --platform android --profile production']} />
+对于使用 EAS Build 创建的构建产物，运行 `eas submit`，然后从列表中选择一个构建产物，或让它自动使用最新的构建产物。
 
-    或者，你也可以在自己的电脑上使用 `eas build --platform android --profile production --local` 或使用 Android Studio 构建应用。
+对于本地构建的构建产物，使用 `--path` 标志指定二进制文件：
 
-  </Requirement>
-  <Requirement title="至少手动上传一次你的应用">
-    你必须至少手动上传一次你的应用。这是 Google Play Store API 的限制。
+<Terminal
+  cmd={[
+    '$ eas submit --platform android --path ./my-app.aab',
+    '',
+    '$ eas submit --platform ios --path ./my-app.ipa',
+  ]}
+/>
 
-    你可以通过 [首次提交 Android 应用](https://expo.fyi/first-android-submission) 指南了解具体方法。
+二进制文件必须经过正确签名。对于 Android，这意味着需要上传密钥库；对于 iOS，这意味着需要分发证书和配置描述文件。
 
-    你可以通过 [首次提交 Android 应用](https://expo.fyi/first-android-submission) 指南了解具体方法。
-  </Requirement>
-</Prerequisites>
+</Collapsible>
 
-完成所有先决条件后，你就可以开始提交流程了。
+<Collapsible summary="EAS Submit 会处理商店元数据或屏幕截图吗？">
 
-运行以下命令将构建提交到 Google Play Store：
+EAS Submit 会上传二进制文件，但不会管理商店列表元数据、屏幕截图或版本说明。
 
-<Terminal cmd={['$ eas submit --platform android']} />
+对于 Google Play 商店，请在提交前直接在 [Google Play Console](https://play.google.com/console/about/) 中配置商店列表。
 
-该命令会一步一步引导你完成应用提交流程。
+对于 Apple App Store，你可以使用 [EAS Metadata](/eas/metadata/) 自动处理应用信息和本地化描述。
 
-## 自动构建并提交
+</Collapsible>
 
-你可以使用 [EAS Workflows](/eas/workflows/introduction/) 自动创建构建并将其提交到应用商店。首先，你需要[配置项目](/eas/workflows/get-started/)，在项目根目录下添加一个名为 **.eas/workflows/build-and-submit.yml** 的文件，然后添加以下 workflow 配置：
+<Collapsible summary="我如何知道提交失败的原因？">
 
-```yaml .eas/workflows/build-and-submit.yml
-name: 构建并提交
+在 [EAS 控制面板](https://expo.dev/accounts/[account]/projects/[project]/submissions)中打开提交详情页面：
 
-on:
-  push:
-    branches: ['main']
+- 阅读提交详情页面上的日志，以了解错误原因。
+- 查找[“构建注释”气泡](https://expo.dev/changelog/2023-12-01-build-annotations)——它们会直接在日志中突出显示常见的失败原因和建议的修复方法。
 
+</Collapsible>
+
+<Collapsible summary="我可以在 EAS Workflows 中或从其他 CI/CD 流水线中使用 EAS Submit 吗？">
+
+可以。EAS Submit 支持在 CI 环境中运行，并与 [EAS Workflows](/eas/workflows/introduction/) 集成。你可以将提交任务添加到工作流配置中。例如：
+
+```yaml
 jobs:
-  build_android:
-    name: 构建 Android 应用
-    type: build
-    params:
-      platform: android
-      profile: production
-  build_ios:
-    name: 构建 iOS 应用
-    type: build
-    params:
-      platform: ios
-      profile: production
-  submit_android:
-    name: 提交 Android
-    type: submit
-    needs: [build_android]
-    params:
-      build_id: ${{ needs.build_android.outputs.build_id }}
-  submit_ios:
-    name: 提交 iOS
+  submit_ios_to_store:
     type: submit
     needs: [build_ios]
     params:
       build_id: ${{ needs.build_ios.outputs.build_id }}
 ```
 
-上面的 workflow 会在你的项目 `main` 分支的每次提交时创建 Android 和 iOS 构建，然后分别将它们提交到 Google Play 和 Apple App Store。你也可以使用以下 EAS CLI 命令手动运行此 workflow：
+有关更多信息，请参阅 [EAS Workflows 预打包任务](/eas/workflows/pre-packaged-jobs/#submit)。
 
-<Terminal cmd={['$ eas workflow:run build-and-submit.yml']} />
+对于 CI 流水线，你还可以使用 `--non-interactive` 标志跳过提示，并使用 `--latest` 自动选择最新的构建产物：
 
-通过 [workflows 示例指南](/eas/workflows/examples/introduction) 了解更多常见模式。
+<Terminal cmd={['$ eas submit --platform android --latest --non-interactive']} />
 
-## 手动提交到应用商店
+</Collapsible>
 
-你也可以手动将应用提交到 Google Play Store 和 Apple App Store。
-
-<BoxLink
-  title="手动提交到 Apple App Store"
-  description="了解如何手动将你的应用提交到 Apple App Store。"
-  href="/guides/local-app-production/#app-submission-using-app-store-connect"
-  Icon={AppleAppStoreIcon}
-/>
-
-<BoxLink
-  title="手动提交到 Google Play Store"
-  description="按照步骤手动将你的应用提交到 Google Play Store。"
-  href="https://expo.fyi/first-android-submission"
-  Icon={GoogleAppStoreIcon}
-/>
-
-## 下一步
-
-<BoxLink
-  title="使用 eas.json 配置 EAS Submit"
-  description="了解如何使用 eas.json 文件预先配置项目以配合 EAS Submit，以及更多关于 Android 或 iOS 特定选项的信息。"
-  Icon={EasSubmitIcon}
-  href="/submit/eas-json/"
-/>
+</FAQ>

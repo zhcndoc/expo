@@ -5,17 +5,17 @@ description: 使用 Expo Modules API 创建原生模块和配置插件的教程�
 searchRank: 3
 ---
 
-import { Grid01Icon } from '@expo/styleguide-icons/outline/Grid01Icon';
+import { CpuChip01Icon } from '@expo/styleguide-icons/outline/CpuChip01Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-[Config plugins](/config-plugins/introduction/) 让你可以自定义在 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 项目中使用 `npx expo prebuild` 生成的原生 Android 和 iOS 项目。你可以用它们向原生配置文件添加属性、将资源复制到原生项目，或者应用更高级的配置，例如添加一个 [app extension target](/build-reference/app-extensions/)。
+[配置插件](/config-plugins/introduction/) 让你可以自定义在 [持续原生生成（CNG）](/workflow/continuous-native-generation/) 项目中使用 `npx expo prebuild` 生成的原生 Android 和 iOS 项目。你可以用它们向原生配置文件添加属性、将资源复制到原生项目，或者应用更高级的配置，例如添加一个 [应用扩展目标](/build-reference/app-extensions/)。
 
-作为应用开发者，config plugins 可以帮助你应用默认 [app config](/workflow/configuration) 中未暴露的自定义设置。作为库作者，它们可以让你为使用你库的开发者自动配置原生项目。
+作为应用开发者，配置插件可以帮助你应用默认 [应用配置](/workflow/configuration) 中未暴露的自定义设置。作为库作者，它们可以让你为使用你库的开发者自动配置原生项目。
 
-本教程将说明如何从零开始创建一个新的 config plugin，以及如何从 Expo 模块中读取插件注入到 **AndroidManifest.xml** 和 **Info.plist** 的自定义值。
+本教程将说明如何从零开始创建一个新的配置插件，以及如何从 Expo 模块中读取插件注入到 **AndroidManifest.xml** 和 **Info.plist** 的自定义值。
 
 <Step label="1">
 
@@ -40,7 +40,7 @@ import { Step } from '~/ui/components/Step';
 
 ## 设置工作区
 
-在这个示例中，你不需要 `create-expo-module` 包含的 view 模块。使用以下命令清理默认模块：
+在这个示例中，你不需要 `create-expo-module` 包含的视图模块。使用以下命令清理默认模块：
 
 <Terminal
   cmdCopy="cd expo-native-configuration && rm ios/ExpoNativeConfigurationView.swift && rm android/src/main/java/expo/modules/nativeconfiguration/ExpoNativeConfigurationView.kt && rm src/ExpoNativeConfigurationView.tsx src/ExpoNativeConfiguration.types.ts && rm src/ExpoNativeConfigurationView.web.tsx src/ExpoNativeConfigurationModule.web.ts"
@@ -224,17 +224,17 @@ export default function App() {
   }}
 />
 
-你应该会看到一个包含文本 "API key: api-key" 的屏幕。
+你应该会看到一个包含文本“API key: api-key”的屏幕。
 
 </Step>
 
 <Step label="4">
 
-## 创建新的 config plugin
+## 创建新的配置插件
 
-[Plugins](/config-plugins/introduction/#plugin-function) 是同步函数，接收一个 `ExpoConfig` 并返回一个修改后的 `ExpoConfig`。按照惯例，这些函数以 `with` 开头。将你的插件命名为 `withMyApiKey`，或者使用其他名称，只要符合这一惯例即可。
+[插件](/config-plugins/introduction/#plugin-function) 是同步函数，接收一个 `ExpoConfig` 并返回一个修改后的 `ExpoConfig`。按照惯例，这些函数以 `with` 开头。将你的插件命名为 `withMyApiKey`，或者使用其他名称，只要符合这一惯例即可。
 
-下面是一个基础 config plugin 函数示例：
+下面是一个基础配置插件函数示例：
 
 ```js
 const withMyApiKey = config => {
@@ -242,14 +242,14 @@ const withMyApiKey = config => {
 };
 ```
 
-你也可以使用 `mods`，它们是用于修改原生项目中文件（例如源代码或配置文件 plist、xml）的异步函数。`mods` 对象与应用配置的其他部分不同，因为它在初次读取后不会序列化。这使你可以在 _代码生成期间_ 执行操作。
+你也可以使用 `mods`，它们是用于修改原生项目中文件（例如源代码或 plist、xml 配置文件）的异步函数。`mods` 对象与应用配置的其他部分不同，因为它在初次读取后不会序列化。这使你可以在_代码生成期间_执行操作。
 
-编写 config plugin 时，请遵循以下注意事项：
+编写配置插件时，请遵循以下注意事项：
 
 - 插件必须是同步的，并且其返回值必须可序列化，除了添加的任何 `mods` 之外。
 - 当 `expo/config` 的 `getConfig` 方法读取配置时，会调用 `plugins`。相反，`mods` 只会在 `npx expo prebuild` 的“同步”阶段被调用。
 
-> 虽然不是必需的，但建议使用 [`expo-module-scripts`](https://www.npmjs.com/package/expo-module-scripts) 来简化插件开发。它为 TypeScript 和 Jest 提供了推荐的默认配置。更多信息请参阅 [config plugins 指南](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin)。
+> 虽然不是必需的，但建议使用 [`expo-module-scripts`](https://www.npmjs.com/package/expo-module-scripts) 来简化插件开发。它为 TypeScript 和 Jest 提供了推荐的默认配置。更多信息请参阅[配置插件指南](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin)。
 
 先使用这个最小样板创建你的插件。创建一个用于用 TypeScript 编写插件的 **plugin** 目录，并在项目根目录添加一个 **app.plugin.js** 文件，它将作为插件入口点。
 
@@ -287,7 +287,7 @@ export default withMyApiKey;
 module.exports = require('./plugin/build');
 ```
 
-在项目根目录运行 `npm run build plugin`，以 watch 模式启动 TypeScript 编译器。接下来，通过在 **example/app.json** 文件中添加以下一行来配置示例项目使用你的插件：
+在项目根目录运行 `npm run build plugin`，以监听模式启动 TypeScript 编译器。接下来，通过在 **example/app.json** 文件中添加以下一行来配置示例项目使用你的插件：
 
 {/* prettier-ignore */}
 ```json example/app.json
@@ -299,7 +299,7 @@ module.exports = require('./plugin/build');
 }
 ```
 
-当你在 **example** 目录中运行 `npx expo prebuild` 命令时，终端会通过 console 语句输出 "my custom plugin"。
+当你在 **example** 目录中运行 `npx expo prebuild` 命令时，终端会通过控制台语句输出“my custom plugin”。
 
 <Terminal
   cmd={{
@@ -310,9 +310,9 @@ module.exports = require('./plugin/build');
   }}
 />
 
-要将自定义 API key 注入到 **AndroidManifest.xml** 和 **Info.plist** 中，请使用 [`expo/config-plugins` 提供的 helper `mods`](/config-plugins/mods/)。它们可以轻松修改原生文件。在这个示例中，使用 `withAndroidManifest` 和 `withInfoPlist`。
+要将自定义 API key 注入到 **AndroidManifest.xml** 和 **Info.plist** 中，请使用 [`expo/config-plugins` 提供的辅助工具 `mods`](/config-plugins/mods/)。它们可以轻松修改原生文件。在这个示例中，使用 `withAndroidManifest` 和 `withInfoPlist`。
 
-顾名思义，`withAndroidManifest` 允许你读取并修改 **AndroidManifest.xml** 文件。使用 `AndroidConfig` helper 向主应用添加一个 metadata 项，如下所示：
+顾名思义，`withAndroidManifest` 允许你读取并修改 **AndroidManifest.xml** 文件。使用 `AndroidConfig` 辅助工具向主应用添加一个 metadata 项，如下所示：
 
 ```ts
 const withMyApiKey: ConfigPlugin<{ apiKey: string }> = (config, { apiKey }) => {
@@ -397,7 +397,7 @@ export default withMyApiKey;
 
 ## 从模块中读取原生值
 
-现在，通过使用平台特定方法访问其内容，让你的原生模块读取添加到 **AndroidManifest.xml** 和 **Info.plist** 中的字段。
+现在，通过使用平台特定的方法访问其内容，让你的原生模块读取添加到 **AndroidManifest.xml** 和 **Info.plist** 中的字段。
 
 在 Android 上，可以使用 `packageManager` 类从 **AndroidManifest.xml** 文件中访问 metadata 信息。要读取 `"MY_CUSTOM_API_KEY"` 的值，请更新 **android/src/main/java/expo/modules/nativeconfiguration/ExpoNativeConfigurationModule.kt** 文件：
 
@@ -510,12 +510,12 @@ public class ExpoNativeConfigurationModule: Module {
   title="Expo 模块 API 参考"
   description="使用 Kotlin 和 Swift 创建原生模块的参考文档。"
   href="/modules/module-api/"
-  Icon={Grid01Icon}
+  Icon={CpuChip01Icon}
 />
 
 <BoxLink
   title="额外的平台支持"
   description="了解如何为 macOS 和 tvOS 平台添加支持。"
   href="/modules/additional-platform-support/"
-  Icon={Grid01Icon}
+  Icon={CpuChip01Icon}
 />

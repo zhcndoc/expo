@@ -58,18 +58,21 @@ import { Terminal } from '~/ui/components/Snippet';
 
 - `CI=1`：表示这是一个 CI 环境
 - `EAS_BUILD=true`：表示这是一个 EAS Build 环境
-- `EAS_BUILD_PLATFORM`：`android` 或 `ios`
-- `EAS_BUILD_RUNNER`：EAS Build 云构建为 `eas-build`，[本地构建](/build-reference/local-builds/)为 `local-build-plugin`
+- `EAS_BUILD_PLATFORM`：值为 `android` 或 `ios`
+- `EAS_BUILD_RUNNER`：对于 EAS Build 云端构建，值为 `eas-build`；对于[本地构建](/build-reference/local-builds/)，值为 `local-build-plugin`
 - `EAS_BUILD_ID`：构建 ID，例如 `f51831f0-ea30-406a-8c5f-f8e1cc57d39c`
-- `EAS_BUILD_PROFILE`：来自 **eas.json** 的构建配置名称，例如 `production`
+- `EAS_BUILD_PROFILE`：**eas.json** 中构建配置文件的名称，例如 `production`
 - `EAS_BUILD_PROJECT_ID`：EAS 项目 ID，例如 `bd2f7e21-1ee7-47f2-8357-d7c4b50622fb`
 - `EAS_BUILD_GIT_COMMIT_HASH`：Git 提交的哈希值，例如 `88f28ab5ea39108ade978de2d0d1adeedf0ece76`
-- `EAS_BUILD_NPM_CACHE_URL`：npm 缓存的 URL（[了解更多](/build-reference/private-npm-packages)）
-- `EAS_BUILD_MAVEN_CACHE_URL`：Maven 缓存的 URL（[了解更多](/build-reference/caching/#android-dependencies)）
-- `EAS_BUILD_COCOAPODS_CACHE_URL`：CocoaPods 缓存的 URL（[了解更多](/build-reference/caching/#ios-dependencies)）
-- `EAS_BUILD_USERNAME`：发起构建的用户用户名（bot 用户时未定义）
-- `EAS_BUILD_WORKINGDIR`：包含你项目的远程目录路径
-- `EAS_BUILD_DISABLE_BUNDLE_JAVASCRIPT_STEP`：设为 `1` 可跳过较早的 JavaScript 打包检查。默认情况下，EAS Build 会在原生构建之前先运行 JavaScript 打包器，以便更早暴露 JS 错误。禁用此步骤意味着 JavaScript 错误要到原生构建步骤才会被捕获。
+- `EAS_BUILD_NPM_CACHE_URL`：npm 缓存的 URL（[详细了解私有 npm 包](/build-reference/private-npm-packages)）
+- `EAS_BUILD_MAVEN_CACHE_URL`：Maven 缓存的 URL（[详细了解 Android 依赖项缓存](/build-reference/caching/#android-dependencies)）
+- `EAS_BUILD_COCOAPODS_CACHE_URL`：CocoaPods 缓存的 URL（[详细了解 iOS 依赖项缓存](/build-reference/caching/#ios-dependencies)）
+- `EAS_BUILD_USERNAME`：发起构建的用户的用户名（机器人用户的值未定义）
+- `EAS_BUILD_WORKINGDIR`：包含项目的远程目录路径
+- `EAS_BUILD_DISABLE_BUNDLE_JAVASCRIPT_STEP`：设置为 `1` 可跳过早期 JavaScript 打包检查。默认情况下，EAS Build 会在原生构建前运行 JavaScript 打包器，以便更早地发现 JS 错误。禁用此步骤意味着只有在原生构建步骤中才能捕获 JavaScript 错误。
+- `EAS_BUILD_DISABLE_NPM_CACHE`：设置为 `1` 可禁用 npm 缓存服务器（[详细了解 JavaScript 依赖项缓存](/build-reference/caching/#javascript-dependencies)）
+- `EAS_BUILD_DISABLE_MAVEN_CACHE`：设置为 `1` 可禁用 Maven 缓存服务器（[详细了解 Android 依赖项缓存](/build-reference/caching/#android-dependencies)）
+- `EAS_BUILD_DISABLE_COCOAPODS_CACHE`：设置为 `1` 可禁用 CocoaPods 缓存服务器（[详细了解 iOS 依赖项缓存](/build-reference/caching/#ios-dependencies)）
 
 </Collapsible>
 
@@ -142,8 +145,14 @@ Expo Router Web 项目可以包含同时用于客户端和服务端的环境变�
 
 ### 为 workflow jobs 设置 EAS 环境
 
-- **Build jobs**：环境来自 **eas.json** 中的 build profile（`build.<profile>.environment`）。如果该字段缺失，则适用上面描述的自动默认值。[在 EAS Build 中使用环境变量](#using-environment-variables-with-eas-build)。
-- **其他 jobs**（例如 update、submit、fingerprint、Maestro 和自定义 jobs）：设置 [`jobs.<job_id>.environment`](/eas/workflows/syntax/#jobsjob_idenvironment)。如果省略它，则使用 `production`。显式设置它有助于让 job 与你在 workflow 中前面使用的 build profile 保持一致。
+当你省略 [`jobs.<job_id>.environment`](/eas/workflows/syntax/#jobsjob_idenvironment) 时，默认值取决于 job 类型：
+
+- **构建 jobs**：环境来自 **eas.json** 中的构建 profile（`build.<profile>.environment`）。如果缺少该字段，则应用上述自动默认值。[在 EAS Build 中使用环境变量](#using-environment-variables-with-eas-build)。
+- **提交 jobs**：环境继承自提交的构建。
+- **Maestro jobs**（`maestro` 和 `maestro-cloud`）：环境默认为 `preview`。
+- **其他 jobs**（例如 update、fingerprint、deploy 和自定义 jobs）：环境默认为 `production`。
+
+在 job 上显式设置 `environment` 可以覆盖其默认值，并使其与 workflow 中之前使用的构建 profile 保持同步。有关完整说明，请参阅[Job 环境](/eas/workflows/environment/#the-job-environment)。
 
 在下面的示例中，build job 配置为使用 `preview` profile，然后 update job 配置为使用相同的 EAS 环境。
 

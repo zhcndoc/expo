@@ -1,98 +1,46 @@
 ---
 title: 开发构建简介
-sidebar_title: 简介
-description: 为什么使用开发构建以及如何开始。
+sidebar_title: 简介与设置
+description: 了解如何在 Expo 项目中创建开发构建，以及为何使用开发构建而不是 Expo Go。
 searchRank: 98
 searchPosition: 1
 hideTOC: true
 hasVideoLink: true
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
-
-import { BoxLink } from '~/ui/components/BoxLink';
-import { Collapsible } from '~/ui/components/Collapsible';
+import { BuildMethodForm } from '~/scenes/develop/development-builds/BuildMethodForm';
+import { DevelopmentBuildInstructions } from '~/scenes/develop/development-builds/DevelopmentBuildInstructions';
+import { RelatedSkills } from '~/ui/components/RelatedSkills';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-**开发构建**是我们用来指代包含 [`expo-dev-client`](/versions/latest/sdk/dev-client/) 库的应用“调试”构建的术语。该库为内置的 React Native 开发工具增加了额外能力，例如支持检查网络请求，以及一个“启动器”界面，让你可以在不同的开发服务器之间切换（例如在你自己机器上运行的服务器和队友机器上的服务器之间切换），以及在应用的不同部署之间切换（例如使用 EAS Update 发布的更新）。
+当你使用 [`create-expo-app`](/get-started/create-a-project/) 创建新的 Expo 应用时，你会从一个项目开始：在本地计算机上更新 TypeScript/JavaScript 代码，并在 Expo Go 应用中查看更改。**开发构建**本质上是**你自己的 Expo Go 版本**，你可以自由使用任何原生库并更改任何原生配置。
 
-<Collapsible summary="Expo Go 与开发构建的区别">
-
-[Expo Go](https://expo.dev/go) 是一个面向学生和学习者的游乐场应用，帮助他们快速入门。它内置了一组固定的原生库，因此你可以编写 JavaScript 代码并立即看到变化，而无需自己构建原生应用。开发构建则是一个功能完整的开发环境，用于处理生产级的 Expo 应用。
-
-</Collapsible>
-
-<Collapsible summary="原生应用与 JavaScript 包">
-
-**原生应用**是你安装到设备上的内容。Expo Go 是一个预先构建好的原生应用，它像一个游乐场一样工作——安装后就无法更改它。要添加新的原生库，或者修改应用名称、图标之类的内容，你需要构建自己的原生应用（即开发构建）。
-
-**JavaScript 包（`npx expo start`）**中包含的是应用的 UI 代码和业务逻辑。在生产应用中，会有一个随应用一起发布的 **main.js** 包。在开发中，这个 JS 包会从你的本地机器进行实时重新加载。React Native 的主要作用是为 JavaScript 代码提供访问原生 API（Image、Camera、Notifications 等）的方法。不过，只有已经打包进 **原生应用** 的 API 和库才能使用。
-
-</Collapsible>
+**当你想创建自己的应用并将其发布到应用商店时，建议使用开发构建**。它包含 [`expo-dev-client`](/versions/latest/sdk/dev-client/) 库，用于增强内置的 React Native 开发工具。该工具还支持检查网络请求，以及提供一个["启动器"界面](/develop/development-builds/use-development-builds/#the-launcher-screen)，让你可以在不同的开发服务器之间切换（例如在运行于你自己的计算机上的服务器与运行于队友计算机上的服务器之间切换），还可以在应用的不同部署版本之间切换（例如使用 [EAS Update](/eas-update/introduction/) 发布的更新）。
 
 <VideoBoxLink
   videoId="FdjczjkwQKE"
-  title="Expo Go 与开发构建：你应该使用哪个？"
-  description="在这个教程视频中，Beto 解释了它们各自是什么，以及何时选择开发构建。"
+  title="Expo Go 和开发构建：你应该使用哪一个？"
+  description="在本教程视频中，Beto 将解释它们各自是什么，以及何时应选择开发构建。"
 />
 
-## 为什么要使用开发构建（也就是在 Expo Go 中你 _不能_ 做什么，以及为什么不能）
+## 您希望如何构建开发构建版本？
 
-Expo Go 是一个供学生和学习者理解 React Native 基础知识的游乐场。它功能受限，并不适合构建生产级项目，因此大多数应用会转向使用开发构建。了解在 Expo Go 中究竟什么是 _不可能_ 的，以及 _为什么_ 不可能，会很有帮助，这样你就可以在何时以及为何做出这一选择时做出明智决定。
+这三种方法都会生成相同的开发构建版本。它们的区别在于应用在哪里进行编译，以及您的计算机上需要安装哪些内容。
 
-<Collapsible summary="使用 Expo Go 中没有的原生代码库">
+<BuildMethodForm />
 
-以 [`react-native-webview`](/versions/latest/sdk/webview/) 为例，这是一个包含原生代码的库，但 [已包含在 Expo Go 中](https://github.com/expo/expo/blob/main/apps/expo-go/package.json#L23)。当你在项目中运行 `npx expo install react-native-webview` 命令时，它会把该库安装到你的 **node_modules** 目录中，其中既包含 JS 代码，也包含原生代码。但你正在构建的 JS 包 _只_ 会使用 JS 代码。然后，你的 JS 包会被上传到 Expo Go，它会与已经随应用一起打包的原生代码进行交互。
+---
 
-相反，当你尝试使用一个未包含的库时，例如 [`react-native-firebase`](/guides/using-firebase/#using-react-native-firebase)，你可以使用 JS 代码并将新的包热重载到 Expo Go 中，但它会立即报错，因为 JS 代码试图调用 Expo Go 中不存在的 React Native Firebase 包的原生代码。除非原生代码已经包含在上传到应用商店的那个包中，否则无法把原生代码放进 Expo Go 应用里。
+<DevelopmentBuildInstructions />
 
-</Collapsible>
+---
 
-<Collapsible summary="测试应用图标、名称、启动屏幕的更改">
+## 安装开发版本后
 
-如果你只在 Expo Go 中开发应用，你可以构建一个商店版本，它会使用你提供的值和图片；只是无法在 Expo Go 中对其进行测试。
+从设备的主屏幕启动开发版本，并在启动器屏幕中连接到开发服务器，以开始开发应用。要了解如何使用新的开发版本，包括启动器屏幕、重新构建和调试，请参阅[使用开发版本](/develop/development-builds/use-development-builds/)。如需了解有关开发版本和 Expo Go 的常见问题，包括在 Expo Go 中无法执行的操作及其原因，请参阅[常见问题](/develop/development-builds/faq/)。
 
-这些原生资源会随原生包一起发布，并且在应用安装后是不可变的。Expo Go 应用确实会显示一个启动屏幕，它是你应用图标显示在纯色背景上。这是一个仅用于开发的模拟，用来查看启动屏幕大致会是什么样子。不过它是有限制的，例如，你无法测试 `SplashScreen.setOptions` 来给启动屏幕添加动画。
+### 面向 AI 代理的 Expo Skills
 
-</Collapsible>
+如果你使用 AI 代理，请安装 [Expo Skills](/skills/)，以教会它本页面中的工作流程：
 
-<Collapsible summary="远程推送通知">
-
-虽然 [应用内通知](/versions/latest/sdk/notifications/) 在 Expo Go 中可用，但远程推送通知（也就是从服务器向应用发送推送通知）不可用。这是因为推送通知服务应该与你自己的推送通知证书绑定；虽然可以让它在 Expo Go 中工作，但这通常会给生产构建带来困惑。建议在开发构建中测试远程推送通知，这样你可以确保开发和生产环境中的行为一致。
-
-</Collapsible>
-
-<Collapsible summary="实现 App/通用链接">
-
-[Android App Links](/linking/android-app-links/) 和 [iOS Universal Links](/linking/ios-universal-links/) 都要求原生应用与网站之间建立双向关联。特别是，它要求原生应用包含所链接网站的 URL。由于前面提到的原生代码不可变性，这在 Expo Go 中是不可能的。
-
-</Collapsible>
-
-<Collapsible summary="打开使用较旧 SDK 的项目（仅 iOS 设备）">
-
-Expo Go 同一时间只能支持一个 SDK 版本。当发布新的 SDK 版本时，Expo Go 会更新以支持较新的版本，而这将成为唯一可从商店安装的 Expo Go 版本。
-
-如果你是在 Android 设备、Android 模拟器或 iOS 模拟器上开发，可以[下载并安装](https://expo.dev/go)兼容版本的 Expo Go。唯一无法做到这一点的平台是 iPhone 设备，因为 Apple 不支持通过侧载安装旧版本应用。
-
-</Collapsible>
-
-<BoxLink
-  title="从 Expo Go 迁移到开发构建"
-  description="了解如何将现有的 Expo Go 项目迁移为使用开发构建。"
-  href="/develop/development-builds/expo-go-to-dev-build/"
-  Icon={BookOpen02Icon}
-/>
-
-<BoxLink
-  title="本地应用开发"
-  description="如何在你的本地机器上构建开发客户端。"
-  href="/guides/local-app-development"
-  Icon={BookOpen02Icon}
-/>
-
-<BoxLink
-  title="在 EAS 上进行开发构建"
-  description="如何在 EAS 上构建开发客户端。"
-  href="/develop/development-builds/create-a-build/"
-  Icon={BookOpen02Icon}
-/>
+<RelatedSkills names={['expo-dev-client', 'eas-simulator']} />

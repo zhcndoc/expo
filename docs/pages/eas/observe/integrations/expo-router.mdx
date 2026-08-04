@@ -68,6 +68,26 @@ export default function Home() {
 
 </Step>
 
+## 过滤敏感的 URL 参数
+
+> **info** 在 **SDK 57 及更高版本**中可用。
+
+默认情况下，该集成会将解析后的 `url` 以及 `routeParams` 中所有可序列化的路由参数和查询参数都包括在内。如果应用在 URL 参数中包含敏感值，请将其键传递给 `filteredParams`：
+
+```tsx src/app/_layout.tsx
+import { Observe } from 'expo-observe';
+
+Observe.configure({
+  integrations: {
+    'expo-router': {
+      filteredParams: ['userId', 'token'],
+    },
+  },
+});
+```
+
+该集成会从 `routeParams` 中移除经过过滤的键，并且事件会省略 `url`，改为包含 `urlHidden: true`。`routeName` 不受影响，因为它是一个模式，从不包含参数值。
+
 ## 指标
 
 ### 按路由首屏渲染（`cold_ttr`）
@@ -78,12 +98,13 @@ export default function Home() {
 
 **事件参数：**
 
-| 参数          | 类型      | 描述                                                                    |
-| ------------- | --------- | ----------------------------------------------------------------------- |
-| `routeName`   | `string`  | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。                          |
-| `url`         | `string`  | 该导航解析后的 pathname。                                                |
-| `routeParams` | `object`  | 解析后的路由参数（例如 `{ sessionId: 'abc' }`）。                        |
-| `isAppLaunch` | `boolean` | 当以进程启动为基准测量时为 `true`，后续导航为 `false`。                  |
+| 参数          | 类型      | 描述                                                                         |
+| ------------- | --------- | ---------------------------------------------------------------------------- |
+| `routeName`   | `string`  | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。                              |
+| `url`         | `string`  | 导航解析后的路径名。                                                         |
+| `urlHidden`   | `boolean` | 当由于过滤了某个参数而省略 `url` 时，该值为 `true`。                         |
+| `routeParams` | `object`  | 解析后的路由参数（例如 `{ sessionId: 'abc' }`）。                            |
+| `isAppLaunch` | `boolean` | 根据进程启动进行测量时为 `true`，后续导航时为 `false`。                      |
 
 ### 按路由热渲染（`warm_ttr`）
 
@@ -91,11 +112,12 @@ export default function Home() {
 
 **事件参数：**
 
-| 参数          | 类型     | 描述                                                  |
-| ------------- | -------- | ----------------------------------------------------- |
-| `routeName`   | `string` | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。        |
-| `url`         | `string` | 该导航解析后的 pathname。                              |
-| `routeParams` | `object` | 解析后的路由参数（例如 `{ sessionId: 'abc' }`）。      |
+| 参数          | 类型      | 描述                                                                         |
+| ------------- | --------- | ---------------------------------------------------------------------------- |
+| `routeName`   | `string`  | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。                              |
+| `url`         | `string`  | 导航解析后的路径名。                                                         |
+| `urlHidden`   | `boolean` | 当由于过滤了某个参数而省略 `url` 时，该值为 `true`。                         |
+| `routeParams` | `object`  | 解析后的路由参数（例如 `{ sessionId: 'abc' }`）。                            |
 
 ### 按路由可交互时间（`tti`）
 
@@ -103,12 +125,13 @@ export default function Home() {
 
 **事件参数：**
 
-| 参数          | 类型     | 描述                                                          |
-| ------------- | -------- | ------------------------------------------------------------- |
-| `routeName`   | `string` | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。               |
-| `url`         | `string` | 解析后的 pathname。                                            |
-| `routeParams` | `object` | 解析后的路由参数。                                              |
-| `...`         | `any`    | 通过 `markInteractive({ params: { ... } })` 传入的任何自定义参数。 |
+| 参数          | 类型      | 描述                                                                         |
+| ------------- | --------- | ---------------------------------------------------------------------------- |
+| `routeName`   | `string`  | 路由模式，例如 `/(tabs)/sessions/[sessionId]`。                              |
+| `url`         | `string`  | 解析后的路径名。                                                             |
+| `urlHidden`   | `boolean` | 当由于过滤了某个参数而省略 `url` 时，该值为 `true`。                         |
+| `routeParams` | `object`  | 解析后的路由参数。                                                           |
+| `...`         | `any`     | 通过 `markInteractive({ params: { ... } })` 传递的任何自定义参数。           |
 
 ## 说明与故障排查
 

@@ -44,7 +44,7 @@ import { Step } from '~/ui/components/Step';
             "useSQLCipher": false
           },
           "ios": {
-            // You can also override the shared configurations for iOS
+            // 你也可以覆盖 iOS 的共享配置
             "customBuildFlags": "-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1"
           }
         }
@@ -95,7 +95,7 @@ import { Step } from '~/ui/components/Step';
 
 要在 web 上使用 `expo-sqlite`，你需要配置 Metro bundler 以支持 **wasm** 文件，并添加 HTTP 头以允许使用 [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)。
 
-将以下配置添加到你的 **metro.config.js** 中。如果你还没有 **metro.config.js**，可以运行 `npx expo customize metro.config.js`。[了解更多](/guides/customizing-metro/)。
+将以下配置添加到你的 **metro.config.js** 中。如果你还没有 **metro.config.js**，可以运行 `npx expo customize metro.config.js`。[了解有关自定义 Metro 的更多信息](/guides/customizing-metro/)。
 
 <DiffBlock source="/static/diffs/sqlite-web-metro-config.diff" />
 
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
 
 ### 带有 `React.Suspense` 的 `useSQLiteContext()` 钩子
 
-与 [`useSQLiteContext()`](#usesqlitecontext-hook) 钩子类似，你也可以将 [`SQLiteProvider`](#sqliteprovider) 与 [`React.Suspense`](https://react.dev/reference/react/Suspense) 集成，在数据库准备就绪之前显示一个回退组件。要启用这种集成，请向 `SQLiteProvider` 组件传入 `useSuspense` 属性。
+与 [`useSQLiteContext()`](#usesqlitecontext-hook) 钩子一样，您也可以将 [`SQLiteProvider`](#sqlitesqliteprovider) 与 [`React.Suspense`](https://react.dev/reference/react/Suspense) 集成，以便在数据库准备就绪之前显示回退组件。要启用此集成，请将 `useSuspense` 属性传递给 `SQLiteProvider` 组件。
 
 ```tsx 带有 React.Suspense 的 useSQLiteContext() 钩子
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
@@ -429,7 +429,7 @@ await db.execAsync('PRAGMA foreign_keys = ON');
 
 ### 导入现有数据库
 
-要使用你已经拥有的现有 **.db** 文件打开一个新的 SQLite 数据库，可以使用 [`SQLiteProvider`](#sqliteprovider) 和 [`assetSource`](#assetsource)。
+要使用已有的 **.db** 文件打开一个新的 SQLite 数据库，可以将 [`SQLiteProvider`](#sqlitesqliteprovider) 与 [`assetSource`](#assetsource) 一起使用。
 
 ```tsx 使用现有数据库的 useSQLiteContext()
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
@@ -524,8 +524,8 @@ expect(row.data).toEqual(blob);
 `expo-sqlite` 库包含一个内置的 DevTools 检查器插件，会在开发环境中自动启用，并且无需额外配置。它允许你直接在浏览器中浏览表、查看和编辑行、执行 SQL 查询以及导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>Shift</kbd> + <kbd>M</kbd> 打开开发工具菜单，然后选择 **打开 expo-sqlite** 来启动检查器。
 
 <ContentSpotlight
-  alt="SQLite 检查器，显示一个数据浏览器，其中包含表行、编辑/删除操作，以及列出表的侧边栏"
-  src="/static/images/sdk/sqlite/inspector.png"
+  alt="SQLite inspector showing a data browser with table rows, edit/delete actions, and a sidebar listing tables"
+  src="/static/images/sdk/sqlite/inspector.webp"
 />
 
 另外，你也可以使用 [`drizzle-studio-expo` dev tools plugin](https://github.com/drizzle-team/drizzle-studio-expo) 直接从 Expo CLI 启动已连接到应用内数据库的 [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview)。该插件可与任何 `expo-sqlite` 配置一起使用，并且不需要 [Drizzle ORM](#drizzle-orm)。[了解如何安装和使用该插件](https://github.com/drizzle-team/drizzle-studio-expo)。
@@ -578,7 +578,7 @@ console.log(globalThis.localStorage.getItem('key')); // 'value'
 
 ## 安全性
 
-SQL 注入是一类漏洞，攻击者会诱使你的应用将用户输入当作 SQL 代码执行。你必须对传递给 SQLite 的所有用户输入进行转义，以防御 SQL 注入。[Prepared statements](#prepared-statements) 是解决这个问题的有效防御手段。它们明确地将 SQL 查询的逻辑与输入参数分离，并且 SQLite 在执行 prepared statements 时会自动对输入进行转义。
+SQL 注入是一类漏洞，攻击者会诱使你的应用将用户输入当作 SQL 代码执行。你必须对传递给 SQLite 的所有用户输入进行转义，以防御 SQL 注入。[预处理语句](#prepared-statements) 是解决这个问题的有效防御手段。它们明确地将 SQL 查询的逻辑与输入参数分离，并且 SQLite 在执行预处理语句时会自动对输入进行转义。
 
 ## 第三方库集成
 
@@ -620,6 +620,6 @@ await db.execAsync(`PRAGMA key = 'password'`);
 | [`runAsync()`](#runasyncsource-params)           | [`executeAsync()`](#executeasyncparams)                                       | 执行 SQL 查询，并返回所做更改的信息。                                                                                                       | 适用于 SQL 写操作，例如 `INSERT`、`UPDATE`、`DELETE`。                                                                                                                       |
 | [`getFirstAsync()`](#getfirstasyncsource-params) | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getfirstasync) | 获取查询结果中的第一行。                                                                                                                         | 适合从数据库中获取单行。例如：`getFirstAsync('SELECT * FROM Users WHERE id = ?', userId)`。                                                            |
 | [`getAllAsync()`](#getallasyncsource-params)     | [`executeAsync()`](#executeasyncparams) + [`getFirstAsync()`](#getallasync)   | 一次获取所有查询结果。                                                                                                                                     | 最适合结果集较小的场景，例如带有 LIMIT 子句的查询，如 `SELECT * FROM Table LIMIT 100`，并且你希望一次性获取所有结果。 |
-| [`getEachAsync()`](#geteachasyncsource-params)   | [`executeAsync()`](#executeasyncparams) + `for-await-of` async iterator       | 提供一个用于遍历结果集的迭代器。此方法一次从数据库获取一行，与 `getAllAsync()` 相比，可能会减少内存使用。 | 推荐用于逐步处理大型结果集，例如无限滚动实现。                                                                                 |
+| [`getEachAsync()`](#geteachasyncsource-params)   | [`executeAsync()`](#executeasyncparams) + `for-await-of` 异步迭代器       | 提供一个用于遍历结果集的迭代器。此方法一次从数据库获取一行，与 `getAllAsync()` 相比，可能会减少内存使用。 | 推荐用于逐步处理大型结果集，例如无限滚动实现。                                                                                 |
 
-<APISection packageName="expo-sqlite" apiName="SQLite" exposeAllClassPropsInSidebar />
+<APISection packageName="expo-sqlite" apiName="SQLite" exposeAllClassPropsInSidebar />】【。

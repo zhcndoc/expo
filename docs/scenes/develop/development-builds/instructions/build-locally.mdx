@@ -1,0 +1,172 @@
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { Tab, Tabs } from '~/ui/components/Tabs';
+
+## 在本地构建
+
+使用 [Expo CLI](/more/expo-cli/) 和您的原生工具链自行编译应用。无需 Expo 帐户，这是在没有付费 Apple Developer 帐户的情况下将开发版本安装到 iPhone 上的唯一方式。
+
+### 主机平台支持
+
+|             | Android    | iOS 模拟器 | iPhone 设备 |
+| ----------- | ---------- | ------------- | ------------- |
+| **macOS**   | <YesIcon/> | <YesIcon/>    | <YesIcon/>    |
+| **Windows** | <YesIcon/> | <NoIcon />    | <NoIcon />    |
+| **Linux**   | <YesIcon/> | <NoIcon />    | <NoIcon />    |
+
+<Prerequisites>
+  <Requirement title="原生构建工具">
+    为您要构建的平台设置开发环境：Android 请使用 [Android Studio 和
+    模拟器](/workflow/android-studio-emulator/)，iOS 请使用 [Xcode 和 iOS
+    模拟器](/workflow/ios-simulator/)。
+  </Requirement>
+</Prerequisites>
+
+<Step label="1">
+
+### 安装 expo-dev-client
+
+在项目的根目录中运行以下命令：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install expo-dev-client'],
+    yarn: ['$ yarn expo install expo-dev-client'],
+    pnpm: ['$ pnpm expo install expo-dev-client'],
+    bun: ['$ bun expo install expo-dev-client'],
+  }}
+/>
+
+<Collapsible summary="您是否在现有的 React Native 项目中使用此库？">
+
+不使用[持续原生生成](/workflow/continuous-native-generation/)或通过 `npx react-native` 创建的应用，在安装此库后需要进行进一步配置。请参阅[在现有 React Native 项目中安装 `expo-dev-client`](/bare/install-dev-builds-in-bare/)中的步骤 1 和 2。
+
+</Collapsible>
+
+<Collapsible summary="开发版本是什么样的？">
+
+<ContentSpotlight
+  alt="Android 和 iOS 上的 expo-dev-client 启动器和菜单界面。"
+  src="/static/images/dev-client/launcher-screen-android-ios.webp"
+  caption={`运行开发版本时，它看起来会是这样，只是其中会显示您的应用名称和图标，而不是“RHT”。左侧是 iOS 启动器界面，右侧是 Android 启动器界面。中间可以看到一个运行在开发版本中的应用，同时打开了可自定义的开发者菜单。`}
+/>
+
+</Collapsible>
+
+> 无需使用 `expo-dev-client` 库也可以使用开发版本。在这种情况下，请使用 `npx expo start --dev-client` 启动开发服务器，以将目标设为您的开发版本，而不是 Expo Go。
+
+</Step>
+
+<Step label="2">
+
+### 构建并运行应用
+
+<Tabs>
+
+<Tab label="Android">
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo run:android'],
+    yarn: ['$ yarn expo run:android'],
+    pnpm: ['$ pnpm expo run:android'],
+    bun: ['$ bun expo run:android'],
+  }}
+/>
+
+默认情况下，应用会安装到正在运行的 Android 模拟器上。若要使用实体设备，请通过 USB 连接设备，在出现提示时允许**USB 调试**，并添加 `--device` 标志。
+
+</Tab>
+
+<Tab label="iOS">
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo run:ios'],
+    yarn: ['$ yarn expo run:ios'],
+    pnpm: ['$ pnpm expo run:ios'],
+    bun: ['$ bun expo run:ios'],
+  }}
+/>
+
+默认情况下，应用会安装到 iOS 模拟器上。若要使用 iPhone，请连接设备，启用[开发者模式](/guides/ios-developer-mode/)，确保应用配置具有唯一的 `ios.bundleIdentifier`，并添加 `--device` 标志。
+
+</Tab>
+
+</Tabs>
+
+此命令会运行 [prebuild](/workflow/continuous-native-generation/#prebuild)，在原生 **android** 和 **ios** 目录不存在时生成这些目录，然后编译并安装应用，并启动开发服务器。
+
+</Step>
+
+<Step label="3">
+
+### 原生代码发生更改时重新构建
+
+`expo run:android|ios` 命令会在后续运行中复用原生 **android** 和 **ios** 目录。当您只更改应用的 TypeScript/JavaScript 代码时，无需重新构建原生应用。相反，请使用以下命令启动开发服务器：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo start'],
+    yarn: ['$ yarn expo start'],
+    pnpm: ['$ pnpm expo start'],
+    bun: ['$ bun expo start'],
+  }}
+/>
+
+只有在以下情况下，您才需要重新生成原生目录（**android** 和 **ios**）：
+
+- 安装或更新[包含原生代码的库](/workflow/using-libraries/#determining-third-party-library-compatibility)
+- 更改您的[应用配置](/workflow/configuration/)（**app.json**）
+- 升级 Expo SDK 版本
+
+在这些情况下，请使用以下命令重新生成原生目录：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo prebuild --clean'],
+    yarn: ['$ yarn expo prebuild --clean'],
+    pnpm: ['$ pnpm expo prebuild --clean'],
+    bun: ['$ bun expo prebuild --clean'],
+  }}
+/>
+
+然后使用更新后的原生代码重新构建应用：
+
+<Tabs>
+
+<Tab label="为 Android 构建">
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo run:android'],
+    yarn: ['$ yarn expo run:android'],
+    pnpm: ['$ pnpm expo run:android'],
+    bun: ['$ bun expo run:android'],
+  }}
+/>
+
+</Tab>
+
+<Tab label="为 iOS 构建">
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo run:ios'],
+    yarn: ['$ yarn expo run:ios'],
+    pnpm: ['$ pnpm expo run:ios'],
+    bun: ['$ bun expo run:ios'],
+  }}
+/>
+
+</Tab>
+
+</Tabs>
+
+> 如果不存在原生目录，所有 Expo 构建工具（`npx expo run:android|ios` 和 `eas build`）都会自动运行 prebuild，因此首次运行时无需手动执行。详细了解[持续原生生成（CNG）](/workflow/continuous-native-generation/)。
+
+</Step>

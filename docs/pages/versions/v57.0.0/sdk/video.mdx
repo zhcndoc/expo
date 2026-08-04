@@ -18,7 +18,7 @@ import { CODE } from '~/ui/components/Text';
 
 `expo-video` 是一个适用于 React Native 和 Expo、支持 Web 的跨平台高性能视频组件。
 
-#### 已知问题&ensp;<PlatformTags platforms={['android']} />
+## 已知问题&ensp;<PlatformTags platforms={['android']} />
 
 当两个 [`VideoView`](#videoview) 组件重叠，并且它们的 [`contentFit`](#contentfit) 属性设置为 [`cover`](#videocontentfit) 时，其中一个视频可能会显示到边界之外。这是一个 [已知的上游问题](https://github.com/androidx/media/issues/1107)。要解决此问题，请使用 [`surfaceType`](#surfacetype) 属性，并将其设置为 [`textureView`](#surfacetype-1)。
 
@@ -26,9 +26,9 @@ import { CODE } from '~/ui/components/Text';
 
 <APIInstallSection />
 
-## app 配置中的配置
+## 应用配置中的配置
 
-如果你在项目中使用 config plugin（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），则可以使用 `expo-video` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置运行时无法设置的各种属性，这些属性需要构建新的应用二进制文件后才会生效。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+如果你在项目中使用配置插件（[持续原生生成（CNG）](/workflow/continuous-native-generation/)），则可以使用 `expo-video` 内置的[配置插件](/config-plugins/introduction/)进行配置。该插件允许你配置运行时无法设置的各种属性，这些属性需要构建新的应用二进制文件后才会生效。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
 
 <ConfigPluginExample>
 ```json app.json
@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
 
 ### 接收事件
 
-[`VideoPlayer`](#videoplayer) 属性的变化不会更新 React 状态。因此，要显示有关 `VideoPlayer` 当前状态的信息，有必要监听它触发的[事件](#videoplayerevents)。
-事件系统基于 [`expo`](../sdk/expo) 包中的 [`EventEmitter`](../sdk/expo/#eventemitter) 类和 [hooks](../sdk/expo/#hooks)。监听事件有几种方式：
+[`VideoPlayer`](#videoplayer) 属性的变化不会更新 React 状态。因此，要显示有关 `VideoPlayer` 当前状态的信息，必须监听它发出的[事件](#videoplayerevents)。
+事件系统基于 [`expo`](../sdk/expo) 包中的 [`EventEmitter`](../sdk/expo/#eventemittertype) 类和 [hooks](../sdk/expo/#hooks)。监听事件有以下几种方式：
 
 #### `useEvent` hook
 
@@ -189,7 +189,7 @@ useEffect(() => {
 
 `expo-video` 支持播放使用 `require` 函数加载的本地媒体。你可以直接使用其结果作为源，也可以将其分配给 [`VideoSource`](#videosource) 的 `assetId` 参数，如果你还想配置其他属性的话。
 
-```tsx Playing local media
+```tsx 播放本地媒体
 import { VideoSource } from 'expo-video';
 
 const assetId = require('./assets/bigbuckbunny.mp4');
@@ -215,7 +215,7 @@ const player2 = useVideoPlayer(videoSource);
 
 在 iOS 上，请务必**不要**使用 asset info 的 `localUri` 属性，因为它不包含读取该资源所需的权限。
 
-```tsx Playing media from media library
+```tsx 从媒体库播放媒体
 import * as MediaLibrary from 'expo-media-library/legacy';
 import { VideoSource, useVideoPlayer, VideoView } from 'expo-video';
 
@@ -340,10 +340,10 @@ const styles = StyleSheet.create({
 
 ### 直接使用 VideoPlayer
 
-在大多数情况下，应使用 [`useVideoPlayer`](#usevideoplayersource-setup) hook 创建 `VideoPlayer` 实例。它会管理 player 的生命周期，并确保在组件卸载时正确释放。不过，在某些高级用例中，可能需要创建一个不会在组件卸载时自动销毁的 `VideoPlayer`。
-在这些情况下，可以使用 [`createVideoPlayer`](#videocreatevideoplayersource) 函数创建 `VideoPlayer`。你需要注意这种方式带来的风险，因为当不再需要 player 时，调用 [`release()`](../sdk/expo/#release) 方法是你的责任。如果处理不当，这种方式可能会导致内存泄漏。
+在大多数情况下，应使用 [`useVideoPlayer`](#usevideoplayersource-setup-playerbuilderoptions) hook 创建 `VideoPlayer` 实例。它会管理播放器的生命周期，并确保组件卸载时正确释放播放器。然而，在某些高级使用场景中，可能需要创建一个不会在组件卸载时自动销毁的 `VideoPlayer`。
+在这些情况下，可以使用 [`createVideoPlayer`](#videocreatevideoplayersource-playerbuilderoptions) 函数创建 `VideoPlayer`。需要注意这种方式带来的风险，因为当播放器不再需要时，必须由你负责调用 [`release()`](../sdk/expo/#release) 方法。如果处理不当，这种方式可能会导致内存泄漏。
 
-```tsx Creating player instance
+```tsx 创建播放器实例
 import { createVideoPlayer } from 'expo-video';
 const player = createVideoPlayer(videoSource);
 ```

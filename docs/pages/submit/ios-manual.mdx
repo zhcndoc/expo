@@ -1,0 +1,96 @@
+---
+title: 手动将 iOS 应用提交到 Apple App Store
+sidebar_title: 手动提交 iOS 应用
+description: 在 macOS 上使用 Xcode 将 iOS 应用归档并上传到 App Store Connect。
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Step } from '~/ui/components/Step';
+import { Terminal } from '~/ui/components/Snippet';
+
+本指南将介绍如何使用 Xcode 归档 iOS 应用并将其上传到 [App Store Connect](https://appstoreconnect.apple.com/)。如果你不使用 EAS，或者 EAS Submit 暂时不可用，这会非常有用。
+
+如果你已经有 **.ipa** 文件，请跳转到[使用 Transporter 上传现有构建版本](#upload-an-existing-build-with-transporter)。对于大多数团队而言，[EAS Submit](/submit/ios/) 更简单，并且可以在任何操作系统上使用。
+
+## 前提条件
+
+<Prerequisites>
+  <Requirement title="注册 Apple Developer 帐户">
+    要将应用提交到 Apple App Store，必须拥有付费的 Apple Developer 会员资格。请在
+    [Apple Developer Portal](https://developer.apple.com/account/) 注册。
+  </Requirement>
+  <Requirement title="安装 Xcode">
+    必须在 Mac 上安装 Xcode。请参阅[设置
+    Xcode](/get-started/set-up-your-environment/?platform=ios&device=physical&mode=development-build&buildEnv=local#set-up-xcode-and-watchman)
+    了解相关说明。
+  </Requirement>
+  <Requirement title="生成 ios 目录">
+    项目需要一个 **ios** 目录。如果使用
+    [CNG](/workflow/continuous-native-generation/)，请运行 `npx expo prebuild` 生成该目录。
+  </Requirement>
+  <Requirement title="在 App Store Connect 中创建应用记录">
+    必须在 [App Store Connect](https://appstoreconnect.apple.com/) 中创建一个与应用匹配的 bundle
+    标识符的应用记录。如果尚未创建，请登录 App Store Connect，点击 **Apps** 旁边的蓝色
+    **+**，然后选择 **New App**。
+  </Requirement>
+</Prerequisites>
+
+<Step label="1">
+
+## 在 Xcode 中打开 iOS 工作区
+
+在项目目录中，在 Xcode 中打开 iOS 工作区：
+
+<Terminal cmd={['$ xed ios']} />
+
+然后：
+
+1. 在左侧边栏中，选择应用的工作区。
+2. 前往 **Signing & Capabilities**，然后选择 **All** 或 **Release**。
+3. 在 **Signing** > **Team** 下，选择 Apple Developer 团队。Xcode 将生成自动管理的配置描述文件和签名证书。
+
+</Step>
+
+<Step label="2">
+
+## 配置发布方案
+
+1. 在菜单栏中，打开 **Product** > **Scheme** > **Edit Scheme**。
+2. 在边栏中选择 **Run**，并将 **Build configuration** 设置为 **Release**。
+
+</Step>
+
+<Step label="3">
+
+## 构建发布版本的应用
+
+在菜单栏中，打开 **Product** > **Build**。Xcode 将构建发布二进制文件。
+
+</Step>
+
+<Step label="4">
+
+## 归档并上传到 App Store Connect
+
+1. 在菜单栏中，打开 **Product** > **Archive**。
+2. 在 **Archives** 下，从右侧边栏中点击 **Distribute App**。
+3. 点击 **App Store Connect** 并按照提示操作。Xcode 会将构建版本上传到 App Store Connect。若要获取 **.ipa** 文件并稍后上传，请在提示中选择 **Export**，然后使用 [Transporter](#upload-an-existing-build-with-transporter)。
+4. 登录 [App Store Connect](https://appstoreconnect.apple.com/)，选择应用，然后从 App Store Connect 控制面板提交到 TestFlight 或进行 App Review。
+
+</Step>
+
+## 使用 Transporter 上传现有构建
+
+如果你已经有一个 **.ipa** 文件，例如通过运行 `eas build --platform ios --local` 获取，或从 [EAS 控制台](https://expo.dev/accounts/[account]/projects/[project]/builds) 下载构建，则无需在 Xcode 中归档应用。请改用 Apple 的 Transporter 应用上传：
+
+1. 从 App Store 下载 [**Transporter**](https://apps.apple.com/app/transporter/id1450874784)。
+2. 使用你的 Apple ID 登录。
+3. 通过将 **.ipa** 文件直接拖入 Transporter 窗口，或点击 **+** 或 **添加 App** 按钮打开文件对话框并选择文件，来添加构建。
+4. 点击 **交付** 按钮提交。
+
+此过程可能需要几分钟，之后还需要在 Apple 服务器上处理 10-15 分钟。完成后，你可以在 App Store Connect 中查看二进制文件的状态，并将其提交到 TestFlight 或进行 App 审核。
+
+## 进一步阅读
+
+- [创建商店资源](/guides/store-assets/)用于你的应用商店页面
+- [使用 EAS Submit 提交到 Apple App Store](/submit/ios/)

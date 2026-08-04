@@ -7,7 +7,7 @@ hideTOC: true
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 
-原生构建时间可能会拖慢你的开发流程。Expo 为其最复杂的模块提供了预编译版本，因此你的项目会链接预编译二进制文件，而不是在每次构建时都从源代码重新编译它们。在 Android 上，这些二进制文件以通过 Gradle 链接的 **.aar** 文件形式提供。在 iOS 上，它们以通过 CocoaPods 链接的 `XCFrameworks` 形式提供。两者都打包在常规的 Expo npm 包中，而尚未预编译的包会自动回退为从源代码构建——预编译模块和源码构建模块可以在同一个项目中共存。
+原生构建时间可能会拖慢你的开发流程。Expo 为其最复杂的模块提供预编译版本，因此你的项目会链接预编译二进制文件，而不是在每次构建时都从源代码重新编译它们。在 Android 上，这些二进制文件以通过 Gradle 链接的 **.aar** 文件形式提供。在 iOS 上，它们以通过 CocoaPods 链接的 `XCFrameworks` 形式提供。两者都打包在常规的 Expo npm 包中，而尚未预编译的包会自动回退为从源代码构建——预编译模块和源码构建模块可以在同一个项目中共存。
 
 **大多数项目不需要做任何事情**——在支持的 SDK 版本中，新的和现有的项目都会自动启用预编译的 Expo Modules。
 
@@ -42,7 +42,7 @@ import { Terminal } from '~/ui/components/Snippet';
 对于 EAS Build，创建一个 [EAS 环境变量](/eas/environment-variables/manage/)：
 
 <Terminal
-  cmd={['$ eas env:create --name EXPO_USE_PRECOMPILED_MODULES --value 0 --visibility plaintext']}
+  cmd={['$ eas env:set --name EXPO_USE_PRECOMPILED_MODULES --value 0 --visibility plaintext']}
 />
 
 CLI 会提示你选择该变量适用的环境（`development`、`preview`、`production`）。
@@ -78,7 +78,7 @@ CLI 会提示你选择该变量适用的环境（`development`、`preview`、`pr
 
 ### iOS
 
-在 EAS Build 上，像 `react-native-reanimated` 和 `react-native-worklets` 这样的第三方库会自动以下编译的 XCFrameworks 形式下载。本地 `pod install` 默认不会获取它们。这些包在本地会从源代码构建，并自动应用任何 `staticFeatureFlags` 覆盖，因此标志和版本不匹配的问题主要会在 EAS Build 上暴露。请避免为本地构建启用第三方预编译下载，并将这条路径仅限定在 EAS。
+在 EAS Build 上，像 `react-native-reanimated` 和 `react-native-worklets` 这样的第三方库会自动以预编译的 XCFrameworks 形式下载。本地 `pod install` 默认不会获取它们。这些包在本地会从源代码构建，并自动应用任何 `staticFeatureFlags` 覆盖，因此标志和版本不匹配的问题主要会在 EAS Build 上暴露。请避免为本地构建启用第三方预编译下载，并将这条路径仅限定在 EAS。
 
 #### `react-native-reanimated` 和 `react-native-worklets`
 

@@ -40,7 +40,7 @@ app 配置可配置许多内容，例如应用名称、图标、启动画面、�
 
 ## 在应用中读取配置值
 
-app 配置中的大多数配置都可以在运行时通过 JavaScript 代码访问，使用 [`Constants.expoConfig`](/versions/latest/sdk/constants/#nativeconstants--properties)。你**不应该**在 app 配置中包含任何敏感信息（少数会被过滤掉的字段除外，如下所述）。
+应用配置中的大多数配置都可以在运行时通过 JavaScript 代码访问，使用 [`Constants.expoConfig`](/versions/latest/sdk/constants/#nativeconstants)。你**不应**在应用配置中包含任何敏感信息（以下列出的少数字段会被过滤掉）。
 
 你可以通过运行 `npx expo config --type public` 来验证哪些配置会被嵌入到你的构建/更新中并在运行时可用。
 
@@ -48,7 +48,6 @@ app 配置中的大多数配置都可以在运行时通过 JavaScript 代码访�
 
 以下字段会从公开的 app 配置中被过滤掉（并且无法通过 `Constants.expoConfig` 对象访问）：
 
-- [`hooks`](/versions/latest/config/app/#hooks)
 - [`ios.config`](/versions/latest/config/app/#config)
 - [`android.config`](/versions/latest/config/app/#config-1)
 - [`updates.codeSigningCertificate`](/versions/latest/config/app/#codesigningcertificate)
@@ -56,7 +55,7 @@ app 配置中的大多数配置都可以在运行时通过 JavaScript 代码访�
 
 </Collapsible>
 
-> **warning** 你还应避免在 JavaScript 代码中直接导入 **app.json** 或 **app.config.js**，因为这会导入整个文件，而不是其处理后的版本。相反，请使用 [`Constants.expoConfig`](/versions/latest/sdk/constants/#nativeconstants--properties) 来访问配置。
+> **warning** 你还应避免直接在 JavaScript 代码中导入 **app.json** 或 **app.config.js**，因为这会导入整个文件，而不是经过处理的版本。相反，请使用 [`Constants.expoConfig`](/versions/latest/sdk/constants/#nativeconstants) 访问配置。
 
 ## 扩展配置
 
@@ -68,12 +67,14 @@ app 配置中的大多数配置都可以在运行时通过 JavaScript 代码访�
 
 为了进行更多自定义，你可以使用 JavaScript（**app.config.js**）或 [TypeScript](#using-typescript-for-configuration-appconfigts-instead-of-appconfigjs)（**app.config.ts**）。这些配置具有以下特性：
 
-- 支持注释、变量和单引号。
-- 不支持 ESM import 语法（`import` 关键字），但使用 [TypeScript with `tsx`](/guides/typescript/#appconfigjs) 时除外。与当前 Node.js 版本兼容的 JS 文件可以使用 `require()` 导入。
-- 支持带有 nullish coalescing 和可选链的 TypeScript。
-- 当 Metro bundler 重新加载时会更新。
+- 注释、变量和单引号。
+- **app.config.js** 和 **app.config.ts** 中都支持 ESM `import` 语法，包括导入其他 JavaScript 文件。
+- TypeScript 支持（**app.config.ts**），包括空值合并和可选链。导入其他 TypeScript 文件或自定义语言特性需要使用 [`tsx`](/guides/typescript/#appconfigjs)。
+- 每当 Metro 打包器重新加载时都会更新。
 - 向你的应用提供环境信息。
-- 不支持 Promises。
+- 不支持 Promise。
+
+> **信息** **注意**：也会发现 **app.config.mts**、**app.config.cts**、**app.config.mjs** 和 **app.config.cjs** 文件。默认情况下，配置会被转译为 CommonJS，并且 `.js` 和 `.ts` 文件可以混合使用 ESM 和 CommonJS 语法。当这种混合使用导致导入或 require 问题时，请使用显式扩展名之一，将配置锁定为单一模块格式。
 
 例如，你可以导出一个对象来定义自定义配置：
 

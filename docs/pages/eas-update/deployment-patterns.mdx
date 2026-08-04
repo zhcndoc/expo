@@ -1,6 +1,6 @@
 ---
 title: 其他部署模式
-description: 了解在使用 EAS Update 时适用于你的项目的不同部署模式。
+description: 了解使用 EAS Update 时适合你的项目的不同部署模式。
 ---
 
 import { Diagram } from '~/ui/components/Diagram';
@@ -18,7 +18,7 @@ import { Diagram } from '~/ui/components/Diagram';
 2. **测试变更**
    - (a) 我们可以使用 TestFlight 和 Play Store Internal Track 测试变更。
    - (b) 我们可以使用内部分发构建测试变更。
-   - (c) 我们可以使用 Expo Go 或 [development build](/develop/development-builds/introduction/) 测试变更。
+   - (c) 我们可以使用 Expo Go 或 [开发构建](/develop/development-builds/introduction/) 测试变更。
 3. **发布更新**
    - (a) 我们可以将更新发布到单个分支。
    - (b) 我们可以创建基于环境的更新分支，例如“production”和“staging”。
@@ -76,9 +76,9 @@ import { Diagram } from '~/ui/components/Diagram';
 ### 流程图
 
 <Diagram
-  source="/static/images/eas-update/deployment-patterns/deployment-staging.png"
-  darkSource="/static/images/eas-update/deployment-patterns/deployment-staging-dark.png"
-  alt="staging 部署流程图"
+  source="/static/images/eas-update/deployment-patterns/deployment-staging.webp"
+  darkSource="/static/images/eas-update/deployment-patterns/deployment-staging-dark.webp"
+  alt="Staging deployment diagram"
 />
 
 ### 流程说明
@@ -112,8 +112,8 @@ import { Diagram } from '~/ui/components/Diagram';
 ### 流程图
 
 <Diagram
-  source="/static/images/eas-update/deployment-patterns/deployment-platform-specific.png"
-  darkSource="/static/images/eas-update/deployment-patterns/deployment-platform-specific-dark.png"
+  source="/static/images/eas-update/deployment-patterns/deployment-platform-specific.webp"
+  darkSource="/static/images/eas-update/deployment-patterns/deployment-platform-specific-dark.webp"
   alt="平台特定部署流程图"
 />
 
@@ -136,7 +136,7 @@ import { Diagram } from '~/ui/components/Diagram';
 
 这个流程是管理版本化发布的一种流程示例。
 
-> **warning** 这个流程需要更多记录工作，并且不支持自动 [runtime version policies](/eas-update/runtime-versions/#setting-runtimeversion)（`"sdkVersion"`、`"appVersion"`、`"nativeVersion"` 和 `"fingerprint"`）。在这个流程中，你需要[手动指定](/eas-update/runtime-versions/#custom-runtimeversion)运行时版本。
+> **警告** 此流程需要更多的记录工作，并且不支持自动[运行时版本策略](/eas-update/runtime-versions/#setting-runtimeversion)（`"sdkVersion"`、`"appVersion"`、`"nativeVersion"` 和 `"fingerprint"`）。使用此流程时，你需要[手动指定](/eas-update/runtime-versions/#custom-runtime-version)运行时版本。
 
 以下是构成此流程的上面部署过程中的各部分：
 
@@ -149,14 +149,14 @@ import { Diagram } from '~/ui/components/Diagram';
 ### 流程图
 
 <Diagram
-  source="/static/images/eas-update/deployment-patterns/deployment-branch.png"
-  darkSource="/static/images/eas-update/deployment-patterns/deployment-branch-dark.png"
-  alt="分支部署流程图"
+  source="/static/images/eas-update/deployment-patterns/deployment-branch.webp"
+  darkSource="/static/images/eas-update/deployment-patterns/deployment-branch-dark.webp"
+  alt="分支部署图"
 />
 
 ### 流程说明
 
-1. 在本地开发项目，并在 Expo Go 或 [development build](/develop/development-builds/introduction/) 中测试变更。
+1. 在本地开发项目，并在 Expo Go 或[开发构建](/develop/development-builds/introduction/)中测试变更。
 2. 创建名为“production-rtv-1”的渠道构建（表示运行时版本为“1”的渠道），这些构建最终会经过审核并在应用商店上可用。再创建另一组名为“staging”的渠道构建，用于在 TestFlight 和 Play Store Internal Track 上测试。
 3. 设置 `expo-github-action`，在将提交合并到分支时发布更新。
 4. 将变更合并到名为“version-1”的分支。
@@ -180,7 +180,7 @@ import { Diagram } from '~/ui/components/Diagram';
 #### 此流程的优点
 
 - 此流程比其他流程更安全。所有更新都在分发给内部测试者的测试构建上进行测试，并且分支会在渠道之间移动，因此实际测试的制品就是部署到生产构建的那个制品。
-- 此流程在 GitHub 分支和 EAS Update 分支之间建立了直接映射。它也在 GitHub commit 和 EAS Update 更新之间建立了映射。如果你在跟踪 GitHub 分支，你可以为每个 GitHub 分支创建 EAS Update 分支，并将这些分支链接到构建的渠道。
+- 此流程在 GitHub 分支和 EAS Update 分支之间建立了直接映射。它也在 GitHub 提交和 EAS Update 更新之间建立了映射。如果你在跟踪 GitHub 分支，你可以为每个 GitHub 分支创建 EAS Update 分支，并将这些分支链接到构建的渠道。
   在实践中，这意味着你可以先推送到 GitHub，然后在 Expo 上选择相同的分支名称来链接到构建。
 - 你部署的早期版本会始终保留在 GitHub 上。一旦“version-1.0”分支被部署，而之后又部署了另一个版本（例如“version-1.1”），那么“version-1.0”分支会永远保留，这使得回查项目的早期版本变得容易。
 

@@ -5,7 +5,7 @@ description: 了解如何在应用配置文件中配置和添加权限。
 
 import { ConfigReactNative } from '~/ui/components/ConfigSection';
 
-在开发原生应用时，如果应用需要访问用户设备上可能敏感的信息，例如位置信息或联系人，应用必须先请求用户的权限。例如，要访问用户的媒体库，应用需要运行 [`MediaLibrary.requestPermissionsAsync()`](/versions/latest/sdk/media-library#medialibraryrequestpermissionsasync)。
+在开发需要访问用户设备上潜在敏感信息（例如位置或联系人）的原生应用时，应用必须先请求用户的许可。例如，要访问用户的媒体库，应用需要运行 [`MediaLibrary.requestPermissionsAsync()`](/versions/latest/sdk/media-library#medialibraryrequestpermissionsasyncwriteonly-granularpermissions)。
 
 在独立应用和[开发构建](/develop/development-builds/introduction/)中，权限在通过运行时 JavaScript 代码请求之前，需要先进行原生构建时配置。在 [Expo Go](https://expo.dev/go) 应用中测试项目时则不需要这样做。
 
@@ -13,9 +13,9 @@ import { ConfigReactNative } from '~/ui/components/ConfigSection';
 
 ## Android
 
-权限通过你在 [app config](/workflow/configuration/) 中使用的 [`android.permissions`](/versions/latest/config/app/#permissions) 和 [`android.blockedPermissions`](/versions/latest/config/app/#blockedpermissions) 键进行配置。
+权限通过你在 [应用配置](/workflow/configuration/) 中使用的 [`android.permissions`](/versions/latest/config/app/#permissions) 和 [`android.blockedPermissions`](/versions/latest/config/app/#blockedpermissions) 键进行配置。
 
-大多数权限会由你在应用中使用的库自动添加，这些库要么通过 [config plugins](/config-plugins/plugins/#creating-a-config-plugin)，要么通过包级别的 **AndroidManifest.xml** 添加。你只需要使用 `android.permissions` 来添加某个库默认未包含的额外权限。
+大多数权限会由你在应用中使用的库自动添加，这些库要么通过 [配置插件](/config-plugins/plugins/#creating-a-config-plugin)，要么通过包级别的 **AndroidManifest.xml** 添加。你只需要使用 `android.permissions` 来添加某个库默认未包含的额外权限。
 
 ```json app.json
 {
@@ -35,8 +35,8 @@ import { ConfigReactNative } from '~/ui/components/ConfigSection';
 }
 ```
 
-- 查看 [`android.permissions`](/versions/latest/config/app/#permissions)，了解默认 [prebuild template](/workflow/continuous-native-generation#templates) 中包含哪些权限。
-- 未提供正当理由而使用 _dangerous_ 或 _signature_ 权限的应用，**可能会被 Google 拒绝**。提交应用时，请确保遵循 [Android permissions best practices](https://developer.android.com/training/permissions/usage-notes)。
+- 查看 [`android.permissions`](/versions/latest/config/app/#permissions)，了解默认 [预构建模板](/workflow/continuous-native-generation#templates) 中包含哪些权限。
+- 未提供正当理由而使用 _危险_ 或 _签名_ 权限的应用，**可能会被 Google 拒绝**。提交应用时，请确保遵循 [Android 权限最佳实践](https://developer.android.com/training/permissions/usage-notes)。
 - [所有可用的 Android `Manifest.permissions`](https://developer.android.com/reference/android/Manifest.permission)。
 
 <ConfigReactNative>
@@ -55,9 +55,9 @@ import { ConfigReactNative } from '~/ui/components/ConfigSection';
 
 ## iOS
 
-你的 iOS 应用可以向用户请求系统权限。例如，要使用设备的摄像头或访问照片，Apple 要求解释你的应用将如何使用这些数据。大多数包会通过 [config plugins](/config-plugins/introduction/) 自动提供某个权限的标准说明。这些默认消息很可能需要根据你的具体用例进行定制，应用才能被 App Store 接受。
+你的 iOS 应用可以向用户请求系统权限。例如，要使用设备的摄像头或访问照片，Apple 要求解释你的应用将如何使用这些数据。大多数包会通过 [配置插件](/config-plugins/introduction/) 自动提供某个权限的标准说明。这些默认消息很可能需要根据你的具体用例进行定制，应用才能被 App Store 接受。
 
-要设置权限消息，请在你的 [app config](/workflow/configuration/) 中使用 [`ios.infoPlist`](/versions/latest/config/app/#infoplist) 键，例如：
+要设置权限消息，请在你的 [应用配置](/workflow/configuration/) 中使用 [`ios.infoPlist`](/versions/latest/config/app/#infoplist) 键，例如：
 
 ```json app.json
 {
@@ -69,7 +69,7 @@ import { ConfigReactNative } from '~/ui/components/ConfigSection';
 }
 ```
 
-这些属性中的许多也可以直接通过添加它们的库所关联的 [config plugin](/config-plugins/introduction/) 属性进行配置。例如，使用 [`expo-media-library`](/versions/latest/sdk/media-library) 时，你可以这样配置照片权限消息：
+这些属性中的许多也可以直接通过添加它们的库所关联的 [配置插件](/config-plugins/introduction/) 属性进行配置。例如，使用 [`expo-media-library`](/versions/latest/sdk/media-library) 时，你可以这样配置照片权限消息：
 
 ```json app.json
 {

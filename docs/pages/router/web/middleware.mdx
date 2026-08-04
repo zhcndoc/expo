@@ -16,9 +16,9 @@ Expo Router 中的服务器中间件允许你在请求到达路由之前运行�
 
 <Step label="1">
 
-### 在应用配置中启用 server middleware
+### 在应用配置中启用服务器中间件
 
-首先，通过在你的 [app config](/versions/latest/config/app/) 中添加服务器配置，将应用配置为使用 server 输出：
+首先，通过在你的 [应用配置](/versions/latest/config/app/) 中添加服务器配置，将应用配置为使用服务器输出：
 
 ```json app.json
 {
@@ -26,7 +26,7 @@ Expo Router 中的服务器中间件允许你在请求到达路由之前运行�
     /* @hide ... */
     /* @end */
     "web": {
-      /* @info 中间件仅在 server 模式下受支持 */
+      /* @info 中间件仅在服务器模式下受支持 */
       "output": "server"
       /* @end */
     },
@@ -48,18 +48,18 @@ Expo Router 中的服务器中间件允许你在请求到达路由之前运行�
 
 <Step label="2">
 
-### 创建你的 middleware 文件
+### 创建你的中间件文件
 
-在你的 **src/app** 目录中创建一个 **+middleware.ts** 文件，用于定义你的 server middleware 函数：
+在你的 **src/app** 目录中创建一个 **+middleware.ts** 文件，用于定义你的服务器中间件函数：
 
 ```ts src/app/+middleware.ts
 export default function middleware(request) {
   console.log(`Middleware executed for: ${request.url}`);
-  // 你的 middleware 逻辑写在这里
+  // 你的中间件逻辑写在这里
 }
 ```
 
-middleware 函数必须作为该文件的默认导出。它接收一个[不可变请求](#request-immutability)，并且可以返回一个 [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)，或者什么都不返回以让请求按原样继续传递。请求是不可变的，以防止副作用；你可以读取 headers 和属性，但不能修改 headers 或消耗请求体。
+中间件函数必须作为该文件的默认导出。它接收一个[不可变请求](#request-immutability)，并且可以返回一个 [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)，或者什么都不返回以让请求按原样继续传递。请求是不可变的，以防止副作用；你可以读取标头和属性，但不能修改标头或消耗请求体。
 
 </Step>
 
@@ -67,7 +67,7 @@ middleware 函数必须作为该文件的默认导出。它接收一个[不可�
 
 ### 启动你的开发服务器
 
-运行你的开发服务器以测试 middleware：
+运行你的开发服务器以测试中间件：
 
 <Terminal
   cmd={{
@@ -78,23 +78,23 @@ middleware 函数必须作为该文件的默认导出。它接收一个[不可�
   }}
 />
 
-现在你的 middleware 将对应用的所有请求运行。
+现在你的中间件将对应用的所有请求运行。
 
 </Step>
 
 <Step label="4">
 
-### 测试 middleware 功能
+### 测试中间件功能
 
-在浏览器中访问你的应用，或发起请求来测试 middleware 是否正常工作。检查控制台中来自 middleware 函数的日志消息。
+在浏览器中访问你的应用，或发起请求来测试中间件是否正常工作。检查控制台中来自中间件函数的日志消息。
 
 </Step>
 
 <Step label="5">
 
-### 配置 middleware 匹配器（可选）
+### 配置中间件匹配器（可选）
 
-默认情况下，middleware 会运行于所有服务器请求。你可以使用 `unstable_settings` 添加一个 matcher 来控制 middleware 何时执行：
+默认情况下，中间件会运行于所有服务器请求。你可以使用 `unstable_settings` 添加一个匹配器来控制中间件何时执行：
 
 ```ts src/app/+middleware.ts
 export const unstable_settings = {
@@ -111,9 +111,9 @@ export default function middleware(request) {
 }
 ```
 
-matcher 配置允许你：
+匹配器配置允许你：
 
-- **按 HTTP 方法过滤**：指定哪些方法会触发 middleware
+- **按 HTTP 方法过滤**：指定哪些方法会触发中间件
 - **按路径模式过滤**：使用精确路径、命名参数或正则表达式定义应匹配哪些 URL 模式
 
 </Step>
@@ -171,10 +171,10 @@ middleware 仅针对发送到你服务器的实际 HTTP 请求执行。这意味
 
 middleware 不会在以下情况运行：
 
-- 使用 [`<Link />`](/versions/latest/sdk/router/link/#link) 或 [`router`](/versions/latest/sdk/router/#router) 的客户端导航
-- 原生应用的屏幕切换
+- 使用 [`<Link />`](/versions/latest/sdk/router/link/#link) 或 [`router`](/versions/latest/sdk/router/#imperativerouter) 进行客户端导航
+- 原生应用屏幕切换
 - 预取的路由
-- 静态资源请求，例如图片和字体
+- 图像和字体等静态资源请求
 
 ## 示例
 
@@ -300,13 +300,13 @@ export default function middleware(request) {
 
 ### 最佳实践
 
-- 保持 middleware 轻量，因为它会在每个服务器请求上同步运行，并直接影响响应时间。
-- 使用 matcher 通过避免在不需要 middleware 的路由上执行它来优化性能，尤其适用于高流量应用。
-- 对于简单模式，优先使用精确路径和命名参数，而不是 regex，因为它们比复杂正则表达式更快、更易维护。
-- 结合方法和模式过滤，以精确控制 middleware 何时执行。
-- 对于原生应用，使用 API 路由进行安全的数据获取。当原生应用调用 API 路由时，这些请求会先经过 middleware。
+- 保持中间件轻量，因为它会在每个服务器请求上同步运行，并直接影响响应时间。
+- 使用 matcher，通过避免在不需要中间件的路由上执行中间件来优化性能，尤其适用于高流量应用。
+- 对于简单模式，优先使用精确路径和命名参数，而不是正则表达式，因为它们比复杂正则表达式更快、更易维护。
+- 结合方法和模式过滤，以精确控制中间件何时执行。
+- 对于原生应用，使用 API 路由进行安全的数据获取。当原生应用调用 API 路由时，这些请求会先经过中间件。
 
-### 类型化 middleware
+### 类型化中间件
 
 ```ts src/app/+middleware.ts
 import { MiddlewareFunction } from 'expo-router/server';
@@ -322,22 +322,22 @@ export default middleware;
 
 ### 限制
 
-- middleware 仅在服务器上运行，并且只针对 HTTP 请求运行。它不会在客户端导航期间执行，例如使用 [`<Link />`](/versions/latest/sdk/router/link/#link) 或原生应用的屏幕切换时。
-- 传递给 middleware 的 request 对象是[不可变的](#request-immutability)，以防止副作用。你不能修改 headers 或消耗请求体，从而确保它仍可供路由处理程序使用。
+- 中间件仅在服务器上运行，并且只针对 HTTP 请求运行。它不会在客户端导航期间执行，例如使用 [`<Link />`](/versions/latest/sdk/router/link/#link) 或原生应用的屏幕切换时。
+- 传递给中间件的请求对象是[不可变的](#request-immutability)，以防止副作用。你不能修改请求头或消耗请求体，从而确保它仍可供路由处理程序使用。
 - 你的应用中只能有一个根级 **+middleware.ts**。
-- [适用于 API 路由的相同限制](/router/web/api-routes/#known-limitations)也适用于 middleware。
+- [适用于 API 路由的相同限制](/router/web/api-routes/#known-limitations)也适用于中间件。
 
 ### 请求不可变性
 
-为防止意外副作用并确保请求体仍可供路由处理程序使用，传递给 middleware 的 [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) 是不可变的。这意味着你可以：
+为防止意外副作用并确保请求体仍可供路由处理程序使用，传递给中间件的 [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) 是不可变的。这意味着你可以：
 
 - 读取所有请求属性，如 `url`、`method`、`headers` 等
-- 使用 `request.headers.get()` 读取 header 值
-- 使用 `request.headers.has()` 检查 header 是否存在
+- 使用 `request.headers.get()` 读取请求头值
+- 使用 `request.headers.has()` 检查请求头是否存在
 - 访问 URL 参数和查询字符串
 
 但你不能：
 
-- 使用 `set()`、`append()`、`delete()` 修改 headers
+- 使用 `set()`、`append()`、`delete()` 修改请求头
 - 使用 `text()`、`json()`、`formData()` 等方法消耗请求体
-- 直接访问 `body` 属性
+- 直接访问 `body` 属性。

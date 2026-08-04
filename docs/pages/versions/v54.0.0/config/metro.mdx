@@ -15,7 +15,7 @@ import { DiffBlock, Terminal } from '~/ui/components/Snippet';
 
 Expo CLI 可以从 **.env** 文件中加载环境变量。有关如何在 Expo CLI 中使用环境变量的更多信息，请参阅 [环境变量指南](/guides/environment-variables/)。
 
-EAS CLI 使用一种不同的环境变量机制，但在它调用 Expo CLI 进行编译和打包时除外。了解更多关于 [EAS 中的环境变量](/build-reference/variables/)。
+除了在调用 Expo CLI 进行编译和打包时以外，EAS CLI 使用不同的环境变量机制。详细了解 [EAS 中的环境变量](/eas/environment-variables/)。
 
 如果你正在迁移一个较旧的项目，那么你应该通过在 **.gitignore** 中添加以下内容来忽略本地 env 文件：
 
@@ -145,11 +145,11 @@ export default function Page() {
           $$css: true,
           _: styles.text,
         }}>
-        Hello World
+        你好，世界
       </Text>
-      <Text style={unstable_styles.text}>Hello World</Text>
+      <Text style={unstable_styles.text}>你好，世界</Text>
       {/* 仅限 web 的用法： */}
-      <p className={styles.text}>Hello World</p>
+      <p className={styles.text}>你好，世界</p>
     </>
   );
 }
@@ -162,7 +162,7 @@ export default function Page() {
 ```
 
 - 在 web 上，所有 CSS 值都可用。CSS 不会像 React Native Web 的 `StyleSheet` API 那样被处理或自动添加前缀。你可以使用 `postcss.config.js` 为你的 CSS 自动添加前缀。
-- CSS Modules 在底层使用 [lightningcss](https://github.com/parcel-bundler/lightningcss)，请查看 [issues](https://github.com/parcel-bundler/lightningcss/issues) 以了解不支持的功能。
+- CSS Modules 在底层使用 [lightningcss](https://github.com/parcel-bundler/lightningcss)，请查看 [问题](https://github.com/parcel-bundler/lightningcss/issues) 以了解不支持的功能。
 
 ### PostCSS
 
@@ -422,9 +422,9 @@ import('./math').then(math => {
 
 当你运行 `npx expo export -p web` 时，bundle 会被拆分为多个文件，并且入口 bundle 会被添加到主 HTML 文件中。`@expo/metro-runtime` 添加了用于加载并执行异步 bundle 的运行时代码。
 
-## Source map debug ID
+## 源映射调试 ID
 
-如果某个 bundle 导出了外部 source map，则文件末尾会添加一个 [**Debug ID**](https://sentry.engineering/blog/the-case-for-debug-ids) 注解，并在对应的 source map 中添加匹配的 `debugId`，以便将这些文件关联起来。如果没有导出 source map，或者使用的是内联 source map，则不会添加此注解。
+如果某个 bundle 导出了外部源映射，则文件末尾会添加一个 [**调试 ID**](https://sentry.engineering/blog/the-case-for-debug-ids) 注解，并在对应的源映射中添加匹配的 `debugId`，以便将这些文件关联起来。如果没有导出源映射，或者使用的是内联源映射，则不会添加此注解。
 
 ```js
 // <所有源代码>
@@ -432,7 +432,7 @@ import('./math').then(math => {
 //# debugId=<确定性的 chunk hash>
 ```
 
-相关的 `*.js.map` 或 `*.hbc.map` source map 将是一个 JSON 文件，其中包含等效的 `debugId` 属性。`debugId` 会在 hermes 字节码生成之前注入，以确保在所有情况下都能匹配。
+相关的 `*.js.map` 或 `*.hbc.map` 源映射将是一个 JSON 文件，其中包含等效的 `debugId` 属性。`debugId` 会在 Hermes 字节码生成之前注入，以确保在所有情况下都能匹配。
 
 `debugId` 是 bundle 内容的确定性哈希值，不包含外部 bundle 拆分引用。这与用于创建 chunk 文件名的值相同，但格式化为 UUID。例如，`431b98e2-c997-4975-a3d9-2987710abd44`。
 
@@ -500,7 +500,7 @@ Metro 对 ES Module 的 `import` 和 CommonJS 的 `require` 使用不同的解�
 
 默认情况下，Metro 会根据平台以及解析是从 CommonJS `require` 调用开始，还是从 ES Modules `import` 语句开始，来匹配不同的条件，并相应地更改条件。
 
-对于原生平台，会添加 `react-native` 条件；对于 web 导出，会添加 `browser` 条件；对于服务器导出（例如 API routes 或 React Server functions），会添加 `node`、`react-server` 和 `workerd` 条件。这些条件的匹配顺序并不是按照其定义顺序，而是按照 `package.json:exports` 映射中的属性顺序来匹配。
+对于原生平台，会添加 `react-native` 条件；对于 web 导出，会添加 `browser` 条件；对于服务器导出（例如 API 路由或 React Server 函数），会添加 `node`、`react-server` 和 `workerd` 条件。这些条件的匹配顺序并不是按照其定义顺序，而是按照 `package.json:exports` 映射中的属性顺序来匹配。
 
 TypeScript 会独立于 Metro 执行 ES Module 解析，并且当其 `compilerOptions.moduleResolution` 配置选项设置为 `"bundler"`（这与 Metro 的行为更接近）或者 `"node16"` / `"nodenext"` 时，也会遵循 `package.json:exports` 映射。不过，TypeScript 也会匹配 `types` 条件。因此，当一个包没有把 `types` 条件放在其 exports 映射的最前面时，类型可能无法正确解析。
 
@@ -569,23 +569,23 @@ export async function GET(req: Request) {
 }
 ```
 
-## Web workers
+## Web Worker
 
-> **important** 此功能处于 alpha 阶段，可能会有破坏性变更。
+> **重要** 此功能处于 alpha 阶段，可能会有破坏性变更。
 
 ```ts
 new Worker(new URL('./worker', window.location.href));
 ```
 
-Expo Metro 提供实验性的 web worker 支持。此功能目前仅支持 web，在原生平台上不可用，在原生平台上使用将触发错误 "Property 'Worker' doesn't exist"。
+Expo Metro 提供实验性的 Web Worker 支持。此功能目前仅支持 Web，在原生平台上不可用，在原生平台上使用将触发错误 "Property 'Worker' doesn't exist"。
 
-Web workers 可用于将工作卸载到 web 上的单独线程，让主线程保持响应。这对于计算开销较大的任务很有用，例如图像处理、加密或其他原本会阻塞主线程的任务。
+Web Worker 可用于将工作卸载到 Web 上的单独线程，让主线程保持响应。这对于计算开销较大的任务很有用，例如图像处理、加密或其他原本会阻塞主线程的任务。
 
 Worker 可以使用 `Blob` 以内联方式生成，但有时你可能希望利用 TypeScript 等现代特性，或导入其他模块。
 
-Web workers 依赖于 Expo 的 bundle 拆分支持，这意味着你需要使用 Expo Router，或者安装并导入 `@expo/metro-runtime`。你也不能在使用 web workers 时设置环境变量 `EXPO_NO_METRO_LAZY=1`。
+Web Worker 依赖于 Expo 的 bundle 拆分支持，这意味着你需要使用 Expo Router，或者安装并导入 `@expo/metro-runtime`。你也不能在使用 Web Worker 时设置环境变量 `EXPO_NO_METRO_LAZY=1`。
 
-请看下面一个将数字加倍的 worker 示例：
+请看下面一个将数字加倍的 Worker 示例：
 
 ```ts worker.ts
 self.onmessage = ({ data }) => {
@@ -594,14 +594,14 @@ self.onmessage = ({ data }) => {
 };
 ```
 
-这个 worker 文件可以在主应用中作为 `Worker` 导入：
+这个 Worker 文件可以在主应用中作为 `Worker` 导入：
 
 ```ts
-// worker 的类型为 `Worker`
+// Worker 的类型为 `Worker`
 const worker = new Worker(new URL('./worker', window.location.href));
 
 worker.onmessage = ({ data }) => {
-  console.log(`Worker responded: ${data}`);
+  console.log(`Worker 响应：${data}`);
 };
 
 worker.postMessage(5);
@@ -615,11 +615,11 @@ const worker = new Worker(
 );
 ```
 
-生成的 bundle URL 会根据开发/生产环境而变化，以确保 worker 被正确加载并打包。与传统的 bundle 拆分不同，worker 文件需要包含其自身的所有模块副本，并且不能依赖主 bundle 中的公共模块。
+生成的 bundle URL 会根据开发/生产环境而变化，以确保 Worker 被正确加载并打包。与传统的 bundle 拆分不同，Worker 文件需要包含其自身的所有模块副本，并且不能依赖主 bundle 中的公共模块。
 
-原生 API `Worker` 传统上在 React Native 中不可用，并且 Expo SDK 也未提供，因此尽管这种打包功能在技术上适用于所有平台，但实际上只对 web 有用。如果你想让原生平台也支持它，理论上可以编写一个原生 Expo 模块来为 `Worker` API 提供 polyfill。或者，你也可以在 React Native Reanimated 中使用 "worklet" API，将工作卸载到原生上的单独线程。
+原生 API `Worker` 传统上在 React Native 中不可用，并且 Expo SDK 也未提供，因此尽管这种打包功能在技术上适用于所有平台，但实际上只对 Web 有用。如果你想让原生平台也支持它，理论上可以编写一个原生 Expo 模块来为 `Worker` API 提供 polyfill。或者，你也可以在 React Native Reanimated 中使用 "worklet" API，将工作卸载到原生上的单独线程。
 
-另外，你还可以通过公共路径导入 Workers：先将一个经过转换的 JS 文件放入 **public** 目录，然后在 worker 导入中使用变量引用它：
+另外，你还可以通过公共路径导入 Worker：先将一个经过转换的 JS 文件放入 **公共** 目录，然后在 Worker 导入中使用变量引用它：
 
 ```ts
 // 将避免转换，并直接使用公共路径。
@@ -633,7 +633,7 @@ const anotherWorker = new Worker(new URL(path, window.location.href));
 
 在 `Worker` 构造函数中使用变量不支持打包。若要检查内部 URL，可以使用内部语法 `require.unstable_resolveWorker('./path/to/worker.js')` 来获取 URL 片段。
 
-## Existing React Native apps
+## 现有的 React Native 应用
 
 > 本指南是按版本编写的，在升级/降级 Expo 时需要重新检查。或者，使用 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 进行全自动设置。
 

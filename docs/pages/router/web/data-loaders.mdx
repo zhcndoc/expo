@@ -6,6 +6,7 @@ isAlpha: true
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { FAQ } from '~/ui/components/FAQ';
+import { RelatedSkills } from '~/ui/components/RelatedSkills';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
@@ -78,7 +79,13 @@ import { Step } from '~/ui/components/Step';
 
 </Step>
 
-## 基本示例
+## 面向 AI 代理的 Expo Skills
+
+如果你使用 AI 代理，请安装 [Expo Skills](/skills/)，以教会它包括数据加载器在内的数据获取模式：
+
+<RelatedSkills names={['expo-data-fetching']} />
+
+## 基础示例
 
 从你的路由文件中导出 `loader` 函数，并使用 [`useLoaderData`](/versions/latest/sdk/router/#useloaderdata) 钩子在组件中访问数据：
 
@@ -105,7 +112,7 @@ export default function Home() {
 
 `loader` 函数在服务器上执行，其返回值会被序列化并传递给你的组件。这意味着你可以安全地使用服务端密钥、数据库连接以及其他不应暴露给客户端的资源。在使用 TypeScript 时，将 `typeof loader` 作为 [`useLoaderData`](/versions/latest/sdk/router/#useloaderdata) 的泛型参数，可以让该钩子从你的 loader 函数中推断返回类型。
 
-> **info** [`useLoaderData`](/versions/latest/sdk/router/#useloaderdata) 钩子不需要在路由组件本身中调用。它可以在路由组件树中的任何子组件里调用。
+> **信息** [`useLoaderData`](/versions/latest/sdk/router/#useloaderdata) 钩子不需要在路由组件本身中调用。它可以在路由组件树中的任何子组件里调用。
 
 ### 使用 Suspense
 
@@ -206,7 +213,7 @@ export default function Post() {
 
 ## 访问请求
 
-> **warning** 在使用静态渲染时，`request` 参数为 `undefined`，因为在构建时没有 HTTP 请求。
+> **警告** 在使用静态渲染时，`request` 参数为 `undefined`，因为在构建时没有 HTTP 请求。
 
 在使用 [服务器渲染](/router/web/server-rendering) 时，loader 会将传入的 HTTP 请求作为第一个参数接收。这使你能够访问请求头、cookie 和其他请求信息：
 
@@ -315,11 +322,11 @@ export default function ApiData() {
 
 数据加载器的行为会根据你的 [`web.output`](/versions/latest/config/app/#output) 配置而有所不同：
 
-| 方面                | 静态渲染                               | 服务器渲染                                                   |
-| ------------------- | -------------------------------------- | ------------------------------------------------------------ |
-| loader 执行时机     | 构建时                                 | 请求时                                                        |
-| `request` 参数      | `undefined`                            | [`ImmutableRequest`](/versions/latest/sdk/server/#immutablerequest) |
-| 最适合              | 博客、营销页面、文档                   | 个性化内容、依赖身份验证的页面                               |
+| 方面                 | 静态渲染                              | 服务器渲染                                                          |
+| -------------------- | ------------------------------------- | ------------------------------------------------------------------- |
+| 加载器执行时机       | 构建时                                | 请求时                                                              |
+| `request` 参数       | `undefined`                           | [`ImmutableRequest`](/versions/latest/sdk/server/#immutablerequest) |
+| 适用场景             | 博客、营销页面、文档                  | 个性化内容、依赖身份验证的页面                                      |
 
 ### 静态渲染
 
@@ -334,7 +341,7 @@ export default function ApiData() {
 在服务器渲染下，loader 会在每次请求时执行。这意味着：
 
 - `request` 参数包含传入 HTTP 请求的不可变版本
-- 生产部署需要 [`expo-server`](/versions/latest/sdk/server/)
+- 生产部署需要 [`expo-server`](/versions/latest/sdk/server/)。
 
 ## 类型化的 loader 函数
 
@@ -342,7 +349,7 @@ export default function ApiData() {
 
 ### `createStaticLoader`
 
-Use [`createStaticLoader`](/versions/latest/sdk/server/#createstaticloaderfn) for routes that only need route parameters. The callback only receives the route params, and is safe to use with both static and server rendering:
+对于只需要路由参数的路由，请使用 [`createStaticLoader`](/versions/latest/sdk/server/#createstaticloaderfn)。回调只会接收路由参数，并且可以安全地用于静态渲染和服务器渲染：
 
 ```tsx src/app/posts/[postId].tsx
 import { Text, View } from 'react-native';
@@ -367,7 +374,7 @@ export default function Post() {
 
 ### `createServerLoader`
 
-Use [`createServerLoader`](/versions/latest/sdk/server/#createserverloaderfn) for routes that need access to the incoming HTTP request. The callback receives an [`ImmutableRequest`](/versions/latest/sdk/server/#immutablerequest) and the route params as arguments:
+对于需要访问传入 HTTP 请求的路由，请使用 [`createServerLoader`](/versions/latest/sdk/server/#createserverloaderfn)。回调会接收 [`ImmutableRequest`](/versions/latest/sdk/server/#immutablerequest) 和路由参数作为参数：
 
 ```tsx src/app/profile.tsx
 import { Text, View } from 'react-native';
@@ -403,11 +410,11 @@ export default function Profile() {
 }
 ```
 
-> **warning** 如果在静态站点生成（SSG）期间调用 `createServerLoader`，它会抛出错误，因为构建时没有 HTTP 请求。使用静态渲染时请改用 `createStaticLoader`。
+> **警告** 如果在静态站点生成（SSG）期间调用 `createServerLoader`，它会抛出错误，因为构建时没有 HTTP 请求。使用静态渲染时请改用 `createStaticLoader`。
 
 ### 直接使用 `LoaderFunction`
 
-你也可以直接使用来自 `expo-router/server` 的 [`LoaderFunction`](/versions/latest/sdk/server/#loaderfunction) 类型来为 loader 添加类型。这可以让你完全控制函数签名，包括 `request` 和 `params`：
+你也可以使用 `expo-router/server` 中的 [`LoaderFunction`](/versions/latest/sdk/server/#loaderfunctionrequest-params) 类型直接为 loader 添加类型。这让你可以完全控制函数签名，包括 `request` 和 `params`：
 
 ```tsx src/app/posts/[postId].tsx
 import { Text, View } from 'react-native';

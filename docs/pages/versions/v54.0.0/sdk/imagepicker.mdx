@@ -27,15 +27,15 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 <ContentSpotlight file="sdk/imagepicker.mp4" loop={false} />
 
+## 已知问题&ensp;<PlatformTags platforms={['ios']} />
+
+在 iOS 上，从相机胶卷中选取图像（通常为[更高分辨率的图像](https://openradar.me/49866214)）时，在某些情况下，裁剪后图像的结果会为裁剪矩形提供错误的值。遗憾的是，此问题源于底层的 `UIImagePickerController`，原因是 iOS 内置闭源工具中的一个错误。
+
 ## 安装
 
 <APIInstallSection />
 
-#### 已知问题&ensp;<PlatformTags platforms={['ios']} />
-
-在 iOS 上，当从相机胶卷中选择图片（通常是[更高分辨率](https://openradar.me/49866214)的图片）时，在某些情况下，裁剪后的图像结果会给出错误的裁剪矩形值。不幸的是，这个问题出在底层的 `UIImagePickerController`，这是由于 iOS 内置的闭源工具中的一个 bug 导致的。
-
-## 在 app 配置中进行配置
+## 在 app config 中配置
 
 如果你在项目中使用配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-image-picker` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置各种无法在运行时设置的属性，这些属性需要重新构建新的应用二进制文件后才会生效。如果你的应用**没有**使用 CNG，那么你需要手动配置该库。
 
@@ -102,7 +102,7 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 ## 用法
 
-<SnackInline label='Image Picker' dependencies={['expo-image-picker']}>
+<SnackInline label='图片选择器' dependencies={['expo-image-picker']}>
 
 ```tsx
 import { useState } from 'react';
@@ -113,11 +113,11 @@ export default function ImagePickerExample() {
   const [image, setImage] = useState<string | null>(null);
 
   const pickImage = async () => {
-    // Launching the image library requires no permissions.
-    // On iOS, when `allowsEditing` is set to `false`
-    // and `videoExportPreset` is `'Passthrough'` (the default), you need to request video permissions manually, preferably before opening the picker,
-    // so that the system prompt doesn't interrupt users after they select a video.
-    // For more details, see the "Requesting video permissions" subsection.
+    // 启动图像库不需要任何权限。
+    // 在 iOS 上，当 `allowsEditing` 设置为 `false`
+    // 且 `videoExportPreset` 为 `'Passthrough'`（默认值）时，需要手动请求视频权限，最好在打开选择器之前请求，
+    // 这样系统提示就不会在用户选择视频后打断操作。
+    // 有关更多详细信息，请参阅“请求视频权限”小节。
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissionResult.granted) {
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
-When you run this example and choose an image, you will see the selected image displayed in the app, and logs similar to the following will be shown in the console:
+运行此示例并选择图像后，你将在应用中看到所选图像，同时控制台中会显示类似以下内容的日志：
 
 ```json collapseHeight=425
 {
@@ -184,33 +184,33 @@ When you run this example and choose an image, you will see the selected image d
 }
 ```
 
-### Requesting video permissions <PlatformTags platforms={['ios']} />
+### 请求视频权限 <PlatformTags platforms={['ios']} />
 
-In SDK 54 and later, the default configuration keeps `allowsEditing` as `false` and sets [`videoExportPreset`](#videoexportpreset) to `'Passthrough'`. These settings cause the picker to skip compression and immediately return the original asset, including HEIC and AVIF files, but iOS requires media library permissions to access the original file and will display a permissions dialog right after the user selects a video.
+在 SDK 54 及更高版本中，默认配置会将 `allowsEditing` 保持为 `false`，并将 [`videoExportPreset`](#videoexportpreset) 设置为 `'Passthrough'`。这些设置会使选择器跳过压缩并立即返回原始资源，包括 HEIC 和 AVIF 文件，但 iOS 需要媒体库权限才能访问原始文件，并会在用户选择视频后立即显示权限对话框。
 
-To avoid showing a permissions dialog after selection, **manually request media library permissions** before opening the picker via [`requestMediaLibraryPermissionsAsync`](#imagepickerrequestmedialibrarypermissionsasyncwriteonly) or [`useMediaLibraryPermissions`](#usemedialibrarypermissionsoptions).
+为了避免在选择后显示权限对话框，请在打开选择器之前，通过 [`requestMediaLibraryPermissionsAsync`](#imagepickerrequestmedialibrarypermissionsasyncwriteonly) 或 [`useMediaLibraryPermissions`](#usemedialibrarypermissionsoptions) **手动请求媒体库权限**。
 
-### Using AWS S3
+### 使用 AWS S3
 
 <BoxLink
-  title="AWS storage example"
-  description="An example of how to use AWS storage can be found in with-aws-storage-upload."
+  title="AWS 存储示例"
+  description="有关如何使用 AWS 存储的示例，请参阅 with-aws-storage-upload。"
   Icon={GithubIcon}
   href="https://github.com/expo/examples/tree/master/with-aws-storage-upload"
 />
 
-Please refer to the [Amplify documentation](https://docs.amplify.aws/) guide to correctly set up your project.
+请参阅 [Amplify 文档](https://docs.amplify.aws/) 指南，以正确设置你的项目。
 
-### Using Firebase
+### 使用 Firebase
 
 <BoxLink
-  title="Firebase storage example"
-  description="An example of how to use Firebase storage can be found in with-firebase-storage-upload."
+  title="Firebase 存储示例"
+  description="有关如何使用 Firebase 存储的示例，请参阅 with-firebase-storage-upload。"
   Icon={GithubIcon}
   href="https://github.com/expo/examples/tree/master/with-firebase-storage-upload"
 />
 
-Please refer to the [Using Firebase](/guides/using-firebase/) guide to correctly set up your project.
+请参阅[使用 Firebase](/guides/using-firebase/)指南，以正确设置你的项目。
 
 ## API
 

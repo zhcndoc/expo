@@ -1,0 +1,168 @@
+---
+title: 开始使用 EAS Simulator
+sidebar_title: 开始使用
+description: 检查 EAS Simulator 是否可用，启动远程设备会话并连接到该设备。
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { RelatedSkills } from '~/ui/components/RelatedSkills';
+import { Step } from '~/ui/components/Step';
+import { Terminal } from '~/ui/components/Snippet';
+import { Tab, Tabs } from '~/ui/components/Tabs';
+
+> **重要** **EAS Simulator 是一项受限访问的预览功能。** 它不包含在付费或免费套餐中，目前仅向部分合作伙伴提供。如果您有兴趣试用，请[加入候补名单](https://expo.dev/services/simulator)。
+
+<Prerequisites>
+  <Requirement title="拥有 EAS Simulator 访问权限的 Expo 账户">
+    EAS Simulator 访问权限直接授予部分合作伙伴。开始会话前，请检查当前项目的账户。
+  </Requirement>
+  <Requirement title="已关联的 Expo 项目">
+    请从项目目录运行这些命令。如果项目没有 EAS 项目 ID，请先运行 `eas init`。
+  </Requirement>
+  <Requirement title="最新版本的 EAS CLI">
+    `simulator:*` 命令处于实验阶段且默认隐藏。使用这些命令前，请[安装或更新 EAS CLI](/eas/cli/)。
+  </Requirement>
+</Prerequisites>
+
+## 面向 AI 代理的 Expo Skills
+
+如果你使用 AI 代理，请安装 [Expo Skills](/skills/)，并要求它使用 EAS Simulator skill。该 skill 可以执行下面的会话工作流、驱动应用并为你收集证据。当你想了解或手动运行这些命令时，请使用此页面。
+
+<RelatedSkills names={['eas-simulator']} />
+
+## 手动启动会话
+
+<Step label="1">
+
+### 进行身份验证并验证项目
+
+在交互式计算机上登录并确认当前用户：
+
+<Terminal cmd={['$ eas login', '$ eas whoami']} />
+
+在 CI 或无头代理环境中，请在 `EXPO_TOKEN` 中提供一个 [Expo 访问令牌](/accounts/programmatic-access/)，而不是启动交互式登录。
+
+如果项目尚未关联到 EAS，请进行初始化：
+
+<Terminal cmd={['$ eas init']} />
+
+</Step>
+
+<Step label="2">
+
+### 检查账户可用性
+
+可用性检查为只读操作。它不会启动设备，也不会消耗模拟器使用额度。`--json` 标志是可选的，但它便于代理或脚本检查结果：
+
+<Terminal cmd={['$ eas simulator:availability --json']} />
+
+已启用的账户会返回：
+
+```json
+{
+  "available": true,
+  "accountName": "my-account"
+}
+```
+
+如果 `available` 为 `false`，请不要调用 `simulator:start`。请使用本地模拟器或仿真器，或者[加入候补名单](https://expo.dev/services/simulator)以获取访问权限。
+
+</Step>
+
+<Step label="3">
+
+### 保护会话配置
+
+EAS CLI 会将当前会话 ID 和控制器凭据写入 **.env.eas-simulator**。请在启动前将该文件添加到 **.gitignore**：
+
+```sh .gitignore
+.env.eas-simulator
+```
+
+请勿提交或分享此文件。它包含允许控制器连接远程设备的令牌。
+
+</Step>
+
+<Step label="4">
+
+### 选择控制器并启动远程设备
+
+选择计划用于安装和执行设备操作的控制器。启动会话时请明确传入其类型。
+
+<Tabs>
+
+<Tab label="agent-device">
+
+请参阅 [agent-device 和 Expo](/agents/agent-device/) 了解控制器设置和命令。
+
+<Terminal cmd={['$ eas simulator:start --platform ios --type agent-device --non-interactive']} />
+
+</Tab>
+
+<Tab label="Argent">
+
+请参阅 [Argent 和 Expo](/agents/argent/) 了解控制器设置和命令。
+
+<Terminal cmd={['$ eas simulator:start --platform ios --type argent --non-interactive']} />
+
+</Tab>
+
+</Tabs>
+
+对于 Android 仿真器，请使用 `--platform android`。Android 会话目前不包含实时浏览器预览。
+
+在交互式终端中省略 `--platform` 时，EAS CLI 会询问要使用哪个平台。非交互式运行需要传入此标志。
+
+启动命令会等待所选控制器准备就绪，然后写入 **.env.eas-simulator**。它还会打印：
+
+- expo.dev 上的直接模拟器会话页面
+- 受支持的 iOS 会话的临时 `webPreviewUrl`
+- 控制设备的命令格式
+
+> **warning** `--non-interactive` 不会自动停止会话。命令会在会话准备就绪时返回，而远程设备仍会保持活动状态。
+
+</Step>
+
+<Step label="5">
+
+### 确认会话处于活动状态
+
+使用 **.env.eas-simulator** 中的会话 ID：
+
+<Terminal cmd={['$ eas simulator:get --json --non-interactive']} />
+
+当 `status` 为 `IN_PROGRESS` 且存在 `remoteConfig` 时即可继续。已停止的会话仍可能包含旧的连接配置，因此仅凭 dotenv 文件无法证明设备处于活动状态。
+
+</Step>
+
+<Step label="6">
+
+### 打开 Web 页面
+
+启动命令会链接到一个具有以下格式的会话页面：
+
+```text
+https://expo.dev/accounts/<account>/projects/<project>/simulator-sessions/<session-id>
+```
+
+项目级会话列表为：
+
+```text
+https://expo.dev/accounts/<account>/projects/<project>/simulator-sessions
+```
+
+对于受支持的 iOS 会话，请在桌面浏览器中打开 `webPreviewUrl`，以查看并操作实时模拟器。预览 URL 不是应用深层链接。请勿将其传递给用于打开应用或 URL 的控制器命令。
+
+</Step>
+
+<Step label="7">
+
+### 停止会话
+
+完成后，请停止当前会话：
+
+<Terminal cmd={['$ eas simulator:stop']} />
+
+如果启动 EAS CLI 时未使用 `--non-interactive`，它会保持连接状态。按一次 Ctrl+C 可停止会话，并让 EAS CLI 重置 **.env.eas-simulator**。
+
+</Step>

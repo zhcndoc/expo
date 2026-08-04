@@ -1,0 +1,266 @@
+---
+title: 运行并控制应用
+sidebar_title: 运行并控制应用
+description: 在 EAS Simulator 上安装应用，并使用 agent-device、Argent 或 iOS 浏览器预览来控制它。
+---
+
+import { Terminal } from '~/ui/components/Snippet';
+import { Tab, Tabs } from '~/ui/components/Tabs';
+
+远程设备一开始是空白的。在打开和控制应用之前，请先安装与模拟器或仿真器兼容的构建版本。
+
+> **信息** 对于智能体开发，请让您的编码智能体使用 [EAS 模拟器技能](https://github.com/expo/skills/blob/main/plugins/expo/skills/eas-simulator/SKILL.md)。它可以选择合适的构建工作流、启动远程设备、驱动应用、收集证据并停止会话。下面的各个部分记录了相同的手动操作流程。
+
+根据您的需求选择构建类型：
+
+| 目标                                         | 构建类型                                  |
+| -------------------------------------------- | ----------------------------------------- |
+| 检查固定构建版本或收集证据                   | 本地发布构建或 EAS 模拟器构建             |
+| 使用快速刷新查看当前源代码更改               | 连接到 Metro 的开发构建                    |
+| 使用现有的 EAS 构件                           | 匹配的 iOS 模拟器构建或 Android APK       |
+
+> **警告** 发布构建包含构建时的 JavaScript。将其连接到 Metro 不会启用快速刷新。请使用开发构建进行实时迭代。
+
+## 选择控制器
+
+在开始会话之前选择一个控制器，并明确传入其类型。在会话的其余时间使用该控制器的命令。
+
+| 控制器       | 启动选项                 | 文档                                      |
+| ------------ | ------------------------ | ----------------------------------------- |
+| agent-device | `--type agent-device`    | [agent-device 与 Expo](/agents/agent-device/) |
+| Argent       | `--type argent`          | [Argent 与 Expo](/agents/argent/)             |
+
+## 查找应用标识符
+
+在安装构建版本之前，读取解析后的应用配置：
+
+<Terminal cmd={['$ npx expo config --json']} />
+
+对于 iOS 命令，使用 `ios.bundleIdentifier`；对于 Android 命令，使用 `android.package`。创建构建版本之前，请在[应用配置](/workflow/configuration/)中配置缺失的值。
+
+## 安装 EAS 构建产物
+
+为 EAS Build 配置文件中的每个平台创建可安装的产物。iOS 需要设置 `ios.simulator: true`，Android 需要进行 [APK 构建](/build-reference/apk/)：
+
+```json eas.json
+{
+  "build": {
+    "remote-device": {
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}
+```
+
+在启动 EAS Simulator 前构建应用。构建过程可能耗时较长，导致空闲的模拟器会话失去其控制器隧道：
+
+<Terminal cmd={['$ eas build --platform ios --profile remote-device --non-interactive']} />
+
+你也可以查找已完成的模拟器构建：
+
+<Terminal
+  cmd={['$ eas build:list --platform ios --simulator --status finished --json --non-interactive']}
+/>
+
+构建准备就绪后，启动 agent-device 会话并使用 `install-from-source`。远程虚拟机（VM）会直接下载产物：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type agent-device --non-interactive',
+    '$ eas simulator:exec npx agent-device@latest install-from-source "https://expo.dev/artifacts/eas/<artifact>.tar.gz" --platform ios',
+    '$ eas simulator:exec npx agent-device@latest open com.example.app --platform ios',
+  ]}
+/>
+
+将 `com.example.app` 替换为应用的 iOS bundle identifier。
+
+对于 Android，使用相同的配置文件创建并安装 APK：
+
+<Terminal
+  cmd={[
+    '$ eas build --platform android --profile remote-device --non-interactive',
+    '$ eas simulator:start --platform android --type agent-device --non-interactive',
+    '$ eas simulator:exec npx agent-device@latest install-from-source "https://expo.dev/artifacts/eas/<artifact>.apk" --platform android',
+    '$ eas simulator:exec npx agent-device@latest open com.example.app --platform android',
+  ]}
+/>
+
+将 `com.example.app` 替换为应用的 Android package。Android 会话支持由控制器驱动的交互和屏幕截图，但不支持实时浏览器预览。
+
+## 使用 agent-device 安装本地构建版本
+
+对于本地 iOS 模拟器 `.app` bundle，`install` 会通过控制器上传构建版本：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec npx agent-device@latest install com.example.app ./path/to/MyApp.app --platform ios',
+    '$ eas simulator:exec npx agent-device@latest open com.example.app --platform ios',
+  ]}
+/>
+
+本地大型构建版本需要更长时间，因为客户端会从你的计算机上传它们。如果有 EAS 构建产物 URL，建议使用 `install-from-source`。
+
+对于本地 Android APK，使用相同的命令，但指定 Android 包名、APK 路径和 `--platform android`。
+
+## 使用开发构建进行实时更改
+
+实时迭代需要一个带有 `expo-dev-client` 的[开发构建](/develop/development-builds/introduction/)。开发构建会从 Metro 加载 JavaScript，而不是仅依赖构建时嵌入的 bundle。
+
+如果机器无法在本地创建原生构建，请配置一个同时包含 `developmentClient: true` 和 `ios.simulator: true` 的 EAS 配置文件：
+
+```json eas.json
+{
+  "build": {
+    "development-simulator": {
+      "developmentClient": true,
+      "ios": {
+        "simulator": true
+      }
+    }
+  }
+}
+```
+
+在启动模拟器会话之前创建构建：
+
+<Terminal cmd={['$ eas build --platform ios --profile development-simulator --non-interactive']} />
+
+对于 Android，使用 `--platform android` 运行构建命令时，同一个配置文件会生成可安装的 APK。无需其他 Android 配置。
+
+使用远程开发客户端可以访问的公共隧道启动 Metro：
+
+<Terminal cmd={['$ EXPO_UNSTABLE_TUNNEL_V2=1 npx expo start --tunnel']} />
+
+安装并打开开发构建，然后在开发客户端的**手动输入 URL**流程中输入公共 Metro URL。确保始终只运行一个 Metro 进程。首次加载 bundle 后，快速刷新会将源代码编辑发送到远程应用。
+
+如需完整且经过测试的开发客户端流程，请安装 [EAS Simulator skill](https://github.com/expo/skills/blob/main/plugins/expo/skills/eas-simulator/SKILL.md)。
+
+## 使用 `simulator:exec` 运行控制器命令
+
+`simulator:exec` 与控制器无关。它会加载当前会话的连接环境，并运行后续命令。请使用会话启动时所选控制器对应的命令格式：
+
+<Tabs>
+
+<Tab label="agent-device">
+
+<Terminal cmd={['$ eas simulator:exec npx agent-device@latest <command> [args...']} />
+
+</Tab>
+
+<Tab label="Argent">
+
+<Terminal cmd={['$ eas simulator:exec argent run <tool> [args...']} />
+
+</Tab>
+
+</Tabs>
+
+## 使用 agent-device 控制应用
+
+有关安装和更广泛的控制器指南，请参阅 [agent-device 和 Expo](/agents/agent-device/)。
+
+将这些命令与使用 `--type agent-device` 启动的会话配合使用：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec npx agent-device@latest apps --platform ios',
+    '$ eas simulator:exec npx agent-device@latest open com.example.app --platform ios',
+  ]}
+/>
+
+检查交互式辅助功能树：
+
+<Terminal cmd={['$ eas simulator:exec npx agent-device@latest snapshot -i']} />
+
+快照会返回类似 `@e1` 和 `@e2` 的引用。使用 `press` 激活元素：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec npx agent-device@latest press @e2',
+    '$ eas simulator:exec npx agent-device@latest press \'label="Continue"\'',
+  ]}
+/>
+
+该操作名为 `press`，而不是 `tap` 或 `click`。
+
+输入文本并截取屏幕截图：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec npx agent-device@latest fill @e4 "hello@example.com"',
+    '$ eas simulator:exec npx agent-device@latest screenshot ./artifacts/result.png',
+  ]}
+/>
+
+屏幕截图会下载到运行该命令的计算机上。
+
+录制操作流程：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec npx agent-device@latest record start',
+    '# 与应用交互',
+    '$ eas simulator:exec npx agent-device@latest record stop ./artifacts/flow.mp4',
+  ]}
+/>
+
+其他有用的控制器命令包括 `scroll`、`gesture`、`logs`、`network` 和 `perf`。通过活动会话读取与版本匹配的帮助信息：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec npx agent-device@latest --help',
+    '$ eas simulator:exec npx agent-device@latest help workflow',
+  ]}
+/>
+
+## 使用 Argent 控制应用
+
+有关安装和更广泛的控制器指南，请参阅 [Argent 和 Expo](/agents/argent/)。
+
+安装 Argent CLI：
+
+<Terminal cmd={['$ npm install --global @swmansion/argent']} />
+
+使用以下命令启动由 Argent 支持的会话：
+
+<Terminal cmd={['$ eas simulator:start --platform ios --type argent --non-interactive']} />
+
+将以下命令用于使用 `--type argent` 启动的会话。`simulator:exec` 会从 **.env.eas-simulator** 提供 `ARGENT_TOOLS_URL` 和 `ARGENT_AUTH_TOKEN`，因此无需为通过这种方式调用的命令运行 `argent link`：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec argent run reinstall-app --udid <udid> --bundleId com.example.app --appPath ./MyApp.app',
+    '$ eas simulator:exec argent run <tool> [args...]',
+  ]}
+/>
+
+Argent 使用自己的工具和应用安装命令。Argent 会话不会同时配置 agent-device 守护进程，因此不要对其运行 agent-device 命令。
+
+## 检查会话活动
+
+使用 agent-device 或 Argent 的会话会记录控制器活动。显示当前会话截至目前记录的活动：
+
+<Terminal cmd={['$ eas simulator:events']} />
+
+在另一个终端中，跟踪你或代理驱动设备时产生的新活动：
+
+<Terminal cmd={['$ eas simulator:events --follow']} />
+
+会话结束时，跟踪命令会退出。使用 `--id <session-id>` 检查其他会话，或使用 `--json` 返回代理或脚本的原始事件记录。`--json` 和 `--follow` 不能同时使用。
+
+会话活动描述控制器的操作和交互。它不能替代应用程序运行时日志。
+
+## 使用 iOS 浏览器预览
+
+受支持的 iOS 会话会返回一个 `webPreviewUrl`。在会话处于活动状态时，在桌面浏览器中打开它。
+
+## 完成后停止
+
+<Terminal cmd={['$ eas simulator:stop']} />
+
+如果你启动了 Metro，也请停止该进程。

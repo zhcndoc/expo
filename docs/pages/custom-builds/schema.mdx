@@ -9,6 +9,8 @@ import { GithubIcon } from '@expo/styleguide-icons/custom/GithubIcon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
+import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
+import { EASFunctionDescription } from '~/ui/components/EASFunctionDescription';
 
 为 EAS Build 创建自定义构建有助于为你的项目定制构建流程。
 
@@ -741,10 +743,10 @@ build:
 
 > **warning** 你的项目必须配置为使用旧版构建基础设施才能启动 Android Emulator。请前往 [项目设置](https://expo.dev/accounts/[account]/projects/[project]/settings) 进行配置。有关更多信息，请参阅 [这篇更新日志](https://expo.dev/changelog/2024/08-29-c3d-default)。
 
-| 输入         | 类型       | 描述                                                                                                                                                                                                                        |
-| ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `flow_path`  | `string`   | 要运行的 [Maestro flows](https://docs.maestro.dev/getting-started/writing-your-first-flow) 的路径（也可以是多个路径，每个路径单独一行）。                                                                                   |
-| `app_path`   | `string`   | 需要测试的模拟器/仿真器应用路径（或正则模式）。如果未提供，Android 默认为 **android/app/build/outputs/\*\*/\*.apk**，iOS 默认为 **ios/build/Build/Products/\*simulator/\*.app**。 |
+| Input       | Type     | Required    | Description                                                                                                                                                                                                                        |
+| ----------- | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `flow_path` | `string` | <YesIcon /> | Path (or multiple paths, each in a separate line) to [Maestro flows](https://docs.maestro.dev/getting-started/writing-your-first-flow) to run.                                                                                     |
+| `app_path`  | `string` | <NoIcon />  | Path (or regex pattern) to the emulator/simulator app that should be tested. If not provided, it defaults to **android/app/build/outputs/\*\*/\*.apk** for Android and to **ios/build/Build/Products/\*simulator/\*.app** for iOS. |
 
 ```yaml build-and-test.yml
 build:
@@ -907,8 +909,6 @@ steps:
 
 检出你的项目源文件。
 
-例如，包含以下 `steps` 的构建配置会检出项目并列出 **assets** 目录中的文件：
-
 ```yaml upload.yml
 build:
   name: 列出文件
@@ -919,17 +919,35 @@ build:
         run: ls assets
 ```
 
-<BoxLink
-  title="eas/checkout 源代码"
-  description="在 GitHub 上查看 eas/checkout 函数的源代码。"
-  Icon={GithubIcon}
-  href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/checkout.ts"
-/>
+For builds with Git-based project sources, the step uses the build's recorded commit by default. Use `ref` to check out a different branch, tag, or commit:
+
+```yaml example.yml
+build:
+  name: Check out a specific ref
+  steps:
+    # @info #
+    - eas/checkout:
+        inputs:
+          ref: feature/add-icon
+    # @end #
+    - eas/build
+```
+
+`ref` accepts:
+
+- A branch, as a bare name such as `feature/add-icon` or a qualified ref such as `refs/heads/feature/add-icon`. The repository ends up on that branch.
+- A tag, as a qualified ref such as `refs/tags/v1.2.3`. The repository ends up on a detached `HEAD`.
+- A full commit SHA. The repository ends up on a detached `HEAD`.
+
+The `ref` input only works when your project sources come from a Git repository, for example, a build triggered through the GitHub integration. Local builds and uploaded project tarballs do not support it. Place the step before [`eas/build`](#easbuild), which checks out the project internally.
+
+<EASFunctionDescription name="checkout" />
 
 #### `eas/use_npm_token`
 
-配置 node 包管理器（npm、pnpm 或 Yarn）以使用私有包，这些包可以发布到 npm 或私有 registry。
-在你的项目 secrets 中设置 `NPM_TOKEN`，该函数会通过创建包含该 token 的 **.npmrc** 来配置构建环境。
+Configures Node package managers (bun, npm, pnpm, or Yarn) for use with private packages, published either to npm or a private registry.
+
+Set `NPM_TOKEN` in your project's secrets, and this function will configure the build environment by creating **.npmrc** with the token.
 
 ```yaml example.yml
 build:
@@ -944,16 +962,11 @@ build:
         run: npm install # <---- 现在可以安装私有包了
 ```
 
-<BoxLink
-  title="eas/use_npm_token 源代码"
-  description="在 GitHub 上查看 eas/use_npm_token 函数的源代码。"
-  Icon={GithubIcon}
-  href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/useNpmToken.ts"
-/>
+<EASFunctionDescription name="use_npm_token" />
 
 #### `eas/install_node_modules`
 
-使用根据你的项目检测到的包管理器（npm、pnpm 或 Yarn）安装 node 模块。支持 monorepo。
+Installs node_modules using the package manager (bun, npm, pnpm, or Yarn) detected based on your project. Works with monorepos.
 
 ```yaml example.yml
 build:
@@ -965,12 +978,7 @@ build:
     # @end #
 ```
 
-<BoxLink
-  title="eas/install_node_modules 源代码"
-  description="在 GitHub 上查看 eas/install_node_modules 函数的源代码。"
-  Icon={GithubIcon}
-  href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/installNodeModules.ts"
-/>
+<EASFunctionDescription name="install_node_modules" />
 
 #### `eas/restore_build_cache`
 
@@ -1007,12 +1015,12 @@ build:
     # @end #
 ```
 
-| 属性                  | 类型        | 描述                                                                                                                                                        |
-| --------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`                | -           | 在构建日志中显示的可重用函数步骤名称。默认值为 `Restore build cache`。                                                     |
-| `inputs.key`          | `string`    | 必填。要恢复的缓存 key。你可以使用 `${{ hashFiles('package-lock.json') }}` 之类的表达式，根据文件哈希创建动态 key。              |
-| `inputs.restore_keys` | `string`    | 可选。如果找不到精确的 key，可使用的备用 key 或前缀。如果提供，缓存系统会查找任何以该前缀开头的缓存条目。 |
-| `inputs.path`         | `string`    | 必填。应恢复缓存的路径。这应与保存缓存时使用的路径匹配。                                                      |
+| Property              | Type     | Required    | Description                                                                                                                                              |
+| --------------------- | -------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                | -        | <NoIcon />  | The name of the step in the reusable function that shows in the build logs. Defaults to `Restore build cache`.                                           |
+| `inputs.key`          | `string` | <YesIcon /> | The cache key to restore. You can use expressions like `${{ hashFiles('package-lock.json') }}` to create dynamic keys based on file hashes.              |
+| `inputs.restore_keys` | `string` | <NoIcon />  | A fallback key or prefix to use if the exact key is not found. If provided, the cache system will look for any cache entry that starts with this prefix. |
+| `inputs.path`         | `string` | <YesIcon /> | The path where the cache should be restored. This should match the path used when saving the cache.                                                      |
 
 <BoxLink
   title="eas/restore_build_cache 源代码"
@@ -1045,11 +1053,11 @@ build:
     # @end #
 ```
 
-| 属性          | 类型        | 描述                                                                                                                                                                                                                 |
-| ------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | -           | 在构建日志中显示的可重用函数步骤名称。默认值为 `Save build cache`。                                                                                                                 |
-| `inputs.key`  | `string`    | 必填。缓存要保存到的 key。你可以使用 `${{ hashFiles('package-lock.json') }}` 之类的表达式，根据文件哈希创建动态 key。这应与恢复缓存时使用的 key 匹配。 |
-| `inputs.path` | `string`    | 必填。需要缓存的目录或文件路径。这应与恢复缓存时使用的路径匹配。                                                                                               |
+| Property      | Type     | Required    | Description                                                                                                                                                                                                       |
+| ------------- | -------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | -        | <NoIcon />  | The name of the step in the reusable function that shows in the build logs. Defaults to `Save build cache`.                                                                                                       |
+| `inputs.key`  | `string` | <YesIcon /> | The cache key to save the cache under. You can use expressions like `${{ hashFiles('package-lock.json') }}` to create dynamic keys based on file hashes. This should match the key used when restoring the cache. |
+| `inputs.path` | `string` | <YesIcon /> | The path to the directory or files that should be cached. This should match the path used when restoring the cache.                                                                                               |
 
 <BoxLink
   title="eas/save_build_cache 源代码"
@@ -1096,10 +1104,10 @@ build:
           apple_team_id: ${ steps.resolve_apple_team_id_from_credentials.apple_team_id }
 ```
 
-| 属性                 | 类型      | 描述                                                                                                                                                                                     |
-| -------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`               | `string`  | 在构建日志中显示的可重用函数步骤名称。默认值为 `Resolve Apple team ID from credentials`。                                                               |
-| `inputs.credentials` | `json`    | 可选输入，用于定义 iOS 构建的应用凭据。默认值为 `${ eas.job.secrets.buildCredentials }`。需要符合 iOS 的 `${ eas.job.secrets.buildCredentials }` schema。 |
+| Property             | Type     | Required   | Description                                                                                                                                                             |
+| -------------------- | -------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`               | `string` | <NoIcon /> | The name of the step in the reusable function that shows in the build logs. Defaults to `Resolve Apple team ID from credentials`.                                       |
+| `inputs.credentials` | `json`   | <NoIcon /> | The app credentials for your iOS build. Defaults to `${ eas.job.secrets.buildCredentials }`. Needs to comply to `${ eas.job.secrets.buildCredentials }` schema for iOS. |
 
 <BoxLink
   title="eas/resolve_apple_team_id_from_credentials 源代码"
@@ -1110,7 +1118,7 @@ build:
 
 #### `eas/prebuild`
 
-使用根据你的项目检测到的包管理器（npm、pnpm 或 Yarn），并采用最适合你的构建类型和构建环境的命令来运行 `expo prebuild` 命令。
+Runs the `expo prebuild` command using the package manager (bun, npm, pnpm, or Yarn) detected based on your project with the command best suited for your build type and build environment.
 
 ```yaml example.yml
 build:
@@ -1139,18 +1147,7 @@ build:
     # @end #
 ```
 
-| 属性                   | 类型       | 描述                                                                                                                              |
-| ---------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `name`                 | -          | 在构建日志中显示的可重用函数步骤名称。默认值为 `Prebuild`。                                      |
-| `inputs.clean`         | `boolean`  | 可选输入，定义运行命令时该函数是否应使用 `--clean` 标志。默认值为 false |
-| `inputs.apple_team_id` | `boolean`  | 可选输入，定义进行 prebuild 时应使用的 Apple team ID。对于使用凭据的 iOS 构建，应指定此项。 |
-
-<BoxLink
-  title="eas/prebuild 源代码"
-  description="在 GitHub 上查看 eas/resolve_apple_team_id_from_credentials 函数的源代码。"
-  Icon={GithubIcon}
-  href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/prebuild.ts"
-/>
+<EASFunctionDescription name="prebuild" />
 
 #### `eas/configure_eas_update`
 
@@ -1185,11 +1182,11 @@ build:
     # @end #
 ```
 
-| 属性                   | 类型      | 描述                                                                                                                                                              |
-| ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `name`                   | -        | 在构建日志中显示的可重用函数步骤名称。默认值为 `Configure EAS Update`。                                                          |
-| `inputs.runtime_version` | `string`  | 可选输入，定义应为构建配置的运行时版本。默认值为 `${ eas.job.version.runtimeVersion }` 或原生定义的运行时版本。 |
-| `inputs.channel`         | `string`  | 可选输入，定义应为构建配置的通道。默认值为 `${ eas.job.updates.channel }`。                                                    |
+| Property                 | Type     | Required   | Description                                                                                                                                      |
+| ------------------------ | -------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                   | -        | <NoIcon /> | The name of the step in the reusable function that shows in the build logs. Defaults to `Configure EAS Update`.                                  |
+| `inputs.runtime_version` | `string` | <NoIcon /> | Runtime version which should be configured for the build. Defaults to `${ eas.job.version.runtimeVersion }` or natively defined runtime version. |
+| `inputs.channel`         | `string` | <NoIcon /> | Channel which should be configured for the build. Defaults to `${ eas.job.updates.channel }`.                                                    |
 
 <BoxLink
   title="eas/configure_eas_update 源代码"
@@ -1216,10 +1213,10 @@ build:
     # @end #
 ```
 
-| 属性                 | 类型   | 描述                                                                                                                                                                                             |
-| -------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`               | -      | 在构建日志中显示的可重用函数步骤名称。默认值为 `Inject Android credentials`。                                                                                   |
-| `inputs.credentials` | `json` | 可选输入，用于定义 Android 构建的应用凭据。默认值为 `${ eas.job.secrets.buildCredentials }`。需要符合 Android 的 `${ eas.job.secrets.buildCredentials }` schema。 |
+| Property             | Type   | Required   | Description                                                                                                                                                                     |
+| -------------------- | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`               | -      | <NoIcon /> | The name of the step in the reusable function that shows in the build logs. Defaults to `Inject Android credentials`.                                                           |
+| `inputs.credentials` | `json` | <NoIcon /> | The app credentials for your Android build. Defaults to `${ eas.job.secrets.buildCredentials }`. Needs to comply to `${ eas.job.secrets.buildCredentials }` schema for Android. |
 
 <BoxLink
   title="eas/inject_android_credentials 源代码"
@@ -1251,11 +1248,11 @@ build:
     # @end #
 ```
 
-| 属性                     | 类型      | 描述                                                                                                                                                                                                     |
-| ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`                       | -        | 在构建日志中显示的可重用函数步骤名称。默认值为 `Configure iOS credentials`。                                                                                            |
-| `inputs.build_configuration` | `string` | 可选输入，定义 Xcode 项目的 Build Configuration。默认值为 `${ eas.job.buildConfiguration }`，如果未指定，则对 development client 解析为 `Debug`，对其他构建解析为 `Release`。 |
-| `inputs.credentials`         | `json`   | 可选输入，用于定义 iOS 构建的应用凭据。默认值为 `${ eas.job.secrets.buildCredentials }`。需要符合 iOS 的 `${ eas.job.secrets.buildCredentials }` schema。                 |
+| Property                     | Type     | Required   | Description                                                                                                                                                                             |
+| ---------------------------- | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                       | -        | <NoIcon /> | The name of the step in the reusable function that shows in the build logs. Defaults to `Configure iOS credentials`.                                                                    |
+| `inputs.build_configuration` | `string` | <NoIcon /> | The Xcode project's Build Configuration. Defaults to `${ eas.job.buildConfiguration }` or if not specified is resolved to `Debug` for development client or `Release` for other builds. |
+| `inputs.credentials`         | `json`   | <NoIcon /> | The app credentials for your iOS build. Defaults to `${ eas.job.secrets.buildCredentials }`. Needs to comply to `${ eas.job.secrets.buildCredentials }` schema for iOS.                 |
 
 <BoxLink
   title="eas/configure_ios_credentials 源代码"
@@ -1303,11 +1300,11 @@ build:
     # @end #
 ```
 
-| 属性                | 类型      | 描述                                                                                                          |
-| --------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
-| `name`                | -        | 在构建日志中显示的可重用函数步骤名称。默认值为 `Configure Android version`。 |
-| `inputs.version_code` | `string` | 可选输入，定义 Android 构建的 `versionCode`。默认值为 `${ eas.job.version.versionCode }`          |
-| `inputs.version_name` | `string` | 可选输入，定义 Android 构建的 `versionName`。默认值为 `${ eas.job.version.versionName }`。         |
+| Property              | Type     | Required   | Description                                                                                                          |
+| --------------------- | -------- | ---------- | -------------------------------------------------------------------------------------------------------------------- |
+| `name`                | -        | <NoIcon /> | The name of the step in the reusable function that shows in the build logs. Defaults to `Configure Android version`. |
+| `inputs.version_code` | `string` | <NoIcon /> | `versionCode` of your Android build. Defaults to `${ eas.job.version.versionCode }`.                                 |
+| `inputs.version_name` | `string` | <NoIcon /> | `versionName` of your Android build. Defaults to `${ eas.job.version.versionName }`.                                 |
 
 <BoxLink
   title="eas/configure_android_version 源代码"
@@ -1365,13 +1362,13 @@ build:
     # @end #
 ```
 
-| 属性                     | 类型      | 描述                                                                                                                                                                                                     |
-| ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`                       | -        | 在构建日志中显示的可重用函数步骤名称。默认值为 `Configure iOS version`。                                                                                                |
-| `inputs.build_number`        | `string` | 可选输入，定义 iOS 构建的构建号（`CFBundleVersion`）。默认值为 `${ eas.job.version.buildNumber }`                                                                                  |
-| `inputs.app_version`         | `string` | 可选输入，定义 iOS 构建的应用版本（`CFBundleShortVersionString`）。默认值为 `${ eas.job.version.appVersion }`。                                                                        |
-| `inputs.build_configuration` | `string` | 可选输入，定义 Xcode 项目的 Build Configuration。默认值为 `${ eas.job.buildConfiguration }`，如果未指定，则对 development client 解析为 `Debug`，对其他构建解析为 `Release`。 |
-| `inputs.credentials`         | `json`   | 可选输入，用于定义 iOS 构建的应用凭据。默认值为 `${ eas.job.secrets.buildCredentials }`。需要符合 iOS 的 `${ eas.job.secrets.buildCredentials }` schema。                 |
+| Property                     | Type     | Required   | Description                                                                                                                                                                             |
+| ---------------------------- | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                       | -        | <NoIcon /> | The name of the step in the reusable function that shows in the build logs. Defaults to `Configure iOS version`.                                                                        |
+| `inputs.build_number`        | `string` | <NoIcon /> | The build number (`CFBundleVersion`) of your iOS build. Defaults to `${ eas.job.version.buildNumber }`.                                                                                 |
+| `inputs.app_version`         | `string` | <NoIcon /> | The app version (`CFBundleShortVersionString`) of your iOS build. Defaults to `${ eas.job.version.appVersion }`.                                                                        |
+| `inputs.build_configuration` | `string` | <NoIcon /> | The Xcode project's Build Configuration. Defaults to `${ eas.job.buildConfiguration }` or if not specified is resolved to `Debug` for development client or `Release` for other builds. |
+| `inputs.credentials`         | `json`   | <NoIcon /> | The app credentials for your iOS build. Defaults to `${ eas.job.secrets.buildCredentials }`. Needs to comply to `${ eas.job.secrets.buildCredentials }` schema for iOS.                 |
 
 <BoxLink
   title="eas/configure_ios_version 源代码"
@@ -1416,10 +1413,10 @@ build:
     # @end #
 ```
 
-| 属性         | 类型      | 描述                                                                                                                                                                             |
-| ---------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `name`           | -          | 在构建日志中显示的可重用函数步骤名称。默认值为 `Run gradle`。                                                                                   |
-| `inputs.command` | `string` | 可选输入，定义用于构建 Android 应用的 Gradle 命令。如果未指定，则会根据构建配置和 `${ eas.job }` 对象的内容进行解析。 |
+| Property         | Type     | Required   | Description                                                                                                                                                     |
+| ---------------- | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`           | -        | <NoIcon /> | The name of the step in the reusable function that shows in the build logs. Defaults to `Run gradle`.                                                           |
+| `inputs.command` | `string` | <NoIcon /> | The Gradle command to run to build the Android app. If not specified it is resolved based on the build configuration and contents of the `${ eas.job }` object. |
 
 <BoxLink
   title="eas/run_gradle 源代码"
@@ -1568,15 +1565,15 @@ build:
         # @end #
 ```
 
-| 属性                     | 类型      | 描述                                                                                                                                                                                                                                                              |
-| ---------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `name`                       | -         | 在构建日志中显示的可重用函数步骤名称。默认值为 `Generate Gymfile from template`。                                                                                                                                                |
-| `inputs.template`            | `string`  | 可选输入，定义应使用的 Gymfile 模板。如果未指定，则会根据是否指定了 `inputs.credentials` 值，从两个默认模板中选择一个。                                                                      |
-| `inputs.credentials`         | `json`    | 可选输入，用于定义 iOS 构建的应用凭据。如果指定，则会向模板提供 `KEYCHAIN_PATH`、`EXPORT_METHOD` 和 `PROFILES` 值。                                                                                                   |
-| `inputs.build_configuration` | `string`  | 可选输入，定义 Xcode 项目的 Build Configuration。默认值为 `${ eas.job.buildConfiguration }`，如果未指定，则对 development client 解析为 `Debug`，对其他构建解析为 `Release`。对应模板值 `BUILD_CONFIGURATION`。 |
-| `inputs.scheme`              | `string`  | 可选输入，定义构建时应使用的 Xcode 项目 scheme。默认值为 `${ eas.job.scheme }`，如果未指定，则解析为在 Xcode 项目中找到的第一个 scheme。对应模板值 `SCHEME`。                     |
-| `inputs.clean`               | `boolean` | 可选输入，定义构建前是否应清理 Xcode 项目。默认值为 `true`。对应模板变量 `CLEAN`。                                                                                                                      |
-| `inputs.extra`               | `json`    | 可选输入，定义应提供给模板的额外值。                                                                                                                                                                                           |
+| Property                     | Type      | Required   | Description                                                                                                                                                                                                                                      |
+| ---------------------------- | --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                       | -         | <NoIcon /> | The name of the step in the reusable function that shows in the build logs. Defaults to `Generate Gymfile from template`.                                                                                                                        |
+| `inputs.template`            | `string`  | <NoIcon /> | The Gymfile template which should be used. If not specified one out of two default templates will be used depending on whether the `inputs.credentials` value is specified.                                                                      |
+| `inputs.credentials`         | `json`    | <NoIcon /> | The app credentials for your iOS build. If specified `KEYCHAIN_PATH`, `EXPORT_METHOD`, and `PROFILES` values will be provided to the template.                                                                                                   |
+| `inputs.build_configuration` | `string`  | <NoIcon /> | The Xcode project's Build Configuration. Defaults to `${ eas.job.buildConfiguration }` or if not specified is resolved to `Debug` for development client or `Release` for other builds. Corresponds to the `BUILD_CONFIGURATION` template value. |
+| `inputs.scheme`              | `string`  | <NoIcon /> | The Xcode project's scheme which should be used for the build. Defaults to `${ eas.job.scheme }` or if not specified is resolved to the first scheme found in the Xcode project. Corresponds to the `SCHEME` template value.                     |
+| `inputs.clean`               | `boolean` | <NoIcon /> | Whether the Xcode project should be cleaned before the build. Defaults to `true`. Corresponds to `CLEAN` template variable.                                                                                                                      |
+| `inputs.extra`               | `json`    | <NoIcon /> | Extra values which should be provided to the template.                                                                                                                                                                                           |
 
 <BoxLink
   title="eas/generate_gymfile_from_template 源代码"
@@ -1700,11 +1697,9 @@ build:
 
 #### `eas/upload_artifact`
 
-从提供的路径上传构建工件。
+Uploads files from the job's workspace as an artifact attached to the run. Uploaded artifacts appear in the run's **Artifacts** section and can be retrieved in a later job with [`eas/download_artifact`](/eas/workflows/syntax/#easdownload_artifact).
 
 > **警告** **你目前每个构建任务中每种工件类型只能上传一次。**<br />如果你在构建配置中设置了 [`buildArtifactPaths`](/eas/json/#buildartifactpaths)，并且使用了 [`eas/find_and_upload_build_artifacts`](#easfind_and_upload_build_artifacts)，而该步骤找到了并上传了一些构建工件，那么后续的任何 `eas/upload_artifact` 步骤都会失败。<br />为了解决这个问题，目前我们建议从自定义构建的配置中移除 `buildArtifactPaths`，并在需要时在 YAML 中使用 `eas/upload_artifact` 手动上传工件。
-
-例如，具有以下 `steps` 的构建配置会将一个工件上传到 EAS 服务器：
 
 ```yaml upload.yml
 build:
@@ -1725,28 +1720,7 @@ build:
             assets/*.png
 ```
 
-| Input          | Type      | Description                                                                                                                                                                                                                                                                                                                      |
-| -------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `path`         | `string`  | Required. Path or newline-delimited list of paths to the artifacts to upload to EAS servers. You can use `*` wildcard and other [glob patterns](https://github.com/isaacs/node-glob#glob-primer).                                                                                                                                |
-| `type`         | `string`  | The type of artifact that is uploaded to the EAS servers. Allowed values are `application-archive` and `build-artifact` (build jobs only), and `other` (a generic artifact). Defaults to `application-archive` in build jobs, and to `other` when there is no build (for example, in a workflow custom job). See the note below. |
-| `name`         | `string`  | A name for the artifact. In workflows, it can be used to reference the artifact from [`eas/download_artifact`](/eas/workflows/syntax/#easdownload_artifact).                                                                                                                                                                     |
-| `metadata`     | `json`    | Arbitrary metadata to attach to a generic (`other`) artifact.                                                                                                                                                                                                                                                                    |
-| `ignore_error` | `boolean` | When `true`, an upload failure is logged but does not fail the step. Defaults to `false`.                                                                                                                                                                                                                                        |
-
-This function sets the following output:
-
-| Output        | Type     | Description                      |
-| ------------- | -------- | -------------------------------- |
-| `artifact_id` | `string` | The ID of the uploaded artifact. |
-
-> **info** The `application-archive` and `build-artifact` types require a build to attach to. Using them in a job without a build (such as a custom [workflow](/eas/workflows/get-started/) job) fails with an error like `Uploading application archives outside of builds is not supported`. Use `type: other` to upload a generic artifact in that case.
-
-<BoxLink
-  title="eas/upload_artifact 源代码"
-  description="在 GitHub 上查看 eas/upload_artifact 函数的源代码。"
-  Icon={GithubIcon}
-  href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/uploadArtifact.ts"
-/>
+<EASFunctionDescription name="upload_artifact" />
 
 #### `eas/install_maestro`
 
@@ -1774,9 +1748,9 @@ build:
           path: ${ eas.env.HOME }/.maestro/tests
 ```
 
-| 输入              | 类型     | 描述                                                                                                           |
-| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
-| `maestro_version` | `string` | 要安装的 Maestro 版本（例如 1.35.0）。如果未提供，`install_maestro` 将安装最新版本。 |
+| Input             | Type     | Required   | Description                                                                                                           |
+| ----------------- | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------- |
+| `maestro_version` | `string` | <NoIcon /> | Maestro version to install (for example, 1.35.0). If not provided, `install_maestro` will install the latest version. |
 
 <BoxLink
   title="eas/install_maestro 源代码"
@@ -1804,10 +1778,10 @@ build:
     # ... Maestro setup and tests
 ```
 
-| 输入                  | 类型     | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `device_name`          | `string` | 创建的设备名称。如果启动多个模拟器，可以自定义该名称。                                                                                                                                                                                                                                                                                                                                                                       |
-| `system_image_package` | `string` | 用于模拟器的 Android 包路径。例如 `system-images;android-30;default;x86_64`。<br />要获取可用系统镜像列表，请在本地计算机上运行 [`sdkmanager --list`](https://developer.android.com/tools/sdkmanager#list)。虚拟机运行在 x86_64 架构上，因此始终选择 `x86_64` 版本的包。[`sdkmanager` 工具](https://developer.android.com/tools/sdkmanager) 来自 Android SDK 命令行工具。 |
+| Input                  | Type     | Required   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ---------------------- | -------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `device_name`          | `string` | <NoIcon /> | Name for the created device. You can customize it if starting multiple emulators.                                                                                                                                                                                                                                                                                                                                                                       |
+| `system_image_package` | `string` | <NoIcon /> | Android package path to use for the emulator. For example, `system-images;android-30;default;x86_64`.<br />To get a list of available system images, run [`sdkmanager --list`](https://developer.android.com/tools/sdkmanager#list) on a local computer. VMs run on x86_64 architecture, so always choose `x86_64` package variants. The [`sdkmanager` tool](https://developer.android.com/tools/sdkmanager) comes from Android SDK command-line tools. |
 
 <BoxLink
   title="eas/start_android_emulator 源代码"
@@ -1831,9 +1805,9 @@ build:
     # ... Maestro setup and tests
 ```
 
-| 输入               | 类型     | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `device_identifier` | `string` | 你想启动的模拟器名称或 UDID。示例包括 `iPhone [XY] Pro`、`AEF997BB-222C-4379-89BA-D21070B1D787`。<br />**注意：** 可用的模拟器因每个镜像而异。如果更换镜像，某个名称对应的模拟器可能会变得不可用。例如，Xcode 14 镜像会有 iPhone 14 模拟器，而 Xcode 15 镜像会有 iPhone 15 模拟器。通常我们建议不要提供此输入。更多信息请参见 [runner 镜像](/build/eas-json/#selecting-a-base-image)。 |
+| Input               | Type     | Required   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------- | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `device_identifier` | `string` | <NoIcon /> | Name or UDID of the Simulator you want to start. Examples include `iPhone [XY] Pro`, `AEF997BB-222C-4379-89BA-D21070B1D787`.<br />**Note:** Available Simulators are different for every image. If you change the image, the Simulator for a given name may become unavailable. For instance, an Xcode 14 image will have iPhone 14 Simulators, while an Xcode 15 image will have iPhone 15 simulators. In general, we encourage not providing this input. See [runner images](/build/eas-json/#selecting-a-base-image) for more information. |
 
 <BoxLink
   title="eas/start_ios_simulator 源代码"
@@ -1844,11 +1818,10 @@ build:
 
 #### `eas/send_slack_message`
 
-向已配置的 [Slack webhook URL](https://api.slack.com/messaging/webhooks) 发送指定消息，然后它会将消息发布到相关的 Slack 频道中。
-该消息可以指定为纯文本或 [Slack Block Kit](https://api.slack.com/block-kit) 消息。
-在这两种情况下，你都可以在消息中引用构建任务属性并 [使用其他步骤的输出](#use-output-from-one-step-to-another) 进行动态计算。
-例如，`'Build URL: ${ eas.job.expoBuildUrl }'`、`Build finished with status: ${ steps.run_fastlane.status_text }`、`Build failed with error: ${ steps.run_gradle.error_text }`。
-必须指定“message”或“payload”之一，但不能同时指定两者。
+Sends a specified message to a configured [Slack webhook URL](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks), which then posts it in the related Slack channel. The message can be specified as plaintext or as a [Slack Block Kit](https://docs.slack.dev/block-kit) message.
+
+You can reference build job properties and [use other steps outputs](#use-output-from-one-step-to-another) in the message for dynamic evaluation.
+For example, `'Build URL: ${ eas.job.expoBuildUrl }'`, `Build finished with status: ${ steps.run_fastlane.status_text }`, `Build failed with error: ${ steps.run_gradle.error_text }`.
 
 ```yaml send-slack-message.yml
 build:
@@ -1950,18 +1923,125 @@ build:
                     value: another_thing
 ```
 
-| 输入             | 类型     | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `message`        | `string` | 你要发送的消息文本。例如，`'This is the content of the message'`。<br /> <br />**注意：** 必须提供 `message` 或 `payload` 之一，但不能同时提供两者。                                                                                                                                                                                                                                                                        |
-| `payload`        | `string` | 使用 [Slack Block Kit](https://api.slack.com/block-kit) 布局定义的消息内容。<br /> <br />**注意：** 必须提供 `message` 或 `payload` 之一，但不能同时提供两者。                                                                                                                                                                                                                                                 |
-| `slack_hook_url` | `string` | 先前配置的 Slack webhook URL，它会将你的消息发布到指定频道。你可以直接提供 URL，例如 `slack_hook_url: 'https://hooks.slack.com/services/[rest_of_hook_url]'`，也可以使用 EAS secrets，例如 `slack_hook_url: ${ eas.env.ANOTHER_SLACK_HOOK_URL }`，或者设置 `SLACK_HOOK_URL` 密钥，它将作为默认 webhook URL（在这种情况下，无需提供 `slack_hook_url` 输入）。 |
+<EASFunctionDescription name="send_slack_message" />
 
-<BoxLink
-  title="eas/send_slack_message 源代码"
-  description="在 GitHub 上查看 eas/send_slack_message 函数的源代码。"
-  Icon={GithubIcon}
-  href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/sendSlackMessage.ts"
-/>
+The following functions connect your build to [PostHog](/guides/using-posthog/). Run `eas integrations:posthog:connect` to link a PostHog project and set the environment variables these functions read. `eas/posthog_capture_event` uses your public project API key, while the other functions use a PostHog personal API key with the scopes noted for each one. For setup, see [Using PostHog](/guides/using-posthog/), and for complete workflows, see [PostHog recipes for EAS Workflows](/guides/using-posthog/recipes).
+
+#### `eas/posthog_capture_event`
+
+Sends an analytics event to [PostHog](https://posthog.com/). Use it to mark builds, releases, and other milestones on your PostHog timeline.
+
+When you do not provide a `distinct_id`, the event is sent anonymously and does not create a PostHog [person profile](https://posthog.com/docs/data/persons).
+
+```yaml posthog-capture-event.yml
+build:
+  name: Build and mark the release in PostHog
+  steps:
+    - eas/build
+    - eas/posthog_capture_event:
+        name: Capture a PostHog event
+        inputs:
+          event: store_build_finished
+          properties:
+            platform: ios
+            profile: production
+```
+
+<EASFunctionDescription name="posthog_capture_event" />
+
+#### `eas/posthog_flag_rollout`
+
+Enables, disables, or rolls out a [PostHog feature flag](https://posthog.com/docs/feature-flags). The function looks up the flag by key and then updates it. Provide at least one of `active`, `rollout_percentage`, or `payload`.
+
+```yaml posthog-flag-rollout.yml
+build:
+  name: Roll out a PostHog feature flag
+  steps:
+    - eas/posthog_flag_rollout:
+        name: Roll out the flag to 25 percent
+        inputs:
+          flag: new-checkout
+          rollout_percentage: 25
+```
+
+<EASFunctionDescription name="posthog_flag_rollout" />
+
+#### `eas/posthog_wait_for_metric`
+
+Pauses until a [HogQL](https://posthog.com/docs/hogql) query returns a number that satisfies a comparison. Use it to gate on a metric, such as holding until the error count over the last few minutes stays low. The function runs the query every `interval_seconds` until the comparison is true or `timeout_seconds` elapses.
+
+> **info** This step has no `ignore_error` input. A timeout or an unreadable query always fails the step.
+
+```yaml posthog-wait-for-metric.yml
+build:
+  name: Gate on the error count
+  steps:
+    - eas/posthog_wait_for_metric:
+        name: Wait for the error count to stay low
+        inputs:
+          query: SELECT count() FROM events WHERE event = '$exception' AND timestamp > now() - INTERVAL 15 MINUTE
+          operator: lt
+          threshold: 10
+```
+
+<EASFunctionDescription name="posthog_wait_for_metric" />
+
+#### `eas/posthog_wait_for_query`
+
+Pauses until a [HogQL](https://posthog.com/docs/hogql) query returns true. Use it when the condition is easier to express in the query itself. For a numeric comparison with an explicit threshold, use [`eas/posthog_wait_for_metric`](#easposthog_wait_for_metric) instead. The step clears when the first column of the first row is `true` or a nonzero number.
+
+> **info** Like `eas/posthog_wait_for_metric`, this step has no `ignore_error` input. A timeout or an unreadable query always fails the step.
+
+```yaml posthog-wait-for-query.yml
+build:
+  name: Wait for a smoke test event
+  steps:
+    - eas/posthog_wait_for_query:
+        name: Wait for the smoke test to pass
+        inputs:
+          query: SELECT count() > 0 FROM events WHERE event = 'smoke_test_passed' AND timestamp > now() - INTERVAL 30 MINUTE
+```
+
+<EASFunctionDescription name="posthog_wait_for_query" />
+
+#### `eas/posthog_annotation`
+
+Creates a [PostHog annotation](https://posthog.com/docs/data/annotations) on the project timeline. Annotations show up on your PostHog charts, which makes them useful for marking builds, releases, and other milestones next to the metrics they affect.
+
+```yaml posthog-annotation.yml
+build:
+  name: Annotate the release in PostHog
+  steps:
+    - eas/posthog_annotation:
+        name: Create a PostHog annotation
+        inputs:
+          content: Published a production build
+```
+
+<EASFunctionDescription name="posthog_annotation" />
+
+#### `eas/posthog_upload_sourcemaps`
+
+Uploads JavaScript source maps to PostHog so that PostHog symbolicates stack traces in [error tracking](/guides/using-posthog/#error-tracking). Run it after the step that produces your bundle, in the same job, so the bundle and source maps are available on disk. Export with `npx expo export --source-maps`, and configure the PostHog Metro config from the [Source maps guide](/guides/using-posthog/#source-maps) so bundles carry the chunk IDs that match them to their source maps.
+
+> **warning** This step runs the PostHog CLI, which cannot tell a permissions error apart from any other failure. Unlike the other PostHog functions, setting `ignore_error: true` also hides authentication and scope errors.
+
+```yaml posthog-upload-sourcemaps.yml
+build:
+  name: Export and upload source maps
+  steps:
+    - eas/checkout
+    - eas/install_node_modules
+    - run:
+        name: Export the bundle and source maps
+        command: npx expo export --source-maps --platform ios
+    - eas/posthog_upload_sourcemaps:
+        name: Upload source maps to PostHog
+        inputs:
+          directory: dist
+```
+
+<EASFunctionDescription name="posthog_upload_sourcemaps" />
 
 ### 使用内置 EAS 函数构建应用
 

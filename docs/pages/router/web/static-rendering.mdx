@@ -10,13 +10,13 @@ import { Step } from '~/ui/components/Step';
 
 要在网页上启用搜索引擎优化（SEO），你必须对应用进行静态渲染。本指南将带你完成 Expo Router 应用的静态渲染过程。
 
-> **info** 使用静态渲染时，[data loaders](/router/web/data-loaders) 会在构建过程中执行，并将其结果嵌入到输出的 HTML 文件中。
+> **info** 使用静态渲染时，[数据加载器](/router/web/data-loaders) 会在构建过程中执行，并将其结果嵌入到输出的 HTML 文件中。
 
 ## 设置
 
 <Step label="1">
 
-在你项目的 [app config](/versions/latest/config/app/) 中启用静态渲染：
+在你项目的 [应用配置](/versions/latest/config/app/) 中启用静态渲染：
 
 ```json app.json
 {
@@ -120,7 +120,7 @@ export async function generateStaticParams(): Promise<Record<string, string>[]> 
 
 ```tsx src/app/[id]/_layout.tsx
 export async function generateStaticParams(): Promise<Record<string, string>[]> {
-  /* @info Any dynamic children that export `generateStaticParams` will be invoked once for every entry in the array. */
+  /* @info 任何导出 `generateStaticParams` 的动态子路由都会针对数组中的每一项调用一次。 */
   return [{ id: 'one' }, { id: 'two' }];
   /* @end */
 }
@@ -173,7 +173,7 @@ export async function generateStaticParams(params: {
 
 你可以在项目中创建 **src/app/+html.tsx** 文件来自定义根 HTML 文件。该文件导出一个 React 组件，它只会在 Node.js 中运行，这意味着其中不能导入全局 CSS。该组件会包裹 **app** 目录中的所有路由。这对于添加全局 `<head>` 元素或禁用页面滚动非常有用。
 
-> **Note**: 全局上下文提供者应放在 [Root Layout](/router/basics/navigation-layouts/#root-layout) 组件中，而不是 Root HTML 组件中。
+> **注意**：全局上下文提供者应放在 [根布局](/router/basics/navigation-layouts/#root-layout) 组件中，而不是根 HTML 组件中。
 
 ```tsx src/app/+html.tsx
 import { ScrollViewStyleReset } from 'expo-router/html';
@@ -208,14 +208,14 @@ export default function Root({ children }: PropsWithChildren) {
 - `children` 属性会包含根 `<div id="root" />` 标签。
 - JavaScript 脚本会在静态渲染之后附加。
 - React Native Web 样式会自动进行静态注入。
-- 不要将全局 CSS 导入到这个文件中。应改为使用 [Root Layout](/router/basics/navigation-layouts/#root-layout)。Expo Router 会从根布局开始遍历依赖图，因此在其他地方导入 CSS 可能会导致意外的加载顺序，使 **node_modules** 中的 CSS 优先于你的自定义样式。
+- 不要将全局 CSS 导入到这个文件中。应改为使用 [根布局](/router/basics/navigation-layouts/#root-layout)。Expo Router 会从根布局开始遍历依赖图，因此在其他地方导入 CSS 可能会导致意外的加载顺序，使 **node_modules** 中的 CSS 优先于你的自定义样式。
 - 诸如 `window.location` 之类的浏览器 API 在此组件中不可用，因为它只会在静态渲染期间于 Node.js 中运行。
 
 ### `expo-router/html`
 
-来自 `expo-router/html` 的导出与 Root HTML 组件相关。
+来自 `expo-router/html` 的导出与根 HTML 组件相关。
 
-- `ScrollViewStyleReset`: 对于带有根 `<ScrollView />` 的全屏 [React Native web apps](https://necolas.github.io/react-native-web/docs/setup/#root-element)，应使用根样式重置，以确保与原生端保持一致。
+- `ScrollViewStyleReset`：对于带有根 `<ScrollView />` 的全屏 [React Native Web 应用](https://necolas.github.io/react-native-web/docs/setup/#root-element)，应使用根样式重置，以确保与原生端保持一致。
 
 ## Meta 标签
 
@@ -248,7 +248,7 @@ Expo CLI 支持一个根 **public** 目录，在静态渲染期间会被复制�
   files={['public/favicon.ico', 'public/logo.png', 'public/.well-known/apple-app-site-association']}
 />
 
-> **warning** 某些路径（例如 `/assets`）是 Metro 预留的。请避免将文件放在 **public/assets/** 或其他预留路径中。完整列表请参见 [Reserved paths](/router/reference/reserved-paths/)。
+> **警告** 某些路径（例如 `/assets`）是 Metro 预留的。请避免将文件放在 **public/assets/** 或其他预留路径中。完整列表请参见 [预留路径](/router/reference/reserved-paths/)。
 
 这些文件会在静态渲染期间被复制到 **dist** 目录：
 
@@ -263,7 +263,7 @@ Expo CLI 支持一个根 **public** 目录，在静态渲染期间会被复制�
   ]}
 />
 
-> **info** **仅限 Web**：静态资源可以在运行时代码中通过相对路径访问。例如，**logo.png** 可以通过 `/logo.png` 访问：
+> **提示** **仅限 Web**：静态资源可以在运行时代码中通过相对路径访问。例如，**logo.png** 可以通过 `/logo.png` 访问：
 
 ```tsx src/app/index.tsx
 import { Image } from 'react-native';
@@ -326,7 +326,7 @@ export default function App() {
 
 将来会提供一个服务器 API，以及一种新的 `web.output` 模式，它将生成一个项目，并且（在其他功能中）支持动态路由。
 
-## 服务器端渲染
+## 服务端渲染
 
 当 `web.output: 'static'` 时，不支持在请求时进行渲染。要在每次请求时动态渲染页面，请改用 [服务器渲染](/router/web/server-rendering)，并将 `web.output` 设置为 `'server'`。
 

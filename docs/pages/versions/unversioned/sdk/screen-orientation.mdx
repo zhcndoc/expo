@@ -1,5 +1,5 @@
 ---
-title: ScreenOrientation
+title: 屏幕方向
 description: 用于管理设备屏幕方向的通用库。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-screen-orientation'
 packageName: 'expo-screen-orientation'
@@ -15,6 +15,7 @@ import {
   ConfigPluginProperties,
 } from '~/ui/components/ConfigSection';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 屏幕方向是指图形在设备上绘制时所采用的方向。例如，下图中的设备在物理上处于竖直和水平方向，但屏幕方向是纵向。有关物理设备方向，请参阅 [Device Motion](devicemotion.mdx) 的 orientation 部分。
 
@@ -27,13 +28,24 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 > Web 仅有[有限支持](https://caniuse.com/#feat=deviceorientation)。
 
+## iOS 27 及更高版本中的方向锁定&ensp;<PlatformTags platforms={['ios']} />
+
+从 iOS 27 开始，iPhone 应用可以调整大小，例如在 macOS 上使用 iPhone 镜像或在 iPad 上运行时。应用可调整大小时，系统会将受支持的方向视为偏好，而不是要求。这会带来两个后果：
+
+- `lockAsync` 可能不会生效。系统可以拒绝该请求，而你的应用会保持可调整大小的状态。
+- `getOrientationAsync` 可能无法描述应用所绘制窗口的形状。无论窗口的宽高比如何，iPhone 镜像始终会报告纵向方向。
+
+请设计能够适应可用空间的屏幕，而不要依赖固定方向。在调试构建中，当系统拒绝方向锁定时，此库会记录警告。利用这些警告找出仍然依赖平台不再保证的方向锁定的屏幕。
+
 ## 安装
 
 <APIInstallSection />
 
 ### 警告
 
-Apple 在 iOS 9 中为 iPad 添加了对 _分屏视图_ 模式的支持。这改变了系统处理屏幕方向的方式。简单来说，对于 iOS，除非你将两个应用并排打开，否则你的 iPad 始终处于横屏模式。要使用此模块锁定屏幕方向，你需要禁用对此功能的支持。有关 _分屏视图_ 模式的更多信息，请查看 [Apple 官方文档](https://support.apple.com/en-us/HT207582)。
+Apple 在 iOS 9 中为 iPad 添加了对 _分屏视图_ 模式的支持。这改变了系统处理屏幕方向的方式。简而言之，对于 iOS 而言，除非您打开两个并排显示的应用，否则您的 iPad 始终处于横屏模式。要使用此模块锁定屏幕方向，您需要在[应用配置](/workflow/configuration/)中将 [`ios.requireFullScreen`](/versions/latest/config/app/#requirefullscreen) 设置为 `true`，以禁用对此功能的支持。
+
+在 iOS 27 及更高版本中，`requireFullScreen` 不再阻止应用调整大小，因此无法可靠地锁定屏幕方向。请参阅[iOS 27 及更高版本中的方向锁定](#orientation-locks-on-ios-27-and-later)。有关 _分屏视图_ 模式的更多信息，请参阅[Apple 官方文档](https://support.apple.com/en-us/HT207582)。
 
 ## 在应用配置中进行配置
 

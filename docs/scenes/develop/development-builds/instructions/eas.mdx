@@ -1,0 +1,174 @@
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { YesIcon } from '~/ui/components/DocIcons';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { Tab, Tabs } from '~/ui/components/Tabs';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+## 使用 EAS 创建开发构建
+
+构建原生应用最简单的方法是使用 [EAS Build](/eas/build/introduction/)。应用编译会在 EAS 服务器上进行，并生成一个构建版本，你可以将其安装到设备或 Android 模拟器/iOS 模拟器上。
+
+EAS Build 还支持从非 macOS 平台触发 iOS 构建。
+
+<VideoBoxLink
+  videoId="uQCE9zl3dXU"
+  title="如何创建开发构建"
+  description="使用 EAS Build 为 Expo 项目配置并创建开发构建。"
+/>
+
+### 主机平台支持
+
+|             | Android    | iOS 模拟器 | iPhone 设备   |
+| ----------- | ---------- | ------------- | --------------- |
+| **macOS**   | <YesIcon/> | <YesIcon/>    | <YesIcon/> (\*) |
+| **Windows** | <YesIcon/> | <YesIcon/>    | <YesIcon/> (\*) |
+| **Linux**   | <YesIcon/> | <YesIcon/>    | <YesIcon/> (\*) |
+
+> (\*) 所有在 iPhone 设备上运行的构建都需要付费的 [Apple Developer](https://developer.apple.com) 账户进行构建签名。
+
+<Prerequisites>
+  <Requirement title="Expo 账户">
+    如果你还没有 [Expo](https://expo.dev/signup) 账户，请注册一个。
+  </Requirement>
+  <Requirement title="EAS CLI">
+    已安装并登录 [EAS CLI](/build/setup/#install-the-latest-eas-cli)。
+    <Terminal
+      cmd={{
+        npm: ['$ npm install --global eas-cli && eas login'],
+        yarn: ['$ yarn global add eas-cli && eas login'],
+        pnpm: ['$ pnpm add --global eas-cli && eas login'],
+        bun: ['$ bun add --global eas-cli && eas login'],
+      }}
+    />
+  </Requirement>
+</Prerequisites>
+
+<Step label="1">
+
+### 安装 expo-dev-client
+
+在项目根目录中运行以下命令：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install expo-dev-client'],
+    yarn: ['$ yarn expo install expo-dev-client'],
+    pnpm: ['$ pnpm expo install expo-dev-client'],
+    bun: ['$ bun expo install expo-dev-client'],
+  }}
+/>
+
+<Collapsible summary="你是否在现有的 React Native 项目中使用此库？">
+
+不使用[持续原生生成](/workflow/continuous-native-generation/)或通过 `npx react-native` 创建的应用，在安装此库后需要进行额外配置。请参阅[在现有 React Native 项目中安装 `expo-dev-client`](/bare/install-dev-builds-in-bare/)中的步骤 1 和 2。
+
+</Collapsible>
+
+<Collapsible summary="开发构建是什么样的？">
+
+<ContentSpotlight
+  alt="Android 和 iOS 上的 expo-dev-client 启动器和菜单界面。"
+  src="/static/images/dev-client/launcher-screen-android-ios.webp"
+  caption={`运行开发构建时，它看起来会是这样，只不过其中会显示你的应用名称和图标，而不是“RHT”。图中左侧是 iOS 上的启动器界面，右侧是 Android 上的启动器界面。在两者之间，你可以看到一个运行在开发构建中的应用，以及已打开的可自定义开发者菜单。`}
+/>
+
+</Collapsible>
+
+</Step>
+
+<Step label="2">
+
+### 构建原生应用
+
+如果你的项目还没有 **eas.json**，EAS CLI 会提示你使用默认的 `development` 配置文件创建一个。
+
+<Tabs>
+
+<Tab label="Android">
+
+<Prerequisites>
+  <Requirement title="Android 模拟器（可选）">
+    如果你想在模拟器上测试应用，可以选择安装一个 [Android 模拟器](/workflow/android-studio-emulator/)。
+  </Requirement>
+</Prerequisites>
+
+<Terminal cmd={['$ eas build --platform android --profile development']} />
+
+</Tab>
+
+<Tab label="iOS 模拟器">
+
+<Prerequisites>
+  <Requirement title="已安装 iOS 模拟器的 macOS">
+    iOS 模拟器仅适用于 macOS。请确保你已经安装了 [iOS
+    模拟器](/workflow/ios-simulator/)。
+  </Requirement>
+</Prerequisites>
+
+编辑 **eas.json** 中的 `development` 配置文件，并将 [`simulator`](/eas/json/#simulator) 选项设置为 `true`（如果你还想为此项目创建 iOS 设备构建版本，则必须为模拟器构建创建单独的配置文件）。
+
+```json eas.json
+{
+  "build": {
+    "development": {
+      /* @info */
+      "ios": {
+        "simulator": true
+      }
+      /* @end */
+    }
+  }
+}
+```
+
+<Terminal cmd={['$ eas build --platform ios --profile development']} />
+
+iOS 模拟器构建版本只能安装在模拟器上，不能安装在真实设备上。
+
+</Tab>
+
+<Tab label="iOS 设备">
+
+<Prerequisites>
+  <Requirement title="Apple Developer 账户">
+    需要付费的 [Apple Developer](https://developer.apple.com/) 账户来创建[签名凭证](/app-signing/managed-credentials/#generating-app-signing-credentials)，以便将应用安装到 iOS 设备上。
+  </Requirement>
+</Prerequisites>
+
+<Terminal cmd={['$ eas build --platform ios --profile development']} />
+
+iOS 设备构建版本只能安装在 iPhone 设备上，不能安装在 iOS 模拟器上。安装构建版本后，请在设备上启用 [iOS 开发者模式](/guides/ios-developer-mode/) 才能运行它。
+
+</Tab>
+
+</Tabs>
+
+</Step>
+
+<Step label="3">
+
+### 安装应用
+
+构建完成后，CLI 会提示你安装应用：按 <kbd>Y</kbd> 将其安装到 Android 模拟器或 iOS 模拟器上，或者使用设备扫描二维码。你也可以从 [expo.dev](https://expo.dev/) 控制面板或使用 [Expo Orbit](https://expo.dev/orbit) 安装任何构建版本。
+
+</Step>
+
+<Step label="4">
+
+### 启动 JavaScript 打包程序
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo start'],
+    yarn: ['$ yarn expo start'],
+    pnpm: ['$ pnpm expo start'],
+    bun: ['$ bun expo start'],
+  }}
+/>
+
+由于你的项目已安装 `expo-dev-client`，此命令会以开发构建为目标，而不是 Expo Go。
+
+</Step>

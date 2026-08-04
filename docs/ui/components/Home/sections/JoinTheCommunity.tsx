@@ -29,8 +29,8 @@ export function JoinTheCommunity() {
           'max-md:grid-cols-1'
         )}>
         <CommunityGridCell
-          title="Discord 和论坛"
-          description="加入我们的 Discord 聊天、提问或参加活动。"
+          title="Discord and forums"
+          description="Join our Discord to chat, ask questions or attend events."
           link="https://chat.expo.dev"
           icon={<DiscordIcon aria-hidden="true" className="icon-xl text-palette-white" />}
           iconClassName="bg-[#3131E8]"

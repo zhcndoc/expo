@@ -1,0 +1,102 @@
+---
+title: EAS 模拟器简介
+sidebar_title: 简介
+description: 通过 CLI、AI 代理或浏览器，在 EAS 基础设施上运行和控制远程 iOS 模拟器与 Android 模拟器。
+---
+
+import { Cloud01Icon } from '@expo/styleguide-icons/outline/Cloud01Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { NoIcon, YesIcon } from '~/ui/components/DocIcons';
+import { RelatedSkills } from '~/ui/components/RelatedSkills';
+
+> **重要** **EAS Simulator 是一项访问受限的预览功能。** 它不包含在付费或免费计划中，目前仅向部分合作伙伴提供。如果你有兴趣试用，请[加入候补名单](https://expo.dev/services/simulator)。
+
+**EAS Simulator** 可在 EAS 基础设施上运行远程 iOS Simulator 或 Android Emulator。你可以安装应用、检查其用户界面并与之交互。你还可以收集屏幕截图和录屏，或分享 iOS 浏览器预览，而无需在本地运行设备。
+
+EAS Simulator 专为代理式开发而构建。它为编码代理提供真实的设备运行时，用于验证代理编写的代码。代理可以修复其发现的问题，并从正在运行的应用中返回证据。
+
+以下情况尤其适合使用 EAS Simulator：
+
+- 后台或云端编码代理需要访问其沙盒中不可用的设备
+- AI 代理需要在运行中的应用中验证更改，而不只是检查源代码
+- 你希望获得一个临时且可共享的 iOS 浏览器预览
+- 你需要卸载模拟器计算任务，或在远程平台上进行测试
+
+> **注意** 对于需要访问 iOS Simulator 的 Linux 或 Windows 开发者，或者本地资源受限、希望将设备运行时卸载到 EAS 以简化设置的情况，EAS Simulator 同样非常有用。
+
+如果你已经具备所需的本地设备运行时，EAS Simulator 不会取代本地 Xcode 或 Android Studio 工作流。请在需要远程或可共享访问时使用它。
+
+## 使用 EAS 模拟器与编码代理
+
+对于代理式开发，请从官方 EAS 模拟器技能开始。要求您的编码代理使用该技能，而不是单独提供 EAS CLI 和控制器命令。该技能涵盖访问检查、构建准备、远程会话、控制器工作流、证据收集和清理。
+
+<RelatedSkills names={['eas-simulator']} />
+
+然后，代理即可完成运行时循环：
+
+1. 实现或修复代码。
+2. 检查 EAS 模拟器访问权限，并准备兼容的应用构建。
+3. 启动远程设备，并通过 agent-device 或 Argent 驱动应用。
+4. 检查结果，如有需要则进行迭代。
+5. 返回屏幕截图、录制内容、日志或其他证据，并停止会话。
+
+### 典型设置：Cursor 云代理
+
+一种常见设置是使用 [Cursor 云代理](https://cursor.com/cloud) 或其他在云项目检出目录中运行的后台编码代理。该环境可以编辑和构建项目，但无法启动本地 iOS 模拟器。借助 EAS 模拟器技能，代理可以在 EAS 上启动远程设备，并通过 agent-device 或 Argent 对其进行控制。随后，它会将结果返回到任务或拉取请求中，而您的计算机无需承载模拟器。
+
+## 工作原理
+
+EAS 模拟器工作流分为四个阶段：
+
+1. **使用 EAS CLI 启动会话**。EAS 会启动远程设备和选定的控制器。
+2. **安装应用**。远程设备启动时为空白状态，因此请安装本地构建版本或 EAS Build 构建产物。
+3. **操作设备**。使用 [agent-device](/agents/agent-device/)、[Argent](/agents/argent/) 或 iOS 浏览器预览。
+4. **停止会话**。无人值守的非交互式会话会持续消耗用量，直到停止。
+
+EAS CLI 管理会话生命周期和连接配置。控制器提供设备操作，例如打开应用、按下按钮、输入文本、检查无障碍树以及截取屏幕截图。
+
+## 可用平台
+
+| 功能                                           | 可用性       |
+| ---------------------------------------------- | ------------ |
+| 远程 iOS 模拟器                                | <YesIcon />  |
+| 远程 Android 模拟器                            | <YesIcon />  |
+| 使用 agent-device 进行程序化控制               | <YesIcon />  |
+| 使用 Argent 进行程序化控制                     | <YesIcon />  |
+| iOS 浏览器实时预览                             | <YesIcon />  |
+| Android 浏览器实时预览                         | <NoIcon />   |
+| 物理设备访问                                   | <NoIcon />   |
+| 使用开发构建和 Metro 进行快速刷新              | <YesIcon />  |
+
+使用 [EAS Build](/build/introduction/) 创建可安装的构建，并使用本地设备工具处理物理设备。
+
+## 后续步骤
+
+<BoxLink
+  title="开始使用"
+  description="检查访问权限，开始您的首次会话，并打开控制面板和浏览器预览。"
+  href="/preview/eas-simulator/get-started/"
+  Icon={Cloud01Icon}
+/>
+
+<BoxLink
+  title="运行和控制您的应用"
+  description="安装本地构建或 EAS 构建，与应用交互并收集证据。"
+  href="/preview/eas-simulator/run-and-control/"
+  Icon={Cloud01Icon}
+/>
+
+<BoxLink
+  title="CLI 参考"
+  description="查看实验性模拟器命令、标志、输出和托管环境文件。"
+  href="/preview/eas-simulator/cli-reference/"
+  Icon={Cloud01Icon}
+/>
+
+<BoxLink
+  title="故障排除"
+  description="解决帐户不可用、会话过期、隧道断开和构建不正确等问题。"
+  href="/preview/eas-simulator/troubleshooting/"
+  Icon={Cloud01Icon}
+/>

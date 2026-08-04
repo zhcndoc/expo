@@ -12,52 +12,52 @@ import { ConfigPluginHierarchy } from '~/ui/components/ConfigPluginHierarchy';
 
 在项目中使用 [Continuous Native Generation (CNG)](/workflow/continuous-native-generation/) 时，本机项目（**android** 和 **ios** 目录）的更改是在不直接与本机项目文件交互的情况下实现的。相反，你可以使用 config plugin，在默认 app config props 所能配置的范围之外，自动配置你的本机项目。
 
-## 什么是 config plugin
+## 什么是配置插件
 
-config plugin 是一个顶层的自定义配置入口点，它并不是内置在 [app config](/workflow/configuration) 中的。使用 config plugin，你可以在 CNG 项目的 [prebuild](/workflow/continuous-native-generation/#usage) 过程中修改生成的本机项目。
+配置插件是一个顶层的自定义配置入口点，它并不是内置在 [应用配置](/workflow/configuration) 中的。使用配置插件，你可以在 CNG 项目的 [预构建](/workflow/continuous-native-generation/#usage) 过程中修改生成的原生项目。
 
-config plugin 会在 [app config](/workflow/configuration) 文件的 `plugins` 属性中引用，它由一个或多个插件函数组成。这些插件函数使用 JavaScript 编写，并在 prebuild 过程中执行。
+配置插件会在 [应用配置](/workflow/configuration) 文件的 `plugins` 属性中引用，它由一个或多个插件函数组成。这些插件函数使用 JavaScript 编写，并在预构建过程中执行。
 
 ## 术语表
 
-一个典型的 config plugin 由一个或多个协同工作的插件函数组成。下图展示了 config plugin 的不同部分如何相互作用：
+一个典型的配置插件由一个或多个协同工作的插件函数组成。下图展示了配置插件的不同部分如何相互作用：
 
 <ConfigPluginHierarchy highlightedNodeId="1" />
 
 在下面的指南中，我们将使用上图来突出显示下面解释的特定术语：
 
-### Plugin
+### 插件
 
-在你的 app config 的 `plugins` 数组中引用的顶层 config plugin。这是你的插件的入口点。按照惯例，它被命名为 `with<Plugin Name>`。例如，`withMyPlugin`。它由一个或多个 [plugin function](#plugin-function) 组成。
+在你的应用配置的 `plugins` 数组中引用的顶层配置插件。这是你的插件的入口点。按照惯例，它被命名为 `with<Plugin Name>`。例如，`withMyPlugin`。它由一个或多个 [插件函数](#plugin-function) 组成。
 
-### Plugin function
+### 插件函数
 
-config plugin 内部的一个或多个函数，称为 _plugin functions_。它们封装了执行平台特定修改的底层逻辑。从技术上讲，plugin function 看起来与顶层 plugin 本身的函数完全一样，并且可以独立作为插件使用。将插件拆分为更小的函数通常有助于测试和调试。
+配置插件内部的一个或多个函数，称为 _插件函数_。它们封装了执行平台特定修改的底层逻辑。从技术上讲，插件函数看起来与顶层插件本身的函数完全一样，并且可以独立作为插件使用。将插件拆分为更小的函数通常有助于测试和调试。
 
-### Mod plugin function
+### Mod 插件函数
 
-来自 `expo/config-plugins` 库的包装函数，它们提供了一种安全的方式，使用 `mods` 来修改本机文件。作为开发者，你会在 config plugin 中使用这些函数，而不是直接使用底层的 `mods`。
+来自 `expo/config-plugins` 库的包装函数，它们提供了一种安全的方式，使用 `mods` 来修改本机文件。作为开发者，你会在配置插件中使用这些函数，而不是直接使用底层的 `mods`。
 
 ### Mod
 
-底层的平台特定修改器（例如 `mods.android.manifest` 和 `mods.ios.infoplist`），它们会在 prebuild 期间直接修改本机项目文件。
+底层的平台特定修改器（例如 `mods.android.manifest` 和 `mods.ios.infoplist`），它们会在预构建期间直接修改本机项目文件。
 
-## 为什么使用 config plugin
+## 为什么使用配置插件
 
-config plugin 可以为你的项目添加默认情况下不包含的本机配置。它们可用于生成应用图标、设置应用名称、配置 **AndroidManifest.xml** 和 **Info.plist** 等。
+配置插件可以为你的项目添加默认情况下不包含的本机配置。它们可用于生成应用图标、设置应用名称、配置 **AndroidManifest.xml** 和 **Info.plist** 等。
 
-在 CNG 项目中，最好避免手动修改这些本机项目，因为你无法在不可能覆盖手动修改的情况下安全地重新生成它们。config plugin 允许你以 _可预测的方式_ 修改这些本机项目：将你的本机项目更改整合到一个配置文件中，并在你运行 `npx expo prebuild` 时应用它们（无论是手动运行还是在 CI/CD 流程中自动运行）。例如，当你在 app config 中更改应用名称并运行 `npx expo prebuild` 时，名称会自动更新到你的本机项目中，而无需手动更新 **AndroidManifest.xml** 和 **Info.plist** 文件。
+在 CNG 项目中，最好避免手动修改这些本机项目，因为你无法在不覆盖手动修改的情况下安全地重新生成它们。配置插件允许你以 _可预测的方式_ 修改这些本机项目：将你的本机项目更改整合到一个配置文件中，并在你运行 `npx expo prebuild` 时应用它们（无论是手动运行还是在 CI/CD 流程中自动运行）。例如，当你在应用配置中更改应用名称并运行 `npx expo prebuild` 时，名称会自动更新到你的本机项目中，而无需手动更新 **AndroidManifest.xml** 和 **Info.plist** 文件。
 
-## config plugin 的特性
+## 配置插件的特性
 
-config plugin 具有以下特性：
+配置插件具有以下特性：
 
-- 插件是接受一个 [ExpoConfig](/workflow/configuration) 并返回修改后的 `ExpoConfig` 的**同步**函数。在极少数情况下，如果用于与本机项目通信的方法是异步的，插件也可以是异步的，但它们不会具有良好的性能。
-- 插件应按照以下约定命名：`with<Plugin Functionality>`，例如 `withFacebook`
-- 插件应为同步的，并且其返回值应可序列化，除非要添加任何 [`mods`](#mods)
-- 插件总是在 app config 评估阶段执行。
-- 可选地，可以向插件传递第二个参数来对其进行配置
-- Mods 仅在 `npx expo prebuild` 的 **syncing** 阶段（prebuild 过程）被评估，并在代码生成期间修改本机文件。因此，config plugin 中对 app config 所做的任何修改都应位于 mod 之外，以确保它们会在非 prebuild 配置场景中执行。
+- 插件是**同步**函数，接受一个 [ExpoConfig](/workflow/configuration) 并返回修改后的 `ExpoConfig`。在极少数情况下，如果与原生项目通信的方法是异步的，插件也可以是异步的，但其性能会较差。
+- 插件应遵循以下命名约定：`with<Plugin Functionality>`，例如 `withFacebook`
+- 插件应当是同步的，并且其返回值应当是可序列化的，但添加任何 [`mods`](#mod) 除外
+- 插件始终在应用配置评估阶段执行。
+- 可以选择向插件传递第二个参数来对其进行配置
+- Mods 仅在 `npx expo prebuild` 的**同步**阶段（预构建过程）执行，并在代码生成期间修改原生文件。因此，对应用配置所做的任何修改都应位于 mod 之外，以确保它们在非预构建配置场景中执行。
 
 ## 开始使用
 

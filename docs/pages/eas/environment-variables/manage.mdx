@@ -18,7 +18,7 @@ import { Terminal } from '~/ui/components/Snippet';
 
 ### 在仪表盘中创建变量
 
-要在 EAS 服务器上创建新的环境变量，你可以在项目仪表盘中导航到 **Project settings** > [**Environment variables**](https://expo.dev/accounts/[account]/projects/[project]/environment-variables)，然后点击 **Add Variables** 按钮。
+要在 EAS 服务器上创建新的环境变量，你可以在项目仪表盘中导航到 **项目设置** > [**环境变量**](https://expo.dev/accounts/[account]/projects/[project]/environment-variables)，然后点击 **添加变量** 按钮。
 
 <ContentSpotlight
   alt="EAS 项目仪表盘中的环境变量表单"
@@ -26,7 +26,7 @@ import { Terminal } from '~/ui/components/Snippet';
   className="max-w-[600px]"
 />
 
-使用 [environment variables creation form](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 页面来设置名称、值、环境、可见性以及可选描述。
+使用[环境变量创建表单](https://expo.dev/accounts/[account]/projects/[project]/environment-variables)页面来设置名称、值、环境、可见性以及可选描述。
 
 <ContentSpotlight
   alt="创建环境变量表单"
@@ -44,18 +44,18 @@ import { Terminal } from '~/ui/components/Snippet';
 
 在上面的示例列表中：
 
-- `SENTRY_AUTH_TOKEN` 变量是一个敏感环境变量。它用于在构建和更新后对 Sentry 进行身份验证以上传 source map，并且必须可在 EAS 服务器之外访问。
+- `SENTRY_AUTH_TOKEN` 变量是一个敏感环境变量。它用于在构建和更新后对 Sentry 进行身份验证以上传源映射，并且必须可在 EAS 服务器之外访问。
 - `GOOGLE_SERVICES_JSON` 变量是一个 secret 环境变量，并使用了上传的文件。它用于对 Google 进行身份验证以访问 Google Services JSON 文件，并且必须安全地存储在 EAS 服务器上。这个上传的 JSON 文件通常会添加到项目的 **.gitignore** 中。
 - 其他所有变量，例如 `APP_VARIANT` 和 `EXPO_PUBLIC_API_URL`，都是纯文本环境变量。
 
 ### 使用 EAS CLI 创建变量
 
-使用 `eas env:create` 添加变量，并使用 `eas env:list` 验证已设置的内容。
+使用 `eas env:set` 添加变量，并使用 `eas env:list` 验证已设置的变量。
 
 <Terminal
   cmd={[
-    '# 示例：为 preview 环境创建一个新的纯文本环境变量',
-    '$ eas env:create --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment preview --visibility plaintext',
+    '# 示例：为 preview 环境创建新的纯文本环境变量',
+    '$ eas env:set --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment preview --visibility plaintext',
     '',
     '# 示例：列出 preview 环境的所有环境变量',
     '$ eas env:list --environment preview',
@@ -87,13 +87,13 @@ function Post() {
 
 在上面的示例中，`EXPO_PUBLIC_API_URL` 被用于动态设置 fetch 请求的 API URL。
 
-> **warning** 不要把密钥放进 `EXPO_PUBLIC_` 变量中。客户端包中的所有内容最终都可被终端用户读取。
+> **警告** 不要把密钥放进 `EXPO_PUBLIC_` 变量中。客户端包中的所有内容最终都可被终端用户读取。
 
 ### 构建时和应用配置
 
-其他不带 `EXPO_PUBLIC_` 前缀的变量可以在 [app config](/workflow/configuration) 解析期间使用，以配置应用行为。例如，`APP_VARIANT` 变量用于确定所选 [app variant](/build-reference/variants/) 的应用名称、包名和 bundle 标识符：
+其他不带 `EXPO_PUBLIC_` 前缀的变量可以在 [应用配置](/workflow/configuration) 解析期间使用，以配置应用行为。例如，`APP_VARIANT` 变量用于确定所选 [应用变体](/build-reference/variants/) 的应用名称、包名和 bundle 标识符：
 
-在动态 app config 中使用非前缀变量。如果你需要在本地解析配置，可见性至少保持为 **sensitive**（plain text 和 sensitive 可通过 EAS CLI 读取；secrets 会保留在服务器上）。
+在动态应用配置中使用非前缀变量。如果你需要在本地解析配置，可见性至少保持为 **sensitive**（plain text 和 sensitive 可通过 EAS CLI 读取；secrets 会保留在服务器上）。
 
 ```js app.config.js
 const IS_DEV = process.env.APP_VARIANT === 'development';
@@ -145,7 +145,7 @@ export default {
 
 ### 密钥和文件变量
 
-像 `GOOGLE_SERVICES_JSON` 这样的环境变量是一个 secret 文件变量，无法在 EAS 服务器之外读取，用于向 EAS Build 任务提供被 git 忽略的 **google-services.json** 文件。要在 app config 中使用它，你可以使用 `process.env` 变量，并在变量未设置时提供一个回退值（用于本地开发时，通常它位于项目仓库中）：
+像 `GOOGLE_SERVICES_JSON` 这样的环境变量是一个 secret 文件变量，无法在 EAS 服务器之外读取，用于向 EAS Build 任务提供被 git 忽略的 **google-services.json** 文件。要在应用配置中使用它，你可以使用 `process.env` 变量，并在变量未设置时提供一个回退值（用于本地开发时，通常它位于项目仓库中）：
 
 ```js app.config.js
 export default {
@@ -157,17 +157,14 @@ export default {
 
 ## 管理环境变量
 
-你可以使用项目或账户中的 [EAS dashboard](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 来创建、更新和删除环境变量。
+你可以使用项目或账户中的 [EAS 仪表盘](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 来创建、更新和删除环境变量。
 
 你也可以使用 EAS CLI 来管理它们。以下命令以 `production` 环境为例。使用这些命令时，请将 `production` 替换为你要管理的环境。
 
 <Terminal
   cmd={[
-    '# 创建一个新的环境变量',
-    '$ eas env:create --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment production --visibility plaintext',
-    '',
-    '# 更新一个已有的环境变量',
-    '$ eas env:update --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment production --visibility plaintext',
+    '# 创建或更新环境变量',
+    '$ eas env:set --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment production --visibility plaintext',
     '',
     '# 删除一个已有的环境变量',
     '$ eas env:delete',
@@ -197,13 +194,13 @@ export default {
 
 APP_VARIANT=development
 EXPO_PUBLIC_API_URL=https://staging.my-api-url.mycompany.com
-# GOOGLE_SERVICES_JSON=*****（secret 变量不可读取）
+# GOOGLE_SERVICES_JSON=*****（机密变量不可读取）
 SENTRY_AUTH_TOKEN=token
 ```
 
 > **info** **提示：** 请将生成的 **.env** 文件保留在 **.gitignore** 中，以避免泄漏以及本地与云端任务之间的优先级冲突。
 
-你也可以在 EAS 仪表盘中使用 **Export** 选项下载文件，并将其存储到你的项目中。
+你也可以在 EAS 仪表盘中使用 **导出** 选项下载文件，并将其存储到你的项目中。
 
 <ContentSpotlight
   alt="从 EAS 仪表盘导出环境变量到 .env 文件"
@@ -213,7 +210,7 @@ SENTRY_AUTH_TOKEN=token
 
 ## 自定义环境
 
-> **important** 创建自定义环境适用于 [Enterprise 和 production](/billing/plans/#plans) 套餐。
+> **重要** 创建自定义环境适用于 [Enterprise 和 production](/billing/plans/#plans) 套餐。
 
 这三个默认环境对于大多数用例已经足够，但如果你的项目依赖复杂工作流，并且需要创建更多环境的灵活性，那么使用自定义环境可能会很有用。
 
@@ -221,8 +218,8 @@ SENTRY_AUTH_TOKEN=token
 
 要在 EAS 仪表盘中创建自定义环境：
 
-- 在你的项目中，导航到 **Project settings** > [**Environment variables**](https://expo.dev/accounts/[account]/projects/[project]/environment-variables)，然后点击 **Add Variables** 按钮。
-- 在 **Environments** 下，点击 **plus (+) icon** 以输入自定义环境的名称。
+- 在你的项目中，导航到 **项目设置** > [**环境变量**](https://expo.dev/accounts/[account]/projects/[project]/environment-variables)，然后点击 **添加变量** 按钮。
+- 在 **环境** 下，点击 **加号 (+) 图标** 以输入自定义环境的名称。
 
 <ContentSpotlight
   alt="在 EAS 项目仪表盘中创建自定义环境"
@@ -230,7 +227,7 @@ SENTRY_AUTH_TOKEN=token
   className="max-w-[600px]"
 />
 
-- 创建环境后，它会在 **Custom environments** 部分下预先选中。
+- 创建环境后，它会在 **自定义环境** 部分下预先选中。
 - 只要至少有一个环境变量关联到这个环境，它就会作为该账户或项目下所有环境变量的可选项显示出来。
 
 ### 使用 EAS CLI 创建自定义环境
@@ -239,6 +236,6 @@ SENTRY_AUTH_TOKEN=token
 
 <Terminal
   cmd={[
-    '$ eas env:create --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment staging --visibility plaintext',
+    '$ eas env:set --name EXPO_PUBLIC_API_URL --value https://example.app/staging --environment staging --visibility plaintext',
   ]}
 />

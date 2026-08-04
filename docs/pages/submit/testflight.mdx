@@ -1,0 +1,334 @@
+---
+title: 使用 TestFlight 分发 iOS 应用
+sidebar_title: TestFlight
+description: 了解如何通过 TestFlight 将 iOS 构建版本安装到测试人员的设备上，以及何时使用内部 TestFlight 测试或外部 TestFlight 测试。
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { NoIcon } from '~/ui/components/DocIcons';
+import { FAQ } from '~/ui/components/FAQ';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { Tabs, Tab } from '~/ui/components/Tabs';
+
+**TestFlight** 是 Apple 的内部和 Beta 应用分发服务。创建 iOS 生产版本后，您的应用可以在 App Store 上公开发布之前，通过 TestFlight 到达测试人员的设备。
+
+测试分为两种，区别在于您的构建版本到达应用用户的速度。**内部测试**面向您自己的 App Store Connect 团队，构建版本处理完成后即可使用。**外部测试**面向其他任何人。不过，您必须将构建版本添加到 App Store Connect 中的一个群组，而该群组的第一个构建版本必须通过 Apple 的 Beta 应用审核流程。
+
+<Prerequisites>
+  <Requirement title="付费 Apple Developer 账户">
+    提交应用到 Apple App Store 需要付费的 Apple Developer 账户。请在
+    [Apple Developer Portal](https://developer.apple.com/account/) 上注册。
+  </Requirement>
+  <Requirement title="App Store Connect 中的应用记录">
+    提交第一个构建版本时，`eas submit` 会自动在 App Store Connect 中创建应用记录。请在
+    [App Store
+    Connect](https://appstoreconnect.apple.com/) 中点击 **Create app** 创建应用。或者，使用 [App Store Connect
+    API](https://developer.apple.com/documentation/appstoreconnectapi) 以编程方式创建应用记录，或在 **eas.json** 的
+    `submit` 配置文件中设置 `ascAppId`，以跳过创建应用记录。
+  </Requirement>
+  <Requirement title="生产版本">
+    TestFlight 只接受在 **eas.json** 中设置了 `"distribution": "store"` 的构建版本，该设置是 [EAS Build](/build/introduction/) `production` 配置文件的默认值。有关操作说明，请参阅[构建生产应用](/submit/ios/#build-a-production-app)。
+  </Requirement>
+  <Requirement title="TestFlight 应用">
+    测试人员需要在其 iOS 设备上安装 [TestFlight 应用](https://apps.apple.com/us/app/testflight/id899247664)，才能安装和测试您的应用。
+  </Requirement>
+</Prerequisites>
+
+## 快速开始
+
+如果你拥有 Apple Developer 账户，且尚未完成其他设置，只需一条命令，即可在 App Store Connect 上创建应用记录、构建生产版本 **.ipa**，并将其提交到 TestFlight：
+
+<Tabs>
+
+<Tab label="npx testflight">
+
+<Terminal
+  cmd={{
+    npm: ['$ npx testflight'],
+    yarn: ['$ yarn dlx testflight'],
+    pnpm: ['$ pnpm dlx testflight'],
+    bun: ['$ bunx testflight'],
+  }}
+/>
+
+上述命令会创建凭据，在 EAS Build 上运行生产版本构建，并通过 TestFlight 提交以供内部测试。这是使用 EAS CLI 一步完成构建和提交的简写方式。
+
+</Tab>
+
+<Tab label="EAS CLI">
+
+<Terminal cmd={['$ eas build --platform ios --auto-submit']} />
+
+[`--auto-submit`](/build/automate-submissions/) 标志会自动将完成的构建交给 EAS Submit。你也可以将构建和提交分为两个步骤。如果你已经有生产版本构建，则无需重新构建。直接提交现有构建即可：
+
+<Terminal cmd={['$ eas submit --platform ios']} />
+
+</Tab>
+
+</Tabs>
+
+本指南的其余部分将更详细地介绍内部测试和外部测试。
+
+## 内部测试与外部测试
+
+在你通过 Apple App Store 公开发布应用之前，可以通过 TestFlight 以两种方式将应用分发给测试人员：**内部测试**和**外部测试**。两者的区别在于构建版本到达测试人员手中的速度：
+
+| 用途                     | 内部测试                           | 外部测试                                                                                 |
+| ------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------------- |
+| 谁可以测试你的应用       | App Store Connect 团队中的用户     | 任何人。测试人员不需要 App Store Connect 账户。                                         |
+| 允许的最大测试人员数量   | 100                                | 每个应用 10,000 人                                                                       |
+| Beta 应用审核            | <NoIcon />                         | 每个应用版本的第一个构建版本都**必须审核**                                               |
+| 如何邀请测试人员         | 仅限电子邮件                       | 电子邮件、导入 CSV 或可共享的公开链接                                                    |
+| Beta 应用描述            | <NoIcon />                         | 外部测试**必需**。这是显示在 TestFlight 中的描述。                                       |
+| 反馈电子邮件             | <NoIcon />                         | 外部测试**必需**。这是显示在 TestFlight 中的电子邮件地址。                               |
+| 测试人员收到构建版本的时间 | 处理完成后立即                     | Beta 应用审核批准构建版本后                                                              |
+| 构建版本有效期            | 从上传之日起 90 天                 | 从上传之日起 90 天                                                                       |
+| 每位测试人员的设备数量   | 30                                 | 30                                                                                       |
+
+> **警告** **内部分发并不等同于内部测试**。这两个术语听起来非常相似。**EAS** [内部分发](/build/internal-distribution/)会生成一个[通过 ad hoc 或企业证书签名的构建版本](/build/internal-distribution/#overview-of-distribution-mechanisms)，该构建版本通过 URL 安装，并且仅限于已注册的唯一设备标识符（UDID）。TestFlight 内部测试需要使用 `"distribution": "store"`，并且会经过 Apple。
+
+## 设置内部测试
+
+内部测试面向您自己的 App Store Connect 团队，并且构建完成处理后即可使用。
+
+<Step label="1">
+
+### 构建并提交
+
+要将构建上传到 App Store Connect 进行内部测试，请确保您已创建生产构建。完成后，运行以下命令将其提交到 TestFlight：
+
+<Terminal cmd={['$ eas submit --platform ios']} />
+
+</Step>
+
+<Step label="2">
+
+### 等待处理
+
+Apple 会先处理构建，然后才能分发。通常需要 5 到 10 分钟，但没有保证的处理时间。处理完成后，Apple 会通过电子邮件通知您。
+
+应用处理完成后，登录 [App Store Connect](https://appstoreconnect.apple.com/)，选择您的应用，然后前往 **TestFlight**。您应该会在 **iOS Builds** 下看到列出的构建。
+
+<ContentSpotlight
+  alt="App Store Connect 中的 iOS Builds 列表，显示已处理且可以提交的构建"
+  src="/static/images/submit/testflight/01-ios-builds.webp"
+/>
+
+</Step>
+
+<Step label="3">
+
+### 创建内部测试群组
+
+> **info** 如果您已经有内部测试群组，请跳过此步骤。您也可以将测试人员添加到现有群组中。
+
+在 App Store Connect 中，前往 **TestFlight** > 点击 **Internal Testing** 旁边的加号 (`+`) 图标 > 输入 **Internal Group** 的名称 > 点击 **Create**。
+
+<ContentSpotlight
+  alt="App Store Connect 中的“Create New Internal Group”对话框，其中已输入群组名称"
+  src="/static/images/submit/testflight/02-create-internal-group.webp"
+/>
+
+然后，点击 **Testers** 旁边的加号 (`+`) 图标，将测试人员添加到群组中。您可以选择 App Store Connect 团队成员的电子邮件地址，然后点击 **Add**，将他们添加为测试人员。测试人员会收到测试您应用的电子邮件邀请。
+
+<ContentSpotlight
+  alt="新的内部测试群组，其中显示用于添加测试人员的加号图标，当前尚未添加测试人员"
+  src="/static/images/submit/testflight/03-internal-group-testers.webp"
+  className="max-w-[480px]"
+/>
+
+<ContentSpotlight
+  alt="“Add Testers”对话框，列出可添加到群组的 App Store Connect 团队成员"
+  src="/static/images/submit/testflight/04-add-testers.webp"
+  className="max-w-[480px]"
+/>
+
+</Step>
+
+<Step label="4">
+
+### 邀请测试人员
+
+在测试人员的设备上，点击邀请电子邮件中的链接。应用会显示在 TestFlight 中，测试人员可以从那里安装应用。
+
+</Step>
+
+> **info** **提示**：如果您已有内部测试群组，也可以直接从 EAS CLI 指定这些群组。例如，命令 `eas submit --platform ios --groups "QA Team" --what-to-test "New onboarding flow"` 会指定名为“QA Team”的内部测试群组，并为构建设置“测试内容”描述。
+
+## 设置外部测试
+
+外部测试面向 App Store Connect 团队之外的人员。
+
+> **warning** 在 App Store Connect 允许你创建**外部**群组之前，你必须先创建一个**内部**群组。
+
+<Step label="1">
+
+### 创建外部群组
+
+在 **App Store Connect** > **TestFlight** 中，点击 **External Testing** 旁边的加号 (`+`) 图标 > 输入**外部群组**的名称 > 点击 **Create**。
+
+<ContentSpotlight
+  alt="用于在 App Store Connect 中创建外部测试群组的“创建新群组”对话框"
+  src="/static/images/submit/testflight/05-create-external-group.webp"
+/>
+
+</Step>
+
+<Step label="2">
+
+### 使用现有的内部构建版本
+
+你可以使用现有的内部构建版本进行外部测试。点击 **Add Builds** > 在 **Select a Build to Test** 下，选择你想使用的构建版本 > 点击 **Next**。
+
+<ContentSpotlight
+  alt="新的外部测试群组，显示“添加构建版本”和“邀请测试人员”步骤"
+  src="/static/images/submit/testflight/06-external-group-setup.webp"
+/>
+
+<ContentSpotlight
+  alt="“选择要测试的构建版本”对话框，其中列出了一个已上传且可提交的构建版本"
+  src="/static/images/submit/testflight/07-select-build.webp"
+  className="max-w-[480px]"
+/>
+
+</Step>
+
+<Step label="3">
+
+### 填写测试信息
+
+在 Apple 接受构建版本进行审核之前，外部测试需要提供测试版 App 描述和反馈电子邮件地址。如果你的 App 需要登录，请启用 **Sign-in Information**，并提供供 Apple 使用的测试帐户。点击 **Next**。
+
+<ContentSpotlight
+  alt="“测试信息”表单，其中已填写测试版 App 描述、反馈电子邮件地址和联系信息"
+  src="/static/images/submit/testflight/08-test-information.webp"
+  className="max-w-[480px]"
+/>
+
+</Step>
+
+<Step label="4">
+
+### 提交 Beta App 审核
+
+在 **What to Test** 下提供所需信息，然后点击 **Submit for Review**。Apple 会审核构建版本，并在批准后通过电子邮件通知你。
+
+<ContentSpotlight
+  alt="“测试内容”步骤，其中提供了在提交审核前自动通知测试人员的选项"
+  src="/static/images/submit/testflight/09-what-to-test.webp"
+  className="max-w-[480px]"
+/>
+
+</Step>
+
+<Step label="5">
+
+### 邀请测试人员
+
+审核通过后，你可以通过电子邮件邀请测试人员、导入 CSV，或启用公开链接。公开链接可以对所有人开放，也可以按设备和操作系统版本进行筛选。
+
+<ContentSpotlight
+  alt="外部测试群组，其中提供了创建公开链接和添加测试人员的选项"
+  src="/static/images/submit/testflight/10-public-link.webp"
+  className="max-w-[480px]"
+/>
+
+</Step>
+
+## 常见问题
+
+<FAQ>
+
+<Collapsible summary="我需要 Mac 才能使用 TestFlight 分发应用吗？">
+
+不需要。`eas build` 和 `eas submit` 都可以在 macOS、Linux 和 Windows 上运行。构建会在 EAS Build 基础设施上运行，EAS Submit 会代表你将 **.ipa** 上传到 App Store Connect。
+
+</Collapsible>
+
+<Collapsible summary="从内部测试转为外部测试时，我需要重新构建吗？">
+
+不需要。将 App Store Connect 中已有的构建添加到外部群组，并提交进行 Beta App Review。只有在应用本身发生变化时，才需要新的构建。
+
+</Collapsible>
+
+<Collapsible summary="为什么团队成员无法将构建添加到外部群组？">
+
+这是因为他们的 App Store Connect 角色不允许执行此操作。**Developer** 或 **Marketing** 角色可以管理内部测试，但无法管理外部测试；外部测试需要 **Account Holder**、**Admin** 或 **App Manager** 角色。
+
+凭证也有相同的限制。只有 **Account Holder** 或 **Admin** 才能创建 EAS Submit 使用的 App Store Connect API 密钥。完整的权限矩阵请参阅 [Apple Developer Program 角色和权限](/app-signing/apple-developer-program-roles-and-permissions/)。
+
+</Collapsible>
+
+<Collapsible summary="TestFlight 中的构建会在 App Store 上发布吗？">
+
+不会。发布到 App Store 是一个单独的提交操作，需要你在 App Store Connect 中手动开始。TestFlight 中的构建会一直保留在 TestFlight 中。
+
+发布后测试也不会停止。如果你没有在构建版本于 App Store 上线前将其过期，已经收到邀请的测试人员仍可继续测试该版本。若要停止测试，请前往 **TestFlight** > 选择构建 > **Expire Build**。
+
+</Collapsible>
+
+<Collapsible summary="为什么我的构建卡在 Missing Compliance？">
+
+App Store Connect 正在等待你回答出口合规问题，在你回答之前无法将该构建分发给测试人员。你可以在应用配置中回答一次，而不必每次上传时都回答：
+
+```json app.json
+{
+  "ios": {
+    "config": {
+      "usesNonExemptEncryption": false
+    }
+  }
+}
+```
+
+只有当你的应用没有使用超出 Apple 豁免范围的加密技术时，才能将 [`usesNonExemptEncryption`](/versions/latest/config/app/#usesnonexemptencryption) 设置为 `false`，例如通过操作系统使用 HTTPS。此声明也涵盖应用所链接的第三方库，并且适用于 TestFlight 构建，而不仅仅是 App Store 发布版本。
+
+</Collapsible>
+
+<Collapsible summary="我可以从命令行将构建添加到 TestFlight 群组吗？">
+
+可以，但仅限内部群组。使用现有内部群组的名称传入 `--groups`，并使用 `--what-to-test` 设置测试说明：
+
+<Terminal
+  cmd={['$ eas submit --platform ios --groups "QA Team" --what-to-test "New onboarding flow"']}
+/>
+
+`--groups` 仅接受**内部**群组名称。若要将构建添加到外部群组，请使用 EAS Workflows。
+
+</Collapsible>
+
+<Collapsible summary="我可以自动将构建分发到外部群组吗？">
+
+可以，使用 EAS Workflows 中预先打包的 [`testflight` 作业](/eas/workflows/pre-packaged-jobs/#testflight)。它会将构建添加到内部和外部群组，设置“What to Test”说明，并提交 Beta App Review：
+
+```yaml .eas/workflows/testflight.yml
+jobs:
+  build_ios:
+    name: 构建 iOS
+    type: build
+    params:
+      platform: ios
+      profile: production
+
+  testflight:
+    name: 分发到 TestFlight
+    type: testflight
+    needs: [build_ios]
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      internal_groups: ['QA Team']
+      external_groups: ['Public Beta']
+      changelog: |
+        What's new in this release:
+        - New features
+        - Bug fixes
+```
+
+提供 `external_groups` 时，`submit_beta_review` 默认为 `true`。在使用外部群组运行作业前，请在 App Store Connect 中完成 TestFlight 测试信息。
+
+</Collapsible>
+
+</FAQ>

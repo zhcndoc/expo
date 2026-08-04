@@ -1,7 +1,7 @@
 ---
-title: 在 Expo Router 应用中使用 React Server Components
-sidebar_title: React Server Components
-description: 了解在 Expo 中于服务器端渲染 React 组件。
+title: 在 Expo Router 应用中使用 React 服务端组件
+sidebar_title: React 服务端组件
+description: 了解如何在 Expo 中于服务器端渲染 React 组件。
 ---
 
 import { Cloud01Icon } from '@expo/styleguide-icons/outline/Cloud01Icon';
@@ -91,9 +91,9 @@ Server Function 的视图返回值是一个 React Server Component payload，它
 
 > 在开发者预览期间，app 配置中的 `web.output` 必须为 `single`。更多输出模式的支持即将推出。
 
-## Server Components
+## 服务端组件
 
-Server Components 在服务端运行，这意味着它们可以访问服务端 API 和 Node.js 内置模块（在本地运行时）。它们也可以使用异步组件。
+服务端组件在服务端运行，这意味着它们可以访问服务端 API 和 Node.js 内置模块（在本地运行时）。它们也可以使用异步组件。
 
 考虑下面这个会获取数据并渲染它的组件：
 
@@ -118,14 +118,14 @@ export async function Pokemon() {
 }
 ```
 
-要将其作为 server component 渲染，你需要从一个 Server Function 中返回它。
+要将其作为服务端组件渲染，你需要从一个服务端函数中返回它。
 
 ### 重点
 
-- 你不能在 Server Components 中使用 `useState`、`useEffect` 或 `useContext` 之类的 hooks。
-- 你不能在 Server Components 中使用浏览器或原生 API。
-- `"use server"` 并不意味着将文件标记为 server component。它用于标记文件中导出了 React Server Functions。
-- Server components 可以访问所有环境变量，因为它们在客户端之外安全运行。
+- 你不能在服务端组件中使用 `useState`、`useEffect` 或 `useContext` 之类的钩子。
+- 你不能在服务端组件中使用浏览器或原生 API。
+- `"use server"` 并不意味着将文件标记为服务端组件。它用于标记文件中导出了 React 服务端函数。
+- 服务端组件可以访问所有环境变量，因为它们在客户端之外安全运行。
 
 ## 客户端组件
 
@@ -146,9 +146,9 @@ export default function Button({ title }) {
 
 你不能向 Server Components 传递函数作为 props。你只能传递可序列化的数据。
 
-## React Server Functions
+## React 服务器函数
 
-Server Functions 是在服务器上运行，并且可以从 Client Components 中调用的函数。可以把它们看作更易编写的、完全类型化的 API 路由。
+服务器函数是在服务器上运行，并且可以从客户端组件中调用的函数。可以把它们看作更易编写的、完全类型化的 API 路由。
 
 它们必须始终是一个 async 函数，并且在函数顶部用 `"use server"` 标记。
 
@@ -168,7 +168,7 @@ export default function Index() {
 }
 ```
 
-你可以创建一个 Client Component 来调用这个 Server Function：
+你可以创建一个客户端组件来调用这个服务器函数：
 
 ```tsx components/button.tsx
 'use client';
@@ -179,7 +179,7 @@ export default function Button({ title, onPress }) {
 }
 ```
 
-Server Functions 也可以定义在一个独立文件中（在顶部带有 `"use server"`），然后从 Client Components 中导入：
+服务器函数也可以定义在一个独立文件中（在顶部带有 `"use server"`），然后从客户端组件中导入：
 
 ```tsx components/server-actions.tsx
 'use server';
@@ -189,7 +189,7 @@ export async function callAction() {
 }
 ```
 
-它们可以在 Client Component 中这样使用：
+它们可以在客户端组件中这样使用：
 
 ```tsx components/button.tsx
 import { Text } from 'react-native';
@@ -202,16 +202,16 @@ export default function Button({ title }) {
 
 ### 重点
 
-- 作为参数传给 Server Functions 时，你只能传递可序列化的数据。
-- Server Functions 只能返回可序列化的数据。
-- Server Functions 在服务器上运行，是放置那些不应暴露给客户端的逻辑的好地方。
-- Server Functions 目前不能在 DOM 组件内部使用
+- 作为参数传给服务器函数时，你只能传递可序列化的数据。
+- 服务器函数只能返回可序列化的数据。
+- 服务器函数在服务器上运行，是放置那些不应暴露给客户端的逻辑的好地方。
+- 服务器函数目前不能在 DOM 组件内部使用。
 
-### 在 Server Functions 中渲染
+### 在服务器函数中渲染
 
-Expo Router 中的 React Server Functions 可以在服务器上渲染 React 组件，并将一个 **RSC payload**（由 React 团队维护的一种自定义 JSON 风格格式）流式返回，用于在客户端渲染。这类似于 Web 上的服务端渲染（SSR）。
+Expo Router 中的 React 服务器函数可以在服务器上渲染 React 组件，并将一个 **RSC 负载**（由 React 团队维护的一种自定义 JSON 风格格式）流式返回，用于在客户端渲染。这类似于 Web 上的服务端渲染（SSR）。
 
-例如，下面的 Server Function 会渲染一些文本：
+例如，下面的服务器函数会渲染一些文本：
 
 ```tsx components/server-actions.tsx
 'use server';
@@ -250,7 +250,7 @@ export async function renderProfile({
 }
 ```
 
-这个 Server Function 可以从 Client Component 中调用，内容将流式返回到客户端：
+这个服务器函数可以从客户端组件中调用，内容将流式返回到客户端：
 
 ```tsx components/profile.tsx
 'use client';
@@ -263,14 +263,14 @@ import { renderProfile } from '@/components/server-actions';
 
 // 在数据获取期间渲染的加载状态。
 function Fallback() {
-  return <Text>Loading...</Text>;
+  return <Text>加载中...</Text>;
 }
 
 export default function Profile() {
   const { username } = useLocalSearchParams();
   const { accessToken } = useCustomAuthProvider();
 
-  // 使用用户名和访问令牌调用 Server Function。
+  // 使用用户名和访问令牌调用服务器函数。
   const profile = React.useMemo(
     () => renderProfile({ username, accessToken }),
     [username, accessToken]
@@ -303,26 +303,26 @@ export { One, Two, Three } from 'react-native-unoptimized';
 
 你可以使用 React Suspense，在等待数据加载时从服务器流式返回部分 UI。
 
-在下面的示例中，客户端会立即返回 `Loading...` 文本，而当 `<MediumTask>` 在一秒后完成渲染时，它会将文本替换为 `Medium task done!`。`<ExpensiveTask>` 需要三秒才能加载，完成后会将文本替换为 `Expensive task done!`。
+在下面的示例中，客户端会立即返回 `加载中...` 文本，而当 `<MediumTask>` 在一秒后完成渲染时，它会将文本替换为 `中等任务完成！`。`<ExpensiveTask>` 需要三秒才能加载，完成后会将文本替换为 `耗时任务完成！`。
 
-```tsx app/index.tsx (Client Component)
+```tsx app/index.tsx (客户端组件)
 import { Suspense } from 'react';
 import { renderMediumTask, renderExpensiveTask } from '@/actions/tasks';
 
 export default function App() {
-  return <Suspense fallback={<Text>Loading...</Text>}>{renderTasks()}</Suspense>;
+  return <Suspense fallback={<Text>加载中...</Text>}>{renderTasks()}</Suspense>;
 }
 ```
 
-```tsx actions/tasks.tsx (Server Functions)
+```tsx actions/tasks.tsx (服务端函数)
 'use server';
 
 export async function renderTasks() {
   return (
-    <Suspense fallback={<Text>Loading...</Text>}>
+    <Suspense fallback={<Text>加载中...</Text>}>
       <>
         <MediumTask />
-        <Suspense fallback={<Text>Loading...</Text>}>
+        <Suspense fallback={<Text>加载中...</Text>}>
           <ExpensiveTask />
         </Suspense>
       </>
@@ -333,17 +333,17 @@ export async function renderTasks() {
 async function MediumTask() {
   // 等待一秒后再解析。
   await new Promise(resolve => setTimeout(resolve, 1000));
-  return <Text>Medium task done!</Text>;
+  return <Text>中等任务完成！</Text>;
 }
 
 async function ExpensiveTask() {
   // 等待三秒后再解析。
   await new Promise(resolve => setTimeout(resolve, 3000));
-  return <Text>Expensive task done!</Text>;
+  return <Text>耗时任务完成！</Text>;
 }
 ```
 
-如果你移除 `<ExpensiveTask>` 外层的 `Suspense` 包裹，你会发现 `Loading...` 会等待这两个组件都渲染完成后才更新 UI。这使你能够逐步控制加载状态。有时候，一次性等待所有内容加载完成是有意义的（大多数情况下），而在其他时候，只要有内容就尽快流式返回 UI 会更有帮助（比如 ChatGPT 中的文本响应）。
+如果你移除 `<ExpensiveTask>` 外层的 `Suspense` 包裹，你会发现 `加载中...` 会等待这两个组件都渲染完成后才更新 UI。这使你能够逐步控制加载状态。有时候，一次性等待所有内容加载完成是有意义的（大多数情况下），而在其他时候，只要有内容就尽快流式返回 UI 会更有帮助（比如 ChatGPT 中的文本响应）。
 
 ## 密钥
 
@@ -382,9 +382,9 @@ SECRET=123
 
 你可以通过执行 `typeof window === 'undefined'` 检查来判断代码是否在服务器上运行。这在客户端设备上总会返回 `true`，在服务器上返回 `false`。
 
-## Testing with jest
+## 使用 jest 进行测试
 
-Library authors can use `jest-expo` to test whether their modules support Server Components. For more information, please refer to the [Testing React Server Components](/guides/testing-rsc) guide.
+库作者可以使用 `jest-expo` 测试其模块是否支持服务器组件。有关更多信息，请参阅[测试 React 服务器组件](/guides/testing-rsc)指南。
 
 ## 元数据
 
@@ -557,7 +557,7 @@ CSS 会从服务器提升到客户端 bundle 中。
 
 ### Web
 
-首先，构建 web 项目：
+首先，构建 Web 项目：
 
 <Terminal cmd={['$ npx expo export -p web']} />
 
@@ -585,12 +585,12 @@ CSS 会从服务器提升到客户端 bundle 中。
 
 > 这是一个非常早期的技术预览版，我们正在积极开发中。
 
-- Expo Snack 不支持打包 Server Components。
-- EAS Update 目前还不能与 Server Components 一起使用。
-- DOM 组件目前还不能在生产环境中使用 React Server Functions。
-- 生产部署的限制较多，目前还不推荐使用。
-- 将 RSC payload 进行服务端渲染并输出为 HTML 目前还不支持。这意味着静态输出和服务器输出目前都还不能完全正常工作。
-- [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) 在完整 React Server Components 模式下仅获得部分支持。
-- HTML `form` 与 Server Functions 的集成目前不支持（虽然这部分会自动工作，但数据不会被加密）。
-- `StyleSheet.create` 和 `Platform.OS` 在原生平台上不受支持。样式请使用标准对象，平台检测请使用 `process.env.EXPO_OS`。
-- 在 Hermes 运行时存在限制，因此在 Hermes 上不支持调用其他 Server Functions 的 React Server Functions。这个问题可能会通过 Static Hermes 得到解决。
+- Expo Snack 不支持捆绑服务端组件。
+- EAS Update 目前还不支持服务端组件。
+- DOM 组件目前还不能在生产环境中使用 React 服务端函数。
+- 生产部署受到限制，目前不建议使用。
+- 目前不支持将 RSC 负载服务端渲染为 HTML。这意味着静态输出和服务端输出目前还不能完全正常工作。
+- [`generateStaticParams`](/router/web/static-rendering/#generatestaticparams) 在完整的 React 服务端组件模式下仅部分受支持。
+- 目前不支持 HTML `form` 与服务端函数的集成（该功能会自动部分生效，但数据未加密）。
+- `StyleSheet.create` 和 `Platform.OS` 在原生平台上不受支持。请对样式使用标准对象，并使用 `process.env.EXPO_OS` 进行平台检测。
+- 由于 Hermes 运行时的限制，调用其他服务端函数的 React 服务端函数在 Hermes 上不受支持。使用 Static Hermes 后可能会解决此问题。

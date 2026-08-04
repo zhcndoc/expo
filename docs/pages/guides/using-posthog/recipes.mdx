@@ -1,0 +1,558 @@
+---
+title: PostHog 的 EAS Workflows 配方
+sidebar_title: EAS Workflows 配方
+description: 从在 PostHog 中标记首次部署，到使用 EAS Workflows 实现分阶段发布、自动熔断开关和需审批的发布流程。
+---
+
+import { Terminal } from '~/ui/components/Snippet';
+
+[EAS Workflows](/eas/workflows/get-started/) 可以将 PostHog 操作作为 CI 流水线中的步骤运行。下面的每个配方都是一个可以直接复制使用的完整工作流，它们共同构建出一条完整的渐进式交付流水线：
+
+- **产品分析**：[标记部署](#mark-a-deploy-on-your-posthog-timeline)、[注释发布](#annotate-a-release)，以及[在用户采用后宣布发布](#announce-a-release-once-users-adopt-it)
+- **功能标志**：[在标志后发布功能](#release-a-feature-behind-a-flag)、[根据错误率逐步发布或回滚](#roll-out-or-roll-back-on-your-error-rate)、[通过人工审批将标志完全发布](#take-a-flag-to-full-rollout-with-human-approval)，以及[手动关闭功能](#turn-a-feature-off-with-a-kill-switch)或[在错误激增时自动关闭功能](#turn-a-feature-off-automatically-on-an-error-spike)
+- **错误跟踪**：[上传源映射](#upload-source-maps-for-error-tracking)以获取可读的堆栈跟踪信息，以及[发布 EAS Update 渠道或在失败时恢复](#roll-out-an-eas-update-channel-or-revert-on-failure)
+
+简洁的[更多配方列表](#more-recipes)涵盖了更具体的需求。有关每个函数所接受的所有输入，请参阅 [EAS Workflows 语法参考](/eas/workflows/syntax/#easposthog_capture_event)。
+
+## 开始使用
+
+一条命令即可设置这些配方所需的一切。请从项目目录运行：
+
+<Terminal cmd={['$ eas integrations:posthog:connect']} />
+
+它会将一个 PostHog 项目关联到你的 Expo 项目，并将这些函数读取的凭据保存为 EAS 环境变量。[使用 PostHog](/guides/using-posthog/) 指南会完整介绍设置过程。
+
+当命令要求输入个人 API 密钥时，请使用“Source map upload”预设以及 `feature_flag:read`、`feature_flag:write`、`query:read` 和 `annotation:write` 作用域创建密钥。一个密钥即可覆盖本页中的所有配方。如果你之前使用权限范围更窄的密钥完成了连接，请创建一个新密钥，并将其设置为具有 **Sensitive** 可见性的 `POSTHOG_CLI_API_KEY` [环境变量](/eas/environment-variables/manage/)。
+
+> **信息** 在 GitHub 事件（例如推送到 `main`）上运行的工作流，需要将你的 EAS 项目关联到 GitHub 仓库。请参阅[开始使用 EAS 工作流](/eas/workflows/get-started/#automate-workflows-with-github-events)。
+
+## 在 PostHog 时间线中标记部署
+
+每次发布更新时发送一个 PostHog 事件。这样，每次部署都会显示在 PostHog 数据中，你可以检查指标变化是否与某个版本发布相对应。
+
+```yaml .eas/workflows/mark-deploy.yml
+name: Publish update and mark it in PostHog
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    type: update
+    params:
+      branch: main
+
+  mark_deploy:
+    needs: [publish]
+    steps:
+      - uses: eas/posthog_capture_event
+        with:
+          event: ota_update_published
+          properties:
+            branch: main
+            runtime_version: ${{ fromJSON(needs.publish.outputs.updates_json || '[]')[0].runtimeVersion }}
+            update_group_id: ${{ needs.publish.outputs.first_update_group_id }}
+```
+
+### 工作原理
+
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 任务会将 EAS Update 发布到 `main` 分支。
+2. [`eas/posthog_capture_event`](/eas/workflows/syntax/#easposthog_capture_event) 随后运行并记录此次部署。这两个属性都来自更新任务的[输出](/eas/workflows/pre-packaged-jobs#update)：运行时版本表示哪些构建可以运行该更新，而更新组 ID 则指向确切的更新。使用 [`fingerprint` 运行时版本策略](/eas-update/runtime-versions/)时，每当原生运行时发生变化，运行时版本也会随之变化，其依据是项目的 [fingerprint](/versions/latest/sdk/fingerprint/)。
+3. 由于未设置 `distinct_id`，该事件是匿名的，不会创建人员档案。
+
+## 标注发布版本
+
+发布更新时在 PostHog 中创建注释。注释会作为标记显示在项目中的每个图表上，因此你可以直接在受影响的图表上查看每次发布。
+
+```yaml .eas/workflows/annotate-release.yml
+name: Annotate release in PostHog
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    type: update
+    params:
+      branch: main
+
+  annotate:
+    needs: [publish]
+    steps:
+      - uses: eas/posthog_annotation
+        with:
+          content: Published update for runtime ${{ fromJSON(needs.publish.outputs.updates_json || '[]')[0].runtimeVersion }} to main
+```
+
+### 工作原理
+
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业发布更新。
+2. [`eas/posthog_annotation`](/eas/workflows/syntax/#easposthog_annotation) 将注释固定到当前时间，内容中的运行时版本用于标识此次发布。
+
+## 上传用于错误追踪的源代码映射
+
+上传源代码映射，以便错误追踪能够将崩溃符号化回原始代码。源代码映射的上传方式取决于生成 bundle 的预打包任务。两种方式都需要按照[使用 PostHog](/guides/using-posthog/#error-tracking)指南完成 PostHog 设置。
+
+[`build`](/eas/workflows/pre-packaged-jobs#build) 会自行上传源代码映射。`posthog-react-native/expo` 配置插件会在原生构建期间上传源代码映射，因此该任务无需额外配置：
+
+```yaml .eas/workflows/build-production.yml
+name: Build for production
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  build:
+    type: build
+    params:
+      platform: ios
+      profile: production
+```
+
+更新只会发布 JavaScript，因此需要在发布后上传其源代码映射。 [`update`](/eas/workflows/pre-packaged-jobs#update) 任务无法运行额外步骤，并且源代码映射必须存在于执行上传操作的任务磁盘上。因此，请在自定义任务中使用 `eas update` 发布一个平台的更新，并在那里添加上传步骤：
+
+```yaml .eas/workflows/update-with-sourcemaps.yml
+name: Publish update with source maps
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish_update:
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - run: npx eas-cli@latest update --branch main --platform ios --auto --non-interactive
+      - uses: eas/posthog_upload_sourcemaps
+        with:
+          directory: dist
+```
+
+### 工作原理
+
+1. `eas update --platform ios` 会发布更新，并将导出结果（包括源代码映射）保留在 **dist** 目录中。每个任务只导出一个原生平台：完整导出还会包含 Web bundle，而 PostHog 的 Hermes 上传会拒绝该 bundle。
+2. [`eas/posthog_upload_sourcemaps`](/eas/workflows/syntax/#easposthog_upload_sourcemaps) 会将这些映射上传到 PostHog 错误追踪，因此来自该更新的堆栈跟踪可以符号化回原始代码。它使用[PostHog Metro 配置](/guides/using-posthog/#source-maps)，为每个 bundle 提供可将其与源代码映射匹配的区块 ID。有关符号化的工作原理，请参阅[错误追踪](/guides/using-posthog/#error-tracking)。
+
+## 在标志后发布功能
+
+将功能的发布状态保存在仓库中的文件里，并让工作流将其应用到 PostHog。发布功能或扩大其发布范围都会变成一个只修改一个文件的拉取请求。
+
+```json .eas/feature-rollout.json
+{
+  "flag": "new-checkout",
+  "rollout_percentage": 10
+}
+```
+
+```yaml .eas/workflows/feature-release.yml
+name: Apply the feature rollout from the repo
+
+on:
+  push:
+    branches: ['main']
+    paths: ['.eas/feature-rollout.json']
+
+jobs:
+  publish:
+    type: update
+    params:
+      branch: main
+
+  read_rollout:
+    outputs:
+      flag: ${{ steps.rollout.outputs.flag }}
+      percent: ${{ steps.rollout.outputs.percent }}
+    steps:
+      - uses: eas/checkout
+      - id: rollout
+        run: |
+          set-output flag "$(node -p "require('./.eas/feature-rollout.json').flag")"
+          set-output percent "$(node -p "require('./.eas/feature-rollout.json').rollout_percentage")"
+
+  apply_rollout:
+    needs: [publish, read_rollout]
+    steps:
+      - uses: eas/posthog_flag_rollout
+        with:
+          flag: ${{ needs.read_rollout.outputs.flag }}
+          active: true
+          rollout_percentage: ${{ needs.read_rollout.outputs.percent }}
+```
+
+### 工作原理
+
+1. [`paths`](/eas/workflows/syntax/#onpush) 筛选器仅在 **.eas/feature-rollout.json** 发生更改时运行此工作流，因此该文件就是定义发布状态的位置。
+2. `read_rollout` 使用 [`set-output`](/eas/workflows/syntax/#jobsjob_idoutputs) 读取文件，并通过该作业的 `outputs` 暴露这些值。
+3. [`eas/posthog_flag_rollout`](/eas/workflows/syntax/#easposthog_flag_rollout) 会在两个依赖项都完成后应用标志状态，因此只有在读取该标志的代码上线后，标志才会切换。
+
+## 根据错误率逐步发布或回滚
+
+向一小部分用户发布，观察错误率，然后让工作流做出决定。当错误率保持较低时，它会将功能标记扩大到所有用户。当错误率不理想时，它会关闭功能标记。无论哪种情况，中间都不需要有人盯着仪表板。
+
+```yaml .eas/workflows/canary-rollout.yml
+name: Canary rollout that rolls forward or back
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    type: update
+    params:
+      branch: main
+
+  canary:
+    needs: [publish]
+    steps:
+      - uses: eas/posthog_flag_rollout
+        with:
+          flag: new-checkout
+          active: true
+          rollout_percentage: 25
+
+  error_gate:
+    needs: [canary]
+    steps:
+      - uses: eas/posthog_wait_for_metric
+        with:
+          query: SELECT count() FROM events WHERE event = '$exception' AND timestamp > now() - INTERVAL 30 MINUTE
+          operator: lte
+          threshold: 5
+          interval_seconds: 60
+          timeout_seconds: 1800
+
+  full_rollout:
+    needs: [error_gate]
+    steps:
+      - uses: eas/posthog_flag_rollout
+        with:
+          flag: new-checkout
+          rollout_percentage: 100
+
+  roll_back:
+    after: [error_gate]
+    if: ${{ failure() }}
+    steps:
+      - uses: eas/posthog_flag_rollout
+        with:
+          flag: new-checkout
+          active: false
+```
+
+### 工作原理
+
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业发布代码，然后 [`eas/posthog_flag_rollout`](/eas/workflows/syntax/#easposthog_flag_rollout) 将其提供给 25% 的用户。
+2. [`eas/posthog_wait_for_metric`](/eas/workflows/syntax/#easposthog_wait_for_metric) 运行一个 [HogQL](https://posthog.com/docs/hogql) 查询，并等待过去 30 分钟内的异常数量降至 5 个或更少。门槛通过后，`full_rollout` 会将功能标记扩大到 100%。如果糟糕的发布导致数量持续偏高，门槛会超时并失败，而 `full_rollout` 永远不会运行。
+3. 发生失败时，`roll_back` 会关闭功能标记。它使用 [`after`](/eas/workflows/syntax/#jobsjob_idafter) 和 [`if: ${{ failure() }}`](/eas/workflows/syntax/#jobsjob_idif)，因为 `needs` 依赖在这里无法正常工作。当 `needs` 依赖失败时，作业会在其 `if` 条件求值之前被跳过。`failure()` 反映整个工作流运行的状态，因此请确保此工作流专注于发布及其门槛。
+
+## 发布 EAS Update channel，或在失败时回滚
+
+上面的发布流程通过 PostHog 功能标志控制曝光范围。如果改用 [EAS Update channel 百分比](/eas-update/rollouts/)进行发布，同一个门控机制会驱动 `eas channel:rollout`：发布更新，将一部分用户引导至该更新，观察错误率，然后将发布范围扩大到所有用户，或执行回滚。与这里的其他方案相比，它涉及更多 EAS 功能：更新任务、channel 发布、指标门控以及结果事件。
+
+```yaml .eas/workflows/channel-rollout.yml
+name: 扩大或回滚的 Channel 发布
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    type: update
+    params:
+      branch: rollout
+
+  start_rollout:
+    needs: [publish]
+    steps:
+      - run: npx eas-cli@latest channel:rollout production --action create --branch rollout --percent 10 --runtime-version 1.0.0 --non-interactive
+
+  error_gate:
+    needs: [start_rollout]
+    steps:
+      - id: gate
+        uses: eas/posthog_wait_for_metric
+        with:
+          query: SELECT count() FROM events WHERE event = '$exception' AND timestamp > now() - INTERVAL 15 MINUTE
+          operator: lt
+          threshold: 10
+          interval_seconds: 60
+          timeout_seconds: 900
+      - uses: eas/posthog_capture_event
+        with:
+          event: channel_rollout_cleared
+          properties:
+            error_count: ${{ steps.gate.outputs.value }}
+
+  widen:
+    needs: [error_gate]
+    steps:
+      - run: npx eas-cli@latest channel:rollout production --action end --outcome republish-and-revert --non-interactive
+
+  revert:
+    after: [error_gate]
+    if: ${{ failure() }}
+    steps:
+      - run: npx eas-cli@latest channel:rollout production --action end --outcome revert --non-interactive
+```
+
+### 工作原理
+
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 任务会将更新发布到 `rollout` 分支，然后 `eas channel:rollout` 会在 `production` channel 上启动发布，将 10% 的用户引导至新更新。`--runtime-version` 的值必须与已发布更新的运行时版本一致。
+2. [`eas/posthog_wait_for_metric`](/eas/workflows/syntax/#easposthog_wait_for_metric) 会持续等待，直到最近 15 分钟内的异常数量保持在 10 以下，然后通过步骤的 `value` 输出记录通过门控时的数量。
+3. 门控通过后，`widen` 会使用 `--outcome republish-and-revert` 结束发布，将新更新发布给所有用户。
+4. 门控失败后，`revert` 会使用 `--outcome revert` 结束发布，将用户送回之前的更新。它使用了与[功能标志回滚](#roll-out-or-roll-back-on-your-error-rate)相同的 [`after`](/eas/workflows/syntax/#jobsjob_idafter) 加 [`if: ${{ failure() }}`](/eas/workflows/syntax/#jobsjob_idif) 模式。
+
+## 在人工审批下将功能标记全面发布
+
+在功能标记达到 100% 之前，于 EAS 控制面板中暂停工作流并请求明确审批。适用于不希望端到端自动化的发布流程。
+
+```yaml .eas/workflows/approved-ga.yml
+name: Take a feature to GA with human approval
+
+jobs:
+  approve:
+    name: Approve new-checkout GA?
+    type: require-approval
+
+  go_full:
+    needs: [approve]
+    steps:
+      - uses: eas/posthog_flag_rollout
+        with:
+          flag: new-checkout
+          active: true
+          rollout_percentage: 100
+
+  bookkeeping:
+    needs: [go_full]
+    steps:
+      - uses: eas/posthog_capture_event
+        with:
+          event: feature_went_ga
+          properties:
+            flag: new-checkout
+```
+
+### 工作原理
+
+1. [`require-approval`](/eas/workflows/pre-packaged-jobs#require-approval) 作业会暂停工作流，直到有人在 EAS 控制面板中批准或拒绝该操作。
+2. 如果获得批准，[`eas/posthog_flag_rollout`](/eas/workflows/syntax/#easposthog_flag_rollout) 会将功能标记发布到 100%。如果被拒绝，该作业会失败，并跳过 `go_full`。
+3. 后续事件会记录该功能标记达到全面发布的时间。
+
+## 使用终止开关关闭功能
+
+只需一条命令即可为所有人关闭某项功能。此工作流没有 `on` 触发器，因此只有在你启动它时才会运行，例如在发生事故期间。
+
+```yaml .eas/workflows/kill-switch.yml
+name: 立即禁用新结账
+
+jobs:
+  disable_flag:
+    steps:
+      - uses: eas/posthog_flag_rollout
+        with:
+          flag: new-checkout
+          active: false
+
+  audit_trail:
+    needs: [disable_flag]
+    steps:
+      - uses: eas/posthog_capture_event
+        with:
+          event: kill_switch_pulled
+          properties:
+            flag: new-checkout
+```
+
+### 工作原理
+
+1. 使用以下命令运行：
+
+   <Terminal cmd={['$ eas workflow:run kill-switch.yml']} />
+
+2. [`eas/posthog_flag_rollout`](/eas/workflows/syntax/#easposthog_flag_rollout) 会关闭该标记，后续事件会记录这一操作。
+
+## 在错误激增时自动关闭功能
+
+这是上一节方案中的紧急开关，并连接到错误门控，因此部署后错误率激增时，它会自动关闭该功能。
+
+```yaml .eas/workflows/auto-kill-switch.yml
+name: 在错误激增时自动关闭 new-checkout
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    type: update
+    params:
+      branch: main
+
+  error_gate:
+    needs: [publish]
+    steps:
+      - uses: eas/posthog_wait_for_metric
+        with:
+          query: SELECT count() FROM events WHERE event = '$exception' AND timestamp > now() - INTERVAL 10 MINUTE
+          operator: lt
+          threshold: 20
+          interval_seconds: 60
+          timeout_seconds: 600
+
+  auto_kill_switch:
+    after: [error_gate]
+    if: ${{ failure() }}
+    steps:
+      - uses: eas/posthog_flag_rollout
+        with:
+          flag: new-checkout
+          active: false
+      - uses: eas/posthog_capture_event
+        with:
+          event: auto_kill_switch_pulled
+          properties:
+            flag: new-checkout
+```
+
+### 工作原理
+
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业会发布更新，而 [`eas/posthog_wait_for_metric`](/eas/workflows/syntax/#easposthog_wait_for_metric) 会等待，直到过去 10 分钟内的异常数量低于 20。如果有问题的更新导致数量持续偏高，门控将超时并失败。
+2. `auto_kill_switch` 作业使用与[标记回滚](#roll-out-or-roll-back-on-your-error-rate)相同的 [`after`](/eas/workflows/syntax/#jobsjob_idafter) 加 [`if: ${{ failure() }}`](/eas/workflows/syntax/#jobsjob_idif) 模式。
+3. [`eas/posthog_flag_rollout`](/eas/workflows/syntax/#easposthog_flag_rollout) 会关闭标记，执行与手动紧急开关相同的操作，并记录该开关是自动触发的。
+
+## 用户采用后宣布发布
+
+当有足够多的用户使用新更新后，发布一条 Slack 消息。该工作流会等待真实的采用情况，而不是在部署完成后立即宣布。
+
+```yaml .eas/workflows/announce-on-adoption.yml
+name: Announce release once adopted
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    type: update
+    params:
+      branch: main
+
+  adoption_gate:
+    needs: [publish]
+    steps:
+      - uses: eas/posthog_wait_for_metric
+        with:
+          query: SELECT count(DISTINCT distinct_id) FROM events WHERE timestamp > now() - INTERVAL 1 HOUR
+          operator: gte
+          threshold: 50
+          interval_seconds: 120
+          timeout_seconds: 3600
+
+  announce:
+    needs: [adoption_gate]
+    type: slack
+    environment: production
+    params:
+      webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
+      message: The latest update is live and 50 or more users are on it.
+```
+
+### 工作原理
+
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业发布更新。
+2. [`eas/posthog_wait_for_metric`](/eas/workflows/syntax/#easposthog_wait_for_metric) 会等待，直到过去一小时内至少有 50 位不同的用户发送事件。
+3. [`slack`](/eas/workflows/pre-packaged-jobs#slack) 作业会在门控条件满足后宣布发布。将 `SLACK_WEBHOOK_URL` 作为 [环境变量](/eas/environment-variables/manage/) 设置在 EAS 上。
+
+## 更多配方
+
+针对更具体需求的简短配方。
+
+### 等待特定事件
+
+等待工作流，直到特定事件到达，例如部署后冒烟测试报告成功，而不是根据聚合指标进行门控。
+
+```yaml .eas/workflows/wait-for-smoke-test.yml
+name: Wait for smoke test to pass
+
+jobs:
+  wait_for_smoke_test:
+    steps:
+      - uses: eas/posthog_wait_for_query
+        with:
+          query: SELECT count() > 0 FROM events WHERE event = 'smoke_test_passed' AND timestamp > now() - INTERVAL 30 MINUTE
+          interval_seconds: 15
+          timeout_seconds: 600
+```
+
+[`eas/posthog_wait_for_query`](/eas/workflows/syntax/#easposthog_wait_for_query) 会在查询返回 true 后解除等待。30 分钟的时间窗口可以防止旧的冒烟测试事件立即解除门控。
+
+### 检查每晚的错误预算
+
+按照计划运行门控，而不是在部署后运行，将其作为独立的健康检查。
+
+```yaml .eas/workflows/error-budget.yml
+name: Nightly error-budget check
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  assert_error_budget:
+    steps:
+      - uses: eas/posthog_wait_for_metric
+        with:
+          query: SELECT count() FROM events WHERE event = '$exception' AND timestamp > now() - INTERVAL 24 HOUR
+          operator: lt
+          threshold: 100
+          interval_seconds: 30
+          timeout_seconds: 60
+```
+
+[`on.schedule.cron`](/eas/workflows/syntax/#onschedulecron) 触发器独立于任何部署运行，因此它可以作为持续的健康检查，而不是针对特定发布的门控。
+
+### 标记商店提交
+
+对于原生版本，`eas/posthog_capture_event` 的工作方式与更新版本相同。
+
+```yaml .eas/workflows/store-release.yml
+name: Build, submit to the store, mark it in PostHog
+
+jobs:
+  build:
+    type: build
+    params:
+      platform: ios
+      profile: production
+
+  submit:
+    needs: [build]
+    type: submit
+    params:
+      build_id: ${{ needs.build.outputs.build_id }}
+      profile: production
+
+  mark_release:
+    needs: [submit]
+    steps:
+      - uses: eas/posthog_capture_event
+        with:
+          event: store_build_submitted
+          properties:
+            platform: ios
+            profile: production
+```
+
+## 重要说明
+
+- **凭据来自 connect 命令。** 每个函数默认使用 `eas integrations:posthog:connect` 设置的环境变量，并且都接受 `api_key` 输入，以便你在需要时覆盖这些变量。若要自行设置，请将以下变量添加为 [EAS 环境变量](/eas/environment-variables/manage/)：`eas/posthog_capture_event` 使用 `EXPO_PUBLIC_POSTHOG_API_KEY`，其他所有函数使用 `POSTHOG_CLI_API_KEY` 和 `POSTHOG_CLI_PROJECT_ID`。[语法参考](/eas/workflows/syntax/#easposthog_capture_event)列出了每个函数所需的作用域。
+- **超时的门禁会使步骤失败。** `eas/posthog_wait_for_metric` 和 `eas/posthog_wait_for_query` 没有 `ignore_error` 输入，因此未通过的门禁会停止发布流程，而不是让流程继续。
+- **条件满足后，门禁会立即通过。** 检查低错误数量的门禁可能在第一次检查时就通过，包括部署后立即检查、用户尚未使用新更新之前。需要先让错误有机会显现时，请将其与采用率门禁结合使用，例如[用户采用后再宣布发布](#announce-a-release-once-users-adopt-it)中的门禁。
+- **将查询限定在当前运行范围内。** 事件和指标查询会返回历史数据。添加 `timestamp > now() - INTERVAL ...` 过滤条件，或添加当前运行独有的属性，以免旧事件立即解除门禁。设置[发布标记](/guides/using-posthog/#release-tagging)后，每个客户端事件都会附带 `expo_update_id`、`expo_channel` 和 `expo_runtime_version`，因此你可以通过 `properties.expo_update_id` 过滤门禁，将其限定到确切的发布版本。

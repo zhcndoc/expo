@@ -1,6 +1,6 @@
 ---
-modificationDate: March 13, 2023
-title: Expo Updates v1
+modificationDate: 2023年3月13日
+title: Expo 更新 v1
 description: 版本 1
 searchRank: 1
 searchPosition: 999
@@ -37,10 +37,10 @@ Expo Updates 是一种用于向客户端组装并交付更新和指令的协议�
 
 以下内容描述了符合规范的 Expo Updates 客户端库 MUST 如何从符合规范的服务器获取新更新：
 
-1. 客户端库 MUST 发起一个针对最新更新和指令的 [请求](#request)，并在请求头中指定约束条件。
-2. 如果收到了一个 [响应](#response)，客户端库 MUST 处理其内容：
-   - 对于包含 _update_ 的响应，客户端库 SHALL 继续发起额外请求，下载并存储 manifest 中指定的任何新资源。manifest 和资源一起被视为一个新的 _update_。客户端库将编辑其本地状态，以反映新的 update 已被添加到本地存储中。它还会使用响应 [headers](#manifest-response-headers) 中找到的新 `expo-manifest-filters` 和 `expo-server-defined-headers` 更新本地状态。
-   - 对于包含 _directive_ 的响应，客户端库将根据指令类型消费该指令，并相应地编辑其本地状态。
+1. 客户端库 MUST 使用请求头中指定的约束条件，为最新的更新和指令发起一次[请求](#request)。
+2. 如果收到[响应](#response)，客户端库 MUST 处理其内容：
+   - 对于包含 _update_ 的响应，客户端库 SHALL 继续发起其他请求，以下载并存储清单中指定的任何新资源。清单和资源共同构成一个新的 _update_。客户端库将编辑其本地状态，以反映本地存储中已添加新的更新。它还将使用响应[请求头](#common-response-headers)中找到的新的 `expo-manifest-filters` 和 `expo-server-defined-headers` 更新本地状态。
+   - 对于包含 _directive_ 的响应，客户端库将根据指令类型使用该指令，并相应地编辑其本地状态。
 
 ## 请求
 
@@ -52,11 +52,11 @@ Expo Updates 是一种用于向客户端组装并交付更新和指令的协议�
    - Android MUST 为 `expo-platform: android`。
    - 如果不是这些平台之一，服务器 SHOULD 返回 400 或 404
 3. `expo-runtime-version` MUST 是与客户端兼容的运行时版本。运行时版本规定了客户端所运行的原生代码配置。它应在客户端构建时设置。例如，在 iOS 客户端中，该值可以设置在 plist 文件中。
-4. 任何前一个响应的 [server defined headers](#response) 所规定的请求头。
+4. 任何前一个响应的[服务器定义的请求头](#response)所规定的请求头。
 
-符合规范的客户端库 MAY 基于 [支持的响应结构](#response) 发送 `accept: application/expo+json`、`accept: application/json` 或 `accept: multipart/mixed` 之一，尽管它 SHOULD 发送 `accept: application/expo+json, application/json, multipart/mixed`。符合规范的客户端库 MAY 按照 [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.1) 的规定使用 "q" 参数表达偏好，其默认值为 `1`。
+符合规范的客户端库 MAY 基于[支持的响应结构](#response)发送 `accept: application/expo+json`、`accept: application/json` 或 `accept: multipart/mixed` 之一，尽管它 SHOULD 发送 `accept: application/expo+json, application/json, multipart/mixed`。符合规范的客户端库 MAY 按照 [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.1) 的规定使用 "q" 参数表达偏好，其默认值为 `1`。
 
-配置为执行 [code signing](#code-signing) 验证的符合规范的客户端库 MUST 发送 `expo-expect-signature` 请求头，以表明它期望符合规范的服务器在 manifest 响应中包含 `expo-signature` 请求头。`expo-expect-signature` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，其中 MAY 包含以下任意键值对：
+配置为执行[代码签名](#code-signing)验证的符合规范的客户端库 MUST 发送 `expo-expect-signature` 请求头，以表明它期望符合规范的服务器在 manifest 响应中包含 `expo-signature` 请求头。`expo-expect-signature` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，其中 MAY 包含以下任意键值对：
 
 - `sig` SHOULD 包含布尔值 `true`，以表明它要求符合规范的服务器在 `sig` 键中返回签名。
 - `keyid` SHOULD 包含客户端将用于验证签名的公钥的 keyId
@@ -233,15 +233,15 @@ accept: image/jpeg, */*
 accept-encoding: br, gzip
 ```
 
-符合规范的客户端库 MUST 还要为此资源键包含 [`assetRequestHeaders`](#manifest-extensions) 中包含的任何标头（键、值）对。
+符合规范的客户端库还 MUST 包含 [`assetRequestHeaders`](#extensions-body) 中为此资源键指定的任何标头（键、值）对。
 
 ## 资源响应
 
-位于特定 URL 的资源 MUST NOT 自创建以来被更改或移除，因为客户端库可能会在任何更新时随时获取资源。符合规范的客户端 MUST 验证资源的 base64url 编码 SHA-256 哈希与清单中该资源的 `hash` 字段匹配。
+位于特定 URL 的资源自创建以来不得被更改或移除，因为客户端库可能会在任何更新时随时获取资源。符合规范的客户端必须验证资源的 base64url 编码 SHA-256 哈希值与清单中该资源的 `hash` 字段匹配。
 
 ### 资源响应标头
 
-资源 MUST 使用客户端根据请求的 `accept-encoding` 标头所支持的压缩格式进行编码。服务器 MAY 提供未压缩的资源。响应 MUST 包含一个 `content-type` 标头，其中包含该资源的 MIME 类型。
+资源必须使用客户端根据请求的 `accept-encoding` 标头所支持的压缩格式进行编码。服务器可以提供未压缩的资源。响应必须包含一个 `content-type` 标头，其中包含该资源的 MIME 类型。
 例如：
 
 ```text
@@ -257,7 +257,7 @@ cache-control: public, max-age=31536000, immutable
 
 ### 压缩
 
-资源 SHOULD 能够以 [Gzip](https://www.gnu.org/software/gzip/) 和 [Brotli](https://github.com/google/brotli) 压缩方式提供。
+资源应能够以 [Gzip](https://www.gnu.org/software/gzip/) 和 [Brotli](https://github.com/google/brotli) 压缩方式提供。
 
 ## 代码签名
 

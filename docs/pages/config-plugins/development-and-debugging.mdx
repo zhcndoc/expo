@@ -10,7 +10,7 @@ sidebar_title: 开发和调试
 
 > 使用 [modifier 预览](https://github.com/expo/vscode-expo#expo-preview-modifier) 实时调试你的插件结果。
 
-为了让插件开发更轻松，我们已为 [`expo-module-scripts`](https://www.npmjs.com/package/expo-module-scripts) 添加了插件支持。
+为了让插件开发更轻松，我们已为 [`expo-module-scripts`](https://www.npmjs.com/package/expo-module-scripts) 添加了插件支持。  
 有关使用 TypeScript 和 Jest 构建插件的更多信息，请参阅 [配置插件指南](https://github.com/expo/expo/tree/main/packages/expo-module-scripts#-config-plugin)。
 
 ### 安装依赖
@@ -51,7 +51,7 @@ const { ... } = require('expo/config');
 通过 `expo` 包导入可确保你使用的是 `expo` 包所依赖的 `expo/config-plugins` 和 `expo/config` 包的版本。
 
 如果你不通过这种方式从 `expo` 的重新导出中导入该包，你可能会意外导入到一个不兼容的版本
-（这取决于使用该模块的开发者所使用的包管理器中模块提升的实现细节），或者根本无法导入该模块（如果使用诸如 Yarn Berry 或 pnpm 等包管理器的“plug and play”功能）。
+（这取决于使用该模块的开发者所使用的包管理器中模块提升的实现细节），或者根本无法导入该模块（如果使用诸如 Yarn Berry 或 pnpm 等包管理器的“即插即用”功能）。
 
 Config 类型直接从 `expo/config` 导出，因此无需安装或从 `expo/config-types` 导入：
 
@@ -456,14 +456,14 @@ project.ext.react = [/* @info 这段代码会预先添加到模板中，但也�
   - `property`：获取属性，如果属性未定义则抛出错误。
   - `findProperty`：获取属性，如果属性缺失则不会抛出错误。这通常可以与 `?:` 运算符一起使用，以提供默认值。
 
-通常，你应该只通过 Expo [Autolinking](/more/glossary-of-terms/#autolinking) 与 Gradle 文件交互，这会为项目文件提供一个程序化接口。
+通常，你应该只通过 Expo [自动链接](/more/glossary-of-terms/#autolinking) 与 Gradle 文件交互，这会为项目文件提供一个程序化接口。
 
 ### iOS AppDelegate
 
-某些模块可能需要向项目的 AppDelegate 添加委托方法。可以通过使用 [AppDelegate subscribers](/modules/appdelegate-subscribers/) 安全地完成，也可以通过 `withAppDelegate` mod 以危险方式完成（_强烈不推荐_）。
-使用 AppDelegate subscribers 可以让原生 Expo 模块以安全且可靠的方式响应重要事件。
+某些模块可能需要向项目的 AppDelegate 添加委托方法。可以通过使用 [AppDelegate 订阅器](/modules/appdelegate-subscribers/) 安全地完成，也可以通过 `withAppDelegate` mod 以危险方式完成（_强烈不推荐_）。
+使用 AppDelegate 订阅器可以让原生 Expo 模块以安全且可靠的方式响应重要事件。
 
-下面是一些 AppDelegate subscribers 实际工作的示例。此外，你还可以在 GitHub 上的社区仓库中找到许多示例（[其中一个示例](https://github.com/bamlab/react-native-app-security/blob/c1a861cbd348f404ec18ffae90d1c9bdc66bc00d/ios/RNASAppLifecyleDelegate.swift)）。
+下面是一些 AppDelegate 订阅器实际工作的示例。此外，你还可以在 GitHub 上的社区仓库中找到许多示例（[其中一个示例](https://github.com/bamlab/react-native-app-security/blob/c1a861cbd348f404ec18ffae90d1c9bdc66bc00d/ios/RNASAppLifecyleDelegate.swift)）。
 
 - `expo-linking`：[**LinkingAppDelegateSubscriber.swift**](https://github.com/expo/expo/blob/b4ca25a4319d7148258ebd5121d1df40a3b1333e/packages/expo-linking/ios/LinkingAppDelegateSubscriber.swift#L14)（openURL）
 - `expo-notifications`：[**NotificationsAppDelegateSubscriber.swift**](https://github.com/expo/expo/blob/bd469e421856f348d539b1b57325890147935dbc/packages/expo-notifications/ios/EXNotifications/PushToken/EXPushTokenManager.m)（didRegisterForRemoteNotificationsWithDeviceToken、didFailToRegisterForRemoteNotificationsWithError、didReceiveRemoteNotification）
@@ -489,7 +489,7 @@ target 'yolo27' do
 end
 ```
 
-通常，你应该只通过 Expo [Autolinking](/more/glossary-of-terms/#autolinking) 与 Podfile 交互，这会为项目文件提供一个程序化接口。
+通常，你应该只通过 Expo [自动链接](/more/glossary-of-terms/#autolinking) 与 Podfile 交互，这会为项目文件提供一个程序化接口。
 
 ### 自定义基础 modifier
 
@@ -497,7 +497,7 @@ Expo CLI 的 `npx expo prebuild` 命令会使用 [`@expo/prebuild-config`](https
 
 例如，假设你想增加对 `ios/*/AppDelegate.h` 文件的支持，可以通过添加一个 `ios.appDelegateHeader` modifier 来实现。
 
-> 这个示例使用 `tsx` 来提供简单的本地 TypeScript 支持，这并不是严格必需的。[了解更多](/guides/typescript/#appconfigjs)。
+> 此示例使用 `tsx` 来简单地支持本地 TypeScript，但这并非严格必要。请参阅[在 `app.config.js` 中使用 TypeScript](/guides/typescript/#appconfigjs)。
 
 ```ts withAppDelegateHeaderBaseMod.ts
 import { ConfigPlugin, IOSConfig, Mod, withMod, BaseMods } from 'expo/config-plugins';
@@ -581,7 +581,7 @@ export default ({ config }) => {
 };
 ```
 
-更多信息请参见 [添加此功能支持的 PR](https://github.com/expo/expo-cli/pull/3852)。
+更多信息请参见[添加此功能支持的 PR](https://github.com/expo/expo-cli/pull/3852)。
 
 ## expo install
 

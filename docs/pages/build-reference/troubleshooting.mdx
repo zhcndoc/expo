@@ -63,7 +63,7 @@ import { A } from '~/ui/components/Text';
 
 {/* TODO: native and js build phases should be separate in eas build logs, this is too much work for people to figure out */}
 
-如果你正在使用 Continuous Native Generation (CNG) 的项目，并且构建错误是原生错误而不是 JavaScript 错误，那么这很可能是由 [config plugin](/config-plugins/introduction/) 或你项目中的某个依赖项引起的。请留意日志中自上次成功构建以来你新增的任何包。运行 `npx expo-doctor` 以确定项目中的 Expo SDK 依赖版本与你的 Expo SDK 版本是否兼容。
+如果你正在使用 Continuous Native Generation (CNG) 的项目，并且构建错误是原生错误而不是 JavaScript 错误，那么这很可能是由 [配置插件](/config-plugins/introduction/) 或你项目中的某个依赖项引起的。请留意日志中自上次成功构建以来你新增的任何包。运行 `npx expo-doctor` 以确定项目中的 Expo SDK 依赖版本与你的 Expo SDK 版本是否兼容。
 
 有了错误日志后，你通常可以开始修复构建问题，或者在 [论坛](https://chat.expo.dev/) 和 GitHub issues 中搜索相关包以深入排查。下面列出了一些常见问题来源。
 
@@ -144,15 +144,15 @@ EAS Build 更像是典型的 CI 服务，因为我们需要的是源代码，而
 
 你可以在本地运行 `npx expo export` 来构建生产 bundle，从而绕过其他所有构建步骤，以便更快地看到这个错误。重复运行该命令，解决发现的任何语法错误或其他问题，直到 bundle 成功构建。然后再次尝试你的 EAS Build。
 
-## Verify whether your project can build and run locally
+## 验证您的项目是否可以在本地构建和运行
 
-If the logs are not enough to immediately help you understand and fix the root cause, then it is time to try reproducing the issue locally. If your project can build and run locally in release mode, then it should also be able to build on EAS Build, as long as all of the following conditions are met:
+如果日志不足以立即帮助您了解并修复根本原因，那么是时候尝试在本地复现该问题了。如果您的项目可以在本地以 release 模式构建和运行，那么只要满足以下所有条件，它也应该能够在 EAS Build 上构建：
 
-- The relevant [build tools versions](/build/eas-json#configuring-your-build-tools) (for example Xcode, Node.js, npm, Yarn) are the same in both environments.
-- The relevant [environment variables](/eas/environment-variables) are the same in both environments.
-- The [archive](https://expo.fyi/eas-build-archive) uploaded to EAS Build contains the same relevant source files.
+- 两个环境中的相关[构建工具版本](/build/eas-json#configuring-build-tools)（例如 Xcode、Node.js、npm、Yarn）相同。
+- 两个环境中的相关[环境变量](/eas/environment-variables)相同。
+- 上传到 EAS Build 的[归档文件](https://expo.fyi/eas-build-archive)包含相同的相关源文件。
 
-You can use the `npx expo run:android` and `npx expo run:ios` commands to verify locally whether the project can build, and set the variant/configuration flag to release to reproduce the EAS Build execution process as faithfully as possible. For more information, see [Android build process](/build-reference/android-builds) and [iOS build process](/build-reference/ios-builds).
+您可以使用 `npx expo run:android` 和 `npx expo run:ios` 命令在本地验证项目是否可以构建，并将 variant/configuration 标志设置为 release，以尽可能忠实地复现 EAS Build 的执行过程。更多信息，请参阅 [Android 构建流程](/build-reference/android-builds)和 [iOS 构建流程](/build-reference/ios-builds)。
 
 <Terminal
   cmd={{
@@ -187,35 +187,35 @@ You can use the `npx expo run:android` and `npx expo run:ios` commands to verify
   }}
 />
 
-> If you are using [CNG](/workflow/continuous-native-generation/), these commands will run `npx expo prebuild` to generate the native projects used for building. Once you finish troubleshooting, you will likely want to [clean up these changes](https://expo.fyi/prebuild-cleanup), unless you want to start managing these projects directly rather than generating them on demand.
+> 如果您正在使用 [CNG](/workflow/continuous-native-generation/)，这些命令将运行 `npx expo prebuild`，以生成用于构建的原生项目。完成故障排查后，除非您希望直接管理这些项目而不是按需生成它们，否则您可能需要[清理这些更改](https://expo.fyi/prebuild-cleanup)。
 >
 > <br />
-> You can also use `eas build --local` for local builds instead — this command performs a series of steps that closely mirror the remote execution process on the managed EAS Build service. It will copy your project to a temporary directory and make any necessary changes there. [Learn how to set it up and use it for debugging](/build-reference/local-builds/#use-local-builds-for-debugging).
+> 您也可以改用 `eas build --local` 进行本地构建——此命令会执行一系列步骤，与托管 EAS Build 服务上的远程执行过程高度相似。它会将您的项目复制到临时目录，并在那里进行任何必要的更改。[了解如何设置并使用它进行调试](/build-reference/local-builds/#use-local-builds-for-debugging)。
 
-If your native toolchain is installed correctly, but the project still cannot be built and run locally in release mode, then it will not build successfully on EAS Build either. Fix the issue locally first, and then try EAS Build again. Other suggestions in this document may help you resolve the issue locally, but this usually requires some knowledge of native toolchains, or appropriate help from Google, Stack Overflow, and GitHub Issues.
+如果您的原生工具链已正确安装，但项目仍无法在本地以 release 模式构建和运行，那么它也无法在 EAS Build 上成功构建。请先在本地修复问题，然后再重新尝试 EAS Build。本文档中的其他建议可能会帮助您在本地解决问题，但这通常需要具备一定的原生工具链知识，或寻求 Google、Stack Overflow 和 GitHub Issues 上的适当帮助。
 
-<Collapsible summary="Your machine doesn't have Xcode and Android Studio set up?">
+<Collapsible summary="您的机器尚未设置 Xcode 和 Android Studio？">
 
-**If you do not have the native toolchain installed locally**, for example if you do not have an Apple computer and therefore cannot build iOS apps on your machine, then debugging build errors is a bit more challenging. The feedback loop for making small changes locally and seeing the results from EAS Build is slower than doing the same steps locally, because the EAS Build builder must first set up the environment, download your project, and install dependencies before it can start building.
+**如果您没有在本地安装原生工具链**，例如，如果您没有 Apple 电脑，因而无法在自己的机器上构建 iOS 应用，那么调试构建错误会更具挑战性。在本地进行小幅修改并查看 EAS Build 结果的反馈循环，比在本地执行相同步骤更慢，因为 EAS Build 构建器必须先设置环境、下载您的项目并安装依赖项，然后才能开始构建。
 
-If you are willing and able to set up the relevant native tools, see the [React Native environment setup guide](https://reactnative.dev/docs/environment-setup).
-
-</Collapsible>
-
-<Collapsible summary="My app can build locally, but not on EAS Build">
-
-By default, EAS Build follows a relatively straightforward process to build your app ([Android](/build-reference/android-builds) or [iOS](/build-reference/ios-builds)). If `npx expo run:android --variant release` and `npx expo run:ios --configuration Release` work locally, but your build fails, then it is time to narrow things down and figure out what is configured on your machine that has not been set up for the project on EAS Build.
-
-- Re-clone your project with `git clone` into a new directory and get it running, preferably on another machine. Pay attention to every required step and confirm that they are also configured for EAS Build.
-- Check whether your [environment variables](/guides/environment-variables) are configured correctly.
-- Verify that the versions of Node.js, npm, Yarn, Xcode, Java, and other tools are the same in both environments.
-- Make sure the [archive](https://expo.fyi/eas-build-archive) you upload to EAS Build contains the same relevant source files.
+如果您愿意并且能够设置相关的原生工具，请参阅 [React Native 环境设置指南](https://reactnative.dev/docs/environment-setup)。
 
 </Collapsible>
 
-<Collapsible summary="Why are my production app and development app inconsistent?">
+<Collapsible summary="我的应用可以在本地构建，但无法在 EAS Build 上构建">
 
-You can test how the JS part of your app behaves in production by starting the app with [`npx expo start --no-dev`](/workflow/development-mode/#production-mode). This tells the bundler to minify JavaScript before serving it, and in particular removes code guarded by the `__DEV__` boolean value. This removes most logs, HMR, and Fast Refresh functionality, and makes debugging a bit harder, but it lets you iterate on the production bundle more quickly.
+默认情况下，EAS Build 会遵循相对直接的流程来构建您的应用（[Android](/build-reference/android-builds) 或 [iOS](/build-reference/ios-builds)）。如果 `npx expo run:android --variant release` 和 `npx expo run:ios --configuration Release` 可以在本地正常运行，但您的构建失败了，那么是时候逐步缩小范围，找出您的机器上已配置、但 EAS Build 项目中尚未设置的内容。
+
+- 使用 `git clone` 将您的项目重新克隆到一个新目录中，并让它运行起来，最好在另一台机器上进行。注意每一个必需的步骤，并确认这些步骤也已为 EAS Build 配置。
+- 检查您的[环境变量](/guides/environment-variables)是否配置正确。
+- 验证两个环境中的 Node.js、npm、Yarn、Xcode、Java 和其他工具的版本是否相同。
+- 确保您上传到 EAS Build 的[归档文件](https://expo.fyi/eas-build-archive)包含相同的相关源文件。
+
+</Collapsible>
+
+<Collapsible summary="为什么我的生产应用和开发应用不一致？">
+
+您可以通过使用 [`npx expo start --no-dev`](/workflow/development-mode/#production-mode) 启动应用，测试应用的 JS 部分在生产环境中的行为。该命令会告知打包器在提供 JavaScript 之前对其进行压缩，尤其会移除由 `__DEV__` 布尔值控制的代码。这会移除大部分日志、HMR 和快速刷新功能，使调试变得稍微困难一些，但可以让您更快地迭代生产构建包。
 
 </Collapsible>
 
@@ -227,12 +227,12 @@ You can test how the JS part of your app behaves in production by starting the a
 
 ### 如何提出一个好问题
 
-加入我们的 <A href="https://chat.expo.dev/" shouldLeakReferrer>Discord 和论坛</A>，向社区和 Expo 团队寻求帮助。Expo 团队会尽最大努力回应高质量且表述清晰的问题和议题，但除非你已订阅 [支持计划](https://expo.dev/support-terms#target-response-time-guidelines-for-subscriptions)，否则不保证会有回复。为了确保 Expo 团队成员看到你的问题，你可以在 [expo.dev/contact](https://expo.dev/contact) 提交工单。
+加入我们的 <A href="https://chat.expo.dev/" shouldLeakReferrer>Discord 和论坛</A>，向社区和 Expo 团队寻求帮助。Expo 团队会尽力回应高质量且表述清晰的问题和议题，但除非你注册了[支持计划](https://expo.dev/support-terms#target-response-time-guidelines-for-subscriptions)，否则无法保证一定会得到回复。要确保 Expo 团队成员看到你的问题，你可以在 [expo.dev/contact](https://expo.dev/contact) 提交工单。
 
 当你寻求排查帮助时，请务必提供以下信息：
 
 - **构建页面的链接**。只有你的团队或 Expo 员工才能访问它。如果你想更公开地分享，可以截屏。如果你想更私密地分享，可以发送电子邮件至 secure@expo.dev，并在你于聊天或论坛中的求助请求里提到这一点。如果你是使用 `eas build --local` 在本地执行此构建，则可以省略这一项，但请说明这一事实。
 - **错误日志**。任何你怀疑可能与构建或运行时错误相关的内容。如果你无法提供这些内容，请解释原因。
-- **最小可复现示例或你的仓库链接**。获得问题解决方案最快的方法是确保其他开发者能够复现它。如果你曾在团队中工作过，你就会从经验中知道这一点。在许多情况下，如果你无法提供可复现的示例，那么可能无法帮助你；即使能帮到，来回提问和回答的过程也会是对时间的低效利用。要了解如何创建可复现示例，请参阅 [手动调试指南](https://expo.fyi/manual-debugging) 和 Stack Overflow 的 [最小可行可复现示例](https://stackoverflow.com/help/minimal-reproducible-example) 指南。
+- **最小可复现示例或你的仓库链接**。获得问题解决方案最快的方法是确保其他开发者能够复现它。如果你曾在团队中工作过，你就会从经验中知道这一点。在许多情况下，如果你无法提供可复现的示例，那么可能无法帮助你；即使能帮到，来回提问和回答的过程也会是对时间的低效利用。要了解如何创建可复现示例，请参阅 [手动调试指南](https://expo.fyi/manual-debugging) 和 Stack Overflow 的[最小可行可复现示例](https://stackoverflow.com/help/minimal-reproducible-example)指南。
 
-尽量做到清晰、准确且有帮助。Stack Overflow 的 [如何提出一个好问题](https://stackoverflow.com/help/how-to-ask) 指南中提供的一般建议同样适用。
+尽量做到清晰、准确且有帮助。Stack Overflow 的[如何提出一个好问题](https://stackoverflow.com/help/how-to-ask)指南中提供的一般建议同样适用。

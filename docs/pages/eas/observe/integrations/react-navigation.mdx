@@ -55,7 +55,7 @@ Observe.configure({
 
 <Tabs>
 
-<Tab label="Dynamic">
+<Tab label="动态">
 
 对于[动态配置](https://reactnavigation.org/docs/hello-react-navigation/)，请将顶层的 `<NavigationContainer>` 替换为 `<ObserveNavigationContainer>`。它会包装原生容器，接受相同的 props，并转发相同的 ref。它还会订阅导航状态变化，从而记录按屏幕划分的渲染耗时。
 
@@ -68,13 +68,13 @@ Observe.configure({
 });
 
 export default function App() {
-  return <ObserveNavigationContainer>{/* your navigators */}</ObserveNavigationContainer>;
+  return <ObserveNavigationContainer>{/* 你的导航器 */}</ObserveNavigationContainer>;
 }
 ```
 
 </Tab>
 
-<Tab label="Static">
+<Tab label="静态">
 
 使用[静态配置](https://reactnavigation.org/docs/static-configuration/)时，不需要替换 `NavigationContainer`。`createStaticNavigation()` 会替你渲染它。相反，你需要自己创建导航 ref，将其传给返回的 `<Navigation>` 元素，并使用同一个 ref 将该元素包裹在 `<ObserveNavigationProvider>` 中。该 provider 通过 ref 监听导航事件，并记录相同的按屏幕渲染耗时。
 
@@ -127,13 +127,33 @@ export default function Home() {
     markInteractive();
   }, [markInteractive]);
 
-  return (/* your screen content */);
+  return (/* 你的屏幕内容 */);
 }
 ```
 
 > **info** 如果集成被禁用，或者未安装 `@react-navigation/native`，`useObserve()` 会回退到全局的 `AppMetrics.markInteractive`。无论集成状态如何，你都可以保留这个 hook。
 
 </Step>
+
+## 过滤敏感路由参数
+
+> **信息** 在 **SDK 57 及更高版本**中可用。
+
+默认情况下，该集成会将所有可序列化的当前路由参数包含在 `routeParams` 中。如果您的应用在路由参数中包含敏感值，请将其键传递给 `filteredParams`：
+
+```tsx App.tsx
+import { Observe } from 'expo-observe';
+
+Observe.configure({
+  integrations: {
+    'react-navigation': {
+      filteredParams: ['userId', 'token'],
+    },
+  },
+});
+```
+
+该集成会从 `routeParams` 中移除经过过滤的键，并在事件中包含 `urlHidden: true`。`routeName` 不受影响，因为它由路由名称构建，且从不包含参数值。
 
 ## 指标
 
@@ -145,11 +165,12 @@ export default function Home() {
 
 **事件参数：**
 
-| Param         | Type      | Description                                                                    |
-| ------------- | --------- | ------------------------------------------------------------------------------ |
-| `routeName`   | `string`  | 路由名路径（例如，`/Tabs/Sessions`）。                                         |
-| `routeParams` | `object`  | 当前聚焦的路由参数（例如，`{ sessionId: 'abc' }`）。                           |
-| `isAppLaunch` | `boolean` | 当以进程启动时长为基准测量时为 `true`，后续导航则为 `false`。                   |
+| 参数          | 类型      | 描述                                                                         |
+| ------------- | --------- | --------------------------------------------------------------------------- |
+| `routeName`   | `string`  | 路由名称路径（例如 `/Tabs/Sessions`）。                                     |
+| `urlHidden`   | `boolean` | 当路由参数被过滤时为 `true`。                                               |
+| `routeParams` | `object`  | 获得焦点的路由参数（例如 `{ sessionId: 'abc' }`）。                         |
+| `isAppLaunch` | `boolean` | 根据进程启动时间进行测量时为 `true`，后续导航时为 `false`。                  |
 
 ### 按屏幕热渲染（`warm_ttr`）
 
@@ -157,10 +178,11 @@ export default function Home() {
 
 **事件参数：**
 
-| Param         | Type     | Description                                                 |
-| ------------- | -------- | ----------------------------------------------------------- |
-| `routeName`   | `string` | 路由名路径（例如，`/Tabs/Sessions`）。                      |
-| `routeParams` | `object` | 当前聚焦的路由参数（例如，`{ sessionId: 'abc' }`）。        |
+| 参数          | 类型      | 描述                                                  |
+| ------------- | --------- | ----------------------------------------------------- |
+| `routeName`   | `string`  | 路由名称路径（例如 `/Tabs/Sessions`）。               |
+| `urlHidden`   | `boolean` | 当路由参数被过滤时为 `true`。                         |
+| `routeParams` | `object`  | 获得焦点的路由参数（例如 `{ sessionId: 'abc' }`）。   |
 
 ### 按屏幕交互就绪时间（`tti`）
 
@@ -168,11 +190,12 @@ export default function Home() {
 
 **事件参数：**
 
-| Param         | Type     | Description                                              |
-| ------------- | -------- | -------------------------------------------------------- |
-| `routeName`   | `string` | 路由名路径（例如，`/Tabs/Sessions`）。                   |
-| `routeParams` | `object` | 当前聚焦的路由参数。                                     |
-| `...`         | `any`    | 通过 `markInteractive({ ... })` 传入的任何自定义参数。    |
+| 参数          | 类型      | 描述                                                   |
+| ------------- | --------- | ------------------------------------------------------ |
+| `routeName`   | `string`  | 路由名称路径（例如 `/Tabs/Sessions`）。                |
+| `urlHidden`   | `boolean` | 当路由参数被过滤时为 `true`。                          |
+| `routeParams` | `object`  | 获得焦点的路由参数。                                   |
+| `...`         | `any`     | 通过 `markInteractive({ ... })` 传递的任意自定义参数。 |
 
 ## 注意事项和故障排查
 

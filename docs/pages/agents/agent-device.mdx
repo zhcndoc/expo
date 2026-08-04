@@ -1,0 +1,200 @@
+---
+title: agent-device 和 Expo
+sidebar_title: agent-device
+description: 使用 agent-device 让您的 AI 编程代理在本地和远程设备上验证、调试、分析和测试正在运行的 Expo 应用。
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Step } from '~/ui/components/Step';
+import { Terminal } from '~/ui/components/Snippet';
+
+[`agent-device`](https://agent-device.dev) 是 Callstack 推出的开源、原生支持智能体的 CLI。它让 AI 编程智能体能够操作正在运行的 Expo 应用，并通过 UI 状态、屏幕截图、视频、日志、网络活动、跟踪记录和性能数据验证结果。
+
+代码检查和自动化测试并不总能展示运行中应用的实际情况。借助 `agent-device`，智能体可以检查屏幕是否渲染、流程是否完成或请求是否发出，然后报告其观察结果。这使行为审查能够融入智能体用于实现更改的同一工作流中。
+
+`agent-device` 可在 Codex、Claude Code、Cursor 及其他编程智能体中通过终端运行，并可选择集成 [模型上下文协议（MCP）](/mcp/)。一套命令模型涵盖 Android 模拟器、iOS 模拟器、实体设备、Android TV、tvOS、macOS、Linux 和 Web。
+
+常规响应保持简洁。语义快照包含诸如 `@e3` 这样的可操作引用，命令结果会说明失败时如何恢复，较大的输出则会保存为构件。这样可以为智能体处理你的应用保留更多上下文空间。
+
+> **信息** `agent-device` 由 [Callstack](https://www.callstack.com) 构建和维护，并基于 MIT 许可证提供。有关支持的平台和命令的完整列表，请参阅 [`agent-device` 文档](https://oss.callstack.com/agent-device/)。
+
+<Prerequisites>
+  <Requirement title="Node.js 22.12 或更高版本">
+    `agent-device` CLI 要求 Node.js 22.12 或更高版本。
+  </Requirement>
+  <Requirement title="用于本地测试的设备环境（可选）">
+    要在 Android 上进行本地测试，请安装 [Android SDK Platform Tools
+    (`adb`)](/workflow/android-studio-emulator/#set-up-android-studio)，并确保 `adb` 位于
+    你的 `PATH` 中。要在 iOS 上进行本地测试，请使用安装了
+    [Xcode](/workflow/ios-simulator/#setup-xcode-and-watchman) 的 macOS。使用[设备
+    云](https://oss.callstack.com/agent-device/docs/device-clouds)或[远程设备
+    主机](https://oss.callstack.com/agent-device/docs/remote-proxy)时，可以跳过这些本地
+    工具链。
+  </Requirement>
+</Prerequisites>
+
+## 快速开始
+
+<Step label="1">
+
+### 安装 `agent-device`
+
+全局安装 CLI，以便你的编码代理可以从终端使用稳定的 `agent-device` 命令。
+
+<Terminal
+  cmd={{
+    npm: ['$ npm install -g agent-device@latest'],
+    yarn: ['$ yarn global add agent-device@latest'],
+    pnpm: ['$ pnpm add -g agent-device@latest'],
+    bun: ['$ bun add -g agent-device@latest'],
+  }}
+/>
+
+检查本地工具链和设备是否已准备就绪，然后阅读与版本匹配的工作流指南：
+
+<Terminal
+  cmd={['$ agent-device doctor', '$ agent-device --version', '$ agent-device help workflow']}
+/>
+
+</Step>
+
+<Step label="2">
+
+### 安装 `agent-device` 技能（可选）
+
+如果你的编码代理支持技能，请安装官方技能。它会教代理选择正确的工作流，并阅读与你已安装的 CLI 版本匹配的帮助信息。
+
+<Terminal
+  cmd={{
+    npm: ['$ npx skills add callstack/agent-device'],
+    yarn: ['$ yarn dlx skills add callstack/agent-device'],
+    pnpm: ['$ pnpm dlx skills add callstack/agent-device'],
+    bun: ['$ bunx skills add callstack/agent-device'],
+  }}
+/>
+
+你也可以不使用技能直接使用 `agent-device`。告诉你的代理使用 `agent-device`；它可以从 CLI 内置的帮助信息中了解当前工作流。请参阅 [AI 代理设置](https://oss.callstack.com/agent-device/docs/agent-setup)，了解针对特定客户端的说明以及可选的 MCP 配置。
+
+</Step>
+
+<Step label="3">
+
+### 运行 Expo 应用
+
+在 Android 模拟器或 iOS 模拟器上启动应用。`agent-device` 操作的是已安装的应用，因此你无需向 Expo 项目添加 `agent-device` 库。
+
+<Terminal
+  cmd={[
+    '# 在模拟器上构建并运行应用',
+    '$ npx expo run:android',
+    '$ npx expo run:ios',
+    '',
+    '# 或为已安装的开发构建版本或 Expo Go 启动开发服务器',
+    '$ npx expo start',
+  ]}
+/>
+
+</Step>
+
+<Step label="4">
+
+### 向代理发送提示
+
+要求你的编码代理使用 `agent-device` 操作正在运行的应用。它可以发现应用、打开会话、检查当前屏幕、操作元素并验证结果。
+
+```text Example prompt
+使用 `agent-device` 在 iOS 上打开我的 Expo 应用中的设置屏幕，确认其已正确加载，
+并截取屏幕截图作为证据。
+```
+
+如果代理确认设置屏幕已加载并返回截图路径，它就可以观察和控制你的应用。
+
+</Step>
+
+## `agent-device` 循环的工作原理
+
+代理打开应用，读取紧凑的无障碍快照，并根据诸如 `@e2` 的引用执行操作。稳定的交互可以在同一响应中包含由此产生的界面变化。然后，代理通过断言或适合任务的证据来验证结果，例如屏幕截图、聚焦的日志窗口或性能采样。
+
+```bash
+agent-device apps --platform ios
+agent-device open MyApp --platform ios
+agent-device snapshot -i
+# @e1 [heading] "Welcome"
+# @e2 [button] "Get Started"
+agent-device press @e2 --settle
+agent-device screenshot ./artifacts/get-started.png
+agent-device close
+```
+
+代理会遵循随已安装 CLI 附带的工作流指南来选择并运行这些命令。
+
+## `agent-device` 能让你的智能体做什么
+
+- **控制和交互：** 检查无障碍标签、角色、值、测试 ID 和交互引用。启动应用、点击、输入、滚动、执行手势、处理警报、打开深层链接，以及更改设备状态。可在 Android、iOS、Web、TV 和桌面目标上，通过本地命令，或使用[设备云](https://oss.callstack.com/agent-device/docs/device-clouds)和[远程代理](https://oss.callstack.com/agent-device/docs/remote-proxy)执行相同的操作。
+- **分析和调试：** 检查 React Native 组件、属性、钩子、缓慢提交和重新渲染；通过 Metro 的 Chrome DevTools 协议（CDP）评估针对性的 JavaScript；并收集聚焦日志以及可用的网络请求和响应。在同一会话中添加平台支持的原生 CPU、内存、FPS 和帧健康度、跟踪、崩溃、截图、视频及音频证据。
+- **测试和重复执行：** 将可正常工作的会话记录为确定性的 `.ad` 脚本，重新执行该脚本，或在 CI 中使用内置测试命令运行它，并保留失败运行的构件。使用 `agent-device test --maestro` 运行受支持的 Maestro YAML，或将兼容的 `.ad` 流程导出为 Maestro YAML。
+
+这些功能涵盖日常实现检查、探索性 QA、错误复现和性能工作。当调查需要实时原生断点、变量、内存检查或单步执行时，`agent-device` 可以复现并记录整个流程，同时让 Xcode 或 LLDB 附加到应用进程。有关与版本匹配的诊断和分析指导，请从 `agent-device help debugging`、`agent-device help react-devtools` 和 `agent-device help cdp` 开始，或参阅[调试和性能分析](https://oss.callstack.com/agent-device/docs/debugging-profiling)。
+
+## 示例提示词
+
+设置完成后，描述你想要的结果和证据。例如：
+
+| 任务                           | 示例提示词                                                                                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 验证实现                       | 打开应用并测试新的结账流程。截取确认屏幕，并报告任何阻碍你完成操作的问题。                            |
+| 在真实设备上复现错误           | 使用我的 BrowserStack 订阅，在真实 Android 设备上复现问题 #123。                                                            |
+| 检查无障碍功能                 | 检查注册流程，并报告缺少或含义不明确的无障碍标签的交互元素。提供相关屏幕截图。                |
+| 分析运行缓慢的屏幕             | 在滚动时分析商品列表的性能。使用回放脚本设计可重复的实验，并找出 React 或原生性能问题。 |
+| 设计到代码的闭环               | 实现此 Figma 设计，使用屏幕截图差异对比在 iOS 上进行验证，并不断迭代，直到差异低于 2%。                        |
+| 体验应用                       | 以首次使用者的身份探索应用，并为每个发现的问题提供一张屏幕截图，返回一份按优先级排序的报告。                                     |
+
+## 将 `agent-device` 与 Expo AI 工具结合使用
+
+`agent-device` 是对 Expo 自有代理工具的补充。Expo Skills 教会你的代理如何实现功能，Expo MCP Server 为其提供最新的 Expo 和 EAS 上下文，而 `agent-device` 则让它能够在运行中的应用中验证结果。
+
+<BoxLink
+  title="Expo MCP Server"
+  description="连接远程 Expo MCP Server，让代理实时访问 Expo 文档和 EAS。"
+  href="/mcp/#installation-and-setup"
+  Icon={BookOpen02Icon}
+/>
+
+<BoxLink
+  title="Expo Skills"
+  description="安装相关插件，让代理掌握经过验证的 Expo 模式。"
+  href="/skills/#install-expo-skills"
+  Icon={BookOpen02Icon}
+/>
+
+如需进行自动化拉取请求测试，请从 Callstack 的 [`agent-device` EAS Workflow 模板](https://github.com/callstackincubator/eas-agent-device/blob/main/.eas/workflows/agent-qa-mobile.yml)开始。该模板展示了如何针对 Expo 应用运行 AI QA 代理，并保留可供审查的构建产物。
+
+## 可选的 MCP 设置
+
+大多数编码代理都可以直接通过其集成终端使用 `agent-device`。如果你的客户端支持 MCP，并且你更喜欢结构化工具，请将其配置为启动已安装的 CLI：
+
+```json
+{
+  "mcpServers": {
+    "agent-device": {
+      "command": "agent-device",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+MCP 为相同的设备工作流提供结构化工具。请保留 CLI 可用，以便代理能够读取版本匹配的帮助信息，并使用仅限终端的设置命令。
+
+## 局限性和提示
+
+- 无障碍标签、角色和测试 ID 可以显著提高代理交互的可靠性。使用屏幕截图作为证据或视觉备用方案，但执行操作时应优先使用 refs 和选择器。
+- 在单个会话中按顺序执行会改变状态的命令。任务完成后关闭会话；在 CI 中，如果还应停止模拟器或仿真器，请使用 `agent-device close --shutdown`。
+- 设备级 UI 自动化（包括快照、点击、输入、屏幕截图和日志）可在开发构建或 Expo Go 中对已安装的应用运行，无需向项目添加任何库。
+- React Native 组件检查和 React 性能分析需要开发服务器以及兼容的 React DevTools 连接，因此请保持开发服务器运行。在 Expo Go 中，原生 CPU、内存和跟踪性能分析针对的是 Expo Go 宿主进程，而不是特定于应用的原生二进制文件；因此，请使用开发构建来分析原生代码。
+- 默认情况下日志记录处于关闭状态。不要收集无界的设备日志，而应要求代理为复现过程打开一个专注的日志窗口。
+- 实体设备自动化需要特定于平台的配对、签名、权限和信任设置。请从模拟器或仿真器开始，然后按照[安装指南](https://oss.callstack.com/agent-device/docs/installation)操作，以配置实体设备。
+- 当任务需要更深入且与版本匹配的指导时，请运行 `agent-device help react-native`、`agent-device help debugging` 或 `agent-device help dogfood`。

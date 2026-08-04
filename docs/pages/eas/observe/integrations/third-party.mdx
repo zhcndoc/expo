@@ -1,0 +1,181 @@
+---
+title: 将第三方软件包与 EAS Observe 集成
+sidebar_title: 第三方
+description: 了解如何将可选的 EAS Observe 集成添加到第三方软件包中。
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Step } from '~/ui/components/Step';
+
+第三方软件包可以与 EAS Observe 集成，以发送帮助开发者识别性能和使用问题的事件。这些问题通常很难仅通过应用程序代码检测出来。
+
+事件应描述开发者可以修复的、可执行的问题。例如，软件包可以报告：
+
+- 尺寸远大于设备屏幕的图像
+- 完成时间过长的后台任务
+- 加载缓慢的原生资源
+
+## 前置条件
+
+<Prerequisites>
+  <Requirement title="Expo SDK 57 及更高版本">
+    第三方集成需要使用 SDK 57 及更高版本，才能访问 `Observe.registerIntegration()`。
+  </Requirement>
+  <Requirement title="已使用 EAS Observe 的应用">
+    按照[开始使用](/eas/observe/get-started/)中的说明安装 `expo-observe` 并创建您的第一个构建版本。
+  </Requirement>
+</Prerequisites>
+
+<Step label="1">
+
+## 将 `expo-observe` 添加为可选的对等依赖
+
+将 `expo-observe` 添加为可选的对等依赖，以便在未安装该依赖时，您的软件包仍能正常工作。同时，将其添加为开发依赖，以提供 TypeScript 类型和测试所需的支持。不要将其添加为必需的运行时依赖。
+
+```json package.json
+{
+  "peerDependencies": {
+    "expo-observe": ">={{expoSdkVersion}}"
+  },
+  "peerDependenciesMeta": {
+    "expo-observe": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "expo-observe": "^{{expoSdkVersion}}"
+  }
+}
+```
+
+在 `try/catch` 块中使用 `require()` 加载该软件包。使用 `typeof import()` 以保留其 TypeScript 类型：
+
+```ts observe.ts
+let observeModule: typeof import('expo-observe') | undefined;
+
+try {
+  observeModule = require('expo-observe') as typeof import('expo-observe');
+} catch {
+  // 未安装 expo-observe 时，该集成将保持禁用状态。
+}
+```
+
+</Step>
+
+<Step label="2">
+
+## 声明集成配置
+
+使用声明合并，将您的软件包集成键添加到 `expo-observe`：
+
+```ts observe.types.ts
+export type YourPackageIntegrationConfig = {
+  thresholdMs?: number;
+};
+
+declare module 'expo-observe' {
+  interface ObserveIntegrationsConfig {
+    'your-package'?: boolean | YourPackageIntegrationConfig;
+  }
+}
+```
+
+从您的软件包入口点导出此声明，以便用户导入您的软件包时，TypeScript 能够加载该声明。
+
+使用您的软件包的开发者随后可以通过 `Observe.configure()` 启用该集成：
+
+```tsx app/_layout.tsx
+import { Observe } from 'expo-observe';
+
+Observe.configure({
+  integrations: {
+    'your-package': true,
+  },
+});
+```
+
+如果该集成接受选项，开发者可以传入配置对象，而不是 `true`：
+
+```tsx app/_layout.tsx
+Observe.configure({
+  integrations: {
+    'your-package': {
+      thresholdMs: 1500,
+    },
+  },
+});
+```
+
+</Step>
+
+<Step label="3">
+
+## 注册集成
+
+使用您的集成键调用 `Observe.registerIntegration()`。回调会接收您的集成配置：
+
+```ts observe.ts
+export function initObserveIntegration() {
+  // `typeof window` 检查会在 Web 端的服务器端渲染期间跳过初始化。
+  if (typeof window !== 'undefined' && observeModule) {
+    const { Observe } = observeModule;
+
+    Observe.registerIntegration('your-package', config => {
+      if (config) {
+        enableObserveIntegration(config === true ? {} : config);
+      }
+    });
+  }
+}
+
+let enabled = false;
+
+function enableObserveIntegration() {
+  // 在此处初始化集成
+  // 例如：
+  enabled = true;
+}
+```
+
+在您的软件包中实现 `enableObserveIntegration()`。当集成被省略或设置为 `false` 时，不会运行该回调。
+
+从您的软件包入口点调用初始化函数：
+
+```ts index.ts
+import { initObserveIntegration } from './observe';
+
+export type { YourPackageIntegrationConfig } from './observe.types';
+
+initObserveIntegration();
+```
+
+</Step>
+
+<Step label="4">
+
+## 记录事件
+
+当您的软件包检测到需要采取行动的问题时，调用 `Observe.logEvent()`。使用小写事件名称，并将软件包名称作为第一个部分。使用句点分隔各个部分：
+
+```ts observe.ts
+export function logExpensiveOperation(durationMs: number, thresholdMs: number) {
+  if (!observeModule || !enabled) {
+    return;
+  }
+
+  const { Observe } = observeModule;
+
+  Observe.logEvent('your-package.expensive-operation', {
+    severity: 'warn',
+    body: 'Reduce the work performed by this operation or increase the configured threshold.',
+    attributes: {
+      durationMs,
+      thresholdMs,
+    },
+  });
+}
+```
+
+有关事件命名和添加详细信息的更多信息，请参阅[用户定义的事件](/eas/observe/events/)。
+
+</Step>

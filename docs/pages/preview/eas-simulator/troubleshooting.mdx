@@ -1,0 +1,147 @@
+---
+title: 排查 EAS 模拟器问题
+sidebar_title: 故障排除
+description: 诊断 EAS 模拟器中的访问、会话生命周期、控制器、安装、预览和快速刷新问题。
+---
+
+import { Terminal } from '~/ui/components/Snippet';
+
+## 未找到命令
+
+### `未找到命令 simulator:start`
+
+已安装的 EAS CLI 版本过旧。[安装或更新 EAS CLI](/eas/cli/)，然后查看命令：
+
+<Terminal cmd={['$ eas simulator:start --help']} />
+
+由于 API 处于实验阶段，这些命令仍处于隐藏状态。
+
+## 访问和项目错误
+
+### 账户未启用 EAS Simulator
+
+启动前检查：
+
+<Terminal cmd={['$ eas simulator:availability --json']} />
+
+如果 `available` 为 `false`，请勿重试 `simulator:start`。请使用本地模拟器或仿真器，或[加入等候名单](https://expo.dev/services/simulator)以获取访问权限。
+
+### EAS CLI 报告需要用户账户
+
+请以交互方式登录，或在无头环境中提供 `EXPO_TOKEN`：
+
+<Terminal cmd={['$ eas whoami']} />
+
+### EAS CLI 报告项目未关联
+
+请在 Expo 项目中运行该命令并初始化 EAS：
+
+<Terminal cmd={['$ eas init']} />
+
+## 会话生命周期问题
+
+### 会话启动时间过长
+
+启动时间因设备容量而异。在设备启动期间，轮询现有会话：
+
+<Terminal cmd={['$ eas simulator:get --id <session-id> --json --non-interactive']} />
+
+当状态为 `IN_PROGRESS` 且存在 `remoteConfig` 时，会话已准备就绪。如果状态变为 `STOPPED` 或 `ERRORED`，或者启动命令报告终止性失败，请启动新会话。在第一个会话仍处于启动阶段时启动第二个会话，并不会加快这一过程。
+
+### 非交互式会话未自动停止
+
+`--non-interactive` 会在控制器准备就绪后返回，但不会停止会话。请运行：
+
+<Terminal cmd={['$ eas simulator:stop']} />
+
+## 控制器和隧道问题
+
+### `Remote daemon is unavailable` 或隧道端点处于离线状态
+
+控制器隧道已断开，或远程 VM 已结束。控制器断开会使已安装的应用状态、辅助功能引用和连接配置失效。
+
+如果会话仍处于活动状态，请先停止会话，然后启动一个全新的会话，并重复执行安装 → 打开 → 操作。不要反复针对已失效的端点重试控制器命令。
+
+### `Unknown command: tap` 或 `Unknown command: click`
+
+agent-device 的操作名称是 `press`：
+
+<Terminal cmd={['$ eas simulator:exec npx agent-device@latest press @e2']} />
+
+### 控制器操作卡住
+
+某些 iOS 快照和交互可能需要几十秒。如果操作超时，请在重试前刷新交互式辅助功能树：
+
+<Terminal cmd={['$ eas simulator:exec npx agent-device@latest snapshot -i']} />
+
+即使响应延迟，原始操作也可能已经到达设备；盲目重试可能会导致操作执行两次。
+
+### `install requires an active session or an explicit device selector`
+
+请传入平台：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec npx agent-device@latest install com.example.app ./MyApp.app --platform ios',
+  ]}
+/>
+
+### 截图提示当前没有活动会话
+
+请先打开已安装的应用，然后再截图：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:exec npx agent-device@latest open com.example.app --platform ios',
+    '$ eas simulator:exec npx agent-device@latest screenshot ./shot.png',
+  ]}
+/>
+
+## 应用和构建问题
+
+### 远程设备不包含应用
+
+这是预期行为。每个会话都从一台空白设备开始。请安装本地模拟器或仿真器构建版本，或使用带有 EAS Build 构建产物的 `install-from-source`。
+
+### 屏幕截图显示的是旧源代码
+
+发布构建版本会在构建时嵌入 JavaScript。请使用当前源代码重新构建，确认现有的 EAS Build 具有匹配的指纹，或安装开发构建版本并将其连接到 Metro。
+
+更改源文件不会更新已安装的发布构建版本。
+
+### 快速刷新无法正常工作
+
+请确认以下所有事项：
+
+- 已安装的二进制文件是带有 `expo-dev-client` 的开发构建版本，而不是发布构建版本
+- Metro 仅运行一个实例，且没有其他进程占用端口 8081
+- 开发客户端已连接到公开的 Metro 隧道 URL
+- 模拟器会话和控制器仍处于活动状态
+
+在远程或无头代理环境中使用隧道 v2：
+
+<Terminal cmd={['$ EXPO_UNSTABLE_TUNNEL_V2=1 npx expo start --tunnel']} />
+
+如果首次连接失败，请重置模拟器会话和 Metro 一次，然后重复文档中介绍的开发构建流程。重新连接发布构建版本无法启用快速刷新。
+
+## 浏览器预览问题
+
+### Android 未返回 `webPreviewUrl`
+
+目前不支持 Android 浏览器预览。请改用 agent-device 或 Argent，并收集截图或录屏。
+
+### 预览显示在模拟器内
+
+`webPreviewUrl` 被当作应用 URL 打开了。请改用桌面浏览器打开它。这是浏览器串流，而不是应用深层链接。
+
+## 报告反馈
+
+EAS Simulator 及其 CLI 处于实验阶段。报告问题时，请包含 EAS CLI 版本、会话 ID、平台、控制器类型和失败的命令。
+
+如需反馈官方 EAS Simulator 技能：
+
+<Terminal
+  cmd={[
+    '$ npx --yes submit-expo-feedback@latest --category skills --subject "eas-simulator" "<actionable feedback>"',
+  ]}
+/>

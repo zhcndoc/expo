@@ -1,6 +1,7 @@
 ---
-title: 提交到 Google Play 商店
-description: 了解如何从你的电脑和 CI/CD 服务将应用提交到 Google Play 商店。
+title: 使用 EAS Submit 提交到 Google Play 商店
+sidebar_title: 提交到 Google Play 商店
+description: 了解如何使用 EAS Submit 将您的 Android 应用提交到 Google Play 商店。
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
@@ -8,119 +9,25 @@ import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal } from '~/ui/components/Snippet';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-本指南概述了如何从您的计算机或从 CI/CD 服务将您的应用提交到 Google Play Store。
+[EAS Submit](/deploy/submit-to-app-stores/) 是将 Android 应用上传到 Google Play 商店的推荐方式。`eas submit` 命令在您的本地机器和 CI/CD 环境中的工作方式相同。[EAS Workflows](/eas/workflows/introduction/) 是在构建完成后自动运行该命令的最简单方式。
 
-## 从您的计算机提交您的应用
+## 前提条件
 
 <Prerequisites>
   <Requirement title="注册 Google Play 开发者账号">
-    提交您的应用到 Google Play Store 需要一个 Google Play 开发者账号。您可以在 [Google Play Console 注册页面](https://play.google.com/apps/publish/signup/) 注册 Google Play 开发者账号。
+    要将应用提交到 Google Play 商店，需要拥有 Google Play 开发者账号。请在 [Google Play Console 注册页面](https://play.google.com/apps/publish/signup/) 注册。
   </Requirement>
   <Requirement title="在 Google Play Console 中创建应用">
     在 [Google Play Console](https://play.google.com/apps/publish/) 中点击 **创建应用** 创建一个应用。
   </Requirement>
-  <Requirement title="创建 Google 服务账号">
-    EAS 要求您上传并配置一个 Google 服务账号密钥，以便将您的 Android 应用提交到 Google Play Store。您可以参考 [使用 EAS 上传 Google 服务账号密钥以进行 Play Store 提交](https://github.com/expo/fyi/blob/main/creating-google-service-account.md) 指南来创建。
-  </Requirement>
-  <Requirement title="安装 EAS CLI 并使用您的 Expo 账号进行认证">
-    安装 EAS CLI 并登录您的 Expo 账号：
+  <Requirement title="创建 Google 服务账号密钥并将其上传到 EAS">
+    EAS 需要 Google 服务账号密钥来代表你提交应用。请按照[创建 Google 服务账号密钥](https://expo.fyi/creating-google-service-account)指南创建密钥。然后，使用 EAS 控制台或 EAS CLI 将密钥上传到项目的凭据中：
 
-    <Terminal
-      cmd={{
-        npm: ['$ npm install --global eas-cli && eas login'],
-        yarn: ['$ yarn global add eas-cli && eas login'],
-        pnpm: ['$ pnpm add --global eas-cli && eas login'],
-        bun: ['$ bun add --global eas-cli && eas login'],
-      }}
-    />
-
-  </Requirement>
-  <Requirement title="在 app.json 中包含包名">
-    在 **app.json** 中包含您应用的包名：
-
-    ```json app.json
-    {
-      "android": {
-        "package": "com.yourcompany.yourapp"
-      }
-    }
-    ```
-
-  </Requirement>
-  <Requirement title="构建生产版本应用">
-    您需要一个可用于商店提交的生产构建。您可以使用 [EAS Build](/build/introduction/) 创建：
-
-    <Terminal cmd={['$ eas build --platform android --profile production']} />
-
-    另外，您也可以使用 `eas build --platform android --profile production --local` 在自己的电脑上构建应用，或者使用 Android Studio。
-
-  </Requirement>
-  <Requirement title="至少手动上传一次您的应用">
-    您至少需要手动上传一次您的应用。这是 Google Play Store API 的限制。
-
-    了解更多请参阅 [Android 应用的首次提交](https://expo.fyi/first-android-submission) 指南。
-
-  </Requirement>
-</Prerequisites>
-
-完成所有先决条件后，您就可以开始提交流程了。
-
-运行以下命令将构建提交到 Google Play Store：
-
-<Terminal cmd={['$ eas submit --platform android']} />
-
-该命令会一步一步引导您完成提交应用的过程。您可以通过在 **eas.json** 中添加提交配置文件来配置提交流程。有关您可以提供的所有选项，请参阅 [eas.json 参考](/eas/json/#android-specific-options-1)。
-
-为了加快提交流程，您可以使用 `--auto-submit` 标志在构建完成后自动提交构建：
-
-<Terminal cmd={['$ eas build --platform android --auto-submit']} />
-
-有关 `--auto-submit` 标志的更多信息，请参阅 [自动化提交](/build/automate-submissions/) 指南。
-
-## 使用 CI/CD 服务提交您的应用
-
-<Prerequisites>
-  <Requirement title="注册 Google Play 开发者账号">
-    提交您的应用到 Google Play Store 需要一个 Google Play 开发者账号。您可以在 [Google Play Console 注册页面](https://play.google.com/apps/publish/signup/) 注册 Google Play 开发者账号。
-  </Requirement>
-  <Requirement title="在 Google Play Console 中创建应用">
-    在 [Google Play Console](https://play.google.com/apps/publish/) 中点击 **创建应用** 创建一个应用。
-  </Requirement>
-  <Requirement title="创建 Google 服务账号">
-    EAS 要求您上传并配置一个 Google 服务账号密钥，以便将您的 Android 应用提交到 Google Play Store。您可以参考 [使用 EAS 上传 Google 服务账号密钥以进行 Play Store 提交](https://github.com/expo/fyi/blob/main/creating-google-service-account.md) 指南来创建。
-  </Requirement>
-  <Requirement title="安装 EAS CLI 并使用您的 Expo 账号进行认证">
-    安装 EAS CLI 并登录您的 Expo 账号：
-
-    <Terminal
-      cmd={{
-        npm: ['$ npm install --global eas-cli && eas login'],
-        yarn: ['$ yarn global add eas-cli && eas login'],
-        pnpm: ['$ pnpm add --global eas-cli && eas login'],
-        bun: ['$ bun add --global eas-cli && eas login'],
-      }}
-    />
-
-  </Requirement>
-  <Requirement title="在 app.json 中包含包名">
-    在 **app.json** 中包含您应用的包名：
-
-    ```json app.json
-    {
-      "android": {
-        "package": "com.yourcompany.yourapp"
-      }
-    }
-    ```
-
-  </Requirement>
-  <Requirement title="将您的 Google 服务账号密钥上传到 EAS 控制台">
-    然后，您需要将 Google 服务账号密钥上传到项目凭据下的 EAS 控制台。
     <Tabs>
-    <Tab label="EAS 仪表盘">
-    - 前往您项目的 EAS 控制台，点击 **凭据**，然后在 **Android** 下点击您应用的 **应用标识符**。
+    <Tab label="EAS 控制台">
+    - 前往项目的 EAS 控制台，点击 **凭据**，然后在 **Android** 下点击应用的 **应用标识符**。
     - 在 **服务凭据** 下，点击 **添加 Google 服务账号密钥**。
-    - 在 **更改 Google 服务账号密钥** 下，确保已选择 **上传新密钥**，并上传下载的 JSON 密钥。这将把该密钥添加到您项目的凭据中。
+    - 确保已选择 **上传新密钥**，然后上传下载的 JSON 密钥。
 
     <ContentSpotlight
       alt="将 Google 服务账号密钥上传到 EAS 控制台中的服务凭据下"
@@ -129,77 +36,114 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
     />
     </Tab>
     <Tab label="EAS CLI">
-    您也可以使用 EAS CLI 将 JSON 密钥上传到 EAS 控制台：
     - 运行 `eas credentials --platform android`
-    - 当提示 **Which build profile do you want to configure?** 时，选择 **production**
-    - 当提示 **What do you want to do?** 时，选择 **Google Service Account** > **Upload a Google Service Account Key**
-    - 然后添加 JSON 密钥文件路径以将文件上传到 EAS 控制台
-
-    <ContentSpotlight
-      alt="将 Google 服务账号密钥上传到 EAS 控制台中的服务凭据下"
-      src="/static/images/tutorial/eas/credentials-03.png"
-      className="max-w-[540px]"
-    />
-
+    - 当出现提示 **你想配置哪个构建配置文件？** 时，选择 **production**
+    - 当出现提示 **你想做什么？** 时，选择 **Google Service Account** > **Upload a Google Service Account Key**
+    - 输入 JSON 密钥文件的路径
     </Tab>
     </Tabs>
 
   </Requirement>
-  <Requirement title="构建生产版本应用">
-    您需要一个可用于商店提交的生产构建。您可以使用 [EAS Build](/build/introduction/) 创建：
+  <Requirement title="在应用配置中包含包名">
+    在 **app.json** 中包含应用的包名：
 
-    <Terminal cmd={['$ eas build --platform android --profile production']} />
-
-    另外，您也可以使用 `eas build --platform android --profile production --local` 在自己的电脑上构建应用，或者使用 Android Studio。
+    ```json app.json
+    {
+      "android": {
+        "package": "com.yourcompany.yourapp"
+      }
+    }
+    ```
 
   </Requirement>
-  <Requirement title="至少手动上传一次您的应用">
-    您至少需要手动上传一次您的应用。这是 Google Play Store API 的限制。
+  <Requirement title="安装 EAS CLI 并使用 Expo 账号进行身份验证">
+    安装 EAS CLI 并使用 Expo 账号登录：
 
-    了解更多请参阅 [Android 应用的首次提交](https://expo.fyi/first-android-submission) 指南。
+    <Terminal
+      cmd={{
+        npm: ['$ npm install --global eas-cli && eas login'],
+        yarn: ['$ yarn global add eas-cli && eas login'],
+        pnpm: ['$ pnpm add --global eas-cli && eas login'],
+        bun: ['$ bun add --global eas-cli && eas login'],
+      }}
+    />
 
   </Requirement>
 </Prerequisites>
 
-完成所有先决条件后，您就可以设置 CI/CD 流水线将您的应用提交到 Google Play Store。
+## 构建生产版本应用
 
-### 使用 EAS Workflows CI/CD
+你需要一个生产版本的 **.aab**（Android App Bundle）才能提交。Google Play 要求新应用以应用包而非 **.apk** 文件的形式发布，并会根据应用包为每台设备生成经过优化的 APK。使用 [EAS Build](/build/introduction/) 创建应用包：
 
-您可以使用 [EAS Workflows](/eas/workflows/get-started/) 自动构建并提交您的应用。
+<Terminal cmd={['$ eas build --platform android --profile production']} />
 
-1. 在项目根目录下创建一个名为 **.eas/workflows/submit-android.yml** 的工作流文件。
-2. 在 **submit-android.yml** 中，您可以使用以下工作流来启动一个提交 Android 应用的任务：
+或者，使用 `eas build --platform android --profile production --local` 在你自己的计算机上构建，或使用 Android Studio 构建。
 
-   ```yaml .eas/workflows/submit-android.yml
-   on:
-     push:
-       branches: ['main']
+默认的 `production` 配置会生成 **.aab**。只有在构建配置中将 [`android.buildType`](/eas/json/#buildtype) 设置为 `apk` 时，才会生成 **.apk**，这对于[在模拟器或设备上安装](/build-reference/apk/)很有用，但无法提交到 Google Play 商店。
 
-   jobs:
-     build_android:
-       name: 构建 Android 应用
-       type: build
-       params:
-         platform: android
-         profile: production
+## 首次提交
 
-     # @info #
-     submit_android:
-       name: 提交到 Google Play Store
-       needs: [build_android]
-       type: submit
-       params:
-         profile: production
-         build_id: ${{ needs.build_android.outputs.build_id }}
-     # @end #
-   ```
+如果这是你的应用首次提交，默认的 `eas submit` 命令可以直接使用，并会在[内部测试轨道](/eas/json/#track)上创建应用的第一个版本。在运行该命令之前，请完成[前提条件](#prerequisites)，确保你的应用已存在于 Google Play Console 中，并且 EAS 拥有一个[Google 服务账号密钥](https://expo.fyi/creating-google-service-account)，可以代表你进行提交。在你完成商店信息和设置任务之前，应用会一直处于 Play Console 的草稿状态；而这些任务是将版本发布到生产环境前必须完成的。
 
-   上面的工作流将构建 Android 应用，然后将其提交到 Google Play Store。
+- **更愿意自行完成首次上传？** 请按照[手动提交指南](/submit/android-manual/)在 Play Console 中创建第一个版本。
+- **想在不发布的情况下上传？** 在 **eas.json** 的提交配置文件中将 [`releaseStatus`](/eas/json/#releasestatus) 设置为 `draft`，然后在 Play Console 中完成版本发布。
 
-### 使用其他 CI/CD 服务
+## 使用 `eas submit` 提交
 
-您可以通过运行以下命令，使用其他 CI/CD 服务通过 EAS Submit 提交您的应用，例如 GitHub Actions、GitLab CI 等：
+构建准备就绪后，将其提交到 Google Play 商店：
+
+<Terminal cmd={['$ eas submit --platform android']} />
+
+该命令将引导你选择构建版本并上传。通过在 **eas.json** 中添加提交配置文件来配置提交流程。有关所有可用选项，请参阅 [eas.json 参考](/eas/json/#android-specific-options-1)。
+
+### 一步完成构建和提交
+
+将 `--auto-submit` 传递给 `eas build`，即可自动将完成的构建交给 EAS Submit：
+
+<Terminal cmd={['$ eas build --platform android --auto-submit']} />
+
+详情请参阅[自动提交](/build/automate-submissions/)。
+
+## 使用 EAS Workflows 自动化
+
+[EAS Workflows](/eas/workflows/introduction/) 在 EAS 基础设施上运行相同的 `eas submit` 命令，可由 git push 触发，也可以通过 CLI 手动运行。工作流使用您在[先决条件](#prerequisites)中上传的 Google 服务帐号密钥向 Google Play 进行身份验证。
+
+创建一个名为 **.eas/workflows/submit-android.yml** 的工作流文件，内容如下：
+
+```yaml .eas/workflows/submit-android.yml
+name: Submit Android
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  build_android:
+    name: Build Android app
+    type: build
+    params:
+      platform: android
+      profile: production
+
+  submit_android:
+    name: Submit to Google Play Store
+    needs: [build_android]
+    type: submit
+    params:
+      profile: production
+      build_id: ${{ needs.build_android.outputs.build_id }}
+```
+
+每次向 `main` 推送时，该工作流都会构建 Android 应用并将其提交到 Google Play。使用以下命令手动触发：
+
+<Terminal cmd={['$ eas workflow:run submit-android.yml']} />
+
+有关更多模式，请参阅[工作流示例指南](/eas/workflows/examples/introduction/)。
+
+## 使用其他 CI/CD 服务
+
+你可以从任何 CI/CD 服务运行 `eas submit`，例如 GitHub Actions、GitLab CI 等：
 
 <Terminal cmd={['$ eas submit --platform android --profile production']} />
 
-此命令需要一个 [个人访问令牌](/accounts/programmatic-access/#personal-access-tokens) 来使用您的 Expo 账号进行认证。一旦您拥有令牌，请在 CI/CD 服务中提供 `EXPO_TOKEN` 环境变量，这将允许 `eas submit` 命令运行。
+这需要使用[个人访问令牌](/accounts/programmatic-access/#personal-access-tokens)向你的 Expo 账户进行身份验证。在 CI 服务中设置 `EXPO_TOKEN` 环境变量，这样 `eas submit` 就可以以非交互方式运行。

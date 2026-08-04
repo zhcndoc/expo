@@ -15,13 +15,13 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { SnackInline } from '~/ui/components/Snippet';
 import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
-> **warning** **[已弃用](/more/release-statuses/#deprecated)：** `expo-background-fetch` 库正在被 [`expo-background-task`](background-task.mdx) 中的新版本所取代。`expo-background-fetch` 不再接收补丁，并将在即将到来的版本中移除。
+> **警告** **[已弃用](/more/release-statuses/#deprecated)：** `expo-background-fetch` 库正在被 [`expo-background-task`](background-task.mdx) 中的新版本所取代。`expo-background-fetch` 不再接收补丁，并将在即将到来的版本中移除。
 
 `expo-background-fetch` 提供了一个用于执行[后台获取](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh)任务的 API，允许你在后台定期运行特定代码以更新你的应用。该模块在底层使用了 [TaskManager](task-manager.mdx) 原生 API。
 
-#### 已知问题&ensp;<PlatformTags platforms={['ios']} />
+## 已知问题&ensp;<PlatformTags platforms={['ios']} />
 
-`BackgroundFetch` 仅在应用进入后台时可用，如果应用已终止或设备重启后则无法工作。你可以查看[相关的 GitHub issue](https://github.com/expo/expo/issues/3582)了解更多详情。
+`BackgroundFetch` 仅在应用进入后台时可用，如果应用已终止或设备重启后则无法工作。你可以查看[相关的 GitHub 问题](https://github.com/expo/expo/issues/3582)了解更多详情。
 
 在 iOS 上，`BackgroundFetch` 库要求你使用[开发构建](/develop/development-builds/introduction/)，因为 iOS Expo Go 应用中未启用 Background Fetch。
 
@@ -52,7 +52,7 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 下面是一个演示如何使用 `expo-background-fetch` 的示例。
 
-<SnackInline label="Background Fetch Usage" dependencies={['expo-background-fetch', 'expo-task-manager']}>
+<SnackInline label="后台获取用法" dependencies={['expo-background-fetch', 'expo-task-manager']}>
 
 ```tsx
 import { useState, useEffect } from 'react';
@@ -67,7 +67,7 @@ const BACKGROUND_FETCH_TASK = 'background-fetch';
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   const now = Date.now();
 
-  console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
+  console.log(`在日期 ${new Date(now).toISOString()} 收到后台获取调用`);
 
   // 确保返回成功结果类型！
   return BackgroundFetch.BackgroundFetchResult.NewData;
@@ -120,13 +120,13 @@ export default function BackgroundFetchScreen() {
     <View style={styles.screen}>
       <View style={styles.textContainer}>
         <Text>
-          Background fetch status:{' '}
+          后台获取状态：{' '}
           <Text style={styles.boldText}>
             {status && BackgroundFetch.BackgroundFetchStatus[status]}
           </Text>
         </Text>
         <Text>
-          Background fetch task name:{' '}
+          后台获取任务名称：{' '}
           <Text style={styles.boldText}>
             {isRegistered ? BACKGROUND_FETCH_TASK : '尚未注册！'}
           </Text>
@@ -171,8 +171,8 @@ const styles = StyleSheet.create({
 5. 导航到 `Document` 菜单并选择 `Simulate Background Fetch - Expo Go`：
 
 <ContentSpotlight
-  alt="Xcode 菜单，包含 Simulate Background Fetch 选项"
-  src="/static/images/simulate-background-fetch-instruments.png"
+  alt="Xcode Menu with Simulate Background Fetch option"
+  src="/static/images/simulate-background-fetch-instruments.webp"
 />
 
 对于 Android，你可以将任务的 `minimumInterval` 选项设置为一个较小的数值，然后像这样将应用切到后台：
@@ -199,4 +199,4 @@ import * as BackgroundFetch from 'expo-background-fetch';
 
 在 Android 上，该模块可能会在设备启动时监听。这对于继续执行使用 `startOnBoot` 启动的任务是必要的。它还会保持那些很快就会进入空闲和休眠状态的设备“唤醒”，以提高任务的可靠性。因此，`RECEIVE_BOOT_COMPLETED` 和 `WAKE_LOCK` 两项权限会被自动添加。
 
-<AndroidPermissions permissions={['RECEIVE_BOOT_COMPLETED', 'WAKE_LOCK']} />
+<AndroidPermissions permissions={['RECEIVE_BOOT_COMPLETED', 'WAKE_LOCK']} />。

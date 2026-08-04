@@ -1,0 +1,171 @@
+---
+title: 手动将 Android 应用提交到 Google Play 商店
+sidebar_title: 手动提交 Android 应用
+description: 首次将 Android 应用上传到 Google Play 管理中心的分步指南。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Step } from '~/ui/components/Step';
+
+如果你是**首次**将 Android 应用提交到 Google Play 商店，本指南将介绍如何手动上传应用，并在 Google Play Console（一个网页界面）中创建首次发布版本。
+
+> **info** **手动上传是可选的**。[`eas submit`](/submit/android/) 命令可以直接创建应用的首次发布版本，默认发布到内部测试轨道。如果你更希望自己在 Play Console 中创建首次发布版本，请使用本指南。
+
+> **warning** Google Play Console 的控制面板会随时间变化。如果本指南中的截图或标签与您看到的内容不一致，请[在 GitHub 上提交问题](https://github.com/expo/expo/issues/new/choose)告知我们。
+
+## 创建您的第一个发布版本
+
+<Step label="1">
+
+打开 [Google Play Console](https://play.google.com/apps/publish/)，然后点击 **创建应用**。
+
+<ContentSpotlight
+  alt="Google Play Console 主屏幕，其中显示“创建应用”按钮"
+  src="/static/images/submit/first-android-submission/01-open-google-play-console.webp"
+/>
+
+</Step>
+
+<Step label="2">
+
+输入 **应用名称**，选择 **默认语言**、**应用或游戏**、**免费或付费**，然后点击 **创建应用**。
+
+<ContentSpotlight
+  alt="Play Console 中的创建应用表单"
+  src="/static/images/submit/first-android-submission/02-create-application.webp"
+/>
+
+</Step>
+
+<Step label="3">
+
+您将被重定向到 **信息中心**，在这里填写有关 Android 应用的所有信息。
+
+<ContentSpotlight
+  alt="显示设置任务的 Play Console 信息中心"
+  src="/static/images/submit/first-android-submission/03-dashboard.webp"
+/>
+
+</Step>
+
+<Step label="4">
+
+按照步骤填写应用详情。首先准备应用的内部测试版本。在 **立即开始测试** 下点击 **查看任务**。
+
+> **info** 此步骤非常重要。否则，在尝试发布时，您会看到与应用信息相关的错误。
+
+<ContentSpotlight
+  alt="包含“查看任务”按钮的信息中心任务列表"
+  src="/static/images/submit/first-android-submission/04-steps.webp"
+/>
+
+</Step>
+
+<Step label="5">
+
+在 **内部测试** 页面中，在 **测试人员** 下点击 **创建电子邮件列表**，然后添加要与其分享内部测试版本的用户。创建（或选择现有的）测试人员列表后，点击 **保存**。
+
+<ContentSpotlight
+  alt="创建测试人员电子邮件列表"
+  src="/static/images/submit/first-android-submission/05-create-email-list.webp"
+/>
+
+<ContentSpotlight
+  alt="显示已保存测试人员列表的内部测试选项卡"
+  src="/static/images/submit/first-android-submission/05-testing.webp"
+/>
+
+</Step>
+
+<Step label="6">
+
+点击 **创建新版本**。
+
+<ContentSpotlight
+  alt="内部测试页面上的“创建新版本”按钮"
+  src="/static/images/submit/first-android-submission/06-create-release.webp"
+/>
+
+</Step>
+
+<Step label="7">
+
+您将被重定向到应用完整性页面。选择 **选择签名密钥** > **Google 生成的密钥**。使用 Google 生成的密钥，即使丢失 Android 密钥库，也可以上传应用。
+
+<ContentSpotlight
+  alt="选择 Google 生成的签名密钥"
+  src="/static/images/submit/first-android-submission/07-google-app-signing.webp"
+/>
+
+</Step>
+
+<Step label="8">
+
+在 **应用捆绑包** 下点击 **上传**，然后从计算机中选择 **.aab** 文件。如果您尚未创建构建版本，请使用 [`eas build`](/tutorial/eas/android-production-build/#create-a-production-build) 创建一个。
+
+<ContentSpotlight
+  alt="上传 aab 压缩包"
+  src="/static/images/submit/first-android-submission/08-upload-aab-archive.webp"
+/>
+
+</Step>
+
+<Step label="9">
+
+上传完成后，您将看到压缩包类型和 **版本号**。**版本号** 用于标识每个发布版本。每个新发布版本都必须使用唯一的值。在 Expo 项目中，可以在应用配置中使用 `expo.android.versionCode` 设置此值，或使用[远程版本来源](/build-reference/app-versions/)自动递增版本号。
+
+<ContentSpotlight
+  alt="查看已上传压缩包的版本号"
+  src="/static/images/submit/first-android-submission/09-view-version-code.webp"
+/>
+
+</Step>
+
+<Step label="10">
+
+输入 **发布名称**，然后点击 **下一步**。在 **预览并确认** 页面上，您可能会看到关于 _“... no deobfuscation file associated with this App Bundle ...”_ 的警告。您现在可以跳过此步骤，或者使用 [`expo-build-properties`](/versions/latest/sdk/build-properties/#pluginconfigtypeandroid)[启用 ProGuard 规则](/versions/latest/sdk/build-properties/#pluginconfigtypeandroid)。点击 **保存并发布**。
+
+<ContentSpotlight
+  alt="提交第一个发布版本页面"
+  src="/static/images/submit/first-android-submission/10-submit-first-release.webp"
+/>
+
+</Step>
+
+<Step label="11">
+
+您将进入 **内部测试** > **发布版本**摘要页面。点击 **推广版本**，即可让测试人员使用您的应用，或将其推广到生产环境。
+
+<ContentSpotlight
+  alt="发布版本摘要页面"
+  src="/static/images/submit/first-android-submission/11-release-summary.webp"
+/>
+
+</Step>
+
+<Step label="12">
+
+要与您创建的测试人员列表分享发布版本，请点击 **测试人员** > **复制链接**，然后分享该链接。测试人员可以通过该链接在其设备上安装应用。
+
+<ContentSpotlight
+  alt="复制测试人员链接"
+  src="/static/images/submit/first-android-submission/12-testers-copy-link.webp"
+/>
+
+</Step>
+
+## 后续步骤
+
+返回**控制面板**，完成应用的剩余任务：隐私政策、商店资源及其他详细信息。应用必须完成这些任务后才能发布到生产环境。
+
+<ContentSpotlight
+  alt="包含待处理任务的控制面板"
+  src="/static/images/submit/first-android-submission/13-pending-tasks.webp"
+/>
+
+### 延伸阅读
+
+- Play 管理中心中的[缺少隐私政策](https://expo.fyi/missing-privacy-policy)错误
+- 为应用的商店页面[创建商店资源](/guides/store-assets/)
+- [创建 Google 服务账号密钥](https://expo.fyi/creating-google-service-account)：使用 `eas submit --platform android` 时所必需
+- [使用 EAS Submit 提交到 Google Play 商店](/submit/android/)

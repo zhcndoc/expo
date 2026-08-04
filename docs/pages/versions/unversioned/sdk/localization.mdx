@@ -9,9 +9,9 @@ platforms: ['android', 'ios', 'tvos', 'web', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
-import { ConfigPluginExample } from '~/ui/components/ConfigSection';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
 
-`expo-localization` 允许你对应用进行本地化，为特定地区、语言或文化定制体验。它还提供对原生设备上区域设置数据的访问。将 [`lingui-js`](https://lingui.dev/introduction)、[`react-i18next`](https://react.i18next.com/)、[`react-intl`](https://formatjs.io/docs/getting-started/installation/)、[`i18n-js`](https://github.com/fnando/i18n-js) 或 [`react-native-intlayer`](https://intlayer.org/doc/environment/react-native-and-expo) 等本地化库与 `expo-localization` 一起使用，将使你能够为用户创建非常易用的体验。
+`expo-localization` 允许您将应用本地化，为特定地区、语言或文化定制使用体验。它还提供对原生设备上区域设置数据的访问。将 [`lingui-js`](https://lingui.dev/introduction)、[`react-i18next`](https://react.i18next.com/)、[`react-intl`](https://formatjs.io/docs/getting-started/installation/)、[`i18n-js`](https://github.com/fnando/i18n-js) 或 [`react-native-intlayer`](https://intlayer.org/doc/environment/react-native-and-expo) 等本地化库与 `expo-localization` 结合使用，可以帮助您为用户打造非常易于访问的体验。
 
 ## 安装
 
@@ -19,23 +19,55 @@ import { ConfigPluginExample } from '~/ui/components/ConfigSection';
 
 ## app config 中的配置
 
-如果你在项目中使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-localization` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置各种无法在运行时设置的属性，并且这些属性需要重新构建新的应用二进制文件后才会生效。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
+如果你在项目中使用 config plugins（[持续原生生成 (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-localization` 内置的 [config plugin](/config-plugins/introduction/) 进行配置。该插件允许你配置各种无法在运行时设置的属性，并且这些属性需要重新构建新的应用二进制文件后才会生效。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
 
 <ConfigPluginExample>
 
 ```json app.json
 {
   "expo": {
-    "plugins": ["expo-localization"]
+    "plugins": [
+      [
+        "expo-localization",
+        {
+          "supportsRTL": true,
+          "forcesRTL": false,
+          "supportedLocales": ["en", "ja"]
+        }
+      ]
+    ]
   }
 }
 ```
 
 </ConfigPluginExample>
 
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'supportsRTL',
+      description:
+        "应用是否允许 RTL 布局。启用后，应用会根据 RTL 设备语言使用 RTL 布局，遵循 React Native 的 `I18nManager`。",
+      default: 'true',
+    },
+    {
+      name: 'forcesRTL',
+      description:
+        '是否无论设备语言为何都强制使用 RTL 布局。适用于测试，或仅针对 RTL 区域设置本地化的应用。',
+      default: 'false',
+    },
+    {
+      name: 'supportedLocales',
+      description:
+        '应用支持的区域设置，用于在系统设置中启用按应用选择语言的功能。可以提供一个供两个平台共用的数组，也可以分别提供平台专属的 `ios` 和 `android` 数组。',
+      default: 'undefined',
+    },
+  ]}
+/>
+
 ## 使用
 
-有关使用 `expo-localization` 以及为从右到左语言添加支持的更多信息，请参阅 [Localization](/guides/localization) 指南。
+有关使用 `expo-localization` 以及为从右到左语言添加支持的更多信息，请参阅 [本地化](/guides/localization) 指南。
 
 ## API
 

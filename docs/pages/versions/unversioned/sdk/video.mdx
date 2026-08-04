@@ -18,7 +18,7 @@ import { CODE } from '~/ui/components/Text';
 
 `expo-video` 是一个跨平台、高性能的视频组件，适用于 React Native 和 Expo，并支持 Web。
 
-#### 已知问题&ensp;<PlatformTags platforms={['android']} />
+## 已知问题&ensp;<PlatformTags platforms={['android']} />
 
 当两个 [`VideoView`](#videoview) 组件相互重叠，并且它们的 [`contentFit`](#contentfit) 属性设置为 [`cover`](#videocontentfit) 时，其中一个视频可能会显示到边界之外。这是一个[已知的上游问题](https://github.com/androidx/media/issues/1107)。要解决此问题，请使用 [`surfaceType`](#surfacetype) 属性，并将其设置为 [`textureView`](#surfacetype-1)。
 
@@ -133,10 +133,10 @@ const styles = StyleSheet.create({
 
 ### 接收事件
 
-[`VideoPlayer`](#videoplayer) 属性的变化不会更新 React 状态。因此，要显示有关 `VideoPlayer` 当前状态的信息，有必要监听它发出的[事件](#videoplayerevents)。
-事件系统基于 [`expo`](../sdk/expo) 包中的 [`EventEmitter`](../sdk/expo/#eventemitter) 类和 [hooks](../sdk/expo/#hooks)。监听事件有几种方式：
+[`VideoPlayer`](#videoplayer) 属性的变化不会更新 React 状态。因此，要显示有关 `VideoPlayer` 当前状态的信息，必须监听它发出的[事件](#videoplayerevents)。
+事件系统基于 [`EventEmitter`](../sdk/expo/#eventemittertype) 类以及来自 [`expo`](../sdk/expo) 包的[钩子](../sdk/expo/#hooks)。监听事件有几种方式：
 
-#### `useEvent` hook
+#### `useEvent` 钩子
 
 创建一个监听器，返回一个可用于组件中的有状态值。组件卸载时也会自动清理。
 
@@ -148,7 +148,7 @@ const { status, error } = useEvent(player, 'statusChange', { status: player.stat
 // 组件其余部分...
 ```
 
-#### `useEventListener` hook
+#### `useEventListener` 钩子
 
 基于 `Player.addListener` 和 `Player.removeListener` 方法，创建一个带自动清理的事件监听器。
 
@@ -189,7 +189,7 @@ useEffect(() => {
 
 `expo-video` 支持使用 `require` 函数加载本地媒体进行播放。你可以直接将结果作为源使用，或者如果你还想配置其他属性，也可以将其赋值给 [`VideoSource`](#videosource) 的 `assetId` 参数。
 
-```tsx Playing local media
+```tsx 播放本地媒体
 import { VideoSource } from 'expo-video';
 
 const assetId = require('./assets/bigbuckbunny.mp4');
@@ -215,7 +215,7 @@ const player2 = useVideoPlayer(videoSource);
 
 在 iOS 上，请务必不要使用资产信息中的 `localUri` 属性，因为它不包含读取该资产所需的权限。
 
-```tsx Playing media from media library
+```tsx 播放媒体库中的媒体
 import * as MediaLibrary from 'expo-media-library/legacy';
 import { VideoSource, useVideoPlayer, VideoView } from 'expo-video';
 
@@ -340,10 +340,10 @@ const styles = StyleSheet.create({
 
 ### 直接使用 VideoPlayer
 
-在大多数情况下，应使用 [`useVideoPlayer`](#usevideoplayersource-setup) hook 来创建 `VideoPlayer` 实例。它会管理播放器的生命周期，并确保在组件卸载时正确释放。不过，在某些高级用例中，可能需要创建一个在组件卸载时不会自动销毁的 `VideoPlayer`。
-在这些情况下，可以使用 [`createVideoPlayer`](#videocreatevideoplayersource) 函数创建 `VideoPlayer`。你需要注意这种方式带来的风险，因为当播放器不再需要时，必须由你负责调用 [`release()`](../sdk/expo/#release) 方法。如果处理不当，这种方式可能会导致内存泄漏。
+在大多数情况下，应使用 [`useVideoPlayer`](#usevideoplayersource-setup-playerbuilderoptions) hook 创建 `VideoPlayer` 实例。它会管理播放器的生命周期，并确保组件卸载时正确释放播放器。不过，在某些高级使用场景中，可能需要创建一个不会在组件卸载时自动销毁的 `VideoPlayer`。
+在这些情况下，可以使用 [`createVideoPlayer`](#videocreatevideoplayersource-playerbuilderoptions) 函数创建 `VideoPlayer`。需要注意，这种方式存在一定风险，因为当播放器不再需要时，您需要负责调用 [`release()`](../sdk/expo/#release) 方法。如果处理不当，这种方式可能会导致内存泄漏。
 
-```tsx Creating player instance
+```tsx 创建播放器实例
 import { createVideoPlayer } from 'expo-video';
 const player = createVideoPlayer(videoSource);
 ```

@@ -23,7 +23,7 @@ import { Terminal } from '~/ui/components/Snippet';
 
 ### 使用 Expo 推送通知服务不是必须的
 
-你可以为 Expo 项目使用任何推送通知服务。[`expo-notifications` 中的 `getDevicePushTokenAsync` 方法](/versions/latest/sdk/notifications/#getdevicepushtokenasync-devicepushtoken) 可让你获取原生设备推送令牌，然后你可以将其用于其他服务，甚至 [直接通过 FCM 和 APNs 发送通知](/push-notifications/sending-notifications-custom)。
+你可以将任何推送通知服务用于 Expo 项目。[`expo-notifications` 中的 `getDevicePushTokenAsync` 方法](/versions/latest/sdk/notifications/#getdevicepushtokenasync)允许你获取原生设备推送令牌，然后将其用于其他服务，或者甚至[直接通过 FCM 和 APNs 发送通知](/push-notifications/sending-notifications-custom)。
 
 ### 到通知服务的连接是加密的
 
@@ -57,9 +57,9 @@ Expo 会尽最大努力将通知传递给由 Google 和 Apple 运营的推送通
 
 ### 通知无法正常工作
 
-推送通知涉及很多环节，因此原因可能很多。为了缩小问题范围，请查看 [push ticket](/push-notifications/sending-notifications/#push-tickets) 和 [push receipt](/push-notifications/sending-notifications/#push-receipts) 中的错误信息。
+推送通知涉及很多环节，因此原因可能很多。为了缩小问题范围，请查看 [推送票据](/push-notifications/sending-notifications/#push-tickets) 和 [推送回执](/push-notifications/sending-notifications/#push-receipts) 中的错误信息。
 
-你还可以在应用中测试 [本地通知](/versions/latest/sdk/notifications/#schedulenotificationasyncnotificationrequest-notificationrequestinput-promisestring) 进一步缩小范围。这可以确保你的客户端逻辑全部正确，并将问题范围缩小到服务端或应用凭证。
+你还可以通过在应用中测试[本地通知](/versions/latest/sdk/notifications/#schedulenotificationasyncrequest)来进一步缩小问题范围。这样可以确保客户端逻辑全部正确，并将问题定位到服务器端或应用凭证。
 
 <Collapsible summary="在这里查看一些可用于获取推送回执的快速终端命令">
 
@@ -89,7 +89,7 @@ curl -H "Content-Type: application/json" -X POST "https://exp.host/--/api/v2/pus
 
 这表明你的凭证配置有误，或者在生产应用中根本没有配置凭证。在 SDK 53 及更高版本中，Expo Go 不支持推送通知功能，因此要测试推送，你应该使用 [开发构建](/develop/development-builds/introduction/)。在 SDK 52 及更早版本中，Expo Go 使用的是 Expo 的凭证，因此无需配置你自己的凭证也能在开发环境中正常使用推送通知。
 
-当你为应用商店构建应用时，需要生成并使用自己的凭证。在 Android 上，请参照[本指南](/push-notifications/fcm-credentials)。在 iOS 上，这由你的 [push key](/app-signing/app-credentials/#push-notification-keys) 处理（吊销与你的应用关联的 push key 会导致通知投递失败。要修复它，请使用 `eas credentials` 添加新的 push key）。
+当你为应用商店构建应用时，需要生成并使用自己的凭证。在 Android 上，请参照[本指南](/push-notifications/fcm-credentials)。在 iOS 上，这由你的 [推送密钥](/app-signing/app-credentials/#push-notification-keys)处理（吊销与你的应用关联的推送密钥会导致通知投递失败。要修复它，请使用 `eas credentials` 添加新的推送密钥）。
 
 更多信息请参见 [应用签名](/app-signing/app-credentials)。
 
@@ -116,15 +116,15 @@ curl -H "Content-Type: application/json" -X POST "https://exp.host/--/api/v2/pus
 
 <Terminal cmd={['$ eas build --profile [profile] --platform ios']} />
 
-如需可视化指南，请查看 [Expo Notifications with EAS 视频](https://youtu.be/BCCjGtKtBjE?t=2123)。
+如需可视化指南，请查看 [使用 EAS 配置 Expo 通知的视频](https://youtu.be/BCCjGtKtBjE?t=2123)。
 
 ### 发送通知时的错误信息
 
-查看返回的 push ticket 或 receipt 的 `details` 属性以获取更多信息。[阅读此处](/push-notifications/sending-notifications/#errors) 了解常见错误码响应及其对应解决方案。
+查看返回的推送票据或回执的 `details` 属性以获取更多信息。[在此处阅读](/push-notifications/sending-notifications/#errors)常见错误码响应及其对应的解决方案。
 
 ### 在 iOS 上获取推送令牌耗时很长
 
-`getDevicePushTokenAsync` 和 `getExpoPushTokenAsync` 在 iOS 上有时可能需要很长时间才能完成。这不在 `expo-notifications` 的控制范围内，正如 Apple 的 [Troubleshooting Push Notifications](https://developer.apple.com/library/archive/technotes/tn2265/_index.html) 技术说明中所述：
+`getDevicePushTokenAsync` 和 `getExpoPushTokenAsync` 在 iOS 上有时可能需要很长时间才能完成。这不在 `expo-notifications` 的控制范围内，正如 Apple 的[《排查推送通知问题》](https://developer.apple.com/library/archive/technotes/tn2265/_index.html)技术说明中所述：
 
 > 这不一定代表错误状态。系统可能根本没有互联网连接，因为它超出了任何基站或 Wi‑Fi 接入点的范围，或者处于飞行模式。应用不应将其视为错误，而应继续正常运行，只禁用依赖推送通知的功能。
 
@@ -142,7 +142,7 @@ curl -H "Content-Type: application/json" -X POST "https://exp.host/--/api/v2/pus
 <Collapsible summary="稍后再试一次">
 
 - 设备附近的 APNS 服务器可能宕机了，如[此论坛帖子](https://developer.apple.com/forums/thread/52224)所示。出去走走，稍后再试！
-- 按照[此 GitHub 评论](https://github.com/expo/expo/issues/10369#issuecomment-717872956) 的建议，几天后再试。
+- 按照[此 GitHub 评论](https://github.com/expo/expo/issues/10369#issuecomment-717872956)的建议，几天后再试。
 
 </Collapsible>
 
@@ -160,16 +160,16 @@ curl -H "Content-Type: application/json" -X POST "https://exp.host/--/api/v2/pus
 
 <Collapsible summary="使用 SIM 卡设置你的设备">
 
-如果出现此问题的设备尚未使用 SIM 卡完成设置，根据[此 Stack Overflow 回答](https://stackoverflow.com/a/19432504/1123156) 的说法，配置它可能有助于缓解此 bug。
+如果出现此问题的设备尚未使用 SIM 卡完成设置，根据[此 Stack Overflow 回答](https://stackoverflow.com/a/19432504/1123156)的说法，配置它可能有助于缓解此问题。
 
 </Collapsible>
 
-## Other
+## 其他
 
-### Send Notifications Directly via FCM and APNs
+### 通过 FCM 和 APNs 直接发送通知
 
-If you are not using [Expo Push Notification Service](/push-notifications/sending-notifications), but instead want to communicate directly with Google and Apple, see [Send Notifications with FCM and APNs](/push-notifications/sending-notifications-custom).
+如果您不使用 [Expo 推送通知服务](/push-notifications/sending-notifications)，而是希望直接与 Google 和 Apple 通信，请参阅[使用 FCM 和 APNs 发送通知](/push-notifications/sending-notifications-custom)。
 
-### Notification icons on Android are gray or white squares
+### Android 上的通知图标显示为灰色或白色方块
 
-This indicates that there is an issue with the image asset you provided. The image should be pure white with a transparent background (this is a Google requirement and is enforced by Google, not Expo). For more information, see [this article](https://clevertap.com/blog/fixing-notification-icon-for-android-lollipop-and-above/).
+这表明您提供的图像资源存在问题。图像应为纯白色，并带有透明背景（这是 Google 的要求，由 Google 强制执行，而非 Expo）。如需更多信息，请参阅[这篇文章](https://clevertap.com/blog/fixing-notification-icon-for-android-lollipop-and-above/)。

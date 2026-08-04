@@ -11,11 +11,11 @@ React Native 模块 API 并未提供任何机制来挂钩这些方法，因此 R
 
 ## 开始使用
 
-首先，你需要已经创建了一个 Expo 模块，或者使用 React Native 模块 API 将 Expo modules API 集成到库中。[了解更多](/modules/overview/#what-is-the-expo-modules-api)。
+首先，你需要创建一个 Expo 模块，或使用 React Native 模块 API 在库中集成 Expo modules API。请参阅[什么是 Expo Modules API](/modules/overview/#what-is-the-expo-modules-api)。
 
-创建一个新的公共 Swift 类，使其继承自 `ExpoModulesCore` 中的 `ExpoAppDelegateSubscriber`，并将其名称添加到 [模块配置](/modules/module-config/) 中的 `apple.appDelegateSubscribers` 数组。运行 `pod install` 后，订阅者会在应用项目内的 **ExpoModulesProvider.swift** 文件中生成。
+创建一个新的公共 Swift 类，使其继承自 `ExpoModulesCore` 中的 `ExpoAppDelegateSubscriber`，并将其名称添加到[模块配置](/modules/module-config/)中的 `apple.appDelegateSubscribers` 数组。运行 `pod install` 后，订阅者会在应用项目内的 **ExpoModulesProvider.swift** 文件中生成。
 
-现在你可以通过向订阅者类添加 delegate 函数来订阅事件。有关你可以订阅的完整函数列表，请参阅在 [`ExpoAppDelegate.swift`](https://github.com/expo/expo/blob/main/packages/expo/ios/AppDelegates/ExpoAppDelegate.swift) 中被重写的函数。对于在提供时可能产生副作用的 app delegate 函数，目前尚不支持（例如 [`application(_:viewControllerWithRestorationIdentifierPath:coder:)`](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623062-application)）。
+现在你可以通过向订阅者类添加委托函数来订阅事件。有关你可以订阅的完整函数列表，请参阅在 [`ExpoAppDelegate.swift`](https://github.com/expo/expo/blob/main/packages/expo/ios/AppDelegates/ExpoAppDelegate.swift) 中被重写的函数。对于在提供时可能产生副作用的应用委托函数，目前尚不支持（例如 [`application(_:viewControllerWithRestorationIdentifierPath:coder:)`](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623062-application)）。
 
 > 不支持 Objective-C 类。
 
@@ -23,12 +23,12 @@ React Native 模块 API 并未提供任何机制来挂钩这些方法，因此 R
 
 需要返回值的 delegate 函数会包含一些额外逻辑，以协调来自多个订阅者的响应并尽量满足所有订阅者。下面有两个这类边缘情况的好例子：
 
-#### `application(_:didFinishLaunchingWithOptions:) -> Bool`
+### `application(_:didFinishLaunchingWithOptions:) -> Bool`
 
 根据 [Apple 文档](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622921-application)，如果应用无法处理 URL 资源或继续用户活动，则应返回 `false`，否则应返回 `true`。如果应用是由于远程通知而启动，则会忽略返回值。
 在这种情况下，如果至少有一个订阅者返回 `true`，`ExpoAppDelegate` 也会返回 `true`。
 
-#### `application(_:didReceiveRemoteNotification:fetchCompletionHandler:)`
+### `application(_:didReceiveRemoteNotification:fetchCompletionHandler:)`
 
 此方法会告知 app delegate 收到了一条远程通知，并给应用一个获取新数据的机会。它接收一个 completion block，用于在获取操作完成时执行。该 block 应使用最能描述获取请求结果的 fetch 结果值来调用。可用值为：`UIBackgroundFetchResult.newData`、`UIBackgroundFetchResult.noData` 或 `UIBackgroundFetchResult.failed`。
 在这种情况下，`ExpoAppDelegate` 会向每个订阅者传递一个新的 completion block，等待所有订阅者完成，并在调用原始 completion block 之前收集结果。最终结果取决于从订阅者收集到的结果，按以下顺序如下：

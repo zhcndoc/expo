@@ -11,11 +11,11 @@ import { ASSETS, Box } from '~/ui/components/Authentication';
 
 使用 `AuthSession` API 时，以下规则适用于所有身份验证提供方：
 
-- 使用 `WebBrowser.maybeCompleteAuthSession()` 来关闭 web 弹出窗口。如果忘记添加这一行，弹窗将不会关闭。
+- 使用 `WebBrowser.maybeCompleteAuthSession()` 来关闭 Web 弹出窗口。如果忘记添加这一行，弹出窗口将不会关闭。
 - 使用 `AuthSession.makeRedirectUri()` 创建重定向 URI，这会处理跨平台支持中的许多繁琐工作。在底层，它使用了 `expo-linking`。
 - 使用 `AuthSession.useAuthRequest()` 构建请求，该 hook 支持异步初始化，这意味着移动浏览器不会阻塞身份验证。
 - 在 `request` 定义之前，请确保禁用提示。
-- 在 web 上只能在用户交互中调用 `promptAsync`。
+- 在 Web 上只能在用户交互中调用 `promptAsync`。
 - 由于无法自定义应用 scheme，Expo Go 不能用于 OAuth 或启用 OpenID Connect 的应用的本地开发和测试。你可以改用 [Development Build](/develop/development-builds/introduction/)，它提供类似 Expo Go 的开发体验，并支持登录后通过 OAuth 重定向回你的应用，其工作方式与生产环境完全一致。
 
 ## 获取访问令牌
@@ -34,9 +34,9 @@ import { ASSETS, Box } from '~/ui/components/Authentication';
   image={ASSETS.github}
 >
 
-| 网站                                                      | 提供方    | PKCE      | 自动发现      |
-| --------------------------------------------------------- | --------- | --------- | ------------- |
-| [获取你的配置](https://github.com/settings/developers) | OAuth 2.0 | 支持      | 不可用        |
+| 网站                                                       | 提供方    | PKCE      | 自动发现       |
+| --------------------------------------------------------- | --------- | --------- | -------------- |
+| [获取你的配置](https://github.com/settings/developers)    | OAuth 2.0 | 支持      | 不可用         |
 
 - 提供方每个应用只允许一个重定向 URI。你需要为每种想使用的方法分别创建一个独立的应用：
   - 独立版 / 开发构建：`com.your.app://*`
@@ -108,9 +108,9 @@ export default function App() {
   image={ASSETS.okta}
 >
 
-| 网站                                                     | 提供方  | PKCE      | 自动发现      |
-| ------------------------------------------------------------ | -------- | --------- | ------------- |
-| [注册](https://developer.okta.com/signup/) > 应用程序 | OpenID   | 支持      | 可用          |
+| 网站                                                         | 提供方   | PKCE      | 自动发现       |
+| ------------------------------------------------------------ | -------- | --------- | -------------- |
+| [注册](https://developer.okta.com/signup/) > 应用程序       | OpenID   | 支持      | 可用           |
 
 - 你不能定义自定义 `redirectUri`，Okta 会为你提供一个。
 
@@ -167,42 +167,42 @@ export default function App() {
 </Box>
 {/* End Okta */}
 
-## Redirect URI Patterns
+## 重定向 URI 模式
 
-Here are some common examples of redirect URI patterns you might end up using.
+以下是一些你可能会使用的重定向 URI 模式示例。
 
-### Standalone/Development Builds
+### 独立版/开发版构建
 
 > `yourscheme://path`
 
-In some cases, there may be 1 to 3 slashes (`/`).
+在某些情况下，可能会有 1 到 3 个斜杠（`/`）。
 
-- **Environment:**
-  - Existing React Native app
+- **环境：**
+  - 现有的 React Native 应用
     - `npx expo prebuild`
-  - Standalone build in the App or Play Store, or local testing
-    - Android: `eas build` or `npx expo run:android`
-    - iOS: `eas build` or `npx expo run:ios`
+  - App Store 或 Play Store 中的独立版构建，或本地测试
+    - Android：`eas build` 或 `npx expo run:android`
+    - iOS：`eas build` 或 `npx expo run:ios`
 
-- **Creation:** When running in the correct environment, use `AuthSession.makeRedirectUri({ native: '<YOUR_URI>' })` to select native.
+- **创建：** 在正确的环境中运行时，使用 `AuthSession.makeRedirectUri({ native: '<YOUR_URI>' })` 来选择原生 URI。
   - `your.app://redirect` -> `makeRedirectUri({ scheme: 'your.app', path: 'redirect' })`
   - `your.app:///` -> `makeRedirectUri({ scheme: 'your.app', isTripleSlashed: true })`
   - `your.app:/authorize` -> `makeRedirectUri({ native: 'your.app:/authorize' })`
   - `your.app://auth?foo=bar` -> `makeRedirectUri({ scheme: 'your.app', path: 'auth', queryParams: { foo: 'bar' } })`
   - `exp://u.expo.dev/[project-id]?channel-name=[channel-name]&runtime-version=[runtime-version]` -> `makeRedirectUri()`
-  - This link is usually created automatically, but we recommend that you at least define the `scheme` property. The entire URL can be overridden in the app by passing the `native` property. This is usually used by providers like Google or Okta that require you to use a custom native URI redirect. You can use `npx uri-scheme` to add, list, and open URI schemes.
-  - If you change `expo.scheme`, run `npx expo prebuild --clean` to regenerate the native project with the new scheme, then rebuild with `npx expo run:android` and `npx expo run:ios`.
-- **Usage:** `promptAsync({ redirectUri })`
+  - 此链接通常会自动创建，但我们建议你至少定义 `scheme` 属性。通过传递 `native` 属性，可以在应用中覆盖整个 URL。Google 或 Okta 等要求使用自定义原生 URI 重定向的提供商通常会使用此方式。你可以使用 `npx uri-scheme` 添加、列出和打开 URI scheme。
+  - 如果更改了 `expo.scheme`，请运行 `npx expo prebuild --clean`，使用新的 scheme 重新生成原生项目，然后使用 `npx expo run:android` 和 `npx expo run:ios` 重新构建。
+- **使用：** `promptAsync({ redirectUri })`
 
-## Improving User Experience
+## 改善用户体验
 
-The “login flow” is a very important part of the process, and in many cases, it’s where users will once again _commit_ to using your app. A poor experience may cause users to abandon it before they even really start using it.
+“登录流程”是整个过程中的重要环节，在许多情况下，用户会在此再次_下定决心_使用你的应用。糟糕的体验可能会导致用户甚至还没真正开始使用应用，就选择放弃。
 
-Here are some tips that can make user authentication faster, simpler, and more secure:
+以下是一些可以让用户身份验证更快速、更简单且更安全的建议：
 
-### Warming Up the Browser
+### 预热浏览器
 
-On Android, you can optionally warm up the web browser before using it. This allows the browser app to pre-initialize itself in the background. Doing so can significantly speed up the authentication prompt shown to the user.
+在 Android 上，你可以选择在使用浏览器之前对其进行预热。这样可以让浏览器应用在后台预先完成初始化。这样做可以显著加快向用户显示身份验证提示的速度。
 
 {/* prettier-ignore */}
 ```tsx
@@ -278,7 +278,7 @@ function App() {
 
 ### 存储数据
 
-在 Android 和 iOS 等原生平台上，你可以使用名为 [`expo-secure-store`](/versions/latest/sdk/securestore) 的库在本地安全地存储诸如访问令牌之类的数据（这不同于不安全的 `AsyncStorage`）。它在 Android 上提供对加密 [`SharedPreferences`](https://developer.android.com/training/basics/data-storage/shared-preferences.html) 的原生访问，并在 iOS 上提供对 [keychain services](https://developer.apple.com/documentation/security/keychain_services) 的原生访问。Web 上没有与此功能对应的实现。
+在 Android 和 iOS 等原生平台上，你可以使用名为 [`expo-secure-store`](/versions/latest/sdk/securestore) 的库在本地安全地存储诸如访问令牌之类的数据（这不同于不安全的 `AsyncStorage`）。它在 Android 上提供对加密 [`SharedPreferences`](https://developer.android.com/training/basics/data-storage/shared-preferences.html) 的原生访问，并在 iOS 上提供对 [钥匙串服务](https://developer.apple.com/documentation/security/keychain_services) 的原生访问。Web 上没有与此功能对应的实现。
 
 你可以存储你的身份验证结果，并在之后重新恢复它们，从而避免再次提示用户登录。
 

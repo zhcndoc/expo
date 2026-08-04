@@ -37,13 +37,13 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 - 以某个时间间隔安排重复通知（或在 iOS 上按日历日期匹配）
 - 获取并设置应用角标数字
 - 获取原生设备推送 token，以便你可以通过 FCM（用于 Android）和 APNs（用于 iOS）发送推送通知
-- 获取 Expo push token，以便你可以通过 [Expo Push Service](/push-notifications/sending-notifications/) 发送推送通知
+- 获取 Expo 推送 token，以便你可以通过 [Expo 推送服务](/push-notifications/sending-notifications/) 发送推送通知
 - 监听前台和后台传入的通知
 - 监听与通知的交互
 - 当应用处于前台时处理通知
 - 以命令式方式从通知中心/托盘中清除通知
 - 创建、更新和删除 [Android 通知渠道](https://developer.android.com/develop/ui/views/notifications/channels)
-- 为 Android 上的通知设置自定义图标和颜色
+- 为 Android 上的通知设置自定义图标和颜色。
 
 ## 安装
 
@@ -66,7 +66,7 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 查看下面的示例 Snack，了解 Notifications 的实际效果。推送通知可在真机、带有 Google Play services 的 Android 模拟器，以及 Xcode 14 或更高版本上的 iOS 模拟器（macOS 13+、iOS 16+）上工作。
 
-<SnackInline label='Push Notifications' dependencies={['expo-constants', 'expo-notifications']}>
+<SnackInline label='推送通知' dependencies={['expo-constants', 'expo-notifications']}>
 
 ```tsx
 import { useState, useEffect } from 'react';
@@ -118,7 +118,7 @@ export default function App() {
         justifyContent: 'space-around',
       }}>
       <Text>你的 expo push token: {expoPushToken}</Text>
-      <Text>{`Channels: ${JSON.stringify(
+      <Text>{`渠道: ${JSON.stringify(
         channels.map(c => c.id),
         null,
         2
@@ -141,8 +141,8 @@ export default function App() {
 async function schedulePushNotification() {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: "You've got mail! 📬",
-      body: 'Here is the notification body',
+      title: '你有一封新邮件！📬',
+      body: '这是通知正文',
       data: { data: 'goes here', test: { test1: 'more data' } },
     },
     trigger: {
@@ -305,7 +305,7 @@ export default function App() {
             return url;
           }
 
-          // 处理来自 expo push notifications 的 URL
+          // 处理来自 Expo 推送通知的 URL
           const response = Notifications.getLastNotificationResponse();
 
           return response?.notification.request.content.data.url;
@@ -316,7 +316,7 @@ export default function App() {
           // 监听来自深度链接的传入链接
           const eventListenerSubscription = Linking.addEventListener('url', onReceiveURL);
 
-          // 监听 expo push notifications
+          // 监听 Expo 推送通知
           const subscription = Notifications.addNotificationResponseReceivedListener(response => {
             const url = response.notification.request.content.data.url;
 
@@ -454,7 +454,7 @@ export default function App() {
 - `DENIED`：应用未被授权安排或接收通知
 - `AUTHORIZED`：应用已被授权安排或接收通知
 - `PROVISIONAL`：应用被临时授权发布不打扰用户的通知
-- `EPHEMERAL`：应用被授权在有限时间内安排或接收通知
+- `EPHEMERAL`：应用被授权在有限时间内安排或接收通知。
 
 ## 通知事件监听器
 
@@ -462,9 +462,9 @@ export default function App() {
 
 多个监听器已暴露并在 [推送通知行为](/push-notifications/what-you-need-to-know/#push-notification-behaviors) 章节中有文档说明。
 
-## Headless（后台）通知
+## 无头（后台）通知
 
-请参见 [你需要了解的内容](/push-notifications/what-you-need-to-know) 指南中的 Headless Background Notifications [定义](/push-notifications/what-you-need-to-know/#headless-background-notifications)。
+请参见 [你需要了解的内容](/push-notifications/what-you-need-to-know) 指南中的无头后台通知 [定义](/push-notifications/what-you-need-to-know/#headless-background-notifications)。
 
 要在应用处于后台或未运行时处理通知，你需要执行以下操作：
 
@@ -481,11 +481,11 @@ export default function App() {
 
 要在 iOS 上使用后台推送通知，需要在应用的 **Info.plist** 文件中的 `UIBackgroundModes` 数组里包含 `remote-notification` 值。
 
-**如果你使用的是 [CNG](/workflow/continuous-native-generation/)**，请将 config plugin 的 [`enableBackgroundRemoteNotifications` 属性](#configurable-properties) 设置为 true，prebuild 会自动应用正确的配置。
+**如果你使用的是 [CNG](/workflow/continuous-native-generation/)**，请将配置插件的 [`enableBackgroundRemoteNotifications` 属性](#configurable-properties) 设置为 true，prebuild 会自动应用正确的配置。
 
 <Collapsible summary="在 iOS 上手动配置 UIBackgroundModes">
 
-如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者你使用的是原生 iOS 项目，那么你需要在 **Expo.plist** 文件中添加以下内容：
+如果你没有使用连续原生生成（[CNG](/workflow/continuous-native-generation/)），或者你使用的是原生 iOS 项目，那么你需要在 **Expo.plist** 文件中添加以下内容：
 
 ```xml ios/project-name/Supporting/Expo.plist
 <key>UIBackgroundModes</key>
@@ -593,7 +593,7 @@ await Notifications.scheduleNotificationAsync({
 ```
 
 <ContentSpotlight
-  alt="notification.wav inside of app resources in Xcode project organizer"
+  alt="Xcode 项目资源管理器中的 app 资源内的 notification.wav"
   src="/static/images/notification-sound-ios.jpeg"
   className="max-w-[305px]"
 />
@@ -610,7 +610,7 @@ await Notifications.scheduleNotificationAsync({
 ，方式可以是按钮或文本回复。类别定义了用户可以执行的一组操作，然后通过在 [`NotificationContent`](#notificationcontent) 中指定 `categoryIdentifier` 将这些操作应用到通知上。
 
 <ContentSpotlight
-  src="/static/images/sdk/notifications/categories.png"
+  src="/static/images/sdk/notifications/categories.webp"
   className="max-w-[800px]"
   alt="Android 和 iOS 上的通知类别图片"
 />
@@ -626,7 +626,7 @@ await Notifications.scheduleNotificationAsync({
 然后，用户可以更改这些设置，并决定你应用中的哪些通知渠道应该具有干扰性或根本可见，
 正如 [Android 开发者文档](https://developer.android.com/training/notify-user/channels) 所述。
 
-如果你没有指定通知渠道，`expo-notifications` 会为你创建一个名为 **Miscellaneous** 的回退渠道。
+如果你没有指定通知渠道，`expo-notifications` 会为你创建一个名为 **其他** 的回退渠道。
 我们建议你始终为应用设置带有说明性名称的合适渠道，并始终将通知发送到这些渠道。
 
 > 对于不支持此功能的平台（Android 8.0（26）以下版本和 iOS），调用这些方法不会产生任何效果。

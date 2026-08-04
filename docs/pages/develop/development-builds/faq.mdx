@@ -1,0 +1,129 @@
+---
+title: 开发构建常见问题
+sidebar_title: 常见问题
+description: 关于开发构建、Expo Go 和 EAS Build 的常见问题汇总。
+---
+
+import { VideoRecorderIcon } from '@expo/styleguide-icons/outline/VideoRecorderIcon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { FAQ } from '~/ui/components/FAQ';
+
+此页面解答了有关开发版本的常见问题，介绍了它们与 Expo Go 的比较，以及在哪里可以进一步了解 EAS Build。
+
+## 详细了解开发版本和 Expo Go
+
+<FAQ>
+
+<Collapsible summary="Expo Go 与开发版本的区别">
+
+[Expo Go](https://expo.dev/go) 是一款供学生和学习者快速入门的实验应用。它内置了一组固定的原生库，因此你可以编写 JavaScript 代码并立即查看更改，而无需自行构建原生应用。开发版本是一个功能完整的开发环境，用于开发面向生产环境的 Expo 应用。
+
+</Collapsible>
+
+<Collapsible summary="原生应用和 JavaScript 包">
+
+**原生应用**是你安装在设备上的应用。Expo Go 是一个预构建的原生应用，像实验场一样运行——安装后无法更改。要添加新的原生库，或更改应用名称和图标等内容，你需要构建自己的原生应用（开发版本）。
+
+**JavaScript 打包器（`expo start`）**包含应用的 UI 代码和业务逻辑。在生产应用中，有一个随应用本身一起发布的 **main.js** 包。在开发过程中，此 JS 包会从本地计算机实时重新加载。React Native 的主要作用是提供一种让 JavaScript 代码访问原生 API（Image、Camera、Notifications 等）的方式。不过，只有已打包到**原生应用**中的 API 和库才能使用。
+
+</Collapsible>
+
+</FAQ>
+
+## 为什么使用开发构建（也就是：在 Expo Go 中你_无法_做什么，以及为什么）
+
+Expo Go 是一个供学生和学习者了解 React Native 基础知识的练习场。它功能有限，不适合构建生产级项目，因此大多数应用都会转而使用开发构建。了解在 Expo Go 中究竟_无法_做什么以及_为什么_无法做到这一点非常重要，这样你就能明智地决定何时以及为什么要进行迁移。
+
+<FAQ>
+
+<Collapsible summary="使用 Expo Go 中未包含的原生代码库">
+
+以 [`react-native-webview`](/versions/latest/sdk/webview/) 为例，这是一个包含原生代码、但[已包含在 Expo Go 中](https://github.com/expo/expo/blob/main/apps/expo-go/package.json#L23)的库。当你在项目中运行 `npx expo install react-native-webview` 命令时，它会将该库安装到你的 **node_modules** 目录中，其中同时包含 JS 代码和原生代码。但你构建的 JS bundle _只会_使用 JS 代码。随后，你的 JS bundle 会被上传到 Expo Go，并与应用中已经打包好的原生代码进行交互。
+
+相反，当你尝试使用未包含在其中的库时，例如 [`react-native-firebase`](/guides/using-firebase/#using-react-native-firebase)，你可以使用其 JS 代码，并将新的 bundle 热重载到 Expo Go 中，但它会立即报错，因为 JS 代码尝试调用 React Native Firebase 软件包中的原生代码，而该代码并不存在于 Expo Go 中。除非原生代码已经包含在上传到应用商店的应用 bundle 中，否则没有办法将其加入 Expo Go 应用。
+
+</Collapsible>
+
+<Collapsible summary="测试应用图标、名称和启动画面的更改">
+
+如果你仅使用 Expo Go 开发应用，你可以构建一个商店版本，该版本会使用你提供的值和图像；只是无法在 Expo Go 中对其进行测试。
+
+这些原生资源会随原生 bundle 一起发布，并且应用安装后便不可更改。Expo Go 应用确实会显示一个启动画面，即在纯色背景上显示你的应用图标。这是一种仅用于开发的模拟，用于查看启动画面大概会是什么样子。不过，它存在局限性，例如你无法测试用于为启动画面添加动画的 `SplashScreen.setOptions`。
+
+</Collapsible>
+
+<Collapsible summary="远程推送通知">
+
+虽然 Expo Go 支持[应用内通知](/versions/latest/sdk/notifications/)，但不支持远程推送通知（也就是从服务器向应用发送推送通知）。这是因为推送通知服务应当与你自己的推送通知证书关联；尽管可以让它在 Expo Go 中运行，但这通常会给生产构建带来困惑。建议在开发构建中测试远程推送通知，以确保开发环境和生产环境中的行为一致。
+
+</Collapsible>
+
+<Collapsible summary="实现 App/通用链接">
+
+[Android App Links](/linking/android-app-links/) 和 [iOS Universal Links](/linking/ios-universal-links/) 都要求原生应用与网站之间建立双向关联。具体来说，这要求原生应用包含关联网站的 URL。由于前面提到的原生代码不可变性，这在 Expo Go 中是不可能实现的。
+
+</Collapsible>
+
+<Collapsible summary="打开使用其他 SDK 版本的项目（仅限 iOS 设备）">
+
+Expo Go 一次只能支持一个 SDK 版本，并且应用商店中只能安装该版本。目前，Expo Go 的商店版本支持 SDK 54。
+
+如果你在 Android 设备、Android 模拟器或 iOS 模拟器上进行开发，可以[下载并安装](https://expo.dev/go)兼容版本的 Expo Go。你也可以使用 [`expo-go` CLI](/develop/tools/#expo-go-cli) 下载特定版本。唯一无法实现这一点的平台是 iPhone 设备，因为 Apple 不支持旁加载其他版本的应用。
+
+</Collapsible>
+
+</FAQ>
+
+## 进一步了解 EAS Build
+
+<FAQ>
+
+<Collapsible summary="如何使用 eas.json 配置 EAS Build？">
+
+请参阅[使用 eas.json 配置 EAS Build](/build/eas-json/)，了解如何配置使用 EAS 服务的项目。
+
+</Collapsible>
+
+<Collapsible summary="如何在项目中使用环境变量？">
+
+请参阅[环境变量](/guides/environment-variables/)，了解在 Expo 项目中使用环境变量的不同方式。
+
+</Collapsible>
+
+<Collapsible summary="如何在 EAS Build 上构建 Android 项目？">
+
+请参阅[Android 构建流程](/build-reference/android-builds/)，了解如何在 EAS Build 上构建 Android 项目。
+
+</Collapsible>
+
+<Collapsible summary="如何在 EAS Build 上构建 iOS 项目？">
+
+请参阅[iOS 构建流程](/build-reference/ios-builds/)，了解如何在 EAS Build 上构建 iOS 项目。
+
+</Collapsible>
+
+<Collapsible summary="如何在 monorepo 中设置 EAS Build？">
+
+请参阅[在 monorepo 中设置 EAS Build](/build-reference/build-with-monorepos/)，获取分步指南。
+
+</Collapsible>
+
+</FAQ>
+
+## 视频教程
+
+<BoxLink
+  title="EAS 教程系列"
+  description="YouTube 上的课程：了解如何使用 Expo Application Services 加快开发速度。"
+  href="https://www.youtube.com/playlist?list=PLsXDmrmFV_AS14tZCBin6m9NIS_VCUKe2"
+  Icon={VideoRecorderIcon}
+/>
+
+<BoxLink
+  title="Async Office Hours：如何使用 EAS Build 创建开发构建"
+  description="在本视频教程中，开发者成功工程师 Keith Kurak 将带你了解如何使用 EAS Build 创建开发构建。"
+  href="https://www.youtube.com/watch?v=LUFHXsBcW6w"
+  Icon={VideoRecorderIcon}
+/>

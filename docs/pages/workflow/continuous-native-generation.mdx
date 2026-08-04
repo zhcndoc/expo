@@ -105,7 +105,7 @@ React Native 应用可以通过使用 [Prebuild](#usage) 来使用 **CNG**，从
 
 ## 平台支持
 
-Prebuild 目前支持 Android 和 iOS。不需要 Web 支持，因为无需为 Web 生成原生项目，而且 web 应用运行在 web 浏览器中。使用 `--platform` 选项可以为单个平台运行 prebuild：
+Prebuild 目前支持 Android 和 iOS。不需要 Web 支持，因为无需为 Web 生成原生项目，而且 Web 应用运行在 Web 浏览器中。使用 `--platform` 选项可以为单个平台运行 prebuild：
 
 <Terminal
   cmd={{
@@ -143,7 +143,7 @@ Prebuild 首先会根据每个 Expo SDK 版本对应的模板初始化新的原�
 
 例如，一些 config plugins 并不是幂等的。当一个项目使用多个“危险修改器”来对应用代码添加正则表达式更改时，可能会导致意外行为。这就是为什么使用 `--clean` 选项是使用 prebuild 命令最安全的方式，并且通常在大多数情况下都推荐这样做。
 
-#### 使用 `--clean` 选项
+### 使用 `--clean` 选项
 
 使用 `--clean` 选项时，如果你的 git 代码仓库中有任何未提交的更改，系统会发出警告，因为该选项会删除并重新创建你所有的原生项目文件。这个提示是可选的，并且在 CI 中遇到时会被跳过。你可以通过启用环境变量 `EXPO_NO_GIT_STATUS=1` 来禁用此检查。
 
@@ -151,7 +151,7 @@ Prebuild 首先会根据每个 Expo SDK 版本对应的模板初始化新的原�
 
 ## 模板
 
-你可以通过 [config plugins](/config-plugins/introduction) 自定义原生目录的生成方式。已有许多 config plugins 可用于各种修改，社区库通常也会随附它们自己的插件。你可以[查看一些流行插件的列表](https://github.com/expo/config-plugins)以了解更多信息。
+你可以通过 [config plugins](/config-plugins/introduction) 自定义原生目录的生成方式。已有许多 config plugins 可用于进行各种修改，社区库通常也会随附它们自己的插件。你可以[查看一些流行插件的列表](https://github.com/expo/config-plugins)以了解更多信息。
 
 Prebuild 从模板文件开始，然后再通过 config plugins 对其进行修改。这些模板文件基于 Expo SDK 版本，并来自 npm 包 [`expo-template-bare-minimum`](https://github.com/expo/expo/tree/main/templates/expo-template-bare-minimum)。你可以通过在 `npx expo prebuild` 命令中传递 `--template /path/to/template.tgz` 来更改所使用的模板。一般不建议这样做，因为 `@expo/prebuild-config` 中的基础修改器对模板文件做出了一些未公开的假设，因此维护自定义模板可能会比较棘手。
 
@@ -182,7 +182,7 @@ Expo 提供的一切内容，包括 [EAS](/eas/)、Expo CLI 以及 Expo SDK 中�
 
 <Collapsible summary="CNG 如何帮助项目升级？">
 
-没有使用 **Continuous Native Generation** 的 React Native 开发者根据 [React Native Survey (2022)](https://results.2022.stateofreactnative.com/opinions/#opinions_pain_points) 的反馈表示，将应用升级到最新版本的 React Native 是该库最大的弱点。
+没有使用 **持续原生生成（Continuous Native Generation）** 的 React Native 开发者根据 [React Native Survey (2022)](https://results.2022.stateofreactnative.com/opinions/#opinions_pain_points) 的反馈表示，将应用升级到最新版本的 React Native 是该库最大的弱点。
 
 在使用 CNG 时，升级流程只需要升级 npm 依赖、应用配置，并重新运行 `npx expo prebuild --clean`。
 
@@ -194,15 +194,15 @@ React Native 库作者可以通过多种方式采用 CNG，具体取决于其库
 
 - **没有原生代码或配置副作用**：像 `react-native-blurhash` 这类没有原生代码或配置副作用的库，可以无缝集成到 `npx expo prebuild` 中。它们可以依赖 Node 模块解析，而无需任何额外配置。
 
-- **包含原生代码，且安装后无需额外设置**：包含原生代码的库通常可以通过 [Expo Autolinking](/more/glossary-of-terms#autolinking) 自动安装并链接，它会在原生应用构建之前运行。
+- **包含原生代码，且安装后无需额外设置**：包含原生代码的库通常可以通过 [Expo 自动链接](/more/glossary-of-terms#autolinking) 自动安装并链接，它会在原生应用构建之前运行。
 
-- **需要额外配置副作用和设置**：需要额外配置副作用的库，可以通过为其创建 [Expo config plugins](/config-plugins/introduction/) 来采用 CNG。这种方式使库作者能够自动添加诸如权限提示信息到 **Info.plist** 中，或向 Xcode 项目注入 targets 等内容。
+- **需要额外配置副作用和设置**：需要额外配置副作用的库，可以通过为其创建 [Expo 配置插件](/config-plugins/introduction/) 来采用 CNG。这种方式使库作者能够自动添加诸如权限提示信息到 **Info.plist** 中，或向 Xcode 项目注入目标等内容。
 
-- **依赖原生运行时钩子的库**：依赖特定原生运行时钩子的库，例如通过 `AppDelegate`、`MainActivity`、`MainApplication` 等拦截初始启动 URL，可以在 Expo Modules API 中使用 [**Lifecycle listeners**](/modules/android-lifecycle-listeners/)。这些生命周期监听器允许通过 Expo Autolinking 来应用这些运行时钩子，而不是修改这些标准原生项目文件，从而无需 config plugin。
+- **依赖原生运行时钩子的库**：依赖特定原生运行时钩子的库，例如通过 `AppDelegate`、`MainActivity`、`MainApplication` 等拦截初始启动 URL，可以在 Expo Modules API 中使用 [**生命周期监听器**](/modules/android-lifecycle-listeners/)。这些生命周期监听器允许通过 Expo 自动链接来应用这些运行时钩子，而不是修改这些标准原生项目文件，从而无需配置插件。
 
 许多复杂的库和服务已经通过 Expo Prebuild 支持 CNG，例如 [MapBox](https://github.com/rnmapbox/maps)、[Sentry](https://github.com/getsentry/sentry-react-native)、[Stripe](https://github.com/stripe/stripe-react-native) 和 [React Native Firebase](https://rnfirebase.io/#installation-for-expo-projects)。
 
-库作者采用 CNG 并不是使用 `npx expo prebuild` 的前提条件。如果某个库作者尚未采用 CNG，开发者仍然可以通过创建本地 [Config Plugins](https://github.com/expo/config-plugins/) 来修改原生生成流程，从而使用 `npx expo prebuild`。这种灵活性使得 CNG 能够为 React Native 社区中的所有开发者所用并带来益处。
+库作者采用 CNG 并不是使用 `npx expo prebuild` 的前提条件。如果某个库作者尚未采用 CNG，开发者仍然可以通过创建本地 [配置插件](https://github.com/expo/config-plugins/) 来修改原生生成流程，从而使用 `npx expo prebuild`。这种灵活性使得 CNG 能够为 React Native 社区中的所有开发者所用并带来益处。
 
 </Collapsible>
 
@@ -216,15 +216,15 @@ React Native 库作者可以通过多种方式采用 CNG，具体取决于其库
 
 以下是一些社区示例，它们将复杂的原生功能转换为简单的配置文件，使开发者能够在不牺牲迭代速度的情况下构建更强大的应用：
 
-- [iOS Safari Extensions](https://github.com/andrew-levy/react-native-safari-extension)：在这里，创建 iOS Safari 扩展这一众所周知难以实现的功能，被简化为几行 JSON。
+- [iOS Safari 扩展](https://github.com/andrew-levy/react-native-safari-extension)：在这里，创建 iOS Safari 扩展这一众所周知难以实现的功能，被简化为几行 JSON。
 
-- [iMessage Sticker App](https://github.com/expo/config-plugins/tree/main/packages/ios-stickers)：这个 Expo config plugin 可以从一个 JSON 对象生成整个 iMessage 贴纸应用。
+- [iMessage 贴纸应用](https://github.com/expo/config-plugins/tree/main/packages/ios-stickers)：这个 Expo 配置插件可以从一个 JSON 对象生成整个 iMessage 贴纸应用。
 
 - [整个 Firebase 套件](https://rnfirebase.io/)：在这里，你可以看到完整的原生 Firebase 套件从跨多个 IDE 的多步骤原生配置流程，简化为基础的 JSON 配置。
 
-- [跨平台主屏幕小组件](https://github.com/gaishimo/eas-widget-example)：这个 Expo config plugin 可以为 Android 和 iOS 生成主屏幕小组件。
+- [跨平台主屏幕小组件](https://github.com/gaishimo/eas-widget-example)：这个 Expo 配置插件可以为 Android 和 iOS 生成主屏幕小组件。
 
-- [Apple App Clips](https://github.com/bndkt/react-native-app-clip)：这个 Expo config plugin 将生成 Apple App Clip 的多步骤流程（跨越多个 target）简化为单行 `["react-native-app-clip", { "name": "My App Clip" }]`。
+- [Apple App Clips](https://github.com/bndkt/react-native-app-clip)：这个 Expo 配置插件将生成 Apple App Clip 的多步骤流程（跨越多个目标）简化为单行 `["react-native-app-clip", { "name": "My App Clip" }]`。
 
 在任何时候，这些功能都可以轻松添加和移除，不会产生任何副作用。CNG 让开发者能够尝试复杂功能并快速迭代，而无需担心长期维护成本或项目中潜在的孤儿代码。
 
@@ -248,9 +248,9 @@ CNG 与 SSG 的相似之处在于它们都会根据一组输入生成项目。�
 
 </Collapsible>
 
-<Collapsible summary="是否可以在现有的 brownfield 项目中使用 CNG？">
+<Collapsible summary="是否可以在现有的棕地项目中使用 CNG？">
 
-CNG 的设计目标是持续管理原生项目的整体状态。因此，它并不适合用于现有的 brownfield 项目。不过，你可以使用 CNG 生成一个新的原生项目，然后将其集成到现有的 brownfield 项目中。
+CNG 的设计目标是持续管理原生项目的整体状态。因此，它并不适合用于现有的棕地项目。不过，你可以使用 CNG 生成一个新的原生项目，然后将其集成到现有的棕地项目中。
 
 </Collapsible>
 
@@ -272,15 +272,15 @@ Expo Prebuild 简化了 CNG 的处理流程。以下是 React Native 开发周�
 
 像应用图标、名称、启动屏幕等跨平台配置，必须用原生代码手动实现。这些实现通常在各个平台上差异很大。
 
-**使用 Prebuild** 时，跨平台配置会在 config plugin 层处理，开发者只需设置一个类似 `"icon": "./icon.png"` 的单一值，图标生成的所有工作都会被处理好。
+**使用 Prebuild** 时，跨平台配置会在配置插件层处理，开发者只需设置一个类似 `"icon": "./icon.png"` 的单一值，图标生成的所有工作都会被处理好。
 
 </Collapsible>
 
 <Collapsible summary="如何使用 Prebuild 管理依赖副作用？">
 
-许多复杂的原生包除了安装和 [autolinking](/more/glossary-of-terms#autolinking) 之外，还需要额外设置。例如，摄像头库需要在 Android 的 **AndroidManifest.xml** 和 iOS 的 **Info.plist** 中添加权限设置。这些额外设置可以视为一个包的配置副作用。把所需的副作用代码直接粘贴到项目的原生文件中，可能会导致难以排查的原生编译错误，而且这些代码也会变成你需要自己负责维护的内容。
+许多复杂的原生包除了安装和 [自动链接](/more/glossary-of-terms#autolinking) 之外，还需要额外设置。例如，摄像头库需要在 Android 的 **AndroidManifest.xml** 和 iOS 的 **Info.plist** 中添加权限设置。这些额外设置可以视为一个包的配置副作用。把所需的副作用代码直接粘贴到项目的原生文件中，可能会导致难以排查的原生编译错误，而且这些代码也会变成你需要自己负责维护的内容。
 
-**使用 Prebuild** 时，最了解如何配置其库的库作者，可以创建一个可测试、可版本化的脚本，称为 [config plugin](/config-plugins/introduction/)，以自动添加其库所需的配置副作用。这意味着库的副作用可以更具表现力、更强大也更稳定。对于原生代码副作用，我们还提供了 [Android Lifecycle Listeners](/modules/android-lifecycle-listeners) 和 [AppDelegate Subscribers](/modules/appdelegate-subscribers)，它们在默认的 [prebuild template](#templates) 中已作为标准配置提供。
+**使用 Prebuild** 时，最了解如何配置其库的库作者，可以创建一个可测试、可版本化的脚本，称为 [配置插件](/config-plugins/introduction/)，以自动添加其库所需的配置副作用。这意味着库的副作用可以更具表现力、更强大也更稳定。对于原生代码副作用，我们还提供了 [Android 生命周期监听器](/modules/android-lifecycle-listeners) 和 [AppDelegate 订阅器](/modules/appdelegate-subscribers)，它们在默认的 [预构建模板](#templates) 中已作为标准配置提供。
 
 </Collapsible>
 
@@ -288,7 +288,7 @@ Expo Prebuild 简化了 CNG 的处理流程。以下是 React Native 开发周�
 
 当你卸载一个包时，必须确保已经移除了让该包正常工作所需的所有副作用。如果遗漏任何内容，就会产生无法追溯到某个特定包的孤儿代码，这些代码会不断累积，使你的项目更难理解和维护。
 
-**使用 Prebuild** 时，唯一的副作用是项目 Expo 配置（**app.json**）中的 [config plugin](/config-plugins/introduction/)。当对应的 node module 被卸载时，它会抛出错误，这意味着孤儿配置会少很多。
+**使用 Prebuild** 时，唯一的副作用是项目 Expo 配置（**app.json**）中的 [配置插件](/config-plugins/introduction/)。当对应的 node module 被卸载时，它会抛出错误，这意味着孤儿配置会少很多。
 
 </Collapsible>
 
@@ -302,19 +302,19 @@ Prebuild 只能用于 Expo SDK 支持的原生平台。目前来说是 Android �
 
 #### 直接修改比模块化和自动化更快
 
-所有原生修改都必须通过原生模块（使用 React Native 内置的 Native Module APIs 或 Expo Modules API）和 config plugin 来添加。这意味着如果你想快速向项目中添加一个原生文件来进行实验，那么先运行 prebuild 并手动添加该文件，之后再通过 [monorepo](/guides/monorepos) 回到系统化流程，可能会更合适。我们计划通过为 [Expo Autolinking](/more/glossary-of-terms#expo-autolinking) 添加功能来加快这一过程，使其能够在构建前找到原生目录之外的原生项目文件并将其链接起来。
+所有原生修改都必须通过原生模块（使用 React Native 内置的 Native Module APIs 或 Expo Modules API）和配置插件来添加。这意味着如果你想快速向项目中添加一个原生文件来进行实验，那么先运行 prebuild 并手动添加该文件，之后再通过 [monorepo](/guides/monorepos) 回到系统化流程，可能会更合适。我们计划通过为 [Expo 自动链接](/more/glossary-of-terms#expo-autolinking) 添加功能来加快这一过程，使其能够在构建前找到原生目录之外的原生项目文件并将其链接起来。
 
 如果你想修改配置，例如 **gradle.properties** 文件，就需要编写一个插件（[示例](https://github.com/expo/expo/blob/1c994bb042ad47fbf6878e3b5793d4545f2d1208/apps/native-component-list/app.config.js#L21-L28)）。这可以通过辅助插件库轻松自动化，不过如果你需要频繁这样做，速度会稍慢一些。
 
-#### 社区中的 config plugin 支持
+#### 社区中的配置插件支持
 
-并非所有包都已经支持 _Expo Prebuild_。如果你发现某个库在安装后需要额外设置，但还没有 config plugin，我们建议提交 pull request 或 issue，这样维护者就能了解到这个功能请求。
+并非所有包都已经支持 _Expo Prebuild_。如果你发现某个库在安装后需要额外设置，但还没有配置插件，我们建议提交拉取请求或问题，这样维护者就能了解到这个功能请求。
 
-许多包，例如 [`react-native-blurhash`](https://github.com/mrousavy/react-native-blurhash)，除了 [autolinking](/more/glossary-of-terms#autolinking) 已处理的内容之外，不需要任何额外的原生配置，因此不需要 config plugin。
+许多包，例如 [`react-native-blurhash`](https://github.com/mrousavy/react-native-blurhash)，除了 [自动链接](/more/glossary-of-terms#autolinking) 已处理的内容之外，不需要任何额外的原生配置，因此不需要配置插件。
 
-其他包，例如 [`react-native-ble-plx`](https://github.com/Polidea/react-native-ble-plx)，确实需要额外设置，因此需要通过 config plugin 才能与 `npx expo prebuild` 一起使用（在这种情况下，有一个名为 [`@config-plugins/react-native-ble-plx`](https://github.com/expo/config-plugins/tree/main/packages/react-native-ble-plx) 的外部插件）。
+其他包，例如 [`react-native-ble-plx`](https://github.com/Polidea/react-native-ble-plx)，确实需要额外设置，因此需要通过配置插件才能与 `npx expo prebuild` 一起使用（在这种情况下，有一个名为 [`@config-plugins/react-native-ble-plx`](https://github.com/expo/config-plugins/tree/main/packages/react-native-ble-plx) 的外部插件）。
 
-另外，我们还有一个用于 [out-of-tree config plugins](https://github.com/expo/config-plugins) 的仓库，它为尚未采用该系统的流行包提供插件。你可以把它看作 TypeScript 的 [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped)。我们更希望包能自带自己的 config plugin，但如果它们还没有采用该系统，社区可以使用仓库中列出的这些包。
+另外，我们还有一个用于 [树外配置插件](https://github.com/expo/config-plugins) 的仓库，它为尚未采用该系统的流行包提供插件。你可以把它看作 TypeScript 的 [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped)。我们更希望包能自带自己的配置插件，但如果它们还没有采用该系统，社区可以使用仓库中列出的这些包。
 
 </Collapsible>
 

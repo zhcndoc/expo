@@ -32,30 +32,30 @@ Expo Updates 是一种用于组装并向运行在多个平台上的应用交付�
 
 下面描述符合规范的 Expo Updates 客户端库 MUST 如何从符合规范的服务器获取新更新：
 
-1. 客户端库将针对最新的 manifest 发起一个 [请求](#request)，并在请求头中指定约束。
-2. 如果下载到新的 manifest，客户端库将继续发起额外请求，下载并存储 manifest 中指定的任何缺失资源。
-3. 客户端库将修改其本地状态，以反映新的更新已被添加到本地缓存中。它还会使用响应 [headers](#manifest-response-headers) 中找到的新 `expo-manifest-filters` 和 `expo-server-defined-headers` 更新本地状态。
+1. 客户端库将根据请求头中指定的约束，为最新的 manifest 发起[请求](#manifest-request)。
+2. 如果下载了新的 manifest，客户端库将继续发起其他请求，以下载并存储 manifest 中指定的所有缺失资源。
+3. 客户端库将编辑其本地状态，以反映本地缓存中已添加新的更新。它还将使用响应[请求头](#manifest-response-headers)中找到的新的 `expo-manifest-filters` 和 `expo-server-defined-headers` 更新本地状态。
 
 本规范的主要使用者是 Expo Application Services，以及希望管理自己的更新服务器以满足内部需求的组织。
 
 ## Manifest 请求
 
-符合规范的客户端库 MUST 使用以下 headers 发起 GET 请求：
+符合规范的客户端库**必须**使用以下请求头发起 GET 请求：
 
 1. `expo-platform`，用于指定客户端运行的平台类型。
-   - iOS MUST 为 `expo-platform: ios`。
-   - Android MUST 为 `expo-platform: android`。
-   - 如果不是这些平台之一，服务器 SHOULD 返回 400 或 404
-2. `expo-runtime-version` MUST 是与客户端兼容的 runtime version。runtime version 规定了客户端所运行的原生代码配置。它应在客户端构建时设置。例如，在 iOS 客户端中，该值可以在 plist 文件中设置。
-3. 任何先前响应的 [server defined headers](#manifest-response-headers) 中所规定的 headers。
+   - iOS **必须**为 `expo-platform: ios`。
+   - Android **必须**为 `expo-platform: android`。
+   - 如果不是这些平台之一，服务器**应**返回 400 或 404
+2. `expo-runtime-version` **必须**是与客户端兼容的 runtime version。runtime version 规定了客户端所运行的原生代码配置。它应在客户端构建时设置。例如，在 iOS 客户端中，该值可以在 plist 文件中设置。
+3. 任何先前响应的 [服务器定义的请求头](#manifest-response-headers) 中所规定的请求头。
 
-符合规范的客户端库 MUST 至少根据支持的响应结构发送以下之一：`accept: application/expo+json`、`accept: application/json` 或 `accept: multipart/mixed`，但 SHOULD 发送 `accept: application/expo+json, application/json, multipart/mixed`。符合规范的客户端库 MAY 使用 [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.1) 中规定的 `"q"` 参数表达偏好，其默认值为 `1`。
+符合规范的客户端库**必须**至少根据支持的响应结构发送以下之一：`accept: application/expo+json`、`accept: application/json` 或 `accept: multipart/mixed`，但**应**发送 `accept: application/expo+json, application/json, multipart/mixed`。符合规范的客户端库**可以**使用 [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.1) 中规定的 `"q"` 参数表达偏好，其默认值为 `1`。
 
-配置为执行 [代码签名](#code-signing) 验证的符合规范的客户端库 MUST 发送 `expo-expect-signature` header，以表明其期望符合规范的服务器在 manifest 响应中包含 `expo-signature` header。`expo-expect-signature` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，MAY 包含以下任意键值对：
+配置为执行 [代码签名](#code-signing) 验证的符合规范的客户端库**必须**发送 `expo-expect-signature` 请求头，以表明其期望符合规范的服务器在 manifest 响应中包含 `expo-signature` 请求头。`expo-expect-signature` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，**可以**包含以下任意键值对：
 
-- `sig` SHOULD 包含布尔值 `true`，以表明它要求符合规范的服务器在 `sig` 键中返回签名。
-- `keyid` SHOULD 包含客户端用于验证签名的公钥的 keyId
-- `alg` SHOULD 包含客户端用于验证签名的算法
+- `sig` **应**包含布尔值 `true`，以表明它要求符合规范的服务器在 `sig` 键中返回签名。
+- `keyid` **应**包含客户端用于验证签名的公钥的 keyId
+- `alg` **应**包含客户端用于验证签名的算法
 
 示例：
 

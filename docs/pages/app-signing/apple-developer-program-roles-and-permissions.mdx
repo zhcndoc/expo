@@ -7,9 +7,9 @@ description: 了解创建 EAS Build 所需的 Apple Developer 账户成员资格
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-使用 EAS Build 创建 iOS 设备构建时，需要一个具有创建 [app signing credentials](/app-signing/managed-credentials/#generating-app-signing-credentials) 权限的 Apple Developer 账号，例如证书、标识符和 provisioning profile。这些凭据可以在提交构建时通过从 EAS CLI 登录你的 Apple 账号来生成，或者由授权用户上传到你的 Expo 账号，这样没有 Apple Developer 账号访问权限的用户也可以使用已上传的凭据创建构建。
+使用 EAS Build 创建 iOS 设备构建时，需要一个具有生成 [应用签名凭据](/app-signing/managed-credentials/#generating-app-signing-credentials) 权限的 Apple Developer 账号，例如证书、标识符和配置描述文件。这些凭据可以在提交构建时通过从 EAS CLI 登录你的 Apple 账号来生成，或者由授权用户上传到你的 Expo 账号，这样没有 Apple Developer 账号访问权限的用户也可以使用已上传的凭据创建构建。
 
-对于个人 Apple Developer 账号，只有 Account Holder 角色可以生成 app signing credentials。对于组织 Apple Developer 账号，Account Holder 和 Admin 角色始终可以生成 app signing credentials，而 App Manager 角色在具有此角色的用户的 App Store Connect 用户权限中启用了 **访问证书、标识符和描述文件** 时也可以生成凭据。
+对于个人 Apple Developer 账号，只有 Account Holder 角色可以生成应用签名凭据。对于组织 Apple Developer 账号，Account Holder 和 Admin 角色始终可以生成应用签名凭据，而 App Manager 角色在具有此角色的用户的 App Store Connect 用户权限中启用了 **访问证书、标识符和描述文件** 时也可以生成凭据。
 
 <ContentSpotlight
   alt="App Store Connect 中的“访问证书、标识符和描述文件”设置。"
@@ -18,30 +18,30 @@ import { Terminal } from '~/ui/components/Snippet';
   className="max-w-[400px]"
 />
 
-本指南提供了授权用户可以遵循的步骤，以确保 app signing credentials 已生成并可供使用 EAS 的团队成员使用。它还提供了团队开发者使用预生成凭据创建 EAS Build 的步骤。
+本指南提供了授权用户可以遵循的步骤，以确保应用签名凭据已生成，并可供使用 EAS 的团队成员使用。它还提供了团队开发者使用预生成凭据创建 EAS Build 的步骤。
 
 > 有关不同角色及其权限的详细信息，请参阅 [Apple 关于 Program Roles 的文档](https://developer.apple.com/support/roles/)，其中说明了不同类型 Developer 账号下各角色所需的权限。
 
-## Apple Developer 账号授权用户的步骤
+## Apple Developer 账户授权用户的步骤
 
-Apple Developer 账号的授权用户需要生成以下凭据：
+Apple Developer 账户的授权用户需要生成以下凭据：
 
-- **Distribution signing certificate**：用于签名安装在 iOS 设备上的开发和发布构建。
-- **Ad hoc provisioning profile**：用于签名安装在 Apple App Store 之外设备上的构建。
-- **Distribution provisioning profile**：用于签名提交到 Apple App Store 的构建。
-- **Push key**：使用推送通知服务时需要。
+- **Distribution 签名证书**：用于签名安装在 iOS 设备上的开发和发布构建。
+- **Ad hoc 配置文件**：用于签名安装在 Apple App Store 之外设备上的构建。
+- **Distribution 配置文件**：用于签名提交到 Apple App Store 的构建。
+- **推送密钥**：使用推送通知服务时需要。
 
-有关 Distribution certificate、Provision profiles 和 Push keys 的详细信息，请参阅 [required iOS app credentials](/app-signing/app-credentials/#ios)。
+有关 Distribution 证书、配置文件和推送密钥的详细信息，请参阅 [所需的 iOS 应用凭据](/app-signing/app-credentials/#ios)。
 
-使用 EAS CLI，以上所有凭据都可以自动创建并与 Apple Developer 账号同步。一旦授权用户登录到他们的 [Expo account](/accounts/account-types/)，就可以通过使用 EAS CLI 运行 `eas credentials` 来创建或更新 provisioning profile。
+使用 EAS CLI，以上所有凭据都可以自动创建并与 Apple Developer 账户同步。授权用户登录其 [Expo 账户](/accounts/account-types/) 后，可以通过使用 EAS CLI 运行 `eas credentials` 来创建或更新配置文件。
 
 <Terminal cmd={['$ eas login', '', '$ eas credentials']} />
 
-CLI 会提示选择用于 EAS Build 的 [build profile](/build/eas-json/#build-profiles)。如果 Apple Developer 账号的授权用户正在创建生产构建，请按照以下步骤 [创建 distribution provisioning profile](/tutorial/eas/ios-production-build/#create-a-distribution-provisioning-profile)。要创建开发者构建，请按照以下步骤 [创建 ad hoc provisioning profile](/tutorial/eas/ios-development-build-for-devices/#provisioning-profile)。
+CLI 会提示选择用于 EAS Build 的 [构建配置文件](/build/eas-json/#build-profiles)。如果 Apple Developer 账户的授权用户正在创建生产构建，请按照以下步骤[创建 Distribution 配置文件](/tutorial/eas/ios-production-build/#create-a-distribution-provisioning-profile)。要创建开发者构建，请按照以下步骤[创建 Ad hoc 配置文件](/tutorial/eas/ios-development-build-for-devices/#provisioning-profile)。
 
-这可确保与 Expo 账号关联的 provisioning profile 具有所需权限。
+这可确保与 Expo 账户关联的配置文件具有所需权限。
 
-> 对于已有凭据的项目，请参阅 [Using existing credentials](/app-signing/existing-credentials/)，了解如何将这些凭据同步到 EAS 或手动管理它们。
+> 对于已有凭据的项目，请参阅[使用现有凭据](/app-signing/existing-credentials/)，了解如何将这些凭据同步到 EAS 或手动管理它们。
 
 ## 团队开发者的步骤
 
@@ -77,7 +77,7 @@ EAS CLI 需要使用与 Expo 账号关联的 provisioning profile 来创建 iOS 
 
 EAS CLI 只能接受 Apple 账号的邮箱和密码来登录你的 Apple Developer 账号。你无法登录 [Federated Apple Developer account](https://support.apple.com/en-in/guide/apple-business-manager/axmb19317543/web) 并对 distribution certificate 或 provisioning profile 进行更新。如果你的构建凭据不需要任何更改，你可以跳过登录。然后你就可以继续构建，EAS CLI 将继续使用你当前上传的凭据。
 
-不过，在运行 `eas build` 命令时，你可以提供一个具有 Admin 访问权限的 Apple Store Connect (ASC) API token，以检查和更新 Apple 凭据。请按照 [为你的 Apple 团队提供 ASC API Token](/build/building-on-ci/#optional-provide-an-asc-api-token-for-your-apple-team) 中的步骤，通过将所需的 token 值传递给 `eas build` 命令来创建构建。
+但是，你可以在运行 `eas build` 命令时提供具有 Admin 访问权限的 Apple Store Connect (ASC) API token，以检查和更新 Apple 凭据。按照[为你的 Apple 团队提供 ASC API token](/build/building-on-ci/#optional-provide-an-asc-api-token-for-your-apple-team)中的步骤，通过向 `eas build` 命令传递所需的 token 值来创建构建。
 
 #### EAS Submit
 

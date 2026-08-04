@@ -14,19 +14,19 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 <TabsGroup>
 
-[Clerk](https://clerk.com/expo-authentication) 是一个身份验证和用户管理平台，提供注册、登录、多因素认证、社交登录、组织以及托管用户数据库。[`@clerk/expo`](https://www.npmjs.com/package/@clerk/expo) SDK 为你提供 React hooks、受控组件，以及预构建的原生 UI 组件，这些组件会在 Android 上使用 Jetpack Compose 渲染，在 iOS 上使用 SwiftUI 渲染。
+[Clerk](https://clerk.com/expo-authentication) 是一个身份验证和用户管理平台，提供注册、登录、多因素身份验证、社交登录、组织以及托管用户数据库等功能。[`@clerk/expo`](https://www.npmjs.com/package/@clerk/expo) SDK 为你提供 React hooks、控制组件、托管身份验证，以及预构建的原生 UI 组件。这些组件在 Android 上使用 Jetpack Compose 渲染，在 iOS 上使用 SwiftUI 渲染。
 
-本指南将向你展示如何安装 `@clerk/expo`，将应用包装在 `<ClerkProvider>` 中，并选择适合你项目的集成方式。本文针对的是 `@clerk/expo` Core 3（3.x 发布线），它支持 Expo SDK 53、54 和 55。
+本指南将介绍如何安装 `@clerk/expo`、将应用包装在 `<ClerkProvider>` 中，以及如何选择适合项目的集成方式。本指南面向 `@clerk/expo` 4.x，该版本支持 Expo SDK 54 及更高版本。
 
 ## 选择你的集成方式
 
-`@clerk/expo` 支持三种方式。请选择最符合你需求的一种——以后也可以更改，无需重写应用。
+`@clerk/expo` 支持三种方式。请选择符合你需求的方式。之后你可以随时切换，而无需重写应用。
 
-| 方式                           | 你要构建的内容                                                                             | 可在 Expo Go 中运行 | 最适合                                                         |
-| ------------------------------ | ------------------------------------------------------------------------------------------ | ------------------- | -------------------------------------------------------------- |
-| 仅 JavaScript                  | 你自己的 React Native 页面，调用 `useSignIn()` 和 `useSignUp()`                           | <YesIcon />         | 最大化 UI 控制、在 Expo Go 中快速原型开发                      |
-| JavaScript + 原生登录          | 你自己的页面，再加上原生的 Google 登录和 Apple 登录按钮                                   | <NoIcon />          | 想要自定义外观但又需要原生社交登录的应用                      |
-| 原生 UI 组件                   | 直接使用 `@clerk/expo/native` 中的 `<AuthView />`、`<UserButton />` 和 `<UserProfileView />` | <NoIcon />          | 构建完整登录和账号管理界面的最快路径                          |
+| 方式                  | 你需要构建的内容                                                                                | 可在 Expo Go 中运行 | 最适合                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------- |
+| 托管身份验证 | 一个按钮，用于在浏览器身份验证会话中打开 Clerk 的账户门户                | <YesIcon />     | 最快速的设置方式，并启用控制面板中的所有方法 |
+| 原生 UI 组件  | 从 `@clerk/expo/native` 中直接使用 `<AuthView />`、`<UserButton />` 和 `<UserProfileView />` | <NoIcon />      | 完整的原生登录和账户管理 UI            |
+| 自定义流程           | 自行构建 React Native 界面，并调用 `useSignUp()` 和 `useSignIn()` 等 hooks         | <YesIcon />     | 最大程度的 UI 控制                                             |
 
 > **info** `@clerk/expo/native` 中的原生 UI 组件目前处于 beta 阶段。它们在 Android 上使用 Jetpack Compose 渲染，在 iOS 上使用 SwiftUI 渲染，并且会将已登录会话同步回 JavaScript SDK，因此所有 `@clerk/expo` hooks（例如 `useAuth()` 和 `useUser()`）都会保持同步。
 
@@ -42,8 +42,8 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
   <Requirement title="使用 Expo SDK 53 或更高版本">
     `@clerk/expo` Core 3 的 peer dependency 是 `expo: >=53 <56`。
   </Requirement>
-  <Requirement title="原生功能需要开发构建">
-    原生登录和原生 UI 组件方式都需要开发构建。仅 JavaScript 方式也可以在 Expo Go 中运行。
+  <Requirement title="为原生功能使用开发构建版本">
+    原生 UI 组件和原生登录 hooks 需要开发构建版本。托管身份验证和自定义流程也可以在 Expo Go 中运行。
   </Requirement>
 </Prerequisites>
 
@@ -66,18 +66,29 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 `expo-secure-store` 是一个 peer dependency。Clerk 通过 `@clerk/expo/token-cache` 使用它，利用 iOS Keychain 和 Android Keystore 对会话令牌进行加密。
 
-如果你计划使用原生 Google 登录，还需要安装 `expo-crypto`：
+对于托管身份验证，还需要安装 Clerk 用于打开浏览器身份验证会话的包：
 
 <Terminal
   cmd={{
-    npm: ['$ npx expo install expo-crypto'],
-    yarn: ['$ yarn expo install expo-crypto'],
-    pnpm: ['$ pnpm expo install expo-crypto'],
-    bun: ['$ bun expo install expo-crypto'],
+    npm: ['$ npx expo install expo-auth-session expo-crypto expo-web-browser'],
+    yarn: ['$ yarn expo install expo-auth-session expo-crypto expo-web-browser'],
+    pnpm: ['$ pnpm expo install expo-auth-session expo-crypto expo-web-browser'],
+    bun: ['$ bun expo install expo-auth-session expo-crypto expo-web-browser'],
   }}
 />
 
-对于原生 Apple 登录，请同时安装 `expo-apple-authentication` 和 `expo-crypto`：
+如果你计划在自定义流程中添加原生使用 Google 登录的按钮，请安装 `@clerk/expo-google-signin` 和 `expo-crypto`：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install @clerk/expo-google-signin expo-crypto'],
+    yarn: ['$ yarn expo install @clerk/expo-google-signin expo-crypto'],
+    pnpm: ['$ pnpm expo install @clerk/expo-google-signin expo-crypto'],
+    bun: ['$ bun expo install @clerk/expo-google-signin expo-crypto'],
+  }}
+/>
+
+对于原生使用 Apple 登录的按钮，请同时安装 `expo-apple-authentication` 和 `expo-crypto`：
 
 <Terminal
   cmd={{
@@ -94,19 +105,21 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 <Step label="2">
 
-### 添加 Clerk 配置插件
+### 验证配置插件
 
-将 `@clerk/expo` 添加到你的 [app config](/workflow/configuration/) 中的 `plugins` 数组：
+将 `@clerk/expo` 和 `expo-secure-store` 添加到 [应用配置](/workflow/configuration/) 中的 `plugins` 数组。如果你的项目使用静态 **app.json**，并且通过 `npx expo install` 安装了这些包，Expo 已经为你添加了它们：
 
 ```json app.json
 {
   "expo": {
-    "plugins": ["@clerk/expo"]
+    "plugins": ["expo-secure-store", "@clerk/expo"]
   }
 }
 ```
 
-该插件会为原生 Google 登录配置 iOS URL scheme（当设置了 `EXPO_PUBLIC_CLERK_GOOGLE_IOS_URL_SCHEME` 时），并应用底层 `clerk-android` SDK 所需的 Android 打包修复。如果你安装了 `expo-apple-authentication` 库，插件还会添加 Apple 登录所需的 entitlement。
+`@clerk/expo` 插件会添加 Apple 登录 entitlement（如果应用不使用 Apple 登录，可以通过插件选项 `appleSignIn: false` 将其禁用）、为托管身份验证回调注册 Android intent filter，并应用底层 `clerk-android` SDK 所需的 Android 打包修复。如果你使用原生使用 Google 登录的按钮，还需要将 `@clerk/expo-google-signin` 插件一并添加。
+
+托管身份验证会根据应用配置中的 `android.package` 和 `ios.bundleIdentifier` 值生成默认回调。在创建生产构建版本之前，请在 Clerk Dashboard 的 [Native applications](https://dashboard.clerk.com/last-active?path=native-applications) 页面添加应用，并使用相同的 Android package name 和 iOS bundle identifier，因为生产实例会根据已注册的值验证回调。
 
 </Step>
 
@@ -156,112 +169,140 @@ export default function RootLayout() {
 
 </Step>
 
-## 构建你的登录界面
+## 添加身份验证
 
 下一步取决于你选择的方式。下面的选项卡展示了每种方式所需的最少代码。
 
-<Tabs tabs={['原生 UI 组件', '使用原生登录的 JavaScript', '仅 JavaScript（Expo Go）']}>
+<Tabs tabs={['托管身份验证', '原生 UI 组件', '自定义流程']}>
 
 <Tab>
 
-将 `<AuthView />` 放入某个页面中。它会渲染一个完整的原生登录和注册界面，处理邮箱、手机号、通行密钥、多因素认证，以及在 Clerk Dashboard 中启用的任何社交连接：
+托管身份验证会在应用上方的浏览器身份验证会话中打开 Clerk 的[账户门户](https://clerk.com/docs/guides/account-portal/overview)。用户可以完成 Clerk 应用中启用的任意登录或注册方式，SDK 会在应用中激活生成的会话。调用 `useHostedAuth()` hook 中的 `startHostedAuth()`：
 
-```tsx
-import { AuthView } from '@clerk/expo/native';
+```tsx src/app/index.tsx
 import { useAuth } from '@clerk/expo';
-import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useHostedAuth } from '@clerk/expo/hosted-auth';
+import { ActivityIndicator, Button, Text, View } from 'react-native';
 
-export default function SignInScreen() {
-  const { isSignedIn } = useAuth({ treatPendingAsSignedOut: false });
-  const router = useRouter();
+export default function MainScreen() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { startHostedAuth } = useHostedAuth();
 
-  useEffect(() => {
-    if (isSignedIn) {
-      router.replace('/(home)');
+  const handleSignUp = async () => {
+    try {
+      await startHostedAuth({ mode: 'sign-up' });
+    } catch (error) {
+      // 在应用中处理错误
     }
-  }, [isSignedIn]);
+  };
 
-  return <AuthView mode="signInOrUp" />;
-}
-```
+  if (!isLoaded) {
+    return <ActivityIndicator size="large" />;
+  }
 
-用户登录后，原生会话会同步回 JavaScript SDK，因此 `useAuth()` 和 `useUser()` 会反映已登录状态。请将 `treatPendingAsSignedOut: false` 传给 `useAuth()`，这样原生到 JS 的短暂会话同步不会被报告为已登出状态，否则可能会在根据 `isSignedIn` 控制导航的页面上导致重定向循环。
-
-`<AuthView />` 接受 `mode="signIn" | "signUp" | "signInOrUp"`，以及可选的 `isDismissable` 布尔值。
-
-如果你想在应用其他位置显示用户头像和个人资料弹窗，可以使用 `<UserButton />`：
-
-```tsx
-import { UserButton } from '@clerk/expo/native';
-import { Show } from '@clerk/expo';
-import { View } from 'react-native';
-
-export function Header() {
   return (
-    <Show when="signed-in">
-      <View style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden' }}>
-        <UserButton />
-      </View>
-    </Show>
+    <View>
+      {isSignedIn ? (
+        <Text>You're signed in</Text>
+      ) : (
+        <Button title="Sign up" onPress={handleSignUp} />
+      )}
+    </View>
   );
 }
 ```
 
-`<UserButton />` 会填充其父容器，因此父容器控制其大小和形状。若要从任何其他 UI 打开原生个人资料弹窗，请使用 `useUserProfileModal()` hook：
+身份验证完成后，SDK 会关闭浏览器会话、激活新会话，并使用已登录状态更新 `useAuth()`。浏览器不会保留单独的活动会话。
 
-```tsx
-import { useUserProfileModal } from '@clerk/expo';
-import { Pressable, Text } from 'react-native';
+`startHostedAuth()` 默认打开登录页面，并接受 `mode: 'sign-in' | 'sign-up'`。如果用户在完成身份验证前关闭浏览器，它会以 `createdSessionId` 为 `null` 的结果解决；身份验证失败时则会抛出异常。
 
-export function ProfileLink() {
-  const { presentUserProfile, isAvailable } = useUserProfileModal();
+这种方式可以在 Expo Go 中运行，此时 Expo 会提供开发回调。在开发构建或生产构建中，回调会根据你的 iOS bundle identifier 或 Android package name 生成，因此请将 `@clerk/expo` 配置插件保留在应用配置中，并在修改任一标识符后重新构建原生项目。
+
+账户门户运行在浏览器中，因此社交登录使用各提供商的 Web OAuth 流程，而不是原生流程。请参阅[托管身份验证指南](https://clerk.com/docs/expo/guides/account-portal/hosted-auth)，了解生产凭证要求和故障排除方法。
+
+</Tab>
+
+<Tab>
+
+`<AuthView />` 会渲染完整的原生登录和注册界面，支持电子邮件、电话、通行密钥、多因素身份验证，以及 Clerk Dashboard 中启用的任何社交连接。它会以内联方式渲染在 React Native 视图层级中，因此你可以将其放置在模态框、路由或全屏视图中。下面的示例会在模态框中打开它：
+
+```tsx src/app/index.tsx
+import { useAuth } from '@clerk/expo';
+import { AuthView, UserButton } from '@clerk/expo/native';
+import { useState } from 'react';
+import { ActivityIndicator, Button, Modal, View } from 'react-native';
+
+export default function MainScreen() {
+  const { isLoaded, isSignedIn } = useAuth({ treatPendingAsSignedOut: false });
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  if (!isLoaded) {
+    return <ActivityIndicator size="large" />;
+  }
+
   return (
-    <Pressable onPress={presentUserProfile} disabled={!isAvailable}>
-      <Text>管理个人资料</Text>
-    </Pressable>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      {isSignedIn ? <UserButton /> : <Button title="Sign up" onPress={() => setIsAuthOpen(true)} />}
+      <Modal
+        animationType="slide"
+        visible={isAuthOpen}
+        presentationStyle="pageSheet"
+        onRequestClose={() => setIsAuthOpen(false)}>
+        <AuthView onDismiss={() => setIsAuthOpen(false)} />
+      </Modal>
+    </View>
   );
 }
 ```
 
-这种方式需要开发构建，因为这些组件由原生模块支持：
+用户登录后，原生会话会同步回 JavaScript SDK，因此 `useAuth()` 和 `useUser()` 会反映已登录状态。向 `useAuth()` 传入 `treatPendingAsSignedOut: false`，这样待处理的[会话任务](https://clerk.com/docs/guides/development/custom-flows/authentication/session-tasks)就不会被视为已登出。
+
+> **warning** 将包含 `<AuthView />` 的 `<Modal>` 与已登录和已登出内容保持在同一层级并挂载。如果只在已登出内容中渲染它，身份验证状态可能会在会话任务仍处于待处理状态时发生变化，而条件渲染会过早卸载模态框。
+
+`<AuthView />` 接受 `mode="signIn" | "signUp" | "signInOrUp"`（默认值）、用于控制原生关闭按钮的 `isDismissible` 布尔值，以及 `onDismiss` 回调。当用户必须先完成身份验证才能继续时，请将其作为全屏视图渲染，并设置 `isDismissible={false}`，而不是放在模态框中。
+
+`<UserButton />` 不接受任何 props。它会显示已登录用户的头像或姓名首字母，点击后打开原生 `<UserProfileView />`，用户可以在其中管理个人信息、安全设置并登出。
+
+`<AuthView />` 会自动显示 Clerk Dashboard 中启用的所有社交连接对应的登录按钮，并在内部处理相关流程，因此你不需要 `expo-crypto` 或原生登录 hooks。原生 OAuth 仍然需要在 Clerk Dashboard 和各提供商控制台中配置凭证。否则，按钮会显示，但点击后会失败。请按照本页面底部链接中的 Clerk 使用 Google 登录和使用 Apple 登录指南进行操作。
+
+这种方式需要开发构建版本，因为这些组件由原生模块支持：
 
 <Terminal
   cmd={{
     npm: [
-      '# Run a development build locally',
+      '# 在本地运行开发构建版本',
       '$ npx expo run:android',
       '',
       '$ npx expo run:ios',
       '',
-      '# Or build with EAS',
+      '# 或使用 EAS 构建',
       '$ eas build --platform ios --profile development',
     ],
     yarn: [
-      '# Run a development build locally',
+      '# 在本地运行开发构建版本',
       '$ yarn expo run:android',
       '',
       '$ yarn expo run:ios',
       '',
-      '# Or build with EAS',
+      '# 或使用 EAS 构建',
       '$ eas build --platform ios --profile development',
     ],
     pnpm: [
-      '# Run a development build locally',
+      '# 在本地运行开发构建版本',
       '$ pnpm expo run:android',
       '',
       '$ pnpm expo run:ios',
       '',
-      '# Or build with EAS',
+      '# 或使用 EAS 构建',
       '$ eas build --platform ios --profile development',
     ],
     bun: [
-      '# Run a development build locally',
+      '# 在本地运行开发构建版本',
       '$ bun expo run:android',
       '',
       '$ bun expo run:ios',
       '',
-      '# Or build with EAS',
+      '# 或使用 EAS 构建',
       '$ eas build --platform ios --profile development',
     ],
   }}
@@ -271,67 +312,108 @@ export function ProfileLink() {
 
 <Tab>
 
-将 `useSignInWithGoogle()` 和 `useSignInWithApple()` hooks 与你自己的 React Native UI 结合使用：
+使用 Core 3 hooks 构建你自己的界面。这种方式可以在 Expo Go 中运行。下面的示例使用 `useSignUp()` 构建一个带有电子邮件验证码验证的电子邮件和密码注册表单：
 
-```tsx
-import { useSignInWithGoogle } from '@clerk/expo/google';
-import { useRouter } from 'expo-router';
-import { Platform, Text, TouchableOpacity } from 'react-native';
+```tsx src/app/index.tsx
+import { useAuth, useSignUp } from '@clerk/expo';
+import { useState } from 'react';
+import { Button, Text, TextInput, View } from 'react-native';
 
-export function GoogleSignInButton() {
-  const { startGoogleAuthenticationFlow } = useSignInWithGoogle();
-  const router = useRouter();
+export default function MainScreen() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { signUp } = useSignUp();
 
-  if (Platform.OS !== 'ios' && Platform.OS !== 'android') return null;
+  const [emailAddress, setEmailAddress] = useState('');
+  const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const onPress = async () => {
-    try {
-      const { createdSessionId, setActive } = await startGoogleAuthenticationFlow();
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
-        router.replace('/');
-      }
-    } catch (err) {
-      console.error('Google 登录错误', err);
+  const handleSignUp = async () => {
+    const { error } = await signUp.password({ emailAddress, password });
+    if (error) {
+      console.error(JSON.stringify(error, null, 2));
+      return;
     }
+
+    const { error: sendError } = await signUp.verifications.sendEmailCode();
+    if (sendError) {
+      console.error(JSON.stringify(sendError, null, 2));
+      return;
+    }
+
+    setIsVerifying(true);
   };
 
+  const handleVerify = async () => {
+    const { error } = await signUp.verifications.verifyEmailCode({ code });
+    if (error) {
+      console.error(JSON.stringify(error, null, 2));
+      return;
+    }
+
+    await signUp.finalize();
+  };
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  if (isSignedIn) {
+    return <Text>You're signed in</Text>;
+  }
+
+  if (isVerifying) {
+    return (
+      <View>
+        <TextInput
+          value={code}
+          placeholder="Enter your verification code"
+          onChangeText={setCode}
+          keyboardType="numeric"
+        />
+        <Button title="Verify" onPress={handleVerify} />
+      </View>
+    );
+  }
+
   return (
-    <TouchableOpacity onPress={onPress}>
-      <Text>使用 Google 继续</Text>
-    </TouchableOpacity>
+    <View>
+      <TextInput
+        autoCapitalize="none"
+        value={emailAddress}
+        placeholder="Enter email"
+        onChangeText={setEmailAddress}
+        keyboardType="email-address"
+      />
+      <TextInput
+        value={password}
+        placeholder="Enter password"
+        secureTextEntry
+        onChangeText={setPassword}
+      />
+      <Button title="Sign up" onPress={handleSignUp} />
+      {/* Expo Web 注册流程必需。Clerk 会在 Android 和 iOS 上跳过浏览器 CAPTCHA */}
+      <View nativeID="clerk-captcha" />
+    </View>
   );
 }
 ```
 
-在 Android 上，这会使用 Credential Manager，且不会打开浏览器。在 iOS 上，当配置了 `EXPO_PUBLIC_CLERK_GOOGLE_IOS_URL_SCHEME` 时，该流程会使用 `ASAuthorization`（系统凭证选择器）；如果没有配置，则 iOS 会回退到系统浏览器面板。请按照本页底部链接的 Clerk 指南，在 Clerk Dashboard 和 Google Cloud Console 中注册你的 Android 包名、iOS bundle ID 以及 SHA-256 指纹。
+在 Core 3 中，`signUp.password()` 和 `signUp.verifications.verifyEmailCode()` 等方法会返回 `{ error }`，而不是在验证错误时抛出异常。验证完成注册后，`signUp.finalize()` 会将其转换为活动会话，并使用已登录状态更新 `useAuth()`。
 
-来自 `@clerk/expo/apple` 的 `useSignInWithApple()` 采用相同模式（`startAppleAuthenticationFlow()` 返回 `{ createdSessionId, setActive }`），且仅支持 iOS。App Store Guideline 4.8 要求，任何提供第三方社交登录的应用，在 iOS 上也必须提供使用 Apple 登录。
-
-这种方式需要开发构建，因为它使用了原生模块。`useSignInWithGoogle()` 需要 `expo-crypto`。`useSignInWithApple()` 需要 `expo-apple-authentication` 和 `expo-crypto`。
-
-</Tab>
-
-<Tab>
-
-使用 Core 3 hooks 构建自定义登录表单。这在 Expo Go 中可用。
+对应的登录流程使用 `useSignIn()`，其中 `finalize()` 接受一个 `navigate` 回调，以便你在重定向前处理[会话任务](https://clerk.com/docs/guides/development/custom-flows/authentication/session-tasks)：
 
 ```tsx
 import { useSignIn } from '@clerk/expo';
-import { useRouter, type Href } from 'expo-router';
-import { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { type Href, useRouter } from 'expo-router';
 
 export default function SignInScreen() {
-  const { signIn, fetchStatus, errors } = useSignIn();
+  const { signIn } = useSignIn();
   const router = useRouter();
-  const [emailAddress, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
 
-  const onSignInPress = async () => {
+  const handleSignIn = async (emailAddress: string, password: string) => {
     const { error } = await signIn.password({ emailAddress, password });
     if (error) {
-      console.error(JSON.stringify(error, null, 2));
       return;
     }
 
@@ -345,50 +427,13 @@ export default function SignInScreen() {
     }
   };
 
-  return (
-    <View>
-      <TextInput
-        autoCapitalize="none"
-        value={emailAddress}
-        placeholder="邮箱"
-        onChangeText={setEmailAddress}
-      />
-      <TextInput
-        value={password}
-        placeholder="密码"
-        secureTextEntry
-        onChangeText={setPassword}
-      />
-      <TouchableOpacity onPress={onSignInPress} disabled={fetchStatus === 'fetching'}>
-        <Text>登录</Text>
-      </TouchableOpacity>
-      {errors?.fields?.identifier ? <Text>{errors.fields.identifier.message}</Text> : null}
-      {errors?.fields?.password ? <Text>{errors.fields.password.message}</Text> : null}
-    </View>
-  );
+  // ... render your email and password fields
 }
 ```
 
-在 Core 3 中，`signIn.password()` 对验证错误返回 `{ error }`，而不是抛出异常；对于使用 `useSignIn()` 构建的登录流程，`signIn.finalize()` 取代了旧的 `setActive()` 调用。
+要在自定义界面中添加原生使用 Google 登录和使用 Apple 登录的按钮，请分别使用来自 `@clerk/expo/google` 的 `useSignInWithGoogle()` hook 和来自 `@clerk/expo/apple` 的 `useSignInWithApple()` hook。两者都会返回一个启动方法（`startGoogleAuthenticationFlow()` 和 `startAppleAuthenticationFlow()`），该方法会以 `{ createdSessionId, setActive }` 解决。
 
-对应的带邮箱验证的注册流程如下：
-
-```tsx
-await signUp.password({ emailAddress, password });
-await signUp.verifications.sendEmailCode();
-// ... 从用户那里收集验证码，然后：
-await signUp.verifications.verifyEmailCode({ code });
-if (signUp.status === 'complete') {
-  await signUp.finalize({
-    navigate: ({ session, decorateUrl }) => {
-      if (session?.currentTask) return;
-      router.replace(decorateUrl('/') as Href);
-    },
-  });
-}
-```
-
-Clerk 的机器人注册保护默认已启用，因此请在注册页面的某处包含 `<View nativeID="clerk-captcha" />`，这样无形 CAPTCHA 才能挂载。
+这两个 hooks 都使用原生模块，因此需要开发构建版本以及安装步骤中的相关包。`useSignInWithGoogle()` 还需要 `@clerk/expo-google-signin` 配置插件。在 iOS 上，App Store 指南 4.8 要求任何提供第三方社交登录的应用同时提供使用 Apple 登录。请按照本页面底部链接中的 Clerk 指南，在 Clerk Dashboard 和各提供商控制台中注册凭证。
 
 </Tab>
 
@@ -429,7 +474,22 @@ export default function HomeScreen() {
 
 ## 运行应用
 
-<Tabs tabs={['Android', 'iOS', '仅 JavaScript（Expo Go）']}>
+<Tabs tabs={['Expo Go', 'Android', 'iOS']}>
+
+<Tab>
+
+对于托管身份验证和自定义流程，请运行以下命令，然后在 Expo Go 中打开项目：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo start'],
+    yarn: ['$ yarn expo start'],
+    pnpm: ['$ pnpm expo start'],
+    bun: ['$ bun expo start'],
+  }}
+/>
+
+</Tab>
 
 <Tab>
 
@@ -457,21 +517,6 @@ export default function HomeScreen() {
 
 </Tab>
 
-<Tab>
-
-对于仅 JavaScript 的方式，运行以下命令并在 Expo Go 中打开项目：
-
-<Terminal
-  cmd={{
-    npm: ['$ npx expo start'],
-    yarn: ['$ yarn expo start'],
-    pnpm: ['$ pnpm expo start'],
-    bun: ['$ bun expo start'],
-  }}
-/>
-
-</Tab>
-
 </Tabs>
 
 ## 后续步骤
@@ -484,6 +529,13 @@ export default function HomeScreen() {
 />
 
 <BoxLink
+  title="托管身份验证"
+  description="使用 Clerk 的账户门户在 Expo 应用中为用户完成登录和注册，并了解回调、取消处理和生产环境设置。"
+  href="https://clerk.com/docs/expo/guides/account-portal/hosted-auth"
+  Icon={BookOpen02Icon}
+/>
+
+<BoxLink
   title="原生组件参考"
   description="AuthView、UserButton 和 UserProfileView 的 API 参考，包括配置、主题和平台要求。"
   href="https://clerk.com/docs/reference/expo/native-components/overview"
@@ -492,7 +544,7 @@ export default function HomeScreen() {
 
 <BoxLink
   title="使用 Google 登录"
-  description="使用 ASAuthorization 和 Credential Manager 为 Android 和 iOS 配置原生 Google 登录。"
+  description="通过 Clerk Dashboard 和 Google Cloud Console 为 Android 和 iOS 设置原生使用 Google 登录。"
   href="https://clerk.com/docs/expo/guides/configure/auth-strategies/sign-in-with-google"
   Icon={BookOpen02Icon}
 />

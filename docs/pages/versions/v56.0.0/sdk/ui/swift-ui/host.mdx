@@ -120,9 +120,39 @@ export default function IgnoreKeyboardExample() {
 }
 ```
 
+### 忽略容器安全区域
+
+使用 `ignoreSafeArea="container"` 仅移除容器安全区域（刘海、主屏幕指示条、状态栏和导航栏）。键盘安全区域仍然适用。
+
+```tsx IgnoreContainerSafeAreaExample.tsx
+import { Button, Host, HStack, Spacer } from '@expo/ui/swift-ui';
+import { labelStyle } from '@expo/ui/swift-ui/modifiers';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+export default function IgnoreContainerSafeAreaExample() {
+  const insets = useSafeAreaInsets();
+  return (
+    <Host
+      style={{ width: '100%', paddingTop: insets.top }}
+      matchContents={{ vertical: true }}
+      ignoreSafeArea="container">
+      <HStack>
+        <Button systemImage="chevron.backward" label="返回" modifiers={[labelStyle('iconOnly')]} />
+        <Spacer />
+        <Button
+          systemImage="square.and.arrow.up"
+          label="分享"
+          modifiers={[labelStyle('iconOnly')]}
+        />
+      </HStack>
+    </Host>
+  );
+}
+```
+
 ### 忽略所有安全区域
 
-当你希望 SwiftUI 内容延伸到状态栏后方时，使用 `ignoreSafeArea="all"`，这对于全屏遮罩或背景很有用。
+当你希望 SwiftUI 内容延伸到状态栏和键盘后方时，请使用 `ignoreSafeArea="all"`，这对于全屏覆盖层或背景非常有用。
 
 ```tsx IgnoreAllSafeAreasExample.tsx
 import { Host, Text, VStack } from '@expo/ui/swift-ui';
@@ -133,7 +163,7 @@ export default function IgnoreAllSafeAreasExample() {
       ignoreSafeArea="all"
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
       <VStack>
-        <Text>此内容会延伸到状态栏和 Home 指示条后方。</Text>
+        <Text>此内容会延伸到状态栏和主屏幕指示条后方。</Text>
       </VStack>
     </Host>
   );

@@ -19,7 +19,7 @@ Expo UI BottomSheet 与官方 SwiftUI [sheet API](<https://developer.apple.com/d
   aspect="portrait"
   src="/static/images/expo-ui/bottomsheet/ios-light.webp"
   darkSrc="/static/images/expo-ui/bottomsheet/ios-dark.webp"
-  alt="一个处于中等 detent 的 BottomSheet，显示一个排序列表，已选中 Most Recent"
+  alt="一个处于中等停靠位置的 BottomSheet，显示一个排序列表，已选中“最近”"
 />
 
 > **info** 在 iOS 上，如果要在另一个底部弹窗之上再显示一个底部弹窗，应将第二个 `BottomSheet` 嵌套在第一个弹窗的内容中，而不是与其并列。这是底层 SwiftUI [`sheet`](<https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)>) 修饰符的限制。有关更多信息，请参见[如何展示多个 sheet](https://www.hackingwithswift.com/quick-start/swiftui/how-to-present-multiple-sheets)。
@@ -32,6 +32,8 @@ Expo UI BottomSheet 与官方 SwiftUI [sheet API](<https://developer.apple.com/d
 
 ### 基本底部弹窗
 
+将打开弹窗的控件作为 `anchor` 属性传入。子元素是弹窗的内容。
+
 ```tsx BasicBottomSheetExample.tsx
 import { useState } from 'react';
 import { Host, BottomSheet, Button, Text, VStack } from '@expo/ui/swift-ui';
@@ -42,8 +44,10 @@ export default function BasicBottomSheetExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
           <Text>你好，世界！</Text>
         </BottomSheet>
       </VStack>
@@ -52,7 +56,51 @@ export default function BasicBottomSheetExample() {
 }
 ```
 
-### 适配内容高度的底部弹窗
+### React Native 视图作为锚点
+
+锚点可以是 React Native 视图。将其包裹在 [`RNHostView`](rnhostview) 中。
+
+```tsx BottomSheetRNAnchorExample.tsx
+import { useState } from 'react';
+import { Pressable, Text as RNText } from 'react-native';
+import { Host, BottomSheet, Button, RNHostView, Text, VStack } from '@expo/ui/swift-ui';
+
+export default function BottomSheetRNAnchorExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          fitToContents
+          anchor={
+            <RNHostView matchContents>
+              <Pressable
+                onPress={() => setIsPresented(true)}
+                style={{
+                  backgroundColor: '#007AFF',
+                  padding: 12,
+                  borderRadius: 8,
+                  alignSelf: 'flex-start',
+                }}>
+                <RNText style={{ color: 'white', fontWeight: '600' }}>Open sheet</RNText>
+              </Pressable>
+            </RNHostView>
+          }>
+          <VStack>
+            <Text>Opened from a React Native anchor.</Text>
+            <Button label="Close" onPress={() => setIsPresented(false)} />
+          </VStack>
+        </BottomSheet>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+### 适配内容的底部弹窗
 
 使用 [`fitToContents`](#fittocontents) 属性可让弹窗自动调整大小以适配其内容。
 
@@ -66,8 +114,11 @@ export default function BottomSheetFitsContentExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented} fitToContents>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          fitToContents
+          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
           <VStack>
             <Text>此弹窗会自动调整大小以适配其内容。</Text>
             <Button label="关闭" onPress={() => setIsPresented(false)} />
@@ -101,8 +152,10 @@ export default function BottomSheetBackgroundColorExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="打开 Sheet" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={<Button label="打开 sheet" onPress={() => setIsPresented(true)} />}>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large']),
@@ -120,14 +173,14 @@ export default function BottomSheetBackgroundColorExample() {
 }
 ```
 
-### 带 presentation detents 的底部弹窗
+### 带有 presentation detents 的底部弹窗
 
 在 `Group` 上使用 [`presentationDetents`](modifiers/#presentationdetentsdetents-options) 修饰器来控制可用高度。你可以使用：
 
 - `'medium'`：系统中等高度（大约半屏）
 - `'large'`：系统大高度（全屏）
 - `{ fraction: number }`：屏幕高度的比例（0-1）
-- `{ height: number }`：以 point 为单位的固定高度
+- `{ height: number }`：以点为单位的固定高度
 
 ```tsx BottomSheetWithDetentsExample.tsx
 import { useState } from 'react';
@@ -140,8 +193,10 @@ export default function BottomSheetWithDetentsExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large', { fraction: 0.3 }, { height: 200 }]),
@@ -183,8 +238,10 @@ export default function BottomSheetWithDetentSelectionExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="显示弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={<Button label="Show sheet" onPress={() => setIsPresented(true)} />}>
           <Group
             modifiers={[
               presentationDetents(detents, {
@@ -194,11 +251,11 @@ export default function BottomSheetWithDetentSelectionExample() {
               presentationDragIndicator('visible'),
             ]}>
             <List>
-              <Section title="更改 detent">
-                <Button label="高度 300" onPress={() => setSelectedDetent({ height: 300 })} />
-                <Button label="比例 0.3" onPress={() => setSelectedDetent({ fraction: 0.3 })} />
-                <Button label="中等" onPress={() => setSelectedDetent('medium')} />
-                <Button label="大" onPress={() => setSelectedDetent('large')} />
+              <Section title="Change detent">
+                <Button label="Height 300" onPress={() => setSelectedDetent({ height: 300 })} />
+                <Button label="Fraction 0.3" onPress={() => setSelectedDetent({ fraction: 0.3 })} />
+                <Button label="Medium" onPress={() => setSelectedDetent('medium')} />
+                <Button label="Large" onPress={() => setSelectedDetent('large')} />
               </Section>
               <Section title="当前">
                 <Text modifiers={[foregroundStyle('secondaryLabel')]}>
@@ -232,8 +289,10 @@ export default function BottomSheetWithBackgroundInteractionExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large']),
@@ -263,8 +322,10 @@ export default function NonDismissibleBottomSheetExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
           <Group modifiers={[interactiveDismissDisabled()]}>
             <VStack>
               <Text>此弹窗不能通过滑动关闭。</Text>
@@ -295,8 +356,11 @@ export default function BottomSheetWithRNContentExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented} fitToContents>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          fitToContents
+          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
           <Group modifiers={[presentationDragIndicator('visible')]}>
             <RNHostView matchContents>
               <View style={{ padding: 24 }}>
@@ -351,8 +415,10 @@ export default function BottomSheetWithFlexRNContentExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack>
-        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large']),
@@ -394,8 +460,10 @@ export default function BottomSheetWithScrollableContentExample() {
   return (
     <Host matchContents>
       <VStack>
-        <Button label="打开弹窗" onPress={() => setIsPresented(true)} />
-        <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={<Button label="Open sheet" onPress={() => setIsPresented(true)} />}>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large']),

@@ -6,17 +6,17 @@ description: 了解如何在 Expo 项目中使用 expo-localization 开始并配
 import { Collapsible } from '~/ui/components/Collapsible';
 import { SnackInline, Terminal } from '~/ui/components/Snippet';
 
-If you want your app to be easier to use for users who speak different languages or come from different cultural backgrounds, you should localize it. Localizing an app makes it adapt to the region settings of the user's device. The app will display translations and currency that users are familiar with and can understand. Numbers, lists, and other content will also be formatted in the way users are accustomed to.
+如果你希望应用对使用不同语言或来自不同文化背景的用户来说更易于使用，就应该对其进行本地化。本地化应用会使其适应用户设备的地区设置。应用将显示用户熟悉且能够理解的翻译内容和货币。数字、列表及其他内容也会按照用户习惯的格式进行显示。
 
-This guide uses the `expo-localization` library to get the user's language settings and add support for multiple languages. It uses `i18n-js` as an example of adding multilingual support.
+本指南使用 `expo-localization` 库获取用户的语言设置，并添加多语言支持。同时以 `i18n-js` 为例，介绍如何添加多语言支持。
 
-## Get the user's language
+## 获取用户的语言
 
-Use the [`expo-localization`](/versions/latest/sdk/localization/) library to get the user's current language. Install the package by running the following command:
+使用 [`expo-localization`](/versions/latest/sdk/localization/) 库获取用户当前的语言。运行以下命令安装该软件包：
 
 <Terminal cmd={['$ npx expo install expo-localization']} />
 
-Then, you can access localization methods and data in your app:
+然后，你就可以在应用中访问本地化方法和数据：
 
 ```tsx
 import { getLocales } from 'expo-localization';
@@ -24,19 +24,19 @@ import { getLocales } from 'expo-localization';
 const deviceLanguage = getLocales()[0].languageCode;
 ```
 
-The `getLocales` method returns the current locale based on the device's system settings. On newer Android and iOS versions, app language can be set per app, so you usually don't need to build a custom UI to let users change the current locale in the app.
+`getLocales` 方法会根据设备的系统设置返回当前区域设置。在较新版本的 Android 和 iOS 中，可以为每个应用单独设置应用语言，因此通常不需要构建自定义 UI 来让用户在应用中更改当前区域设置。
 
-Sometimes, it makes sense to build a UI so users can set other localization preferences per app. Generally, you should allow users to change the following:
+有时，构建一个 UI 以便用户为每个应用设置其他本地化偏好是有意义的。通常，你应该允许用户更改以下设置：
 
-- If your app makes moderate or greater use of localized units, allow changing localized units (for example, metric/imperial, currency, temperature, etc.)
-- If the platforms you support don't have an API for retrieving default values, allow changing other preference settings (for details, see the [`expo-localization`](/versions/latest/sdk/localization) API docs)
+- 如果你的应用对本地化单位的使用程度中等或更高，则允许更改本地化单位（例如公制/英制、货币、温度等）
+- 如果你支持的平台没有用于获取默认值的 API，则允许更改其他偏好设置（详情请参阅 [`expo-localization`](/versions/latest/sdk/localization) API 文档）
 
-### Enable per-app language selection through system settings
+### 通过系统设置启用按应用选择语言
 
-Both Android and iOS allow users to select a preferred language for a single app through system settings. To support this feature, your app must declare its supported locales to the system.
+Android 和 iOS 都允许用户通过系统设置为单个应用选择首选语言。要支持此功能，你的应用必须向系统声明其支持的区域设置。
 
-To do this, use the [`expo-localization`](/versions/latest/sdk/localization/#installation) config plugin and pass the `supportedLocales` property to the `expo-localization` config plugin.
-You can provide an array of supported locales directly, or use the `supportedLocales.ios` and `supportedLocales.android` fields to specify platform-specific values:
+为此，请使用 [`expo-localization`](/versions/latest/sdk/localization/#installation) 配置插件，并将 `supportedLocales` 属性传递给 `expo-localization` 配置插件。
+你可以直接提供支持的区域设置数组，也可以使用 `supportedLocales.ios` 和 `supportedLocales.android` 字段来指定特定平台的值：
 
 ```json app.json
 {
@@ -56,9 +56,9 @@ You can provide an array of supported locales directly, or use the `supportedLoc
 }
 ```
 
-> On Android, refer to the [locale names naming guide](https://developer.android.com/guide/topics/resources/app-languages#locale-names) and the [most common locale list](https://developer.android.com/guide/topics/resources/app-languages#sample-config).
+> 在 Android 上，请参阅[区域设置名称命名指南](https://developer.android.com/guide/topics/resources/app-languages#locale-names)和[最常用的区域设置列表](https://developer.android.com/guide/topics/resources/app-languages#sample-config)。
 >
-> On iOS, use language names or ISO language identifiers.
+> 在 iOS 上，请使用语言名称或 ISO 语言标识符。
 
 ## 翻译应用
 
@@ -208,39 +208,48 @@ const styles = StyleSheet.create({
 
 在 SDK 55 及更高版本中，iOS 还提供一个选项，可以指定 `Localizable.strings` 对象，其条目会被用来创建原生本地化文件。这些条目可用于 [iOS 本地化通知](https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification#Localize-your-alert-messages)。
 
-## 启用 RTL 支持
+## RTL 支持
 
-世界上有些地区的文本是从右向左书写的。如果你希望对应用进行本地化，使其在 RTL 语言中外观符合预期，你需要确保应用相应地处理这些布局和文本方向变化。
+世界上有一些地区使用从右到左（RTL）的书写方式。要让你的应用在 RTL 语言中呈现预期效果，你需要确保它能够相应地处理这些布局和文本方向的变化。
 
-要启用 RTL 支持，请使用 [`expo-localization`](/versions/latest/sdk/localization/#installation) 配置插件，并在应用配置中启用 `extra.supportsRTL` 属性：
+> **信息** 本节介绍 **SDK 58 及更高版本**中的行为。在之前的版本中，RTL 支持默认启用，但在 Expo Go 中默认禁用。
+
+RTL 支持默认启用。布局方向遵循 React Native 的 [`I18nManager`](https://reactnative.dev/docs/i18nmanager)。当设备设置为 RTL 语言（例如阿拉伯语或希伯来语）时，应用会以 RTL 方式渲染；否则会以从左到右（LTR）方式渲染。在 iOS 上，设备语言还必须是应用支持的语言环境之一，并通过 [`supportedLocales`](#enabling-per-app-language-selection-via-system-settings) 选项声明。此行为适用于 Expo Go、开发构建版本，以及使用 EAS Build 或 `npx expo prebuild` 构建的应用。
+
+### 禁用 RTL 支持
+
+要选择退出 RTL 布局，请在 `expo-localization` 配置插件中将 `supportsRTL` 选项设置为 `false`：
 
 ```json app.json
 {
   "expo": {
-    "extra": {
-      "supportsRTL": true
-    },
-    "plugins": ["expo-localization"]
+    "plugins": [
+      [
+        "expo-localization",
+        {
+          "supportsRTL": false
+        }
+      ]
+    ]
   }
 }
 ```
 
-这样会在应用加载于 Expo Go、Expo dev Client，以及使用 EAS Build 或 `npx expo prebuild` 构建的应用中启用 RTL。
-
-当应用启动时，Expo 会检查当前设备地区设置是否应以 RTL 布局渲染，以便看起来正确。例如，在应用配置文件中标记支持 RTL 的应用，在希伯来语或阿拉伯语地区设置下会以 RTL 模式渲染。
-
 ### 强制使用 RTL 布局
 
-你也可以通过在应用配置中启用 `extra.forcesRTL` 属性，来进行测试时的 RTL 布局强制设置，或者用于仅为 RTL 地区提供本地化的应用：
+你可以强制使用 RTL 布局以进行测试，或者用于仅针对 RTL 语言环境进行本地化的应用。为此，请在 `expo-localization` 配置插件中将 `forcesRTL` 选项设置为 `true`：
 
 ```json app.json
 {
   "expo": {
-    "extra": {
-      "supportsRTL": true,
-      "forcesRTL": true
-    },
-    "plugins": ["expo-localization"]
+    "plugins": [
+      [
+        "expo-localization",
+        {
+          "forcesRTL": true
+        }
+      ]
+    ]
   }
 }
 ```

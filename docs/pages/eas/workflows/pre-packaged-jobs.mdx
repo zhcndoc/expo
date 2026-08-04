@@ -32,9 +32,12 @@ jobs:
     runs_on: string # 可选 - 可用选项请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
       platform: android | ios # 必需
-      profile: string # 可选 - 默认值为 production
+      profile: string # 可选 - 默认值：production
       message: string # 可选
       refresh_ad_hoc_provisioning_profile: boolean # 可选
+    hooks:
+      before_install_node_modules: step[] # 可选 - 在构建安装依赖项之前运行的步骤。
+      after_install_node_modules: step[] # 可选 - 在构建安装依赖项之后运行的步骤。
 ```
 
 #### 参数
@@ -71,6 +74,15 @@ jobs:
 | runtime_version   | string | 使用的运行时版本。                                        |
 | sdk_version       | string | 使用的 SDK 版本。                                         |
 | simulator         | string | 是否为模拟器构建。                                        |
+
+#### 钩子
+
+构建作业支持以下钩子：
+
+- `before_install_node_modules`：在构建安装项目依赖项之前运行的步骤。
+- `after_install_node_modules`：在构建安装项目依赖项之后运行的步骤。
+
+关于通用钩子语法，请参见 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
 ### 示例
 
@@ -181,7 +193,7 @@ jobs:
 
 </Collapsible>
 
-<Collapsible summary="使用刷新后的 ad hoc 配置文件进行 iOS 内部构建">
+<Collapsible summary="使用刷新的 ad hoc 配置文件进行 iOS 内部构建">
 
 此工作流会为你的 iOS 应用进行内部分发构建，并在你推送到 main 分支时刷新 ad hoc 配置文件。
 
@@ -221,9 +233,13 @@ jobs:
   deploy_web:
     type: deploy
     params:
-      alias: string # 可选
-      prod: boolean # 可选
-      source_maps: boolean # 可选
+      alias: string # optional
+      prod: boolean # optional
+      source_maps: boolean # optional
+    hooks:
+      after_checkout: step[] # optional - steps to run after the job checks out your project.
+      before_install_node_modules: step[] # optional - steps to run before the job installs dependencies.
+      after_install_node_modules: step[] # optional - steps to run after the job installs dependencies.
 ```
 
 #### 参数
@@ -248,6 +264,16 @@ jobs:
 | deploy_deployment_url | string | 指向该部署的唯一 URL（例如，`https://account-project--uniqueid.expo.app`）。                                                              |
 | deploy_identifier     | string | 部署的标识符。                                                                                                                             |
 | deploy_dashboard_url  | string | 指向部署仪表板的 URL（例如，`https://expo.dev/projects/[project]/hosting/deployments`）。                                                |
+
+#### Hooks
+
+Deploy 作业支持以下 hooks：
+
+- `after_checkout`：作业检出项目后要运行的步骤。
+- `before_install_node_modules`：作业安装项目依赖项之前要运行的步骤。
+- `after_install_node_modules`：作业安装项目依赖项之后要运行的步骤。
+
+有关通用 hooks 语法，请参阅 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
 ### 示例
 
@@ -326,6 +352,10 @@ jobs:
     environment: production | preview | development # 可选，默认值为 production
     env: # 可选的环境变量列表
       ENV_VAR_NAME: value
+    hooks:
+      after_checkout: step[] # 可选 - 作业检出项目后运行的步骤。
+      before_install_node_modules: step[] # 可选 - 作业安装依赖项前运行的步骤。
+      after_install_node_modules: step[] # 可选 - 作业安装依赖项后运行的步骤。
 ```
 
 #### 环境变量
@@ -348,6 +378,16 @@ jobs:
 | ------------------------ | ------ | -------------------------- |
 | android_fingerprint_hash | string | Android 的指纹哈希。       |
 | ios_fingerprint_hash     | string | iOS 的指纹哈希。           |
+
+#### Hooks
+
+指纹作业支持以下 hooks：
+
+- `after_checkout`：作业检出项目后运行的步骤。
+- `before_install_node_modules`：作业安装项目依赖项前运行的步骤。
+- `after_install_node_modules`：作业安装项目依赖项后运行的步骤。
+
+有关通用 hooks 语法，请参阅 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
 ### 示例
 
@@ -380,7 +420,7 @@ name: 使用环境变量的指纹
 
 jobs:
   fingerprint:
-    name: Calculate Fingerprint
+    name: 计算指纹
     type: fingerprint
     environment: production
     # 结果环境将是 "production" 环境与内联环境变量的并集。
@@ -530,9 +570,9 @@ jobs:
 
 <Prerequisites>
   <Requirement title="CI/CD 提交配置">
-    提交作业需要额外配置才能在 CI/CD 流程中运行。更多信息请参见 [Google
-    Play 商店 CI/CD 提交指南](/submit/android/#submitting-your-app-using-cicd-services) 和
-    [Apple App Store CI/CD 提交指南](/submit/ios/#submitting-your-app-using-cicd-services)。
+    提交任务需要额外配置，才能在 CI/CD 流程中运行。有关更多信息，请参阅 [Google
+    Play 商店 CI/CD 提交指南](/submit/android/#automate-with-eas-workflows) 和 [Apple App
+    Store CI/CD 提交指南](/submit/ios/#automate-with-eas-workflows)。
   </Requirement>
 </Prerequisites>
 
@@ -547,8 +587,11 @@ jobs:
       profile: string # 可选 - 默认值：production
       groups: string[] # 可选
     hooks:
-      before_submit: step[] # 可选 - 在提交开始前运行的步骤。
-      after_submit: step[] # 可选 - 在提交完成后运行的步骤。
+      after_checkout: step[] # 可选 - 作业检出项目后要运行的步骤。
+      before_install_node_modules: step[] # 可选 - 作业安装依赖项之前要运行的步骤。
+      after_install_node_modules: step[] # 可选 - 作业安装依赖项之后要运行的步骤。
+      before_submit: step[] # 可选 - 提交开始前要运行的步骤。
+      after_submit: step[] # 可选 - 提交完成后要运行的步骤。
 ```
 
 #### 参数
@@ -575,8 +618,11 @@ jobs:
 
 以下 hook 适用于 Submit 作业：
 
-- `before_submit`：在提交开始前运行的步骤。
-- `after_submit`：在提交完成后运行的步骤。
+- `after_checkout`：作业检出项目后要运行的步骤。
+- `before_install_node_modules`：作业安装项目依赖项之前要运行的步骤。
+- `after_install_node_modules`：作业安装项目依赖项之后要运行的步骤。
+- `before_submit`：提交开始前要运行的步骤。
+- `after_submit`：提交完成后要运行的步骤。
 
 有关通用 hooks 语法，请参见 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
@@ -638,7 +684,7 @@ jobs:
 
 ## TestFlight
 
-将 iOS 构建分发到 TestFlight 内部和外部测试组。这是 iOS submit 任务的替代方案，适用于你需要更高级的 TestFlight 功能时。如果你需要控制测试组、更新日志或 Beta App Review 提交，请使用 `testflight` 任务而不是 submit。
+将 iOS 构建分发到 [TestFlight](/submit/testflight/) 内部和外部测试组。当你需要更高级的 TestFlight 功能时，可以使用此任务作为 iOS submit 任务的替代方案。如果你需要控制测试组、更新日志或 Beta App Review 提交，请使用 `testflight` 任务，而不是 submit。
 
 该任务支持两种方式：上传一个构建并将其提交到 TestFlight（`build_id`），或提交一个已经上传的构建（`asc_build_id`）。在这两种情况下，你都可以将构建添加到分组、设置“要测试的内容”说明，并提交 Beta App Review。请且仅提供 `build_id` 或 `asc_build_id` 其中之一。
 
@@ -650,30 +696,30 @@ jobs:
   </Requirement>
 </Prerequisites>
 
-### Shared parameters
+### 共享参数
 
 两种方式都在 `params` 中接受以下参数：
 
-| Parameter          | Type     | Description                                                                                                                                                                                                                                                             |
-| ------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 参数               | 类型     | 描述                                                                                                                                                                                                                                                             |
+| ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | internal_groups    | string[] | 可选。要将构建添加到的 TestFlight 内部组名称数组。仅包含未启用自动分发的组。                                                                                                                                                                                          |
 | external_groups    | string[] | 可选。要将构建添加到的 TestFlight 外部组名称数组。                                                                                                                                                                                                                      |
 | changelog          | string   | 可选。TestFlight 测试者的测试说明（“要测试的内容”）。                                                                                                                                                                                                                  |
 | submit_beta_review | boolean  | 可选。是否提交 Beta App Review。若未指定，当提供 `external_groups` 时默认为 `true`，否则默认为 `false`。若要在不重新提交 Beta App Review 的情况下，更新已提交构建的更新日志或分组，请设为 `false`。 |
 
-### Upload build and submit to TestFlight
+### 上传构建并提交到 TestFlight
 
 上传一个 EAS iOS 构建，并在一个工作流任务中将其提交到 TestFlight。
 
 <Prerequisites>
-  <Requirement title="一个 iOS 商店构建和 Apple Developer 账户">
-    TestFlight 作业需要使用 `distribution: store` 创建的 iOS 构建，并已配置 Apple Developer
-    账户。更多信息请参见 [TestFlight 提交
-    指南](/submit/ios/#submitting-your-app-using-cicd-services)。
+  <Requirement title="一个 iOS 商店构建和 Apple Developer 帐户">
+    TestFlight 任务需要使用 `distribution: store` 创建的 iOS 构建，并配置 Apple Developer
+    帐户。有关更多信息，请参阅 [TestFlight 提交
+    指南](/submit/ios/#automate-with-eas-workflows)。
   </Requirement>
 </Prerequisites>
 
-#### Syntax
+#### 语法
 
 ```yaml
 jobs:
@@ -681,12 +727,16 @@ jobs:
     type: testflight
     params:
       build_id: string # 必需
-      profile: string # 可选 - 默认：production
+      profile: string # 可选 - 默认为：production
       internal_groups: string[] # 可选
       external_groups: string[] # 可选
       changelog: string # 可选
       submit_beta_review: boolean # 可选
-      wait_processing_timeout_seconds: number # 可选 - 默认：1800（30 分钟）
+      wait_processing_timeout_seconds: number # 可选 - 默认为：1800（30 分钟）
+    hooks:
+      after_checkout: step[] # 可选 - 任务检出项目后运行的步骤。
+      before_install_node_modules: step[] # 可选 - 任务安装依赖项前运行的步骤。
+      after_install_node_modules: step[] # 可选 - 任务安装依赖项后运行的步骤。
 ```
 
 #### 参数
@@ -710,7 +760,17 @@ jobs:
 | apple_app_id          | string | 已提交构建的 Apple App ID。         |
 | ios_bundle_identifier | string | 已提交构建的 iOS 包标识符。         |
 
-#### Examples
+#### Hooks
+
+TestFlight 任务支持以下 Hooks：
+
+- `after_checkout`：任务检出项目后运行的步骤。
+- `before_install_node_modules`：任务安装项目依赖项前运行的步骤。
+- `after_install_node_modules`：任务安装项目依赖项后运行的步骤。
+
+有关通用 Hooks 语法，请参阅 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。当[提交已上传的构建](#submit-an-already-uploaded-build)时不支持 Hooks，因为该任务变体不会在工作器上运行。
+
+#### 示例
 
 以下是一些使用 TestFlight 任务的实际示例：
 
@@ -764,7 +824,7 @@ jobs:
 
 </Collapsible>
 
-### Submit an already uploaded build
+### 提交已上传的构建
 
 将已存在于 App Store Connect 中的构建提交到 TestFlight 组，设置“要测试的内容”说明，并提交进行 Beta App Review。Beta App Review 提交是可选的。将 `submit_beta_review: false` 设为不重新提交审核，即可在现有构建上更新更新日志或分组。
 
@@ -776,7 +836,7 @@ jobs:
   </Requirement>
 </Prerequisites>
 
-#### Syntax
+#### 语法
 
 ```yaml
 jobs:
@@ -790,21 +850,25 @@ jobs:
       submit_beta_review: boolean
 ```
 
-#### Parameters
+#### 参数
 
-| Parameter    | Type   | Description                                                           |
-| ------------ | ------ | --------------------------------------------------------------------- |
+| 参数         | 类型   | 描述                                      |
+| ------------ | ------ | ----------------------------------------- |
 | asc_build_id | string | 必需。已存在于 App Store Connect 中的构建 ID。 |
 
 你也可以传入任意 [共享参数](#shared-parameters)。
 
-#### Outputs
+#### 输出
 
-| Output       | Type   | Description                     |
-| ------------ | ------ | ------------------------------- |
-| asc_build_id | string | App Store Connect 构建 ID。      |
+你可以在后续工作流中引用以下输出：
 
-#### Examples
+| 输出                 | 类型   | 描述                             |
+| -------------------- | ------ | -------------------------------- |
+| asc_build_id         | string | App Store Connect 构建 ID。       |
+| apple_app_id         | string | 所提交构建的 Apple App ID。       |
+| ios_bundle_identifier | string | 所提交构建的 iOS Bundle 标识符。 |
+
+#### 示例
 
 <Collapsible summary="在 App Store Connect 上传后自动分发到 TestFlight">
 
@@ -895,10 +959,16 @@ jobs:
       message: string # 可选
       platform: string # 可选 - android | ios | all，默认为 all
       branch: string # 可选
-      channel: string # 可选 - 不能与 branch 同时使用
+      channel: string # 可选 - 不能与 branch 一起使用
       rollout_percentage: number # 可选 - 0 到 100，默认为 100
       private_key_path: string # 可选
-      upload_sentry_sourcemaps: boolean # 可选 - 默认为“尝试上传，但如果失败则不让作业失败”
+      upload_sentry_sourcemaps: boolean # 可选 - 默认为“尝试上传，但上传失败时不使作业失败”
+    hooks:
+      after_checkout: step[] # 可选 - 作业检出项目后运行的步骤。
+      before_install_node_modules: step[] # 可选 - 作业安装依赖前运行的步骤。
+      after_install_node_modules: step[] # 可选 - 作业安装依赖后运行的步骤。
+      before_update: step[] # 可选 - 发布更新前运行的步骤。
+      after_update: step[] # 可选 - 发布更新后运行的步骤。
 ```
 
 #### 环境变量
@@ -927,6 +997,18 @@ jobs:
 | --------------------- | ------ | ------------------------------------------------------------- |
 | first_update_group_id | string | 第一个更新组的 ID。                             |
 | updates_json          | string | 包含所有更新组信息的 JSON 字符串。 |
+
+#### Hooks
+
+Update 作业支持以下 hooks：
+
+- `after_checkout`：作业检出项目后运行的步骤。
+- `before_install_node_modules`：作业安装项目依赖前运行的步骤。
+- `after_install_node_modules`：作业安装项目依赖后运行的步骤。
+- `before_update`：发布更新前运行的步骤。
+- `after_update`：发布更新后运行的步骤。Hook 步骤可以访问发布过程中生成的文件（例如 **dist** 目录中的 sourcemaps）。
+
+有关通用 hooks 语法，请参阅 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
 ### 示例
 
@@ -1004,7 +1086,104 @@ jobs:
 
 </Collapsible>
 
-## 分支删除
+<Collapsible summary="发布更新后上传 sourcemaps">
+
+此工作流会发布更新，然后使用内置的 [`eas/posthog_upload_sourcemaps`](/eas/workflows/syntax/#easposthog_upload_sourcemaps) 函数将生成的 sourcemaps 上传到 PostHog。发布更新会在 **dist** 目录中生成 sourcemaps，该目录是此函数默认的上传目录。这些文件仅存在于运行作业的工作节点上，因此上传操作必须在 `after_update` hook 中执行，而不能放在单独的作业中。Hook 步骤会继承作业的环境，因此你可以将 `POSTHOG_CLI_API_KEY` 和 `POSTHOG_CLI_PROJECT_ID` 凭据作为 [EAS 环境变量](/eas/environment-variables/) 提供。要上传到其他服务，请改为在 `run` 步骤中运行该服务的上传命令。
+
+```yaml .eas/workflows/update-with-sourcemaps.yml
+name: Update with sourcemaps
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  update:
+    name: Publish update
+    type: update
+    params:
+      channel: production
+    hooks:
+      after_update:
+        - uses: eas/posthog_upload_sourcemaps
+```
+
+</Collapsible>
+
+## 更新发布
+
+增加正在进行中的 [EAS 更新](/eas-update/introduction/)发布的比例。使用此功能可以逐步发布更新组，该更新组已通过部分 `rollout_percentage` 发布给一部分用户。
+
+### 语法
+
+```yaml
+jobs:
+  roll_out_update:
+    type: update-rollout
+    params:
+      update_group_id: string # 必填
+      rollout_percentage: number # 可选 - 0 到 100，默认为 100
+```
+
+#### 参数
+
+你可以将以下参数传入 `params` 列表：
+
+| 参数               | 类型   | 描述                                                                                                                                                                                                                                                       |
+| ------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| update_group_id    | string | 必填。要更改发布比例的更新组 ID。通常，这是前置 [`update`](#update) 作业的 `first_update_group_id` 输出。该组必须有正在进行中的发布，否则作业将失败。                                   |
+| rollout_percentage | number | 可选。此更新组应发布给的用户百分比。必须是介于 `0` 和 `100` 之间的整数，且不得低于该组当前的发布比例。默认为 `100`，这会将更新发布给所有用户并完成发布。 |
+
+#### 输出
+
+你可以在后续作业中引用以下输出：
+
+| 输出               | 类型   | 描述                                                               |
+| ------------------ | ------ | -------------------------------------------------------------------- |
+| update_group_id    | string | 已完成发布的更新组 ID。                      |
+| rollout_percentage | number | 应用于更新组的发布比例。         |
+| updates_json       | string | 包含组中所有更新信息的 JSON 字符串。 |
+
+### 示例
+
+以下是使用更新发布作业的一些实际示例：
+
+<Collapsible summary="发布部分更新，然后在批准后完成发布">
+
+此工作流会将更新发布给 25% 的用户，等待批准，然后才将发布比例提升到 100%。
+
+```yaml .eas/workflows/update-rollout.yml
+name: 分阶段发布更新
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish_update:
+    name: 将更新发布给 25% 的用户
+    type: update
+    params:
+      channel: production
+      rollout_percentage: 25
+
+  require_approval:
+    name: 发布给所有用户？
+    type: require-approval
+    needs: [publish_update]
+
+  complete_rollout:
+    name: 发布给所有用户
+    type: update-rollout
+    needs: [publish_update, require_approval]
+    params:
+      update_group_id: ${{ needs.publish_update.outputs.first_update_group_id }}
+      rollout_percentage: 100
+```
+
+</Collapsible>
+
+## 删除分支
 
 在当前项目中删除一个 [EAS Update](/eas-update/introduction/) 分支。与 [`eas branch:delete`](/eas-update/eas-cli/#delete-a-branch) 相同。在 `branch_name` 中传入 EAS Update 分支名称。
 
@@ -1071,8 +1250,9 @@ jobs:
       output_format: string # 可选 - 默认为 junit
       skip_build_check: boolean # 可选 - 默认为 false
     hooks:
-      before_maestro_tests: step[] # 可选 - tests start 前运行的步骤。
-      after_maestro_tests: step[] # 可选 - tests complete 后运行的步骤。
+      after_checkout: step[] # 可选 - 作业检出项目后要运行的步骤。
+      before_maestro_tests: step[] # 可选 - 测试开始前要运行的步骤。
+      after_maestro_tests: step[] # 可选 - 测试完成后要运行的步骤。
 ```
 
 #### 参数
@@ -1099,8 +1279,9 @@ jobs:
 
 Maestro 作业支持以下 hooks：
 
-- `before_maestro_tests`：在 tests start 之前运行的步骤。
-- `after_maestro_tests`：在 tests complete 之后运行的步骤。
+- `after_checkout`：作业检出项目后要运行的步骤。
+- `before_maestro_tests`：测试开始前要运行的步骤。
+- `after_maestro_tests`：测试完成后要运行的步骤。
 
 有关通用 hooks 语法，请参见 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
@@ -1290,8 +1471,9 @@ jobs:
       branch: string # 可选 - 覆盖 Maestro Cloud 上传来源的分支。默认情况下，如果工作流运行是从 GitHub 触发的，则使用该工作流运行所在的分支。对应于 `maestro cloud` 的 `--branch` 参数。
       async: boolean # 可选 - 异步运行 Maestro Cloud 测试。如果为 true，作业状态将只表示上传是否成功，_不表示_ 测试是否成功。对应于 `maestro cloud` 的 `--async` 参数。
     hooks:
-      before_maestro_cloud: step[] # 可选 - 在 Maestro Cloud 上传之前运行的步骤。
-      after_maestro_cloud: step[] # 可选 - 在 Maestro Cloud 上传之后运行的步骤。
+      after_checkout: step[] # 可选 - 作业检出项目后运行的步骤。
+      before_maestro_cloud: step[] # 可选 - Maestro Cloud 上传前运行的步骤。
+      after_maestro_cloud: step[] # 可选 - Maestro Cloud 上传后运行的步骤。
 ```
 
 #### 参数
@@ -1318,23 +1500,24 @@ jobs:
 
 > **重要** 你需要在作业环境中设置 `maestro_api_key` 参数或 `MAESTRO_CLOUD_API_KEY` 环境变量。前往 [Maestro Cloud](https://app.maestro.dev/) 的“设置”生成 API 密钥，然后前往 [环境变量](https://expo.dev/accounts/[account]/projects/[project]/environment-variables) 将其添加到你的项目中。
 
-#### Hooks
+#### 钩子
 
-以下 hook 支持用于 Maestro Cloud 作业：
+以下钩子支持用于 Maestro Cloud 作业：
 
-- `before_maestro_cloud`：在 Maestro Cloud 上传之前运行的步骤。
-- `after_maestro_cloud`：在 Maestro Cloud 上传之后运行的步骤。
+- `after_checkout`：作业检出项目后运行的步骤。
+- `before_maestro_cloud`：Maestro Cloud 上传前运行的步骤。
+- `after_maestro_cloud`：Maestro Cloud 上传后运行的步骤。
 
-有关通用 hooks 语法，请参阅 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
+有关通用钩子语法，请参阅 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
-#### Outputs
+#### 输出
 
 你可以在后续作业中引用以下输出：
 
 | 输出                       | 类型   | 描述                                                                 |
 | -------------------------- | ------ | -------------------------------------------------------------------- |
 | maestro_cloud_url          | string | Maestro Cloud 上传结果页面的 URL。                                   |
-| total_flows_count          | number | 已执行的 flow 总数。                                                 |
+| total_flows_count         | number | 已执行的 flow 总数。                                                 |
 | successful_flows_count     | number | 成功完成的 flow 数量（状态为 SUCCESS 或 WARNING）。                  |
 | failed_flows_count         | number | 失败的 flow 数量（状态为 ERROR 或 STOPPED）。                        |
 | successful_flow_names_json | string | 包含成功 flow 名称的 JSON 数组。                                     |
@@ -1597,7 +1780,7 @@ jobs:
 这是最简单的用法——自动发现并发布工作流中的所有构建、更新和部署。
 
 ```yaml .eas/workflows/pr-auto-comment.yml
-name: PR Auto Comment
+name: PR 自动评论
 
 on:
   pull_request: {}
@@ -1619,7 +1802,7 @@ jobs:
 在自动发现所有构建、更新和部署的同时添加自定义消息。
 
 ```yaml .eas/workflows/pr-custom-message.yml
-name: PR Custom Message
+name: PR 自定义消息
 
 on:
   pull_request: {}
@@ -1643,7 +1826,7 @@ jobs:
 此工作流使用 EAS Hosting 部署你网站的预览，并将部署详情发布到拉取请求中。
 
 ```yaml .eas/workflows/pr-preview.yml
-name: PR Preview
+name: PR 预览
 
 on:
   pull_request: {}
@@ -1665,7 +1848,7 @@ jobs:
 明确指定要包含在评论中的构建和更新。
 
 ```yaml .eas/workflows/pr-specific-builds.yml
-name: PR Specific Builds
+name: PR 指定构建
 
 on:
   pull_request: {}
@@ -1693,7 +1876,7 @@ jobs:
 使用空数组来排除特定内容类型。
 
 ```yaml .eas/workflows/pr-updates-only.yml
-name: PR Updates Only
+name: 仅更新 PR
 
 on:
   pull_request: {}
@@ -1721,7 +1904,7 @@ jobs:
 Payload 模式让你可以完全控制评论内容。请注意，使用 payload 时，不能指定任何其他参数。
 
 ```yaml .eas/workflows/custom-pr-comment.yml
-name: Custom PR Comment
+name: 自定义 PR 评论
 
 on:
   pull_request: {}
@@ -1760,14 +1943,14 @@ jobs:
 此工作流会根据构建成功或失败发布不同的评论。
 
 ```yaml .eas/workflows/conditional-comment.yml
-name: Conditional PR Comment
+name: 条件 PR 评论
 
 on:
   pull_request: {}
 
 jobs:
   build_android:
-    name: Build Android
+    name: 构建 Android
     type: build
     params:
       platform: android
@@ -1799,7 +1982,7 @@ jobs:
 
 ## Apple 设备注册请求
 
-暂停一次工作流运行，直到某台 iOS 设备为特定 [Apple Team](https://expo.fyi/apple-team) 完成注册，并且团队成员在 [expo.dev](https://expo.dev) 上批准该注册。使用此作业可在 EAS Workflows 中自动化注册用于 [内部分发](/build/internal-distribution/) 的设备。
+Pause a workflow run until an iOS device enrolls for a specific [Apple team](https://expo.fyi/apple-team) and a team member approves that enrollment on [expo.dev](https://expo.dev). Use this job to automate registering a device for [internal distribution](/build/internal-distribution/) inside EAS Workflows.
 
 当工作流到达此作业时，该作业和运行会进入 `action-required` 状态，并保持暂停，直到流程完成：
 
@@ -1826,7 +2009,7 @@ jobs:
 
 | 参数 | 类型 | 描述 |
 | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| apple_team_identifier | string | 可选。Apple Team ID（例如 `ABCDE12345`）。如果你省略此参数且你的 Expo 账号恰好只有一个 Apple Team，则会使用该团队。如果你的账户没有 Apple Teams，或者有两个及以上 Apple Teams，则必须设置此参数。提供后，EAS 会根据该标识符解析或创建团队。 |
+| apple_team_identifier | string | 可选。Apple Team ID（例如 `ABCDE12345`）。如果省略此参数，且你的 Expo 账户中只有一个 Apple team，则使用该团队。当你的账户中没有 Apple team 或有两个及以上 Apple team 时，必须设置此参数。提供该参数后，EAS 会根据该标识符解析或创建团队。 |
 
 #### 输出
 
@@ -2064,15 +2247,19 @@ jobs:
     type: repack
     runs_on: string # 可选 - 可用选项请参见 https://docs.expo.dev/build-reference/infrastructure/
     params:
-      build_id: string # 必需
-      profile: string # 可选
-      embed_bundle_assets: boolean # 可选
-      js_bundle_only: boolean # 可选
-      ios_signing_use_source_app_entitlements: boolean # 可选
-      ios_signing_app_entitlements_path: string # 可选
-      message: string # 可选
-      repack_version: string # 可选
-      repack_package: string # 可选
+      build_id: string # required
+      profile: string # optional
+      embed_bundle_assets: boolean # optional
+      js_bundle_only: boolean # optional
+      ios_signing_use_source_app_entitlements: boolean # optional
+      ios_signing_app_entitlements_path: string # optional
+      message: string # optional
+      repack_version: string # optional
+      repack_package: string # optional
+    hooks:
+      after_checkout: step[] # optional - steps to run after the job checks out your project.
+      before_install_node_modules: step[] # optional - steps to run before the job installs dependencies.
+      after_install_node_modules: step[] # optional - steps to run after the job installs dependencies.
 ```
 
 > **注意：** 如果构建可能仍在进行中，请使用 [`get-build`](#get-build) 并设置 `wait_for_in_progress: true`，然后将其 `build_id` 传递给 `repack`。
@@ -2101,23 +2288,33 @@ jobs:
 
 你可以向 `params` 列表传入以下参数：
 
-| Parameter                               | Type    | Description                                                                                                                                                                                                     |
-| --------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build_id                                | string  | 必需。要重新打包的构建的源构建 ID。                                                                                                                                                                            |
-| profile                                 | string  | 可选。要使用的构建配置文件。默认使用从 `build_id` 检索到的源构建配置文件。                                                                                                                                    |
-| embed_bundle_assets                     | boolean | 可选。是否将 bundle 资源嵌入到重新打包的构建中。默认会根据源构建自动确定。                                                                                                                                    |
-| js_bundle_only                          | boolean | 可选。是否仅重新打包 JavaScript bundle。默认值为 false，表示将更新整个应用元数据。                                                                                                                          |
-| message                                 | string  | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。                                                                                                                               |
-| repack_version                          | string  | 可选。要使用的 `@expo/repack-app` 版本。默认使用最新版本。                                                                                                                                                |
-| repack_package                          | string  | 可选。要使用的 repack npm 包。默认值为 `@expo/repack-app`。                                                                                                                                                  |
-| ios_signing_use_source_app_entitlements | boolean | 可选。是否使用 fastlane resign 的 `use_app_entitlements` 行为：提取应用包代码签名 entitlements，并将其与新配置文件中的 entitlements 组合。默认值为 false。                                                 |
-| ios_signing_app_entitlements_path       | string  | 可选。要使用的 entitlements 文件路径，例如 `myApp/MyApp.entitlements`。此项与 `ios_signing_use_source_app_entitlements` 互斥。                                                                                  |
+| 参数                                      | 类型    | 描述                                                                                                                                                                                                          |
+| ----------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| build_id                                  | string  | 必需。要重新打包的构建的源构建 ID。                                                                                                                                                                            |
+| profile                                   | string  | 可选。要使用的构建配置文件。默认使用从 `build_id` 检索到的源构建配置文件。                                                                                                                                    |
+| embed_bundle_assets                       | boolean | 可选。是否将 bundle 资源嵌入到重新打包的构建中。默认会根据源构建自动确定。                                                                                                                                    |
+| js_bundle_only                            | boolean | 可选。是否仅重新打包 JavaScript bundle。默认值为 false，表示将更新整个应用元数据。                                                                                                                          |
+| message                                   | string  | 可选。附加到构建上的自定义消息。对应于运行 `eas build` 时的 `--message` 标志。                                                                                                                               |
+| repack_version                            | string  | 可选。要使用的 `@expo/repack-app` 版本。默认使用最新版本。                                                                                                                                                    |
+| repack_package                            | string  | 可选。要使用的 repack npm 包。默认值为 `@expo/repack-app`。                                                                                                                                                   |
+| ios_signing_use_source_app_entitlements   | boolean | 可选。是否使用 fastlane resign 的 `use_app_entitlements` 行为：提取应用包代码签名 entitlements，并将其与新配置文件中的 entitlements 组合。默认值为 false。                                                 |
+| ios_signing_app_entitlements_path         | string  | 可选。要使用的 entitlements 文件路径，例如 `myApp/MyApp.entitlements`。此项与 `ios_signing_use_source_app_entitlements` 互斥。                                                                                  |
+
+#### Hooks
+
+Repack 任务支持以下 hooks：
+
+- `after_checkout`：任务检出项目后要运行的步骤。
+- `before_install_node_modules`：任务安装项目依赖前要运行的步骤。
+- `after_install_node_modules`：任务安装项目依赖后要运行的步骤。
+
+有关通用 hooks 语法，请参阅 [`jobs.<job_id>.hooks`](/eas/workflows/syntax/#jobsjob_idhooks)。
 
 ### 示例
 
 以下是一些在重打包任务中使用指纹的实际示例：
 
-<Collapsible summary="结合指纹和重打包的持续部署">
+<Collapsible summary="使用 Fingerprint 和 Repack 进行持续部署">
 
 此工作流首先生成指纹，然后根据该指纹是否已存在兼容构建来决定是构建还是重打包应用。最后，它运行 Maestro 测试。
 
