@@ -1,0 +1,109 @@
+---
+title: 构建主页
+description: 本章将指示 AI 代理添加标签导航、照片查看器和图像选择器。
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Step } from '~/ui/components/Step';
+
+在本章中，应用会逐渐呈现出 StickerSmash 的样子。我们将添加两个导航标签、照片查看器，以及一个用于打开智能手机照片图库的按钮。
+
+<Step label="1">
+
+## 添加导航标签
+
+大多数应用都有多个屏幕，并通过底部的标签在屏幕之间切换。请将以下提示粘贴到代理中。
+
+```text プロンプト|wrap
+アプリにタブバーを追加して。タブは 2 つで、Home タブには現在のホーム画面を表示し、About タブにはいまは "About screen" と表示するだけの画面を置いて。ナビゲーションには Expo Router を使って。全体をダークテーマにして、画面の背景・ヘッダー・タブバーの色は #25292e、テキストは白、選択中のタブの色は黄色（#ffd33d）にして。各タブには内容に合ったアイコンを付けて。Home は家、About は情報の丸アイコンなど。
+```
+
+<Collapsible summary="英文原始提示">
+
+```text Prompt|wrap
+Add a tab bar to the app with two tabs: a Home tab showing the current home screen, and an About tab with a screen that says "About screen" for now. Use Expo Router for navigation. Style everything with a dark theme: the color #25292e for the screen backgrounds, headers, and tab bar, white text, and yellow (#ffd33d) as the color of the selected tab. Give each tab a fitting icon, such as a house for Home and an info circle for About.
+```
+
+</Collapsible>
+
+**显示内容**：应用底部会显示包含 Home 和 About 的标签栏。当前显示的标签会以黄色高亮，点击另一个标签即可切换屏幕。
+
+<ContentSpotlight
+  alt="包含两个标签的应用布局"
+  src="/static/images/tutorial/04-tab-navigator-complete.webp"
+  className="max-w-[720px]"
+/>
+
+</Step>
+
+<Step label="2">
+
+## 添加照片查看器
+
+接下来是主屏幕的核心元素。我们将放置一张大照片和两个按钮。我们准备好了包含占位照片和之后要使用的表情符号贴纸的资源包。请将以下提示粘贴到代理中。
+
+```text プロンプト|wrap
+このアプリで使う画像アセットを https://docs.expo.dev/static/images/tutorial/sticker-smash-assets.zip からダウンロードして、assets/images フォルダに展開して。同じ名前のファイルは置き換えて。そのうえで Home 画面を作って。background-image.png の写真を画面の中央に大きく、角を丸くして表示して。その下に 2 つのボタンを縦に並べて。1 つは "Choose a photo" で、黄色い枠線・白い背景・濃い色のラベル・小さな画像アイコンを持つ目立つボタン。もう 1 つは白いテキストだけのシンプルな "Use this photo" ボタン。画像の表示には expo-image ライブラリを使って。
+```
+
+<Collapsible summary="英文原始提示">
+
+```text Prompt|wrap
+Download the image assets for this app from https://docs.expo.dev/static/images/tutorial/sticker-smash-assets.zip and extract them into the assets/images folder, replacing any files with the same names. Then build out the Home screen: show the background-image.png photo large in the center of the screen with rounded corners, and below it two buttons stacked vertically: "Choose a photo" — a prominent button with a yellow border, a white background, a dark label, and a small picture icon — and a plain "Use this photo" button with white text. Use the expo-image library to display the image.
+```
+
+</Collapsible>
+
+<Collapsible summary="想自行下载资源时">
+
+如果代理无法下载或解压文件，请手动完成。[sticker-smash-assets.zip](/static/images/tutorial/sticker-smash-assets.zip) 下载并解压，然后将 **StickerSmash** 文件夹内的 **assets/images** 文件夹中的图像复制过去。请替换同名文件。然后，将上方提示中删除第一句话后的内容交给代理，让它创建屏幕。
+
+</Collapsible>
+
+**显示内容**：一张横跨大海的木制栈道照片会占据屏幕的大部分，下方排列着两个按钮。
+
+<ContentSpotlight
+  alt="带有照片查看器和两个按钮的主屏幕"
+  src="/static/images/tutorial/initial-layout.webp"
+  className="max-w-[300px]"
+/>
+
+</Step>
+
+<Step label="3">
+
+## 从图库中选择照片
+
+终于到了第一个真正的功能。我们将让用户能够选择自己的照片。请将以下提示粘贴到代理中。
+
+```text プロンプト|wrap
+expo-image-picker ライブラリを追加して。"Choose a photo" をタップしたらスマートフォンの写真ライブラリを開いて画像を選べるようにして、選んだ画像をプレースホルダーの写真の代わりに表示して。何も選ばずにキャンセルした場合は、いま表示している写真をそのまま表示し続けて。
+```
+
+<Collapsible summary="英文原始提示">
+
+```text Prompt|wrap
+Add the expo-image-picker library. When I tap "Choose a photo", open my phone's photo library so I can pick an image, and show the one I pick in place of the placeholder photo. If I cancel without picking anything, keep showing the current photo.
+```
+
+</Collapsible>
+
+**显示内容**：点击 **Choose a photo** 后，智能手机的照片图库会打开。首次使用时会请求照片访问权限，请点击 **Allow**（允许）。所选照片会替换占位照片。
+
+</Step>
+
+> 如果结果不符合预期，请将看到的内容原样告诉代理。前一章的[遇到问题时](/ja/tutorial/build-with-ai/create-your-first-app/#うまくいかないとき)中介绍了应对方法。
+
+## 总结
+
+<ProgressTracker
+  currentChapterSlug="/tutorial/build-with-ai/build-the-home-screen"
+  name="BUILD_WITH_AI"
+  chapterTitle="第 3 章：构建主屏幕"
+  summary="应用现在已经具备了导航、样式完善的主屏幕，以及可正常运行的图片选择器。整个过程一行代码都没有写。"
+  nextChapterDescription="下一章将添加表情符号选择器模态框，并支持通过手势操作贴纸。"
+  nextChapterTitle="添加贴纸"
+  nextChapterLink="/ja/tutorial/build-with-ai/add-stickers"
+/>

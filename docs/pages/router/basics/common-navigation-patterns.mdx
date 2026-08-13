@@ -77,6 +77,41 @@ export default function FeedLayout() {
 
 你也可以在外层 stack 导航器中嵌套 tabs。这样通常更适合在 tabs 之上显示模态框。
 
+### 返回你所在的标签页
+
+指向属于另一个标签页的 URL 的 `Link` 会切换标签页，此时返回按钮会弹出该标签页内部的堆栈。在上面的例子中，从 Settings 标签页打开 `/feed/123` 会进入 Feed 标签页中的帖子。返回时会回到 `feed/index`，而不是 Settings。
+
+使用 [native tabs](/router/advanced/native-tabs/) 时，标签导航器会在挂载后立即加载每个标签页。包含堆栈的标签页在你链接进入之前，就已经停留在该堆栈的第一个屏幕上。无论你是否传递 `withAnchor`，这个屏幕都会位于你链接到的屏幕下方。
+
+如果你希望返回按钮回到你所在的屏幕，请将详情路由移出 tabs，改为从外层 stack 推入：
+
+<FileTree
+  files={[
+    ['src/app/\_layout.tsx', '包含 tabs 的 stack'],
+    ['src/app/(tabs)/\_layout.tsx'],
+    ['src/app/(tabs)/index.tsx'],
+    ['src/app/(tabs)/feed/\_layout.tsx'],
+    ['src/app/(tabs)/feed/index.tsx'],
+    ['src/app/(tabs)/settings.tsx'],
+    ['src/app/feed/[postId].tsx', '推入标签栏上方'],
+  ]}
+/>
+
+```tsx src/app/_layout.tsx
+import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return (
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="feed/[postId]" options={{ title: 'Post' }} />
+    </Stack>
+  );
+}
+```
+
+现在，`/feed/123` 是根 stack 中的屏幕，而不是 Feed 标签页中的屏幕。路由器会将它推入当前打开的标签页上方，返回时会回到该标签页。这也是 iOS 应用中详情屏幕通常的行为。
+
 <BoxLink
   title="嵌套导航器"
   description="了解如何在你的 Expo Router 应用中使用嵌套导航器。"

@@ -1,0 +1,142 @@
+---
+title: 从 GitHub 仓库触发构建
+sidebar_title: 从 GitHub 进行构建
+description: 学习从 GitHub 仓库触发构建的流程。
+hasVideoLink: true
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Step } from '~/ui/components/Step';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+[Expo GitHub App](/build/building-from-github/) 会自动从 GitHub 上的项目触发 EAS 构建。根据开发团队的偏好，可以使用任何构建配置文件触发构建。也可以从直接提交到仓库的 `git` push 或拉取请求触发构建。
+
+本章将设置此功能。为便于说明，示例应用的 GitHub 仓库已经准备好。
+
+<VideoBoxLink
+  videoId="fBLFEFC0ip0"
+  title="观看：如何从 GitHub 仓库触发构建"
+  description="将 Expo GitHub App 连接到仓库，并设置通过 push 或拉取请求触发 EAS 构建。"
+/>
+
+---
+
+<Step label="1">
+
+## 设置 Expo GitHub app
+
+要使用此功能，需要连接 GitHub 账户。
+
+- 在 EAS 控制面板中前往 [expo.dev/settings](https://expo.dev/settings#connections)，在 **Connections** > **GitHub** 中点击 **Connect**。此时会打开 **Connect GitHub** 账户页面。
+- 点击 **Get started** 按钮，会打开用于授权 Expo GitHub app 的弹出窗口。点击 **Install and Authorize**。
+- 应用安装到 GitHub 账户后，将其链接到 Expo 账户。在下一个弹出窗口中点击 **Link installation**。
+- 账户链接后，会显示在 **GitHub** 下方。
+
+<ContentSpotlight
+  alt="已链接的 GitHub 账户显示在 EAS 控制面板中"
+  src="/static/images/tutorial/eas/github-01.png"
+  className="max-w-[800px]"
+/>
+
+</Step>
+
+<Step label="2">
+
+## 连接 GitHub 仓库
+
+要能够从 GitHub 仓库触发构建，请在 EAS 控制面板中将仓库连接到项目。
+
+- 在 EAS 控制面板中前往 **Projects** > 选择自己的项目 > **Project settings** > **GitHub**。
+- 在 **Connect a GitHub repository** 下方会显示 GitHub 仓库列表，连接所需的仓库。本例中查找的是 **sticker-smash**。
+- 点击项目仓库旁的 **Connect**。
+
+<ContentSpotlight
+  alt="EAS 控制面板中用于连接项目的 GitHub 仓库列表"
+  src="/static/images/tutorial/eas/github-02.png"
+  className="max-w-[800px]"
+/>
+
+</Step>
+
+<Step label="3">
+
+## 使用仓库的默认设置
+
+Expo GitHub app 需要知道项目源代码所在的位置。默认使用 `/` 选择根目录。由于此示例项目的源代码也位于仓库根目录，因此在 EAS 控制面板中保持默认设置即可。
+
+</Step>
+
+<Step label="4">
+
+## 使用 GitHub PR 标签触发构建
+
+Expo GitHub app 提供[多种方式](/build/building-from-github/#trigger-a-build-from-github)来触发构建。
+
+- 从 Builds 页面手动运行特定平台的构建
+- 在新代码 push 到仓库时自动运行
+- 使用 GitHub PR 标签自动运行
+
+要通过 GitHub PR 标签自动触发构建，请使用上面列表中的第 3 种方式。
+
+- 需要指定要使用的构建镜像。打开 **eas.json**，向 `development` 配置文件添加 [`android.image`](/eas/json/#image) 和 [`ios.image`](/eas/json/#image-1) 属性，并将值设置为 [`latest`](/build-reference/infrastructure/#configuring-build-environment)。
+
+  ```json eas.json
+  {
+    "build": {
+      "development": {
+        /* @hide ... */ /* @end */
+        /* @info */
+        "android": {
+          "image": "latest"
+        },
+        "ios": {
+          "image": "latest"
+        }
+        /* @end */
+      }
+    }
+    /* @hide ... */ /* @end */
+  }
+  ```
+
+- 接下来创建一个名为 `dev` 的新分支，并修改应用的 JavaScript 代码。提交更改并 push 此分支，然后从该分支创建 PR。
+- 在 PR 页面中，从 **Labels** 创建名为 `eas-build-all:development` 的标签。
+
+<ContentSpotlight
+  alt="在 GitHub PR 中创建标签"
+  src="/static/images/tutorial/eas/github-04.png"
+  className="max-w-[320px]"
+/>
+
+- 点击 **Create pull request** 按钮创建 PR。Expo GitHub app 将开始创建开发构建。
+
+- 在 EAS 控制面板的 **Builds** 页面中，可以确认 Android 和 iOS 的构建都已触发。
+
+<ContentSpotlight
+  alt="EAS 控制面板中已触发 Android 和 iOS 平台的构建"
+  src="/static/images/tutorial/eas/github-06.png"
+  className="max-w-[800px]"
+/>
+
+- 查看单个构建的详细信息时，可以在 **Created by** 中看到构建是由 GitHub app 创建的。
+
+<ContentSpotlight
+  alt="EAS 控制面板中的单个构建详细信息"
+  src="/static/images/tutorial/eas/github-07.png"
+  className="max-w-[760px]"
+/>
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  name="EAS_TUTORIAL"
+  currentChapterSlug="/tutorial/eas/using-github"
+  chapterTitle="第 11 章：从 GitHub 仓库触发构建"
+  summary="我们学习了如何将 GitHub 账户链接到 Expo，将仓库连接到 EAS 项目，并通过 GitHub PR 标签自动创建开发构建。"
+  nextChapterDescription="了解使用 EAS 的下一步。"
+  nextChapterTitle="EAS 使用之旅的下一步"
+  nextChapterLink="/ja/tutorial/eas/next-steps/"
+/>

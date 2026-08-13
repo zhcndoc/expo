@@ -1,0 +1,221 @@
+---
+title: 创建并共享内部分发构建
+sidebar_title: 内部分发构建
+description: 了解什么是内部分发构建、为什么需要它，以及如何创建它。
+hasVideoLink: true
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { Tabs, Tab } from '~/ui/components/Tabs';
+import { CODE } from '~/ui/components/Text';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+本章将介绍如何设置[内部配布构建](/build/internal-distribution/#using-internal-distribution)。
+
+<VideoBoxLink
+  videoId="1fQuGLHxWks"
+  title="观看：如何创建和共享内部配布构建"
+  description="使用 EAS 创建内部配布构建，并直接共享给团队进行测试。"
+/>
+
+---
+
+## 内部配布构建
+
+内部配布构建非常适合向团队成员共享更新。您可以直接获得技术人员和非技术人员的反馈。与开发构建不同，它不需要运行开发服务器，因此测试流程更加简单。
+
+### 如何在内部配布应用
+
+Google 和 Apple 都提供了标准的应用内部共享机制。
+
+- **Android**：使用 Google Play Beta
+- **iOS**：使用 TestFlight
+
+不过，这些传统方法各自都有一些限制。例如，在 TestFlight 中，一次只能有一个构建处于活动状态。
+
+### 使用 EAS Build 更快速地配布
+
+EAS Build 可以加快这一流程。它会创建构建共享链接，并指导您如何使用该链接。它还提供了便于内部配布的默认设置，是比传统方法更高效的选择。
+
+## 创建内部配布构建
+
+请按照以下步骤，使用 EAS Build 创建并配布构建。
+
+<Step label="1">
+
+### 设置 Preview 构建配置文件
+
+在 **eas.json** 的初始设置中，默认配置已经包含了专为内部配布设计的 `preview` 构建配置文件。
+
+```json eas.json
+{
+  "build": {
+    "preview": {
+      /* @info `preview` プロファイルの `distribution` には `internal` が設定されています。 */
+      "distribution": "internal"
+      /* @end */
+    }
+  }
+}
+```
+
+创建第一个内部配布构建只需要这些设置。上方代码片段中的 `preview` 构建配置文件包含 `distribution` 属性，其值为 `internal`。此值允许您将构建 URL 共享给任何人，对方可以将其安装到自己的设备上。运行应用不需要开发服务器。
+
+如上一章所述，对于面向应用商店以外渠道的构建，Android 需要 **.apk** 格式，iOS 需要 **.ipa** 格式。这同样适用于内部配布构建。将 `distribution` 设置为 `internal` 后，系统会自动为面向设备的应用二进制文件创建这些文件格式。
+
+</Step>
+
+<Step label="2">
+
+### 创建
+
+创建内部配布构建需要[应用签名凭据](/app-signing/app-credentials/)。
+
+Android 应用签名的限制较少，只要是兼容的 **.apk** 文件即可安装。由于在创建开发构建时已经生成了新的 Android Keystore，因此无需为 preview 构建生成新的 keystore。
+
+另一方面，Apple 对向 iOS 设备配布应用制定了更严格的规则。您需要使用 ad hoc 配置文件，明确列出允许运行应用的设备。如果应用所属的组织满足特定要求，也可以使用 [Apple Developer Enterprise Program](https://developer.apple.com/programs/enterprise/) 进行更广泛的内部配布。
+
+<Tabs>
+
+<Tab label="Android">
+
+- 使用 `preview` 配置文件开始 Android 构建。
+
+<Terminal cmd={['$ eas build --platform android --profile preview']} />
+
+- 此命令会启动 EAS Build，您可以在 EAS dashboard 中查看构建进度。
+
+<ContentSpotlight
+  alt="Android preview build details and progress in EAS dashboard"
+  src="/static/images/tutorial/eas/android-preview-build.png"
+  className="max-w-[800px]"
+/>
+
+</Tab>
+
+<Tab label="iOS">
+
+使用 ad hoc 配置文件签名的应用，可以安装到其 UDID 已注册在配置文件中的 iOS 设备上。
+
+- 要添加并注册设备，请使用 `eas device:create`。此命令会注册 iOS 设备，并显示可用于共享设备注册的 URL 或 QR 代码。
+
+<Terminal cmd={['$ eas device:create']} />
+
+- 此命令会注册用于安装应用的 iOS 设备，并生成可共享的设备注册 URL（或 QR 代码）。
+
+  > **info** **提示**：您可以随时使用此命令注册设备。不过，新添加的设备只能运行在注册后创建的构建。
+
+  > **warning** **对于新加入或刚刚更新的 Apple Developer Program 会员资格，刚注册的设备可能无法立即安装。** 即使在 Expo 中注册设备，也不会将其注册到 Apple。设备只有在首次执行包含该设备的构建或重新签名时，才会被添加到 Apple。对于此类会员资格，Apple 可能需要[最长 24〜72 小时](https://developer.apple.com/help/account/reference/device-registration-updates/)来处理设备并将其添加到配置文件。如果在注册新设备后立即构建失败，请等待 Apple 完成处理后再重新运行构建。详情请参阅[管理设备](/build/internal-distribution/#managing-devices)。
+
+- 要创建 preview 构建，请在 `eas build` 命令中指定 `preview` 配置文件。
+
+<Terminal cmd={['$ eas build --platform ios --profile preview']} />
+
+- 此命令会启动 EAS Build，您可以在 EAS dashboard 中查看构建进度。
+
+<ContentSpotlight
+  alt="iOS preview build details and progress in EAS dashboard"
+  src="/static/images/tutorial/eas/ios-preview-build.png"
+  className="max-w-[800px]"
+/>
+
+<Collapsible summary={<><CODE>eas build:resign</CODE> を使ってデバイスを登録する別の方法</>}>
+
+使用 [`eas build:resign`](/app-signing/app-credentials/#re-signing-new-credentials) 命令，可以使用新的 ad hoc 配置文件为现有的 iOS **.ipa** 重新签名，无需重新执行构建。
+
+</Collapsible>
+
+<Collapsible summary="正在尝试设置企业配置吗？">
+
+Apple Enterprise Program 会员资格的费用为每年 299 美元，并且[并非所有组织都符合条件](https://developer.apple.com/programs/enterprise/)。因此，您通常会使用普通付费 Apple Developer 账户可用的 ad hoc 配置。
+
+如果拥有 [Apple Developer Enterprise Program 会员资格](https://developer.apple.com/programs/enterprise/)，用户无需预先注册 UDID 即可将应用安装到自己的设备上。只需在设备上安装配置文件，即可访问现有构建。要设置正确的配置，您需要在运行 `eas build` 时使用 Apple Developer Enterprise 账户登录。
+
+如果同时通过企业配置和 App Store 配布应用，则需要分别使用不同的 bundle identifier。我们建议使用以下任一方式。
+
+- 对于使用 Expo CLI 生成的项目，在[**app.config.js** 中动态切换标识符](/ja/tutorial/eas/multiple-app-variants/)。
+- 对于[现有的 React Native 项目](/bare/overview/)，为每个 bundle identifier 创建单独的 `scheme`，并在各自的构建配置文件中指定相应的 scheme 名称。
+
+</Collapsible>
+
+<Collapsible summary="正在手动管理本地凭据吗？">
+
+在这种情况下，请让 **credentials.json** 指向在 Apple Developer Portal 中生成的 ad hoc 或企业配置文件（更新用于其他配布方式的现有 **credentials.json**，或将其替换为指向适当配置文件的新文件）。由于 EAS CLI 只能有限地验证本地凭据，因此您需要自行注册设备 UDID。详情请参阅[使用本地凭据](/app-signing/local-credentials)。
+
+</Collapsible>
+
+</Tab>
+
+</Tabs>
+
+</Step>
+
+<Step label="3">
+
+### 安装
+
+构建完成后，Build artifact 部分会更新，并显示构建已完成。此部分提供 Expo Orbit 和 Install 按钮，可用于在 iOS 真机上运行开发构建。
+
+- 打开构建详情页面。如果要与他人共享构建，请发送该链接。对方可以打开构建详情页面以及包括 Expo Orbit 在内的构建产物详情。
+- 使用 USB 将 Android 或 iOS 设备连接到计算机。
+- 打开 Orbit 菜单栏应用。
+- 在 Orbit 应用中选择 **Device**。
+- 在 **Build artifact** 中点击 **Open with Orbit**。
+
+<Collapsible summary="另一种方法：使用 Install 按钮和 QR 代码">
+
+- 打开构建详情页面。如果要与他人共享构建，请发送该页面的链接。对方可以打开页面，查看包括 Expo Orbit 在内的构建产物详情。
+- 在 Build artifact 部分点击 **Install**，会显示 **Install on a test device** 弹窗。
+- 从 **Send a link to a device** 部分复制链接，并将其发送到测试设备。
+
+<ContentSpotlight
+  alt="Internal distribution build details and install link in EAS dashboard"
+  src="/static/images/tutorial/eas/android-qr-code.png"
+  className="max-w-[450px]"
+/>
+
+</Collapsible>
+
+</Step>
+
+<Step label="4">
+
+### 运行
+
+点击设备上的应用图标以启动 preview 构建。不需要开发服务器。
+
+由于已经设置了多个应用变体，可以看到 development 和 preview 变体分别安装。示例如下。
+
+- Android：
+
+<ContentSpotlight
+  alt="Internal distribution build details and install link in EAS dashboard for Android"
+  src="/static/images/tutorial/eas/android-multi-variants-installed.png"
+  className="max-w-[270px]"
+/>
+
+- iOS：
+
+<ContentSpotlight
+  alt="Internal distribution build details and install link in EAS dashboard for iOS"
+  src="/static/images/tutorial/eas/ios-multi-variants-installed.webp"
+  className="max-w-[250px]"
+/>
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  name="EAS_TUTORIAL"
+  currentChapterSlug="/tutorial/eas/internal-distribution-builds"
+  chapterTitle="第 6 章：创建并共享内部配布构建"
+  summary="创建了面向 Android 和 iOS 的内部配布构建，在 iOS 上使用了 ad hoc 配置，并在同一设备上安装了多个应用变体。"
+  nextChapterDescription="下一章将介绍面向开发者和面向用户的应用版本，以及如何自动管理这些版本。"
+  nextChapterTitle="管理不同的应用版本"
+  nextChapterLink="/ja/tutorial/eas/manage-app-versions/"
+/>

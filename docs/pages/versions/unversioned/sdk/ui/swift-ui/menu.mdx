@@ -17,7 +17,7 @@ Expo UI Menu 与官方 SwiftUI [Menu API](https://developer.apple.com/documentat
   aspect="landscape"
   src="/static/images/expo-ui/menu/ios-light.webp"
   darkSrc="/static/images/expo-ui/menu/ios-dark.webp"
-  alt="Open menu showing Settings, Profile, and a destructive Delete item"
+  alt="打开菜单，显示设置、个人资料和具有破坏性操作的删除项"
 />
 
 > **注意：** 在 tvOS 上，Menu 需要 tvOS 17.0 或更高版本。
@@ -185,6 +185,28 @@ export default function StyledMenuExample() {
       <Menu label="样式化菜单" modifiers={[buttonStyle('borderedProminent')]}>
         <Button label="样式化操作 1" onPress={() => console.log('样式化 1')} />
         <Button label="样式化操作 2" onPress={() => console.log('样式化 2')} />
+      </Menu>
+    </Host>
+  );
+}
+```
+
+### Mac Catalyst 上的无样式触发器
+
+在使用 Mac idiom（Xcode 的 **为 Mac 优化界面**）的 Mac Catalyst 构建中，SwiftUI 会将 `Menu` 渲染为 AppKit 下拉按钮：带边框的外观和展开箭头会替代自定义 `label`，而下拉菜单自身的尺寸会使触发器变宽。结合使用 `menuStyle('button')`、`buttonStyle('plain')` 和 `menuIndicator('hidden')`，可使标签成为整个触发器。
+
+```tsx PlainTriggerMenuExample.tsx
+import { Host, Menu, Button, Text } from '@expo/ui/swift-ui';
+import { buttonStyle, menuIndicator, menuStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function PlainTriggerMenuExample() {
+  return (
+    <Host matchContents>
+      <Menu
+        label={<Text>Custom Label</Text>}
+        modifiers={[menuStyle('button'), buttonStyle('plain'), menuIndicator('hidden')]}>
+        <Button label="Action 1" onPress={() => console.log('Action 1')} />
+        <Button label="Action 2" onPress={() => console.log('Action 2')} />
       </Menu>
     </Host>
   );

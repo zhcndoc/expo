@@ -1,0 +1,113 @@
+---
+title: 管理不同的应用版本
+sidebar_title: 管理应用版本
+description: 了解面向开发者和面向用户的应用版本，以及 EAS Build 如何自动管理面向开发者的版本
+hasVideoLink: true
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+本章将介绍 EAS Build 如何自动管理 Android 和 iOS 的开发者应用版本。在接下来的两章中开始处理生产构建之前，了解这些内容会很有帮助。
+
+<VideoBoxLink
+  videoId="C8x4N9UmzS8"
+  title="观看：自动化应用版本代码"
+  description="了解开发者应用版本与用户应用版本之间的区别，以及 EAS Build 如何自动化版本管理。"
+/>
+
+---
+
+## 了解开发者应用版本和用户应用版本
+
+应用版本由两个值组成。
+
+- 开发者值：在 Android 中由 [`versionCode`](/versions/latest/config/app/#versioncode) 表示，在 iOS 中由 [`buildNumber`](/versions/latest/config/app/#buildnumber) 表示。
+- 用户值：在 **app.config.js** 中由 [`version`](/versions/latest/config/app/#version) 表示。
+
+Google Play 商店和 Apple App Store 都使用开发者值来识别各自的构建版本。例如，如果你上传了应用版本 `1.0.0 (1)`（用户值与开发者值的组合），就无法将同一应用版本的另一个构建版本提交到商店。提交具有重复应用版本号的构建版本会失败。
+
+下面展示了手动管理开发者值的示例，即 **app.config.js** 中的 `android.versionCode` 和 `ios.buildNumber`。**EAS Build 会自动完成这些工作，因此你无需手动添加或管理这些值**。
+
+```js app.config.js
+{
+  ios: {
+    buildNumber: 1
+    /* @hide ... */ /* @end */
+  },
+  android: {
+    versionCode: 1
+  }
+  /* @hide ... */ /* @end */
+}
+```
+
+> **Note**：[用户版本号](/build-reference/app-versions/#user-facing-version) 不由 EAS 处理。在将生产应用提交审核之前，你可以在各个应用商店的开发者门户中定义它。
+
+## 使用 EAS Build 自动管理版本
+
+默认情况下，EAS Build 会帮助你自动管理开发者值。它使用[远程版本源](/build-reference/app-versions/#remote-version-source)，每次创建新的生产版本时都会自动递增开发者值。
+
+使用 `eas init` 命令初始化项目时，EAS CLI 会自动向 **eas.json** 添加以下属性。
+
+- 设置为 `remote` 的 `cli.appVersionSource`
+- 设置为 `true` 的 [`build.production.autoIncrement`](/eas/json/#autoincrement-1)
+
+你可以在自己项目的 **eas.json** 中进行确认。
+
+{/* prettier-ignore */}
+```json eas.json
+{
+  "cli": {
+    /* @hide ... */ /* @end */
+    /* @info `appVersionSource` は `remote` に設定されています。 */
+    "appVersionSource": "remote"
+    /* @end */
+  },
+  "build": {
+    "production": {
+      /* @info `versionCode` や `buildNumber` を自動でインクリメントするため、`autoIncrement` は `true` に設定されています。 */
+      "autoIncrement": true
+      /* @end */
+    }
+  }
+  /* @hide ... */ /* @end */
+}
+```
+
+在接下来的 2 个章节中创建新的生产版本时，Android 的 `versionCode` 和 iOS 的 `buildNumber` 会自动递增。
+
+<Collapsible summary="将已发布应用的开发者应用版本同步到 EAS">
+
+如果应用已经在应用商店中发布，则开发者应用版本已经设置完成。将该应用迁移到 EAS Build 时，请按照以下步骤同步版本。
+
+- 在终端窗口中运行 `eas build:version:set` 命令。
+
+<Terminal cmd={['$ eas build:version:set']} />
+
+- 出现提示时，选择平台（Android 或 iOS）。
+- 当系统询问 **Do you want to set app version source to remote now?**（是否现在将应用版本源设置为 remote？）时，选择 **yes**。这样会将 **eas.json** 中的 `cli.appVersionSource` 设置为 `remote`。
+- 当系统询问 **What version would you like to initialize it with?**（要使用哪个版本进行初始化？）时，输入在应用商店中设置的最新版本号。
+
+完成这些步骤后，应用版本就会同步到 EAS Build 的远程端。你可以在 **eas.json** 中将 `build.production.autoIncrement` 设置为 `true`。之后创建新的生产版本时，`versionCode` 和 `buildNumber` 会自动递增。
+
+</Collapsible>
+
+## 总结
+
+<ProgressTracker
+  name="EAS_TUTORIAL"
+  currentChapterSlug="/tutorial/eas/manage-app-versions"
+  chapterTitle="第 7 章：管理不同的应用版本"
+  summary={
+    <>
+      你了解了应用版本控制的差异，理解了唯一的应用版本对于防止应用商店拒绝的重要性，并已在生产版本中通过{' '}
+      <strong>eas.json</strong> 启用版本自动更新。
+    </>
+  }
+  nextChapterDescription="下一章将学习创建 Android 生产版本的流程。"
+  nextChapterTitle="创建 Android 生产版本"
+  nextChapterLink="/ja/tutorial/eas/android-production-build/"
+/>

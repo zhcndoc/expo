@@ -1,64 +1,112 @@
 ---
 title: 使用 Supabase
-description: 使用 Supabase 为您的 React Native 应用添加 Postgres 数据库和用户身份验证。
+description: 使用 Supabase 为你的 React Native 应用添加 Postgres 数据库和用户身份验证
+platforms: ['android', 'ios']
 ---
 
 import { BoxLink } from '~/ui/components/BoxLink';
+import { Collapsible } from '~/ui/components/Collapsible';
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-[Supabase](https://supabase.com/?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 是一个后端即服务（BaaS）应用开发平台，提供托管的后端服务，例如 Postgres 数据库、用户身份验证、文件存储、边缘函数、实时同步，以及向量和 AI 工具包。它是 Google Firebase 的开源替代方案。
+[Supabase](https://supabase.com/?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 是一个构建于 Postgres 之上的后端即服务（BaaS）应用开发平台。它从你的数据库[生成 REST API](https://supabase.com/docs/guides/api?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，并使用[行级安全策略](https://supabase.com/docs/guides/auth/row-level-security?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)保护数据，因此你的 React Native 应用可以直接查询该 API，中间无需服务器。
 
-Supabase 会自动根据你的数据库[生成一个 REST API](https://supabase.com/docs/guides/api?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，并采用一种称为[行级安全性（RLS）](https://supabase.com/docs/guides/auth/row-level-security?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)的概念来保护你的数据，使你可以直接从 React Native 应用与数据库交互，而无需经过服务器！
-
-Supabase 提供了一个名为 [`supabase-js`](https://supabase.com/docs/reference/javascript/introduction?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 的 TypeScript 客户端库，用于与 REST API 交互。或者，Supabase 也提供 [GraphQL API](https://supabase.com/docs/guides/database/extensions/pg_graphql?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，如果你愿意，可以使用你喜欢的 GraphQL 客户端（例如 [Apollo Client](https://supabase.github.io/pg_graphql/usage_with_apollo/)）。
+EAS CLI 集成会自动完成标准设置：授权你的 Supabase 帐户、创建或关联项目、安装 SDK，以及写入环境变量。你也可以[手动设置](#manual-setup)，然后不加修改地使用本指南的其余部分。
 
 <Prerequisites>
-  <Requirement title="一个 Supabase 项目">
-    前往 [database.new](https://database.new?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 创建一个新的 Supabase 项目。
+  <Requirement title="Expo 帐户">
+    注册一个 [Expo 帐户](https://expo.dev/signup)。
   </Requirement>
-  <Requirement title="项目 URL 和可发布密钥">
-    从 API 设置中获取**项目 URL**，并从 API 密钥中获取**可发布密钥**：
-
-    1. 前往控制台中的 [API 设置](https://supabase.com/dashboard/project/_/settings/api) 页面。
-    2. 在此页面找到你的项目 `URL` 和 `service_role` 密钥。
-    3. 然后前往 [API 密钥](https://supabase.com/dashboard/project/_/settings/api-keys)。
-    4. 在 API 密钥选项卡下找到你的项目**可发布密钥**。
-
+  <Requirement title="EAS CLI">使用 `npm install -g eas-cli` 全局安装 EAS CLI。</Requirement>
+  <Requirement title="已关联到 EAS 的 Expo 项目">
+    创建一个 Expo 项目，并使用 `eas init` 将其关联到 EAS。
+  </Requirement>
+  <Requirement title="Supabase 帐户">
+    注册一个 [Supabase 帐户](https://supabase.com/dashboard/sign-up?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)。
   </Requirement>
 </Prerequisites>
 
-## 使用 Supabase TypeScript SDK
+## 你将学到什么
 
-使用 [`supabase-js`](https://supabase.com/docs/reference/javascript/introduction?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 是充分利用 Supabase 技术栈全部能力最方便的方式，因为它将所有不同的服务（数据库、auth、realtime、storage、edge functions）都方便地组合在一起。
+- 在 React Native 应用中[安装和配置 Supabase](#install-and-configure-supabase)
+- 使用第 2 步中创建的客户端[添加身份验证](#add-authentication)
+- 为本地开发、Production 和 Preview[设置环境](#set-up-environments)
+- [管理集成](#manage-the-integration)并[排查常见问题](#troubleshooting)
 
-### 安装并初始化 Supabase TypeScript SDK
+## 安装和配置 Supabase
 
 <Step label="1">
 
-在你创建好 [Expo 项目](/get-started/create-a-project/) 之后，使用以下命令安装 `@supabase/supabase-js` 和所需依赖：
+### 运行 `connect` 命令
+
+在项目目录中运行以下命令：
+
+<Terminal cmd={['$ eas integrations:supabase:connect']} />
+
+如果没有关联项目，该命令会创建一个新的 Supabase 项目。若要使用已有的 Supabase 项目，请改为关联它：
+
+<Terminal cmd={['$ eas integrations:supabase:connect --link <project-ref-or-url>']} />
+
+此命令会：
+
+- 打开浏览器以授权 Supabase，并在你批准后继续。
+- 如果你的帐户拥有多个 Supabase **组织**，询问要使用哪个组织。
+- 从美洲、欧洲／中东／非洲和亚太地区中询问一个**区域**，然后创建项目并等待其准备就绪。区域决定你的数据驻留位置，项目创建后无法更改。
+- 安装用于存储身份验证会话的 `@supabase/supabase-js` 和 `expo-sqlite`，并将 `expo-sqlite` 配置插件添加到你的[应用配置](/workflow/configuration/)中。如果你使用[动态应用配置](/workflow/configuration/#dynamic-configuration)，命令会打印插件条目，供你自行添加。
+- 将 `EXPO_PUBLIC_SUPABASE_URL` 和 `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` 写入 **.env.local**，并写入 Production、Preview 和 Development 环境中的 EAS 环境变量。
+
+这两个值本来就是公开的，因此可以随应用一起发布。任何拥有这些值的人都可以查询你的数据库，因此行级安全策略负责保护数据隐私。请启用行级安全策略，并为应用读取或写入的每个表添加策略。
+
+> **警告** 永远不要将数据库密码或密钥放入应用中。密钥会绕过行级安全策略，并授予对数据的完全访问权限。
+
+重新运行 `connect` 是安全的：它会复用现有连接和 Supabase 项目，并在覆盖环境变量前进行提示。
+
+<Collapsible summary="查找项目引用 ID">
+
+`--link` 接受引用 ID、控制台 URL 或项目 API URL。Supabase 会在 **Project Settings** > **General** 下显示引用 ID。项目名称无法使用。
 
 <Terminal
-  cmd={{
-    npm: ['$ npx expo install @supabase/supabase-js expo-sqlite'],
-    yarn: ['$ yarn expo install @supabase/supabase-js expo-sqlite'],
-    pnpm: ['$ pnpm expo install @supabase/supabase-js expo-sqlite'],
-    bun: ['$ bun expo install @supabase/supabase-js expo-sqlite'],
-  }}
+  cmd={[
+    '$ eas integrations:supabase:connect --link abcdefghijklmnopqrst',
+    '',
+    '$ eas integrations:supabase:connect --link https://supabase.com/dashboard/project/abcdefghijklmnopqrst',
+  ]}
 />
+
+</Collapsible>
+
+<Collapsible summary="在 CI 或非交互模式下运行">
+
+EAS Build 和 EAS Update 会从它们运行环境中读取变量，因此只有在 CI 创建或关联项目时，才应在 CI 中运行 `connect`：
+
+<Terminal
+  cmd={['$ eas integrations:supabase:connect --non-interactive --region us-east-1 --overwrite']}
+/>
+
+- `--region` 是命令在无提示的情况下创建项目时的必需参数。它接受 `americas`、`emea`、`apac` 或特定代码，例如 `us-east-1`。
+- `--overwrite` 会在不提示的情况下替换现有环境变量。
+- `--organization` 用于选择 Supabase 组织。
+- `--json` 表示同时启用 `--non-interactive`。
+
+授权 Supabase 帐户需要浏览器，因此至少要先以交互模式运行一次 `connect`。
+
+</Collapsible>
+
 </Step>
 
 <Step label="2">
 
-创建一个辅助文件来初始化 Supabase 客户端（`@supabase/supabase-js`）。你需要此前复制的 API URL 和 [`Publishable` 密钥](#prerequisites)。由于 Supabase 已在数据库中启用[行级安全性](https://supabase.com/docs/guides/auth/row-level-security?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，因此这些变量可以安全地公开在你的 Expo 应用中。
+### 创建 Supabase 客户端
 
-```ts utils/supabase.ts
+创建一个辅助文件，从 `connect` 写入的环境变量初始化客户端。这里的路径遵循默认 Expo 模板，其中 `@/` 映射到 **src**。检查 **tsconfig.json** 中的 `paths` 字段，并将文件放在别名解析到的位置；如果项目没有别名，则使用相对导入。
+
+```ts src/lib/supabase.ts
 import 'expo-sqlite/localStorage/install';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = YOUR_REACT_NATIVE_SUPABASE_URL!;
-const supabasePublishableKey = YOUR_REACT_NATIVE_SUPABASE_PUBLISHABLE_KEY!;
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabasePublishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
   auth: {
@@ -70,44 +118,265 @@ export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
 });
 ```
 
-现在你可以在整个应用中 `import { supabase } from '/utils/supabase'`，以利用 Supabase 的全部能力！
+`expo-sqlite/localStorage/install` 提供了 Supabase 用来在设备上持久化会话的 `localStorage`，从而让用户在多次启动应用后仍保持登录状态。`detectSessionInUrl` 设置为 `false`，因为 Android 和 iOS 没有可用于读取会话的 URL。Supabase 自己的快速入门还会导入 `react-native-url-polyfill/auto`，但 Expo 项目不需要这样做，因为 Expo 已经安装了 `URL` 全局对象。
 
 </Step>
 
-## 接下来的步骤
+<Step label="3">
+
+### 创建表
+
+运行 `eas integrations:supabase:dashboard` 打开已关联的项目，或从 Supabase 控制台中打开它。选择 **SQL Editor**，然后运行：
+
+```sql Supabase SQL Editor
+create table public.todos (
+  id bigint generated always as identity primary key,
+  title text not null
+);
+alter table public.todos enable row level security;
+create policy "Anyone can read todos" on public.todos for select using (true);
+grant select on public.todos to anon, authenticated;
+insert into public.todos (title) values ('Hello from Supabase');
+```
+
+用户未登录时，请求使用 `anon` 角色，登录后使用 `authenticated` 角色，策略决定这些角色可以读取哪些行。如果没有策略，select 会返回空数组且不报错。若要让应用写入数据，请添加 insert 策略。
+
+grant 是一种保护措施，而不是必需条件。托管项目已经默认向 `public` 中的新表授予这两个角色 `select`、`insert`、`update` 和 `delete` 权限。不过，[Supabase 正在将这些授权改为选择性启用](https://supabase.com/docs/guides/database/hardening-data-api?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，如果项目撤销了这些授权，就会失败并显示 `permission denied for table todos`。为表已经拥有的权限再次授权不会产生任何变化。
+
+</Step>
+
+<Step label="4">
+
+### 验证配置
+
+将第一个屏幕的内容替换为针对该表的查询：
+
+```tsx src/app/index.tsx
+import { useEffect, useState } from 'react';
+import { Text, View } from 'react-native';
+import { supabase } from '@/lib/supabase';
+
+export default function Index() {
+  const [titles, setTitles] = useState<string[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('todos')
+      .select()
+      .then(({ data, error }) => {
+        if (error) {
+          setTitles([error.message]);
+          return;
+        }
+        setTitles(data.map(todo => todo.title));
+      });
+  }, []);
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      {titles.map(title => (
+        <Text key={title}>{title}</Text>
+      ))}
+    </View>
+  );
+}
+```
+
+启动应用：
+
+<Terminal cmd={['$ npx expo start']} />
+
+如果屏幕显示 `Hello from Supabase`，则客户端运行正常。屏幕为空表示没有策略允许读取。显示错误消息则说明存在其他问题，请参阅[故障排除](#troubleshooting)。
+
+你可以在 Expo Go 中测试本指南中的所有内容。一旦向 `expo-sqlite` 插件传递选项或添加其他原生库，就需要使用[开发构建](/develop/development-builds/introduction/)。
+
+</Step>
+
+有关这些步骤背后的概念，请参阅 Supabase 数据库概览：
+
+<BoxLink
+  title="Supabase 数据库概览"
+  description="表、行级安全策略和实时更新。"
+  href="https://supabase.com/docs/guides/database/overview?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
+/>
+
+## 添加身份验证
+
+[第 2 步](#create-the-supabase-client)中的客户端已经会存储会话，因此电子邮件和密码登录无需额外配置。新的 Supabase 项目默认会确认电子邮件地址。首次调用 `signUp` 时，在地址确认之前，或者你在项目的电子邮件提供商设置中关闭 **Confirm email** 之前，返回的 `data.user` 中 `data.session` 会设置为 `null`。
+
+`autoRefreshToken` 会在 Android 和 iOS 上持续运行刷新循环，因此 Supabase 的[`startAutoRefresh` 参考文档](https://supabase.com/docs/reference/javascript/auth-startautorefresh?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)建议将该循环与应用状态绑定。将以下内容添加到客户端文件中：
+
+```ts src/lib/supabase.ts
+import { AppState } from 'react-native';
+
+AppState.addEventListener('change', state => {
+  if (state === 'active') {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
+});
+```
+
+OAuth 提供商和魔法链接需要一个返回应用的深层链接，详见 [Supabase 的移动端深层链接指南](https://supabase.com/docs/guides/auth/native-mobile-deep-linking?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)。
+
+## 设置环境
+
+`connect` 会将这些值存储为[EAS 环境变量](/eas/environment-variables/)，因此每个构建或更新都会从其运行的环境中读取这些值。
+
+一个 Supabase 项目包含一个环境的数据，因此不同环境意味着不同项目。创建第二个项目之前，请查看你的 [Supabase 计划限制](https://supabase.com/pricing?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)。
+
+**Development** 使用 [Supabase CLI](https://supabase.com/docs/guides/local-development?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)在本地运行。启动 Docker，然后运行：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx supabase init', '$ npx supabase start', '$ npx supabase status'],
+    yarn: ['$ yarn dlx supabase init', '$ yarn dlx supabase start', '$ yarn dlx supabase status'],
+    pnpm: ['$ pnpm dlx supabase init', '$ pnpm dlx supabase start', '$ pnpm dlx supabase status'],
+    bun: ['$ bunx supabase init', '$ bunx supabase start', '$ bunx supabase status'],
+  }}
+/>
+
+将 **.env.local** 中的托管值替换为 `supabase status` 输出的 API URL 和可发布密钥。在 shell 中导出的变量优先于 **.env.local**，因此请编辑文件，而不要导出变量。本地数据库初始为空，因此也要针对它运行表 SQL。重新运行 `connect` 会将托管值写回。
+
+> **信息** 本地 URL 指向你的计算机。实体设备或 Android Emulator 无法访问它，因此应在这里使用计算机的 LAN 地址，而不是 `127.0.0.1`。
+
+<Collapsible summary="将 Development 环境指向本地堆栈">
+
+`connect` 会将每个值写成一个覆盖 Production、Preview 和 Development 的变量。`eas env:pull --environment development` 在替换 **.env.local** 前会进行询问，然后根据该环境重写整个文件，因此会删除你设置的本地值。
+
+若要将 Development 指向本地堆栈，请将这一个变量替换为两个变量。`eas env:set` 会复用一个同名且环境与目标环境重叠的变量，因此仅设置 Development 会同时将 Production 和 Preview 移动到本地 URL：
+
+<Terminal
+  cmd={[
+    '$ eas env:delete --variable-name EXPO_PUBLIC_SUPABASE_URL',
+    '',
+    '$ eas env:set --name EXPO_PUBLIC_SUPABASE_URL --value <hosted-url> --environment production --environment preview --visibility plaintext',
+    '',
+    '$ eas env:set --name EXPO_PUBLIC_SUPABASE_URL --value http://127.0.0.1:54321 --environment development --visibility plaintext',
+  ]}
+/>
+
+如果 **eas.json** 中的任何构建配置设置了 `"environment": "development"`，请不要这样做。这样云端构建会嵌入任何设备都无法访问的 URL。
+
+</Collapsible>
+
+**Production** 使用 `connect` 设置的项目。
+
+**Preview** 默认没有自己的项目。若要为 Preview 或任何其他 EAS 环境提供自己的托管项目，请使用 `--environment` 重新运行 `connect`。这会创建第二个项目，并计入计划的活跃项目限制：
+
+<Terminal cmd={['$ eas integrations:supabase:connect --environment preview']} />
+
+新项目的 URL 和密钥仅会写入指定的环境，其他环境仍会指向第一个项目。如果目标环境中已经存在 `EXPO_PUBLIC_SUPABASE_*` 值，命令会在替换这些值前要求确认。与不带 `--environment` 的 `connect` 不同，该命令不会安装 SDK，也不会修改 **.env.local**。不能将 `--environment` 与 `--link`、`--reauth` 或 `--organization` 结合使用。
+
+若要让 EAS 环境指向已有的 Supabase 项目，请使用 [`eas env:set`](/eas/environment-variables/) 自行设置两个变量，而不要使用 `--environment`。如上所示，先将共享变量替换为两个变量，以便其他环境继续使用当前项目。
+
+## 管理集成
+
+之后可以使用两个命令管理集成：
+
+<Terminal
+  cmd={['$ eas integrations:supabase:dashboard', '', '$ eas integrations:supabase:disconnect']}
+/>
+
+`dashboard` 会打开已关联的 Supabase 项目。`disconnect` 只会移除 Expo 端的关联。你的 Supabase 项目、其中的数据以及环境变量都不会改变。
+
+断开关联后，`connect` 将不再找到已关联的项目，因此会创建一个新项目。若要让应用重新指向同一个项目，请使用其引用 ID 运行 `connect --link`。
+
+## 手动设置
+
+`connect` 是标准 Supabase 设置流程的快捷方式。手动执行步骤如下：
+
+1. 在 [database.new](https://database.new?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 创建项目。
+2. 从 [API Settings](https://supabase.com/dashboard/project/_/settings/api?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 复制**项目 URL**，并从 [API Keys](https://supabase.com/dashboard/project/_/settings/api-keys?utm_source=expo&utm_medium=referral&utm_term=expo-react-native) 复制**可发布密钥**。
+3. 安装 SDK：
+
+   <Terminal
+     cmd={{
+       npm: ['$ npx expo install @supabase/supabase-js expo-sqlite'],
+       yarn: ['$ yarn expo install @supabase/supabase-js expo-sqlite'],
+       pnpm: ['$ pnpm expo install @supabase/supabase-js expo-sqlite'],
+       bun: ['$ bun expo install @supabase/supabase-js expo-sqlite'],
+     }}
+   />
+
+4. 将 `expo-sqlite` 配置插件添加到你的[应用配置](/workflow/configuration/)中。
+5. 在 **.env.local** 中设置 `EXPO_PUBLIC_SUPABASE_URL` 和 `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`，然后根据[第 2 步](#create-the-supabase-client)创建客户端文件。
+
+## 故障排除
+
+<Collapsible summary="已达到活跃项目限制">
+
+Free 计划允许每位用户拥有两个活跃项目，一个组织中的所有者和管理员会共享每个人的额度。已暂停的项目不计入限制。使用 `--link` 关联已有项目，在 Supabase 控制台中暂停或删除项目，升级组织，或查看 Supabase 的[计费常见问题](https://supabase.com/docs/guides/platform/billing-faq?utm_source=expo&utm_medium=referral&utm_term=expo-react-native)，了解额度如何共享。`--environment` 不能与 `--link` 结合使用，因此在这种情况下，请释放一个名额，或自行在目标环境中设置 `EXPO_PUBLIC_SUPABASE_URL` 和 `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`。
+
+</Collapsible>
+
+<Collapsible summary="项目引用 ID 无法使用">
+
+项目必须属于你所连接的 Supabase 组织。有关可接受的格式，请参阅[查找项目引用 ID](#finding-your-project-reference-id)。
+
+</Collapsible>
+
+<Collapsible summary="环境变量未更新">
+
+`connect` 写入变量后，重新加载应用，使其读取新值。如果应用仍然读取旧值，请停止开发服务器，然后再次运行 `npx expo start`。
+
+</Collapsible>
+
+<Collapsible summary="创建表后立即提示表不存在">
+
+Supabase 会缓存数据库架构，因此创建表后立即查询可能会失败，并显示 `Could not find the table 'public.todos' in the schema cache`。重新运行查询即可；缓存会自行刷新。
+
+</Collapsible>
+
+<Collapsible summary="表权限被拒绝">
+
+为两个角色添加查询所需的授权，例如 `grant select on public.todos to anon, authenticated`。仅有策略还不够。与缺少策略时返回空数组不同，这种情况会使 `error.code` 为 `42501` 并失败。
+
+</Collapsible>
+
+<Collapsible summary="Supabase 授权停止工作">
+
+如果你在 Supabase 中撤销了 Expo 的访问权限，请运行 `eas integrations:supabase:connect --reauth`。这会清除已存储的连接和项目关联，重新打开浏览器，然后询问是关联项目还是创建项目，因此请准备好引用 ID。你的 Supabase 项目不会受到影响。`--reauth` 需要浏览器，因此在非交互模式下会失败。
+
+</Collapsible>
+
+<Collapsible summary="创建了额外项目但没有环境变量">
+
+如果 `connect --environment` 创建项目后写入环境变量失败，命令会打印项目 URL 和可发布密钥。使用 [`eas env:set`](/eas/environment-variables/) 保存这些值。
+
+> **警告** 此时不要重新运行 `connect --environment`。它会创建另一个项目，并计入计划限制。
+
+</Collapsible>
+
+## 延伸阅读
 
 <BoxLink
   title="构建用户管理应用"
-  description="了解如何在这个快速入门指南中将 Supabase Auth 和 Database 结合起来。"
+  description="在本快速入门指南中结合使用 Supabase Auth 和数据库。"
   href="https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
   title="使用 Apple 登录"
-  description="Supabase Auth 支持在 Web 端以及 iOS、macOS、watchOS 或 tvOS 的原生应用中使用 Apple 登录。"
+  description="使用 Supabase Auth 为 Android 和 iOS 应用添加使用 Apple 登录。"
   href="https://supabase.com/docs/guides/auth/social-login/auth-apple?platform=react-native&utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
   title="使用 Google 登录"
-  description="Supabase Auth 支持在 Web 端、原生 Android 应用以及 Chrome 扩展中使用 Google 登录。"
+  description="使用 Supabase Auth 为 Android 和 iOS 应用添加使用 Google 登录。"
   href="https://supabase.com/docs/guides/auth/social-login/auth-google?platform=react-native&utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
-  title="OAuth 和 Magic Links 的深度链接"
-  description="在原生移动应用中执行 OAuth 或发送 magic link 邮件时，了解如何为 Android 和 iOS 应用配置深度链接。"
-  href="https://supabase.com/docs/guides/auth/native-mobile-deep-linking?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
-/>
-
-<BoxLink
-  title="使用 WatermelonDB 的离线优先 React Native 应用"
-  description="了解如何将数据本地存储并使用 WatermelonDB 与 Postgres 同步。"
+  title="使用 WatermelonDB 构建离线优先应用"
+  description="在本地存储数据，并使用 WatermelonDB 将其与 Postgres 同步。"
   href="https://supabase.com/blog/react-native-offline-first-watermelon-db?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />
 
 <BoxLink
-  title="使用 Supabase Storage 进行 React Native 文件上传"
-  description="了解如何在 React Native 应用中实现身份验证和文件上传。"
+  title="使用 Supabase Storage 上传文件"
+  description="在 React Native 应用中实现身份验证和文件上传。"
   href="https://supabase.com/blog/react-native-storage?utm_source=expo&utm_medium=referral&utm_term=expo-react-native"
 />

@@ -12,6 +12,8 @@ import {
   CursorLogoIcon,
   OpenAILogoIcon,
 } from '~/ui/components/CustomIcons/AIProviderIcons';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
 
 Claude Code、Codex、Cursor 和其他 AI 编码代理可以帮助你构建、升级、调试和部署你的 Expo 和 React Native 项目。当你使用 [`create-expo-app`](/more/create-expo/) 创建一个新项目时，该新项目已经配置好了 AI 代理所需的配置文件。这个设置也会提交到你的项目中，因此你团队中的每个人都从相同的 SDK 版本和项目说明开始，并且他们的代理会读取相同的项目上下文。
 
@@ -77,6 +79,54 @@ Expo Skills 和 Expo MCP Server 可与每个受支持的代理配合使用。请
 | **.claude/settings.json** | Claude Code 在启动时读取。                                       | 预先启用 Claude Code 插件市场中的官方 Expo 插件。                                                       |
 
 每个文件都面向不同的代理约定，因此同一个项目无需针对每个代理单独配置，就能同时适用于 Claude Code、Codex 或 Cursor。
+
+## 设置现有项目
+
+`create-expo-app` 仅在创建新项目时写入项目上下文文件。对于现有项目，请自行在项目根目录添加相同的文件。
+
+<Step label="1">
+
+### 下载 AGENTS.md
+
+下载 `create-expo-app` 随 Expo 项目一起提供、位于项目根目录中的规范 **AGENTS.md**：
+
+<Terminal
+  cmd={[
+    '$ curl -o AGENTS.md https://raw.githubusercontent.com/expo/expo/main/packages/create-expo/template/agent-files/AGENTS.md',
+  ]}
+/>
+
+如果你的项目已经有 **AGENTS.md**，请将下载的内容追加到该文件中，而不是替换该文件。
+
+</Step>
+
+<Step label="2">
+
+### 创建 CLAUDE.md
+
+如果你使用 Claude Code，请创建 **CLAUDE.md**，其中只包含一行用于导入 **AGENTS.md** 的内容：
+
+<Terminal cmd={["$ echo '@AGENTS.md' > CLAUDE.md"]} />
+
+</Step>
+
+<Step label="3">
+
+### 为 Claude Code 启用 Expo 插件
+
+创建 **.claude/settings.json**，以启用 Claude Code 插件市场中的官方 Expo 插件：
+
+```json .claude/settings.json
+{
+  "enabledPlugins": {
+    "expo@claude-plugins-official": true
+  }
+}
+```
+
+</Step>
+
+提交全部三个文件，这样你团队中的每个代理会话都能从相同的项目上下文开始。Codex 和 Cursor 只需要 **AGENTS.md**，因此步骤 2 和 3 仅适用于 Claude Code。
 
 ## 验证设置
 

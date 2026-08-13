@@ -14,17 +14,21 @@ import { Collapsible } from '~/ui/components/Collapsible';
 
 > **warning** 本节描述的功能可在 Expo SDK 54 中使用，且需要 `expo-updates` 0.29.0 及更高版本。
 
-此功能的主要使用场景是[通道切换](/eas-update/channel-surfing/)，它会在完整的通道切换工作流中于运行时切换 `expo-channel-name` 请求头。
+对于使用 EAS Update 的应用，此功能的主要用例是 [channel surfing](/eas-update/channel-surfing/)。Channel surfing 会在完整的通道切换流程中，在运行时切换 `expo-channel-name` 请求头。
 
 例如，如果你有一个用于生产更新的 `default` 通道，以及一个用于预览更新的 `preview` 通道，你可以覆盖 `expo-channel-name` 请求头，使其指向 `preview` 通道。这样就可以在当前生产构建中测试预览更新。
 
-另一种潜在用例是向不同用户提供不同更新，例如让一组内部用户（如员工）在最终用户之前先接收更新。
+> **warning** 切换通道可能会导致兼容性问题，尤其是在更新使用不同的迁移方式或数据结构时。请参阅[切换通道时的风险和注意事项](/eas-update/channel-surfing/#risks-and-considerations-when-switching-channels)。
+
+另一个潜在的用例是向不同用户提供不同的更新，例如，让一组内部用户（如员工）比最终用户更早收到更新。
 
 ### 它是如何工作的
 
-你可以通过调用 [`Updates.setUpdateRequestHeadersOverride`](/versions/latest/sdk/updates/#updatessetupdaterequestheadersoverriderequestheaders) 来覆盖 `expo-channel-name` 请求头。这将覆盖更新请求，使其从指定通道获取更新。
+你可以通过调用 [`Updates.setUpdateRequestHeadersOverride`](/versions/latest/sdk/updates/#updatessetupdaterequestheadersoverriderequestheaders) 来覆盖请求头。对于 EAS Update，覆盖 `expo-channel-name` 请求头会使应用从指定通道请求更新。
 
-在应用中的某个位置，你需要提供一种方式让用户触发请求头的更改。这可以是只有受信任用户才能访问的隐藏菜单，或其他机制，具体取决于你的用例。参数更改后，你可以调用 [`fetchUpdateAsync()`](/versions/latest/sdk/updates/#updatesfetchupdateasync) 获取更新，然后调用 [`reloadAsync()`](/versions/latest/sdk/updates/#updatesreloadasyncoptions) 重新加载应用。或者你也可以等待下一次启动，应用会自动获取并安装更新。
+要在运行时覆盖 `expo-channel-name` 请求头，原生构建必须包含该请求头。当 **eas.json** 中的构建配置文件定义了 `channel` 时，EAS Build 会自动将该请求头设置为对应的值。在 EAS Build 之外创建的构建（例如使用 `npx expo run:android` 创建的构建）不会自动设置该请求头。对于这些构建，请在应用配置中的 [`updates.requestHeaders`](/eas-update/getting-started/#configure-update-channels-in-appjson) 中声明该请求头，然后重新构建应用。
+
+在应用中提供一种让用户触发请求头更改的方式。这可以是只有受信任用户才能访问的隐藏菜单，也可以是其他适合你用例的机制。更改请求头后，调用 [`fetchUpdateAsync()`](/versions/latest/sdk/updates/#updatesfetchupdateasync) 获取更新，并调用 [`reloadAsync()`](/versions/latest/sdk/updates/#updatesreloadasyncoptions) 重新加载应用。你也可以等待下次启动，以自动获取并安装更新。
 
 ```js
 import * as Updates from 'expo-updates';
@@ -37,13 +41,11 @@ await Updates.fetchUpdateAsync();
 await Updates.reloadAsync();
 ```
 
-> **info** 你希望在运行时覆盖的任何请求头，都必须在应用配置中的 `updates.requestHeaders` 中声明。
+<Collapsible summary="我可以覆盖其他请求头吗？">
 
-### 切换通道时的风险和注意事项
+可以。你希望在运行时覆盖的任何其他请求头，都必须在应用配置中的 [`updates.requestHeaders`](/eas-update/getting-started/#configure-update-channels-in-appjson) 中声明。你传递给 `setUpdateRequestHeadersOverride()` 的对象会替换构建中的所有自定义请求头，因此在覆盖生效期间，请包含应用仍然需要的每个请求头。
 
-切换通道会改变应用运行的 JavaScript bundle。如果你的应用依赖于在不同通道之间不兼容的迁移或数据结构，那么来回切换可能会导致问题。
-
-例如，如果某个 beta 更新应用了数据库迁移，生产版本可能无法理解新的 schema。开发者应确保他们的更新在通道之间切换时保持安全，或者在需要时限制只允许单向切换。
+</Collapsible>
 
 ## 同时覆盖更新 URL 和请求头
 
@@ -57,12 +59,12 @@ await Updates.reloadAsync();
 
 有两个相关 API：
 
-1. `Updates.setUpdateURLAndRequestHeadersOverride({ url: string, requestHeaders: Object })` - 此方法会覆盖 **app.json** / **Expo.plist** / **AndroidManifest.xml** 中指定的更新 URL 和请求头，例如 `expo-channel-name` 请求头。
-2. `disableAntiBrickingMeasures` - 应用配置中的此字段会禁用 `expo-updates` 内置的防变砖措施，这些措施可确保后续更新始终可以发布，以修复先前已安装更新中的问题。当你更改此值时，需要创建一个新的构建才能生效。**请不要在生产构建中启用此项。** 之所以这样命名，是为了清楚表明：当你覆盖更新 URL/请求头时，我们将不再能够安全地回滚到之前加载的更新。因此，如果你加载的新更新导致应用崩溃，那么 `expo-updates` 无法自动恢复，因为此字段与 `setUpdateURLAndRequestHeadersOverride` 配合使用时，会禁用嵌入式更新，因此也就没有可回滚的更新。用户需要卸载并重新安装应用。你应当只在预览构建中使用此功能。
+1. `Updates.setUpdateURLAndRequestHeadersOverride({ updateUrl: string, requestHeaders: Object })` - 此方法会覆盖 **app.json**／**Expo.plist**／**AndroidManifest.xml** 中指定的更新 URL 和请求头，例如 `expo-channel-name` 请求头。
+2. `disableAntiBrickingMeasures` - 应用配置中的此字段会禁用 `expo-updates` 内置的防变砖措施，这些措施可确保始终能够发布后续更新，以修复之前安装的更新中存在的问题。当你更改此值时，需要创建新的构建才能使其生效。**不要在生产构建中启用此项。** 之所以使用这个名称，是为了明确表明，当你覆盖更新 URL／请求头后，我们将无法再安全地回滚到之前加载的更新。因此，如果你加载的新更新导致应用崩溃，`expo-updates` 将无法自动恢复，因为此字段与 `setUpdateURLAndRequestHeadersOverride` 结合使用后会禁用嵌入式更新，因此将没有任何可回滚的更新。用户需要卸载并重新安装应用。你应该仅在预览构建中使用此功能。
 
 如何使用这些 API：
 
-1. **覆盖更新 URL/请求头，并提示用户关闭应用**：在应用中的某个位置，你需要提供一种方式让用户触发对 URL 和/或请求头的更改。这可以是只有受信任用户才能访问的隐藏菜单，或其他机制，具体取决于你的用例。参数更改后，通过提示框等方式通知用户需要关闭并重新打开应用。`expo-updates` 库中的方法，例如 `checkForUpdateAsync()`，在应用关闭并重新打开之前，不会使用新的已覆盖 URL 和请求头。
+1. **覆盖更新 URL／请求头，并提示用户关闭应用**：在应用中的某个位置，你需要提供一种方式让用户触发对 URL 和／或请求头的更改。这可以是只有受信任用户才能访问的隐藏菜单，或其他机制，具体取决于你的用例。参数更改后，通过提示框等方式通知用户需要关闭并重新打开应用。`expo-updates` 库中的方法，例如 `checkForUpdateAsync()`，在应用关闭并重新打开之前，不会使用新的已覆盖 URL 和请求头。
 2. **新更新将在下次打开应用时下载并启动**：当应用完全关闭（“杀死”状态，而不仅仅是进入后台）并重新打开后，更新及其相关资源都会被下载。准备就绪后，应用将启动。在下载期间，用户需要等待启动画面。我们理解在启动画面等待并不理想，如果此功能被广泛使用，我们计划在未来改进这一体验。对于当前推荐的用例（预览），这可能是一个可接受的折中。
 
 ### 安全注意事项
@@ -86,7 +88,7 @@ import * as Updates from 'expo-updates';
 // 拉取请求中进行选择，可能会很合适。
 function overrideUpdateURLAndHeaders() {
   Updates.setUpdateURLAndRequestHeadersOverride({
-    url: 'https://u.expo.dev/{updateId}/group/{groupId}',
+    updateUrl: 'https://u.expo.dev/{updateId}/group/{groupId}',
     requestHeaders: {},
   });
 

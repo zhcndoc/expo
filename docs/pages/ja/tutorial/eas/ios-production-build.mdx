@@ -1,0 +1,187 @@
+---
+title: 创建面向 iOS 的生产构建
+sidebar_title: iOS 生产构建
+description: 了解创建面向 iOS 的生产构建的流程，以及如何自动化发布流程。
+hasVideoLink: true
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { CODE } from '~/ui/components/Text';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+本章将创建示例应用的生产版本，并使用 TestFlight 提交测试。之后将其提交至 App Store 审核，并发布到 App Store。
+
+<VideoBoxLink
+  videoId="VZL_e0cEwo8"
+  title="观看：创建并发布 iOS 生产版本"
+  description="使用 EAS 创建 iOS 生产版本，在 TestFlight 中进行测试，并提交至 App Store。"
+/>
+
+---
+
+<Prerequisites>
+  <Requirement title="Apple Developer 账户">
+    创建方法请参阅 [Apple Developer Portal](https://developer.apple.com/account/)。
+  </Requirement>
+  <Requirement title="eas.json 中的 production 构建配置文件">
+    请确认 **eas.json** 中存在 `production`
+    构建配置文件。默认情况下会自动添加。
+  </Requirement>
+</Prerequisites>
+
+## iOS 生产版本
+
+[iOS 生产版本](/build/eas-json/#production-builds) 针对 Apple 的 App Store Connect 进行了优化，可以通过 TestFlight 向测试人员分发构建版本，也可以通过 App Store 向普通用户分发。此构建类型无法直接安装到模拟器或实体设备上，只能通过 App Store Connect 分发。
+
+<Step label="1">
+
+## 创建分发配置文件
+
+在终端中运行 `eas credentials` 命令，并按如下方式回答 EAS CLI 的问题。
+
+- **Select platform**（请选择平台）选择 iOS。
+- **Which build profile do you want to configure?**（要配置哪个构建配置文件？）选择 production。
+- **Do you want to log in to your Apple account?**（要登录 Apple 账户吗？）按 <kbd>Y</kbd>。这样即可登录 Apple Developer 账户。
+- **What do you want to do?**（要执行什么操作？）选择 **Build credentials**，然后选择 **All: Set up all the required credentials to build your project**（设置构建项目所需的所有凭证）。
+- 接下来，系统会询问是否重新使用之前的 Distribution Certificate。按 <kbd>Y</kbd>。
+- **Generate a new Apple Provisioning Profile?**（要生成新的 Apple Provisioning Profile 吗？）按 <kbd>Y</kbd>。这将成为生产应用的 Provisioning Profile。
+- 配置文件创建完成后，按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 退出 EAS CLI。
+
+</Step>
+
+<Step label="2">
+
+## 创建生产版本
+
+要使用默认的 `production` 配置文件创建 iOS 生产版本，请打开终端并运行以下命令。由于 EAS 配置中已将 `production` 设置为默认配置文件，因此无需通过 `--profile` 标志显式指定。
+
+<Terminal cmd={['$ eas build --platform ios']} />
+
+此命令会将构建加入队列。请注意，EAS 控制面板中的 **Build Number** 会自动递增。
+
+</Step>
+
+<Step label="3">
+
+## 将应用二进制文件提交至 App Store
+
+要提交最近一次 EAS Build 创建的应用二进制文件，请运行 [`eas submit`](/submit/ios/) 命令。
+
+<Terminal cmd={['$ eas submit --platform ios']} />
+
+运行此命令后，执行以下操作。
+
+- **Select a build from EAS.**（请选择 EAS 中的构建版本）选择最新的构建 ID。
+- **按照显示的步骤登录 Apple 账户。** 当系统询问 **Reuse this App Store Connect API Key?**（要重新使用此 App Store Connect API 密钥吗？）时，按 <kbd>Y</kbd>。
+
+提交流程现在开始。
+
+</Step>
+
+<Step label="4">
+
+## 发布内部测试版本
+
+提交流程完成后，通过 web 浏览器登录 Apple Developer 账户。
+
+- 点击 **[Apps](https://appstoreconnect.apple.com/apps)**，即可看到应用图标。
+- 点击应用名称，然后在导航标签的菜单中点击 **TestFlight**。如果是在刚提交后进行操作，Apple 可能需要几分钟处理，之后才能通过 TestFlight 分发。
+
+> **info** **仅当跳过 [iOS 实体设备开发版本章节](/ja/tutorial/eas/ios-development-build-for-devices/)时：** 系统会询问 **iOS app only uses standard/exempt encryption?**（此 iOS 应用是否仅使用标准加密或豁免加密？）。按 <kbd>Y</kbd> 选择默认值。由于此应用不使用加密，**Info.plist** 文件中的 `ITSAppUsesNonExemptEncryption` 会被设置为 `NO`，从而处理发布到 TestFlight 或 Apple App Store 时的合规检查。如果自己的应用使用了加密，请选择 `N`，这样下次即可跳过此问题。
+
+- 在 App Store Connect 的 **Internal Testing** 中创建测试组。这样即可邀请测试用户。
+
+<ContentSpotlight
+  alt="在 App Store Connect 中创建测试用户组"
+  src="/static/images/tutorial/eas/app-store-01.webp"
+  className="max-w-[800px]"
+/>
+
+- 创建群组后，所有测试用户都会收到电子邮件。
+
+<ContentSpotlight
+  alt="发送给内部测试用户的电子邮件"
+  src="/static/images/tutorial/eas/app-store-02.jpg"
+  className="max-w-[240px]"
+/>
+
+- 点击邮件中的 **View in TestFlight** 接受邀请，然后点击 **Install**。
+
+<ContentSpotlight
+  alt="显示待安装应用的 TestFlight 应用"
+  src="/static/images/tutorial/eas/app-store-03.jpg"
+  className="max-w-[240px]"
+/>
+
+现在应用会下载到设备上，即可开始测试。
+
+> **Note**：与内部测试一样，也可以创建用于在 TestFlight 中邀请外部测试人员的群组。内部测试上限为 100 人，而 TestFlight 最多可以向 10,000 名测试人员共享测试版本，并提供公开共享链接。有关详细步骤，请参阅[通过 TestFlight 分发 iOS 应用](/submit/testflight/)。
+
+</Step>
+
+<Step label="5">
+
+## 将应用提交至 Apple App Store
+
+要准备将应用提交至 App Store，请转到 **App Store** 标签页。
+
+- 输入元数据，准备符合 Apple 指南的屏幕截图，并填写 **General** 中的项目。
+
+<ContentSpotlight
+  alt="显示应用详细信息和屏幕截图的 App Store Connect"
+  src="/static/images/tutorial/eas/app-store-04.png"
+  className="max-w-[800px]"
+/>
+
+- 接下来，手动选择构建版本。
+
+<ContentSpotlight
+  alt="显示应用构建版本选择的 App Store Connect"
+  src="/static/images/tutorial/eas/app-store-05.png"
+  className="max-w-[800px]"
+/>
+
+> **完善 App Store 上架信息**：要准备应用以便上架商店，请参阅[创建应用商店资源](/guides/store-assets/)，了解如何制作屏幕截图和预览。
+
+- 应用准备就绪后，点击 **Submit to App Review**。之后 Apple 会审核应用，审核通过后，应用将发布到 App Store。
+
+<ContentSpotlight
+  alt="显示应用提交审核信息的 App Store Connect"
+  src="/static/images/tutorial/eas/app-store-06.png"
+  className="max-w-[800px]"
+/>
+
+</Step>
+
+<Step label="6">
+
+## 自动化提交
+
+在今后的发布中，可以为 `eas build` 添加 [`--auto-submit`](/build/automate-submissions/) 标志，将创建构建版本和提交至 App Store 合并为一个步骤，从而提高效率。
+
+<Terminal cmd={['$ eas build --platform ios --auto-submit']} />
+
+> **Note：** 此命令会自动将构建版本上传到 TestFlight 以供内部测试，但不会自动提交至 App Store 审核。准备好公开发布后，需要从 TestFlight 手动将构建版本提升到 App Store。详情请参阅[应用商店的默认提交行为](/build/automate-submissions/#default-submission-behavior-for-app-stores)。
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  name="EAS_TUTORIAL"
+  currentChapterSlug="/tutorial/eas/ios-production-build"
+  chapterTitle="第 9 章：创建 iOS 生产版本"
+  summary={
+    <>
+      创建了面向生产环境的 iOS 构建版本，了解了如何使用 TestFlight 和 <CODE>eas submit</CODE> 将其分发到 Apple App Store
+      ，并使用 <CODE>--auto-submit</CODE> 自动化发布流程。
+    </>
+  }
+  nextChapterDescription="下一章将学习如何使用 EAS Update 分发 OTA（不通过应用商店）更新，并与团队共享预览。"
+  nextChapterTitle="与团队共享预览"
+  nextChapterLink="/ja/tutorial/eas/team-development/"
+/>

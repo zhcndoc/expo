@@ -1,0 +1,338 @@
+---
+title: 创建面向 Android 的生产构建
+sidebar_title: Android 生产构建
+description: 了解创建面向 Android 的生产构建的流程，以及自动化发布流程的方法。
+hasVideoLink: true
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { CODE } from '~/ui/components/Text';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+本章将创建示例应用的生产版本并提交到 Google Play 商店。同时，我们还将了解如何自动化创建和发布新应用版本。
+
+<VideoBoxLink
+  videoId="nxlt8uwqhpE"
+  title="观看：创建并发布 Android 生产构建"
+  description="使用 EAS 创建 Android 生产构建，将其提交到 Google Play 商店，并自动化发布流程"
+/>
+
+---
+
+<Prerequisites>
+  <Requirement title="Google Play 开发者账号">
+    需要付费的 Google Play 开发者账号。有关创建方法，请参阅 [Google Play
+    注册页面](https://play.google.com/apps/publish/signup/)。
+  </Requirement>
+  <Requirement title="eas.json 中的 production 构建配置文件">
+    请确认 **eas.json** 中存在 `production`
+    构建配置文件。默认情况下已经添加。
+  </Requirement>
+  <Requirement title="Google 服务账号密钥（可选）">
+    要[自动化发布流程](#自動リリース)，需要 Google 服务账号的电子邮件地址和
+    JSON 密钥。请按照[创建 Google
+    服务账号密钥，或从现有账号下载密钥](https://expo.fyi/creating-google-service-account)
+    的步骤操作，然后返回本指南。
+  </Requirement>
+</Prerequisites>
+
+## Android 生产构建
+
+[Android 生产构建](/build/eas-json/#production-builds)采用针对 Google Play 商店分发进行优化的 **.aab** 格式。与 **.apk** 构建不同，**.aab** 文件只能通过 Google Play 商店进行分发和安装。
+
+<Step label="1">
+
+## 创建生产构建
+
+要使用默认的 `production` 配置文件创建 Android 生产构建，请打开终端并运行以下命令。由于在 EAS 配置中 `production` 是默认配置文件，因此无需通过 `--profile` 标志明确指定。
+
+<Terminal cmd={['$ eas build --platform android']} />
+
+此命令会将构建加入队列。请注意，EAS 控制面板中的 **Version Code** 会自动递增。
+
+</Step>
+
+<Step label="2">
+
+## 在 Google Play Console 中创建应用
+
+> **info** 无需手动创建第一个发布版本。`eas submit` 可以直接创建应用的第一个发布版本。本教程将完整操作 Play Console，以便熟悉发布机制。
+
+首次将应用上传到 Google Play 商店时，请按照以下步骤操作。
+
+- 前往 Google Play 控制面板。
+- 在 **首页** 页面中，点击 **创建应用** 以创建新应用。
+
+<ContentSpotlight
+  alt="在 Google Play Console 中创建应用"
+  src="/static/images/tutorial/eas/play-store-01.webp"
+  className="max-w-[800px]"
+/>
+
+- 输入应用详细信息，然后点击 **创建应用** 按钮。
+
+<ContentSpotlight
+  alt="Google Play Console 中的创建应用表单"
+  src="/static/images/tutorial/eas/play-store-02.png"
+  className="max-w-[800px]"
+/>
+
+</Step>
+
+<Step label="3">
+
+## 发布内部测试版本
+
+在 Google Play Console 中创建应用后，你将被重定向到该应用的控制面板页面。在这里准备应用的内部测试版本。
+
+- 在 **控制面板** 中点击 **立即开始测试**。
+
+<ContentSpotlight
+  alt="Google Play Console 中立即开始测试下的步骤"
+  src="/static/images/tutorial/eas/play-store-03.png"
+  className="max-w-[800px]"
+/>
+
+- 在 **内部测试** > **内部测试版本的测试人员** 中，创建用户电子邮件地址列表。
+
+<ContentSpotlight
+  alt="为内部测试人员创建电子邮件列表"
+  src="/static/images/tutorial/eas/play-store-04.png"
+  className="max-w-[800px]"
+/>
+
+- Google Play Console 会提示你创建内部测试版本。
+- 要创建新版本，请前往 **控制面板**，然后点击 **创建新版本**。首先，在 **应用完整性** 下可以看到，签名密钥已由 Google Play Console 自动生成。
+
+<ContentSpotlight
+  alt="选择应用程序包的签名密钥"
+  src="/static/images/tutorial/eas/play-store-05.png"
+  className="max-w-[800px]"
+/>
+
+</Step>
+
+<Step label="4">
+
+## 上传应用二进制文件
+
+EAS 完成生产构建后，请按照以下步骤操作。
+
+- 打开 EAS 控制面板，点击 **Download** 获取 **.aab** 文件。
+
+<ContentSpotlight
+  alt="下载 aab 文件"
+  src="/static/images/tutorial/eas/play-store-07.png"
+/>
+
+- 返回 Google Play Console，前往 **测试和发布** > **测试** > **内部测试**。
+- 在 **App Bundle** 下点击 **上传**，添加 **.aab** 文件。接着输入应用的发布信息，然后点击 **下一步**。
+- 在下一个页面中点击 **保存并发布**。
+
+<ContentSpotlight
+  alt="将 aab 文件上传到 Google Play Console"
+  src="/static/images/tutorial/eas/play-store-08.png"
+  className="max-w-[800px]"
+/>
+
+</Step>
+
+<Step label="5">
+
+## 分享内部发布版本
+
+查看 **轨道概览** 时，可以看到最新发布版本显示了临时应用名称。这是因为应用尚未经过审核。
+
+<ContentSpotlight
+  alt="Google Play Console 中等待审核的应用"
+  src="/static/images/tutorial/eas/play-store-09.png"
+  className="max-w-[800px]"
+/>
+
+在 **发布版本** 下，可以看到应用已提供给内部测试人员。要与测试人员团队分享应用，请按照以下步骤操作。
+
+- 切换到 **发布版本** 旁边的 **测试人员** 标签页。
+- 在 **测试人员如何加入测试** 下点击 **复制链接**。可以通过电子邮件或消息发送此链接，与测试人员团队分享。
+
+<ContentSpotlight
+  alt="分享内部发布版本"
+  src="/static/images/tutorial/eas/play-store-14.png"
+  className="max-w-[800px]"
+/>
+
+- 在设备上打开测试电子邮件，并按照步骤下载应用。
+
+<ContentSpotlight
+  alt="作为内部测试人员在设备上下载应用"
+  src="/static/images/tutorial/eas/play-store-15.webp"
+  className="max-w-[240px]"
+/>
+
+- 测试电子邮件的收件人需要接受邀请。接受后，即可将应用安装到设备上。
+
+<ContentSpotlight
+  alt="接受邀请后，可以将应用安装到设备上"
+  src="/static/images/tutorial/eas/play-store-16.webp"
+  className="max-w-[240px]"
+/>
+
+<ContentSpotlight
+  alt="作为内部测试人员安装在设备上的应用"
+  src="/static/images/tutorial/eas/play-store-17.webp"
+  className="max-w-[260px]"
+/>
+
+> **info** **提示**：要在 Play 商店中发布应用，请在 Google 控制面板中完成 **应用设置** 下的每个步骤。这些步骤是在 Play 商店中首次发布应用前必须完成的。你需要输入隐私政策链接、目标用户、数据安全等信息。
+
+> **完善商店信息**：要准备应用在商店中的展示内容，请参阅[创建应用商店资源](/guides/store-assets/)，了解如何制作屏幕截图和预览。
+
+<Collapsible summary="提升测试发布版本">
+
+要将内部测试发布版本提升为 **Alpha 版**，请在 Google Play Console 中按照以下步骤操作。
+
+- 在 **测试和发布** 下前往 **测试** > **封闭式测试**。
+- 点击 **封闭式测试 - Alpha 版** 旁边的 **管理轨道**。
+
+</Collapsible>
+
+</Step>
+
+<Step label="6">
+
+## 添加 Google 服务账号权限密钥
+
+> **info** **提示**：在继续执行本节中的步骤之前，请参阅[创建 Google 服务账号密钥，或从现有账号下载密钥](https://expo.fyi/creating-google-service-account)指南。
+
+从这里开始，可以使用 [EAS Submit](/submit/android/) 自动化发布，避免手动操作。为此，需要将服务账号密钥添加到项目凭据中。
+
+完成 Google 服务账号指南中的步骤后，将下载的 JSON 密钥上传到 EAS 控制面板。
+
+- 在项目的 EAS 控制面板中点击 **Credentials**，然后点击 **Android** 下应用的 **Application identifier**。
+
+<ContentSpotlight
+  alt="向 EAS 控制面板添加新的 Google 服务账号密钥"
+  src="/static/images/tutorial/eas/credentials-01.png"
+  className="max-w-[640px]"
+/>
+
+- 在 **Service Credentials** 下点击 **Add a Google Service Account Key**。
+
+<ContentSpotlight
+  alt="在 EAS 控制面板的 Change Google Service Account Key 下上传 Google 服务账号密钥"
+  src="/static/images/tutorial/eas/credentials-02.png"
+  className="max-w-[640px]"
+/>
+
+- 在 **Change Google Service Account Key** 中确认已选择 **Upload new key**，然后上传下载的 JSON 密钥。这样就会将密钥添加到项目凭据中。
+
+<ContentSpotlight
+  alt="在 EAS 控制面板的 Service Credentials 下上传 Google 服务账号密钥"
+  src="/static/images/tutorial/eas/credentials-03.png"
+  className="max-w-[640px]"
+/>
+
+</Step>
+
+<Step label="7">
+
+## 内部发布
+
+在 **eas.json** 中将轨道设置为 `internal`。
+
+- 在 `submit.production` 配置文件中将 `track` 设置为 `internal`。
+
+{/* prettier-ignore */}
+```json
+{
+  /* @hide ... */ /* @end */
+  "submit": {
+    "production": {
+      /* @info `track` を `internal` に設定する。 */
+      "android": {
+        "track": "internal"
+      }
+      /* @end */
+    }
+  }
+}
+```
+
+在上面的代码片段中，我们添加了 [`track`](/eas/json/#track) 属性，并将其值设置为 `internal`。这样就可以通过 `eas submit` 命令上传生产构建，并将其发布到 Google Play 商店的内部测试频道。
+
+- 现在运行 `eas submit` 命令，发布新的内部测试版本。
+
+<Terminal cmd={['$ eas submit --platform android']} />
+
+- 此命令会在 Google Play Console 中自动创建新的内部发布版本。
+
+<ContentSpotlight
+  alt="由 EAS Submit 在 Google Play Console 中自动创建的内部发布版本"
+  src="/static/images/tutorial/eas/play-store-18.png"
+  className="max-w-[800px]"
+/>
+
+</Step>
+
+<Step label="8">
+
+## 生产发布
+
+要将应用发布到生产环境，请按照以下步骤操作。
+
+- 将 **eas.json** 中 `track` 的值改为 `production`。
+
+```json
+{
+  /* @hide ... */ /* @end */
+  "submit": {
+    "production": {
+      "android": {
+        /* @info トラックを `production` に変更する。 */
+        "track": "production"
+        /* @end */
+      }
+    }
+  }
+}
+```
+
+- 可以重新使用内部测试发布版本中使用的同一个 EAS Build。运行 `eas submit` 命令，将其发布到 Play 商店。
+
+<Terminal cmd={['$ eas submit --platform android']} />
+
+- 要创建轨道并将应用提交给 Google Play 商店审核，请前往 **测试和发布** > **正式版**，然后在 **发布版本** 下选择要提交审核的构建。
+
+</Step>
+
+<Step label="9">
+
+## 自动发布
+
+对于今后的发布，可以在 `eas build` 中添加 [`--auto-submit`](/build/automate-submissions/) 标志，将创建构建和提交到 Play 商店合并为一个步骤，从而提高效率。
+
+<Terminal cmd={['$ eas build --platform android --auto-submit']} />
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  name="EAS_TUTORIAL"
+  currentChapterSlug="/tutorial/eas/android-production-build"
+  chapterTitle="第 8 章：创建 Android 生产构建"
+  summary={
+    <>
+      我们创建了 Android 生产构建，了解了如何使用 <CODE>eas submit</CODE> 手动和自动上传到 Google Play
+      商店，并通过 <CODE>--auto-submit</CODE>{' '}
+      自动化了发布流程。
+    </>
+  }
+  nextChapterDescription="下一章将学习创建 iOS 生产构建的流程。"
+  nextChapterTitle="创建 iOS 生产构建"
+  nextChapterLink="/ja/tutorial/eas/ios-production-build/"
+/>

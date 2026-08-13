@@ -158,7 +158,7 @@ export default function TabLayout() {
 
 > **info** 此功能可在 SDK 56 及更高版本中使用。
 
-By default on Android, the keyboard overlays the native tab bar. To have the tab bar lift above the keyboard instead, pass the `tabBarRespectsIMEInsets` prop on `NativeTabs`:
+默认情况下，在 Android 上，键盘会覆盖原生选项卡栏。若要让选项卡栏上移到键盘上方，请在 `NativeTabs` 上传入 `tabBarRespectsIMEInsets` 属性：
 
 ```tsx app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -195,6 +195,75 @@ export default function TabLayout() {
 > **info** `ThemeProvider`、`DarkTheme` 和 `DefaultTheme` 在 SDK 56 及更高版本中从 `expo-router` 导出。对于 SDK 55，请改为从 `@react-navigation/native` 导入。
 
 **支持浅色和深色模式的应用：**
+
+```tsx
+<NativeTabs.Trigger name="index" contentStyle={{ backgroundColor: '#1a1a2e' }}>
+```
+
+</Collapsible>
+
+<Collapsible summary="选项卡栏背景属性在 iOS 26 上不起作用">
+
+在 iOS 26 及更高版本上，系统使用 Liquid Glass 绘制选项卡栏，并从其背后的内容中获取背景。`backgroundColor`、`blurEffect`、`shadowColor` 和 `disableTransparentOnScrollEdge` 属性仅在 iOS 18 及更早版本上影响 iOS 选项卡栏。
+
+这也意味着选项卡栏不会遵循仅存在于 JavaScript 中的配色方案。使用 [`Appearance.setColorScheme`](https://reactnative.dev/docs/appearance#setcolorscheme) 设置配色方案会更改其他原生视图所依据的界面样式，但也不会更改选项卡栏背景。
+
+要让选项卡栏在 iOS 26 上匹配深色界面，请按照[在 iOS 26 上切换选项卡时出现白色背景闪烁](#white-background-flashes-when-switching-tabs-on)中的说明，将选项卡栏背后的内容设为深色。
+
+</Collapsible>
+
+<Collapsible summary="点击选项卡时无法滚动到顶部">
+
+点击当前激活的选项卡应将内容滚动到顶部，但如果 `ScrollView` 不是屏幕组件的第一个子组件，则可能无法正常工作。
+
+请确保 `ScrollView` 是屏幕组件的直接第一个子组件。如果使用其他组件包裹它，请确保将包裹组件的 `collapsable` 设置为 `false`。
+
+```tsx src/app/index.tsx
+import { ScrollView, View } from 'react-native';
+
+export default function HomeScreen() {
+  return (
+    <View collapsable={false} style={{ flex: 1 }}>
+      <ScrollView>{/* Screen content */}</ScrollView>
+    </View>
+  );
+}
+```
+
+</Collapsible>
+
+<Collapsible summary="iOS 26 深色模式下 Liquid Glass 标题栏按钮闪烁">
+
+在 iOS 26 的深色模式下，采用液态玻璃样式的标题栏按钮在切换选项卡时可能会闪烁或短暂显示其背景。这是因为默认主题与系统深色模式不匹配，导致液态玻璃渲染出现视觉伪影。
+
+修复方法与白色背景闪烁问题相同：使用适当的主题，通过来自 `expo-router` 的 `<ThemeProvider>` 包裹布局。
+
+> **info** `ThemeProvider`、`DarkTheme` 和 `DefaultTheme` 在 SDK 56 及更高版本中从 `expo-router` 导出。对于 SDK 55，请改为从 `@react-navigation/native` 导入。
+
+**支持浅色和深色模式的应用：**
+
+```tsx app/_layout.tsx
+import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { useColorScheme } from 'react-native';
+
+export default function TabLayout() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <NativeTabs>
+        <NativeTabs.Trigger name="index">
+          <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="settings">
+          <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+        </NativeTabs.Trigger>
+      </NativeTabs>
+    </ThemeProvider>
+  );
+}
+```
 
 **仅支持深色模式的应用：**
 

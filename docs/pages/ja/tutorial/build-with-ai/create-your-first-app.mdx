@@ -1,0 +1,132 @@
+---
+title: 创建第一个应用
+description: 在本章中，你将指导 AI 代理创建一个新的 Expo 应用，并在智能手机上运行它。
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+本章将让エージェント创建一个新的 Expo 应用，在智能手机上运行它，并进行第一次修改。这是教程其余部分会反复执行的循环。
+
+<Step label="1">
+
+## 在新文件夹中启动エージェント
+
+エージェント一次只会在一个文件夹中工作。让我们创建一个专用于此项目的文件夹，并在其中启动エージェント。在终端中执行以下命令。
+
+<Terminal
+  cmd={['$ mkdir StickerSmash', '', '$ cd StickerSmash']}
+  cmdCopy={['$ mkdir StickerSmash && cd StickerSmash']}
+/>
+
+接下来，在该文件夹中启动エージェント。运行 `claude` 或 `codex`。如果你使用的是 Cursor，请创建一个名为 **StickerSmash** 的新文件夹，通过 **File** > **Open Folder** 打开它，然后打开エージェント面板。
+
+</Step>
+
+<Step label="2">
+
+## 创建应用
+
+将以下提示粘贴到エージェント中。
+
+```text プロンプト|wrap
+npx create-expo-app@latest を実行して SDK 54 テンプレートを選び、このフォルダ（カレントディレクトリ）に新しい Expo アプリを作成して。スマートフォンの Expo Go でこのアプリをテストする予定で、Expo Go は SDK 54 を使っているから。作成できたら、プロジェクトの reset-project スクリプトを実行して最小構成のアプリから始められるようにし、そのスクリプトが残す app-example フォルダを削除して。開発サーバーは起動しないで。それは自分で実行するので。
+```
+
+<Collapsible summary="英文原始提示">
+
+```text Prompt|wrap
+Create a new Expo app in this folder (the current directory) by running npx create-expo-app@latest and choosing the SDK 54 template — I will test the app with Expo Go on my phone, which uses SDK 54. After it is created, run the project's reset-project script so we start from a minimal app, and delete the app-example folder that the script leaves behind. Don't start the development server; I will run that myself.
+```
+
+</Collapsible>
+
+エージェント下载模板并安装依赖需要几分钟。完成后，它会报告项目已准备就绪，并且应该会生成一个包含几个文件的最小 **app** 文件夹。
+
+</Step>
+
+<Step label="3">
+
+## 在智能手机上运行应用
+
+这是整个教程中唯一需要你亲自执行的命令。它会启动一个将应用流式传输到智能手机的开发服务器。打开**新的终端窗口**（让第一个窗口保持运行エージェント），然后执行以下命令。
+
+<Terminal
+  cmd={['$ cd StickerSmash', '', '$ npx expo start']}
+  cmdCopy={['$ cd StickerSmash && npx expo start']}
+/>
+
+终端中会显示二维码。打开应用的方法如下。
+
+- **Android**：打开 Expo Go，然后点击 **Scan QR code**。
+- **iOS**：打开标准相机应用，对准二维码。
+
+此时智能手机上应该会显示一个几乎空白的屏幕。这就是你的应用。在教程剩余部分，请保持此终端窗口打开，并将智能手机放在手边。
+
+<Collapsible summary="如果智能手机无法连接">
+
+智能手机和计算机必须连接到同一个 Wi-Fi 网络。如果两者已连接到同一网络，但应用仍无法加载，请使用 <kbd>Ctrl</kbd> + <kbd>C</kbd> 停止服务器，然后以隧道模式重新启动，这种模式可以跨不同网络运行。
+
+<Terminal cmd={['$ npx expo start --tunnel']} />
+
+如果智能手机和终端都登录了同一个 Expo 账户，也可以从 Expo Go 的 **Projects** 选项卡中找到项目。
+
+</Collapsible>
+
+</Step>
+
+<Step label="4">
+
+## 进行第一次修改
+
+现在让我们完成一轮循环。请求エージェント进行可见的修改，并确认修改已反映到智能手机上。将以下提示粘贴到エージェント中。
+
+```text プロンプト|wrap
+ホーム画面を変更して、"Home screen" というテキストを白色で、色 #25292e の暗い背景の中央に表示して。
+```
+
+<Collapsible summary="英文原始提示">
+
+```text Prompt|wrap
+Change the home screen so it shows the text "Home screen" in white, centered on a dark background with the color #25292e.
+```
+
+</Collapsible>
+
+**你将看到的结果**：エージェント完成工作后的几秒内，智能手机上的应用会重新加载，并在深色屏幕中央显示白色的 "Home screen" 文本。
+
+<ContentSpotlight
+  alt="显示更新后文本和背景色的应用"
+  src="/static/images/tutorial/02-index-screen-changes.webp"
+  className="max-w-[720px]"
+/>
+
+这就是整个工作流程。发送提示，エージェント进行构建，结果显示在智能手机上。
+
+</Step>
+
+## 遇到问题时
+
+迟早会有结果与请求内容不一致的时候。这很正常，修复问题也是工作流程的一部分。
+
+- **不要猜测原因，而是描述当前状态。** 将你看到的内容和原本期待的内容直接告诉エージェント。例如：「文本已经居中，但背景仍然是白色」。不需要猜测为什么会这样。
+- **原样粘贴错误信息。** 如果智能手机上显示红色错误屏幕，或终端中输出了错误，请将完整消息原样交给エージェント。错误消息是为程序员编写的，而エージェント也是程序员之一。
+- **让エージェント检查自己的工作。** 类似「出现了问题。请重新检查你刚才添加的修改，找到问题并修复」这样的提示很有效。
+- **如果应用停止运行**，请晃动智能手机，然后在显示的菜单中点击 **Reload**。如果仍未解决，请使用 <kbd>Ctrl</kbd> + <kbd>C</kbd> 停止开发服务器，然后再次运行 `npx expo start`。
+
+在后续章节的末尾，会显示一条简短的提醒，并附上指向本节的链接。
+
+## 总结
+
+<ProgressTracker
+  currentChapterSlug="/tutorial/build-with-ai/create-your-first-app"
+  name="BUILD_WITH_AI"
+  chapterTitle="第 2 章：创建第一个应用"
+  summary="我们创建了应用，在智能手机上运行它，并通过一个提示进行了修改。"
+  nextChapterDescription="下一章将把这个空白屏幕构建成一个真正的应用。我们会添加导航选项卡、照片查看器和图像选择器。"
+  nextChapterTitle="构建主屏幕"
+  nextChapterLink="/ja/tutorial/build-with-ai/build-the-home-screen"
+/>

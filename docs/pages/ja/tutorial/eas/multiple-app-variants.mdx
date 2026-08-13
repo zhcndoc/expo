@@ -1,0 +1,226 @@
+---
+title: 设置多个应用变体
+sidebar_title: 多个应用变体
+description: 了解如何设置动态 app config，以便在一台设备上安装多个应用变体。
+hasVideoLink: true
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+本章将设置项目，使多个构建类型（development、preview、production）能够在一台设备上同时运行。这样一来，无需卸载并重新安装其他版本，就可以测试应用开发的不同阶段。
+
+<VideoBoxLink
+  videoId="UtJJCAfrjIg"
+  title="观看：如何设置多个应用变体"
+  description="为 development、preview、production 各应用变体设置唯一的 bundle 标识符，使它们能够在一台设备上并排运行"
+/>
+
+---
+
+要在一台设备上同时安装，每个变体都需要唯一的 Android Application ID 和 iOS Bundle Identifier。在 **app.json** 文件中，这些 ID 的设置如下：
+
+```json app.json
+{
+  "ios": {
+    /* @info */
+    "bundleIdentifier": "com.yourname.stickersmash"
+    /* @end */
+    /* @hide ... */ /* @end */
+  },
+  "android": {
+    /* @info */
+    "package": "com.yourname.stickersmash"
+    /* @end */
+    /* @hide ... */ /* @end */
+  }
+}
+```
+
+<Step label="1">
+
+## 添加 app.config.js 以实现动态配置
+
+**app.json** 将应用相关配置保存在 JSON 文件中。由于这是静态配置，因此不适合[希望为某些属性使用动态值](/workflow/configuration/#dynamic-configuration)的情况。在这里，我们将根据[环境变量](/workflow/configuration/#switching-configuration-based-on-the-environment)，为每个构建配置设置不同的 Android Application ID 和 iOS Bundle Identifier。
+
+- 在项目根目录中创建一个名为 **app.config.js** 的新文件。
+- 在 **app.config.js** 中，默认导出一个接收 `config` 作为参数的函数。然后解构 `config`，复制 **app.json** 中的所有现有属性。
+
+```js app.config.js
+export default ({ config }) => ({
+  /* @info `config` オブジェクトは app.json ファイルの既存の設定をすべてコピーします。*/
+  ...config,
+  /* @end */
+});
+```
+
+</Step>
+
+<Step label="2">
+
+## 根据环境更新动态值
+
+为了识别构建类型，让我们在 **app.config.js** 中添加两个环境变量 `IS_DEV` 和 `IS_PREVIEW`，用于 `development` 和 `preview` 构建配置。
+
+```js app.config.js
+const IS_DEV = process.env.APP_VARIANT === 'development';
+const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
+```
+
+接下来，添加两个函数，用于动态切换应用名称、Android Application ID 和 iOS Bundle Identifier。
+
+```js app.config.js
+const getUniqueIdentifier = () => {
+  if (IS_DEV) {
+    return 'com.yourname.stickersmash.dev';
+  }
+
+  if (IS_PREVIEW) {
+    return 'com.yourname.stickersmash.preview';
+  }
+
+  return 'com.yourname.stickersmash';
+};
+
+const getAppName = () => {
+  if (IS_DEV) {
+    return 'StickerSmash (Dev)';
+  }
+
+  if (IS_PREVIEW) {
+    return 'StickerSmash (Preview)';
+  }
+
+  return 'StickerSmash: Emoji Stickers';
+};
+```
+
+将 `getAppName()` 用于应用的 `name` 值，并使用 `getUniqueIdentifier()` 来区分 development 和 preview 构建中的 `android.package` 和 `ios.bundleIdentifier`。
+
+{/* prettier-ignore */}
+```js app.config.js
+export default ({ config }) => ({
+  ...config,
+  /* @info "name" プロパティに `getAppName()` を使う */
+  name: getAppName(),
+  /* @end */
+  ios: {
+    /* @info app.json の既存の `ios` 設定を取り込む */
+    ...config.ios,
+    /* @end */
+    /* @info "bundleIdentifier" プロパティに `getUniqueIdentifier()` を使う */
+    bundleIdentifier: getUniqueIdentifier(),
+  },
+  android: {
+    /* @info app.json の既存の `android` 設定を取り込む */
+    ...config.android,
+    /* @end */
+    /* @info "package" プロパティに `getUniqueIdentifier()` を使う */
+    package: getUniqueIdentifier(),
+  },
+});
+```
+
+</Step>
+
+<Step label="3">
+
+## 配置 eas.json
+
+在 **eas.json** 中添加 `APP_VARIANT` 环境变量。
+
+{/* prettier-ignore */}
+```json eas.json|collapseHeight=440
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      /* @info ビルドプロファイルで環境変数を参照できるよう `env.APP_VARIANT` を追加する*/
+      "env": {
+        "APP_VARIANT": "development"
+      }
+      /* @end */
+    },
+    "preview": {
+      "distribution": "internal",
+      /* @info ビルドプロファイルで環境変数を参照できるよう `env.APP_VARIANT` を追加する*/
+      "env": {
+        "APP_VARIANT": "preview"
+      }
+      /* @end */
+    }
+    /* @hide ... */ /* @end */
+  }
+}
+```
+
+现在，运行 `eas build --profile development` 时，`APP_VARIANT` 将被设置为 `development`。
+
+> **注意**：由于更改了 Android Application ID 和 iOS Bundle Identifier，EAS CLI 会要求为 Android 生成新的 Keystore，并为 iOS 生成新的 provisioning profile。有关这些步骤的详细内容，请参阅上一章。
+
+`ios-simulator` 构建配置继承自 `development`，因此此配置也会自动应用于 iOS Simulator。
+
+</Step>
+
+<Step label="4">
+
+## 运行开发服务器
+
+> 构建完成后，请按照上一章中的相同步骤，将其安装到实体设备或模拟器／仿真器上。
+
+由于使用 `APP_VARIANT` 环境变量来识别开发构建，因此还需要将此变量传递给启动开发服务器的命令。为此，请在项目 **package.json** 的 [`"scripts"`](https://docs.npmjs.com/cli/v10/using-npm/scripts) 字段中添加 `dev` 脚本。
+
+```json package.json
+{
+  "scripts": {
+    "dev": "APP_VARIANT=development npx expo start"
+  }
+}
+```
+
+运行 `npm run dev` 命令以启动开发服务器。
+
+<Terminal
+  cmd={{
+    npm: ['$ npm run dev'],
+    yarn: ['$ yarn run dev'],
+    pnpm: ['$ pnpm run dev'],
+    bun: ['$ bun run dev'],
+  }}
+/>
+
+此脚本会在本地评估 **app.config.js**，并加载 `development` 配置的环境变量。
+
+现在，开发构建可以在 Android 和 iOS 上运行，并显示在 **app.config.js** 中更改的应用名称。例如，下面的开发构建正在 iOS Simulator 上运行。请注意，应用名称为 **StickerSmash (Dev)**。
+
+<ContentSpotlight
+  alt="在 Android 设备上运行的 Development 变体"
+  src="/static/images/tutorial/eas/ios-dev-variant.webp"
+  className="max-w-[240px]"
+/>
+
+从现在开始，可以根据需要使用 **app.json** 配置静态值，使用 **app.config.js** 配置动态值。
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  name="EAS_TUTORIAL"
+  currentChapterSlug="/tutorial/eas/multiple-app-variants"
+  chapterTitle="第 5 章：设置多个应用变体"
+  summary={
+    <>
+      我们创建了用于动态配置的 <strong>app.config.js</strong>，并保留了 <strong>app.json</strong>{' '}
+      中的静态配置。我们还学习了如何在 <strong>eas.json</strong> 中添加环境变量，以配置特定的构建配置，以及如何使用自定义的 <strong>package.json</strong>{' '}
+      脚本启动开发服务器。
+    </>
+  }
+  nextChapterDescription="下一章将学习什么是内部发布构建、为什么需要它，以及如何创建它。"
+  nextChapterTitle="创建并分享内部发布构建"
+  nextChapterLink="/ja/tutorial/eas/internal-distribution-builds/"
+/>

@@ -4,7 +4,6 @@ description: 一个在 Android 上使用 Play Age Signals API、在 iOS 上使�
 sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-age-range'
 packageName: 'expo-age-range'
 platforms: ['android', 'ios', 'expo-go']
-isAlpha: true
 ---
 
 import APISection from '~/components/plugins/APISection';
@@ -13,15 +12,15 @@ import { ConfigReactNative } from '~/ui/components/ConfigSection';
 import { SnackInline } from '~/ui/components/Snippet';
 import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
-> **重要** **此库目前处于 [alpha](/more/release-statuses/#alpha) 阶段，并且会频繁出现破坏性变更。**
-
-`expo-age-range` 提供对用户年龄范围信息的访问。它在 Android 上使用 Google 的 [Play Age Signals API](https://developer.android.com/google/play/age-signals/use-age-signals-api)，在 iOS 上使用 Apple 的 [Declared Age Range framework](https://developer.apple.com/documentation/declaredagerange/)。
+`expo-age-range` 提供访问用户年龄范围信息的功能。在 Android 上，它使用 Google 的 [Play 年龄信号 API](https://developer.android.com/google/play/age-signals/use-age-signals-api)，在 iOS 上使用 Apple 的[已声明年龄范围框架](https://developer.apple.com/documentation/declaredagerange/)。
 
 此库允许你向应用用户请求年龄范围信息，以帮助你遵守适龄内容法规（例如 [美国得克萨斯州](https://developer.apple.com/news/?id=btkirlj8)）并在应用中提供适合年龄的体验。
 
+> **重要** **Google 和 Apple 提供的底层原生 API 正在积极开发中。虽然此库已经稳定，但为了适应这些变化，可能需要进行更多破坏性更改。**
+
 ### 限制
 
-我们强烈建议在真机上测试此功能，因为模拟器运行时可能无法按预期工作。
+我们建议在真实设备上测试此功能，因为模拟器运行环境可能无法按预期工作。
 
 ## 安装
 
@@ -31,7 +30,9 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 ### 设置 iOS 项目
 
-要在 iOS 上使用年龄范围 API，你需要使用 Xcode 26.0 或更高版本构建项目。需要 `com.apple.developer.declared-age-range` entitlement。将其添加到你的 [app config](../config/app/) 文件中：
+要在 iOS 上使用年龄范围 API，你需要使用 Xcode 26.0 或更高版本构建项目，但我们建议使用最新版本的 Xcode，以便访问最新的 API。
+
+需要使用 `com.apple.developer.declared-age-range` entitlement。将其添加到你的[应用配置](../config/app/)文件中：
 
 ```json app.json
 {
@@ -58,6 +59,8 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 ## 用法
 
+在 Android 上，Play 年龄信号仅会在用户同意分享年龄范围时报告年龄范围。请先调用 [`requestAgeSignalsAccessAsync`](#agerangerequestagesignalsaccessasync)，并仅在其解析为 `'SHARED'` 时继续。在 iOS 上，同意提示是 `requestAgeRangeAsync` 的一部分，因此该调用会解析为 `null`，下面的示例会继续执行。
+
 <SnackInline label="年龄范围用法" dependencies={['expo-age-range']} platforms={['android', 'ios']}>
 
 ```tsx
@@ -70,6 +73,13 @@ export default function App() {
 
   const requestAgeRange = async () => {
     try {
+      // On Android, ask the user to share their age signals first. Resolves with null on iOS.
+      const status = await AgeRange.requestAgeSignalsAccessAsync();
+      if (status !== null && status !== 'SHARED') {
+        setResult({ error: `Age signals are not shared: ${status}` });
+        return;
+      }
+
       const ageRange = await AgeRange.requestAgeRangeAsync({
         threshold1: 10,
         threshold2: 13,
@@ -123,10 +133,11 @@ import * as AgeRange from 'expo-age-range';
 
 ## 错误代码
 
-可在原生模块抛出的任何错误的 `code` 属性中获取。有关 Android 特定的错误代码，请参阅 [Play Age Signals API 文档](https://developer.android.com/google/play/age-signals/use-age-signals-api#handle-api-errors) 中的 “Handle API error codes”。
+可在原生模块抛出的任何错误的 `code` 属性中获取。对于 Android 特定的错误代码，请参阅[使用 Play 年龄信号 API 文档](https://developer.android.com/google/play/age-signals/handle-errors)中的“错误代码参考”。
 
-| 代码                            | 平台                             | 描述                                                                                                        |
-| ------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `ERR_AGE_RANGE_USER_DECLINED`   | <PlatformTags platforms={['ios']} /> | 用户拒绝共享其年龄范围。                                                                            |
-| `ERR_AGE_RANGE_NOT_AVAILABLE`   | <PlatformTags platforms={['ios']} /> | 年龄范围不可用。最可能的原因是用户未在设备上登录其 Apple 账户。 |
-| `ERR_AGE_RANGE_INVALID_REQUEST` | <PlatformTags platforms={['ios']} /> | 提供的参数无效。年龄范围之间需要至少相差 2 年。                                 |
+| Code                            | Platform                                 | Description                                                                                                        |
+| ------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `ERR_AGE_RANGE_USER_DECLINED`   | <PlatformTags platforms={['ios']} />     | 用户拒绝分享其年龄范围。                                                                                           |
+| `ERR_AGE_RANGE_NOT_AVAILABLE`   | <PlatformTags platforms={['ios']} />     | 年龄范围不可用。最可能的原因是用户未在设备上登录其 Apple 账户。                                                     |
+| `ERR_AGE_RANGE_INVALID_REQUEST` | <PlatformTags platforms={['ios']} />     | 提供的参数无效。年龄范围之间至少需要相隔 2 年。                                                                    |
+| `ERR_AGE_RANGE_TASK_CANCELLED`  | <PlatformTags platforms={['android']} /> | 用户关闭了 Play 年龄信号的年龄分享同意页面。                                                                     |

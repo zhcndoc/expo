@@ -1,0 +1,246 @@
+---
+title: 创建并运行面向 iOS 真机的云构建
+sidebar_title: iOS 真机开发构建
+description: 了解如何使用 EAS Build 为 iOS 真机设置开发构建
+hasVideoLink: true
+---
+
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+本章将使用 EAS Build 创建可在 iOS 真机上运行的开发构建。
+
+面向 iOS 真机的开发构建将以 iOS 应用安装的标准 **.ipa** 格式生成。
+
+<VideoBoxLink
+  videoId="HbfWU7_o4cU"
+  title="观看：创建面向 iOS 真机的开发构建"
+  description="了解如何使用 EAS Build 构建并运行 iOS 真机开发构建，包括代码签名设置。"
+/>
+
+---
+
+<Prerequisites>
+  <Requirement title="Apple Developer 帐户">
+    访问应用签名所需的[凭据](/app-signing/app-credentials/#ios)
+    。每个构建都必须进行签名，以验证应用来自受信任的提供方。EAS
+    Build 可以帮助你管理这些凭据。
+  </Requirement>
+  <Requirement title="在 iOS 16 及更高版本中启用开发者模式">
+    要在设备上安装开发构建，必须启用开发者模式。如果是首次启用，或当前已禁用，请参阅[启用开发者模式](/guides/ios-developer-mode/)
+    。
+  </Requirement>
+</Prerequisites>
+
+## 配置描述文件
+
+要开始在 iOS 真机上进行开发，需要完成以下操作：
+
+- 创建新的[配置描述文件](/app-signing/app-credentials/#provisioning-profiles)并注册设备。
+- 下载该描述文件并将其安装到设备上。
+
+<Step label="1">
+
+### 注册 iOS 设备
+
+在 EAS CLI 中运行用于注册新的 Apple 设备的命令。
+
+<Terminal cmd={['$ eas device:create']} />
+
+此命令会显示以下问题。
+
+- **You're inside the project directory. Would you like to use the** **your-account-name** **account?**（你位于项目目录中。要使用 your-account-name 帐户吗？）按下 <kbd>Y</kbd>。
+- **Apple ID.** 在此处输入你的 Apple ID。随后将登录 Apple Developer 帐户。请按照终端窗口中的步骤操作。
+- **How would you like to register your devices?**（你希望以哪种方式注册设备？）选择 **Website** 后，会生成一个可在 iOS 设备上打开的注册 URL。
+
+> **info** **提示**：如果你或团队拥有多个设备，可以共享配置描述文件链接，然后在各个设备上下载并安装。
+
+</Step>
+
+<Step label="2">
+
+### 下载并安装描述文件
+
+在设备的 web 浏览器中打开上一步中的链接，然后点击 **Download Profile** 按钮。
+
+<ContentSpotlight
+  alt="下载配置描述文件"
+  src="/static/images/tutorial/eas/ios-ad-hoc-01.jpg"
+  className="max-w-[240px]"
+/>
+
+打开**设置**应用后，系统会提示你注册设备。
+
+<ContentSpotlight
+  alt="安装配置描述文件"
+  src="/static/images/tutorial/eas/ios-ad-hoc-02.jpg"
+  className="max-w-[240px]"
+/>
+
+点击**安装**以注册 iOS 设备。
+
+<ContentSpotlight
+  alt="配置描述文件已成功安装"
+  src="/static/images/tutorial/eas/ios-ad-hoc-03.jpg"
+  className="max-w-[240px]"
+/>
+
+配置描述文件安装完成后，设备会返回 web 浏览器，并显示表示操作完成的成功消息。
+
+</Step>
+
+## 面向 iOS 真机的开发构建
+
+<Step label="1">
+
+### 创建
+
+要创建面向 iOS 真机的开发构建，请确认 `build.development` 配置文件满足以下条件。
+
+- **eas.json** 中的 `developmentClient` 为 `true`。默认设置即为此值。
+- 接下来，将平台指定为 `ios`，将构建配置文件指定为 `development`，然后运行 `eas build` 命令。
+
+<Terminal cmd={['$ eas build --platform ios --profile development']} />
+
+> **info** **提示**：下次运行 `eas build` 命令时，也可以使用 `-p` 指定平台。这是 `--platform` 的缩写形式。
+
+首次创建构建时，此命令会显示以下问题。
+
+- **What would you like your iOS bundle identifier to be?**（你希望使用什么 iOS 捆绑包标识符？）按下 <kbd>Return</kbd>，选择显示的默认值。如果尚未定义，**app.json** 中会添加 [`ios.bundleIdentifier`](/versions/latest/config/app/#bundleidentifier)。
+- **Do you want to log in to your Apple account?**（要登录 Apple 帐户吗？）由于这是首次创建开发构建，还会询问是否要 **Generate a new Apple Distribution Certificate**（生成新的 Apple Distribution Certificate）。两处都按下 <kbd>Y</kbd>。
+- **Select a device for ad hoc build**。（请选择用于 ad hoc 构建的设备）这是重要的部分，因为这正是要提前注册配置描述文件的原因。从已注册的设备中选择一台或全部设备，然后按下 return，之后即可将构建安装到这些设备上。
+
+> **warning** **对于新加入或刚刚更新的 Apple Developer Program 会员资格，可能无法立即安装到刚注册的设备上。** 即使在 Expo 中注册了设备，也不会同时在 Apple 中注册。设备只有在首次创建包含该设备的构建时才会添加到 Apple。对于此类会员资格，Apple 可能需要[最多 24〜72 小时](https://developer.apple.com/help/account/reference/device-registration-updates/)来处理设备并将其添加到配置描述文件，因此包含刚注册设备的首次构建可能会失败。在这种情况下，请等待 Apple 完成处理后再次运行构建。
+
+> **info** **仅当跳过 [iOS Simulator 章节](/ja/tutorial/eas/ios-development-build-for-simulators/) 时：** 系统会询问 **iOS app only uses standard/exempt encryption?**（此 iOS 应用是否仅使用标准或豁免加密？）按下 <kbd>Y</kbd>，选择默认值。由于此应用不使用加密，**Info.plist** 文件中的 `ITSAppUsesNonExemptEncryption` 会被设置为 `NO`，从而处理在 TestFlight 或 Apple App Store 发布时的合规检查。如果发布自己的应用时使用了加密，则选择 `N`，之后即可跳过此问题。
+
+回答后，构建会进入队列，你可以通过 EAS CLI 显示的链接在 EAS 控制面板中查看进度。
+
+<ContentSpotlight
+  alt="EAS 控制面板中的 iOS 预览构建详情和进度"
+  src="/static/images/tutorial/eas/ios-build.png"
+  className="max-w-[800px]"
+/>
+
+<Collapsible summary="构建详情页面包含哪些内容？">
+
+构建详情页面会显示构建类型、配置文件、Expo SDK 版本、应用版本、构建编号、最后一次提交的哈希值，以及启动构建的开发者或帐户所有者。
+
+在上图中，**Build artifact** 的当前状态表示构建正在进行。完成后，可以从此部分下载构建。**Logs** 中会列出 iOS 在 EAS Build 上的构建过程的各个步骤。为简洁起见，这里不介绍每个步骤的详细信息。详情请参阅 [iOS 构建过程](/build-reference/ios-builds/)。
+
+</Collapsible>
+
+<Collapsible summary="什么是 iOS bundle identifier？">
+
+`ios.bundleIdentifier` 是应用的唯一名称。如果现在发布应用，Apple App Store 会使用此属性的值来识别商店中的应用。
+
+其格式定义为 `host.owner.app-name`。例如，在示例应用中为 `com.owner.stickersmash`，其中 `com.owner` 是域名，`stickersmash` 是应用名称。
+
+</Collapsible>
+
+</Step>
+
+<Step label="2">
+
+### 安装
+
+构建完成后，Build artifact 部分会更新，并显示构建已完成。
+
+<ContentSpotlight
+  alt="Build artifact 提供下载适用于 iOS 设备和模拟器的开发构建的选项"
+  src="/static/images/tutorial/eas/ios-build-artifact.png"
+/>
+
+此部分提供 Expo Orbit 和 Install 按钮，用于在 iOS 真机上运行开发构建。
+
+使用 [Expo Orbit](https://expo.dev/orbit) 可以顺畅地将开发构建安装到 iOS 真机。使用此方法的步骤如下：
+
+- 通过 USB 将 iOS 真机连接到开发计算机。
+- 打开 Orbit 菜单栏应用。
+- 在 Orbit 应用中选择 **Device**。
+
+<ContentSpotlight
+  alt="Build artifact 中 EAS 控制面板上的 Open with Orbit 按钮"
+  src="/static/images/tutorial/eas/ios-orbit.png"
+  className="max-w-[300px]"
+/>
+
+- 在 EAS 控制面板的 **Build artifact** 中点击 **Open with Orbit**。
+
+构建安装后，Orbit 应用会在真机上启动开发构建。
+
+<Collapsible summary="其他方法：使用 Install 按钮和二维码">
+
+**Build artifact** 部分的 **Install** 按钮会生成二维码，方便进行安装。
+
+- 点击 **Install** 后，会显示包含二维码的弹出窗口。
+
+<ContentSpotlight
+  alt="Install 按钮会生成二维码，方便在 iOS 设备和模拟器上安装"
+  src="/static/images/tutorial/eas/ios-qr-code.png"
+  className="max-w-[480px]"
+/>
+
+- 使用 iOS 真机的相机扫描二维码，然后点击打开的链接，将开发构建下载到设备。
+
+</Collapsible>
+
+</Step>
+
+<Step label="3">
+
+### 运行
+
+在项目目录中运行 `npx expo start` 命令，启动开发服务器。
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo start'],
+    yarn: ['$ yarn expo start'],
+    pnpm: ['$ pnpm expo start'],
+    bun: ['$ bun expo start'],
+  }}
+/>
+
+- 在设备上点击应用图标，打开开发构建。
+
+<ContentSpotlight
+  alt="iOS 设备上的开发构建启动器界面"
+  src="/static/images/tutorial/eas/ios-dev-build-01.jpg"
+  className="max-w-[240px]"
+/>
+
+- 同时登录 EAS CLI 和开发构建，以使用帐户同步功能。你已经登录 EAS CLI，因此接下来需要通过开发构建的 UI 登录。
+
+<ContentSpotlight
+  alt="iOS 设备上用于登录 Expo 帐户的模态窗口"
+  src="/static/images/tutorial/eas/ios-dev-build-02.jpg"
+  className="max-w-[240px]"
+/>
+
+- 点击 **Fetch development servers**，然后从 Development servers 列表中选择正在运行的服务器。
+
+<ContentSpotlight
+  alt="获取开发服务器以建立连接"
+  src="/static/images/tutorial/eas/ios-dev-build-03.jpg"
+  className="max-w-[240px]"
+/>
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  name="EAS_TUTORIAL"
+  currentChapterSlug="/tutorial/eas/ios-development-build-for-devices"
+  chapterTitle="第 4 章：创建并运行面向 iOS 真机的云构建"
+  summary="我们使用 EAS Build 创建并运行了可在 iOS 真机上使用的开发构建。"
+  nextChapterDescription="下一章将学习如何配置 app config，以便在一台设备上安装多个应用变体。"
+  nextChapterTitle="配置多个应用变体"
+  nextChapterLink="/ja/tutorial/eas/multiple-app-variants/"
+/>
