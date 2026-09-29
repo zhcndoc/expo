@@ -1,0 +1,65 @@
+---
+title: 使用 React Activity 管理非活跃路由
+description: 了解如何在保留状态的同时释放非活跃路由中的资源
+---
+
+> **重要** 这是一项[实验性](/more/release-statuses/#experimental)功能，适用于 **Expo SDK 58** 及更高版本
+
+[React 的 `<Activity>`](https://react.dev/reference/react/Activity) 可以在保留状态的同时隐藏非活跃路由内容。隐藏的内容会清理 effects 并释放资源，直到它再次变为可见状态。
+
+在 navigator 上启用 activity 处理，并为单个路由覆盖设置：
+
+```tsx src/app/_layout.tsx
+import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return (
+    <Stack activityEnabled>
+      {/* Keep this screen active while another screen covers it. */}
+      <Stack.Screen name="music" activityEnabled={false} />
+      {/* Hide this screen as soon as another screen covers it. */}
+      <Stack.Screen name="editor" activityEnabled={1} />
+      {/* Hide this screen when three screens are above it. */}
+      <Stack.Screen name="feed" activityEnabled={3} />
+    </Stack>
+  );
+}
+```
+
+## 配置屏幕何时隐藏
+
+对于 `Stack`，当有两个屏幕位于某个屏幕之上时，`activityEnabled` 会隐藏该屏幕。设置为正数可以更改此阈值。将其设置为 `1` 后，屏幕一失去焦点就会隐藏。
+
+JavaScript tabs、native tabs、headless tabs 和 drawers 会在屏幕失去焦点时将其隐藏。
+
+## 手动包裹路由内容
+
+当你只需要包裹屏幕的一部分时，可以使用 [`<NavigationAwareActivity>`](/versions/v58.0.0/sdk/router/#navigationawareactivityhidewhennestedatlevel)：
+
+```tsx src/app/details.tsx
+import { NavigationAwareActivity } from 'expo-router';
+import { useEffect } from 'react';
+import { Text } from 'react-native';
+
+function Details() {
+  useEffect(() => {
+    console.log('Details became visible');
+
+    return () => console.log('Details became hidden');
+  }, []);
+
+  return <Text>Details</Text>;
+}
+
+export default function DetailsScreen() {
+  return (
+    <NavigationAwareActivity hideWhenNestedAtLevel={1}>
+      <Details />
+    </NavigationAwareActivity>
+  );
+}
+```
+
+屏幕隐藏时会运行 effect cleanup。React 会保留组件的状态，因此组件不会卸载。
+
+`<NavigationAwareActivity>` 必须在路由屏幕内渲染。有关所有 activity 选项，请参阅 [Expo Router API reference](/versions/latest/sdk/router/)。

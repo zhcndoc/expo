@@ -35,10 +35,10 @@ export default function MatchContentsExample() {
     <Host matchContents>
       <Button
         onPress={() => {
-          console.log('已按下');
-        }}>
-        点击
-      </Button>
+          console.log('Pressed');
+        }}
+        label="Click"
+      />
     </Host>
   );
 }
@@ -51,7 +51,9 @@ import { Host, HStack, ScrollView, Text } from '@expo/ui/swift-ui';
 
 export default function ScrollViewMatchContents() {
   return (
-    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+    <Host
+      matchContents={{ vertical: true }}
+      style={{ width: '100%' }}>
       <ScrollView axes="horizontal">
         <HStack spacing={12}>
           {Array.from({ length: 20 }).map((_, i) => (
@@ -78,15 +80,48 @@ export default function ExplicitSizingExample() {
         <Text>你好，世界！</Text>
         <Button
           onPress={() => {
-            console.log('已按下');
-          }}>
-          点击
-        </Button>
+            console.log('Pressed');
+          }}
+          label="Click"
+        />
       </VStack>
     </Host>
   );
 }
 ```
+
+### 在 React Native 视图中放置组件
+
+`Host` 使用 SwiftUI 渲染其子组件。`Host` 内部的 React Native 视图（如 `View` 或 `ScrollView`）会切换回 React Native 渲染。要在该视图中使用 SwiftUI 组件，请将该组件包裹在一个新的 `Host` 中。即使视图外层的树中已经有一个 `Host`，也要这样做。
+
+```tsx ReactNativeLayoutExample.tsx
+import { useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
+import { Host, Toggle } from '@expo/ui/swift-ui';
+
+export default function ReactNativeLayoutExample() {
+  const [isOn, setIsOn] = useState(false);
+
+  return (
+    <ScrollView>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 16,
+        }}>
+        <Text>Notifications</Text>
+        <Host matchContents>
+          <Toggle isOn={isOn} onIsOnChange={setIsOn} />
+        </Host>
+      </View>
+    </ScrollView>
+  );
+}
+```
+
+要在 SwiftUI 组件中放置 React Native 视图，请使用 [`RNHostView`](rnhostview)。
 
 ### 忽略键盘安全区域
 
@@ -94,7 +129,10 @@ export default function ExplicitSizingExample() {
 
 ```tsx IgnoreKeyboardExample.tsx
 import { Host, TextField } from '@expo/ui/swift-ui';
-import { KeyboardProvider, KeyboardStickyView } from 'react-native-keyboard-controller';
+import {
+  KeyboardProvider,
+  KeyboardStickyView,
+} from 'react-native-keyboard-controller';
 import { View } from 'react-native';
 
 export default function IgnoreKeyboardExample() {
@@ -110,8 +148,11 @@ export default function IgnoreKeyboardExample() {
             padding: 16,
             backgroundColor: 'green',
           }}>
-          <Host matchContents ignoreSafeArea="keyboard" style={{ backgroundColor: 'red' }}>
-            <TextField placeholder="输入文本" axis="vertical" />
+          <Host
+            matchContents
+            ignoreSafeArea="keyboard"
+            style={{ backgroundColor: 'red' }}>
+            <TextField placeholder="Enter text" axis="vertical" />
           </Host>
         </KeyboardStickyView>
       </View>
@@ -137,7 +178,11 @@ export default function IgnoreContainerSafeAreaExample() {
       matchContents={{ vertical: true }}
       ignoreSafeArea="container">
       <HStack>
-        <Button systemImage="chevron.backward" label="返回" modifiers={[labelStyle('iconOnly')]} />
+        <Button
+          systemImage="chevron.backward"
+          label="Back"
+          modifiers={[labelStyle('iconOnly')]}
+        />
         <Spacer />
         <Button
           systemImage="square.and.arrow.up"
@@ -161,9 +206,17 @@ export default function IgnoreAllSafeAreasExample() {
   return (
     <Host
       ignoreSafeArea="all"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}>
       <VStack>
-        <Text>此内容会延伸到状态栏和 Home 指示器后面。</Text>
+        <Text>
+          此内容延伸至状态栏和 Home 指示器后方。
+        </Text>
       </VStack>
     </Host>
   );

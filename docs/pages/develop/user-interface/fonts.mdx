@@ -3,6 +3,7 @@ title: 字体
 description: 了解如何使用本地文件或 Google 字体包将自定义字体集成到你的应用中
 ---
 
+import { DocsLogo } from '@expo/styleguide';
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
@@ -31,7 +32,20 @@ Expo SDK 官方支持在 Android、iOS 和 web 平台上使用 OTF 和 TTF 字�
 
 ### 可变字体
 
-可变字体（包括 OTF 和 TTF 中的可变字体实现）并非在所有平台上都受支持。若要实现完整的平台支持，请使用静态字体。或者，你也可以使用类似 [fontTools](https://fonttools.readthedocs.io/en/latest/varLib/mutator.html) 的工具，从可变字体中提取你想使用的特定轴配置，并将其保存为单独的字体文件。
+可变字体在一个文件中包含多种字形。你无需为每种字重都打包一个文件，而是只需打包一个文件，然后使用 `fontWeight` 和 `fontStyle` 样式属性选择字形。[配置插件](#with-expo-font-config-plugin)和 [`useFonts` hook](#with-usefonts-hook) 均支持可变字体。
+
+> **信息** Android 和 iOS 在 SDK 58 及更高版本中支持可变字体。在较早版本中，请使用静态字体文件。
+
+每个平台确定文件提供哪些字形的方式各不相同，因此请先检查文件，再决定是否使用：
+
+- **Android** 会读取 `wght` 轴，并从中绘制 `fontWeight` 可以指定的每种字重，但不能超出该轴声明的范围。这需要 Android 10 或更高版本。在较早版本中，字体会以默认字重呈现，Android 则通过加粗字母来生成粗体。
+- **iOS** 会读取文件声明的_命名实例_。命名实例是字体设计师赋予名称并为每个轴设定固定位置的字形，例如 “Bold” 或 “Condensed Light”。React Native 会选择字重最接近你所请求字重的命名实例。如果没有命名实例涵盖某个字重，则无法使用该字重。如果文件未声明命名实例，则只会呈现默认字形。
+
+对于 `fontStyle: 'italic'`，Android 会在 Android 15 及更高版本中应用字体的 `ital` 轴。在较早版本中，Android 会通过倾斜正体字母来生成斜体。iOS 则使用文件中的斜体命名实例。
+
+在 React Native 0.88（Expo SDK 58）及更高版本中，你还可以使用 [`fontVariationSettings`](https://reactnative.dev/docs/text-style-props) 样式属性，直接在组件上设置任意轴，例如 `fontVariationSettings: "'wght' 650, 'wdth' 90"`。该属性适用于两个平台上的 `<Text>` 和 `<TextInput>`（Android 8 及更高版本），并且你在此处设置的轴优先级高于 `fontWeight` 和 `fontStyle`。
+
+可以使用 [fontTools](https://fonttools.readthedocs.io/) 等工具检查文件的轴和命名实例。如果你在某个平台上无法使用所需字形，可以使用 fontTools [提取该轴配置](https://fonttools.readthedocs.io/en/latest/varLib/instancer.html)，并将其保存为单独的静态字体文件。
 
 ### 如何在 OTF 和 TTF 之间选择
 
@@ -93,6 +107,8 @@ Expo SDK 官方支持在 Android、iOS 和 web 平台上使用 OTF 和 TTF 字�
 
 如果你想通过 `fontFamily`、`weight` 和 `style` 的组合来引用字体，请提供对象数组（如下方的 `Inter` 所示）。
 
+对于 Android 上的[可变字体](#variable-fonts)，请在每个 `fontDefinitions` 条目中声明文件路径，或者在 `fontFamily` 旁边声明一次，以避免重复。每个定义都需要一组 `weight` 和 `style` 值，且同一字体族中的其他定义不能使用相同的组合，因为 Android 会根据这组值解析字体族。
+
 ```json app.json
 {
   "expo": {
@@ -122,11 +138,28 @@ Expo SDK 官方支持在 Android、iOS 和 web 平台上使用 OTF 和 TTF 字�
                     "weight": 700
                   }
                 ]
+              },
+              {
+                "fontFamily": "Roboto Flex",
+                /* @info One variable font file backs every definition below. */
+                "path": "./assets/fonts/RobotoFlex.ttf",
+                /* @end */
+                "fontDefinitions": [
+                  { "weight": 400 },
+                  { "weight": 700 },
+                  /* @info Refer to this font using fontFamily: 'Roboto Flex', fontWeight: '400', fontStyle: 'italic' */
+                  { "weight": 400, "style": "italic", "axes": { "slnt": -10 } }
+                  /* @end */
+                ]
               }
             ]
           },
           "ios": {
-            "fonts": ["./assets/fonts/Inter-Bold.ttf", "./assets/fonts/Inter-BoldItalic.ttf"]
+            "fonts": [
+              "./assets/fonts/Inter-Bold.ttf",
+              "./assets/fonts/Inter-BoldItalic.ttf",
+              "./assets/fonts/RobotoFlex.ttf"
+            ]
           }
         }
       ]
@@ -134,6 +167,12 @@ Expo SDK 官方支持在 Android、iOS 和 web 平台上使用 OTF 和 TTF 字�
   }
 }
 ```
+
+`style` 会选择与 `fontStyle` 匹配的字形，但不会倾斜字形。若要从正体文件生成斜体，请在 `axes` 中设置倾斜轴，例如 `slnt` 或 `ital`。
+
+`axes` 接受字体声明的任何[变化轴](https://learn.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg)，例如用于选择窄体字形的 `wdth`。轴标签为四个字符，且区分大小写。已注册的轴（`ital`、`opsz`、`slnt`、`wdth`、`wght`）均为小写，而字体自带的轴为大写，例如 `GRAD`。除非你在 `axes` 中覆盖 `weight`，否则 `weight` 会设置 `wght`。
+
+在 iOS 上，`path` 和 `axes` 不起作用。请像静态字体一样，将可变字体文件列在 `ios.fonts` 中。你可以选择的字形是文件声明的[命名实例](#variable-fonts)。要使用轴上的其他位置，请在 React Native 0.88 及更高版本中使用 [`fontVariationSettings`](#variable-fonts) 样式属性。
 
 </Step>
 
@@ -147,6 +186,7 @@ Expo SDK 官方支持在 Android、iOS 和 web 平台上使用 OTF 和 TTF 字�
 <Text style={{ fontFamily: 'Inter', fontWeight: '700' }}>Inter Bold</Text>
 <Text style={{ fontFamily: 'Inter', fontWeight: '700', fontStyle: 'italic' }}>Inter Bold Italic</Text>
 <Text style={{ fontFamily: 'FiraSans-MediumItalic' }}>Fira Sans Medium Italic</Text>
+<Text style={{ fontFamily: 'Roboto Flex', fontWeight: '400', fontStyle: 'italic' }}>Roboto Flex Italic</Text>
 ```
 
 </Step>
@@ -170,7 +210,7 @@ Expo SDK 官方支持在 Android、iOS 和 web 平台上使用 OTF 和 TTF 字�
 
 例如，Inter Black 字体文件的 PostScript 名称是 `Inter-Black`。
 
-_Font Book 应用在 macOS 上的截图。_
+_macOS 上的 Font Book 应用截图。_
 
 <ContentSpotlight
   alt="macOS 上的 Font Book 应用显示了 Inter 字体的标识符，其中 PostScript 名称“Inter-Black”被突出显示。"
@@ -219,6 +259,7 @@ export default function RootLayout() {
   /* @info 使用 `useFonts` hook 映射字体文件。 */
   const [loaded, error] = useFonts({
     'Inter-Black': require('./assets/fonts/Inter-Black.otf'),
+    'Roboto Flex': require('./assets/fonts/RobotoFlex.ttf'),
   });
   /* @end */
 
@@ -250,7 +291,52 @@ export default function RootLayout() {
 <Text style={{ fontFamily: 'Inter-Black' }}>Inter Black</Text>
 ```
 
+如果映射的文件是[可变字体](#variable-fonts)，请使用 `fontWeight` 和 `fontStyle` 样式属性选择字形：
+
+```tsx
+<Text style={{ fontFamily: 'Roboto Flex', fontWeight: '300' }}>Roboto Flex Light</Text>
+<Text style={{ fontFamily: 'Roboto Flex', fontWeight: '700' }}>Roboto Flex Bold</Text>
+```
+
+`useFonts` 只读取字重轴。要设置其他轴，例如 `wdth` 或 `slnt`，请在 Android 上使用[配置插件](#with-expo-font-config-plugin)嵌入字体，或者在 React Native 0.88 及更高版本中设置 [`fontVariationSettings`](#variable-fonts) 样式属性。
+
 </Step>
+
+#### 为同一字体族加载多个字重和样式
+
+> **信息** 在 SDK 58 及更高版本中，可以在同一字体族名称下加载多个字体文件。
+
+上面的映射语法会将每个键视为一个单独的字体族。要在同一个 `fontFamily` 名称下加载多个字体文件（例如常规、粗体和斜体字形），请向 `useFonts` 传递 [`FontFamilyDefinition`](/versions/unversioned/sdk/font/#fontfamilydefinition) 数组，而不是映射：
+
+```tsx src/app/_layout.tsx
+const [loaded, error] = useFonts([
+  {
+    fontFamily: 'Inter',
+    fontDefinitions: [
+      { path: require('./assets/fonts/Inter-Regular.otf'), weight: 400 },
+      { path: require('./assets/fonts/Inter-Italic.otf'), weight: 400, style: 'italic' },
+      { path: require('./assets/fonts/Inter-Bold.otf'), weight: 700 },
+    ],
+  },
+]);
+```
+
+然后使用 `fontWeight` 和 `fontStyle` 样式属性选择字形：
+
+```tsx
+<Text style={{ fontFamily: 'Inter', fontWeight: '700' }}>Inter Bold</Text>
+<Text style={{ fontFamily: 'Inter', fontWeight: '400', fontStyle: 'italic' }}>Inter Italic</Text>
+```
+
+请在一次调用中声明某个字体族的所有字形。一个 `fontFamily` 只会加载一次，因此后续针对已加载名称的 `loadAsync` 或 `useFonts` 调用不会向其中添加字形。这也适用于两种调用方式之间的情形：执行 `useFonts({ Inter: require('./assets/fonts/Inter-Regular.otf') })` 后，再为 `Inter` 传递数组也不会加载更多字体。
+
+为多字形字体族中的每个字形声明 `weight` 和 `style`。Web 需要这两个值，显式声明也能确保三个平台保持一致。唯一的例外是单个可变字体文件：请将其 `style` 留空，并将 `weight` 留空或声明一个字重范围，例如 `'100 900'`。这样 Android 会为每个 `fontWeight` 实例化字体的 `wght` 轴，而不是将其固定为单一字重。
+
+平台说明：
+
+- **Android** 使用声明的 `weight` 和 `style` 值；未声明时则回退到字体文件中的值。声明 `weight` 会将可变字体字形固定为该字重，其他字重由 Android 合成。在 API 29 以下（Android 10 以下），只会加载默认字形，并根据声明的值选择（最接近字重 400 的正体字形）。通过[配置插件](#with-expo-font-config-plugin)嵌入的字体使用 Android 的 XML 字体资源，不受此限制。
+- **iOS** 根据字体文件中嵌入的字重和样式元数据匹配字形。只有当文件中没有可读取的元数据时，它才会使用声明的 `weight` 和 `style` 值来选择字体族的默认字形。
+- **Web** 会为每个字形生成一条 CSS `@font-face` 规则，并使用声明的 `weight` 和 `style` 值。CSS 无法读取字体文件中的元数据，因此未声明 `style` 的字形会以正体呈现。同一字体族中的两个字形如果都未声明相同的值，就会生成相同的 CSS 规则，浏览器会呈现最后一个字形。
 
 ## 使用 Google Fonts
 
@@ -417,10 +503,10 @@ export default function RootLayout() {
   }
   description="请参阅 Expo Fonts API 参考中的用法部分，了解使用自定义字体的最小示例。"
   href="/versions/latest/sdk/font/#usage"
-  Icon={BookOpen02Icon}
+  Icon={DocsLogo}
 />
 
-### 超出 OTF 和 TTF 之外的格式
+### OTF 和 TTF 之外的格式
 
 如果你的字体格式不是 OTF 或 TTF，你必须[自定义 Metro bundler 配置，将其作为额外资源包含进去](/guides/customizing-metro#adding-more-file-extensions-to-assetexts)，它才会生效。在某些情况下，渲染平台不支持的字体格式可能会导致你的应用崩溃。
 

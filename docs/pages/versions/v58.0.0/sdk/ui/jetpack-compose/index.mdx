@@ -1,0 +1,289 @@
+---
+title: Jetpack Compose
+sidebar_title: 概述
+description: 使用 @expo/ui 构建原生 Android 界面的 Jetpack Compose 组件
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { BoxLink } from '~/ui/components/BoxLink';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import JetpackComposeCards from '~/scenes/versions/unversioned/ui/jetpack-compose.mdx';
+
+`@expo/ui/jetpack-compose` 中的 Jetpack Compose 组件让你可以通过 React Native 使用 Jetpack Compose 构建完全原生的 Android 界面
+
+## 安装
+
+<APIInstallSection />
+
+## 使用方法
+
+使用 `@expo/ui/jetpack-compose` 中的组件时，需要将其包装在 [`Host`](./host) 组件中。`Host` 是 Jetpack Compose 视图的容器
+
+```tsx
+import { Host, Button } from '@expo/ui/jetpack-compose';
+
+export function SaveButton() {
+  return (
+    <Host matchContents>
+      <Button onClick={() => alert('Saved!')}>Save changes</Button>
+    </Host>
+  );
+}
+```
+
+<BoxLink
+  title="通过 Jetpack Compose 扩展"
+  description="创建可与 Expo UI 集成的自定义 Jetpack Compose 组件和修饰符。"
+  href="jetpack-compose/extending"
+  Icon={BookOpen02Icon}
+/>
+
+## 可用组件
+
+<JetpackComposeCards />
+
+## 示例
+
+### 修饰符
+
+修饰符通过 `modifiers` 属性按数组顺序应用。将 `background` 放在 `paddingAll` 前面，这样内边距就会位于背景内侧，而不是外侧
+
+<ComponentExample
+  title="ComposeModifiersExample.tsx"
+  src="/static/images/expo-ui/examples/jetpack-compose-index-modifiers-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/jetpack-compose-index-modifiers-android-dark.webp"
+  alt="一个紫色填充标签位于浅紫色边框标签上方，两者均带有内边距且宽度占满">
+
+```tsx
+import { Column, Host, Text } from '@expo/ui/jetpack-compose';
+import {
+  background,
+  border,
+  fillMaxWidth,
+  paddingAll,
+  shadow,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function ComposeModifiersExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column
+        verticalArrangement={{ spacedBy: 16 }}
+        modifiers={[paddingAll(16)]}>
+        <Text
+          color="#FFFFFF"
+          modifiers={[
+            fillMaxWidth(),
+            shadow(4),
+            background('#6750A4'),
+            paddingAll(16),
+          ]}>
+          背景、阴影和内边距
+        </Text>
+        <Text
+          color="#1D192B"
+          modifiers={[
+            fillMaxWidth(),
+            background('#E8DEF8'),
+            border(2, '#6750A4'),
+            paddingAll(16),
+          ]}>
+          背景、边框和内边距
+        </Text>
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 设置界面
+
+将 `ListItem` 插槽与 `Switch` 和 `Icon` 组合，构建 Material 3 设置界面
+
+<ComponentExample
+  title="ComposeSettingsScreenExample.tsx"
+  src="/static/images/expo-ui/examples/jetpack-compose-index-settings-screen-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/jetpack-compose-index-settings-screen-android-dark.webp"
+  alt="一个飞行模式行及其开关位于 Wi-Fi 行上方，后者显示 Expo Guest 和一个箭头">
+
+```tsx
+import {
+  Column,
+  Host,
+  Icon,
+  ListItem,
+  Switch,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import ChevronRight from '@expo/material-symbols/chevron_right.xml';
+import Flight from '@expo/material-symbols/flight.xml';
+import Wifi from '@expo/material-symbols/wifi.xml';
+import { useState } from 'react';
+
+export default function ComposeSettingsScreenExample() {
+  const [airplaneMode, setAirplaneMode] = useState(true);
+  const colors = useMaterialColors();
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column>
+        <ListItem>
+          <ListItem.LeadingContent>
+            <Icon
+              source={Flight}
+              tint={colors.onSurfaceVariant}
+              contentDescription="Airplane mode"
+            />
+          </ListItem.LeadingContent>
+          <ListItem.HeadlineContent>
+            <Text>Airplane mode</Text>
+          </ListItem.HeadlineContent>
+          <ListItem.TrailingContent>
+            <Switch
+              value={airplaneMode}
+              onCheckedChange={setAirplaneMode}
+            />
+          </ListItem.TrailingContent>
+        </ListItem>
+        <ListItem>
+          <ListItem.LeadingContent>
+            <Icon
+              source={Wifi}
+              tint={colors.onSurfaceVariant}
+              contentDescription="Wi-Fi"
+            />
+          </ListItem.LeadingContent>
+          <ListItem.HeadlineContent>
+            <Text>Wi-Fi</Text>
+          </ListItem.HeadlineContent>
+          <ListItem.SupportingContent>
+            <Text>Expo Guest</Text>
+          </ListItem.SupportingContent>
+          <ListItem.TrailingContent>
+            <Icon
+              source={ChevronRight}
+              tint={colors.onSurfaceVariant}
+              contentDescription="Open"
+            />
+          </ListItem.TrailingContent>
+        </ListItem>
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 亮度行
+
+亮度或音量控件的一种常见模式是在 `Slider` 两侧放置图标。为 `Slider` 添加 `weight` 修饰符，使其占据图标之间剩余的空间
+
+<ComponentExample
+  title="ComposeBrightnessRowExample.tsx"
+  src="/static/images/expo-ui/examples/jetpack-compose-index-brightness-row-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/jetpack-compose-index-brightness-row-android-dark.webp"
+  alt="一个亮度滑块位于较暗和较亮的背光图标之间">
+
+```tsx
+import {
+  Host,
+  Icon,
+  Row,
+  Slider,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import {
+  paddingAll,
+  weight,
+} from '@expo/ui/jetpack-compose/modifiers';
+import BacklightHigh from '@expo/material-symbols/backlight_high.xml';
+import BacklightLow from '@expo/material-symbols/backlight_low.xml';
+import { useState } from 'react';
+
+export default function ComposeBrightnessRowExample() {
+  const [brightness, setBrightness] = useState(0.5);
+  const colors = useMaterialColors();
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Row
+        verticalAlignment="center"
+        horizontalArrangement={{ spacedBy: 12 }}
+        modifiers={[paddingAll(16)]}>
+        <Icon
+          source={BacklightLow}
+          tint={colors.onSurfaceVariant}
+          contentDescription="Dimmer"
+        />
+        <Slider
+          value={brightness}
+          onValueChange={setBrightness}
+          modifiers={[weight(1)]}
+        />
+        <Icon
+          source={BacklightHigh}
+          tint={colors.onSurfaceVariant}
+          contentDescription="Brighter"
+        />
+      </Row>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 次要文本
+
+使用 `ListItem.SupportingContent` 显示第二行内容，并使用 `useMaterialColors` 获取随浅色和深色主题变化的文本颜色
+
+<ComponentExample
+  title="ComposeSecondaryTextExample.tsx"
+  src="/static/images/expo-ui/examples/jetpack-compose-index-secondary-text-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/jetpack-compose-index-secondary-text-android-dark.webp"
+  alt="Chrome 行右侧显示 1.57 GB，灰色辅助文本显示 Last used Today">
+
+```tsx
+import {
+  Column,
+  Host,
+  ListItem,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+
+export default function ComposeSecondaryTextExample() {
+  const colors = useMaterialColors();
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column>
+        <ListItem>
+          <ListItem.HeadlineContent>
+            <Text>Chrome</Text>
+          </ListItem.HeadlineContent>
+          <ListItem.SupportingContent>
+            <Text color={colors.onSurfaceVariant}>
+              Last used: Today
+            </Text>
+          </ListItem.SupportingContent>
+          <ListItem.TrailingContent>
+            <Text color={colors.onSurfaceVariant}>1.57 GB</Text>
+          </ListItem.TrailingContent>
+        </ListItem>
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>

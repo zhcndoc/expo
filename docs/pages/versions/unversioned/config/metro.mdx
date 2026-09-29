@@ -3,7 +3,7 @@ title: metro.config.js
 description: Metro 中可用配置的参考。
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { CodeSquare01Icon } from '@expo/styleguide-icons/outline/CodeSquare01Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { FileTree } from '~/ui/components/FileTree';
@@ -223,7 +223,7 @@ Expo Metro 对 SCSS/SASS 提供 _部分_ 支持。
   title="Tailwind CSS"
   description="了解如何在你的 Expo 项目中配置和使用 Tailwind CSS。"
   href="/guides/tailwind/"
-  Icon={BookOpen02Icon}
+  Icon={CodeSquare01Icon}
 />
 
 ## 扩展 Babel 转换器
@@ -550,13 +550,13 @@ config.resolver.unstable_enablePackageExports = false;
 module.exports = config;
 ```
 
-## Resource Import
+## 资源导入
 
-When importing assets, a virtual module is created to represent the data required to import that asset.
+导入资源时，会创建一个虚拟模块来表示导入该资源所需的数据。
 
-On native platforms, the asset will be a numeric ID: `1`, `2`, `3`, etc., which can be looked up via `require("@react-native/assets-registry/registry").getAssetByID(<NUMBER>)`. On Web and server platforms, the asset will vary depending on the file type. If the file is an image, the asset will be `{ uri: string, width?: number, height?: number }`; otherwise, the asset will be a `string` representing the remote URL of that asset. Starting from SDK 55, you can use `String(asset)` to get the public URL of any asset on Web, excluding React Server Component environments that cannot contain the `toString` function.
+在原生平台上，资源将是一个数字 ID：`1`、`2`、`3` 等，可通过 `require("@react-native/assets-registry/registry").getAssetByID(<NUMBER>)` 查找。在 Web 和服务器平台上，资源的形式因文件类型而异。如果文件是图像，资源将是 `{ uri: string, width?: number, height?: number }`；否则，资源将是一个表示该资源远程 URL 的 `string`。从 SDK 55 开始，你可以使用 `String(asset)` 获取 Web 上任何资源的公开 URL，但 React Server Component 环境除外，因为其中不能包含 `toString` 函数。
 
-Assets can be used as follows:
+资源可以按如下方式使用：
 
 ```jsx
 import { Image } from 'react-native';
@@ -568,7 +568,7 @@ function Demo() {
 }
 ```
 
-In API routes, you can always assume that the asset type will not be a number:
+在 API 路由中，你可以始终假定资源类型不是数字：
 
 ```js
 import asset from './img.png';
@@ -599,15 +599,15 @@ export async function GET(req: Request) {
 new Worker(new URL('./worker', window.location.href));
 ```
 
-Expo Metro 提供了实验性的 web worker 支持。此功能目前仅适用于 Web，在原生平台上不工作，在原生平台上使用将触发错误 "Property 'Worker' doesn't exist"。
+Expo Metro 提供了实验性的 Web Worker 支持。此功能目前仅适用于 Web，在原生平台上不工作，在原生平台上使用将触发错误 "Property 'Worker' doesn't exist"。
 
-Web worker 可用于将工作卸载到 Web 上的单独线程，从而使主线程保持响应。它适用于计算开销较大的任务，例如图像处理、密码学，或其他原本会阻塞主线程的任务。
+Web Worker 可用于将工作卸载到 Web 上的单独线程，从而使主线程保持响应。它适用于计算开销较大的任务，例如图像处理、密码学，或其他原本会阻塞主线程的任务。
 
 Worker 可以使用 `Blob` 以内联方式生成，但有时你可能希望利用 TypeScript 等现代特性，或者导入其他模块。
 
-Web worker 依赖于 Expo 的 bundle 拆分支持，这意味着你需要使用 Expo Router，或者安装并导入 `@expo/metro-runtime`。你也不能在使用 web worker 时使用环境变量 `EXPO_NO_METRO_LAZY=1`。
+Web Worker 依赖于 Expo 的 bundle 拆分支持，这意味着你需要使用 Expo Router，或者安装并导入 `@expo/metro-runtime`。你也不能在使用 Web Worker 时使用环境变量 `EXPO_NO_METRO_LAZY=1`。
 
-请考虑下面这个将一个数字翻倍的 worker 示例：
+请考虑下面这个将一个数字翻倍的 Worker 示例：
 
 ```ts worker.ts
 self.onmessage = ({ data }) => {
@@ -616,7 +616,7 @@ self.onmessage = ({ data }) => {
 };
 ```
 
-这个 worker 文件可以在主应用中作为 `Worker` 导入：
+这个 Worker 文件可以在主应用中作为 `Worker` 导入：
 
 ```ts
 // worker 的类型为 `Worker`
@@ -637,11 +637,11 @@ const worker = new Worker(
 );
 ```
 
-生成的 bundle URL 会根据开发/生产环境而变化，以确保 worker 被正确加载和打包。与传统的 bundle 拆分不同，worker 文件需要包含其自身对所有模块的副本，且不能依赖主 bundle 中的公共模块。
+生成的 bundle URL 会根据开发/生产环境而变化，以确保 Worker 被正确加载和打包。与传统的 bundle 拆分不同，Worker 文件需要包含其自身对所有模块的副本，且不能依赖主 bundle 中的公共模块。
 
 原生 API `Worker` 传统上在 React Native 中不可用，也不是 Expo SDK 提供的，因此尽管这种打包特性在技术上适用于所有平台，但它只对 Web 有用。如果你想同时支持原生平台，可以理论上编写一个原生 Expo 模块来为 `Worker` API 提供 polyfill。或者，你也可以在 React Native Reanimated 中使用 "worklet" API，将工作卸载到原生平台上的单独线程。
 
-另外，你可以先将转换后的 JS 文件放入 **public** 目录，然后在 worker 导入中使用变量并通过公开路径导入 Workers：
+另外，你可以先将转换后的 JS 文件放入 **public** 目录，然后在 Worker 导入中使用变量并通过公开路径导入 Workers：
 
 ```ts
 // 将避免转换，并直接使用公开路径。
@@ -687,17 +687,17 @@ Android 的 **app/build.gradle** 必须配置为在生产打包时使用 Expo CL
 
 在你的 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换以下脚本：
 
-#### "Start Packager" 脚本
+#### “Start Packager”脚本
 
-删除 **"Start Packager"** 脚本。开发服务器必须在运行应用之前或之后使用 `npx expo` 启动。
+删除 **“Start Packager”** 脚本。开发服务器必须在运行应用之前或之后使用 `npx expo` 启动。
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-remove-start-packager.diff" />
 
-#### "Bundle React Native code and images" 脚本
+#### “Bundle React Native code and images”脚本
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script.diff" />
 
-或者，在 Xcode 项目中，选择 **"Bundle React Native code and images"** 构建阶段并添加以下修改：
+或者，在 Xcode 项目中，选择 **“Bundle React Native code and images”** 构建阶段并添加以下修改：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script-inline.diff" />
 
@@ -717,7 +717,7 @@ Android 的 **app/build.gradle** 必须配置为在生产打包时使用 Expo CL
 
 #### 生产
 
-在你的 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换 **"Bundle React Native code and images"** 脚本，以根据 Metro 设置 `$ENTRY_FILE`：
+在你的 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换 **“Bundle React Native code and images”** 脚本，以根据 Metro 设置 `$ENTRY_FILE`：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script.diff" />
 

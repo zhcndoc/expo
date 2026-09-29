@@ -8,8 +8,13 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 ---
 
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import UniversalCards from '~/scenes/versions/unversioned/ui/universal.mdx';
+import { PlatformTabsGroup } from '~/ui/components/PlatformTabs';
 
 `@expo/ui` 中的通用组件是在各平台原生 UI 工具包之上的单一 API 层。在 Android 上，它们会委托给 [`@expo/ui/jetpack-compose`](../jetpack-compose)。在 iOS 上，它们会委托给 [`@expo/ui/swift-ui`](../swift-ui)。在 web 上，它们是使用 `react-dom` 或 `react-native-web` 的 JS 实现，并且会根据具体组件选择最适合该控件的实现。
+
+<PlatformTabsGroup>
 
 ## 安装
 
@@ -19,45 +24,48 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 通用组件仍然必须包裹在一个 [`Host`](host) 中，但你可以从包的根入口导入所有内容，包括 `Host`。通用的 `Host` 会在 Android 和 iOS 上分发到平台原生的 host，因此无需直接使用 [`@expo/ui/swift-ui`](../swift-ui) 或 [`@expo/ui/jetpack-compose`](../jetpack-compose)。
 
-```tsx UniversalExample.tsx
+<ComponentExample
+  title="UniversalExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-index-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-index-basic-android-dark.webp',
+    alt: 'A Hello world label above a filled Material 3 button',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-index-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-index-basic-ios-dark.webp',
+    alt: 'A Hello world label above a filled button',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
 import { Host, Column, Button, Text } from '@expo/ui';
 
-export default function Example() {
+export default function UniversalExample() {
+  const colorScheme = useColorScheme();
+
   return (
     <Host style={{ flex: 1 }}>
       <Column spacing={12} alignment="center">
-        <Text>Hello, world!</Text>
-        <Button label="按我" onPress={() => alert('Pressed')} />
+        <Text textStyle={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>
+          Hello, world!
+        </Text>
+        <Button label="Press me" onPress={() => alert('Pressed')} />
       </Column>
     </Host>
   );
 }
 ```
 
+</ComponentExample>
+
 ## 可用组件
 
-| 组件                         | 描述                                                                                                      |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
-| [`BottomSheet`](bottomsheet) | 从屏幕底部向上滑出的模态页面。                                                                            |
-| [`Button`](button)           | 具有多种视觉变体的可按压按钮。                                                                            |
-| [`Checkbox`](checkbox)       | 表示选中或未选中状态的切换控件。                                                                          |
-| [`Collapsible`](collapsible) | 可点击的带标签标题，用于切换其内容的可见性。                                                              |
-| [`Column`](column)           | 用于通用 @expo/ui 组件的垂直布局容器。                                                                    |
-| [`FieldGroup`](fieldgroup)   | 包含分组设置样式行的可滚动容器。                                                                          |
-| [`Host`](host)               | 包裹通用 @expo/ui 内容的跨平台 Host 组件。                                                                |
-| [`Icon`](icon)               | 平台原生图标——iOS 上为 SF Symbol，Android 上为 Material Symbol。                                          |
-| [`List`](list)               | 用于承载行的虚拟化垂直容器，与可点击的 ListItem 原语配合使用。                                             |
-| [`Picker`](picker)           | 具有菜单和滚轮外观的单选输入控件。                                                                        |
-| [`RNHostView`](rnhostview)   | 用于在 @expo/ui 视图中承载 React Native 视图的跨平台组件。                                                 |
-| [`Row`](row)                 | 用于通用 @expo/ui 组件的水平布局容器。                                                                    |
-| [`ScrollView`](scrollview)   | 支持垂直或水平滚动的可滚动容器。                                                                          |
-| [`Slider`](slider)           | 用于从连续或分步范围中选择值的控件。                                                                      |
-| [`Spacer`](spacer)           | 用于在同级元素之间生成空白的布局间隔组件。                                                                |
-| [`Switch`](switch)           | 在开启和关闭状态之间切换的切换控件。                                                                      |
-| [`Text`](text)               | 用于显示带样式文本内容的组件。                                                                            |
-| [`TextInput`](textinput)     | 基于原生 SwiftUI 和 Jetpack Compose 组件的文本输入控件，并提供与 React Native 兼容的 API。               |
+<UniversalCards />
 
 ## 何时使用这个而不是 `jetpack-compose`/`swift-ui`
 
-- 当你希望一个组件树无需修改即可在 Android、iOS 和 web 上运行时，请选择 **universal** 组件。由于这些组件在底层委托给 Jetpack Compose/SwiftUI，因此在 Android 和 iOS 上会保留平台原生的外观和体验。
-- 当你需要 universal API 未提供的平台特定控件、修饰符或行为时，请直接选择 **[`@expo/ui/jetpack-compose`](../jetpack-compose)** 或 **[`@expo/ui/swift-ui`](../swift-ui)**。
+- 当你希望使用一棵无需修改即可在 Android、iOS 和 web 上运行的组件树时，请使用**通用**组件。由于这些组件在底层委托给 Jetpack Compose/SwiftUI，因此 Android 和 iOS 上会保留平台原生的外观和体验。
+- 当你需要通用 API 未提供的平台专属控件、修饰符或行为时，请直接使用 **[`@expo/ui/jetpack-compose`](../jetpack-compose)** 或 **[`@expo/ui/swift-ui`](../swift-ui)**。
+
+</PlatformTabsGroup>

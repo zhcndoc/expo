@@ -1,0 +1,145 @@
+---
+title: MaskedView
+description: 与 @react-native-masked-view/masked-view 兼容的遮罩视图。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+一个 `MaskedView` 组件，其 API 与 `@react-native-masked-view/masked-view` 兼容。`maskElement` 的不透明像素会显示其后方被遮罩的内容；透明像素则会将其隐藏。
+
+在底层，此组件会将任意 React Native 子元素桥接到平台专用的 `@expo/ui` 遮罩原语：
+
+- **Android**：使用 `BlendMode.DstIn` 的 Jetpack Compose 图形层合成。
+- **iOS**：SwiftUI [`.mask`](<https://developer.apple.com/documentation/swiftui/view/mask(alignment:_:)>) 修饰符。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/community-maskedview/android-light.webp',
+    darkSrc: '/static/images/expo-ui/community-maskedview/android-dark.webp',
+    alt: '彩虹渐变填充的单词 EXPO',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/community-maskedview/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/community-maskedview/ios-dark.webp',
+    alt: '彩虹渐变填充的单词 EXPO',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@react-native-masked-view/masked-view` 迁移
+
+- 将导入语句从 `import MaskedView from '@react-native-masked-view/masked-view'` 更新为 `import { MaskedView } from '@expo/ui/community/masked-view'`。
+- 不支持 `androidRenderingMode` 属性。基于 Compose 的实现始终使用离屏图形层，因此该属性没有对应功能，不会包含在公共类型中。
+- 尚未实现 Web 支持。在 Web 上，子元素会不经过遮罩直接渲染，并且只会记录一次控制台警告。对于 Web 目标，请根据具体情况选择合适的 CSS 原语：
+  - **渐变文本** — 使用 `background-clip: text`、`color: 'transparent'` 和 CSS 渐变／图像背景。
+  - **Alpha 渐隐** — 直接在内容视图上使用 `mask-image: linear-gradient(...)`（或 `WebkitMaskImage`）。
+  - **形状遮罩**（圆形、圆角矩形等）— 使用 `clip-path: circle(...)`／`inset(...)`／`path(...)`，或使用 `border-radius` + `overflow: 'hidden'`。
+
+## 基本用法
+
+<ComponentExample
+  title="MaskedViewExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-maskedview-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-maskedview-basic-android-dark.webp',
+    alt: '彩虹渐变填充的单词 EXPO',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-maskedview-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-maskedview-basic-ios-dark.webp',
+    alt: '彩虹渐变填充的单词 EXPO',
+  }}>
+
+```tsx
+import { MaskedView } from '@expo/ui/community/masked-view';
+import { StyleSheet, Text, View } from 'react-native';
+
+export default function MaskedViewExample() {
+  return (
+    <MaskedView
+      style={{ width: 300, height: 80 }}
+      maskElement={
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 64, fontWeight: 'bold' }}>EXPO</Text>
+        </View>
+      }>
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            experimental_backgroundImage:
+              'linear-gradient(135deg, #FF3B30, #FF9500, #FFCC00, #34C759, #007AFF, #AF52DE)',
+          },
+        ]}
+      />
+    </MaskedView>
+  );
+}
+```
+
+</ComponentExample>
+
+## Alpha 渐隐遮罩
+
+只有 `maskElement` 的 Alpha 通道会起作用：不透明像素显示内容，透明像素隐藏内容。使用从不透明到透明的 `LinearGradient`（来自 `expo-linear-gradient`）——例如，下方从 `'black'` 到 `'transparent'`——即可沿某个轴淡出内容。
+
+<ComponentExample
+  title="AlphaFadeExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-maskedview-alpha-fade-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-maskedview-alpha-fade-android-dark.webp',
+    alt: '三条色带从左向右逐渐淡出',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-maskedview-alpha-fade-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-maskedview-alpha-fade-ios-dark.webp',
+    alt: '三条色带从左向右逐渐淡出',
+  }}>
+
+```tsx
+import { MaskedView } from '@expo/ui/community/masked-view';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, View } from 'react-native';
+
+export default function AlphaFadeExample() {
+  return (
+    <MaskedView
+      style={{ width: 300, height: 80, flexDirection: 'row' }}
+      maskElement={
+        <LinearGradient
+          colors={['black', 'transparent']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+      }>
+      <View style={{ flex: 1, backgroundColor: '#3D5A80' }} />
+      <View style={{ flex: 1, backgroundColor: '#DAA520' }} />
+      <View style={{ flex: 1, backgroundColor: '#E07A5F' }} />
+    </MaskedView>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { MaskedView } from '@expo/ui/community/masked-view';
+```
+
+<APISection packageName="expo-ui/community/masked-view" apiName="MaskedView" />
+
+</PlatformTabsGroup>

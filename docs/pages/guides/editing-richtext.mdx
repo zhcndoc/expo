@@ -6,23 +6,23 @@ hasVideoLink: true
 
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-Many apps need to let users enter text. For example, if you want to build a messaging or social media app, you’ll likely rely heavily on text input. React Native includes the `<TextInput>` component out of the box, which makes this easy in many simple scenarios.
+许多应用都需要让用户输入文本。例如，如果你想构建一款即时通讯或社交媒体应用，很可能会大量使用文本输入。React Native 开箱即带有 `<TextInput>` 组件，在许多简单场景中都能轻松满足需求。
 
-However, sometimes you need a bit more flexibility. Think of long social media posts, note-taking apps, or document editors. Ideally, you’d want support for different text styles, lists, headings, inline images, and more. This is called a rich text editor, and it’s a hard problem to solve well everywhere, including in React Native.
+不过，有时你需要更多灵活性。想想较长的社交媒体帖子、笔记应用或文档编辑器。理想情况下，你会希望支持不同的文本样式、列表、标题、内嵌图片等。这类功能称为富文本编辑器，而要在任何平台上做好它都很困难，React Native 也不例外。
 
-At the moment, there isn’t a default solution in the React Native ecosystem. However, this guide will explore some options and promising approaches, each with its own trade-offs.
+目前，React Native 生态系统中还没有这类功能的默认解决方案。本指南将介绍现有方案及其取舍。对于大多数应用，可以从 Software Mansion 的原生编辑器入手：需要输出 markdown 时使用 [`react-native-enriched-markdown`](https://github.com/software-mansion/enriched-markdown)，需要输出 HTML 时使用 [`react-native-enriched-html`](https://github.com/software-mansion/react-native-enriched-html)。
 
 <VideoBoxLink
   videoId="CxORa1tXMjw"
-  title="Watch: How to build a rich text editor with DOM components"
-  description="Use Expo DOM components to render a web-based editor in a native app, enabling a rich text editor in React Native."
+  title="观看：如何使用 DOM 组件构建富文本编辑器"
+  description="使用 Expo DOM 组件在原生应用中渲染基于 Web 的编辑器，从而在 React Native 中实现富文本编辑器。"
 />
 
 ## 渲染富文本
 
 显示富文本有很多不错的选择：
 
-- 对于 markdown 内容，你可以使用 markdown 渲染器，例如 [`react-native-enriched-markdown`](https://github.com/software-mansion/react-native-enriched-markdown) 或其他类似工具。
+- 对于 markdown 内容，你可以使用 markdown 渲染器，例如 [`react-native-enriched-markdown`](https://github.com/software-mansion/enriched-markdown)。
 
 - 对于 HTML 内容，你可以使用 [`@expo/html-elements`](https://www.npmjs.com/package/@expo/html-elements) 或 WebView（[`react-native-webview`](/versions/latest/sdk/webview/)）。
 
@@ -42,6 +42,21 @@ At the moment, there isn’t a default solution in the React Native ecosystem. H
 
 要让富文本渲染正常工作，有几种不同的方法。不过，它们都有各自的限制。
 
+### 原生编辑器
+
+原生编辑器使用平台的文本 API 来渲染和编辑文本，而不是使用 WebView。它能提供原生性能和与应用其他部分一致的文本行为。Software Mansion 维护着两个采用这种方式的库：
+
+- [`react-native-enriched-markdown`](https://github.com/software-mansion/enriched-markdown) 可在 Android、iOS、macOS 和 Web 上编辑富文本并输出 markdown。它还为 Android（Kotlin）和 iOS（Swift）提供独立的原生 SDK。
+- [`react-native-enriched-html`](https://github.com/software-mansion/react-native-enriched-html) 在 Android、iOS 和 Web 上提供原生输入和显示组件，并输出 HTML。它需要[新架构](/guides/new-architecture/)。
+
+[`react-native-live-markdown`](https://github.com/Expensify/react-native-live-markdown) 是另一个原生方案。它可以直接替换 `<TextInput>`，并在每次按键时实时应用 markdown 格式。
+
+你也可以使用 [Expo Modules API](/modules/overview/) 封装任何原生富文本编辑器，但如果在不同平台上使用不同的编辑器，就需要统一它们的 API 和输入格式。
+
+> 富文本通常使用[抽象语法树](https://en.wikipedia.org/wiki/Abstract_syntax_tree)表示。例如，项目符号列表可以是一个类型为 `bulleted-list` 的节点，其中包含多个类型为 `list-item` 的子节点。你可以将 HTML 和 markdown 转换为合适的 AST 格式。
+
+目前也有一项工作，旨在将 lexical 编辑器移植到 Android 和 iOS，并提供 React Native 封装。要了解其进展，请参阅关于 React Native 支持的 [lexical 讨论](https://github.com/facebook/lexical/discussions/2410)。
+
 ### 基于 WebView 的编辑器
 
 大多数 React Native UI 组件封装的是原生平台基础组件，因此速度快、性能好，并且因此带有**原生体验**。而基于 WebView 的富文本编辑器采用的是不同的方法。
@@ -52,11 +67,7 @@ At the moment, there isn’t a default solution in the React Native ecosystem. H
 
 ### 现有的基于 WebView 的 React Native 库
 
-目前已有一些 React Native 库可以支持富文本编辑。如果你只需要一个基础的富文本编辑器，配置较少，而且对性能或用户体验没有严格要求，那么这些是最容易上手的选择：
-
-- [`react-native-rich-editor`](https://github.com/wxik/react-native-rich-editor)
-- [`react-native-cn-quill`](https://github.com/imnapo/react-native-cn-quill)
-- [`@10play/tentap-editor`](https://github.com/10play/10Tap-Editor)
+如果要使用现成的基于 WebView 的编辑器，请使用 [`@10play/tentap-editor`](https://github.com/10play/10tap-editor)。如果你只需要一个配置有限的基础富文本编辑器，且对性能或用户体验没有严格要求，那么它很适合你。
 
 ### 自定义基于 WebView 的编辑器
 
@@ -95,28 +106,12 @@ React Native 允许嵌套 `<Text>` 组件，并且允许它们作为 `<TextInput
 
 ## 带可见样式标记的 Markdown 编辑器
 
-如果使用 markdown 来设置文本样式就能满足你的需求，那么你可以在编辑时将 markdown 渲染到一个单独的、不可编辑的视图中。使用任何 markdown 渲染器自己实现都不复杂。你也可以使用第三方库，例如 [`react-native-markdown-editor`](https://github.com/kunall17/react-native-markdown-editor)。
+如果使用 markdown 来设置文本样式就能满足你的需求，那么你可以在编辑时于单独的不可编辑视图中渲染 markdown。使用任何 markdown 渲染器自行构建都不复杂。
 
 这种编辑体验适合高级用户或编程/技术类应用。你也可以探索在选中的文本块中渲染富文本，同时只显示 markdown，或者其他混合方案。
 
-## 原生编辑器
-
-你可以使用封装为 React Native 模块的 Android 或 iOS 原生富文本编辑器。可选项有：
-
-- [`react-native-aztec`](https://github.com/WordPress/gutenberg/tree/trunk/packages/react-native-aztec)
-- [`gutenberg-mobile`](https://github.com/wordpress-mobile/gutenberg-mobile)
-- [`react-native-live-markdown`](https://github.com/Expensify/react-native-live-markdown)
-- [`react-native-enriched-markdown`](https://github.com/software-mansion/react-native-enriched-markdown)
-- [`react-native-enriched-html`](https://github.com/software-mansion/react-native-enriched-html)
-
-你也可以使用 [Expo Modules API](/modules/overview/) 封装任何原生富文本编辑器，但如果你在不同平台上使用不同的编辑器，就需要统一它们的 API 和输入格式。
-
-> 富文本通常使用 [抽象语法树](https://en.wikipedia.org/wiki/Abstract_syntax_tree) 来表示。例如，一个项目符号列表可以是一个类型为 `bulleted-list` 的节点，并包含若干类型为 `list-item` 的子节点。你可以将 HTML 和 markdown 都转换为合适的 AST 格式。
-
-目前也有人在努力将 lexical 编辑器移植到 Android 和 iOS，并提供 React Native 封装，[在此跟踪进展](https://github.com/facebook/lexical/discussions/2410)。
-
 ## 总结
 
-虽然展示富文本有很多很好的选择，但在 React Native 中进行富文本编辑并没有一种通用的完美方案。也没有一种在大多数使用场景下都足够好的流行方案。还需要社区进一步贡献，以改进现有解决方案或添加新的方案。
+虽然显示富文本有很多选择，但 React Native 中的富文本编辑并没有适用于所有场景的解决方案。对于大多数应用，可以从 Software Mansion 的[原生编辑器](#native-editors)入手。
 
-目前，你需要在更复杂但功能更多、可能更难维护的原生编辑器，与基于 react-native 原语构建的编辑器之间仔细做出选择。这取决于这个功能对你的应用有多核心、你在编辑器中需要多少功能，以及你愿意投入多少精力去把它做完整。
+当你需要 Web 编辑器独有的功能时，可以选择基于 WebView 的编辑器。只有在需求很简单时，才基于 React Native 基础组件构建，因为你必须自行处理选区和格式设置。

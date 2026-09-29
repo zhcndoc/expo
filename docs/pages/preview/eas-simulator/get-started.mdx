@@ -10,7 +10,7 @@ import { Step } from '~/ui/components/Step';
 import { Terminal } from '~/ui/components/Snippet';
 import { Tab, Tabs } from '~/ui/components/Tabs';
 
-> **重要** **EAS Simulator 是一项受限访问的预览功能。** 它不包含在付费或免费套餐中，目前仅向部分合作伙伴提供。如果您有兴趣试用，请[加入候补名单](https://expo.dev/services/simulator)。
+> **重要** **EAS Simulator 是有限开放的预览版。** 它不包含在付费或免费套餐中，目前仅向部分合作伙伴开放。如果你有兴趣试用，请[加入候补名单](https://expo.dev/services/simulators)。
 
 <Prerequisites>
   <Requirement title="拥有 EAS Simulator 访问权限的 Expo 账户">
@@ -19,8 +19,9 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
   <Requirement title="已关联的 Expo 项目">
     请从项目目录运行这些命令。如果项目没有 EAS 项目 ID，请先运行 `eas init`。
   </Requirement>
-  <Requirement title="最新版本的 EAS CLI">
-    `simulator:*` 命令处于实验阶段且默认隐藏。使用这些命令前，请[安装或更新 EAS CLI](/eas/cli/)。
+  <Requirement title="近期版本的 EAS CLI">
+    `simulator:*` 命令属于实验性功能，默认隐藏。使用这些命令前，请[安装或更新 EAS CLI](/eas/cli/)。
+    由于预览版变化迅速，请使用 `eas simulator:start --help` 检查已安装版本支持的标志。
   </Requirement>
 </Prerequisites>
 
@@ -31,6 +32,8 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 <RelatedSkills names={['eas-simulator']} />
 
 ## 手动启动会话
+
+以下步骤使用 EAS CLI。若要直接通过自己的 HTTP 客户端管理会话，请参阅 [REST API 参考](/preview/eas-simulator/rest-api/)。若要在有人打开经过身份验证的 expo.dev URL 时启动仅限浏览器预览的会话，请参阅[创建会话链接](/preview/eas-simulator/create-session-links/)。
 
 <Step label="1">
 
@@ -65,7 +68,7 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 }
 ```
 
-如果 `available` 为 `false`，请不要调用 `simulator:start`。请使用本地模拟器或仿真器，或者[加入候补名单](https://expo.dev/services/simulator)以获取访问权限。
+如果 `available` 为 `false`，请勿调用 `simulator:start`。请使用本地模拟器或仿真器，或者[加入候补名单](https://expo.dev/services/simulators)以获取访问权限。
 
 </Step>
 
@@ -85,9 +88,9 @@ EAS CLI 会将当前会话 ID 和控制器凭据写入 **.env.eas-simulator**。
 
 <Step label="4">
 
-### 选择控制器并启动远程设备
+### 选择会话类型并启动远程设备
 
-选择计划用于安装和执行设备操作的控制器。启动会话时请明确传入其类型。
+选择你计划用于安装和设备操作的控制器。在 iOS 上，每个由控制器支持的会话也包含网页预览。如果你只需要网页预览，请使用 `web-preview-only`，而不指定控制器。启动会话时请明确传入会话类型。
 
 <Tabs>
 
@@ -95,7 +98,11 @@ EAS CLI 会将当前会话 ID 和控制器凭据写入 **.env.eas-simulator**。
 
 请参阅 [agent-device 和 Expo](/agents/agent-device/) 了解控制器设置和命令。
 
-<Terminal cmd={['$ eas simulator:start --platform ios --type agent-device --non-interactive']} />
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type agent-device --name "Checkout flow screenshots" --non-interactive',
+  ]}
+/>
 
 </Tab>
 
@@ -103,23 +110,57 @@ EAS CLI 会将当前会话 ID 和控制器凭据写入 **.env.eas-simulator**。
 
 请参阅 [Argent 和 Expo](/agents/argent/) 了解控制器设置和命令。
 
-<Terminal cmd={['$ eas simulator:start --platform ios --type argent --non-interactive']} />
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type argent --name "Checkout flow screenshots" --non-interactive',
+  ]}
+/>
+
+</Tab>
+
+<Tab label="Appium">
+
+如果你已经有 Appium 测试或自动化，请使用 Appium 客户端。EAS CLI 会将远程服务器 URL 和功能写入会话配置。
+
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type appium --name "Checkout flow tests" --non-interactive',
+  ]}
+/>
+
+</Tab>
+
+<Tab label="仅限网页预览">
+
+无需配置程序化控制器，即可使用 iOS 网页预览。
+
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type web-preview-only --name "Design review" --non-interactive',
+  ]}
+/>
 
 </Tab>
 
 </Tabs>
 
-对于 Android 仿真器，请使用 `--platform android`。Android 会话目前不包含实时浏览器预览。
+为每个会话指定一个简短且能说明用途的名称。该名称会显示在 `simulator:list`、`simulator:get` 和 expo.dev 上，便于识别并行会话和历史会话。
+
+使用 `--platform android` 可启动 Android Emulator。Android 会话目前不包含实时浏览器预览。使用 `--device` 可选择特定的 iOS Simulator 名称或唯一设备标识符（UDID），也可选择 Android 虚拟设备硬件配置文件。如果省略此标志，远程运行器会选择设备。
+
+对于无人值守或可共享的会话，请使用 `--max-duration-minutes` 设置自动停止时间。你也可以使用 `--max-idle-time-minutes`，在一段时间没有会话活动后停止会话。付费套餐支持自定义最长时长。
 
 在交互式终端中省略 `--platform` 时，EAS CLI 会询问要使用哪个平台。非交互式运行需要传入此标志。
 
-启动命令会等待所选控制器准备就绪，然后写入 **.env.eas-simulator**。它还会打印：
+启动命令会等待会话就绪，然后写入 **.env.eas-simulator**。它还会打印：
 
 - expo.dev 上的直接模拟器会话页面
 - 受支持的 iOS 会话的临时 `webPreviewUrl`
 - 控制设备的命令格式
 
-> **warning** `--non-interactive` 不会自动停止会话。命令会在会话准备就绪时返回，而远程设备仍会保持活动状态。
+若要在会话就绪前安装并启动应用，请传入 `--build-id`、`--application-archive-url` 或 `--expo-go` 中的一个，且只能传入其中一个。你还可以传入启动参数以及 Expo 或开发客户端 URL。完整示例请参阅[运行和控制应用](/preview/eas-simulator/run-and-control/)。
+
+> **警告** `--non-interactive` 不会自动停止会话。命令会在会话就绪后返回，远程设备仍会保持活动状态。
 
 </Step>
 

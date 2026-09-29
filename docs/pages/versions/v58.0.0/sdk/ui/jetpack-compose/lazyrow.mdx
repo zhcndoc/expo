@@ -1,0 +1,221 @@
+---
+title: LazyRow
+description: 用于显示水平滚动列表的 Jetpack Compose LazyRow 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+一种采用延迟加载的水平列表组件，仅渲染可见项目以实现高效滚动。有关更多信息，请参阅 [Jetpack Compose 官方文档](https://developer.android.com/develop/ui/compose/lists)。
+
+> **信息** `LazyRow` 目前还不是真正的延迟加载：原生端只会组合可见项目，但 React 仍会预先创建每个子项，因此大型列表的挂载速度可能较慢。我们正在努力改进这一点。对于大型列表，我们推荐使用 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/lazyrow/android-light.webp"
+  darkSrc="/static/images/expo-ui/lazyrow/android-dark.webp"
+  alt="LazyRow 在水平滚动列表中渲染彩色类别卡片"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本延迟加载行
+
+<ComponentExample
+  title="BasicLazyRow.tsx"
+  src="/static/images/expo-ui/examples/lazyrow-basic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/lazyrow-basic-android-dark.webp"
+  alt="水平行中的描边项目从屏幕右边缘滚动出去">
+
+```tsx
+import {
+  Host,
+  LazyRow,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import {
+  border,
+  padding,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+const items = Array.from(
+  { length: 100 },
+  (_, i) => `Item ${i + 1}`
+);
+
+export default function BasicLazyRow() {
+  const colors = useMaterialColors();
+
+  return (
+    <Host style={{ height: 100 }}>
+      <LazyRow>
+        {items.map(item => (
+          <Text
+            key={item}
+            style={{ fontSize: 28 }}
+            color={colors.onBackground}
+            modifiers={[
+              border(1, colors.outline),
+              padding(12, 6, 12, 6),
+            ]}>
+            {item}
+          </Text>
+        ))}
+      </LazyRow>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 使用排列方式
+
+使用 `horizontalArrangement` 属性控制列表中项目之间的间距。传入类似 `'spaceBetween'` 的字符串值，或传入类似 `{ spacedBy: 8 }` 的对象以设置固定的 dp 间距。
+
+<ComponentExample
+  title="LazyRowArrangement.tsx"
+  src="/static/images/expo-ui/examples/lazyrow-arrangement-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/lazyrow-arrangement-android-dark.webp"
+  alt="水平行中的描边项目之间以十六个密度无关像素的间隙分隔">
+
+```tsx
+import {
+  Host,
+  LazyRow,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import {
+  border,
+  padding,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function LazyRowArrangement() {
+  const colors = useMaterialColors();
+
+  return (
+    <Host style={{ height: 100 }}>
+      <LazyRow
+        horizontalArrangement={{ spacedBy: 16 }}
+        verticalAlignment="center">
+        <Text
+          style={{ fontSize: 28 }}
+          color={colors.onBackground}
+          modifiers={[
+            border(1, colors.outline),
+            padding(12, 6, 12, 6),
+          ]}>
+          Spaced item 1
+        </Text>
+        <Text
+          style={{ fontSize: 28 }}
+          color={colors.onBackground}
+          modifiers={[
+            border(1, colors.outline),
+            padding(12, 6, 12, 6),
+          ]}>
+          Spaced item 2
+        </Text>
+        <Text
+          style={{ fontSize: 28 }}
+          color={colors.onBackground}
+          modifiers={[
+            border(1, colors.outline),
+            padding(12, 6, 12, 6),
+          ]}>
+          Spaced item 3
+        </Text>
+      </LazyRow>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 使用内容内边距
+
+使用 `contentPadding` 属性以 dp 为单位在列表内容周围添加内边距。
+
+<ComponentExample
+  title="LazyRowPadding.tsx"
+  src="/static/images/expo-ui/examples/lazyrow-padding-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/lazyrow-padding-android-dark.webp"
+  alt="水平行中的描边项目通过内容内边距与列表起始位置保持间隔">
+
+```tsx
+import {
+  Host,
+  LazyRow,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import {
+  border,
+  padding,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function LazyRowPadding() {
+  const colors = useMaterialColors();
+
+  return (
+    <Host style={{ height: 100 }}>
+      <LazyRow
+        contentPadding={{ start: 16, top: 8, end: 16, bottom: 8 }}>
+        <Text
+          style={{ fontSize: 28 }}
+          color={colors.onBackground}
+          modifiers={[
+            border(1, colors.outline),
+            padding(12, 6, 12, 6),
+          ]}>
+          Padded item 1
+        </Text>
+        <Text
+          style={{ fontSize: 28 }}
+          color={colors.onBackground}
+          modifiers={[
+            border(1, colors.outline),
+            padding(12, 6, 12, 6),
+          ]}>
+          Padded item 2
+        </Text>
+        <Text
+          style={{ fontSize: 28 }}
+          color={colors.onBackground}
+          modifiers={[
+            border(1, colors.outline),
+            padding(12, 6, 12, 6),
+          ]}>
+          Padded item 3
+        </Text>
+      </LazyRow>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { LazyRow } from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/lazyrow"
+  apiName="LazyRow"
+/>

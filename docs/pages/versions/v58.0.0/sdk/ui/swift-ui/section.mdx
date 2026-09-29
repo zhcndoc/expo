@@ -1,0 +1,248 @@
+---
+title: Section
+description: 用于在列表和表单中对内容进行分组的 SwiftUI Section 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI Section matches the official SwiftUI [Section API](https://developer.apple.com/documentation/swiftui/section)，用于在 [`List`](list)、[`Form`](form) 或 [`Picker`](picker) 组件中对相关内容进行分组。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/section/ios-light.webp"
+  darkSrc="/static/images/expo-ui/section/ios-dark.webp"
+  alt="Form 中的两个 Section，每个都有一个标题和分组的 Toggle"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 带标题的基本 Section
+
+使用 `title` prop 创建带有文本标题的简单 Section。
+
+<ComponentExample
+  title="BasicSectionExample.tsx"
+  src="/static/images/expo-ui/examples/section-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/section-basic-ios-dark.webp"
+  alt="一个列表，Settings 标题位于 General、Privacy 和 Notifications 行上方">
+
+```tsx
+import { Host, List, Section, Text } from '@expo/ui/swift-ui';
+
+export default function BasicSectionExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <List>
+        <Section title="Settings">
+          <Text>General</Text>
+          <Text>Privacy</Text>
+          <Text>Notifications</Text>
+        </Section>
+      </List>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义标题和页脚的 Section
+
+使用 `header` 和 `footer` props 创建自定义视图。仅当未提供 `title` 时才会使用这些 props。
+
+<ComponentExample
+  title="CustomHeaderFooterExample.tsx"
+  src="/static/images/expo-ui/examples/section-header-footer-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/section-header-footer-ios-dark.webp"
+  alt="一个 Section，其标题中有位置图标，包含一个切换行，下面有页脚文本">
+
+```tsx
+import {
+  Host,
+  List,
+  Section,
+  Toggle,
+  Text,
+  HStack,
+  Image,
+} from '@expo/ui/swift-ui';
+import { useState } from 'react';
+
+export default function CustomHeaderFooterExample() {
+  const [locationEnabled, setLocationEnabled] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <List>
+        <Section
+          header={
+            <HStack>
+              <Image
+                systemName="location.fill"
+                color="blue"
+                size={16}
+              />
+              <Text>Location Services</Text>
+            </HStack>
+          }
+          footer={
+            <Text>
+              Enabling location services allows the app to provide
+              personalized recommendations.
+            </Text>
+          }>
+          <Toggle
+            label="Enable location"
+            isOn={locationEnabled}
+            onIsOnChange={setLocationEnabled}
+          />
+        </Section>
+      </List>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 可折叠的 Section
+
+使用 `isExpanded` prop 控制 Section 是展开还是折叠。提供该 prop 后，Section 将变为可折叠。使用 `onIsExpandedChange` 处理状态变化。
+
+> **注意：**可折叠的 Section 要求 iOS 17+ 和 tvOS 17+，并且列表必须使用 `sidebar` 样式。可折叠的 Section 不支持页脚。
+
+<ComponentExample
+  title="CollapsibleSectionExample.tsx"
+  src="/static/images/expo-ui/examples/section-collapsible-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/section-collapsible-ios-dark.webp"
+  alt="两个折叠的 Section，分别为 Favorites 和 Recents，每个都有一个展开指示箭头">
+
+```tsx
+import { useState } from 'react';
+import { Host, List, Section, Text } from '@expo/ui/swift-ui';
+import { listStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function CollapsibleSectionExample() {
+  const [favoritesExpanded, setFavoritesExpanded] = useState(false);
+  const [recentsExpanded, setRecentsExpanded] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <List modifiers={[listStyle('sidebar')]}>
+        <Section
+          title="Favorites"
+          isExpanded={favoritesExpanded}
+          onIsExpandedChange={setFavoritesExpanded}>
+          <Text>Home</Text>
+          <Text>Work</Text>
+          <Text>Gym</Text>
+        </Section>
+        <Section
+          title="Recents"
+          isExpanded={recentsExpanded}
+          onIsExpandedChange={setRecentsExpanded}>
+          <Text>Coffee Shop</Text>
+          <Text>Library</Text>
+          <Text>Park</Text>
+        </Section>
+      </List>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### Form 中的多个 Section
+
+Section 可以在 `Form` 组件中使用，将表单控件组织成逻辑分组。
+
+<ComponentExample
+  title="FormSectionsExample.tsx"
+  src="/static/images/expo-ui/examples/section-form-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/section-form-ios-dark.webp"
+  alt="一个包含 Appearance、Notifications 和 Account Section 的表单，其中包含 Toggle、Picker 和红色的 Sign out 按钮">
+
+```tsx
+import { useState } from 'react';
+import {
+  Host,
+  Form,
+  Section,
+  Toggle,
+  Picker,
+  Text,
+  Button,
+} from '@expo/ui/swift-ui';
+import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
+
+export default function FormSectionsExample() {
+  const [darkMode, setDarkMode] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+  const [language, setLanguage] = useState(0);
+  const languages = ['English', 'Spanish', 'French', 'German'];
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section title="Appearance">
+          <Toggle
+            label="Dark Mode"
+            isOn={darkMode}
+            onIsOnChange={setDarkMode}
+          />
+          <Picker
+            label="Language"
+            selection={language}
+            onSelectionChange={setLanguage}
+            modifiers={[pickerStyle('menu')]}>
+            {languages.map((lang, index) => (
+              <Text key={index} modifiers={[tag(index)]}>
+                {lang}
+              </Text>
+            ))}
+          </Picker>
+        </Section>
+        <Section title="Notifications">
+          <Toggle
+            label="Push Notifications"
+            isOn={notifications}
+            onIsOnChange={setNotifications}
+          />
+        </Section>
+        <Section title="Account">
+          <Button
+            label="Sign out"
+            role="destructive"
+            onPress={() => alert('Signed out')}
+          />
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Section } from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/section"
+  apiName="Section"
+/>

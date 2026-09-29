@@ -20,9 +20,9 @@ Expo 中的危险 mod 通过字符串操作和正则表达式直接访问原生�
 
 在以下情况下可以考虑使用危险 mod：
 
-- **无法使用标准 mod 完成修改**：你需要的修改不受现有 mod 插件支持，例如 [`withAndroidManifest`](/config-plugins/mods/#android)、[`withPodfile`](/config-plugins/mods/#ios) 等，或者某个库需要标准插件未覆盖的特定原生修改。
-- **旧版 Expo SDK 兼容性：** 你正在目标 Expo SDK 的较旧版本，而该版本不包含你需要的 mod 插件。
-- **需要使用正则或替换函数修改文本**：你需要执行现有 mod 插件不支持的复杂文本处理。Expo 内部会在大规模文件系统重构时使用危险 mod，例如某个库名称发生变化时。
+- **无法通过标准 mod 实现修改**：你需要的修改不受现有 mod 插件支持，例如 [`withAndroidManifest`](/config-plugins/mods/#android)、[`withPodfile`](/config-plugins/mods/#ios) 等；或者某个库需要标准插件未涵盖的特定原生修改。
+- **兼容旧版 Expo SDK：** 你针对的是不包含所需 mod 插件的旧版 Expo SDK。
+- **需要使用正则表达式或替换函数修改文本**：你需要进行现有 mod 插件不支持的复杂文本修改。例如，当某个库更改名称时，Expo 会在内部使用危险 mod 来重构大型文件系统。
 
 ## 如何使用危险 mod
 
@@ -146,7 +146,7 @@ config plugin 中可用的不同路径属性：
 使用危险 mod 时，请考虑以下几点：
 
 - **幂等性保证有限。** 与通常幂等、且在不使用 clean 标志时也能工作的标准 mod 不同，危险 mod **很少能保证幂等**。这意味着多次运行同一个危险 mod 可能会产生不同结果或引发问题。
-- **实验性且容易出问题。** 使用 `withDangerousMod` 时要谨慎，因为它未来可能会变更。请在每个 SDK 版本中都对你的危险 mod 进行充分测试，因为当原生模板发生变化时，它们尤其容易出问题。
+- **具有实验性且容易出问题。** 使用 `withDangerousMod` 时要谨慎，因为它未来可能会变更。请在每个 SDK 版本中都对你的危险 mod 进行充分测试，因为当原生模板发生变化时，它们尤其容易出问题。
 - **使用标准 mod 插件**。Android 和 iOS 都提供了诸如 `withAndroidManifest`、`withPodfile`、`withPodfileProperties` 等 mod 插件，用于执行常见的原生文件修改。只有在没有[现有 mod 插件可用](/config-plugins/mods/#available-mod-plugins)来处理你的用例时，才使用危险 mod。
 - **不要假设文件一定存在**。在读写之前，始终检查原生目录以及文件的相对路径。如果你使用 CNG，可以随时运行 `npx expo prebuild` 来创建原生 **android** 和 **ios** 目录，并手动验证文件是否存在。
 - **危险 mod 会先运行**。危险 mod 执行的顺序可能不可靠，因为危险 mod 会在其他修改器之前运行。这会影响构建过程的可预测性，并可能与其他修改发生冲突。

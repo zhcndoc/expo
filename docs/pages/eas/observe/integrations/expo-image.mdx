@@ -1,0 +1,105 @@
+---
+title: Expo Image 集成
+sidebar_title: Expo Image
+description: 通过为 EAS Observe 启用 Expo Image 集成，在生产应用中检测尺寸过大的图像
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+
+[`expo-image`](/versions/latest/sdk/image/) 提供了一个可选的 EAS Observe 集成，用于报告解码尺寸远大于设备屏幕可显示尺寸的图像。过大的图像会浪费带宽和内存，却无法提升视觉质量。该集成会为每张过大的图像记录一个 `expo-image.oversized` 事件，让你能在生产环境中发现这些图像，而不必手动检查每个屏幕。
+
+## 前提条件
+
+<Prerequisites>
+  <Requirement title="Expo SDK 57 或更高版本">
+    该集成适用于 `expo-image` 57.0.2 及更高版本。
+  </Requirement>
+  <Requirement title="应用已在使用 EAS Observe">
+    按照[开始使用](/eas/observe/get-started/)中的说明安装 `expo-observe` 并创建首个构建。如果尚未安装 `expo-observe`，该集成不会执行任何操作。
+  </Requirement>
+  <Requirement title="应用中已安装 Expo Image">
+    该集成会监控通过 [`expo-image`](/versions/latest/sdk/image/) 加载的图像。通过其他库加载的图像不会被报告。
+  </Requirement>
+</Prerequisites>
+
+## 启用集成
+
+在应用挂载之前，于模块作用域调用一次 `Observe.configure()`，并设置 `expo-image` 集成标记：
+
+```tsx src/app/_layout.tsx
+import { Observe } from 'expo-observe';
+
+Observe.configure({
+  integrations: { 'expo-image': true },
+});
+```
+
+无需进行其他设置。启用后，该集成会自动监控每次图像加载。
+
+## 工作原理
+
+每次加载图像时，该集成都会将图像解码后的像素尺寸与设备屏幕的物理像素数量进行比较。当解码后的图像面积超过屏幕像素数，且超出幅度大于配置的阈值时，该集成会记录一个严重级别为 `warn` 的 `expo-image.oversized` 事件。
+
+对于使用 `<Image>` 组件渲染的图像，各平台上该集成获取到的解码尺寸有所不同：
+
+- 在 Android 上，`<Image>` 组件会在解码时将图像缩小到组件尺寸，因此，在小组件中显示的大尺寸源图像通常不会被报告。
+- 在 iOS 上，该集成会报告源图像在 `expo-image` 为渲染而缩小之前的解码尺寸，因此，即使启用了 `allowDownscaling`，在小组件中显示的大尺寸源图像仍会被报告。
+
+默认情况下，在两个平台上，使用 `useImage` hook 或 `Image.loadAsync` 加载的图像都会按源图像的完整尺寸解码。你可以通过 `maxWidth` 和 `maxHeight` 加载选项限制解码尺寸。这样可以确保各平台报告的图像尺寸一致。
+
+每个图像 URL 在每个应用会话中最多报告一次。去重使用经过清理的 URL，因此在默认配置下，仅查询参数不同的同一图像的多个变体（例如使用轮换的签名 URL）只会生成一个事件。
+
+**事件属性：**
+
+| 属性           | 类型      | 描述                                                                                  |
+| -------------- | --------- | -------------------------------------------------------------------------------------- |
+| `url`          | `string`  | 过大图像经过清理的 URL。                                                              |
+| `urlSanitized` | `boolean` | 清理是否移除了部分 URL（查询字符串、片段或凭据）。                                     |
+| `imageWidth`   | `number`  | 解码后图像的宽度，单位为像素。                                                        |
+| `imageHeight`  | `number`  | 解码后图像的高度，单位为像素。                                                        |
+| `screenWidth`  | `number`  | 屏幕宽度，单位为点。                                                                  |
+| `screenHeight` | `number`  | 屏幕高度，单位为点。                                                                  |
+| `pixelRatio`   | `number`  | 用于计算屏幕物理像素数的设备像素比。                                                  |
+
+事件会在设备外分发，因此该集成会在报告图像 URL 之前对其进行清理：
+
+- 默认情况下会移除查询字符串和片段，因为查询参数通常包含签名令牌或 API 密钥等敏感值。将 [`includeUrlParams`](#configuration) 选项设为 `true`，即可改为报告完整 URL。
+- 无论 `includeUrlParams` 的值如何，都会移除基本身份验证凭据。
+- 只会报告 `http(s)`、`file` 和 `android.resource` URL。其他方案（例如 `data:` 或 `ph://`）包含图像数据或稳定的个人照片标识符，因此永远不会离开设备。
+
+`urlSanitized` 属性会告知你清理操作是否改变了所报告的 URL。URL 会以规范化的（WHATWG）形式报告，仅发生规范化不算作更改。
+
+## 配置
+
+传入配置对象而非 `true`，以调整图像的报告条件：
+
+```tsx src/app/_layout.tsx
+import { Observe } from 'expo-observe';
+
+Observe.configure({
+  integrations: {
+    'expo-image': {
+      oversizeThreshold: 2,
+    },
+  },
+});
+```
+
+- `oversizeThreshold`：当图像解码后的像素面积超过屏幕物理像素数的倍数大于此值时，系统会报告该图像。默认值为 `1.5`，为全屏图像额外留出 50% 的空间。
+- `includeUrlParams`：所报告的事件是否包含图像 URL 的查询字符串和片段。默认值为 `false`：URL 会在离开设备前于查询字符串和片段处截断，因为查询参数通常包含签名令牌或 API 密钥等敏感值。只有在图像 URL 完整发送到设备外也安全时，才启用此选项。无论此设置如何，都会移除基本身份验证凭据。
+
+## 修复过大的图像
+
+- 提供尺寸接近其显示尺寸的图像，例如从图像 CDN 请求调整尺寸后的变体。
+- 使用 [`useImage`](/versions/latest/sdk/image/#useimagesource-options-dependencies) hook 加载图像时，设置 `maxWidth` 和 `maxHeight` 加载选项，以便在解码时缩小图像，同时保持其宽高比。
+
+## 查看事件
+
+在控制面板中：打开项目，前往[**Observe > Events**](https://expo.dev/accounts/[account]/projects/[project]/observe/events)，然后选择 `expo-image.oversized` 事件，即可查看包含属性和会话信息的单条报告。
+
+通过 CLI：
+
+<Terminal cmd={['# Show oversized image events', '$ eas observe:events expo-image.oversized']} />
+
+有关所有事件共有的命名、严重级别和属性详情，请参阅[用户定义的事件](/eas/observe/events/)。

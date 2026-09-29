@@ -8,6 +8,7 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { FileTree } from '~/ui/components/FileTree';
 import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { CODE } from '~/ui/components/Text';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
@@ -24,11 +25,11 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 Expo Router 是一个面向 React Native 和 Web 应用的基于文件的路由框架。它负责管理屏幕之间的导航，并在多个平台上使用相同的组件。要开始使用，我们需要了解以下约定：
 
-- **app 目录**：一个特殊目录，只包含路由及其布局。添加到该目录中的任何文件都会成为原生应用中的一个屏幕，以及 Web 上的一个页面。
-- **根布局**：**app/\_layout.tsx** 文件。它定义了共享 UI 元素，例如标题和标签栏，从而使不同路由之间保持一致。
-- **文件名约定**：像 **index.tsx** 这样的 _Index_ 文件名会与其父目录匹配，不会新增路径段。例如，**app** 目录中的 **index.tsx** 文件匹配 `/` 路由。
-- 一个 **路由** 文件会将 React 组件作为默认导出。它可以使用 `.js`、`.jsx`、`.ts` 或 `.tsx` 扩展名。
-- Android、iOS 和 web 共享统一的导航结构。
+- **app directory**：一个仅包含路由及其布局的特殊目录。添加到此目录中的任何文件都会成为原生应用中的屏幕和 Web 上的页面。在默认模板中，它位于 **src/app**。
+- **Root layout**：**src/app/\_layout.tsx** 文件。它定义了共享的 UI 元素，例如标题和标签栏，以便它们在不同路由之间保持一致。
+- **File name conventions**：_Index_ 文件名（例如 **index.tsx**）与其父目录匹配，不会添加路径片段。例如，**src/app** 目录中的 **index.tsx** 文件匹配 `/` 路由。
+- **route** 文件将 React 组件作为其默认值导出。它可以使用 `.js`、`.jsx`、`.ts` 或 `.tsx` 扩展名。
+- Android、iOS 和 Web 共享统一的导航结构。
 
 > 以上列表已经足够我们开始使用。有关完整功能列表，请参阅 [Expo Router 简介](/router/introduction/)。
 
@@ -36,9 +37,9 @@ Expo Router 是一个面向 React Native 和 Web 应用的基于文件的路由�
 
 ## 向堆栈中添加新屏幕
 
-让我们在 **app** 目录中创建一个名为 **about.tsx** 的新文件。当用户导航到 `/about` 路由时，它会显示该屏幕的名称。
+让我们在 **src/app** 目录中创建一个名为 **about.tsx** 的新文件。当用户导航到 `/about` 路由时，它会显示屏幕名称。
 
-```tsx app/about.tsx|collapseHeight=300
+```tsx src/app/about.tsx|collapseHeight=300
 import { Text, View, StyleSheet } from 'react-native';
 
 export default function AboutScreen() {
@@ -62,13 +63,13 @@ const styles = StyleSheet.create({
 });
 ```
 
-在 **app/\_layout.tsx** 中：
+在 **src/app/\_layout.tsx** 中：
 
 1. 添加一个 `<Stack.Screen />` 组件和一个 `options` 属性，以更新 `/about` 路由的标题。
 2. 通过添加 `options` 属性，将 `/index` 路由的标题更新为 `Home`。
 
 {/* prettier-ignore */}
-```tsx app/_layout.tsx
+```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
 
 export default function RootLayout() {
@@ -97,12 +98,12 @@ export default function RootLayout() {
 
 我们将使用 Expo Router 的 `Link` 组件从 `/index` 路由导航到 `/about` 路由。它是一个 React 组件，会根据给定的 `href` 属性渲染一个 `<Text>`。
 
-1. 在 **index.tsx** 中从 `expo-router` 导入 `Link` 组件。
+1. 在 **src/app/index.tsx** 中从 `expo-router` 导入 `Link` 组件。
 2. 在 `<Text>` 组件后添加一个 `Link` 组件，并传入指向 `/about` 路由的 `href` 属性。
 3. 为 `Link` 组件添加 `fontSize`、`textDecorationLine` 和 `color` 样式。它接受与 `<Text>` 组件相同的属性。
 
 {/* prettier-ignore */}
-```tsx app/index.tsx|collapseHeight=300
+```tsx src/app/index.tsx|collapseHeight=300
 import { Text, View, StyleSheet } from 'react-native';
 /* @tutinfo 从 `expo-router` 中导入 `Link` 组件。 */ import { Link } from 'expo-router'; /* @end */
 
@@ -151,12 +152,12 @@ const styles = StyleSheet.create({
 
 当路由不存在时，我们可以使用 `+not-found` 路由来显示一个回退屏幕。这在我们希望在移动端导航到无效路由时显示自定义屏幕，而不是让应用崩溃，或者在 Web 上显示 _404_ 错误时非常有用。Expo Router 使用一个特殊的 **+not-found.tsx** 文件来处理这种情况。
 
-1. 在 app 目录中创建一个名为 **+not-found.tsx** 的新文件，以添加 `NotFoundScreen` 组件。
-2. 从 `Stack.Screen` 添加 `options` 属性，为该路由显示自定义屏幕标题。
-3. 添加一个 `Link` 组件，用于导航到 `/` 路由，它是我们的回退路由。
+1. 在 **src/app** 目录中创建一个名为 **+not-found.tsx** 的新文件，以添加 `NotFoundScreen` 组件。
+2. 从 `Stack.Screen` 添加 `options` 属性，为此路由显示自定义屏幕标题。
+3. 添加一个 `Link` 组件，以导航到 `/` 路由，也就是我们的回退路由。
 
 {/* prettier-ignore */}
-```tsx app/+not-found.tsx
+```tsx src/app/+not-found.tsx
 import { View, StyleSheet } from 'react-native';
 import { Link, Stack } from 'expo-router';
 
@@ -203,37 +204,37 @@ const styles = StyleSheet.create({
 
 ## 添加底部标签导航器
 
-此时，我们 **app** 目录的文件结构如下所示：
+此时，我们的 **src/app** 目录文件结构如下所示：
 
 <FileTree
   files={[
-    ['app/_layout.tsx', '根布局'],
-    ['app/index.tsx', "匹配路由 '/'"],
-    ['app/about.tsx', "匹配路由 '/about'"],
-    ['app/+not-found.tsx', '匹配任意 404 路由'],
+    ['src/app/_layout.tsx', 'Root layout'],
+    ['src/app/index.tsx', "matches route '/'"],
+    ['src/app/about.tsx', "matches route '/about'"],
+    ['src/app/+not-found.tsx', 'matches route any 404 route'],
   ]}
 />
 
 我们将为应用添加一个底部标签导航器，并复用现有的 Home 和 About 屏幕来创建一个标签布局（这是许多社交媒体应用中常见的导航模式，例如 X 或 BlueSky）。我们还会在根布局中继续使用堆栈导航器，这样 `+not-found` 路由就会显示在任何其他嵌套导航器之上。
 
-1. 在 **app** 目录中，添加一个 **(tabs)** 子目录。这个特殊目录用于将路由分组并在底部标签栏中显示它们。
-2. 在该目录中创建一个 **(tabs)/\_layout.tsx** 文件。它将用于定义标签布局，且独立于根布局。
-3. 将现有的 **index.tsx** 和 **about.tsx** 文件移动到 **(tabs)** 目录中。**app** 目录结构将如下所示：
+1. 在 **src/app** 目录中添加一个 **(tabs)** 子目录。这个特殊目录用于将路由组合在一起，并在底部标签栏中显示这些路由。
+2. 在该目录中创建一个 **(tabs)/\_layout.tsx** 文件。它将用于定义标签布局，该布局独立于根布局。
+3. 将现有的 **index.tsx** 和 **about.tsx** 文件移入 **(tabs)** 目录。**src/app** 目录的结构如下所示：
 
 <FileTree
   files={[
-    ['app/_layout.tsx', '根布局'],
-    ['app/+not-found.tsx', '匹配任意 404 路由'],
-    ['app/(tabs)/_layout.tsx', '标签布局'],
-    ['app/(tabs)/index.tsx', "匹配路由 '/'"],
-    ['app/(tabs)/about.tsx', "匹配路由 '/about'"],
+    ['src/app/_layout.tsx', 'Root layout'],
+    ['src/app/+not-found.tsx', 'matches route any 404 route'],
+    ['src/app/(tabs)/_layout.tsx', 'Tab layout'],
+    ['src/app/(tabs)/index.tsx', "matches route '/'"],
+    ['src/app/(tabs)/about.tsx', "matches route '/about'"],
   ]}
 />
 
 更新根布局文件，添加一个 `(tabs)` 路由：
 
 {/* prettier-ignore */}
-```tsx app/_layout.tsx
+```tsx src/app/_layout.tsx
 import { Stack } from 'expo-router';
 
 export default function RootLayout() {
@@ -250,7 +251,7 @@ export default function RootLayout() {
 在 **(tabs)/\_layout.tsx** 中，添加一个 `Tabs` 组件来定义底部标签布局：
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/_layout.tsx
+```tsx src/app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
@@ -277,18 +278,37 @@ export default function TabLayout() {
 
 <Step label="5">
 
-## 更新底部标签导航器的外观
+## 安装 @expo/vector-icons
+
+要安装 `@expo/vector-icons` 库，请在终端中按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 停止开发服务器，然后运行以下命令：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install @expo/vector-icons'],
+    yarn: ['$ yarn expo install @expo/vector-icons'],
+    pnpm: ['$ pnpm expo install @expo/vector-icons'],
+    bun: ['$ bun expo install @expo/vector-icons'],
+  }}
+/>
+
+安装完成后，运行 `npx expo start` 重新启动开发服务器。
+
+</Step>
+
+<Step label="6">
+
+## 更新底部标签导航器外观
 
 现在，底部标签导航器在所有平台上的外观都相同，但并不符合我们应用的风格。例如，标签栏或标题没有显示自定义图标，底部标签栏背景颜色也与应用的背景颜色不一致。
 
-修改 **(tabs)/\_layout.tsx** 文件以添加标签栏图标：
+修改 **src/app/(tabs)/\_layout.tsx** 文件，为标签栏添加图标：
 
 1. 从 [`@expo/vector-icons`](/guides/icons/#expovector-icons) 导入 `Ionicons` 图标集——这是一个包含常用图标集的库。
 2. 为 `index` 和 `about` 两个路由都添加 `tabBarIcon`。这个函数接收 `focused` 和 `color` 作为参数，并渲染图标组件。通过图标集，我们可以指定自定义的图标名称。
 3. 为 `Tabs` 组件添加 `screenOptions.tabBarActiveTintColor`，并将其值设为 `#ffd33d`。这样会在标签处于激活状态时更改其图标和标签的颜色。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/_layout.tsx
+```tsx src/app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 /* @tutinfo 导入 `Ionicons` 图标集。*/
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -332,7 +352,7 @@ export default function TabLayout() {
 
 我们再通过 `screenOptions` 属性更改标签栏和标题的背景颜色：
 
-```tsx app/(tabs)/_layout.tsx
+```tsx src/app/(tabs)/_layout.tsx
 <Tabs
   screenOptions={{
     tabBarActiveTintColor: '#ffd33d',

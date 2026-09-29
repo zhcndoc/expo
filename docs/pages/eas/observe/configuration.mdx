@@ -1,43 +1,12 @@
 ---
 title: 配置 EAS Observe
 sidebar_title: 配置
-description: 控制 EAS Observe 如何收集和分发指标，包括环境设置、开发模式和自定义端点。
+description: 控制 EAS Observe 如何收集和分发指标，包括环境设置、开发模式、自定义端点和数据摄取
 ---
 
-在运行时配置 EAS Observe，以适配应用的构建设置、环境和数据路由。本页涵盖 `configure()` 和 `dispatchEvents()`，以及在开发环境中启用指标、使用自定义端点和按环境分离数据。
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-## `configure()`
-
-使用 `configure()` 方法来控制 EAS Observe 在运行时的行为：
-
-```tsx
-import { Observe } from 'expo-observe';
-
-Observe.configure({
-  environment: 'production',
-  dispatchingEnabled: true,
-});
-```
-
-| Option               | Type      | Default                | Description                                                                                                                                                                                                                                           |
-| -------------------- | --------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `environment`        | `string`  | `process.env.NODE_ENV` | 可观测性事件的环境标签                                                                                                                                                                                                                                |
-| `dispatchingEnabled` | `boolean` | `true`                 | 是否将收集的事件发送到服务器                                                                                                                                                                                                                          |
-| `dispatchInDebug`    | `boolean` | `false`                | 是否发送在调试构建中收集的指标。对发布构建无效。                                                                                                                                                                                                       |
-| `sampleRate`         | `number`  | `undefined`            | 分发指标的安装实例比例，取值范围为 `[0, 1]`。参见[采样](#sampling)。                                                                                                                                                                                   |
-| `integrations`       | `object`  | `undefined`            | EAS Observe 集成的选择性启用设置。参见 [Expo Router](/eas/observe/integrations/expo-router/)、[React Navigation](/eas/observe/integrations/react-navigation/)，或[集成你自己的包](/eas/observe/integrations/third-party/)。 |
-
-## `dispatchEvents()`
-
-当应用切换到后台时，事件会自动分发。在 Android 上，一旦网络连接可用，后台 worker 就会分发事件。在 iOS 上，这发生在应用失去活跃状态或即将终止时。
-
-如需手动刷新事件（例如，在测试期间或为了确保在某个特定时点之前发送事件），请调用 `dispatchEvents()`：
-
-```tsx
-import { Observe } from 'expo-observe';
-
-await Observe.dispatchEvents();
-```
+Configure EAS Observe at runtime to fit your app's build setup, environment, and data routing. This page covers enabling metrics in development, sampling, using a custom endpoint, separating data by environment, and turning off data ingestion from the dashboard. For the runtime methods themselves, see the [`configure()`](/versions/latest/sdk/observe/#configureconfig) and [`dispatchEvents()`](/versions/latest/sdk/observe/#dispatchevents) API references.
 
 ## 抽样
 
@@ -56,9 +25,9 @@ Observe.configure({
 
 有几点细节值得了解：
 
-- 超出 `[0, 1]` 范围的值会被限制到最近的边界。`0` 始终丢弃；`1` 始终分发。
-- 样本外设备会丢弃待处理的指标，而不是累积它们。稍后降低抽样率不会追溯发送更早的会话。
-- 抽样依赖于 [`dispatchingEnabled`](#configure)。如果 `dispatchingEnabled` 为 `false`，无论 `sampleRate` 是多少，都不会分发任何内容。
+- `[0, 1]` 范围之外的值会被限制到最接近的边界。`0` 始终丢弃；`1` 始终分发
+- 样本外的设备会丢弃待处理指标，而不是累积这些指标。之后降低抽样率不会追溯发送之前的会话
+- 抽样取决于 [`dispatchingEnabled`](/versions/latest/sdk/observe/#observeconfig)。如果 `dispatchingEnabled` 为 `false`，无论 `sampleRate` 的值如何，都不会分发任何内容
 
 ## 开发中启用指标
 
@@ -74,13 +43,13 @@ Observe.configure({
 
 如果原生应用是调试构建，或者 JS bundle 是开发包（`__DEV__` 为 `true`），则会将构建视为调试构建。此检测与 `environment` 值无关（参见 [环境](#environments)）。
 
-`dispatchInDebug` 对发布构建没有影响；发布构建始终会分发（受 [`dispatchingEnabled`](#configure) 和 [`sampleRate`](#sampling) 约束）。如果 `dispatchingEnabled` 为 `false`，或者此安装处于样本外，则无论 `dispatchInDebug` 如何，都不会分发任何内容。
+`dispatchInDebug` 对发布构建没有影响，发布构建始终会分发（受 [`dispatchingEnabled`](/versions/latest/sdk/observe/#observeconfig) 和 [`sampleRate`](#sampling) 的限制）。如果 `dispatchingEnabled` 为 `false` 或此安装处于样本外，则无论 `dispatchInDebug` 如何设置，都不会分发任何内容
 
 > **警告** 仅在测试 EAS Observe 集成时启用此项。开发/调试环境的性能与生产环境差异很大，因此收集开发/调试指标可能会扭曲仪表板中显示的结果。
 
 ## 自定义端点
 
-EAS Observe 使用 OpenTelemetry Protocol (OTLP) 通过 HTTP 发送带有 JSON 负载的数据。它会将指标发送到 `<endpointUrl>/<project-id>/v1/metrics`，并将日志发送到 `<endpointUrl>/<project-id>/v1/logs`，其中 `<project-id>` 是你的 EAS 项目 ID。这意味着你可以将 `endpointUrl` 设置为兼容 OpenTelemetry 的后端或 OpenTelemetry Collector，以便将可观测性数据路由到那里。
+EAS Observe 使用 OpenTelemetry Protocol（OTLP）通过 HTTP 发送带有 JSON 负载的数据。它会将指标发送到 `<endpointUrl>/<project-id>/v1/metrics`，并将日志发送到 `<endpointUrl>/<project-id>/v1/logs`，其中 `<project-id>` 是你的 EAS 项目 ID。这意味着你可以将 `endpointUrl` 设置为兼容 OpenTelemetry 的后端或 OpenTelemetry Collector，以便将可观测性数据路由到那里。
 
 要更改端点，请在你的 **app config** 中设置 `endpointUrl` 的值：
 
@@ -104,6 +73,49 @@ EAS Observe 使用 OpenTelemetry Protocol (OTLP) 通过 HTTP 发送带有 JSON �
 
 ## 环境
 
-所有指标都会按环境分组。默认情况下，环境值由 `process.env.NODE_ENV` 派生（如果未设置，则回退为 `'production'`）。若要覆盖它，请使用 [`configure({ environment })`](#configure)。
+所有指标都会按环境分组。默认情况下，环境值取自 `process.env.NODE_ENV`（如果未设置，则回退为 `'production'`）。要覆盖此值，请使用 [`configure({ environment })`](/versions/latest/sdk/observe/#configureconfig)。
 
-环境是附加到每个指标上的元数据标签，并且与 bundle 的构建方式无关。若要控制是否分发调试构建的指标，请参见 [在开发中启用指标](#enable-metrics-in-development)。若要全局禁用所有分发，请使用 `configure({ dispatchingEnabled: false })`。
+环境是附加到每个指标的元数据标签，与 bundle 的构建方式无关。要控制是否分发调试构建的指标，请参见[开发中启用指标](#enable-metrics-in-development)。要全局禁用所有分发，请使用 `configure({ dispatchingEnabled: false })`。
+
+## 网络追踪
+
+> **提示** 网络追踪需要 SDK 58 或更高版本
+
+已完成的网络请求可以记录为 trace span。默认情况下不会记录，因为每个 span 都会计入你的事件配额。使用以下方式启用：
+
+```ts
+import { Observe } from 'expo-observe';
+
+Observe.configure({ networkTraces: true });
+```
+
+传入一个对象即可仅记录你关注的请求。主机名会进行完全匹配且不区分大小写，因此不会隐含匹配子域名。省略某个字段会匹配所有请求，空数组则不匹配任何请求：
+
+```ts
+Observe.configure({
+  networkTraces: { filter: { hosts: ['api.myapp.com'], methods: ['GET', 'POST'] } },
+});
+```
+
+对象形式默认会进行记录，因此如果你想在保留筛选器配置的同时不记录任何内容，请将 `enabled: false` 设置为 `false`
+
+已关闭或被筛选掉的请求永远不会进入本地数据库，因此不会存储任何内容，也不会导出任何内容。该设置适用于未来的请求，因此在本次启动期间较早记录的 span 仍会被发送。该设置也会在多次启动之间持久保存，因此下次启动时在 `configure` 运行之前观察到的请求会遵循你上次设置的值。
+
+由于该值会持久保存，移除该选项会在下次运行 `configure` 时生效，而不是立即生效。范围较窄的 `hosts` 列表也是如此：在 `configure` 放宽该列表之前，它会继续抑制应用启动早期的请求。
+
+URL 会在存储之前进行脱敏。URL 中的用户名和密码会被替换为 `REDACTED`，查询参数 `AWSAccessKeyId`、`Signature`、`sig`、`X-Amz-Signature`、`X-Amz-Credential`、`X-Amz-Security-Token` 和 `X-Goog-Signature` 也会被替换为 `REDACTED`。其他查询参数中的机密信息会按原样存储。
+
+## 关闭数据接收
+
+上述选项控制你的应用发送的内容。你还可以使用 EAS 仪表板中的 **Observe data ingestion** 开关，在不发布应用更新的情况下，停止 EAS Observe 在服务器端接收数据：
+
+- **账户级别**：打开[账户设置](https://expo.dev/accounts/[account]/settings)，然后关闭 **Observe data ingestion**。这会暂停该账户中所有项目的数据接收
+- **项目级别**：打开[项目设置](https://expo.dev/accounts/[account]/projects/[project]/settings)，然后关闭 **Observe data ingestion**。这只会暂停该项目的数据接收
+
+<ContentSpotlight
+  alt="The Observe data ingestion toggle in the EAS dashboard account settings."
+  src="/static/images/expo-observe/observe-data-ingestion-light.webp"
+  darkSrc="/static/images/expo-observe/observe-data-ingestion-dark.webp"
+/>
+
+在数据接收暂停期间，EAS Observe 不会接受你的应用发送的事件、指标或日志。已经接收的数据仍可在仪表板和 CLI 中使用。重新打开该开关即可恢复数据接收。

@@ -17,24 +17,24 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
 import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
-`expo-updates` 是一个可让您的应用管理应用代码远程更新的库。它会与配置的远程更新服务通信，以获取有关可用更新的信息。
+`expo-updates` 是一个可让你的应用远程管理应用代码更新的库。它会与配置的远程更新服务通信，以获取有关可用更新的信息。
 
 ## 安装
 
-`expo-updates` 库可以通过 [EAS Update](/eas-update/introduction/) 自动配置，这是一个托管服务，用于管理并向你的应用提供更新。要开始使用 EAS Update，请按照 [开始使用](/eas-update/getting-started/) 指南中的说明进行操作。
+`expo-updates` 库可以通过 [EAS Update](/eas-update/introduction/) 自动配置。EAS Update 是一项托管服务，用于管理更新并将其提供给你的应用。要开始使用 EAS Update，请按照[开始使用](/eas-update/getting-started/)指南中的说明进行操作。
 
-另外，在需要不同的远程更新服务，或者配置仅在原生文件中指定的情况下，也可以手动配置 `expo-updates` 库。
+此外，如果你需要使用不同的远程更新服务，或仅在原生文件中指定配置，也可以手动配置 `expo-updates` 库。
 
 <Collapsible summary="手动安装、配置和自定义远程更新服务">
 
 <APIInstallSection hideBareInstructions />
 
-如果你是在 [现有 React Native 项目](/bare/overview/) 中安装此库，或者是在手动配置原生代码的通用应用中安装，请遵循这些[安装说明](/bare/installing-updates/)。
+如果你是在[现有 React Native 项目](/bare/overview/)中安装此库，或者是在手动配置原生代码的通用应用中安装，请遵循这些[安装说明](/bare/installing-updates/)。
 
-如果使用 [应用配置](/workflow/configuration/) 进行配置，则可以通过至少设置以下应用配置属性来配置此库：
+如果使用[应用配置](/workflow/configuration/)进行配置，则可以通过至少设置以下应用配置属性来配置此库：
 
 - [`updates.url`](../config/app/#updates)：实现 [Expo Updates protocol](/technical-specs/expo-updates-1/) 的远程服务 URL
-- [`runtimeVersion`](../config/app/#runtimeversion)：一个 [运行时版本](#runtime-version)
+- [`runtimeVersion`](../config/app/#runtimeversion)：一个[运行时版本](#runtime-version)
 
 远程服务必须实现 [Expo Updates protocol](/technical-specs/expo-updates-1/)。[EAS Update](/eas-update/introduction) 就是这样一种服务，但也可以将此库与自定义服务器一起使用。
 
@@ -49,7 +49,7 @@ import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
 ## 配置
 
-有一些构建时配置选项用于控制该库的行为。对于大多数应用，这些配置值都在 [应用配置](/workflow/configuration/) 的 [`updates` 属性](../config/app/#updates)下设置。
+有一些构建时配置选项用于控制此库的行为。对于大多数应用，这些配置值都在[应用配置](/workflow/configuration/)的 [`updates` 属性](../config/app/#updates)下设置。
 
 | [应用配置属性](../config/app/#updates)                                                               | 默认值   | 必需？   | iOS plist/dictionary 键               | Android 元数据名称                                           | Android 映射键               |
 | ----------------------------------------------------------------------------------- | --------- | ----------- | -------------------------------------- | ---------------------------------------------------------------- | ----------------------------- |
@@ -65,17 +65,22 @@ import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 | [`updates.assetPatternsToBeBundled`](../config/app/#assetpatternstobebundled)       | (无)    | <NoIcon />  | 不适用                                    | 不适用                                                              | 不适用                           |
 | [`updates.disableAntiBrickingMeasures`](../config/app/#disableantibrickingmeasures) | `false`   | <NoIcon />  | `EXUpdatesDisableAntiBrickingMeasures` | `expo.modules.updates.DISABLE_ANTI_BRICKING_MEASURES`            | `disableAntiBrickingMeasures` |
 | [`updates.enableBsdiffPatchSupport`](../config/app/#enablebsdiffpatchsupport)       | `true`    | <NoIcon />  | `EXUpdatesEnableBsdiffPatchSupport`    | `expo.modules.updates.ENABLE_BSDIFF_PATCH_SUPPORT`               | `enableBsdiffPatchSupport`    |
+| [`updates.maxUpdatesToKeep`](../config/app/#maxupdatestokeep)                       | `2`       | <NoIcon />  | `EXUpdatesMaxUpdatesToKeep`            | `expo.modules.updates.EXPO_UPDATES_MAX_UPDATES_TO_KEEP`          | `maxUpdatesToKeep`            |
+
+`updates.maxUpdatesToKeep` 控制保留的更新数量，包括当前正在运行的更新。例如，将其设为 `3`，会保留正在运行的更新和最多两个较旧的更新。符合清单筛选条件的更新优先保留，并从最新的更新开始保留。
+
+此值控制与正在运行的更新一起保留的较旧更新数量。清理时会保留其他作用域的更新，以及提交时间与正在运行的更新相同或更晚的更新，因此缓存中的更新数量可能超过此值。
 
 两个核心必需配置项是：
 
-- [`updates.url`](../config/app/#updates)：该库获取远程更新的 URL
+- [`updates.url`](../config/app/#updates)：此库获取远程更新的 URL
 - [`runtimeVersion`](../config/app/#runtimeversion)：一个[运行时版本](#runtime-version)
 
 按照 EAS Update 的[开始使用](/eas-update/getting-started/)指南操作时，这些都会自动配置。
 
 ### 运行时版本
 
-每次为你的应用构建二进制文件时，其中都会包含构建时存在的原生代码和配置，以及原生配置，这种独特组合会以一个称为运行时版本的字符串表示。一个远程更新会面向某个运行时版本，这表示只有运行时版本匹配的二进制文件才能加载该远程更新。
+每次为你的应用构建二进制文件时，其中都会包含构建时存在的原生代码和配置。这个独特组合会以一个称为运行时版本的字符串表示。远程更新会面向某个运行时版本，这表示只有运行时版本匹配的二进制文件才能加载该远程更新。
 
 <Collapsible summary="手动配置">
 
@@ -93,7 +98,7 @@ import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
 <Collapsible summary = "使用运行时版本策略自动配置">
 
-运行时版本策略会从项目中已存在的另一项信息推导出运行时版本。可以在 [`runtimeVersion`](../config/app/#runtimeversion) 配置字段中按如下方式设置：
+运行时版本策略会根据项目中已存在的其他信息推导运行时版本。可以在 [`runtimeVersion`](../config/app/#runtimeversion) 配置字段中按如下方式设置：
 
 ```json
 {
@@ -109,7 +114,7 @@ import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
 <Collapsible summary="appVersion">
 
-`"appVersion"` 策略适用于希望基于应用版本来定义其运行时兼容性的项目。
+`"appVersion"` 策略适用于希望基于应用版本定义运行时兼容性的项目。
 
 例如，在一个应用配置中包含以下内容的项目里：
 
@@ -132,7 +137,7 @@ import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
 `"appVersion"` 策略会将运行时版本设置为项目当前的 `"version"` 属性。在这种情况下，Android 和 iOS 构建以及任何更新的运行时版本都将是 `"1.0.0"`。
 
-此策略非常适合包含自定义原生代码，并且在每次公开发布后都会更新 `"version"` 字段的项目。要提交应用，应用商店要求每个提交的构建都具有更新后的原生版本号，因此如果你希望确保安装到用户设备上的每个版本都拥有不同的运行时版本，那么此策略会很方便。
+此策略非常适合包含自定义原生代码，并且在每次公开发布后都会更新 `"version"` 字段的项目。要提交应用，应用商店要求每个提交的构建都具有更新后的原生版本号，因此如果你希望确保安装到用户设备上的每个版本都拥有不同的运行时版本，此策略会很方便。
 
 使用此策略时，你需要在每次公开发布时手动更新应用配置中的 `"version"` 字段，但对于 Play Store 的 Internal Test Track 和 App Store 的 TestFlight 上传，你可以依赖 **eas.json** 中的 `"autoIncrement"` 选项来[替你管理版本](/build-reference/app-versions/#remote-version-source)。
 
@@ -140,7 +145,7 @@ import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
 <Collapsible summary="nativeVersion">
 
-`"nativeVersion"` 策略适用于希望基于项目当前的 `"version"` 和 `"versionCode"`（Android）或 `"buildNumber"`（iOS）属性来定义其运行时兼容性的项目。
+`"nativeVersion"` 策略适用于希望基于项目当前的 `"version"` 和 `"versionCode"`（Android）或 `"buildNumber"`（iOS）属性定义运行时兼容性的项目。
 
 例如，在一个应用配置中包含以下内容的项目里：
 
@@ -163,11 +168,11 @@ import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
 
 Android 和 iOS 构建以及任何更新的运行时版本都将是 `"[version]([buildNumber|versionCode])"` 的组合，在此例中将是 `"1.0.0(1)"`。
 
-此策略非常适合包含自定义原生代码、并且在每次构建时都会更新原生版本号（iOS 的 `"buildNumber"` 和 Android 的 `"versionCode"`）的项目。要提交应用，应用商店要求每个提交的构建都具有更新后的原生版本号，因此如果你希望确保上传到 Play Store 的 Internal Test Track 以及 App Store 的 TestFlight 分发工具的每个应用都拥有不同的 `runtimeVersion`，那么此策略会很方便。
+此策略非常适合包含自定义原生代码、并且在每次构建时都会更新原生版本号（iOS 的 `"buildNumber"` 和 Android 的 `"versionCode"`）的项目。要提交应用，应用商店要求每个提交的构建都具有更新后的原生版本号，因此如果你希望确保上传到 Play Store 的 Internal Test Track 以及 App Store 的 TestFlight 分发工具的每个应用都拥有不同的 `runtimeVersion`，此策略会很方便。
 
 需要注意的是，此策略要求在每次构建之间手动管理原生版本号。
 
-另外，如果你为 Android 和 iOS 选择不同的原生版本，那么最终会得到具有分别独立运行时版本的构建和更新。
+此外，如果你为 Android 和 iOS 选择不同的原生版本，那么最终会得到具有各自独立运行时版本的构建和更新。
 
 </Collapsible>
 
@@ -185,7 +190,7 @@ Android 和 iOS 构建以及任何更新的运行时版本都将是 `"[version](
 }
 ```
 
-此策略适用于有自定义原生代码和没有自定义原生代码的项目。它通过使用 [`@expo/fingerprint`](fingerprint) 包，在构建和更新期间计算项目的哈希值，以确定构建-更新兼容性（也称为运行时）。
+此策略适用于包含或不包含自定义原生代码的项目。它通过使用 [`@expo/fingerprint`](fingerprint) 包，在构建和更新期间计算项目的哈希值，以确定构建与更新的兼容性（也称为运行时）。
 
 </Collapsible>
 
@@ -197,7 +202,7 @@ Android 和 iOS 构建以及任何更新的运行时版本都将是 `"[version](
 
 <Collapsible summary="原生配置说明">
 
-在 Android 上，这些选项会作为 `meta-data` 标签设置在 **AndroidManifest.xml** 文件中（如果使用了自动设置，则位于安装过程中添加的标签旁边）。你也可以在运行时使用 `UpdatesController.overrideConfiguration()` 来设置或覆盖它们。
+在 Android 上，这些选项会作为 `meta-data` 标签设置在 **AndroidManifest.xml** 文件中（如果使用自动设置，则位于安装过程中添加的标签旁边）。你也可以在运行时使用 `UpdatesController.overrideConfiguration()` 来设置或覆盖它们。
 
 在 iOS 上，这些属性会作为键设置在 **Expo.plist** 文件中。你也可以通过调用 `AppController.overrideConfiguration` 在运行时设置或覆盖它们。
 
@@ -219,13 +224,13 @@ Android 和 iOS 构建以及任何更新的运行时版本都将是 `"[version](
 
 默认情况下，`expo-updates` 会在应用启动时检查更新。如果有可用更新，它会下载该更新，并在应用下次重启时应用。你可以使用上面的 `checkAutomatically` 和 `fallbackToCacheTimeout` 配置选项来调整这种启动行为。
 
-该库还提供了多种常量用于检查当前更新，以及一些函数用于在你的应用代码中（启动后）自定义更新行为。例如，一种常见的替代用法是在应用启动后手动检查更新，而不是在启动时执行默认检查。
+此库还提供了多种常量，用于检查当前更新；以及一些函数，用于在应用代码中（启动后）自定义更新行为。例如，一种常见的替代用法是在应用启动后手动检查更新，而不是在启动时执行默认检查。
 
 <Collapsible summary="示例：手动检查更新">
 
 你可以通过以下步骤将应用配置为手动检查更新：
 
-1. 将 `checkAutomatically` 配置值设置为 `ON_ERROR_RECOVERY` 或 `NEVER`，以禁用该库默认的启动行为。
+1. 将 `checkAutomatically` 配置值设置为 `ON_ERROR_RECOVERY` 或 `NEVER`，以禁用此库默认的启动行为。
 2. 添加以下代码以检查可用更新、下载它们并重新加载：
 
    ```jsx App.js
@@ -259,13 +264,13 @@ Android 和 iOS 构建以及任何更新的运行时版本都将是 `"[version](
 
 ## 测试
 
-本库中的大多数方法和常量只能在 release 构建中使用或测试。在 debug 构建中，默认行为是始终从开发服务器加载最新的 JavaScript。可以[构建一个与 release 构建具有相同更新行为的 debug 版本](/eas-update/debug/#debugging-of-native-code-while-loading-the-app-through-expo-updates)。这样的应用不会从你的开发服务器打开最新的 JavaScript——它会像 release 构建一样加载已发布的更新。这对于在未连接开发服务器时调试应用行为可能很有用。
+本库中的大多数方法和常量只能在发布构建中使用或测试。在调试构建中，默认行为是始终从开发服务器加载最新的 JavaScript。可以[构建一个与发布构建具有相同更新行为的调试版本](/eas-update/debug/#debugging-of-native-code-while-loading-the-app-through-expo-updates)。这样的应用不会从你的开发服务器加载最新的 JavaScript，而是像发布构建一样加载已发布的更新。这对于在未连接开发服务器时调试应用行为可能很有用。
 
-**要在开发构建中测试更新内容**，请运行 [`eas update`](/eas-update/getting-started/) ，然后在你的开发构建中浏览该更新。请注意，这只是模拟更新在你的应用中的外观，并且在开发构建运行时，大多数 [Updates API](#api) 都不可用。
+**要在开发构建中测试更新内容**，请运行 [`eas update`](/eas-update/getting-started/)，然后在你的开发构建中浏览该更新。请注意，这只是模拟更新在你的应用中的呈现效果，并且在开发构建运行时，大多数 [Updates API](#api) 都不可用。
 
-**要在 release 构建中测试更新**，你可以创建一个 [**.apk**](/build-reference/apk) 或一个 [模拟器构建](/build-reference/simulators)，或者使用 `npx expo run:android --variant release` 和 `npx expo run:ios --configuration Release` 在本地制作 release 构建（你无需将此构建提交到商店即可测试）。完整的 [Updates API](#api) 在 release 构建中可用。
+**要在发布构建中测试更新**，你可以创建一个 [**.apk**](/build-reference/apk) 或一个[模拟器构建](/build-reference/simulators)，或者使用 `npx expo run:android --variant release` 和 `npx expo run:ios --configuration Release` 在本地制作发布构建（你无需将此构建提交到商店即可测试）。完整的 [Updates API](#api) 在发布构建中可用。
 
-**要在 Expo Go 中测试更新内容**，请运行 [`eas update`](/eas-update/getting-started/) ，然后在 Expo Go 中浏览该更新。请注意，这只是模拟更新在你的应用中的外观，并且在 Expo Go 运行时，大多数 [Updates API](#api) 都不可用。另请注意，仅支持使用 [与 Expo Go 兼容的库](/workflow/using-libraries/#determining-third-party-library-compatibility) 的更新。
+**要在 Expo Go 中测试更新内容**，请运行 [`eas update`](/eas-update/getting-started/)，然后在 Expo Go 中浏览该更新。请注意，这只是模拟更新在你的应用中的呈现效果，并且在 Expo Go 运行时，大多数 [Updates API](#api) 都不可用。另请注意，仅支持使用[与 Expo Go 兼容的库](/workflow/using-libraries/#determining-third-party-library-compatibility)的更新。
 
 ## API
 

@@ -1,0 +1,259 @@
+---
+title: 使用 EAS CLI 进行查询
+sidebar_title: EAS CLI
+description: 使用 eas observe 命令从终端查询 EAS Observe 指标、事件和会话。
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+
+[EAS Observe dashboard](/eas/observe/dashboard/) 上显示的所有内容，也可以通过终端获取。使用 `eas observe` 命令比较版本、调查缓慢的会话，并将结果传递给脚本。
+
+## 前置条件
+
+<Prerequisites>
+  <Requirement title="EAS CLI">
+    按照[安装 CLI 的说明](/eas/cli#installation)进行操作。
+  </Requirement>
+  <Requirement title="已使用 EAS Observe 的应用">
+    按照[开始使用](/eas/observe/get-started/)安装 `expo-observe` 并创建你的第一个构建版本。
+  </Requirement>
+  <Requirement title="在项目目录中通过 EAS CLI 进行身份验证">
+    使用 `eas login` 登录。默认情况下，每条命令都会从当前目录中的应用配置读取项目 ID。使用有权访问该项目的账户，通过 `--project-id` 可从任何位置查询项目：
+    <Terminal cmd={['$ eas observe:metrics-summary --project-id <project-id>']} />
+  </Requirement>
+</Prerequisites>
+
+## EAS CLI 帮助
+
+运行任何命令时添加 `--help`，即可查看你所安装的 EAS CLI 版本支持的标志。
+
+某些数据仅在特定方案中提供。如果你的账户方案不包含命令所请求的内容，该命令会失败，并显示链接到账单页面的升级提示。在交互式选择器运行之前，会先检查会话时间线，因此如果方案不支持，会立即报告。有关各方案包含的内容，请参阅[定价](https://expo.dev/pricing)。
+
+## 命令
+
+| 命令                        | 显示内容                                               |
+| ----------------------------- | ----------------------------------------------------- |
+| `eas observe:metrics-summary` | 按应用版本汇总的统计数据，例如中位数、p90 和 p99      |
+| `eas observe:metrics`         | 按数值或时间排序的单项指标样本                        |
+| `eas observe:routes`          | 按路由名称分组的导航指标                              |
+| `eas observe:session`         | 单个会话的完整事件时间线                              |
+| `eas observe:events`          | 使用 `Observe.logEvent` 记录的用户自定义事件          |
+| `eas observe:versions`        | 应用版本及其构建编号和更新 ID                          |
+
+每条命令都支持以下标志：
+
+- `--platform android` 或 `--platform ios`：按平台筛选。默认包含两个平台。`observe:session` 不支持此标志，因为该命令的目标已是单个会话。
+- `--days <number>`：显示最近 N 天的数据。
+- `--start <ISO date>` 和 `--end <ISO date>`：设置明确的时间范围。不能与 `--days` 同时使用。
+- `--project-id <id>`：无需在项目目录中运行即可查询项目。
+- `--json`：输出机器可读的数据。隐含启用 `--non-interactive`。
+- `--non-interactive`：遇到需要提示的情况时直接失败。
+
+未指定时间范围时，命令会返回最近 60 天的数据。
+
+## 指标名称
+
+应用完成埋点后，会自动收集启动指标。有关每项指标的含义，请参阅[指标参考](/eas/observe/reference/metrics/)。
+
+| 名称              | 指标                                               |
+| ----------------- | -------------------------------------------------- |
+| `tti`             | 达到可交互状态的时间                               |
+| `ttr`             | 首次渲染时间                                       |
+| `cold_launch`     | 冷启动时间                                         |
+| `warm_launch`     | 热启动时间                                         |
+| `bundle_load`     | Bundle 加载时间                                    |
+| `update_download` | [EAS Update 下载时间](/eas/observe/eas-update/)    |
+
+导航指标按路由统计。需要使用 SDK 56 或更高版本，并集成以下导航库之一：[Expo Router](/eas/observe/integrations/expo-router/) 或 [React Navigation](/eas/observe/integrations/react-navigation/)。
+
+| 名称           | 指标               |
+| -------------- | ------------------ |
+| `nav_cold_ttr` | 每个路由的首次渲染 |
+| `nav_warm_ttr` | 每个路由的热渲染   |
+| `nav_tti`      | 每个路由达到可交互状态的时间 |
+
+`observe:metrics` 和 `observe:metrics-summary` 接受全部九个名称。`observe:routes` 接受三个导航指标名称。
+
+## `eas observe:metrics-summary`
+
+显示按应用版本分组的汇总统计数据，每个平台各有一个表格。可用于比较不同版本的启动性能。
+
+<Terminal
+  cmd={[
+    '# 所有指标，最近 60 天，两个平台',
+    '$ eas observe:metrics-summary',
+    '',
+    '# 单个指标，最近 14 天，仅 iOS',
+    '$ eas observe:metrics-summary --metric tti --days 14 --platform ios',
+    '',
+    '# 多个指标，各自显示在单独的表格中',
+    '$ eas observe:metrics-summary --metric tti --metric cold_launch',
+    '',
+    '# 选择要显示的统计数据',
+    '$ eas observe:metrics-summary --metric tti --stat median --stat p90',
+  ]}
+/>
+
+命令标志：
+
+- `--metric <name>`：要显示的指标。重复该标志可指定多个指标。
+- `--stat <name>`：要为每项指标显示的统计数据。可选值为 `min`、`median`、`max`、`average`、`p80`、`p90`、`p99` 或 `eventCount`。
+
+默认情况下，表格显示 `median` 和 `eventCount`，并将它们合并到一个单元格中，例如 `0.45s (150)`。App version 列会在括号中包含构建编号。为保持表格易读，表格中省略了更新 ID，但 `--json` 会将它们作为每个版本对应的数组返回。
+
+## `eas observe:metrics`
+
+显示单个样本，而不是汇总数据。可用于调查异常值并查找导致启动缓慢的会话。
+
+<Terminal
+  cmd={[
+    '# 本周最慢的达到可交互状态时间',
+    '$ eas observe:metrics tti --sort slowest --days 7 --limit 20',
+    '',
+    '# 某个版本的样本',
+    '$ eas observe:metrics tti --app-version 1.2.0',
+    '',
+    '# 下一页结果',
+    '$ eas observe:metrics tti --after <cursor>',
+  ]}
+/>
+
+指标是一个位置参数。省略该参数时，命令会提示你选择；在非交互模式下则会失败。
+
+命令标志：
+
+- `--sort <order>`：可选值为 `oldest`（默认值）、`newest`、`slowest` 或 `fastest`。
+- `--limit <number>`：每页的样本数。默认为 10，最大为 100。
+- `--after <cursor>`：上一次运行返回的 `endCursor`。
+- `--app-version <version>`：按应用版本筛选。
+- `--update-id <id>`：按 EAS Update ID 筛选。
+
+如果还有更多结果，命令会输出用于获取下一页的标志。JSON 输出还会添加 `sessionId`、`easClientId`，以及附加到样本的任何自定义参数。
+
+## `eas observe:routes`
+
+显示按路由名称分组的导航指标，每个平台都有单独的部分。可用于查找到达速度最慢的屏幕。
+
+<Terminal
+  cmd={[
+    '# 所有导航指标，最近 7 天',
+    '$ eas observe:routes --days 7',
+    '',
+    '# 每个路由达到可交互状态的时间及百分位数',
+    '$ eas observe:routes --metric nav_tti --stat median --stat p90',
+    '',
+    '# 只查看你关心的路由',
+    '$ eas observe:routes --route-name /home --route-name /checkout',
+  ]}
+/>
+
+命令标志：
+
+- `--metric <name>`：可选值为 `nav_cold_ttr`、`nav_warm_ttr` 或 `nav_tti`。重复该标志可指定多个指标。默认包含全部三项。
+- `--stat <name>`：可选值为 `median`、`p90` 或 `count`。
+- `--route-name <name>`：按路由名称筛选。重复该标志可指定多个路由。
+- `--app-version <version>` 和 `--build-number <number>`：筛选单个版本。
+- `--update-id <id>`：按 EAS Update ID 筛选。
+- `--limit <number>`：每页显示的路由数。默认为 50，最大为 200。
+- `--after <cursor>`：上一次运行返回的 `endCursor`。
+
+路由名称是模式，例如 `/(tabs)/sessions/[sessionId]`，因此不同的参数值会归为一组。每个平台分别分页，因此下一页提示会注明其适用的平台。
+
+## `eas observe:session`
+
+按顺序显示单个会话期间记录的所有指标和日志事件。`observe:metrics` 找到缓慢的样本后，可使用此命令查看该次启动期间还发生了什么。
+
+<Terminal
+  cmd={[
+    '# 检查已知会话',
+    '$ eas observe:session <session-id>',
+    '',
+    '# 从达到可交互状态最慢的事件中选择会话',
+    '$ eas observe:session --event-name tti --sort slowest --days 7',
+  ]}
+/>
+
+会话 ID 是一个位置参数。在交互模式下省略该参数时，命令会提示你从候选会话列表中选择。在非交互模式下（包括使用 `--json` 时），必须提供会话 ID。`observe:metrics` 和 `observe:events` 的 `--json` 输出中也包含会话 ID。
+
+命令标志：
+
+- `--event-name <name>`：用于生成候选列表的指标或用户自定义事件，例如 `tti` 或 `onboarding.completed`。
+- `--sort <order>`：对候选事件进行排序。可选值为 `slowest`、`fastest`、`newest` 或 `oldest`。
+
+> **info** 用于生成候选列表的标志——`--event-name`、`--sort`、`--days`、`--start` 和 `--end`——用于描述如何_查找_会话，因此不能与会话 ID 一起使用。要检查已有会话，请单独传入 ID。
+
+## `eas observe:events`
+
+显示使用 `Observe.logEvent` 记录的[用户自定义事件](/eas/observe/events/)，以及 [SDK 及其集成发出的事件](/eas/observe/events/#events-emitted-by-the-sdk-and-integrations)，例如 `expo.memory.warning` 和 `expo-image.oversized`。不带参数时，会列出事件名称及其计数。
+
+<Terminal
+  cmd={[
+    '# 查看应用发出了哪些事件',
+    '$ eas observe:events',
+    '',
+    '# 查看具有某个名称的单个事件',
+    '$ eas observe:events report.exported --limit 50',
+    '',
+    '# 查看所有名称的全部事件',
+    '$ eas observe:events --all-events --days 7',
+    '',
+    '# 查看单个会话中的事件',
+    '$ eas observe:events --all-events --session-id <session-id>',
+  ]}
+/>
+
+命令标志：
+
+- `--all-events`：列出每个事件，而不是事件名称摘要。不能与事件名称同时使用。
+- `--session-id <id>`：筛选单个会话。要查看包含指标在内的完整时间线，请使用 `observe:session`。
+- `--app-version <version>`：按应用版本筛选。
+- `--update-id <id>`：按 EAS Update ID 筛选。
+- `--limit <number>` 和 `--after <cursor>`：对结果分页。
+
+查询没有事件的名称时，会输出相同时间范围内可用的名称，便于发现拼写错误。
+
+## `eas observe:versions`
+
+列出线上用户使用的应用版本及其构建编号、更新 ID 和事件数。可用于查找其他命令所需的筛选标识符。
+
+<Terminal
+  cmd={[
+    '# 两个平台，最近 60 天',
+    '$ eas observe:versions',
+    '',
+    '# 仅 iOS，最近 14 天',
+    '$ eas observe:versions --days 14 --platform ios',
+  ]}
+/>
+
+表格显示应用版本、首次发现时间、事件数、用户数、构建版本和更新版本。JSON 输出会返回完整的层级结构，其中每个版本下嵌套了 EAS Build 和更新的详细信息。
+
+## 常见工作流
+
+**比较当前版本与上一版本：**
+
+<Terminal cmd={['$ eas observe:metrics-summary --days 7 --stat median --stat p90']} />
+
+**查找并调查启动最慢的会话：**
+
+<Terminal
+  cmd={[
+    '$ eas observe:metrics tti --sort slowest --days 7 --json',
+    '',
+    '# 然后检查上面返回的其中一个会话',
+    '$ eas observe:session <session-id>',
+  ]}
+/>
+
+**检查哪些屏幕达到可交互状态最慢：**
+
+<Terminal cmd={['$ eas observe:routes --metric nav_tti --stat median --stat p90 --days 7']} />
+
+**检查线上用户的空中更新下载情况：**
+
+<Terminal cmd={['$ eas observe:metrics-summary --metric update_download --days 7']} />
+
+**根据指标控制脚本或 CI 任务：**
+
+<Terminal cmd={['$ eas observe:metrics-summary --metric tti --json --non-interactive']} />

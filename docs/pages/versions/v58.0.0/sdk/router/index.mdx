@@ -1,0 +1,181 @@
+---
+title: Router
+sidebar_title: 概览
+description: 一个适用于 React Native 和 Web 应用的基于文件的路由库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-router'
+packageName: 'expo-router'
+platforms: ['android', 'ios', 'tvos', 'web', 'expo-go']
+searchRank: 6
+---
+
+import { RouterLogo } from '@expo/styleguide';
+
+import APISection from '~/components/plugins/APISection';
+import { BoxLink } from '~/ui/components/BoxLink';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+
+`expo-router` 是一个适用于 React Native 和 Web 应用的路由库。它通过基于文件的路由系统管理导航，并提供原生导航组件。
+
+<BoxLink
+  title="Expo Router guides"
+  description="了解 Expo Router 基础知识、导航模式、核心概念等。"
+  href="/router/introduction/"
+  Icon={RouterLogo}
+/>
+
+> **Important** 在 **SDK 56 及更高版本**中，Expo Router 不再支持在应用代码中从外部 `@react-navigation/*` 软件包导入内容。请将这些导入改为对应的 `expo-router` 入口点。运行 [codemod](/router/migrate/sdk-55-to-56#automated-migration)，或遵循 [SDK 55 到 56 迁移指南](/router/migrate/sdk-55-to-56) 更新项目。
+
+## 安装
+
+若要在项目中使用 Expo Router，需要先安装。请按照 Expo Router 安装指南中的说明操作：
+
+<BoxLink
+  title="安装 Expo Router"
+  description="了解如何在项目中安装 Expo Router。"
+  href="/router/installation/"
+  Icon={RouterLogo}
+/>
+
+## 在应用配置中配置
+
+如果你使用[默认](/more/create-expo/#--template)模板创建新项目，`expo-router` 的[配置插件](/config-plugins/introduction/)已在应用配置中完成配置。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": ["expo-router"]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'root',
+      description:
+        '将路由目录从 `app` 更改为其他值。除非有特定需求，否则请避免使用此属性。',
+      default: '"app"',
+    },
+    {
+      name: 'origin',
+      description:
+        '用于托管 public 文件夹中资源的生产环境源 URL。在生产环境中，fetch 函数会经过 polyfill 处理，以支持对此源发起相对请求。开发环境源则根据 Expo CLI 开发服务器推断。',
+      default: 'undefined',
+    },
+    {
+      name: 'headOrigin',
+      description:
+        '用于 iOS handoff 的 `expo-router/head` 模块中的更具体源 URL。默认值为 `origin`。',
+      default: 'undefined',
+    },
+    {
+      name: 'asyncRoutes',
+      description:
+        '启用异步路由（延迟加载）。在 SDK 58 及更高版本中，Web 上默认启用且已稳定。原生平台上为实验性功能，默认禁用。可以是布尔值、字符串（`"development"` 或 `"production"`），或包含平台专属值的对象（`{ android, ios, web, default }`）。显式指定的平台值优先于 `default`。生产环境中的异步路由仅适用于 Web。',
+      default: '{ web: true }',
+    },
+    {
+      name: 'platformRoutes',
+      description:
+        '启用或禁用平台专属路由（例如 **index.android.tsx** 和 **index.ios.tsx**）。',
+      default: 'true',
+    },
+    {
+      name: 'sitemap',
+      description: '启用或禁用自动生成的站点地图 **/_sitemap**。',
+      default: 'true',
+    },
+    {
+      name: 'partialRouteTypes',
+      description:
+        '启用部分类型化路由生成。这允许 TypeScript 对路由进行类型检查，而无需静态获知所有路由。',
+      default: 'true',
+    },
+    {
+      name: 'redirects',
+      description:
+        '静态重定向规则数组。每条规则应包含 `source`、`destination`，还可以包含 `permanent`（默认为 `false`）和 `methods`（要重定向的 HTTP 方法）。',
+      default: 'undefined',
+    },
+    {
+      name: 'rewrites',
+      description:
+        '静态重写规则数组。每条规则应包含 `source`、`destination`，还可以包含 `methods`（要重写的 HTTP 方法）。',
+      default: 'undefined',
+    },
+    {
+      name: 'headers',
+      description:
+        '为服务器返回的每个路由响应设置的标头列表。值可以是字符串或字符串数组。',
+      default: 'undefined',
+    },
+    {
+      name: 'pageHeaders',
+      description:
+        "为服务器返回的特定页面响应设置的标头规则数组。每条规则应包含 `source` 和 `headers`。规则仅适用于页面响应，不适用于 API 路由或数据加载器。",
+      default: 'undefined',
+    },
+    {
+      name: 'disableSynchronousScreensUpdates',
+      description:
+        '禁用原生屏幕的同步布局更新。这在某些情况下有助于提升性能。',
+      default: 'false',
+    },
+    {
+      name: 'unstable_useServerMiddleware',
+      description:
+        '从 SDK 58 开始不再需要，且不会产生任何效果。请从应用配置中移除此选项。',
+      default: 'false',
+      deprecated: true,
+    },
+    {
+      name: 'unstable_useServerDataLoaders',
+      description:
+        '从 SDK 58 开始不再需要，且不会产生任何效果。请从应用配置中移除此选项。',
+      default: 'false',
+      deprecated: true,
+    },
+    {
+      name: 'unstable_useServerRendering',
+      description:
+        '从 SDK 58 开始不再需要，且不会产生任何效果。请从应用配置中移除此选项。',
+      default: 'false',
+      deprecated: true,
+    },
+    {
+      name: 'apiRoutes',
+      description:
+        '启用静态或服务器输出的 API 路由。服务器输出时默认为 `true`，静态输出时默认为 `false`。',
+      default: 'Depends on web.output',
+    },
+  ]}
+/>
+
+## 用法
+
+有关核心概念、符号模式、导航布局和常见导航模式的信息，请从 Router 101 部分开始：
+
+<BoxLink title="Router 101" Icon={RouterLogo} href="/router/basics/core-concepts/" />
+
+## API
+
+| API                        | 描述                                     |
+| -------------------------- | ----------------------------------------------- |
+| [Stack](stack)             | Stack 导航器、工具栏和屏幕组件 |
+| [Link](link)               | Link 和 Redirect 组件                    |
+| [Color](color)             | 平台颜色工具                        |
+| [Native Tabs](native-tabs) | 原生标签页导航                           |
+| [Split View](split-view)   | 分栏视图布局                               |
+| [UI](ui)                   | 无头标签页组件                         |
+
+## API
+
+```js
+import { useRouter, Tabs, Navigator, Slot } from 'expo-router';
+```
+
+<APISection packageName="expo-router" />

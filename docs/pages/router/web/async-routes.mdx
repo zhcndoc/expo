@@ -6,7 +6,7 @@ description: 了解如何通过 Expo Router 中的异步打包来加快开发速
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
-> **重要** 异步路由处于 [alpha](/more/release-statuses/#alpha) 阶段。
+> **重要** 在 SDK 58 及更高版本中，Web 上的异步路由已稳定，并在开发和生产环境中默认启用。在原生平台上，异步路由仍处于实验阶段，需要明确选择启用，且仅在开发环境中受支持。有关当前限制，请参阅[注意事项](#caveats)。
 
 <ContentSpotlight file="expo-router/async-routes.mp4" loop={false} />
 
@@ -30,30 +30,25 @@ Expo Router 可以使用 [React Suspense](https://react.dev/reference/react/Susp
 
 ## 设置
 
-通过在你的 [app 配置](/versions/latest/config/app/) 中的 Expo Router 配置插件里设置 `asyncRoutes` 选项来启用该功能：
+在 SDK 58 及更高版本中，异步路由在 Web 平台的开发和生产环境中默认启用。在原生平台上，默认情况下会禁用。在 SDK 57 及更早版本中，异步路由需要在每个平台上显式启用。
 
-    > 将 `asyncRoutes` 设置为 `true` 以启用生产环境的包拆分。
+在你的[应用配置](/workflow/configuration/)的 Expo Router 配置插件中配置 `asyncRoutes`。要在 Web 平台上禁用异步路由，请将 `asyncRoutes` 设置为 `{ "web": false }`。将 `asyncRoutes` 设置为 `false` 会在所有平台上禁用此功能：
 
-    ```json app.json
-    {
-      "expo": {
-        "plugins": [
-          [
-            "expo-router",
-            {
-              "origin": "https://acme.com",
-              "asyncRoutes": {
-                "web": true,
-                "default": "development"
-              }
-            }
-          ]
-        ]
-      }
-    }
-    ```
+```json app.json
+{
+  "expo": {
+    "plugins": [["expo-router", { "asyncRoutes": false }]]
+  }
+}
+```
 
-你可以使用对象为 `asyncRoutes` 设置平台特定配置（`default`、`android`、`ios` 或 `web`）：
+你也可以使用 `"development"` 或 `"production"`，仅在相应模式下启用异步路由；或者使用包含平台专属设置（`default`、`android`、`ios` 或 `web`）的对象：
+
+- 显式设置的平台值优先于 `default`。
+- 设置为 `{ "default": false }` 时，除非通过 `web` 显式启用，否则会在 Web 平台上禁用异步路由。
+- 在 SDK 58 及更高版本中，仅设置原生平台会保留 Web 平台的默认设置。例如，`{ "android": true }` 等同于 `{ "android": true, "web": true }`。原生生产构建仍会同步加载路由。
+
+例如，以下配置会在两种模式下于 Web 平台启用异步路由，在开发模式下于 iOS 启用异步路由，同时在 Android 上禁用异步路由。在 SDK 57 及更早版本中，这也可作为显式启用配置：
 
 ```json app.json
 {
@@ -75,7 +70,7 @@ Expo Router 可以使用 [React Suspense](https://react.dev/reference/react/Susp
 }
 ```
 
-然后，在即将启动项目时，你可以使用 `--clear` 标志清除 Metro 缓存。这将确保路由以异步方式加载：
+更改此设置后，在启动或导出项目时，使用 `--clear` 清除 Metro 缓存：
 
 <Terminal
   cmd={{
@@ -88,16 +83,16 @@ Expo Router 可以使用 [React Suspense](https://react.dev/reference/react/Susp
 
 ## 静态渲染
 
-在生产版 Web 应用中，静态渲染通过在 Node.js 中同步渲染所有 Suspense 边界来支持，然后基于某个 HTML 文件所选中的所有路由，将所有异步 chunk 连接到 HTML 中。这可以确保你在服务器导航时不会遇到一连串的加载状态。后续的导航会递归加载任何缺失的 chunk。
+在生产版 Web 应用中，静态渲染通过在 Node.js 中同步渲染所有 Suspense 边界来实现，然后根据某个 HTML 文件所选中的所有路由，将所有异步 chunk 连接到 HTML 中。这可以确保你在服务器导航时不会遇到一连串的加载状态。后续导航会递归加载任何缺失的 chunk。
 
 为了确保首次渲染的一致性，通向某个 URL 的叶子路由之前的所有布局路由都会包含在初始服务器响应中。
 
-所有使用 `unstable_settings = { initialRouteName: '...' }` 定义的初始路由都会包含在初始 HTML 文件中，因为首次渲染需要它们。例如，如果服务器请求的是一个模态框，那么模态框下方渲染的屏幕也会被包含进来，以确保模态框能够正确渲染。
+所有锚点路由（使用 `unstable_settings = { anchor: '...' }` 定义）都会包含在初始 HTML 文件中，因为它们是首次渲染所必需的。例如，如果服务器请求的是一个模态页面，那么模态页面下方渲染的屏幕也会包含在内，以确保模态页面能够正确渲染。
 
 ## 注意事项
 
-异步路由代表了我们未来计划支持 [React Server Components](https://react.dev/blog/2023/03/22/react-labs-what-we-have-been-working-on-march-2023#react-server-components) 的早期预览。因此，有一些注意事项需要了解：
+异步路由存在以下限制：
 
-- 异步路由目前还不支持原生生产应用。
-- 在开发环境中，运行时 JavaScript 会以懒加载方式打包，因此你可能会遇到 HTML 与可用 JavaScript 不匹配的情况。
-- 自定义的 [`SuspenseFallback`](/router/error-handling/#loading-states-with-suspense-fallback) 导出不适用于异步路由。
+- 异步路由尚不支持原生生产应用。
+- 在开发过程中，运行时 JavaScript 会延迟打包，因此你可能会遇到 HTML 与可用 JavaScript 不匹配的情况。
+- 自定义 [`SuspenseFallback`](/router/error-handling/#loading-states-with-suspense-fallback) 导出项无法与异步路由配合使用。在 SDK 58 及更高版本中，除非禁用了异步路由，否则 Web 应用会使用默认加载回退界面。若要保留自定义回退界面，请在 `expo-router` 配置插件中设置 `asyncRoutes: { web: false }`。应用配置示例请参阅[迁移指南](/router/migrate/sdk-57-to-58/#review-async-route-defaults)。

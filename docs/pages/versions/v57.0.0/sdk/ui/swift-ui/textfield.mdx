@@ -8,6 +8,7 @@ platforms: ['ios', 'tvos', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 > **info** 有关跨平台使用，请参阅通用的 [`TextInput`](../universal/textinput) — 它会为每个平台渲染相应的原生组件。
@@ -32,19 +33,28 @@ Expo UI TextField 与官方 SwiftUI [TextField API](https://developer.apple.com/
 
 将一个 [`useNativeState`](usenativestate) 可观察对象绑定到 `text`。该输入框会自行跟踪用户输入，你可以从 `textState.value` 读取当前值。
 
-```tsx BasicTextFieldExample.tsx
+<ComponentExample
+  title="BasicTextFieldExample.tsx"
+  src="/static/images/expo-ui/examples/textfield-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/textfield-basic-ios-dark.webp"
+  alt="显示占位符 Username 的空文本输入框">
+
+```tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 
 export default function BasicTextFieldExample() {
   const textState = useNativeState('');
 
+  // A text field stretches to the width it is given, so give the host a size.
   return (
-    <Host matchContents>
-      <TextField placeholder="用户名" text={textState} />
+    <Host style={{ flex: 1 }}>
+      <TextField placeholder="Username" text={textState} />
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ### 受控文本输入框
 
@@ -52,7 +62,13 @@ export default function BasicTextFieldExample() {
 
 > **注意：** Worklet 需要安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。
 
-```tsx ControlledTextFieldExample.tsx
+<ComponentExample
+  title="ControlledTextFieldExample.tsx"
+  src="/static/images/expo-ui/examples/textfield-controlled-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/textfield-controlled-ios-dark.webp"
+  alt="显示占位符 Name 的空文本输入框">
+
+```tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { useCallback } from 'react';
 
@@ -68,18 +84,30 @@ export default function ControlledTextFieldExample() {
   );
 
   return (
-    <Host matchContents>
-      <TextField placeholder="姓名" text={text} onTextChange={handleTextChange} />
+    <Host style={{ flex: 1 }}>
+      <TextField
+        placeholder="Name"
+        text={text}
+        onTextChange={handleTextChange}
+      />
     </Host>
   );
 }
 ```
 
+</ComponentExample>
+
 ### 多行文本输入框
 
-设置 `axis="vertical"` 以允许文本输入框垂直展开。使用 [`lineLimit`](modifiers/#linelimit) 修饰符来控制可见行数。使用 `Host matchContents` 时，添加 `fixedSize({ horizontal: false, vertical: true })`，这样文本输入框会在使用其理想高度的同时接受父容器的宽度。
+设置 `axis="vertical"` 以允许文本输入框垂直扩展。使用 [`lineLimit`](modifiers/#linelimit) modifier 控制可见行数。为 `Host` 指定明确的尺寸，使输入框拥有可供扩展的宽度。
 
-```tsx MultilineTextFieldExample.tsx
+<ComponentExample
+  title="MultilineTextFieldExample.tsx"
+  src="/static/images/expo-ui/examples/textfield-multiline-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/textfield-multiline-ios-dark.webp"
+  alt="显示占位符 Tell us about yourself 的空多行文本输入框">
+
+```tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { lineLimit, fixedSize } from '@expo/ui/swift-ui/modifiers';
 
@@ -87,60 +115,14 @@ export default function MultilineTextFieldExample() {
   const textState = useNativeState('');
 
   return (
-    <Host matchContents>
+    <Host style={{ flex: 1 }}>
       <TextField
         axis="vertical"
         text={textState}
-        placeholder="告诉我们关于你自己的事情..."
-        modifiers={[lineLimit(5), fixedSize({ horizontal: false, vertical: true })]}
-      />
-    </Host>
-  );
-}
-```
-
-### 键盘类型
-
-使用 [`keyboardType`](modifiers/#keyboardtypekeyboardtype) 修饰符来显示特定的键盘布局。
-
-```tsx KeyboardTypeExample.tsx
-import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
-import { keyboardType, autocorrectionDisabled } from '@expo/ui/swift-ui/modifiers';
-
-export default function KeyboardTypeExample() {
-  const textState = useNativeState('');
-
-  return (
-    <Host matchContents>
-      <TextField
-        placeholder="邮箱"
-        text={textState}
-        modifiers={[keyboardType('email-address'), autocorrectionDisabled()]}
-      />
-    </Host>
-  );
-}
-```
-
-### 提交处理
-
-使用 [`submitLabel`](modifiers/#submitlabelsubmitlabel) 修饰符来自定义回车键，并使用 [`onSubmit`](modifiers/#onsubmithandler) 来处理提交操作。
-
-```tsx SubmitHandlingExample.tsx
-import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
-import { submitLabel, onSubmit } from '@expo/ui/swift-ui/modifiers';
-
-export default function SubmitHandlingExample() {
-  const textState = useNativeState('');
-
-  return (
-    <Host matchContents>
-      <TextField
-        placeholder="搜索..."
-        text={textState}
+        placeholder="Tell us about yourself..."
         modifiers={[
-          submitLabel('search'),
-          onSubmit(() => console.log('已提交：', textState.value)),
+          lineLimit(5),
+          fixedSize({ horizontal: false, vertical: true }),
         ]}
       />
     </Host>
@@ -148,13 +130,94 @@ export default function SubmitHandlingExample() {
 }
 ```
 
+</ComponentExample>
+
+### 键盘类型
+
+使用 [`keyboardType`](modifiers/#keyboardtypekeyboardtype) modifier 显示特定的键盘布局。
+
+<ComponentExample
+  title="KeyboardTypeExample.tsx"
+  src="/static/images/expo-ui/examples/textfield-keyboard-type-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/textfield-keyboard-type-ios-dark.webp"
+  alt="显示占位符 Email 的空文本输入框">
+
+```tsx
+import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
+import {
+  keyboardType,
+  autocorrectionDisabled,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function KeyboardTypeExample() {
+  const textState = useNativeState('');
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <TextField
+        placeholder="Email"
+        text={textState}
+        modifiers={[
+          keyboardType('email-address'),
+          autocorrectionDisabled(),
+        ]}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 提交处理
+
+使用 [`submitLabel`](modifiers/#submitlabelsubmitlabel) modifier 自定义回车键，并使用 [`onSubmit`](modifiers/#onsubmithandler) 处理提交操作。
+
+<ComponentExample
+  title="SubmitHandlingExample.tsx"
+  src="/static/images/expo-ui/examples/textfield-submit-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/textfield-submit-ios-dark.webp"
+  alt="显示占位符 Search 的空文本输入框">
+
+```tsx
+import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
+import { submitLabel, onSubmit } from '@expo/ui/swift-ui/modifiers';
+
+export default function SubmitHandlingExample() {
+  const textState = useNativeState('');
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <TextField
+        placeholder="Search..."
+        text={textState}
+        modifiers={[
+          submitLabel('search'),
+          onSubmit(() =>
+            console.log('Submitted:', textState.value)
+          ),
+        ]}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
 ### 命令式 ref
 
 使用 `ref` 以命令式方式设置文本、聚焦、失焦或选择文本。
 
 > **注意：** `setSelection` 需要 iOS 18.0+ / tvOS 18.0+。其他 ref 方法可在所有受支持的版本上使用。
 
-```tsx ImperativeRefExample.tsx
+<ComponentExample
+  title="ImperativeRefExample.tsx"
+  src="/static/images/expo-ui/examples/textfield-imperative-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/textfield-imperative-ios-dark.webp"
+  alt="一个显示 Select me! 的文本输入框，下方有 Focus、Blur、Set text、Clear 和 Select 按钮">
+
+```tsx
 import { useRef } from 'react';
 import {
   Host,
@@ -172,9 +235,13 @@ export default function ImperativeRefExample() {
   const textState = useNativeState('选择我！');
 
   return (
-    <Host matchContents>
-      <VStack>
-        <TextField ref={ref} text={textState} placeholder="命令式输入框" />
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={12}>
+        <TextField
+          ref={ref}
+          text={textState}
+          placeholder="Imperative field"
+        />
         <HStack spacing={12}>
           <Button
             modifiers={[buttonStyle('bordered')]}
@@ -186,6 +253,8 @@ export default function ImperativeRefExample() {
             onPress={() => ref.current?.blur()}
             label="失焦"
           />
+        </HStack>
+        <HStack spacing={12}>
           <Button
             modifiers={[buttonStyle('bordered')]}
             onPress={() => ref.current?.setText('SwiftUI 很棒！')}
@@ -208,13 +277,21 @@ export default function ImperativeRefExample() {
 }
 ```
 
+</ComponentExample>
+
 ### Worklet 文本遮罩
 
 当 `onTextChange` 标记了 `'worklet'` 指令时，它会在 UI 线程上同步运行，因此回调内对 [`useNativeState`](usenativestate) 可观察对象的写入会在下一帧之前生效。键入文本与遮罩后的文本之间不会出现闪烁。下面的示例会在用户输入时对电话号码进行遮罩，并从 worklet 中同时写入 `text` 和 `selection`，以保持光标位于格式化后值的末尾。
 
 > **注意：** Worklet 需要安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。`selection` 属性需要 iOS 18.0+ / tvOS 18.0+。在较旧版本上，worklet 仍然可以更新文本，但无法进行光标定位。
 
-```tsx WorkletPhoneMaskExample.tsx
+<ComponentExample
+  title="WorkletPhoneMaskExample.tsx"
+  src="/static/images/expo-ui/examples/textfield-worklet-mask-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/textfield-worklet-mask-ios-dark.webp"
+  alt="显示格式化电话号码占位符的空文本输入框">
+
+```tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
 import { keyboardType } from '@expo/ui/swift-ui/modifiers';
 import { useEffectEvent } from 'react';
@@ -234,13 +311,16 @@ export default function WorkletPhoneMaskExample() {
     }
     if (formatted !== v) {
       phone.value = formatted;
-      // 为演示而吸附到末尾。实际遮罩需要更智能的光标处理。
-      selection.value = { start: formatted.length, end: formatted.length };
+      // Snaps to end for demo. Real masks need smarter cursor handling.
+      selection.value = {
+        start: formatted.length,
+        end: formatted.length,
+      };
     }
   });
 
   return (
-    <Host matchContents>
+    <Host style={{ flex: 1 }}>
       <TextField
         text={phone}
         selection={selection}
@@ -253,10 +333,15 @@ export default function WorkletPhoneMaskExample() {
 }
 ```
 
+</ComponentExample>
+
 ## API
 
 ```tsx
 import { TextField } from '@expo/ui/swift-ui';
 ```
 
-<APISection packageName="expo-ui/swift-ui/textfield" apiName="TextField" />
+<APISection
+  packageName="expo-ui/swift-ui/textfield"
+  apiName="TextField"
+/>

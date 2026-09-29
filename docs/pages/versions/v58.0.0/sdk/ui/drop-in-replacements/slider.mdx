@@ -1,0 +1,93 @@
+---
+title: Slider
+description: 与 @react-native-community/slider 兼容的滑块。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+一个与 [`@react-native-community/slider`](https://www.npmjs.com/package/@react-native-community/slider) API 兼容的 `Slider` 组件。它在 Android 上使用 Material 3 `Slider`，在 iOS 上使用 SwiftUI `Slider`，并在 Web 上使用原生 `<input type="range">` 元素。
+
+在底层，此组件封装了平台专属的 `@expo/ui` 基元：
+
+- **Android**：[Jetpack Compose Slider](../jetpack-compose/slider)
+- **iOS**：[SwiftUI Slider](../swift-ui/slider)
+
+如果需要更低层级的控制，请直接使用这些基元。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/community-slider/android-light.webp',
+    darkSrc: '/static/images/expo-ui/community-slider/android-dark.webp',
+    alt: '一个位于范围中间的 Material 3 滑块',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/community-slider/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/community-slider/ios-dark.webp',
+    alt: '一个位于范围中间的滑块',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@react-native-community/slider` 迁移
+
+- 将导入语句从 `import Slider from '@react-native-community/slider'` 更新为 `import Slider from '@expo/ui/community/slider'`。
+- 暂不支持 `onSlidingStart`、`onSlidingComplete`、`tapToSeek`、`StepMarker`、`renderStepNumber`、`thumbImage`、`minimumTrackImage`、`maximumTrackImage`、`trackImage`、`accessibilityUnits`、`accessibilityIncrements`、`testID` 和 `ref.updateValue`。
+- 在 iOS 上，`maximumTrackTintColor` 和 `thumbTintColor` 不会产生视觉效果——SwiftUI 的 `Slider` 仅提供最小值（活动）轨道的色调。`minimumTrackTintColor` 在两个平台上均有效。
+
+## 基本用法
+
+<ComponentExample
+  title="SliderExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-slider-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-slider-basic-android-dark.webp',
+    alt: '一个位于范围中间的 Material 3 滑块，下方有一个 Value 标签',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-slider-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-slider-basic-ios-dark.webp',
+    alt: '一个位于范围中间的滑块，下方有一个 Value 标签',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { Text, useColorScheme, View } from 'react-native';
+import Slider from '@expo/ui/community/slider';
+
+export default function SliderExample() {
+  const [value, setValue] = useState(0.5);
+  const colorScheme = useColorScheme();
+
+  return (
+    <View>
+      <Slider value={value} onValueChange={setValue} />
+      <Text style={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>
+        Value: {value.toFixed(3)}
+      </Text>
+    </View>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import Slider from '@expo/ui/community/slider';
+```
+
+<APISection packageName="expo-ui/community/slider" apiName="Slider" />
+
+</PlatformTabsGroup>

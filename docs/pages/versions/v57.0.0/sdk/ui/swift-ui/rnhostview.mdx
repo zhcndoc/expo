@@ -16,6 +16,8 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 - **使用 `matchContents` 时**：shadow node 的大小会设置为匹配子 React Native 视图的固有大小，从而允许 SwiftUI 父视图根据 React Native 内容来确定自身大小。
 - **不使用 `matchContents` 时**：shadow node 的大小会设置为匹配父 SwiftUI 视图的大小，从而允许 React Native 内容填充可用空间（对 `flex: 1` 布局很有用）。
 
+> **注意：**将单个 React Native 元素作为子元素传入。`RNHostView` 只会测量和布局其第一个子元素，因此请将多个视图包装在一个父级 `View` 中，并由该视图安排它们的布局。
+
 ## 安装
 
 <APIInstallSection />
@@ -29,22 +31,41 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 ```tsx RNHostView 与 matchContents
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { Host, BottomSheet, Button, RNHostView } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  RNHostView,
+} from '@expo/ui/swift-ui';
 
 function Example() {
   const [isPresented, setIsPresented] = useState(false);
 
   return (
     <Host style={{ flex: 1 }}>
-      <Button label="打开面板" onPress={() => setIsPresented(true)} />
-      <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+      <Button
+        label="Open sheet"
+        onPress={() => setIsPresented(true)}
+      />
+      <BottomSheet
+        isPresented={isPresented}
+        onIsPresentedChange={setIsPresented}>
         <RNHostView matchContents>
           <View style={{ padding: 24 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>React Native 内容</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+              React Native 内容
+            </Text>
             <Pressable
-              style={{ backgroundColor: '#007AFF', padding: 12, borderRadius: 8, marginTop: 16 }}
+              style={{
+                backgroundColor: '#007AFF',
+                padding: 12,
+                borderRadius: 8,
+                marginTop: 16,
+              }}
               onPress={() => setIsPresented(false)}>
-              <Text style={{ color: 'white', textAlign: 'center' }}>关闭</Text>
+              <Text style={{ color: 'white', textAlign: 'center' }}>
+                Close
+              </Text>
             </Pressable>
           </View>
         </RNHostView>
@@ -61,7 +82,13 @@ function Example() {
 ```tsx RNHostView 与 flex 内容
 import { useState } from 'react';
 import { Text, View } from 'react-native';
-import { Host, BottomSheet, Button, Group, RNHostView } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  RNHostView,
+} from '@expo/ui/swift-ui';
 import { presentationDetents } from '@expo/ui/swift-ui/modifiers';
 
 function Example() {
@@ -69,11 +96,22 @@ function Example() {
 
   return (
     <Host style={{ flex: 1 }}>
-      <Button label="打开面板" onPress={() => setIsPresented(true)} />
-      <BottomSheet isPresented={isPresented} onIsPresentedChange={setIsPresented}>
-        <Group modifiers={[presentationDetents(['medium', 'large'])]}>
+      <Button
+        label="Open sheet"
+        onPress={() => setIsPresented(true)}
+      />
+      <BottomSheet
+        isPresented={isPresented}
+        onIsPresentedChange={setIsPresented}>
+        <Group
+          modifiers={[presentationDetents(['medium', 'large'])]}>
           <RNHostView>
-            <View style={{ flex: 1, backgroundColor: '#007AFF', padding: 24 }}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: '#007AFF',
+                padding: 24,
+              }}>
               <Text style={{ color: 'white', fontSize: 18 }}>
                 此内容会填满可用空间
               </Text>
@@ -93,7 +131,12 @@ function Example() {
 ```tsx 在 Popover 中使用 RNHostView
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { Host, Button, Popover, RNHostView } from '@expo/ui/swift-ui';
+import {
+  Host,
+  Button,
+  Popover,
+  RNHostView,
+} from '@expo/ui/swift-ui';
 
 function Example() {
   const [isPresented, setIsPresented] = useState(false);
@@ -101,17 +144,29 @@ function Example() {
 
   return (
     <Host style={{ flex: 1 }}>
-      <Popover isPresented={isPresented} onIsPresentedChange={setIsPresented}>
+      <Popover
+        isPresented={isPresented}
+        onIsPresentedChange={setIsPresented}>
         <Popover.Trigger>
-          <Button onPress={() => setIsPresented(true)} label="显示弹出框" />
+          <Button
+            onPress={() => setIsPresented(true)}
+            label="Show Popover"
+          />
         </Popover.Trigger>
         <Popover.Content>
           <RNHostView matchContents>
             <View style={{ padding: 24 }}>
-              <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  marginBottom: 8,
+                }}>
                 React Native 内容
               </Text>
-              <Text style={{ color: '#666', marginBottom: 12 }}>计数器：{counter}</Text>
+              <Text style={{ color: '#666', marginBottom: 12 }}>
+                计数器：{counter}
+              </Text>
               <Pressable
                 style={{
                   backgroundColor: '#007AFF',
@@ -120,7 +175,9 @@ function Example() {
                   alignItems: 'center',
                 }}
                 onPress={() => setCounter(counter + 1)}>
-                <Text style={{ color: 'white', fontWeight: '600' }}>增加</Text>
+                <Text style={{ color: 'white', fontWeight: '600' }}>
+                  增加
+                </Text>
               </Pressable>
             </View>
           </RNHostView>
@@ -137,4 +194,7 @@ function Example() {
 import { RNHostView } from '@expo/ui/swift-ui';
 ```
 
-<APISection packageName="expo-ui/swift-ui/rnhostview" apiName="RNHostView" />
+<APISection
+  packageName="expo-ui/swift-ui/rnhostview"
+  apiName="RNHostView"
+/>

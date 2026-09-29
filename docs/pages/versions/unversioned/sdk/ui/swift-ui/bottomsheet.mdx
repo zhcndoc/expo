@@ -8,11 +8,12 @@ platforms: ['ios', 'tvos', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 > **info** 有关跨平台用法，请参见通用的 [`BottomSheet`](../universal/bottomsheet) —— 它会针对每个平台渲染相应的原生组件。
 
-Expo UI BottomSheet 与官方 SwiftUI [sheet API](<https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)>) 保持一致，并从屏幕底部展示内容。
+Expo UI BottomSheet 与官方 SwiftUI [sheet API](<https://developer.apple.com/documentation/swiftui/view.sheet(ispresented:ondismiss:content:)>) 保持一致，并从屏幕底部展示内容。
 
 <ContentSpotlight
   variant="component"
@@ -22,7 +23,7 @@ Expo UI BottomSheet 与官方 SwiftUI [sheet API](<https://developer.apple.com/d
   alt="一个处于中等停靠位置的 BottomSheet，显示一个排序列表，已选中“最近”"
 />
 
-> **info** 在 iOS 上，如果要在另一个底部弹窗之上再显示一个底部弹窗，应将第二个 `BottomSheet` 嵌套在第一个弹窗的内容中，而不是与其并列。这是底层 SwiftUI [`sheet`](<https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)>) 修饰符的限制。有关更多信息，请参见[如何展示多个 sheet](https://www.hackingwithswift.com/quick-start/swiftui/how-to-present-multiple-sheets)。
+> **info** 在 iOS 上，如果要在另一个底部弹窗之上再显示一个底部弹窗，应将第二个 `BottomSheet` 嵌套在第一个弹窗的内容中，而不是与其并列。这是底层 SwiftUI [`sheet`](<https://developer.apple.com/documentation/swiftui/view.sheet(ispresented:ondismiss:content:)>) 修饰符的限制。有关更多信息，请参见[如何展示多个 sheet](https://www.hackingwithswift.com/quick-start/swiftui/how-to-present-multiple-sheets)。
 
 ## 安装
 
@@ -34,9 +35,21 @@ Expo UI BottomSheet 与官方 SwiftUI [sheet API](<https://developer.apple.com/d
 
 将打开弹窗的控件作为 `anchor` 属性传入。子元素是弹窗的内容。
 
-```tsx BasicBottomSheetExample.tsx
+<ComponentExample
+  title="BasicBottomSheetExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-basic-ios-dark.webp"
+  alt="一个占满屏幕的底部弹窗，中央显示文本 Hello, world!">
+
+```tsx
 import { useState } from 'react';
-import { Host, BottomSheet, Button, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 
 export default function BasicBottomSheetExample() {
   const [isPresented, setIsPresented] = useState(false);
@@ -47,8 +60,13 @@ export default function BasicBottomSheetExample() {
         <BottomSheet
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
-          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
-          <Text>你好，世界！</Text>
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
+          <Text>Hello, world!</Text>
         </BottomSheet>
       </VStack>
     </Host>
@@ -56,14 +74,29 @@ export default function BasicBottomSheetExample() {
 }
 ```
 
-### React Native 视图作为锚点
+</ComponentExample>
+
+### 将 React Native 视图用作锚点
 
 锚点可以是 React Native 视图。将其包裹在 [`RNHostView`](rnhostview) 中。
 
-```tsx BottomSheetRNAnchorExample.tsx
+<ComponentExample
+  title="BottomSheetRNAnchorExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-rn-anchor-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-rn-anchor-ios-dark.webp"
+  alt="一个蓝色 React Native 按钮，位于一个大小适配内容的底部弹窗上方">
+
+```tsx
 import { useState } from 'react';
 import { Pressable, Text as RNText } from 'react-native';
-import { Host, BottomSheet, Button, RNHostView, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  RNHostView,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 
 export default function BottomSheetRNAnchorExample() {
   const [isPresented, setIsPresented] = useState(false);
@@ -85,13 +118,19 @@ export default function BottomSheetRNAnchorExample() {
                   borderRadius: 8,
                   alignSelf: 'flex-start',
                 }}>
-                <RNText style={{ color: 'white', fontWeight: '600' }}>Open sheet</RNText>
+                <RNText
+                  style={{ color: 'white', fontWeight: '600' }}>
+                  Open sheet
+                </RNText>
               </Pressable>
             </RNHostView>
           }>
           <VStack>
             <Text>Opened from a React Native anchor.</Text>
-            <Button label="Close" onPress={() => setIsPresented(false)} />
+            <Button
+              label="Close"
+              onPress={() => setIsPresented(false)}
+            />
           </VStack>
         </BottomSheet>
       </VStack>
@@ -100,13 +139,27 @@ export default function BottomSheetRNAnchorExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 适配内容的底部弹窗
 
 使用 [`fitToContents`](#fittocontents) 属性可让弹窗自动调整大小以适配其内容。
 
-```tsx BottomSheetFitsContentExample.tsx
+<ComponentExample
+  title="BottomSheetFitsContentExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-fits-content-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-fits-content-ios-dark.webp"
+  alt="一个底部弹窗，大小适配一行文本和一个 Close 按钮">
+
+```tsx
 import { useState } from 'react';
-import { Host, BottomSheet, Button, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 
 export default function BottomSheetFitsContentExample() {
   const [isPresented, setIsPresented] = useState(false);
@@ -118,10 +171,20 @@ export default function BottomSheetFitsContentExample() {
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
           fitToContents
-          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <VStack>
-            <Text>此弹窗会自动调整大小以适配其内容。</Text>
-            <Button label="关闭" onPress={() => setIsPresented(false)} />
+            <Text>
+              This sheet automatically sizes to fit its content.
+            </Text>
+            <Button
+              label="Close"
+              onPress={() => setIsPresented(false)}
+            />
           </VStack>
         </BottomSheet>
       </VStack>
@@ -130,15 +193,32 @@ export default function BottomSheetFitsContentExample() {
 }
 ```
 
-### 自定义背景色
+</ComponentExample>
 
-默认情况下，sheet 使用系统的半透明材质背景（iOS 26 上为 Liquid Glass）。在 `Group` 上使用 [`presentationBackground`](modifiers/#presentationbackgroundcolor) 修饰符可以改为用纯色填充 sheet，这也会让 sheet 不再使用这种半透明材质。
+### 自定义背景
+
+默认情况下，弹窗使用系统的半透明材质背景（iOS 26 上为 Liquid Glass）。使用 `Group` 上的 [`presentationBackground`](modifiers/#presentationbackgroundstyle) 修饰符自行绘制弹窗背景，这也会使弹窗不再使用该半透明材质。它接受任何 `ShapeStyle`：纯色、材质或渐变。
+
+> **info** 在 iOS 26 上，材质（例如 `{ type: 'material', material: 'ultraThin' }`）会渲染为纯色，而不是半透明模糊效果。请选择一种在不透明状态下也清晰易辨的背景。
 
 > **info** 优先使用 `presentationBackground`，而不是在 sheet 内容上使用 `background` 修饰符。`background` 位于内容自身背景的 _后面_，因此 `Form` 或 `List` 会将其遮住，并且当 sheet 在不同 detent 之间移动时，颜色显示会不一致。`presentationBackground` 会给 sheet 表面本身着色，因此在每个 detent 下都保持一致。当内容是 `Form` 或 `List` 时，也请添加 [`scrollContentBackground('hidden')`](modifiers/#scrollcontentbackgroundvisible)，这样 sheet 颜色就能透过分组背景显示出来。
 
-```tsx BottomSheetBackgroundColorExample.tsx
+<ComponentExample
+  title="BottomSheetBackgroundColorExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-background-color-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-background-color-ios-dark.webp"
+  alt="一个在中等停靠位置具有纯白背景的底部弹窗">
+
+```tsx
 import { useState } from 'react';
-import { Host, BottomSheet, Button, Group, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import {
   presentationBackground,
   presentationDetents,
@@ -155,15 +235,25 @@ export default function BottomSheetBackgroundColorExample() {
         <BottomSheet
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
-          anchor={<Button label="打开 sheet" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large']),
               presentationBackground('#ffffff'),
             ]}>
             <VStack modifiers={[padding({ all: 20 })]}>
-              <Text modifiers={[foregroundStyle('#000000')]}>纯白色 sheet 背景。</Text>
-              <Button label="关闭" onPress={() => setIsPresented(false)} />
+              <Text modifiers={[foregroundStyle('#000000')]}>
+                Solid white sheet background.
+              </Text>
+              <Button
+                label="Close"
+                onPress={() => setIsPresented(false)}
+              />
             </VStack>
           </Group>
         </BottomSheet>
@@ -173,7 +263,9 @@ export default function BottomSheetBackgroundColorExample() {
 }
 ```
 
-### 带有 presentation detents 的底部弹窗
+</ComponentExample>
+
+### 带有停靠位置的底部弹窗
 
 在 `Group` 上使用 [`presentationDetents`](modifiers/#presentationdetentsdetents-options) 修饰器来控制可用高度。你可以使用：
 
@@ -182,9 +274,22 @@ export default function BottomSheetBackgroundColorExample() {
 - `{ fraction: number }`：屏幕高度的比例（0-1）
 - `{ height: number }`：以点为单位的固定高度
 
-```tsx BottomSheetWithDetentsExample.tsx
+<ComponentExample
+  title="BottomSheetWithDetentsExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-detents-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-detents-ios-dark.webp"
+  alt="一个处于中等停靠位置的底部弹窗，显示有关吸附到多个高度的文本">
+
+```tsx
 import { useState } from 'react';
-import { Host, BottomSheet, Button, Group, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import { presentationDetents } from '@expo/ui/swift-ui/modifiers';
 
 export default function BottomSheetWithDetentsExample() {
@@ -196,10 +301,20 @@ export default function BottomSheetWithDetentsExample() {
         <BottomSheet
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
-          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <Group
             modifiers={[
-              presentationDetents(['medium', 'large', { fraction: 0.3 }, { height: 200 }]),
+              presentationDetents([
+                'medium',
+                'large',
+                { fraction: 0.3 },
+                { height: 200 },
+              ]),
             ]}>
             <Text>此弹窗可以停靠到多个高度。</Text>
           </Group>
@@ -210,13 +325,30 @@ export default function BottomSheetWithDetentsExample() {
 }
 ```
 
-### 带 detent 选择跟踪的底部弹窗
+</ComponentExample>
 
-将 `selection` 和 `onSelectionChange` 选项传递给 [`presentationDetents`](modifiers/#presentationdetentsdetents-options)，即可通过编程方式控制弹窗停靠到哪个 detent。
+### 跟踪停靠位置选择的底部弹窗
 
-```tsx BottomSheetWithDetentSelectionExample.tsx
+将 `selection` 和 `onSelectionChange` 选项传递给 [`presentationDetents`](modifiers/#presentationdetentsdetents-options)，即可通过编程方式控制弹窗停靠到哪个停靠位置。
+
+<ComponentExample
+  title="BottomSheetWithDetentSelectionExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-detent-selection-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-detent-selection-ios-dark.webp"
+  alt="一个列出停靠位置选项的底部弹窗，当前停靠位置显示为 medium">
+
+```tsx
 import { useState } from 'react';
-import { Host, BottomSheet, Button, List, Section, Text, VStack, Group } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  List,
+  Section,
+  Text,
+  VStack,
+  Group,
+} from '@expo/ui/swift-ui';
 import {
   presentationDetents,
   presentationDragIndicator,
@@ -226,8 +358,14 @@ import type { PresentationDetent } from '@expo/ui/swift-ui/modifiers';
 
 export default function BottomSheetWithDetentSelectionExample() {
   const [isPresented, setIsPresented] = useState(false);
-  const detents: PresentationDetent[] = [{ height: 300 }, { fraction: 0.3 }, 'medium', 'large'];
-  const [selectedDetent, setSelectedDetent] = useState<PresentationDetent>('medium');
+  const detents: PresentationDetent[] = [
+    { height: 300 },
+    { fraction: 0.3 },
+    'medium',
+    'large',
+  ];
+  const [selectedDetent, setSelectedDetent] =
+    useState<PresentationDetent>('medium');
 
   const formatDetent = (detent: PresentationDetent): string => {
     if (typeof detent === 'string') return detent;
@@ -241,7 +379,12 @@ export default function BottomSheetWithDetentSelectionExample() {
         <BottomSheet
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
-          anchor={<Button label="Show sheet" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="Show sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <Group
             modifiers={[
               presentationDetents(detents, {
@@ -252,13 +395,28 @@ export default function BottomSheetWithDetentSelectionExample() {
             ]}>
             <List>
               <Section title="Change detent">
-                <Button label="Height 300" onPress={() => setSelectedDetent({ height: 300 })} />
-                <Button label="Fraction 0.3" onPress={() => setSelectedDetent({ fraction: 0.3 })} />
-                <Button label="Medium" onPress={() => setSelectedDetent('medium')} />
-                <Button label="Large" onPress={() => setSelectedDetent('large')} />
+                <Button
+                  label="Height 300"
+                  onPress={() => setSelectedDetent({ height: 300 })}
+                />
+                <Button
+                  label="Fraction 0.3"
+                  onPress={() =>
+                    setSelectedDetent({ fraction: 0.3 })
+                  }
+                />
+                <Button
+                  label="Medium"
+                  onPress={() => setSelectedDetent('medium')}
+                />
+                <Button
+                  label="Large"
+                  onPress={() => setSelectedDetent('large')}
+                />
               </Section>
-              <Section title="当前">
-                <Text modifiers={[foregroundStyle('secondaryLabel')]}>
+              <Section title="Current">
+                <Text
+                  modifiers={[foregroundStyle('secondaryLabel')]}>
                   {formatDetent(selectedDetent)}
                 </Text>
               </Section>
@@ -271,13 +429,28 @@ export default function BottomSheetWithDetentSelectionExample() {
 }
 ```
 
-### 底部弹窗与背景交互
+</ComponentExample>
+
+### 带背景交互的底部弹窗
 
 使用 [`presentationBackgroundInteraction`](modifiers/#presentationbackgroundinteractioninteraction) 修饰器，允许与弹窗后面的内容进行交互。
 
-```tsx BottomSheetWithBackgroundInteractionExample.tsx
+<ComponentExample
+  title="BottomSheetWithBackgroundInteractionExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-background-interaction-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-background-interaction-ios-dark.webp"
+  alt="一个处于中等停靠位置、背景未变暗的底部弹窗">
+
+```tsx
 import { useState } from 'react';
-import { Host, BottomSheet, Button, Group, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import {
   presentationDetents,
   presentationBackgroundInteraction,
@@ -292,13 +465,23 @@ export default function BottomSheetWithBackgroundInteractionExample() {
         <BottomSheet
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
-          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large']),
-              presentationBackgroundInteraction({ type: 'enabledUpThrough', detent: 'medium' }),
+              presentationBackgroundInteraction({
+                type: 'enabledUpThrough',
+                detent: 'medium',
+              }),
             ]}>
-            <Text>当处于中等高度时，可以与背后的内容交互。</Text>
+            <Text>
+              处于中等高度时可与后面的内容交互。
+            </Text>
           </Group>
         </BottomSheet>
       </VStack>
@@ -307,13 +490,28 @@ export default function BottomSheetWithBackgroundInteractionExample() {
 }
 ```
 
-### 不可通过手势关闭的底部弹窗
+</ComponentExample>
+
+### 不可交互关闭的底部弹窗
 
 使用 [`interactiveDismissDisabled`](modifiers/#interactivedismissdisabledisdisabled) 修饰器可防止用户通过滑动关闭弹窗。
 
-```tsx NonDismissibleBottomSheetExample.tsx
+<ComponentExample
+  title="NonDismissibleBottomSheetExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-non-dismissible-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-non-dismissible-ios-dark.webp"
+  alt="一个全高底部弹窗，包含文本和 Close 按钮">
+
+```tsx
 import { useState } from 'react';
-import { Host, BottomSheet, Button, Group, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import { interactiveDismissDisabled } from '@expo/ui/swift-ui/modifiers';
 
 export default function NonDismissibleBottomSheetExample() {
@@ -325,11 +523,21 @@ export default function NonDismissibleBottomSheetExample() {
         <BottomSheet
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
-          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <Group modifiers={[interactiveDismissDisabled()]}>
             <VStack>
-              <Text>此弹窗不能通过滑动关闭。</Text>
-              <Button label="关闭" onPress={() => setIsPresented(false)} />
+              <Text>
+                This sheet cannot be dismissed by swiping.
+              </Text>
+              <Button
+                label="Close"
+                onPress={() => setIsPresented(false)}
+              />
             </VStack>
           </Group>
         </BottomSheet>
@@ -339,14 +547,34 @@ export default function NonDismissibleBottomSheetExample() {
 }
 ```
 
-### 带 React Native 内容的底部弹窗
+</ComponentExample>
+
+### 带有 React Native 内容的底部弹窗
 
 使用 `RNHostView` 将 React Native 组件嵌入到底部弹窗中。设置 `matchContents` 可让宿主视图自动调整大小以适配其内容。
 
-```tsx BottomSheetWithRNContentExample.tsx
+<ComponentExample
+  title="BottomSheetWithRNContentExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-rn-content-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-rn-content-ios-dark.webp"
+  alt="一个底部弹窗，包含 React Native 文本、计数器以及 Increment 和 Close 按钮">
+
+```tsx
 import { useState } from 'react';
-import { Pressable, Text as RNText, View } from 'react-native';
-import { Host, BottomSheet, Button, Group, RNHostView, VStack } from '@expo/ui/swift-ui';
+import {
+  PlatformColor,
+  Pressable,
+  Text as RNText,
+  View,
+} from 'react-native';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  RNHostView,
+  VStack,
+} from '@expo/ui/swift-ui';
 import { presentationDragIndicator } from '@expo/ui/swift-ui/modifiers';
 
 export default function BottomSheetWithRNContentExample() {
@@ -360,14 +588,27 @@ export default function BottomSheetWithRNContentExample() {
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
           fitToContents
-          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <Group modifiers={[presentationDragIndicator('visible')]}>
             <RNHostView matchContents>
               <View style={{ padding: 24 }}>
-                <RNText style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>
-                  React Native 内容
+                <RNText
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    marginBottom: 8,
+                    color: PlatformColor('label'),
+                  }}>
+                  React Native Content
                 </RNText>
-                <RNText style={{ color: '#666', marginBottom: 16 }}>计数器：{counter}</RNText>
+                <RNText style={{ color: '#666', marginBottom: 16 }}>
+                  Counter: {counter}
+                </RNText>
                 <Pressable
                   style={{
                     backgroundColor: '#007AFF',
@@ -377,7 +618,10 @@ export default function BottomSheetWithRNContentExample() {
                     marginBottom: 12,
                   }}
                   onPress={() => setCounter(counter + 1)}>
-                  <RNText style={{ color: 'white', fontWeight: '600' }}>增加</RNText>
+                  <RNText
+                    style={{ color: 'white', fontWeight: '600' }}>
+                    Increment
+                  </RNText>
                 </Pressable>
                 <Pressable
                   style={{
@@ -387,7 +631,10 @@ export default function BottomSheetWithRNContentExample() {
                     alignItems: 'center',
                   }}
                   onPress={() => setIsPresented(false)}>
-                  <RNText style={{ color: 'white', fontWeight: '600' }}>关闭</RNText>
+                  <RNText
+                    style={{ color: 'white', fontWeight: '600' }}>
+                    Close
+                  </RNText>
                 </Pressable>
               </View>
             </RNHostView>
@@ -399,15 +646,33 @@ export default function BottomSheetWithRNContentExample() {
 }
 ```
 
-### 底部弹窗与灵活的 React Native 内容
+</ComponentExample>
+
+### 带有灵活 React Native 内容的底部弹窗
 
 当使用带有 `flex: 1` 的 React Native 内容时，请省略 `RNHostView` 上的 `matchContents` 属性，并使用 [`presentationDetents`](modifiers/#presentationdetentsdetents-options) 来控制弹窗高度。
 
-```tsx BottomSheetWithFlexRNContentExample.tsx
+<ComponentExample
+  title="BottomSheetWithFlexRNContentExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-flex-rn-content-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-flex-rn-content-ios-dark.webp"
+  alt="一个处于中等停靠位置、由蓝色 React Native 视图填充的底部弹窗">
+
+```tsx
 import { useState } from 'react';
 import { Text as RNText, View } from 'react-native';
-import { Host, BottomSheet, Button, Group, RNHostView, VStack } from '@expo/ui/swift-ui';
-import { presentationDetents, presentationDragIndicator } from '@expo/ui/swift-ui/modifiers';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  RNHostView,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  presentationDetents,
+  presentationDragIndicator,
+} from '@expo/ui/swift-ui/modifiers';
 
 export default function BottomSheetWithFlexRNContentExample() {
   const [isPresented, setIsPresented] = useState(false);
@@ -418,19 +683,35 @@ export default function BottomSheetWithFlexRNContentExample() {
         <BottomSheet
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
-          anchor={<Button label="打开弹窗" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large']),
               presentationDragIndicator('visible'),
             ]}>
             <RNHostView>
-              <View style={{ flex: 1, backgroundColor: '#007AFF', padding: 24 }}>
-                <RNText style={{ fontSize: 18, fontWeight: 'bold', color: 'white' }}>
-                  灵活的 React Native 内容
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: '#007AFF',
+                  padding: 24,
+                }}>
+                <RNText
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    color: 'white',
+                  }}>
+                  Flexible React Native Content
                 </RNText>
                 <RNText style={{ color: 'white', marginTop: 8 }}>
-                  此内容会填充弹窗中的可用空间。
+                  This content fills the available space in the
+                  sheet.
                 </RNText>
               </View>
             </RNHostView>
@@ -442,15 +723,38 @@ export default function BottomSheetWithFlexRNContentExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 可滚动的 React Native 内容
 
 将可滚动的 React Native 列表，例如 `FlatList`、`ScrollView`，或高性能列表（如 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)）嵌套在带有 `RNHostView` 的弹窗中。使用 [`presentationDetents`](modifiers/#presentationdetentsdetents-options) 设置弹窗尺寸，列表会在该高度内滚动。
 
-```tsx BottomSheetWithScrollableContentExample.tsx
+<ComponentExample
+  title="BottomSheetWithScrollableContentExample.tsx"
+  src="/static/images/expo-ui/examples/bottomsheet-scrollable-content-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/bottomsheet-scrollable-content-ios-dark.webp"
+  alt="一个处于 medium detent 状态的底部弹出面板，列出 Item 1 到 Item 8">
+
+```tsx
 import { useState } from 'react';
-import { FlatList, Text as RNText, View } from 'react-native';
-import { Host, BottomSheet, Button, Group, RNHostView, VStack } from '@expo/ui/swift-ui';
-import { presentationDetents, presentationDragIndicator } from '@expo/ui/swift-ui/modifiers';
+import {
+  FlatList,
+  PlatformColor,
+  Text as RNText,
+  View,
+} from 'react-native';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  RNHostView,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  presentationDetents,
+  presentationDragIndicator,
+} from '@expo/ui/swift-ui/modifiers';
 
 const DATA = Array.from({ length: 50 }, (_, i) => `项目 ${i + 1}`);
 
@@ -458,12 +762,17 @@ export default function BottomSheetWithScrollableContentExample() {
   const [isPresented, setIsPresented] = useState(false);
 
   return (
-    <Host matchContents>
+    <Host style={{ flex: 1 }}>
       <VStack>
         <BottomSheet
           isPresented={isPresented}
           onIsPresentedChange={setIsPresented}
-          anchor={<Button label="Open sheet" onPress={() => setIsPresented(true)} />}>
+          anchor={
+            <Button
+              label="打开弹出面板"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
           <Group
             modifiers={[
               presentationDetents(['medium', 'large']),
@@ -474,7 +783,15 @@ export default function BottomSheetWithScrollableContentExample() {
                 <FlatList
                   data={DATA}
                   keyExtractor={item => item}
-                  renderItem={({ item }) => <RNText style={{ paddingVertical: 16 }}>{item}</RNText>}
+                  renderItem={({ item }) => (
+                    <RNText
+                      style={{
+                        paddingVertical: 16,
+                        color: PlatformColor('label'),
+                      }}>
+                      {item}
+                    </RNText>
+                  )}
                 />
               </View>
             </RNHostView>
@@ -486,10 +803,15 @@ export default function BottomSheetWithScrollableContentExample() {
 }
 ```
 
+</ComponentExample>
+
 ## API
 
 ```tsx
 import { BottomSheet } from '@expo/ui/swift-ui';
 ```
 
-<APISection packageName="expo-ui/swift-ui/bottomsheet" apiName="BottomSheet" />
+<APISection
+  packageName="expo-ui/swift-ui/bottomsheet"
+  apiName="BottomSheet"
+/>

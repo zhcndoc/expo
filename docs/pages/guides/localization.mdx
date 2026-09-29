@@ -310,7 +310,29 @@ const styles = StyleSheet.create({
 
 </Collapsible>
 
-## 让应用在 RTL 区域设置下正常运行
+### 运行时更改 Expo Router 方向
+
+如果你的应用允许用户在不重启的情况下更改语言，请在根目录的 **app/\_layout.tsx** 中使用 `LocaleProvider` 包裹导航器。传入所选语言环境的方向，以更新导航标题、过渡效果和手势。
+
+```tsx app/_layout.tsx
+import { LocaleProvider, Stack } from 'expo-router';
+
+import { useAppLocale } from '../providers/AppLocaleProvider';
+
+export default function RootLayout() {
+  const { direction } = useAppLocale();
+
+  return (
+    <LocaleProvider direction={direction}>
+      <Stack />
+    </LocaleProvider>
+  );
+}
+```
+
+`LocaleProvider` 会配置 Expo Router 的导航组件。请继续单独设置应用内容的布局方向。
+
+## 让应用在 RTL 区域设置中正确运行
 
 ### 布局和视图
 
@@ -319,7 +341,7 @@ const styles = StyleSheet.create({
 - 在 LTR 区域设置中，`start` 和 `end` 等同于 `left` 和 `right`。
 - 在 RTL 区域设置中，`start` 和 `end` 等同于 `right` 和 `left`。
 
-> **info** 有关 React Native 中 RTL 工作方式的更多细节，请查看介绍 RTL 支持的 React Native [博客文章](https://reactnative.dev/blog/2016/08/19/right-to-left-support-for-react-native-apps)。
+> **信息** 有关 React Native 中 RTL 工作方式的更多细节，请查看介绍 RTL 支持的 React Native [博客文章](https://reactnative.dev/blog/2016/08/19/right-to-left-support-for-react-native-apps)。
 
 #### Web 支持
 
@@ -335,7 +357,7 @@ import { getLocales } from 'expo-localization';
 return <View dir={getLocales()[0].textDirection || 'ltr'}>...</View>;
 ```
 
-> **warning** `textDirection` 在 Firefox 和较旧的浏览器版本中不可用。必要时请[手动检测](https://stackoverflow.com/a/15726039)。
+> **警告** `textDirection` 在 Firefox 和较旧的浏览器版本中不可用。必要时请[手动检测](https://stackoverflow.com/a/15726039)。
 
 ### 文本对齐
 

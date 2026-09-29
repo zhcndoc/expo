@@ -1,0 +1,56 @@
+---
+title: 配置导航转场
+description: 了解如何在 Expo Router 中使用 React 转场进行导航
+---
+
+> **important** 这是一项在 **Expo SDK 58** 及更高版本中可用的[实验性](/more/release-statuses/#experimental)功能。
+
+Expo Router 可以在 [React 转场](https://react.dev/reference/react/startTransition)中处理导航。转场会在下一屏挂起时保持当前屏幕可见。
+
+在根布局渲染之前设置转场模式：
+
+```tsx src/app/_layout.tsx
+import { router, Stack } from 'expo-router';
+
+router.setTransitionMode('always');
+
+export default function RootLayout() {
+  return <Stack />;
+}
+```
+
+## 选择转场模式
+
+使用以下模式配置 Expo Router 何时开始转场：
+
+| 模式           | 行为                                                               |
+| -------------- | ------------------------------------------------------------------ |
+| `preload-only` | 使用转场进行预加载。这是默认模式。                                 |
+| `always`       | 对所有排队的导航操作使用转场。                                     |
+| `never`        | 从不使用转场。单个操作无法覆盖此设置。                             |
+
+使用 `inTransition` 覆盖单个操作的模式。`never` 模式无法被覆盖。
+
+```tsx
+router.push('/details', { inTransition: true });
+router.back({ inTransition: false });
+```
+
+> **info** 当 Expo Router 批量处理操作时，批次中的每个操作都必须允许使用转场，该批次才能使用转场。
+
+## 显示待处理的导航
+
+使用 `unstable_useIsNavigating()` 检查导航是否已排队或正在等待：
+
+```tsx
+import { unstable_useIsNavigating } from 'expo-router';
+import { ActivityIndicator } from 'react-native';
+
+export function NavigationProgress() {
+  const isNavigating = unstable_useIsNavigating();
+
+  return <ActivityIndicator animating={isNavigating} />;
+}
+```
+
+此 Hook 不会报告同步导航或原生返回手势。有关完整 API，请参阅 [Expo Router API 参考](/versions/latest/sdk/router/)。

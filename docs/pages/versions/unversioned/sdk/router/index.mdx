@@ -8,7 +8,7 @@ platforms: ['android', 'ios', 'tvos', 'web', 'expo-go']
 searchRank: 6
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { RouterLogo } from '@expo/styleguide';
 
 import APISection from '~/components/plugins/APISection';
 import { BoxLink } from '~/ui/components/BoxLink';
@@ -20,7 +20,7 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
   title="Expo Router 指南"
   description="了解 Expo Router 基础知识、导航模式、核心概念等。"
   href="/router/introduction/"
-  Icon={BookOpen02Icon}
+  Icon={RouterLogo}
 />
 
 > **重要** 在 **SDK 56 及更高版本** 中，Expo Router 不再支持在应用代码中从外部 `@react-navigation/*` 包导入。请将这些导入重定向到匹配的 `expo-router` 入口点。运行 [codemod](/router/migrate/sdk-55-to-56#automated-migration) 或按照 [SDK 55 到 56 迁移指南](/router/migrate/sdk-55-to-56) 更新你的项目。
@@ -33,7 +33,7 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
   title="安装 Expo Router"
   description="了解如何在项目中安装 Expo Router。"
   href="/router/installation/"
-  Icon={BookOpen02Icon}
+  Icon={RouterLogo}
 />
 
 ## 在 app 配置中的配置
@@ -75,8 +75,8 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
     {
       name: 'asyncRoutes',
       description:
-        '启用异步路由（懒加载）。可以是布尔值、字符串（`"development"` 或 `"production"`），或包含平台特定值的对象（`{ android, ios, web, default }`）。`production` 目前仅支持 web，并且在原生平台上会被禁用。',
-      default: 'undefined',
+        '启用异步路由（惰性加载）。在 SDK 58 及更高版本中，web 平台默认启用且已稳定。在原生平台上属于实验性功能，默认禁用。可以是布尔值、字符串（`"development"` 或 `"production"`），也可以是包含平台特定值的对象（`{ android, ios, web, default }`）。显式的平台值优先于 `default`。生产环境中的异步路由仅适用于 web。',
+      default: '{ web: true }',
     },
     {
       name: 'platformRoutes',
@@ -128,23 +128,29 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
     {
       name: 'unstable_useServerMiddleware',
       description:
-        '通过 `+middleware.ts` 文件启用服务器中间件支持。需要在 app 配置中设置 `web.output: "server"`。',
+        '从 SDK 58 起不再需要且不起作用。请从 app 配置中移除此选项。',
       default: 'false',
-      experimental: true,
+      deprecated: true,
     },
     {
       name: 'unstable_useServerDataLoaders',
       description:
-        '启用数据加载器支持。目前仅支持 `web.output: "static"` 输出。',
+        '从 SDK 58 起不再需要且不起作用。请从 app 配置中移除此选项。',
       default: 'false',
-      experimental: true,
+      deprecated: true,
     },
     {
       name: 'unstable_useServerRendering',
       description:
-        '启用服务器端渲染。启用后并设置 `web.output: "server"` 时，HTML 会在请求时渲染，而不是在构建时预渲染。',
+        '从 SDK 58 起不再需要且不起作用。请从 app 配置中移除此选项。',
       default: 'false',
-      experimental: true,
+      deprecated: true,
+    },
+    {
+      name: 'apiRoutes',
+      description:
+        '启用带有静态或服务器输出的 API 路由。服务器输出时默认为 `true`，静态输出时默认为 `false`。',
+      default: '取决于 web.output',
     },
   ]}
 />
@@ -153,7 +159,7 @@ import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/Con
 
 有关核心概念、标记模式、导航布局和常见导航模式的信息，请从 Router 101 章节开始：
 
-<BoxLink title="Router 101" Icon={BookOpen02Icon} href="/router/basics/core-concepts/" />
+<BoxLink title="Router 101" Icon={RouterLogo} href="/router/basics/core-concepts/" />
 
 ## API
 

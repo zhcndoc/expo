@@ -1,0 +1,115 @@
+---
+title: '@stripe/stripe-react-native'
+description: 一个提供原生 API 访问能力的库，用于集成 Stripe 支付
+sourceCodeUrl: 'https://github.com/stripe/stripe-react-native'
+packageName: '@stripe/stripe-react-native'
+platforms: ['android', 'ios', 'expo-go']
+inExpoGo: true
+hasVideoLink: true
+---
+
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+Expo 支持 [`@stripe/stripe-react-native`](https://github.com/stripe/stripe-react-native)，借助它，你可以使用 React Native 和 Expo 在原生 Android 和 iOS 应用中打造出色的支付体验。该库提供功能强大且可自定义的 UI 屏幕和元素，可开箱即用地收集用户的付款详细信息。
+
+> 正从 Expo 的 `expo-payments-stripe` 模块迁移？[详细了解如何过渡到新的 `@stripe/stripe-react-native` 库](https://github.com/expo/fyi/blob/main/payments-migration-guide.md#how-to-migrate-from-expo-payments-stripe-to-the-new-stripestripe-react-native-library)。
+
+<VideoBoxLink
+  videoId="J0tyxUV_omY"
+  title="观看：通用全栈 Expo Stripe 支付集成"
+  description="完整演示如何在通用 Expo 应用中集成 Stripe 支付，支持 Android、iOS 和 Web。"
+/>
+
+## 安装
+
+每个 Expo SDK 版本都需要特定版本的 `@stripe/stripe-react-native`。有关版本对应关系，请参阅 [Stripe 更新日志](https://github.com/stripe/stripe-react-native/blob/master/CHANGELOG.md)。若要自动安装适用于你的 Expo SDK 版本的正确版本，请运行：
+
+<APIInstallSection href="https://github.com/stripe/stripe-react-native" />
+
+### 配置插件设置（可选）
+
+如果使用 EAS Build，你可以通过 `@stripe/stripe-react-native` [配置插件](/config-plugins/introduction/)完成大部分 Stripe 设置。若要进行设置，只需将配置插件添加到 **app.json** 或 **app.config.js** 中的 `plugins` 数组，如下所示，然后重新构建应用。
+
+```json app.json
+{
+  "expo": {
+    /* @hide ... */ /* @end */
+    "plugins": [
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": string | string [],
+          "enableGooglePay": boolean
+        }
+      ]
+    ],
+  }
+}
+```
+
+- **merchantIdentifier**：仅适用于 iOS。这是[在此处获取的 Apple 商户 ID](https://docs.stripe.com/apple-pay?platform=react-native)。否则，Apple Pay 将无法正常使用。如果有多个 merchantIdentifiers，可以将它们设置在一个数组中。
+- **enableGooglePay**：仅适用于 Android。布尔值，表示是否启用 Google Pay。默认为 `false`。
+
+## 示例
+
+只需几秒钟即可试用 Stripe。在设备上连接到[此 Snack](https://snack.expo.dev/@charliecruzan/stripe-react-native-example?platform=mydevice)。
+
+在底层，该示例会连接到一个用于处理付款的 Glitch 服务器。
+
+## 用法
+
+有关用法信息和详细文档，请参阅以下资源：
+
+- [Stripe 的 React Native SDK 参考](https://stripe.dev/stripe-react-native/api-reference/index.html)
+- [Stripe 的 React Native GitHub 仓库](https://github.com/stripe/stripe-react-native)
+- [Stripe 的 React Native 示例应用](https://github.com/stripe/stripe-react-native/tree/master/example)
+
+### 常见问题
+
+#### 浏览器弹出窗口没有重定向回我的应用
+
+如果你依赖重定向，则需要向 `initStripe` 传入 `urlScheme`。为确保始终使用正确的 `urlScheme`，请传入：
+
+```js
+import * as Linking from 'expo-linking';
+import Constants from 'expo-constants';
+
+urlScheme:
+  Constants.appOwnership === 'expo'
+    ? Linking.createURL('/--/')
+    : Linking.createURL(''),
+```
+
+[`Linking.createURL()`](./linking/#createurloptions) 可确保你使用正确的 scheme，无论你是在 Expo Go 还是生产应用中运行。Expo Go 中需要使用 `'/--/'`，因为它表示其后的子字符串对应于深层链接路径，而不是应用本身的路径。
+
+#### iOS 上的 PaymentSheet 本地化
+
+在 Android 上，`PaymentSheet` 的翻译会根据设备的语言设置自动检测。
+
+在 iOS 上，你必须启用 `CFBundleAllowMixedLocalizations`，并在应用配置中 [`ios.infoPlist`](../config/app/#infoplist) 下通过 `CFBundleLocalizations` 添加首选语言：
+
+```json app.json
+{
+  "expo": {
+    "ios": {
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
+        "CFBundleLocalizations": ["fr"]
+        /* @hide ... */ /* @end */
+      }
+      /* @hide ... */ /* @end */
+    }
+  }
+}
+```
+
+## 限制
+
+### Google Pay
+
+[Expo Go](https://expo.dev/go) **不支持** Google Pay。若要使用 Google Pay，必须创建一个[开发构建版本](/develop/development-builds/introduction/#how-would-you-like-to-build-your-development-build)。你可以使用 [EAS Build](/build/introduction) 创建，也可以在本地运行 `npx expo run:android` 创建。
+
+### Apple Pay
+
+[Expo Go](https://expo.dev/go) **不支持** Apple Pay。若要使用 Apple Pay，必须创建一个[开发构建版本](/develop/development-builds/introduction/#how-would-you-like-to-build-your-development-build)。你可以使用 [EAS Build](/build/introduction) 创建，也可以在本地运行 `npx expo run:ios` 创建。

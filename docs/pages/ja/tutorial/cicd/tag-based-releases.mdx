@@ -1,0 +1,194 @@
+---
+title: '使用 Git 标签触发生产部署'
+sidebar_title: 基于标签的发布
+description: 了解如何在 EAS Workflows 中通过 Git 标签触发生产部署。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { BranchVsTagTrigger } from '~/ui/components/FlowDiagram/Diagrams/BranchVsTagTrigger';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+在发布分支上推送的方式中，每次提交都会触发生产工作流，包括那些原本并不打算发布的提交。
+
+## 本章内容
+
+- 将生产工作流的触发条件从 `release/*` 分支切换为匹配 `v*.*.*` 的 Git 标签
+- 从 `main` 推送标签以创建发布，并在 EAS 仪表板中确认工作流运行情况
+- 将 `v1.0.0-rc.1` 之类的预发布标签排除在生产环境之外，并通过单独的工作流运行发布候选版本
+
+## 作为发布事件的标签
+
+EAS Workflows 支持基于标签的触发器，只需在 [`on.push`](/eas/workflows/syntax/#onpush) 中指定 `tags` 列表即可。只有当与 glob 模式匹配的标签被推送到远程仓库时，工作流才会运行。与之后可以更新的分支不同，Git 标签是一次性事件，与特定提交和版本绑定。因此，标签适合作为发布标记。
+
+基于标签的发布工作流适合以下团队：
+
+- 希望 Git 中的版本号与交付给应用用户的版本一致
+- 不维护长期存在的发布分支，而是直接从 `main` 发布
+- 希望留下清晰的记录，以便按版本追踪所有发布提交
+
+<BranchVsTagTrigger />
+
+## 将 production.yml 切换为标签触发器
+
+打开[上一章](/ja/tutorial/cicd/production/)中的 **.eas/workflows/production.yml** 工作流，将 `on.push.branches` 触发器替换为 `on.push.tags`。除此之外，工作流内容完全相同。
+
+<Step label="1">
+
+### 更改触发器
+
+将 `branches` 触发器替换为 `tags` 触发器。此 `tags` glob 可匹配 `v1.0.0`、`v2.3.7`、`v10.0.0-beta.1` 等标签。
+
+```yaml .eas/workflows/production.yml
+name: Deploy to production
+
+# @info #
+on:
+  push:
+    tags: ['v*.*.*']
+# @end #
+
+jobs:
+  fingerprint:
+    name: Fingerprint
+    type: fingerprint
+    environment: production
+  get_android_build:
+    name: Check for existing Android build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      profile: production
+  get_ios_build:
+    name: Check for existing iOS build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      profile: production
+  build_android:
+    name: Build Android
+    needs: [get_android_build]
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    type: build
+    params:
+      platform: android
+      profile: production
+  build_ios:
+    name: Build iOS
+    needs: [get_ios_build]
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    type: build
+    params:
+      platform: ios
+      profile: production
+  update_android:
+    name: Publish Android update
+    needs: [get_android_build]
+    if: ${{ needs.get_android_build.outputs.build_id }}
+    type: update
+    params:
+      branch: production
+      platform: android
+  update_ios:
+    name: Publish iOS update
+    needs: [get_ios_build]
+    if: ${{ needs.get_ios_build.outputs.build_id }}
+    type: update
+    params:
+      branch: production
+      platform: ios
+```
+
+要通过标签触发工作流，需要选择符合团队工作方式的模式。常见模式如下：
+
+- `['v*']` 匹配所有以 `v` 开头的标签
+- `['v*.*.*']` 匹配由 3 个数字组成的严格语义化版本（推荐）
+
+无需更改其他作业。`fingerprint`、`get-build`、`build` 和 `update` 作业都针对提交运行，因此功能完全相同。
+
+</Step>
+
+<Step label="2">
+
+### 提交并推送工作流更改
+
+提交对 **production.yml** 的更改并推送到 `main`。由于已从分支触发器切换为标签触发器，因此此操作不会触发工作流。
+
+<Terminal
+  cmd={[
+    '$ git add .eas/workflows/production.yml',
+    '',
+    '$ git commit -m "Switch production workflow to tag trigger"',
+    '',
+    '$ git push origin main',
+  ]}
+  cmdCopy="git add .eas/workflows/production.yml && git commit -m 'Switch production workflow to tag trigger' && git push origin main"
+/>
+
+</Step>
+
+<Step label="3">
+
+### 创建标签并测试工作流
+
+要运行工作流，必须推送一个与 **production.yml** 中定义的 glob 模式匹配的标签。
+
+在示例项目中进行 TypeScript/JavaScript 更改并提交，然后推送一个新标签。
+
+<Terminal
+  cmd={[
+    '$ git add .',
+    '',
+    '$ git commit -m "Fix welcome copy"',
+    '',
+    '$ git tag v0.1.0',
+    '',
+    '$ git push origin main --tags',
+  ]}
+  cmdCopy="git add . && git commit -m 'Fix welcome copy' && git tag v0.1.0 && git push origin main --tags"
+/>
+
+`v0.1.0` 标签会触发工作流。打开 EAS 仪表板并查看 **Workflows**，即可看到 "Deploy to production" 正在运行，其分支为 `refs/tags/v0.1.0`。
+
+<ContentSpotlight
+  alt="由标签触发的生产工作流运行情况，EAS Workflows 仪表板显示 fingerprint、get-build 以及 Android 和 iOS 的 update 作业。"
+  src="/static/images/tutorial/cicd/eas-workflows-tag-based-production-run.webp"
+  className="max-w-160"
+/>
+
+这是首次使用基于标签的发布所生成的指纹运行生产工作流，因此 Android 和 iOS 的 `build` 作业都会运行。如果后续标签指向的是 TypeScript/JavaScript 更改，则会跳过构建作业，直接运行 `update` 作业。
+
+<ContentSpotlight
+  alt="EAS Workflows 仪表板并行显示 Android 和 iOS 的生产构建作业，适用于 v0.1.0 标签发布。"
+  src="/static/images/tutorial/cicd/eas-workflows-tag-based-build-android-ios.png"
+  className="max-w-160"
+/>
+
+</Step>
+
+## 面向发布候选版本的预发布标签
+
+`v*.*.*` glob 也会匹配 `v1.0.0-rc.1` 之类的预发布标签，因此发布候选版本可能会直接交付给应用用户。要将发布候选版本排除在生产环境之外，请在生产工作流的触发器中排除这些标签。
+
+```yaml .eas/workflows/production.yml
+on:
+  push:
+    tags: ['v*.*.*', '!v*.*.*-rc.*']
+```
+
+要在生产发布前测试发布候选版本，请创建另一个仅匹配预发布标签的工作流（`tags: ['v*.*.*-rc.*']`），并复用 `fingerprint`、`get-build` 和 `build` 作业，但不包含 `update` 和 `submit` 作业。这样可以运行相同的流水线，同时不会向应用用户交付任何内容。
+
+## 总结
+
+<ProgressTracker
+  currentChapterSlug="/tutorial/cicd/tag-based-releases"
+  name="CICD_TUTORIAL"
+  chapterTitle="第 6 章：基于标签的发布"
+  summary="您已学习如何将生产工作流的触发器从发布分支切换为 Git 标签，从 main 推送版本标签以测试更改，并使用预发布标签 glob 排除发布候选版本。"
+  nextChapterDescription="下一章将介绍如何通过工作流将 web 构建部署到 EAS Hosting。"
+  nextChapterTitle="web 部署"
+  nextChapterLink="/ja/tutorial/cicd/web-deployments"
+/>

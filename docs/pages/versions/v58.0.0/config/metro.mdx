@@ -1,0 +1,726 @@
+---
+title: metro.config.js
+description: Metro 中可用配置的参考
+---
+
+import { CodeSquare01Icon } from '@expo/styleguide-icons/outline/CodeSquare01Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { FileTree } from '~/ui/components/FileTree';
+import { DiffBlock, Terminal } from '~/ui/components/Snippet';
+
+有关 **metro.config.js** 的更多信息，请参阅[自定义 Metro 指南](/guides/customizing-metro/)。
+
+## 环境变量
+
+Expo CLI 可以从 **.env** 文件加载环境变量。要了解如何在 Expo CLI 中使用环境变量，请参阅[环境变量指南](/guides/environment-variables/)。
+
+EAS CLI 使用不同的环境变量机制，但在调用 Expo CLI 进行编译和打包时除外。了解有关 [EAS 中的环境变量](/eas/environment-variables/)的更多信息。
+
+如果你正在迁移较旧的项目，则应将以下内容添加到 **.gitignore**，以忽略本地 env 文件：
+
+```sh .gitignore
+# local env files
+.env*.local
+```
+
+### 禁用 dotenv 文件
+
+在运行任何 Expo CLI 命令之前启用 `EXPO_NO_DOTENV` 环境变量，即可在 Expo CLI 中完全禁用 dotenv 文件加载。
+
+<Terminal
+  cmd={[
+    '# All users can run cross-env, followed by the Expo CLI command',
+    '$ npx cross-env EXPO_NO_DOTENV=1 expo start',
+    '# Alternatively, macOS and Linux users can define the environment variable, then run npx, followed by the Expo CLI command',
+    '$ EXPO_NO_DOTENV=1 npx expo start',
+  ]}
+/>
+
+### 禁用带有 `EXPO_PUBLIC_` 前缀的客户端环境变量
+
+带有 `EXPO_PUBLIC_` 前缀的环境变量将在构建时暴露给应用。例如，`EXPO_PUBLIC_API_KEY` 将可通过 `process.env.EXPO_PUBLIC_API_KEY` 获取。
+
+可以使用环境变量 `EXPO_NO_CLIENT_ENV_VARS=1` 禁用客户端环境变量内联；必须在执行任何打包操作之前定义该变量。
+
+<Terminal
+  cmd={[
+    '# All users can run cross-env, followed by the Expo CLI command',
+    '$ npx cross-env EXPO_NO_CLIENT_ENV_VARS=1 expo start',
+    '# Alternatively, macOS and Linux users can define the environment variable, then run npx, followed by the Expo CLI command',
+    '$ EXPO_NO_CLIENT_ENV_VARS=1 npx expo start',
+  ]}
+/>
+
+## CSS
+
+> **info** CSS 支持仍在开发中，目前仅适用于 Web。
+
+Expo 支持在项目中使用 CSS。你可以从任何组件导入 CSS 文件。也支持 CSS Modules。
+
+默认启用 CSS 支持。你可以在 Metro 配置中设置 `isCSSEnabled` 来禁用此功能。
+
+```js metro.config.js
+/** @type {import('expo/metro-config').MetroConfig} */
+const config = getDefaultConfig(__dirname, {
+  // Disable CSS support.
+  isCSSEnabled: false,
+});
+```
+
+### 全局 CSS
+
+> **warning** 全局样式仅适用于 Web，使用后会导致应用在原生平台上的视觉效果不一致。
+
+你可以从任何组件导入 CSS 文件。CSS 将应用于整个页面。
+
+这里，我们将为类名 `.container` 定义全局样式：
+
+```css styles.css
+.container {
+  background-color: red;
+}
+```
+
+然后，我们可以通过导入样式表并使用 `.container`，在组件中使用该类名：
+
+```jsx App.js|collapseHeight=470
+import './styles.css';
+import { View } from 'react-native';
+
+export default function App() {
+  return (
+    <>
+      {/* Use `className` to assign the style with React DOM components. */}
+      <div className="container">Hello World</div>
+
+      {/* Use `style` with the following syntax to append class names in React Native for web. */}
+      <View
+        style={{
+          $$css: true,
+          _: 'container',
+        }}>
+        Hello World
+      </View>
+    </>
+  );
+}
+```
+
+你也可以像导入任何 Node 模块一样，导入库中附带的样式表：
+
+```js index.js
+// Applies the styles app-wide.
+import 'emoji-mart/css/emoji-mart.css';
+```
+
+- 在原生平台上，所有全局样式表都会自动忽略。
+- 全局样式表支持热重载，只需保存文件，更改就会生效。
+
+> **warning** 使用 Expo Router 时，始终在根目录的 **\_layout.tsx** 中导入全局 CSS。Expo Router 会从根布局开始遍历依赖关系图。在嵌套布局中导入 CSS 会导致 **node_modules** 中的 CSS 先于自定义样式加载，从而破坏预期的样式顺序。
+
+### CSS Modules
+
+> **warning** 原生平台的 CSS Modules 仍在开发中，目前仅适用于 Web。
+
+CSS Modules 是一种将 CSS 限定在特定组件范围内的方法。这有助于避免命名冲突，并确保样式只应用于预期的组件。
+
+在 Expo 中，CSS Modules 通过创建扩展名为 `.module.css` 的文件来定义。可以从任何组件导入该文件。导出的值是一个对象，其中类名为键，Web 专用的作用域名称为值。可以使用导入项 `unstable_styles` 访问与 `react-native-web` 兼容的样式。
+
+CSS Modules 支持平台扩展名，因此你可以为不同平台定义不同的样式。例如，你可以分别定义 `module.ios.css` 和 `module.android.css` 文件来为 Android 和 iOS 定义样式。导入时需要省略扩展名，例如：
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/css-modules-import.diff" />
+
+反过来使用扩展名，例如 `App.ios.module.css`，将无法正常工作，并会生成名为 `App.ios.module` 的通用模块。
+
+> 你不能将样式传递给 React Native 或 React Native for web 组件的 `className` 属性。必须改用 `style` 属性。
+
+```jsx App.js|collapseHeight=470
+import styles, { unstable_styles } from './App.module.css';
+
+export default function Page() {
+  return (
+    <>
+      <Text
+        style={{
+          // This is how react-native-web class names are applied
+          $$css: true,
+          _: styles.text,
+        }}>
+        Hello World
+      </Text>
+      <Text style={unstable_styles.text}>Hello World</Text>
+      {/* Web-only usage: */}
+      <p className={styles.text}>Hello World</p>
+    </>
+  );
+}
+```
+
+```css App.module.css
+.text {
+  color: red;
+}
+```
+
+- 在 Web 上，所有 CSS 值均可使用。CSS 不会像 React Native Web 的 `StyleSheet` API 那样经过处理或自动添加前缀。你可以使用 `postcss.config.js` 为 CSS 自动添加前缀。
+- CSS Modules 底层使用 [lightningcss](https://github.com/parcel-bundler/lightningcss)，请查看[相关问题](https://github.com/parcel-bundler/lightningcss/issues)了解不受支持的功能。
+
+### PostCSS
+
+可以通过在项目根目录添加 `postcss.config.json` 文件来自定义 [PostCSS](https://github.com/postcss/postcss)。该文件应导出一个返回 PostCSS 配置对象的函数。例如：
+
+```json postcss.config.json
+{
+  "plugins": {
+    "tailwindcss": {}
+  }
+}
+```
+
+同时支持 `postcss.config.json` 和 `postcss.config.js`，但 `postcss.config.json` 可实现更好的缓存效果。
+
+Expo CLI 会自动处理 CSS 厂商前缀，内置支持 [browserslist](https://browsersl.ist/)。请勿添加 `autoprefixer`，因为这会重复实现相同功能并拖慢打包速度。
+
+#### 更新后重置缓存
+
+更改 Post CSS 或 `browserslist` 配置后，需要清除 Metro 缓存：
+
+<Terminal
+  cmd={['$ npx expo start --clear', '$ npx expo export --clear']}
+  cmdCopy="npx expo start --clear && npx expo export --clear"
+/>
+
+### browserslist
+
+Expo 通过基于 Rust 的 CSS 解析器自动支持 [browserslist](https://browsersl.ist/)。你可以在 **package.json** 文件中添加 **browserslist** 字段，自定义 CSS 厂商前缀和浏览器支持。例如：
+
+```json package.json
+{
+  "browserslist": [">0.2%", "not dead", "not op_mini all"]
+}
+```
+
+### SASS
+
+Expo Metro 对 SCSS/SASS 提供_部分_支持。
+
+要进行设置，请在项目中安装 `sass` 包：
+
+<Terminal cmd={['$ yarn add -D sass']} />
+
+然后，确保在 **metro.config.js** 文件中[设置 CSS](#css)。
+
+- 安装 `sass` 后，没有扩展名的模块将按以下顺序解析：`scss`、`sass`、`css`。
+- `sass` 文件只能使用对应的语法。
+- 目前不支持在 scss/sass 文件中导入其他文件。
+
+### Tailwind
+
+> **info** 标准 Tailwind CSS 仅支持 Web 平台。若要获得通用支持，请使用 [NativeWind](https://www.nativewind.dev/) 或 [Uniwind](https://uniwind.dev/) 等库，它们可以使用 Tailwind CSS 创建带样式的 React Native 组件。
+
+<BoxLink
+  title="Tailwind CSS"
+  description="了解如何在 Expo 项目中配置和使用 Tailwind CSS。"
+  href="/guides/tailwind/"
+  Icon={CodeSquare01Icon}
+/>
+
+## 扩展 Babel 转换器
+
+Expo 的 Metro 配置使用自定义的 `transformer.babelTransformerPath` 值，以确保始终使用 `expo-babel-preset` 并支持 Web/Node.js 环境。
+
+如果你想扩展 Babel 转换器，请从 `@expo/metro-config/babel-transformer` 导入上游转换器，而不是 `metro-react-native-babel-transformer`。例如：
+
+```js metro.transformer.js
+const upstreamTransformer = require('@expo/metro-config/babel-transformer');
+
+module.exports.transform = async ({ src, filename, options }) => {
+  // Do something custom for SVG files...
+  if (filename.endsWith('.svg')) {
+    src = '...';
+  }
+  // Pass the source through the upstream Expo transformer.
+  return upstreamTransformer.transform({ src, filename, options });
+};
+```
+
+## 自定义解析
+
+Expo CLI 扩展了 Metro 默认解析器，添加了 Web、Server 和 tsconfig 别名支持等功能。你也可以通过串联 `config.resolver.resolveRequest` 函数，自定义 Metro 的默认解析行为。
+
+```tsx metro.config.js|collapseHeight=470
+const { getDefaultConfig } = require('expo/metro-config');
+
+/** @type {import('expo/metro-config').MetroConfig} */
+const config = getDefaultConfig(__dirname);
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName.startsWith('my-custom-resolver:')) {
+    // Logic to resolve the module name to a file path...
+    // NOTE: Throw an error if there is no resolution.
+    return {
+      filePath: 'path/to/file',
+      type: 'sourceFile',
+    };
+  }
+
+  // Ensure you call the default resolver.
+  return context.resolveRequest(context, moduleName, platform);
+};
+
+module.exports = config;
+```
+
+与传统打包器不同，Metro 在所有平台间共享同一个解析器函数。因此，你可以使用 `context` 对象在每个请求中动态更改解析设置。
+
+### 模拟模块
+
+如果你希望某个平台上的模块为空，可以从解析器返回一个 `type: 'empty'` 对象。以下示例会使 Web 上的 `lodash` 为空：
+
+```ts metro.config.js
+const { getDefaultConfig } = require('expo/metro-config');
+
+/** @type {import('expo/metro-config').MetroConfig} */
+const config = getDefaultConfig(__dirname);
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (platform === 'web' && moduleName === 'lodash') {
+    return {
+      type: 'empty',
+    };
+  }
+
+  // Ensure you call the default resolver.
+  return context.resolveRequest(context, moduleName, platform);
+};
+
+module.exports = config;
+```
+
+这种技术相当于在 Webpack 或 Vite 中使用空外部模块，但还可以针对特定平台。
+
+### 虚拟模块
+
+Metro 目前不支持虚拟模块。一种实现类似行为的方法是在 `node_modules/.cache/...` 目录中创建模块，并将解析重定向到该文件。
+
+以下示例会在 `node_modules/.cache/virtual/virtual-module.js` 创建模块，并将 `virtual:my-module` 的解析重定向到该文件：
+
+```ts metro.config.js
+const path = require('path');
+const fs = require('fs');
+
+const { getDefaultConfig } = require('expo/metro-config');
+
+/** @type {import('expo/metro-config').MetroConfig} */
+const config = getDefaultConfig(__dirname);
+
+const virtualPath = path.resolve(__dirname, 'node_modules/.cache/virtual/virtual-module.js');
+
+// Create the virtual module in a generated directory...
+fs.mkdirSync(path.dirname(virtualPath), { recursive: true });
+fs.writeFileSync(virtualPath, 'export default "Hello World";');
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === 'virtual:my-module') {
+    return {
+      filePath: virtualPath,
+      type: 'sourceFile',
+    };
+  }
+
+  // Ensure you call the default resolver.
+  return context.resolveRequest(context, moduleName, platform);
+};
+
+module.exports = config;
+```
+
+这可以用于通过自定义导入模拟 `externals`。例如，如果你想将 `require('expo')` 重定向到类似 `SystemJS.require('expo')` 的自定义内容，可以创建一个导出 `SystemJS.require('expo')` 的虚拟模块，并将 `expo` 的解析重定向到该文件。
+
+## 自定义转换
+
+> Metro 中的转换会大量使用缓存。如果你更新了内容，请使用 `--clear` 标志查看更改。例如，`npx expo start --clear`。
+
+Metro 没有功能特别丰富的文件转换插件系统，因此建议使用 [**babel.config.js**](../config/babel/) 和 caller 对象来自定义转换。
+
+```js babel.config.js
+module.exports = function (api) {
+  // Get the platform that Expo CLI is transforming for.
+  const platform = api.caller(caller => (caller ? caller.platform : 'ios'));
+
+  // Detect if the bundling operation is for Hermes engine or not, e.g. `'hermes'` | `undefined`.
+  const engine = api.caller(caller => (caller ? caller.engine : null));
+
+  // Is bundling for a server environment, e.g. API Routes.
+  const isServer = api.caller(caller => (caller ? caller.isServer : false));
+
+  // Is bundling for development or production.
+  const isDev = api.caller(caller =>
+    caller
+      ? caller.isDev
+      : process.env.BABEL_ENV === 'development' || process.env.NODE_ENV === 'development'
+  );
+
+  // Ensure the config is not cached otherwise the platform will not be updated.
+  api.cache(false);
+  // You can alternatively provide a more robust CONFIG cache invalidation:
+  // api.cache.invalidate(() => platform);
+
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: [
+      // Add a plugin based on the platform...
+      platform === 'web' && 'my-plugin',
+
+      // Ensure you filter out falsy values.
+    ].filter(Boolean),
+  };
+};
+```
+
+如果 caller 没有 `engine`、`platform`、`bundler` 等信息，请确保转换器使用的是 `@expo/metro-config/babel-transformer`。如果使用自定义转换器，则可能需要扩展 Expo 转换器。
+
+如果可能，始终尝试在解析器中实现自定义逻辑，这样缓存会简单得多，也更容易理解。例如，如果你需要重新映射导入，使用解析器将其解析到静态文件会比分析所有可能的导入方式并通过转换器重新映射更简单、更快。
+
+始终使用 `babel-preset-expo` 作为默认 Babel 预设，以确保转换始终与 Expo 运行时兼容。`babel-preset-expo` 会在内部使用所有 caller 输入，针对给定的平台、引擎和环境进行优化。
+
+## 按需文件系统
+
+Expo 使用 `metro-file-map` 的一个分支（[`@expo/metro-file-map`](https://github.com/expo/expo/tree/main/packages/@expo/metro-file-map)）来发现、监视并按需解析源文件。
+
+Metro 启动时会预先扫描 `watchFolders` 中列出的每个目录。在[单体仓库](/guides/monorepos)中，这通常意味着会扫描每个工作区。启用按需文件系统访问后，文件映射可以在解析器请求时，按需读取 `watchFolders` 之外的文件。这样，你可以安全地减少 `watchFolders` 条目数量，以文件监视覆盖范围换取更快的启动速度，同时不影响访问项目根目录之外内容的导入。
+
+按需扫描还允许在单体仓库根目录之外解析符号链接，因此 Bun 和 pnpm 等包管理器也获得了 [Global Virtual Store 支持](https://pnpm.io/global-virtual-store)。
+
+此功能默认启用。你可以在[应用配置](/versions/latest/config/app/)中将 `experiments.onDemandFilesystem` 设置为 `false` 来禁用它：
+
+```json app.json
+{
+  "expo": {
+    "experiments": {
+      "onDemandFilesystem": false
+    }
+  }
+}
+```
+
+## Node.js 内置模块
+
+为服务器环境打包时，Expo 的 Metro 配置会根据当前 Node.js 版本，自动支持将 Node.js 内置模块（`fs`、`path`、`node:crypto` 等）设为外部模块。如果 CLI 正在为浏览器环境打包，则会先检查本地是否安装了内置模块，然后回退到空的垫片。例如，如果你安装了 `path` 以便在浏览器中使用，则可以使用它；否则会自动跳过该模块。
+
+## 环境设置
+
+> **info** 这些环境变量在测试环境中不会定义。
+
+Expo 的 Metro 配置会注入可通过环境变量在客户端包中使用的构建设置。所有变量都会内联，不能动态使用。例如，`process.env["EXPO_BASE_URL"]` 将无法使用。
+
+- `process.env.EXPO_BASE_URL` 会公开 `experiments.baseUrl` 中定义的基本 URL。Expo Router 会使用它来遵循部署的生产基本 URL。
+
+## 包拆分
+
+在生产环境中，Expo CLI 会根据异步导入自动将 Web 包拆分成多个区块。此功能要求安装 `@expo/metro-runtime`，并在入口包的某处导入它（Expo Router 默认已提供）。
+
+异步包中的共享依赖会合并到单个区块中，以减少请求数量。例如，如果两个异步包都导入了 `lodash`，则该库会合并到一个初始区块中。
+
+区块拆分启发式规则无法自定义。例如：
+
+<FileTree files={['math.js', 'index.js']} />
+
+```js math.js
+export function add(a, b) {
+  return a + b;
+}
+```
+
+```js index.js
+import '@expo/metro-runtime';
+
+// This will be split into a separate chunk.
+import('./math').then(math => {
+  console.log(math.add(1, 2));
+});
+```
+
+运行 `npx expo export -p web` 时，包会拆分成多个文件，入口包会添加到主 HTML 文件中。`@expo/metro-runtime` 会添加运行时代码，用于加载并执行异步包。
+
+## 源映射调试 ID
+
+如果包导出时带有外部源映射文件，则文件末尾会添加 [**Debug ID**](https://sentry.engineering/blog/the-case-for-debug-ids) 注释，同时在源映射文件中添加匹配的 `debugId`，以便将相应文件关联起来。如果未导出源映射，或者使用了内联源映射，则不会添加此注释。
+
+```js
+// <all source code>
+
+//# debugId=<deterministic chunk hash>
+```
+
+关联的 `*.js.map` 或 `*.hbc.map` 源映射将是一个 JSON 文件，其中包含等效的 `debugId` 属性。在生成 hermes 字节码之前会注入 `debugId`，以确保所有情况下都能匹配。
+
+`debugId` 是根据包内容计算出的确定性哈希，不包含外部包拆分引用。它与用于创建区块文件名的值相同，但格式为 UUID。例如，`431b98e2-c997-4975-a3d9-2987710abd44`。
+
+`@expo/metro-config` 会在 `npx expo export` 和 `npx expo export:embed` 期间注入 `debugId`。`npx expo export:embed` 中的任何额外优化步骤（例如 Hermes 字节码生成）都需要手动注入 `debugId`。
+
+## Metro require 运行时
+
+你可以使用环境变量 `EXPO_USE_METRO_REQUIRE=1`，选择启用自定义 Metro `require` 实现。此运行时具有以下功能：
+
+- 可读性更好的字符串模块 ID，使模块缺失错误更易于排查。
+- 确定性 ID，在多次运行及不同模块之间保持一致（开发环境中的 React Server Components 需要此功能）。
+- 移除了对旧版 RAM 包的支持。
+
+## 魔法导入注释
+
+> 从 SDK 52 起在所有平台上可用。
+
+Workers 等服务器环境以及 Node.js 支持在运行时导入任意文件，因此你可能希望保留 `import` 语法，而不是使用 Metro 的 require 系统。你可以在 `import()` 语句中使用 `/* @metro-ignore */` 注释来选择退出动态导入转换。
+
+```js
+// Manually ensure `./my-module.js` is included in the correct spot relative to the module.
+const myModule = await import(/* @metro-ignore */ './my-module.js');
+```
+
+Expo CLI 会跳过 `./my-module.js` 依赖，并假定开发者已手动将其添加到输出包中。内部会使用此功能导出自定义服务器代码，使其能够根据请求在不同文件之间动态切换。避免在原生包中使用此语法，因为启用 Hermes 后，React Native 通常不支持 `import()`。
+
+许多 React 库都附带了 Webpack 的 `/* webpackIgnore: true */` 注释，以实现类似行为。为弥合差距，我们也添加了对 Webpack 注释的支持，但建议在应用中使用 Metro 对应的注释。
+
+## ES Module 解析
+
+> 本节适用于 SDK 53 及之后的所有平台。
+
+Metro 使用不同的解析策略来解析 ES Module `import` 和 CommonJS `require`。
+
+此前，Metro 使用经典的 Node.js 模块解析策略（与 v12 之前的 Node.js 版本一致），并添加了一些对 ES Modules 的支持。在这种解析策略中，Metro 会从 `node_modules` 中解析模块和 JS 文件，也会选择性地省略扩展名（例如 `.js`），并使用 `package.json` 中的 `main`、`module` 和 `react-native` 等字段。
+
+现在，采用现代 ES Modules 解析策略后，Metro 会从 `node_modules` 中解析模块，然后匹配不同的 `package.json` 字段，例如 `exports`（[软件包公开的子路径嵌套映射](https://nodejs.org/api/packages.html#conditional-exports)）和 `main`。
+
+根据软件包的导入方式，将使用以下两种解析策略之一。通常，从 Node 模块中通过 `import`（而不是 `require`）导入的文件会使用 ES Modules 解析策略，并在此策略无法解析时回退到常规的经典 Node.js 解析。未通过 ES Modules 解析策略解析的文件，或通过 CommonJS `require` 导入的文件，将使用经典解析策略。
+
+### `package.json:exports`
+
+执行 ES Modules 解析时，Metro 会查看 `package.json:exports` 条件映射。这是一个将导入子路径和条件映射到 Node 模块软件包中的文件的映射。
+
+例如，始终公开 **index.js** 文件且符合 Metro 经典 CommonJS 模块解析方式的软件包，可以使用 `default` 条件指定映射。
+
+```json
+{
+  "exports": {
+    "default": "./index.js"
+  }
+}
+```
+
+不过，同时提供 CommonJS 和 ES Modules 入口文件的软件包，可以使用 `import` 和 `require` 条件指定映射。
+
+```json
+{
+  "exports": {
+    "import": "./index.mjs",
+    "require": "./index.cjs"
+  }
+}
+```
+
+默认情况下，Metro 会根据平台，以及解析是从 CommonJS `require` 调用还是 ES Modules `import` 语句开始，匹配不同的条件，并相应地更改条件。
+
+对于原生平台，会添加 `react-native` 条件；对于 Web 导出，会添加 `browser` 条件；对于服务器导出（例如 API 路由或 React Server 函数），会添加 `node`、`react-server` 和 `workerd` 条件。这些条件并非按照其定义顺序进行匹配，而是按照 `package.json:exports` 映射中属性的顺序进行匹配。
+
+TypeScript 会独立于 Metro 执行 ES Module 解析，并且当其 `compilerOptions.moduleResolution` 配置选项设置为 `"bundler"`（与 Metro 的行为更为接近）或 `"node16"` / `"nodenext"` 时，也会遵循 `package.json:exports` 映射。不过，TypeScript 也会匹配 `types` 条件。因此，如果软件包未将 `types` 条件放在其 exports 映射的首位，类型可能无法正确解析。
+
+由于 exports 映射可以包含子路径，软件包导入不再需要与软件包 modules 文件夹中的文件匹配，也可以是“重定向”导入。如果 `package.json:exports` 中有相应指定，导入 `'package/submodule'` 时匹配的文件可能与 **node_modules/package/submodule.js** 不同。
+
+```json
+{
+  "exports": {
+    ".": "./index.js",
+    "./submodule": "./submodule/submodule.js"
+  }
+}
+```
+
+如果遇到与新的 ES Modules 解析策略不兼容或尚未针对其做好准备的软件包，可以尝试修补其 `package.json` 文件，添加或修正其 `package.json:exports` 条件映射来解决问题。不过，也可以通过禁用 `unstable_enablePackageExports` 选项，阻止 Metro 在解析时使用 `package.json:exports` 映射。
+
+```js metro.config.js
+const { getDefaultConfig } = require('expo/metro-config');
+
+/** @type {import('expo/metro-config').MetroConfig} */
+const config = getDefaultConfig(__dirname);
+
+config.resolver.unstable_enablePackageExports = false;
+
+module.exports = config;
+```
+
+## 资源导入
+
+导入资源时，会创建一个虚拟模块，用于表示导入该资源所需的数据。
+
+在原生平台上，资源会是一个数字 ID：`1`、`2`、`3` 等，可以通过 `require("@react-native/assets-registry/registry").getAssetByID(<NUMBER>)` 查找。在 Web 和服务器平台上，资源的形式会因文件类型而异。如果文件是图像，资源将是 `{ uri: string, width?: number, height?: number }`；否则，资源将是一个表示该资源远程 URL 的 `string`。从 SDK 55 起，你可以使用 `String(asset)` 获取 Web 上任意资源的公开 URL；但 React Server Component 环境不在此列，因为其中不能包含 `toString` 函数。
+
+资源可以按如下方式使用：
+
+```jsx
+import { Image } from 'react-native';
+
+import asset from './img.png';
+
+function Demo() {
+  return <Image source={asset} />;
+}
+```
+
+在 API 路由中，可以始终假设资源的类型不是数字：
+
+```js
+import asset from './img.png';
+
+export async function GET(req: Request) {
+  const ImageData = await fetch(
+    new URL(
+      // Access the asset URI.
+      asset.uri,
+      // Append to the current request URL origin.
+      req.url
+    )
+  ).then(res => res.arrayBuffer());
+
+  return new Response(ImageData, {
+    headers: {
+      'Content-Type': 'image/png',
+    },
+  });
+}
+```
+
+## Web Worker
+
+> **重要** 此功能处于 alpha 阶段，可能会发生破坏性变更。
+
+```ts
+new Worker(new URL('./worker', window.location.href));
+```
+
+Expo Metro 提供实验性的 Web Worker 支持。此功能目前仅适用于 Web，在原生平台上无法使用；在原生平台上使用会触发错误 `"Property 'Worker' doesn't exist"`。
+
+Web Worker 可将工作卸载到 Web 上的独立线程，使主线程保持响应。这适用于计算开销较大的任务，例如图像处理、加密或其他可能阻塞主线程的任务。
+
+Worker 可以使用 `Blob` 内联生成，但有时你可能希望利用 TypeScript 等现代功能，或导入其他模块。
+
+Web Worker 依赖 Expo 的 bundle 拆分支持，这意味着你需要使用 Expo Router，或安装并导入 `@expo/metro-runtime`。此外，Web Worker 也不能与环境变量 `EXPO_NO_METRO_LAZY=1` 一起使用。
+
+以下示例展示了一个将数字加倍的 Worker：
+
+```ts worker.ts
+self.onmessage = ({ data }) => {
+  const result = data * 2; // Example: double the number
+  self.postMessage(result);
+};
+```
+
+此 Worker 文件可以在主应用中作为 `Worker` 导入：
+
+```ts
+// worker is of type `Worker`
+const worker = new Worker(new URL('./worker', window.location.href));
+
+worker.onmessage = ({ data }) => {
+  console.log(`Worker responded: ${data}`);
+};
+
+worker.postMessage(5);
+```
+
+在幕后，Expo CLI 会生成类似如下的代码：
+
+```ts
+const worker = new Worker(
+  new URL('/worker.bundle?platform=web&dev=true&etc', window.location.href)
+);
+```
+
+生成的 bundle URL 会根据开发或生产环境而变化，以确保 Worker 能正确加载和打包。与传统的 bundle 拆分不同，Worker 文件需要包含自身所需的所有模块副本，不能依赖主 bundle 中的公共模块。
+
+React Native 中通常无法使用原生 API `Worker`，且 Expo SDK 不提供该 API，因此，尽管此打包功能从技术上讲适用于所有平台，但它只适用于 Web。如果你希望同时支持原生平台，理论上可以编写一个为 `Worker` API 提供 polyfill 的原生 Expo 模块。或者，你也可以在原生平台上使用 React Native Reanimated 的“worklet” API，将工作卸载到独立线程。
+
+或者，你可以将经过转换的 JS 文件先放入 **public** 目录，然后在 Worker 导入中使用变量引用它，从而通过公开路径导入 Worker：
+
+```ts
+// Will avoid the transform and use the public path directly.
+const worker = new Worker('/worker.js');
+
+// The variable breaks the transform causing the literal path to be used instead of the transformed path.
+const path = '/worker.js';
+
+const anotherWorker = new Worker(new URL(path, window.location.href));
+```
+
+不支持在 `Worker` 构造函数中使用变量进行打包。若要检查内部 URL，可以使用内部语法 `require.unstable_resolveWorker('./path/to/worker.js')` 获取 URL 片段。
+
+## 现有 React Native 应用
+
+> 本指南有版本之分，在升级或降级 Expo 时需要重新检查。或者，使用 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 实现全自动设置。
+
+未使用 [Expo Prebuild](/more/glossary-of-terms/#prebuild) 的项目必须配置原生文件，以确保始终使用 Expo Metro 配置打包项目。
+
+{/* If this isn't done, then features like [aliases](/guides/typescript/#path-aliases-optional), [absolute imports](/guides/typescript/#absolute-imports-optional), asset hashing, and more will not work. */}
+
+这些修改旨在分别将 `npx react-native bundle` 和 `npx react-native start` 替换为 `npx expo export:embed` 和 `npx expo start`
+
+### metro.config.js
+
+确保 **metro.config.js** 扩展自 `expo/metro-config`：
+
+```js metro.config.js
+const { getDefaultConfig } = require('expo/metro-config');
+
+const config = getDefaultConfig(__dirname);
+
+module.exports = config;
+```
+
+### `android/app/build.gradle`
+
+Android **app/build.gradle** 必须配置为使用 Expo CLI 进行生产环境打包。修改 `react` 配置对象：
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/android-use-expo-cli-bundling.diff" />
+
+### `ios/<Project>.xcodeproj/project.pbxproj`
+
+在 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换以下脚本：
+
+#### “Start Packager”脚本
+
+移除 **“Start Packager”** 脚本。运行应用前后必须使用 `npx expo` 启动开发服务器
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/ios-remove-start-packager.diff" />
+
+#### “Bundle React Native code and images”脚本
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script.diff" />
+
+或者，在 Xcode 项目中，选择 **“Bundle React Native code and images”** 构建阶段并添加以下修改：
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script-inline.diff" />
+
+> 可以设置 `CLI_PATH`、`BUNDLE_COMMAND` 和 `ENTRY_FILE` 环境变量来覆盖这些默认值
+
+### 自定义入口文件
+
+默认情况下，React Native 仅支持使用根目录下的 `index.js` 文件作为入口文件（或 `index.ios.js` 等特定平台的变体）。Expo 项目允许使用任意入口文件，但这需要对现有 React Native 项目进行额外设置
+
+#### 开发
+
+可以使用 [`expo-dev-client`](../sdk/dev-client/) 包启用开发模式入口文件。也可以添加以下配置：
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/ios-appdelegate-entry.diff" />
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/android-mainapplication-entry.diff" />
+
+#### 生产环境
+
+在 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换 **“Bundle React Native code and images”** 脚本，以根据 Metro 设置 `$ENTRY_FILE`：
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script.diff" />
+
+Android **app/build.gradle** 必须配置为使用 Metro 模块解析来查找根入口文件。修改 `react` 配置对象：
+
+<DiffBlock source="/static/diffs/config/metro-unversioned/android-entry-file.diff" />

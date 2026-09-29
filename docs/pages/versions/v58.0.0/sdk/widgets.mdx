@@ -1,0 +1,740 @@
+---
+title: 小组件
+description: 使用 Expo UI components 构建 iOS 主屏幕小组件和 Live Activities 的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-widgets'
+packageName: 'expo-widgets'
+exampleName: 'with-widgets'
+platforms: ['ios']
+hasVideoLink: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+> **重要** 此库在 Expo Go 应用中不可用 — 请使用[开发构建](/develop/development-builds/introduction)进行试用。
+
+`expo-widgets` 可使用 Expo UI 组件创建 iOS 主屏幕小组件和实时活动，无需编写原生代码。它提供了一个简单的 API，用于创建和更新小组件的时间线，以及启动和管理实时活动。你可以使用 [`expo/ui`](/versions/latest/sdk/ui/swift-ui/) 组件和修饰符构建布局。
+
+<VideoBoxLink
+  videoId="3r_OHePTCcI"
+  title="观看：如何构建 iOS 小组件"
+  description="使用 expo-widgets 和 TypeScript 构建原生 iOS 主屏幕小组件。"
+/>
+
+## 已知限制
+
+- **频繁更新实时活动。** 如需提高频繁推送更新的额度，请在 **Info.plist** 中将 `NSSupportsLiveActivitiesFrequentUpdates` 设为 `true`。系统仍可能限制更新频率，用户也可以在“设置”中关闭频繁更新。
+- **小组件运行时。** `'widget'` 标记组件中的代码会在隔离的运行时中执行，且只能使用 `@expo/ui/swift-ui` 组件，不能使用 React hooks、应用状态或异步操作。请参阅[ `'widget'` 指令](#the-widget-directive)。
+
+## 安装
+
+<APIInstallSection />
+
+## 在应用配置中配置
+
+如果项目使用配置插件（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用内置的[配置插件](/config-plugins/introduction/)来配置 `expo-widgets`。该插件可配置各种无法在运行时设置、且需要重新构建应用二进制文件才能生效的属性。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-widgets",
+        {
+          "widgets": [
+            {
+              "name": "MyWidget",
+              "displayName": "My Widget",
+              "description": "A sample home screen widget",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
+            }
+          ]
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'bundleIdentifier',
+      description:
+        '小组件扩展目标的 bundle 标识符。如果未指定，默认为 `<main app bundle identifier>.ExpoWidgetsTarget`。',
+      default: '"<app bundle identifier>.ExpoWidgetsTarget"',
+    },
+    {
+      name: 'groupIdentifier',
+      description:
+        '用于主应用与小组件之间通信和共享数据的应用组标识符，小组件需要它才能正常工作。如果未指定，默认为 `group.<main app bundle identifier>`。如果 `ios.bundleIdentifier` 也未设置，预构建会失败，因为需要 bundle 标识符来推导此值。',
+      default: '"group.<app bundle identifier>"',
+    },
+    {
+      name: 'enablePushNotifications',
+      description:
+        '是否为实时活动启用推送通知。启用后，会添加 `aps-environment` 权限，并在 **Info.plist** 中设置 `ExpoLiveActivity_EnablePushNotifications`。',
+      default: 'false',
+    },
+    {
+      name: 'widgets',
+      description:
+        '小组件配置数组。数组中的每个小组件都会在小组件扩展中生成为单独的小组件类型。',
+    },
+    {
+      name: 'widgets[].name',
+      description:
+        '小组件的内部名称（标识符）。它会用作 Swift 结构体名称，应为有效的 Swift 标识符（不能包含空格或特殊字符）。它必须与传递给 `createWidget` 的 `name` 一致。',
+    },
+    {
+      name: 'widgets[].displayName',
+      description:
+        '面向用户的小组件名称，用户将小组件添加到主屏幕时，此名称会显示在小组件图库中。',
+    },
+    {
+      name: 'widgets[].description',
+      description:
+        "对小组件功能的简短描述。此描述会显示在小组件图库中，帮助用户了解小组件的用途。",
+    },
+    {
+      name: 'widgets[].ios.supportedFamilies',
+      description: [
+        '此小组件支持的小组件尺寸数组。可用选项：',
+        '* `systemSmall` - 小型方形小组件（2x2 网格）',
+        '* `systemMedium` - 中型矩形小组件（4x2 网格）',
+        '* `systemLarge` - 大型方形小组件（4x4 网格）',
+        '* `systemExtraLarge` - 超大型小组件（仅限 iPad，6x4 网格）',
+        '* `accessoryCircular` - 锁定屏幕上的圆形小组件',
+        '* `accessoryRectangular` - 锁定屏幕上的矩形小组件',
+        '* `accessoryInline` - 锁定屏幕上的行内文本小组件',
+      ].join('\n'),
+    },
+    {
+      name: 'widgets[].ios.contentMarginsDisabled',
+      description:
+        "禁用小组件的内容边距后，系统不会自动在小组件内容周围添加边距，你需要负责为不同上下文中的小组件内容指定边距和内边距。",
+      default: 'false',
+    },
+    {
+      name: 'widgets[].ios.initialLayout',
+      description:
+        '注册此小组件的文件路径，该文件会调用 `createWidget`。路径相对于项目根目录。设置此项可使小组件在应用首次打开前就显示在小组件图库中。',
+    },
+    {
+      name: 'widgets[].ios.configuration',
+      description: [
+        '使小组件变为[可配置](#configurable-widgets)。用户选择的值会通过 `environment.configuration` 在运行时传递给小组件。它是一个包含以下内容的对象：',
+        '* `title` - 用户编辑小组件时显示的标题。',
+        '* `description` - 用户编辑小组件时显示的可选描述。',
+        '* `parameters` - 参数键到参数定义的映射。每个参数包含 `title`、`type`（`string`、`number`、`boolean` 或 `enum`）和 `default`。`enum` 参数还需要一个包含 `{ name, value }` 选项的 `values` 数组，并且可以设置 `dynamic: true`，以便应用在运行时替换这些选项。',
+      ].join('\n'),
+    },
+  ]}
+/>
+
+> **信息** 顶层的 `supportedFamilies` 和 `contentMarginsDisabled` 选项是 `ios.supportedFamilies` 和 `ios.contentMarginsDisabled` 的已弃用别名。请优先使用上面所示的嵌套 `ios` 形式。
+
+### 包含所有选项的完整示例
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "com.example.myapp.widgets",
+          "groupIdentifier": "group.com.example.myapp",
+          "enablePushNotifications": true,
+          "widgets": [
+            {
+              "name": "StatusWidget",
+              "displayName": "Status",
+              "description": "Shows your current status at a glance",
+              "ios": {
+                "contentMarginsDisabled": true,
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
+            },
+            {
+              "name": "WeatherWidget",
+              "displayName": "Weather",
+              "description": "Shows the weather for a city you choose",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"],
+                "configuration": {
+                  "title": "Choose a city",
+                  "description": "Pick which city to show the weather for",
+                  "parameters": {
+                    "city": {
+                      "title": "City",
+                      "type": "enum",
+                      "default": "sf",
+                      "values": [
+                        { "name": "San Francisco", "value": "sf" },
+                        { "name": "New York", "value": "nyc" }
+                      ],
+                      "dynamic": true
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "LockScreenWidget",
+              "displayName": "Quick View",
+              "description": "View info on your Lock Screen",
+              "ios": {
+                "supportedFamilies": [
+                  "accessoryCircular",
+                  "accessoryRectangular",
+                  "accessoryInline"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    ]
+  }
+}
+```
+
+## 使用方法
+
+### `'widget'` 指令
+
+传递给 `createWidget` 和 `createLiveActivity` 的组件必须以 `'widget'` 指令开头。该指令会告诉打包器将组件编译成单独的 JavaScript 包，在小组件扩展内部的隔离运行时中运行，而不是在应用的 React Native 运行时中运行。
+
+由于这种隔离，`'widget'` 标记组件中的代码受到以下限制：
+
+- 只能渲染 [`@expo/ui/swift-ui`](/versions/latest/sdk/ui/swift-ui/) 组件和修饰符。标准 React Native 组件（例如来自 `react-native` 的 `View` 和 `Text`）不可用。
+- 不能使用 React hooks（`useState`、`useEffect` 等）、组件状态或上下文。函数必须是纯函数，并同步返回布局。
+- 不能执行异步操作、导入其他模块，或访问应用的运行时和内存状态。
+- 不能引用组件函数外部声明的任何内容，包括**同一文件**中的顶层普通 `const`。打包器只会序列化函数体，因此模块作用域的值在运行时不可用。请在小组件函数**内部**声明所有常量和辅助函数，或通过 props 传入。
+
+小组件所需的所有数据都必须通过其 props（使用 `updateSnapshot`、`updateTimeline` 或实时活动的 `start` 和 `update` 设置）以及 `environment` 参数传入。若要使用图片，请从应用将图片写入 [`widgetsDirectory`](#sharing-images-with-widgetsdirectory)，并通过路径引用。
+
+```tsx
+import { Text } from '@expo/ui/swift-ui';
+import { createWidget, type WidgetEnvironment } from 'expo-widgets';
+
+// 在模块作用域声明 — 不会包含在小组件包中。
+const CITY_NAMES: Record<string, string> = { sf: 'San Francisco' };
+
+const CityWidget = (props: object, environment: WidgetEnvironment<{ city: string }>) => {
+  'widget';
+  // 运行时抛出异常：Can't find variable: CITY_NAMES
+  return <Text>{CITY_NAMES[environment.configuration.city]}</Text>;
+};
+
+export default createWidget('CityWidget', CityWidget);
+```
+
+将 `CITY_NAMES` 移至 `CityWidget` 内部（或通过 props 传入解析后的值）即可修复此问题。
+
+### 小组件
+
+#### 前提条件：创建小组件
+
+首先，使用 `createWidget` 函数创建小组件，并传入带有 `'widget'` 指令标记的小组件。该组件接收作为第一个参数传入的小组件 props，以及作为第二个参数传入的 `WidgetEnvironment` 对象。
+
+```tsx
+import { Text, VStack } from '@expo/ui/swift-ui';
+import { font, foregroundStyle } from '@expo/ui/swift-ui/modifiers';
+import { createWidget, type WidgetEnvironment } from 'expo-widgets';
+
+type MyWidgetProps = {
+  count: number;
+};
+
+const MyWidget = (props: MyWidgetProps, environment: WidgetEnvironment) => {
+  'widget';
+  return (
+    <VStack>
+      <Text modifiers={[font({ weight: 'bold', size: 16 }), foregroundStyle('#000000')]}>
+        Count: {props.count}
+      </Text>
+      <Text>Family: {environment.widgetFamily}</Text>
+    </VStack>
+  );
+};
+
+export default createWidget('MyWidget', MyWidget, { count: 0 });
+```
+
+小组件名称（`'MyWidget'`）必须与[应用配置](/workflow/configuration/)中小组件配置的 `name` 字段一致。
+可选的第三个参数提供初始 props，在小组件时间线更新之前使用。
+
+#### 基础小组件
+
+更新小组件的一种有效方式是使用 `updateSnapshot` 方法。它会创建仅包含一个条目的小组件时间线，并立即显示该条目。
+
+以下示例接续自[创建小组件](#prerequisite-creating-a-widget)。
+
+```tsx
+import MyWidget from './MyWidget';
+
+// 更新小组件
+MyWidget.updateSnapshot({ count: 5 });
+```
+
+#### 时间线小组件
+
+使用 `updateTimeline` 方法可安排在指定时间更新小组件。系统会根据时间线自动更新小组件。
+
+以下示例接续自[创建小组件](#prerequisite-creating-a-widget)。
+
+```tsx
+import MyWidget from './MyWidget';
+
+MyWidget.updateTimeline([
+  { date: new Date(), props: { count: 1 } },
+  { date: new Date(Date.now() + 3600000), props: { count: 2 } }, // 1 hour from now
+  { date: new Date(Date.now() + 7200000), props: { count: 3 } }, // 2 hours from now
+  { date: new Date(Date.now() + 10800000), props: { count: 4 } }, // 3 hours from now
+]);
+```
+
+#### 读取当前时间线
+
+使用 `getTimeline` 读取当前为小组件安排的条目，包括过去和未来的条目。
+
+```tsx
+import MyWidget from './MyWidget';
+
+const entries = await MyWidget.getTimeline();
+// [{ date: Date, props: { count: number } }, ...]
+```
+
+#### 重新加载小组件
+
+使用 `reload` 强制系统立即刷新小组件的内容和时间线，例如在底层数据发生变化后。
+
+```tsx
+import MyWidget from './MyWidget';
+
+MyWidget.reload();
+```
+
+#### 响应式小组件
+
+使用 `environment` 参数，根据当前小组件尺寸和渲染上下文调整布局。
+
+```tsx
+import { HStack, Text, VStack } from '@expo/ui/swift-ui';
+import { createWidget, type WidgetEnvironment } from 'expo-widgets';
+
+type WeatherWidgetProps = {
+  temperature: number;
+  condition: string;
+};
+
+const WeatherWidget = (props: WeatherWidgetProps, environment: WidgetEnvironment) => {
+  'widget';
+  // 根据尺寸渲染不同布局
+  if (environment.widgetFamily === 'systemSmall') {
+    return (
+      <VStack>
+        <Text>{props.temperature}°</Text>
+      </VStack>
+    );
+  }
+
+  if (environment.widgetFamily === 'systemMedium') {
+    return (
+      <HStack>
+        <Text>{props.temperature}°</Text>
+        <Text>{props.condition}</Text>
+      </HStack>
+    );
+  }
+
+  // systemLarge 及其他尺寸
+  return (
+    <VStack>
+      <Text>Temperature: {props.temperature}°</Text>
+      <Text>Condition: {props.condition}</Text>
+      <Text>Updated: {environment.date.toLocaleTimeString()}</Text>
+    </VStack>
+  );
+};
+
+const Widget = createWidget('WeatherWidget', WeatherWidget);
+export default Widget;
+
+Widget.updateSnapshot({
+  temperature: 72,
+  condition: 'Sunny',
+});
+```
+
+#### 适应渲染环境
+
+除了 `widgetFamily` 和 `date`，`environment` 对象还描述了系统如何以及在哪里绘制小组件，因此你可以据此调整布局：
+
+- `colorScheme`：`'light'` 或 `'dark'`。
+- `widgetRenderingMode`：主屏幕小组件使用 `'fullColor'`；锁定屏幕小组件使用 `'vibrant'`（系统会将其降低饱和度，呈现自适应单色外观）；iOS 18 及更高版本上的色调小组件使用 `'accented'`。你可以据此选择在每种模式下都清晰易读的颜色。
+- `isLuminanceReduced`：当显示屏需要降低亮度时为 `true`（例如“始终显示”模式）。请降低内容的整体亮度，例如使用描边形状而不是填充形状。
+- `widgetContentMargins`：未禁用内容边距时系统建议的边距（`top`、`bottom`、`leading`、`trailing`）。
+- `showsWidgetLabel`：对于配件小组件，指示是否可以显示配件标签。
+
+#### 交互式小组件
+
+小组件可以包含 `Button` 等交互控件。按钮的 `onPress` 回调返回的值会成为小组件的新 props。运行时会持久化该值，并在设备上重新加载小组件，无需应用进程运行。这是让小组件响应点击并自行更新的主要方式。交互式小组件要求 iOS 17 或更高版本。
+
+```tsx CounterWidget.tsx
+import { Button, Text, VStack } from '@expo/ui/swift-ui';
+import { createWidget } from 'expo-widgets';
+
+type CounterProps = {
+  count: number;
+};
+
+const CounterWidget = (props: CounterProps) => {
+  'widget';
+  return (
+    <VStack>
+      <Text>Count: {props.count}</Text>
+      <Button label="Increment" target="increment" onPress={() => ({ count: props.count + 1 })} />
+    </VStack>
+  );
+};
+
+export default createWidget('CounterWidget', CounterWidget, { count: 0 });
+```
+
+若还要让正在运行的应用与小组件交互保持同步，请为控件设置 `target` 标识符（如上所示），并使用 `addUserInteractionListener` 监听点击事件。监听器会接收小组件的 `name` 作为 `source`，以及控件的 `target`。与 `onPress` 不同，它仅在应用进程存活时触发，因此应将其用于把交互同步到应用状态，而不是用作小组件的更新机制。
+
+```tsx App.tsx
+import { addUserInteractionListener } from 'expo-widgets';
+
+const subscription = addUserInteractionListener(event => {
+  if (event.source === 'CounterWidget' && event.target === 'increment') {
+    // 小组件已通过 onPress 自行更新；在此处将更改同步到应用状态。
+    console.log('Counter incremented from the widget');
+  }
+});
+
+// 不再需要更新时：
+subscription.remove();
+```
+
+#### 使用 `widgetsDirectory` 共享图片
+
+小组件无法访问应用沙盒中的文件，因此若要在小组件中显示图片，必须将图片放入共享的应用组容器中。`widgetsDirectory` 是一个 `file://` URL 字符串，指向应用和小组件都可以读取的目录。请从应用将图片写入该目录，然后在小组件中通过路径引用。
+
+```tsx
+import { widgetsDirectory } from 'expo-widgets';
+
+// `widgetsDirectory` 是指向与小组件共享目录的 file:// URL。
+console.log(widgetsDirectory);
+```
+
+> **信息** 仅当未配置应用组时，`widgetsDirectory` 才为 `null`。`groupIdentifier` 配置插件选项会自动设置应用组（若未设置则使用 `group.<bundle identifier>`），因此在正常使用时该目录可用。
+
+#### 可配置小组件
+
+为小组件添加 [`ios.configuration`](#configuration-in-app-config) 后，用户可以长按小组件并编辑其参数。用户选择的值会通过 `environment.configuration` 传递给小组件。将第二个类型参数传递给 `createWidget`（以及 `WidgetEnvironment`）即可为配置指定类型。可配置小组件要求 iOS 17 或更高版本。
+
+```tsx
+import { Text, VStack } from '@expo/ui/swift-ui';
+import { createWidget, type WidgetEnvironment } from 'expo-widgets';
+
+type WeatherProps = {
+  temperature: number;
+};
+
+type WeatherConfiguration = {
+  city: string;
+};
+
+const WeatherWidget = (
+  props: WeatherProps,
+  environment: WidgetEnvironment<WeatherConfiguration>
+) => {
+  'widget';
+  return (
+    <VStack>
+      <Text>{environment.configuration.city}</Text>
+      <Text>{props.temperature}°</Text>
+    </VStack>
+  );
+};
+
+export default createWidget<WeatherProps, WeatherConfiguration>('WeatherWidget', WeatherWidget);
+```
+
+#### 动态枚举选项
+
+当选项列表只有在运行时才确定时（例如登录后加载的工作区），请在[应用配置](#configuration-in-app-config)中的枚举参数上设置 `dynamic: true`。在应用提供运行时选项之前，应用配置中的 `values` 数组会作为备用列表，如下所示：
+
+```tsx
+WeatherWidget.setConfigurationParameterEnum('city', [
+  { name: 'Current City', value: 'current' },
+  { name: 'San Francisco', value: 'sf' },
+  { name: 'New York', value: 'nyc' },
+]);
+```
+
+### 实时活动
+
+实时活动会在锁定屏幕和受支持设备上的灵动岛中显示实时信息。
+
+#### 前提条件：创建实时活动
+
+必须先使用 `createLiveActivity` 创建一次实时活动布局，并使用 `'widget'` 指令标记。该组件接收作为第一个参数传入的 props，以及作为第二个参数传入的 `LiveActivityEnvironment` 对象。它会返回一个描述各展示形式布局的对象：锁定屏幕上的 `banner`、灵动岛的紧凑和最小状态，以及灵动岛的展开区域。
+
+> **重要** `createLiveActivity` 会完全在运行时注册实时活动，并由库内置的实时活动目标进行渲染。请**勿**在[应用配置](#configuration-in-app-config)中为其添加 `widgets[]` 条目。`widgets[]` 数组仅用于主屏幕和锁定屏幕小组件；不含 `supportedFamilies` 的条目会生成无效的小组件目标，导致构建失败。传递给 `createLiveActivity` 的 `name` 只需与此 `createLiveActivity` 调用匹配，无需对应应用配置中的小组件。
+
+```tsx
+import { Image, Text, VStack } from '@expo/ui/swift-ui';
+import { font, foregroundStyle, padding } from '@expo/ui/swift-ui/modifiers';
+import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
+
+type DeliveryActivityProps = {
+  etaMinutes: number;
+  status: string;
+};
+
+const DeliveryActivity = (props: DeliveryActivityProps, environment: LiveActivityEnvironment) => {
+  'widget';
+  const accentColor = environment.isLuminanceReduced ? '#FFFFFF' : '#007AFF';
+
+  return {
+    banner: (
+      <VStack modifiers={[padding({ all: 12 })]}>
+        <Text modifiers={[font({ weight: 'bold' }), foregroundStyle(accentColor)]}>
+          {props.status}
+        </Text>
+        <Text>Estimated arrival: {props.etaMinutes} minutes</Text>
+      </VStack>
+    ),
+    compactLeading: <Image systemName="box.truck.fill" color={accentColor} />,
+    compactTrailing: <Text>{props.etaMinutes} min</Text>,
+    minimal: <Image systemName="box.truck.fill" color={accentColor} />,
+    expandedLeading: (
+      <VStack modifiers={[padding({ all: 12 })]}>
+        <Image systemName="box.truck.fill" color={accentColor} />
+        <Text modifiers={[font({ size: 12 })]}>Delivering</Text>
+      </VStack>
+    ),
+    expandedTrailing: (
+      <VStack modifiers={[padding({ all: 12 })]}>
+        <Text modifiers={[font({ weight: 'bold', size: 20 })]}>{props.etaMinutes}</Text>
+        <Text modifiers={[font({ size: 12 })]}>minutes</Text>
+      </VStack>
+    ),
+    expandedBottom: (
+      <VStack modifiers={[padding({ all: 12 })]}>
+        <Text>Driver: John Smith</Text>
+        <Text>Order #12345</Text>
+      </VStack>
+    ),
+  };
+};
+
+export default createLiveActivity('DeliveryActivity', DeliveryActivity);
+```
+
+布局对象支持以下区域：
+
+- `banner`：锁定屏幕上的主要展示。
+- `bannerSmall`：紧凑型锁定屏幕展示，用于 CarPlay 和 watchOS。省略时回退到 `banner`。
+- `compactLeading`、`compactTrailing`、`minimal`：灵动岛的紧凑和最小状态。
+- `expandedLeading`、`expandedTrailing`、`expandedCenter`、`expandedBottom`：灵动岛展开后的区域。
+
+`environment` 对象还会公开 `isLuminanceReduced`、`isActivityFullscreen`、`isActivityUpdateReduced` 和 `activityFamily`，以便你根据当前展示调整布局。
+
+#### 启动实时活动
+
+以下示例接续自[创建实时活动](#prerequisite-creating-a-live-activity)。
+
+```tsx
+import { Button, View } from 'react-native';
+import DeliveryActivity from './DeliveryActivity';
+
+function App() {
+  const startDeliveryTracking = () => {
+    // Start the Live Activity
+    const instance = DeliveryActivity.start(
+      {
+        etaMinutes: 15,
+        status: 'Your delivery is on the way',
+      },
+      'myapp://deliveries/12345'
+    );
+    // Store instance
+  };
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Button title="Start delivery tracking" onPress={startDeliveryTracking} />
+    </View>
+  );
+}
+export default App;
+```
+
+可选的第二个参数是与实时活动关联的 URL。当用户轻点活动时，系统会通过该 URL 打开你的应用，因此你可以使用[链接](/linking/into-your-app/)跳转到相关页面（例如使用 Expo Router 的深度链接）。
+
+#### 更新实时活动
+
+以下示例接续自[启动实时活动](#starting-a-live-activity)。
+
+```tsx
+import { LiveActivity } from 'expo-widgets';
+
+function updateDelivery(instance: LiveActivity<DeliveryActivityProps>) {
+  instance.update({
+    etaMinutes: 2,
+    status: 'Delivery arriving soon!',
+  });
+}
+```
+
+#### 恢复活跃的实时活动
+
+实时活动可以在启动它的应用进程结束后继续存在。使用工厂上的 `getInstances` 检索当前活跃的该类型活动，例如在应用重新启动后更新或结束这些活动。
+
+```tsx
+import DeliveryActivity from './DeliveryActivity';
+
+const activeInstances = DeliveryActivity.getInstances();
+
+for (const instance of activeInstances) {
+  await instance.update({ etaMinutes: 5, status: 'Almost there' });
+}
+```
+
+#### 结束实时活动
+
+使用 `end` 结束实时活动。你可以选择关闭策略，可选地提供最终内容状态，并传入 `contentDate`，以便系统忽略过期更新。
+
+```tsx
+import { after, type LiveActivity } from 'expo-widgets';
+
+async function completeDelivery(instance: LiveActivity<DeliveryActivityProps>) {
+  await instance.end(
+    after(new Date(Date.now() + 15 * 60 * 1000)),
+    {
+      etaMinutes: 0,
+      status: 'Delivered',
+    },
+    new Date()
+  );
+}
+```
+
+你也可以传入 `'default'` 或 `'immediate'`，代替 `after(date)` 作为关闭策略。
+
+#### 通过推送通知远程更新
+
+当 `enablePushNotifications` 为 `true` 时，你可以通过 Apple 推送通知服务（APNs）从服务器远程更新实时活动。
+
+- 使用 `addPushToStartTokenListener` 接收应用级的推送启动令牌，该令牌可让服务器远程启动实时活动（需要 iOS 17.2 或更高版本）。
+- 使用 `instance.getPushToken()` 或 `instance.addPushTokenListener()` 获取特定运行中实时活动的令牌，该令牌可让服务器向该活动发送更新。
+
+```tsx
+import { addPushToStartTokenListener } from 'expo-widgets';
+import DeliveryActivity from './DeliveryActivity';
+
+const pushToStartSubscription = addPushToStartTokenListener(event => {
+  console.log('Push-to-start token:', event.activityPushToStartToken);
+});
+
+async function startDeliveryTracking() {
+  const instance = DeliveryActivity.start({
+    etaMinutes: 15,
+    status: 'Your delivery is on the way',
+  });
+
+  const pushToken = await instance.getPushToken();
+  console.log('Per-activity token:', pushToken);
+
+  const subscription = instance.addPushTokenListener(event => {
+    console.log('Updated push token:', event.activityId, event.pushToken);
+  });
+
+  // Later, when you no longer need updates:
+  subscription.remove();
+}
+
+// Later, when you no longer need updates:
+pushToStartSubscription.remove();
+```
+
+将令牌发送到服务器，并用它推送更新。通知必须使用 `liveactivity` 推送类型（`apns-push-type` 标头），且 `apns-topic` 为 `<your bundle identifier>.push-type.liveactivity`。其 `aps` 负载包含一个 `event`（`start`、`update` 或 `end`）、一个 `timestamp`，以及与活动 props 匹配的 `content-state`。`content-state` 必须与 `expo-widgets` 使用的内部内容状态匹配：将 `name` 设为传给 `createLiveActivity` 的名称，并将 `props` 设为该活动 props 的 JSON 字符串。立即更新使用 `apns-priority: 10`，较低优先级的更新使用 `apns-priority: 5`。`timestamp`、`dismissal-date` 和其他 APNs 日期字段均为以秒为单位的 Unix 时间戳。
+
+要远程启动实时活动，请向推送启动令牌发送 `start` 事件：
+
+```json
+{
+  "aps": {
+    "timestamp": 1778832000,
+    "event": "start",
+    "attributes-type": "LiveActivityAttributes",
+    "attributes": {},
+    "content-state": {
+      "name": "DeliveryActivity",
+      "props": "{\"etaMinutes\":15,\"status\":\"Your delivery is on the way\"}"
+    },
+    "alert": {
+      "title": "Delivery started",
+      "body": "Your delivery is on the way"
+    }
+  }
+}
+```
+
+远程启动需要 iOS 17.2 或更高版本。在 iOS 18 或更高版本上，如果希望 APNs 为后续更新提供新的活动级令牌，请在 `aps` 负载中包含 `input-push-token: 1`。
+
+要远程更新实时活动，请向该活动的活动级令牌发送 `update` 事件：
+
+```json
+{
+  "aps": {
+    "timestamp": 1778832300,
+    "event": "update",
+    "content-state": {
+      "name": "DeliveryActivity",
+      "props": "{\"etaMinutes\":2,\"status\":\"Delivery arriving soon!\"}"
+    }
+  }
+}
+```
+
+要远程结束实时活动，请发送带有最终内容状态的 `end` 事件：
+
+```json
+{
+  "aps": {
+    "timestamp": 1778832600,
+    "event": "end",
+    "content-state": {
+      "name": "DeliveryActivity",
+      "props": "{\"etaMinutes\":0,\"status\":\"Delivered\"}"
+    },
+    "dismissal-date": 1778833200
+  }
+}
+```
+
+有关确切的负载格式和标头，请参阅 Apple 的[使用 ActivityKit 推送通知启动和更新实时活动](https://developer.apple.com/documentation/activitykit/starting-and-updating-live-activities-with-activitykit-push-notifications)。
+
+## API
+
+{/* prettier-ignore */}
+```tsx
+import { createWidget, createLiveActivity } from 'expo-widgets';
+```
+
+<APISection packageName="expo-widgets" />

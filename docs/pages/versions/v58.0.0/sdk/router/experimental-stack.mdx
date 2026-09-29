@@ -1,0 +1,120 @@
+---
+title: 路由器实验性 Stack
+sidebar_title: 实验性 Stack
+description: 一个基于 react-native-screens 实验性 gamma stack、可选择启用的 Stack 同级组件。仅供测试使用。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-router/src/layouts/experimental-stack'
+packageName: 'expo-router'
+platforms: ['ios', 'android']
+isAlpha: true
+---
+
+import { RouterLogo } from '@expo/styleguide';
+
+import APISection from '~/components/plugins/APISection';
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Collapsible } from '~/ui/components/Collapsible';
+
+> **重要** `ExperimentalStack` 是一个 [alpha](/more/release-statuses/#alpha) API，适用于 **Expo SDK 56** 及更高版本。该 API 仅供测试使用——在可用于生产环境之前，API 和功能集可能会发生变化。
+
+`ExperimentalStack` 是 [`Stack`](./stack) 的同类组件，由新的 `react-native-screens/experimental` 堆栈驱动。它需要按导航器选择启用：在要迁移的特定布局中，将 `<Stack />` 替换为 `<ExperimentalStack />`，其他地方继续使用 `<Stack />`。
+
+我们提前分享它，以便你可以在应用中试用并告诉我们还缺少什么。当前支持的选项范围有意保持精简，今后会逐步扩展。
+
+> 有关适用于原生和 Web 应用的基于文件路由库的更多信息，请参阅 [Expo Router](./index) 参考文档。
+
+## 支持的功能
+
+支持的屏幕选项：
+
+- `title`
+- `headerShown`
+- `headerTransparent`
+- `headerBackVisible`
+
+在 Android 上，`ExperimentalStack` 内置了对[预测性返回手势](https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture)的支持。你仍需在[应用配置](/workflow/configuration/)中将 [`android.predictiveBackGestureEnabled`](/versions/latest/config/app/#predictivebackgestureenabled) 设置为 `true`，以便为应用启用此功能。
+
+## 平台支持
+
+`ExperimentalStack` 仅适用于原生平台。在 Web 上，它会回退到标准的 `Stack`，因此相同的布局可以在各个平台上运行，无需条件代码。
+
+## 基本用法
+
+```tsx app/_layout.tsx
+import { ExperimentalStack as Stack } from 'expo-router';
+
+export default function Layout() {
+  return (
+    <Stack screenOptions={{ headerShown: true }}>
+      <Stack.Screen name="index" options={{ title: 'Home' }} />
+      <Stack.Screen name="details" options={{ title: 'Details' }} />
+    </Stack>
+  );
+}
+```
+
+你可以像使用 `Stack` 一样组合使用 `ExperimentalStack.Screen` 和 `ExperimentalStack.Protected`。
+
+## 已知限制
+
+<Collapsible summary="屏幕选项有限">
+
+`ExperimentalStack` 仅支持 `title`、`headerShown`、`headerTransparent` 和 `headerBackVisible`。传入任何其他选项（例如 `headerLeft`、`headerRight`、`headerTitle`、`headerStyle`、`headerTintColor`、动画覆盖选项、状态栏选项）都会记录开发警告且不起作用。对于需要这些选项的屏幕，请继续使用 `<Stack />`。
+
+</Collapsible>
+
+<Collapsible summary="暂不支持呈现模式">
+
+`ExperimentalStack` 暂不支持 `presentation: 'modal'` 或 `transparentModal`。屏幕始终会推入堆栈。
+
+</Collapsible>
+
+<Collapsible summary="暂不支持底部弹出表单">
+
+`ExperimentalStack` 暂不支持 `formSheet` 或相关的底部弹出表单尺寸／停靠点选项。
+
+</Collapsible>
+
+<Collapsible summary="暂不支持自定义标题栏">
+
+`ExperimentalStack` 暂不支持自定义标题栏组件或标题栏着色／样式设置。只有上面列出的四种标题栏选项会生效。
+
+</Collapsible>
+
+<Collapsible summary="暂不支持自定义动画或状态栏">
+
+`ExperimentalStack` 暂不支持按屏幕设置动画覆盖选项（`animation`、`animationDuration`）或状态栏选项。
+
+</Collapsible>
+
+<Collapsible summary="不能在 Android 上与 Stack 混用">
+
+在 Android 上，`ExperimentalStack` 和标准的 `Stack` 不能在同一个应用中共存——原生堆栈请选择一种导航器类型。我们希望在未来的版本中取消此限制，以便你可以一次迁移一个导航器。
+
+</Collapsible>
+
+<Collapsible summary="Web 回退到标准 Stack">
+
+在 Web 上，`<ExperimentalStack />` 会渲染来自 `expo-router` 的标准 `Stack`。仅限原生平台的选项在 Web 上不起作用。
+
+</Collapsible>
+
+> **信息** 我们正在积极开发 `ExperimentalStack`，并期待收到反馈。你可以在 [Discord](https://chat.expo.dev) 上分享想法、[在 GitHub 上提交问题](https://github.com/expo/expo/issues)，或使用本页底部的 **反馈** 按钮。
+
+## 安装
+
+`ExperimentalStack` 是 `expo-router` 的一部分。如果你的项目中尚未安装 Expo Router，请按照 Expo Router 安装指南进行操作：
+
+<BoxLink
+  title="安装 Expo Router"
+  description="了解如何在项目中安装 Expo Router。"
+  href="/router/installation/"
+  Icon={RouterLogo}
+/>
+
+## API
+
+```js
+import { ExperimentalStack } from 'expo-router';
+```
+
+<APISection packageName="expo-router/experimental-stack" apiName="Experimental Stack" />

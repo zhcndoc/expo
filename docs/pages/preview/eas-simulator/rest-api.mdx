@@ -1,0 +1,248 @@
+---
+title: EAS Simulator REST API
+sidebar_title: REST API
+description: 使用 REST API 从您自己的系统创建、检查、连接和停止 EAS Simulator 会话。
+---
+
+import { Cloud01Icon } from '@expo/styleguide-icons/outline/Cloud01Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Terminal } from '~/ui/components/Snippet';
+
+> **重要** **EAS Simulator 是有限访问的预览版。**它不包含在付费或免费计划中，目前仅对部分合作伙伴开放。如果您有兴趣试用，请[加入候补名单](https://expo.dev/services/simulators)。
+
+EAS Simulator REST API 允许您通过 CI、代理或其他 HTTP 客户端管理远程设备会话，而无需运行 EAS CLI。所有端点均位于 `https://api.expo.dev` 下。请求和响应均为 JSON，成功响应会将结果封装在 `data` 中。
+
+创建会话，轮询直到连接详情可用，并在完成后停止会话。REST API 管理会话生命周期。使用所选控制器执行设备操作，例如安装应用、按下按钮或截取屏幕截图。
+
+## 身份验证
+
+所有端点都需要 [Expo 访问令牌](/accounts/programmatic-access/)，并通过 `Authorization` 标头以 bearer token 的形式发送。拥有该项目的账户必须具有 EAS Simulator 访问权限。
+
+对于生产集成，请在拥有该项目的账户上创建一个[机器人用户](/accounts/programmatic-access/#robot-users-and-access-tokens)，并为其分配 [Developer 角色](/accounts/account-types/#manage-access)，这是能够创建和停止会话的最低角色。[个人访问令牌](/accounts/programmatic-access/#personal-access-tokens)也适用于脚本。
+
+```text
+Authorization: Bearer <EXPO_TOKEN>
+Content-Type: application/json
+```
+
+以下示例从 `EXPO_TOKEN` 环境变量中读取令牌。请将此令牌保存在 CI 密钥存储或服务器环境中，而不要放在客户端代码里。
+
+> **警告** 会话响应可能包含控制器凭据。请将连接详情视为机密：不要提交这些内容，不要将其写入日志，也不要在公开响应中暴露。成功响应会携带 `Cache-Control: private, no-store` 和 `Pragma: no-cache`。请勿缓存会话响应。
+
+## 创建会话
+
+```text
+POST /v2/device-run-sessions
+```
+
+创建会话并将远程设备加入队列。设备和控制器就绪之前，请求就会返回。
+
+### 请求正文
+
+**最多选择一个应用来源：** `buildId`、`applicationArchiveUrl` 或 `expoGo: true`。提供多个值会返回 `400`。您可以省略这三项，以空白设备启动。
+
+UUID 表示通用唯一标识符。
+
+| 字段                    | 类型          | 必填 | 描述                                                                                                                                                                                                                         |
+| ----------------------- | ------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `appId`                 | string (UUID) | 是   | EAS 项目 ID。您可以在项目页面中找到它，也可以在 [app config](/workflow/configuration/) 的 `extra.eas.projectId` 下找到。                                                                                                     |
+| `platform`              | string        | 是   | `android` 或 `ios`。                                                                                                                                                                                                          |
+| `name`                  | string        | 否   | 描述性会话名称，最多 255 个字符。不能为空白。                                                                                                                                                                                 |
+| `type`                  | string        | 否   | `agent-device`、`appium`、`argent` 或 `web-preview-only`。默认为 `agent-device`。已移除的 `serve-sim` 类型会返回 `400`。请改用 `web-preview-only`。                                                                            |
+| `packageVersion`        | string        | 否   | 所选会话类型的软件包版本。省略时使用服务默认值。                                                                                                                                                                             |
+| `deviceIdentifier`      | string        | 否   | iOS Simulator 名称或唯一设备标识符（UDID），或 Android 虚拟设备硬件配置文件。省略时由运行器选择设备。                                                                                                                        |
+| `maxDurationMinutes`    | integer       | 否   | 会话自动停止时间，单位为分钟。必须介于 0 到 115 之间（含），且不得超过账户的时长限制。115 分钟的限制不包括预留用于清理的五分钟。省略时使用账户默认值。                                                                       |
+| `maxIdleTimeMinutes`    | integer       | 否   | 会话无活动达到此分钟数后停止。必须为正数且小于 115。同时设置时，该值必须小于 `maxDurationMinutes`。省略时禁用空闲超时。`web-preview-only` 不支持此选项。                                                                       |
+| `buildId`               | string (UUID) | 否   | 要下载、安装并启动的 EAS Build。使用 Android **.apk** 或 iOS Simulator 构建版本。                                                                                                                                             |
+| `applicationArchiveUrl` | string        | 否   | 可安装应用归档文件的 HTTP 或 HTTPS URL，最多 2,048 个字符。                                                                                                                                                                  |
+| `expoGo`                | boolean       | 否   | 设置为 `true` 以安装并启动 Expo Go。                                                                                                                                                                                          |
+| `sdkVersion`            | string        | 否   | 用于选择 Expo Go 的 Expo SDK 版本，例如 `"57"`。仅在 `expoGo: true` 时有效。省略时使用该平台当前发布的 Expo Go 版本。                                                                                                         |
+| `launchArgs`            | string[]      | 否   | 应用启动时传递给已安装应用的参数。需要指定应用来源。                                                                                                                                                                         |
+| `openUrl`               | string        | 否   | 启动应用后要打开的 URL，例如 Expo 或开发客户端 URL。需要指定应用来源。                                                                                                                                                       |
+
+对于 `agent-device`、`argent` 和 `web-preview-only` 会话，应用来源选项会安装并启动应用。对于 `appium`，请通过您的 Appium 客户端安装并启动应用。
+
+`web-preview-only` 会话提供 Web 预览，但不提供控制器。它不支持空闲超时。其他会话类型会提供控制器并包含 Web 预览。在移除 `serve-sim` 之前创建的会话仍会返回 `"type": "serve-sim"`。
+
+### 示例
+
+将 `appId` 和 `buildId` 替换为您的 EAS 项目 ID 和兼容的构建 ID：
+
+<Terminal
+  cmdCopy={`curl -X POST "https://api.expo.dev/v2/device-run-sessions" -H "Authorization: Bearer $EXPO_TOKEN" -H "Content-Type: application/json" -d '{"appId":"a415eac6-231a-4b38-b481-3255a59f13b8","platform":"ios","type":"agent-device","name":"Checkout flow screenshots","buildId":"f9609423-5072-4ea2-a0a5-c345eedf2c2a","maxDurationMinutes":30,"maxIdleTimeMinutes":5}'`}
+  cmd={[
+    `$ curl -X POST "https://api.expo.dev/v2/device-run-sessions" \\`,
+    `    -H "Authorization: Bearer $EXPO_TOKEN" \\`,
+    `    -H "Content-Type: application/json" \\`,
+    `    -d '{`,
+    `      "appId": "a415eac6-231a-4b38-b481-3255a59f13b8",`,
+    `      "platform": "ios",`,
+    `      "type": "agent-device",`,
+    `      "name": "Checkout flow screenshots",`,
+    `      "buildId": "f9609423-5072-4ea2-a0a5-c345eedf2c2a",`,
+    `      "maxDurationMinutes": 30,`,
+    `      "maxIdleTimeMinutes": 5`,
+    `    }'`,
+  ]}
+/>
+
+### 响应
+
+返回 `200 OK`，其中包含新会话的元数据：
+
+```json
+{
+  "data": {
+    "id": "019d9d17-013a-7e05-89aa-4aa83ff68c32",
+    "appId": "a415eac6-231a-4b38-b481-3255a59f13b8",
+    "url": "https://expo.dev/accounts/acme/projects/example/simulator-sessions/019d9d17-013a-7e05-89aa-4aa83ff68c32",
+    "jobRunId": "019d9d17-1a3f-7c10-bdee-5f2811a9d6ad",
+    "name": "Checkout flow screenshots",
+    "type": "agent-device",
+    "packageVersion": null,
+    "buildId": "f9609423-5072-4ea2-a0a5-c345eedf2c2a",
+    "applicationArchiveUrl": null,
+    "platform": "ios",
+    "status": "new",
+    "remoteConfig": null,
+    "maxDurationMinutes": 30,
+    "maxIdleTimeMinutes": 5,
+    "startedAt": null,
+    "finishedAt": null,
+    "createdAt": "2026-08-28T10:00:00.000Z",
+    "updatedAt": "2026-08-28T10:00:00.000Z"
+  }
+}
+```
+
+保存 `data.id`，并将其设为后续示例使用的 `SESSION_ID`。`url` 链接到 expo.dev 上的会话页面。它不是实时浏览器预览 URL。
+
+`buildId` 包含提供的构建 ID。`applicationArchiveUrl` 包含提供的归档 URL 或解析后的 Expo Go 归档 URL。使用 `buildId` 时，该字段为 `null`。省略 `name`、`packageVersion` 和 `maxIdleTimeMinutes` 等可选值时，它们会为 `null`。
+
+响应中的 `maxDurationMinutes` 与请求的会话时长一致。请求 30 分钟会返回 `30`。
+
+会话启动期间，`remoteConfig` 为 `null`。请轮询 [获取端点](#get-a-session)，同时获取状态和连接详情。
+
+## 获取会话
+
+```text
+GET /v2/device-run-sessions/:deviceRunSessionId
+```
+
+返回 `200 OK`，其中包含与创建端点相同的会话对象，包括当前状态、时间戳和 `remoteConfig`。将 `:deviceRunSessionId` 替换为会话 ID。无需单独发送连接请求。
+
+### 示例
+
+<Terminal
+  cmdCopy={`curl "https://api.expo.dev/v2/device-run-sessions/$SESSION_ID" -H "Authorization: Bearer $EXPO_TOKEN"`}
+  cmd={[
+    `$ curl "https://api.expo.dev/v2/device-run-sessions/$SESSION_ID" \\`,
+    `    -H "Authorization: Bearer $EXPO_TOKEN"`,
+  ]}
+/>
+
+### 响应
+
+已就绪的 agent-device 会话会在元数据旁返回连接详情：
+
+```json
+{
+  "data": {
+    "id": "019d9d17-013a-7e05-89aa-4aa83ff68c32",
+    "appId": "a415eac6-231a-4b38-b481-3255a59f13b8",
+    "url": "https://expo.dev/accounts/acme/projects/example/simulator-sessions/019d9d17-013a-7e05-89aa-4aa83ff68c32",
+    "jobRunId": "019d9d17-1a3f-7c10-bdee-5f2811a9d6ad",
+    "name": "Checkout flow screenshots",
+    "type": "agent-device",
+    "packageVersion": null,
+    "buildId": "f9609423-5072-4ea2-a0a5-c345eedf2c2a",
+    "applicationArchiveUrl": null,
+    "platform": "ios",
+    "status": "in-progress",
+    "remoteConfig": {
+      "agentDeviceRemoteSessionUrl": "https://controller.example.com",
+      "agentDeviceRemoteSessionToken": "<session-token>",
+      "webPreviewUrl": "https://preview.example.com"
+    },
+    "maxDurationMinutes": 30,
+    "maxIdleTimeMinutes": 5,
+    "startedAt": "2026-08-28T10:01:00.000Z",
+    "finishedAt": null,
+    "createdAt": "2026-08-28T10:00:00.000Z",
+    "updatedAt": "2026-08-28T10:01:00.000Z"
+  }
+}
+```
+
+### 会话状态
+
+REST API 返回小写状态值：
+
+| 值            | 含义                                                                                   |
+| ------------- | -------------------------------------------------------------------------------------- |
+| `new`         | 会话已排队，或正在准备设备和控制器。`remoteConfig` 为 `null`。                          |
+| `in-progress` | 会话正在运行。当 `remoteConfig` 不为 `null` 时即可连接。                               |
+| `stopped`     | 会话已停止。终态。`remoteConfig` 为 `null`。                                           |
+| `errored`     | 会话因错误结束。终态。`remoteConfig` 为 `null`。                                       |
+
+每五秒轮询此端点一次，直到 `status` 为 `in-progress` 且 `remoteConfig` 不为 `null`，然后使用该配置连接。在集成中设置超时时间。如果状态变为 `stopped` 或 `errored`，请停止轮询，并检查 `url` 对应的会话页面。
+
+### 连接详情
+
+`remoteConfig` 中的字段取决于会话类型。仅当会话处于 `in-progress` 状态时才会返回连接详情。会话停止或出错后，即使此前有连接详情，会话响应中的 `remoteConfig` 也会返回 `null`。
+
+| 会话类型          | 连接字段                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| `agent-device`    | `agentDeviceRemoteSessionUrl` 和 `agentDeviceRemoteSessionToken`。`webPreviewUrl` 可选。  |
+| `argent`          | `toolsUrl`、可选的 `toolsAuthToken` 和可选的 `webPreviewUrl`。                            |
+| `appium`          | `appiumUrl`、一个 `capabilities` 对象和可选的 `webPreviewUrl`。                           |
+| `web-preview-only`| `webPreviewUrl`。此会话类型不提供控制器。                                                  |
+
+对于 agent-device，请将 URL 和令牌分别用作 `AGENT_DEVICE_DAEMON_BASE_URL` 和 `AGENT_DEVICE_DAEMON_AUTH_TOKEN`。对于 Argent，请将 `toolsUrl` 和 `toolsAuthToken` 分别用作 `ARGENT_TOOLS_URL` 和 `ARGENT_AUTH_TOKEN`。对于 Appium，请使用 `appiumUrl` 和 `capabilities` 配置客户端。有关控制器的用法，请参阅[运行和控制应用](/preview/eas-simulator/run-and-control/)。
+
+在桌面浏览器中打开 `webPreviewUrl`，即可查看实时 iOS Simulator 或 Android Emulator。不要在远程设备上打开它。
+
+## 停止会话
+
+```text
+POST /v2/device-run-sessions/:deviceRunSessionId/stop
+```
+
+停止会话。此端点不需要请求正文。
+
+### 示例
+
+<Terminal
+  cmdCopy={`curl -X POST "https://api.expo.dev/v2/device-run-sessions/$SESSION_ID/stop" -H "Authorization: Bearer $EXPO_TOKEN"`}
+  cmd={[
+    `$ curl -X POST "https://api.expo.dev/v2/device-run-sessions/$SESSION_ID/stop" \\`,
+    `    -H "Authorization: Bearer $EXPO_TOKEN"`,
+  ]}
+/>
+
+### 响应
+
+返回 `200 OK`，其中包含会话对象。活动会话会转为 `stopped`，包含 `finishedAt`，并返回 `remoteConfig: null`。此操作是幂等的：如果会话已经处于 `stopped` 或 `errored` 状态，则会返回该会话，不会更改其状态或结束时间。连接详情仍为 `null`。
+
+工作完成后，请始终停止会话，包括发生错误或轮询超时时。HTTP 请求返回并不会停止远程设备。请在集成中使用清理处理程序，并设置 `maxDurationMinutes` 以限制无人值守的使用时间。
+
+## 错误
+
+| 状态 | 原因                                                                                                                                                                                                                                                    |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400  | 请求未通过验证。例如 UUID 无效、应用来源不兼容、会话选项不受支持或时长超出账户限制。如果账户未启用 EAS Simulator，会话创建也会失败。                                                                                                                     |
+| 401  | bearer token 无效。如果请求中没有 `Authorization` 标头，则会改为返回包含 `UNAUTHORIZED_ERROR` 的 `400`。                                                                                                                                                 |
+| 403  | 该令牌无权读取项目或执行请求的操作。                                                                                                                                                                                                                    |
+| 404  | 不存在具有给定 ID 的项目或会话。                                                                                                                                                                                                                        |
+
+请使用返回的错误消息确定需要处理哪个选项或权限。对于会话启动失败，请检查 `url` 链接的会话页面。
+
+## 下一步
+
+<BoxLink
+  title="运行和控制应用"
+  description="选择兼容的构建版本，连接控制器，并与远程设备交互。"
+  href="/preview/eas-simulator/run-and-control/"
+  Icon={Cloud01Icon}
+/>

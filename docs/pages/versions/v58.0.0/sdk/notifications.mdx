@@ -1,0 +1,676 @@
+---
+title: 通知
+description: 一个提供 API 用于获取推送通知令牌，以及展示、安排、接收和响应通知的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-notifications'
+packageName: 'expo-notifications'
+iconUrl: '/static/images/packages/expo-notifications.png'
+platforms: ['android', 'ios']
+---
+
+import { NotificationBoxIcon } from '@expo/styleguide-icons/outline/NotificationBoxIcon';
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { AndroidPermissions } from '~/components/plugins/permissions';
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ConfigReactNative, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { SnackInline } from '~/ui/components/Snippet';
+import { Tab, Tabs } from '~/ui/components/Tabs';
+import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
+
+`expo-notifications` 提供了用于获取推送通知令牌，以及呈现、安排、接收和响应通知的 API。
+
+<BoxLink
+  title="通知指南"
+  description="别错过我们的指南，了解如何设置、发送和处理推送通知。"
+  href="/push-notifications/overview/"
+  Icon={NotificationBoxIcon}
+/>
+
+> **warning** 从 SDK 53 开始，Android 上的 Expo Go 不支持 `expo-notifications` 提供的推送通知（远程通知）功能。使用推送通知需要[开发构建](/develop/development-builds/introduction/)。本地通知（应用内通知）仍可在 Expo Go 中使用。
+
+## 功能
+
+- 为特定日期或从现在起的一段时间安排一次性通知
+- 按某个时间间隔重复安排通知（或在 iOS 上匹配日历日期）
+- 获取和设置应用角标图标的数字
+- 获取原生设备推送令牌，以便使用 FCM（Android）和 APNs（iOS）发送推送通知
+- 获取 Expo 推送令牌，以便通过 [Expo Push Service](/push-notifications/sending-notifications/) 发送推送通知
+- 监听前台和后台收到的通知
+- 监听与通知的交互
+- 在应用处于前台时处理通知
+- 从通知中心／通知栏中主动清除通知
+- 创建、更新和删除 [Android 通知渠道](https://developer.android.com/develop/ui/views/notifications/channels)
+- 在 Android 上为通知设置自定义图标和颜色
+
+## 安装
+
+<APIInstallSection />
+
+<br />
+然后继续阅读[配置](#configuration)，设置[配置插件](#app-config)并获取推送通知所需的[凭据](#credentials)。
+
+### 已知问题 <PlatformTags platforms={['android']} />
+
+在 **Android 开发构建**中从推送通知启动应用时，启动屏幕在约 70% 的情况下可能无法正确显示。图标和淡入动画可能无法按预期显示。
+
+- 图标可能缺失
+- 淡入动画可能无法播放
+- 可能只有背景颜色短暂闪烁
+
+此问题只影响调试构建，在发布构建中不会出现。若要规避此问题，请在发布模式下测试通知启动（`npx expo run:android --variant release`），以确保行为准确。
+
+## 用法
+
+查看下面的示例 Snack，了解通知的实际效果。推送通知可在实体设备、装有 Google Play 服务的 Android 模拟器，以及运行 Xcode 14 或更高版本的 iOS 模拟器上使用（macOS 13+、iOS 16+）。
+
+<SnackInline label='推送通知' dependencies={['expo-constants', 'expo-notifications']}>
+
+```tsx
+import { useState, useEffect } from 'react';
+import { Text, View, Button, Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+export default function App() {
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
+  const [notification, setNotification] = useState<Notifications.Notification | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
+
+    if (Platform.OS === 'android') {
+      Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
+    }
+    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      notificationListener.remove();
+      responseListener.remove();
+    };
+  }, []);
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'space-around',
+      }}>
+      <Text>Your expo push token: {expoPushToken}</Text>
+      <Text>{`Channels: ${JSON.stringify(
+        channels.map(c => c.id),
+        null,
+        2
+      )}`}</Text>
+      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <Text>Title: {notification && notification.request.content.title} </Text>
+        <Text>Body: {notification && notification.request.content.body}</Text>
+        <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
+      </View>
+      <Button
+        title="Press to schedule a notification"
+        onPress={async () => {
+          await schedulePushNotification();
+        }}
+      />
+    </View>
+  );
+}
+
+async function schedulePushNotification() {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "You've got mail! 📬",
+      body: 'Here is the notification body',
+      data: { data: 'goes here', test: { test1: 'more data' } },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 2,
+    },
+  });
+}
+
+async function registerForPushNotificationsAsync() {
+  let token;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('myNotificationChannel', {
+      name: 'A channel is needed for the permissions prompt to appear',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+  if (finalStatus !== 'granted') {
+    alert('Failed to get push token for push notification!');
+    return;
+  }
+  // Learn more about projectId:
+  // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
+  // EAS projectId is used here.
+  try {
+    const projectId =
+      Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+      throw new Error('Project ID not found');
+    }
+    token = (
+      await Notifications.getExpoPushTokenAsync({
+        projectId,
+      })
+    ).data;
+    console.log(token);
+  } catch (e) {
+    token = `${e}`;
+  }
+
+  return token;
+}
+```
+
+</SnackInline>
+
+### 向用户呈现本地（应用内）通知
+
+```ts
+import * as Notifications from 'expo-notifications';
+
+Notifications.scheduleNotificationAsync({
+  content: {
+    title: 'Look at that notification',
+    body: "I'm so proud of myself!",
+  },
+  trigger: null,
+});
+```
+
+### 使用导航处理推送通知
+
+如果你希望在收到推送通知时深度链接到应用中的特定屏幕，可以配置 Expo 的任一导航系统来实现。
+
+<Tabs>
+
+<Tab label="Expo Router">
+
+你可以使用 Expo Router 的[内置深度链接](/router/basics/core-concepts/#2-all-pages-have-a-url)来处理推送通知中的传入 URL。只需配置根布局，以监听传入通知和初始通知事件。
+
+```tsx app/_layout.tsx
+import { useEffect } from 'react';
+import * as Notifications from 'expo-notifications';
+import { Slot, router } from 'expo-router';
+
+function useNotificationObserver() {
+  useEffect(() => {
+    function redirect(notification: Notifications.Notification) {
+      const url = notification.request.content.data?.url;
+      if (typeof url === 'string') {
+        /* @info 推送此 URL。导航前，你可能需要验证其格式。 */
+        router.push(url);
+        /* @end */
+        /* @info 清除已存储的响应，避免布局重新挂载时再次跳转到同一个 URL。 */
+        Notifications.clearLastNotificationResponse();
+        /* @end */
+      }
+    }
+
+    /* @info 处理初始推送通知。 */
+    const response = Notifications.getLastNotificationResponse();
+    if (response?.notification) {
+      redirect(response.notification);
+    }
+
+    /* @info 监听运行时通知。 */
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      /* @end */
+      redirect(response.notification);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+}
+
+export default function Layout() {
+  /* @info 在根布局中进行监听。确保此布局永远不会返回 **null**，否则导航将无法处理。 */
+  useNotificationObserver();
+  /* @end */
+
+  return <Slot />;
+}
+```
+
+</Tab>
+
+<Tab label="React Navigation">
+
+可以配置 React Navigation 的手动[链接配置](https://reactnavigation.org/docs/navigation-container#linking)，以处理推送通知带来的传入重定向：
+
+```tsx App.tsx
+import React from 'react';
+import { Linking } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { NavigationContainer } from '@react-navigation/native';
+
+export default function App() {
+  return (
+    <NavigationContainer
+      linking={{
+        config: {
+          // Configuration for linking
+        },
+        async getInitialURL() {
+          // First, you may want to do the default deep link handling
+          // Check if app was opened from a deep link
+          const url = await Linking.getInitialURL();
+
+          if (url != null) {
+            return url;
+          }
+
+          // Handle URL from expo push notifications
+          const response = Notifications.getLastNotificationResponse();
+          const notificationUrl = response?.notification.request.content.data?.url;
+          if (typeof notificationUrl === 'string') {
+            return notificationUrl;
+          }
+        },
+        subscribe(listener) {
+          const onReceiveURL = ({ url }: { url: string }) => listener(url);
+
+          // Listen to incoming links from deep linking
+          const eventListenerSubscription = Linking.addEventListener('url', onReceiveURL);
+
+          // Listen to expo push notifications
+          const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+            const url = response.notification.request.content.data?.url;
+
+            // Any custom logic to see whether the URL needs to be handled
+            //...
+
+            if (typeof url === 'string') {
+              // Let React Navigation handle the URL
+              listener(url);
+            }
+
+            // Clear the stored response so the next getInitialURL call does not redirect to the same URL again
+            Notifications.clearLastNotificationResponse();
+          });
+
+          return () => {
+            // Clean up the event listeners
+            eventListenerSubscription.remove();
+            subscription.remove();
+          };
+        },
+      }}>
+      {/* Your app content */}
+    </NavigationContainer>
+  );
+}
+```
+
+更多详情请参阅 [React Navigation 文档](https://reactnavigation.org/docs/deep-linking/#third-party-integrations)。
+
+</Tab>
+
+</Tabs>
+
+## 配置
+
+### 凭据
+
+请按照[设置指南](/push-notifications/push-notifications-setup/#get-credentials-for-development-builds)操作。
+
+### App 配置
+
+若要配置 `expo-notifications`，请在应用配置文件（**app.json** 或 **app.config.js**）中使用内置的[配置插件](/config-plugins/introduction/)，用于 [EAS Build](/build/introduction) 或 `npx expo run:[android|ios]`。该插件允许你配置以下无法在运行时设置、且需要构建新的应用二进制文件才能生效的属性：
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'icon',
+      platform: 'android',
+      description:
+        '用于推送通知图标的本地图片路径。使用 96x96 的全白色透明 PNG 图片。',
+    },
+    {
+      name: 'largeIcon',
+      platform: 'android',
+      description:
+        '用于通知大图标的本地图片路径。图片会缩放至 64x64 dp，并显示在通知文本旁边。若通知自带图片，则会使用该图片。',
+    },
+    {
+      name: 'color',
+      default: '#ffffff',
+      platform: 'android',
+      description:
+        '推送通知图片显示在通知栏时的着色颜色。',
+    },
+    {
+      name: 'defaultChannel',
+      platform: 'android',
+      description: 'FCMv1 通知的默认渠道。',
+    },
+    {
+      name: 'sounds',
+      description:
+        '本地声音文件路径数组（推荐使用 .wav 文件），可用作自定义通知声音。专注模式不允许播放声音或开启静音模式时，不会播放声音。',
+    },
+    {
+      name: 'enableBackgroundRemoteNotifications',
+      default: 'false',
+      platform: 'ios',
+      description:
+        '是否启用后台远程通知，详情请参阅 [Apple 文档](https://developer.apple.com/documentation/usernotifications/pushing-background-updates-to-your-app)。这会更新 `Info.plist` 中的 `UIBackgroundModes` 键，将 `remote-notification` 加入其中。',
+    },
+  ]}
+/>
+
+以下是在应用配置文件中使用配置插件的示例：
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./local/assets/notification_icon.png",
+          "largeIcon": "./local/assets/notification_large_icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "sounds": [
+            "./local/assets/notification_sound.wav",
+            "./local/assets/notification_sound_other.wav"
+          ],
+          "enableBackgroundRemoteNotifications": false
+        }
+      ]
+    ]
+  }
+}
+```
+
+> iOS APNs 权限始终设置为 'development'。Xcode 会在发布构建生成的归档中自动将其更改为 'production'。
+> 请参阅[关于 APNs 权限的 Stack Overflow 回答](https://stackoverflow.com/a/42293632/4047926)。
+
+<ConfigReactNative>
+
+了解如何在 [`expo-notifications` 仓库的安装说明](https://github.com/expo/expo/tree/main/packages/expo-notifications#installation-in-bare-react-native-projects)中配置原生项目。
+
+</ConfigReactNative>
+
+## 权限
+
+### Android
+
+- 在 Android 上，此模块需要订阅设备启动事件的权限，用于在设备重新启动时设置已安排的通知。
+  该库会自动将 `RECEIVE_BOOT_COMPLETED` 权限添加到 **AndroidManifest.xml**。
+
+- 从 Android 12（API 级别 31）开始，若要安排在精确时间触发的通知，需要在 **AndroidManifest.xml** 中添加
+  `<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>`。
+  详细信息请参阅[精确闹钟权限](https://developer.android.com/about/versions/12/behavior-changes-12#exact-alarm-permission)。
+  `delivery: 'alarmClock'` 触发选项也需要精确闹钟权限。在 Android 13（API 级别 33）及更高版本上，闹钟、计时器和日历应用
+  可以改为声明 `<uses-permission android:name="android.permission.USE_EXACT_ALARM"/>`。系统会直接授予此权限，无需用户确认。
+  [Google Play 的精确闹钟政策](https://support.google.com/googleplay/android-developer/answer/13161072)将 `USE_EXACT_ALARM` 限制在这些应用类别中。
+
+- 在 Android 13 上，应用用户必须通过操作系统自动触发的权限提示，选择是否接收通知。
+  至少创建一个通知渠道后，才会显示此提示。获取推送令牌前，必须先调用 `setNotificationChannelAsync`，再调用
+  `getDevicePushTokenAsync` 或 `getExpoPushTokenAsync`。关于 Android 13 新通知权限行为的更多信息，请参阅
+  [官方文档](https://developer.android.com/develop/ui/views/notifications/notification-permission#new-apps)。
+
+<AndroidPermissions
+  permissions={['RECEIVE_BOOT_COMPLETED', 'SCHEDULE_EXACT_ALARM', 'USE_EXACT_ALARM']}
+/>
+
+### iOS
+
+无需提供用法说明，参阅[与通知相关的权限](#fetch-information-about-notifications-related-permissions)。
+
+### 解读 iOS 权限响应
+
+在 iOS 上，发送通知的权限比 Android 上更加细分。因此，你应该依据 `NotificationPermissionsStatus` 的 `ios.status` 字段，而不是根级别的 `status` 字段。
+
+此值将是以下之一，可通过 `Notifications.IosAuthorizationStatus` 访问：
+
+- `NOT_DETERMINED`：用户尚未决定是否允许应用安排通知
+- `DENIED`：应用未获准安排或接收通知
+- `AUTHORIZED`：应用已获准安排或接收通知
+- `PROVISIONAL`：应用已获准发布非打扰式用户通知
+- `EPHEMERAL`：应用已获准在有限时间内安排或接收通知
+
+## 通知事件监听器
+
+通知事件包括收到通知、用户与通知进行的交互（例如点按通知，或通过[通知类别](#manage-notification-categories-interactive-notifications)与之交互），以及通知可能被丢弃的少数情况。
+
+多个监听器的说明请参阅[推送通知行为](/push-notifications/what-you-need-to-know/#push-notification-behaviors)一节。
+
+## 无头（后台）通知
+
+请参阅[你需要了解的内容](/push-notifications/what-you-need-to-know)指南中关于无头后台通知的[定义](/push-notifications/what-you-need-to-know/#headless-background-notifications)。
+
+若要在应用处于后台或未运行时处理通知，需要执行以下操作：
+
+- 将 `expo-task-manager` 包添加到项目中。
+- [配置后台通知](#background-notification-configuration)。
+- 在应用代码中设置一个[后台任务](#registertaskasynctaskname)，以便在收到通知时运行。
+
+然后发送满足以下条件的推送通知：
+
+- 仅包含 `data` 键（没有 `title`、`body`）
+- 对 iOS 设置 `contentAvailable: true` — 参阅 [Expo 推送通知服务负载格式](/push-notifications/sending-notifications/#message-request-format)
+
+### 后台通知配置&ensp;<PlatformTags platforms={["ios"]} />
+
+若要在 iOS 上使用无头（后台）推送通知，应用的 **Info.plist** 文件中的 `UIBackgroundModes` 数组必须包含 `remote-notification` 值。
+
+**如果你正在使用 [CNG](/workflow/continuous-native-generation/)**，请将配置插件的 [`enableBackgroundRemoteNotifications` 属性](#configurable-properties)设为 true，prebuild 会自动应用正确的配置。
+
+<Collapsible summary="在 iOS 上手动配置 UIBackgroundModes">
+
+如果你没有使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者使用的是原生 iOS 项目，则需要将以下内容添加到 **Expo.plist** 文件中：
+
+```xml ios/project-name/Supporting/Expo.plist
+<key>UIBackgroundModes</key>
+<array>
+  <string>remote-notification</string>
+</array>
+```
+
+</Collapsible>
+
+## 附加信息
+
+### 设置自定义通知声音
+
+若要向应用添加自定义推送通知声音，请将 `expo-notifications` 插件添加到 **app.json** 文件中，然后在 `sounds` 键下提供可用作自定义通知声音的本地声音文件路径数组。这些路径相对于项目目录。
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "sounds": ["local/path/to/mySoundFile.wav"]
+        }
+      ]
+    ]
+  }
+}
+```
+
+构建应用后，这些文件即可用于 [`NotificationContentInput`](#notificationcontentinput) 和 [`NotificationChannelInput`](#notificationchannelinput)。
+只需提供基础文件名。以下是使用上述配置的示例：
+
+```ts
+await Notifications.setNotificationChannelAsync('new_emails', {
+  name: 'E-mail notifications',
+  importance: Notifications.AndroidImportance.HIGH,
+  sound: 'mySoundFile.wav', // Provide ONLY the base filename
+});
+
+await Notifications.scheduleNotificationAsync({
+  content: {
+    title: "You've got mail! 📬",
+    sound: 'mySoundFile.wav', // Provide ONLY the base filename
+  },
+  trigger: {
+    type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+    seconds: 2,
+    channelId: 'new_emails',
+  },
+});
+```
+
+如果愿意，也可以手动将通知文件添加到 Android 和 iOS 项目中：
+
+<Collapsible summary="在 Android 上手动添加通知声音">
+
+在 Android 8.0 及更高版本上，为通知播放自定义声音，仅设置 `NotificationContentInput` 的 `sound` 属性是不够的。
+你还需要为 `NotificationChannel` 配置相应的 `sound`，并在发送／安排通知时使用该渠道。
+
+要使下面的示例正常工作，请将 **email_sound.wav** 文件放在 **android/app/src/main/res/raw/** 中。
+
+```ts
+// Prepare the notification channel
+await Notifications.setNotificationChannelAsync('new_emails', {
+  name: 'E-mail notifications',
+  importance: Notifications.AndroidImportance.HIGH,
+  sound: 'email_sound.wav', // <- for Android 8.0+, see channelId property below
+});
+
+// Eg. schedule the notification
+await Notifications.scheduleNotificationAsync({
+  content: {
+    title: "You've got mail! 📬",
+    body: 'Open the notification to read them all',
+    sound: 'email_sound.wav', // <- for Android below 8.0
+  },
+  trigger: {
+    type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+    seconds: 2,
+    channelId: 'new_emails', // <- for Android 8.0+, see definition above
+  },
+});
+```
+
+</Collapsible>
+
+<Collapsible summary="在 iOS 上手动添加通知声音">
+
+在 iOS 上，只需将声音文件放入 Xcode 项目中（见下方截图），
+然后在 `NotificationContentInput` 中指定声音文件，如下所示：
+
+```ts
+await Notifications.scheduleNotificationAsync({
+  content: {
+    title: "You've got mail! 📬",
+    body: 'Open the notification to read them all',
+    sound: 'notification.wav',
+  },
+  trigger: {
+    // ...
+  },
+});
+```
+
+<ContentSpotlight
+  alt="Xcode 项目组织器中的应用资源内的 notification.wav"
+  src="/static/images/notification-sound-ios.jpeg"
+  className="max-w-[305px]"
+/>
+
+</Collapsible>
+
+### 推送通知负载规范
+
+请参阅[消息请求格式](/push-notifications/sending-notifications/#message-request-format)。
+
+### 管理交互式通知的通知类别
+
+通知类别允许你创建交互式推送通知，使用户可以通过按钮或文本回复直接响应收到的通知。类别定义了用户可以执行的一组操作，然后通过在通知的 [`NotificationContent`](#notificationcontent) 中指定 `categoryIdentifier`，将这些操作应用于通知。
+
+<ContentSpotlight
+  src="/static/images/sdk/notifications/categories.webp"
+  className="max-w-[800px]"
+  alt="Android 和 iOS 上的通知类别图片"
+/>
+
+在 iOS 上，通知类别还可以让你进一步自定义通知。对于每个类别，你可以设置用户可以执行的交互操作，并配置诸如当用户为你的应用停用通知预览时显示的占位文本等内容。
+
+## 特定平台指南
+
+### 处理通知渠道&ensp;<PlatformTags platforms={['android 8+']} />
+
+从 Android 8.0（API level 26）开始，所有通知都必须分配到一个渠道。对于每个渠道，
+你可以设置应用于该渠道中所有通知的视觉和听觉行为。
+然后，用户可以更改这些设置，并决定你的应用中的哪些通知渠道应当具有侵扰性或完全可见，
+正如 [Android developer docs](https://developer.android.com/training/notify-user/channels) 所述。
+
+如果你未指定通知渠道，`expo-notifications` 将为你创建一个名为 **Miscellaneous** 的备用渠道。
+我们建议你始终确保为应用设置合适且名称清晰的渠道，并始终将通知发送到这些渠道。
+
+> 对于不支持此功能的平台（Android 8.0（26）以下版本和 iOS），调用这些方法不会执行任何操作
+
+### 自定义通知图标和颜色&ensp;<PlatformTags platforms={['android']} />
+
+你可以通过将 [`expo-notifications` config plugin](#configurable-properties) 与 [Expo Prebuild](/workflow/continuous-native-generation) 搭配使用，在项目中配置通知的 `icon` 和 `color` 键。这些是构建时设置，因此你需要使用 `eas build -p android` 或 `npx expo run:android` 重新编译原生 Android 应用，才能看到更改。
+
+对于通知图标，请确保遵循 [Google's design guidelines](https://m2.material.io/design/iconography/product-icons.html#design-principles)
+（图标必须为全白色且背景透明），否则它可能无法按预期显示。
+
+你还可以直接在 [`NotificationContentInput`](#notificationcontentinput) 的 `color` 属性下为**每条通知**设置自定义通知颜色。
+
+## API
+
+```js
+import * as Notifications from 'expo-notifications';
+```
+
+<APISection
+  packageName="expo-notifications"
+  apiName="Notifications"
+  headersMapping={{
+    fetch: '获取推送通知的令牌',
+    listen: '监听通知事件',
+    inForeground: '应用运行时显示传入的通知',
+    inBackground: '响应传入的通知运行 JavaScript',
+    permissions: '获取与通知相关的权限信息',
+    badge: '管理应用徽章图标',
+    schedule: '安排通知',
+    dismiss: '关闭通知',
+    channels: '管理通知渠道（特定于 Android）',
+    categories: '管理通知类别（交互式通知）',
+  }}
+/>

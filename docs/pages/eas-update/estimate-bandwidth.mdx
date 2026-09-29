@@ -59,6 +59,29 @@ EAS Update 使应用能够通过空中下载更新自身的非原生部分（例
 
 这将生成你的 Hermes 包的 **Brotli 和 Gzip 压缩**版本（**bundle.hbc.br** 和 **bundle.hbc.gz**）并显示它们的大小。你可以利用这些数据，基于应用在真实场景中的更新大小来优化带宽计算。
 
+## 估算 bundle diff 补丁大小
+
+如果你的项目使用了 [bundle diffing](/eas-update/bundle-diffing)，大多数用户下载的是补丁，而不是完整的 bundle。补丁仅包含设备上已有的 bundle 与新 bundle 之间的差异，因此通常比完整更新小得多。将 bundle diffing 的影响纳入考量，可以更准确地估算带宽用量。
+
+EAS Update 使用 [bsdiff 算法](https://en.wikipedia.org/wiki/Bsdiff)生成补丁。你可以在本地运行相同的算法来比较自己的两个 bundle。首先，安装 bsdiff：
+
+<Terminal cmd={['$ brew install bsdiff']} />
+
+接下来，导出应用两次：一次使用用户当前运行的版本，另一次使用包含新更改的版本。对于每次导出，运行 `npx expo export`，在 **dist** 文件夹中生成 bundle。将两个 **.hbc** 文件分别重命名为 **old.hbc** 和 **new.hbc**。
+
+然后生成补丁并查看其大小：
+
+<Terminal
+  cmd={['$ bsdiff old.hbc new.hbc patch.bin', '$ ls -lh patch.bin']}
+  cmdCopy="bsdiff old.hbc new.hbc patch.bin && ls -lh patch.bin"
+/>
+
+**patch.bin** 的大小大致相当于用户从旧 bundle 更新到新 bundle 时的下载大小。补丁已经经过压缩，因此无需考虑压缩算法的影响。
+
+每个补丁都不一样。尝试进行各种幅度较小或较大的代码更改，看看 bundle diffing 对你自己的应用有什么影响。
+
+在正常情况下，大多数用户下载的是补丁，而不是完整 bundle，但在某些情况下，EAS Update 可能会回退为提供完整 bundle（参见[当前限制](/eas-update/bundle-diffing/#current-limitations)）。bundle diffing 的实际影响还会因内嵌 bundle 是否启用了 diffing 而有所不同。
+
 ## 影响带宽消耗的因素
 
 实际带宽用量会因以下因素而有所不同：

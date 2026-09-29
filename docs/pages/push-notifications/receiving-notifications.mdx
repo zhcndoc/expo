@@ -221,7 +221,11 @@ useEffect(() => {
 
 ## 前台通知行为
 
-要处理应用处于**前台**时收到通知的行为，请使用 [`Notifications.setNotificationHandler`](/versions/latest/sdk/notifications/#present-incoming-notifications-when-the-app-is)，并通过 `handleNotification()` 回调设置以下选项：
+在 SDK 57 及更早版本中，默认情况下完全不会显示前台通知。若要显示通知，必须设置处理程序，通过 [`Notifications.setNotificationHandler`](/versions/latest/sdk/notifications/#present-incoming-notifications-when-the-app-is) 请求显示通知。如果处理程序在 3 秒内未作出响应，通知将被丢弃。
+
+在 SDK 58 及更高版本中，应用处于**前台**时收到的通知默认会显示。通知会播放声音、显示横幅、出现在通知列表中，并设置应用徽标。处理程序在 3 秒内未作出响应的通知也会以相同方式显示。
+
+若要更改行为，请使用 [`Notifications.setNotificationHandler`](/versions/latest/sdk/notifications/#present-incoming-notifications-when-the-app-is)，并通过 `handleNotification()` 回调设置以下选项：
 
 - `shouldPlaySound`
 - `shouldSetBadge`
@@ -239,6 +243,16 @@ Notifications.setNotificationHandler({
 });
 ```
 
-## 关闭状态下的通知行为
+### 禁用通知处理程序
+
+在 SDK 58 及更高版本中，若要停止 `expo-notifications` 决定是否显示收到的通知，请传入 `null`：
+
+```jsx
+Notifications.setNotificationHandler(null);
+```
+
+在 Android 上，此时应用处于前台时不会显示通知。在 iOS 上，决定权将交给由其他库设置的 `UNUserNotificationCenterDelegate`。如果没有库设置该代理，则不会显示通知。
+
+## 应用关闭时的通知行为
 
 在 Android 上，用户可以设置某些操作系统级别的选项，这些选项通常与性能和电池优化有关，可能会导致应用关闭时无法接收到通知。例如，OnePlus 设备在 Android 9 及更低版本上使用的 **Deep Clear** 选项就是其中一种设置。

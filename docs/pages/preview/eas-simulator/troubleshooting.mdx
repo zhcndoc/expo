@@ -4,7 +4,10 @@ sidebar_title: 故障排除
 description: 诊断 EAS 模拟器中的访问、会话生命周期、控制器、安装、预览和快速刷新问题。
 ---
 
+import { FAQ } from '~/ui/components/FAQ';
 import { Terminal } from '~/ui/components/Snippet';
+
+<FAQ>
 
 ## 未找到命令
 
@@ -16,6 +19,12 @@ import { Terminal } from '~/ui/components/Snippet';
 
 由于 API 处于实验阶段，这些命令仍处于隐藏状态。
 
+### `simulator:start` 拒绝已记录的标志
+
+更新到最新版本的 [EAS CLI](/eas/cli/)，然后将该命令与已安装版本的帮助信息进行比较：
+
+<Terminal cmd={['$ eas simulator:start --help']} />
+
 ## 访问和项目错误
 
 ### 账户未启用 EAS Simulator
@@ -24,7 +33,7 @@ import { Terminal } from '~/ui/components/Snippet';
 
 <Terminal cmd={['$ eas simulator:availability --json']} />
 
-如果 `available` 为 `false`，请勿重试 `simulator:start`。请使用本地模拟器或仿真器，或[加入等候名单](https://expo.dev/services/simulator)以获取访问权限。
+如果 `available` 为 `false`，请勿重试 `simulator:start`。请使用本地模拟器或仿真器，或[加入候补名单](https://expo.dev/services/simulators)以获取访问权限。
 
 ### EAS CLI 报告需要用户账户
 
@@ -53,6 +62,18 @@ import { Terminal } from '~/ui/components/Snippet';
 `--non-interactive` 会在控制器准备就绪后返回，但不会停止会话。请运行：
 
 <Terminal cmd={['$ eas simulator:stop']} />
+
+### 启动会话后之前的会话仍在运行
+
+默认情况下，`simulator:start` 会创建新会话，即使 **.env.eas-simulator** 中包含另一个会话 ID。它会替换本地配置，但不会停止之前的远程会话。
+
+列出活动会话并显式停止旧会话：
+
+<Terminal
+  cmd={['$ eas simulator:list --status in-progress', '$ eas simulator:stop --id <old-session-id>']}
+/>
+
+如果希望在环境中已包含 ID 时让 `simulator:start` 失败，而不是创建新会话，请使用 `--no-force`。为每个会话指定描述性 `--name`，以便在列表中轻松识别。
 
 ## 控制器和隧道问题
 
@@ -99,9 +120,23 @@ agent-device 的操作名称是 `press`：
 
 ## 应用和构建问题
 
-### 远程设备不包含应用
+### `Launch options require an application source`
 
-这是预期行为。每个会话都从一台空白设备开始。请安装本地模拟器或仿真器构建版本，或使用带有 EAS Build 构建产物的 `install-from-source`。
+`--launch-arg` 和 `--open-url` 适用于会话启动期间安装的应用。请在命令中准确传入一个源：
+
+- `--build-id <build-id>` 用于 EAS Build
+- `--application-archive-url <url>` 用于远程应用归档
+- `--expo-go` 用于与项目 SDK 匹配的 Expo Go 版本
+
+对于本地 **.app** 或 APK，请启动空白会话，然后通过 agent-device 或其他控制器安装。
+
+### Expo Go 无法确定 SDK 版本
+
+请在具有有效应用配置的 Expo 项目中运行该命令，或将 `--sdk-version <version>` 与 `--expo-go` 一起传入。SDK 覆盖选项不能与 `--build-id` 或 `--application-archive-url` 一起使用。
+
+### 远程设备不包含该应用
+
+如果会话启动时未使用 `--build-id`、`--application-archive-url` 或 `--expo-go`，这是预期行为。请通过控制器安装本地模拟器或仿真器构建版本，或使用应用源启动新会话。
 
 ### 屏幕截图显示的是旧源代码
 
@@ -133,6 +168,8 @@ agent-device 的操作名称是 `press`：
 ### 预览显示在模拟器内
 
 `webPreviewUrl` 被当作应用 URL 打开了。请改用桌面浏览器打开它。这是浏览器串流，而不是应用深层链接。
+
+</FAQ>
 
 ## 报告反馈
 

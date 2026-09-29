@@ -1,0 +1,240 @@
+---
+title: Toggle
+description: 用于显示原生切换开关的 SwiftUI Toggle 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+> **info** 如需跨平台使用，请参阅通用的 [`Switch`](../universal/switch)——它会根据平台渲染适当的原生组件。
+
+Expo UI Toggle 与官方 SwiftUI [Toggle API](https://developer.apple.com/documentation/swiftui/toggle) 匹配，并支持通过 [`toggleStyle`](modifiers/#togglestylestyle) 修饰符进行样式设置。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/toggle/ios-light.webp"
+  darkSrc="/static/images/expo-ui/toggle/ios-dark.webp"
+  alt="Form 中的 Toggle 行"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本 Toggle
+
+<ComponentExample
+  title="BasicToggleExample.tsx"
+  src="/static/images/expo-ui/examples/toggle-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toggle-basic-ios-dark.webp"
+  alt="一行标记为 Enable feature，末尾有一个关闭的开关">
+
+```tsx
+import { useState } from 'react';
+import { Host, Toggle } from '@expo/ui/swift-ui';
+
+export default function BasicToggleExample() {
+  const [isOn, setIsOn] = useState(false);
+
+  // A toggle row stretches to the width it is given, so give the host a size.
+  return (
+    <Host style={{ flex: 1 }}>
+      <Toggle
+        isOn={isOn}
+        onIsOnChange={setIsOn}
+        label="Enable feature"
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带系统图像的 Toggle
+
+<ComponentExample
+  title="ToggleWithImageExample.tsx"
+  src="/static/images/expo-ui/examples/toggle-system-image-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toggle-system-image-ios-dark.webp"
+  alt="一行包含飞机图标，标记为 Airplane Mode，并带有一个关闭的开关">
+
+```tsx
+import { useState } from 'react';
+import { Host, Toggle } from '@expo/ui/swift-ui';
+
+export default function ToggleWithImageExample() {
+  const [airplaneMode, setAirplaneMode] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Toggle
+        isOn={airplaneMode}
+        onIsOnChange={setAirplaneMode}
+        label="Airplane Mode"
+        systemImage="airplane"
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### Toggle 样式
+
+使用 `toggleStyle` 修饰符更改 Toggle 的外观。可用样式包括：`automatic`、`switch` 和 `button`。
+
+> **注意：** tvOS 不支持 `button` 样式。
+
+<ComponentExample
+  title="ToggleStylesExample.tsx"
+  src="/static/images/expo-ui/examples/toggle-styles-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toggle-styles-ios-dark.webp"
+  alt="一个 Switch Style 行，其开关处于开启状态；下方是一个处于选中填充状态的 Button Style Toggle">
+
+```tsx
+import { useState } from 'react';
+import { Host, Toggle, VStack } from '@expo/ui/swift-ui';
+import { toggleStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function ToggleStylesExample() {
+  const [isOn, setIsOn] = useState(true);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={8}>
+        <Toggle
+          isOn={isOn}
+          onIsOnChange={setIsOn}
+          label="Switch Style"
+          modifiers={[toggleStyle('switch')]}
+        />
+        <Toggle
+          isOn={isOn}
+          onIsOnChange={setIsOn}
+          label="Button Style"
+          modifiers={[toggleStyle('button')]}
+        />
+      </VStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 着色 Toggle
+
+使用 `tint` 修饰符更改 Toggle 的颜色。
+
+<ComponentExample
+  title="TintedToggleExample.tsx"
+  src="/static/images/expo-ui/examples/toggle-tinted-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toggle-tinted-ios-dark.webp"
+  alt="一行标记为 Custom Color，带有一个开启且呈橙色的开关">
+
+```tsx
+import { useState } from 'react';
+import { Host, Toggle } from '@expo/ui/swift-ui';
+import { tint } from '@expo/ui/swift-ui/modifiers';
+
+export default function TintedToggleExample() {
+  const [isOn, setIsOn] = useState(true);
+
+  return (
+    <Host matchContents>
+      <Toggle
+        isOn={isOn}
+        onIsOnChange={setIsOn}
+        label="Custom Color"
+        modifiers={[tint('#FF9500')]}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义标签内容
+
+你可以将自定义组件作为 `children` 传入，以创建更复杂的 Toggle 标签。使用多个 `Text` 视图，其中第一个表示标题，第二个表示副标题。
+
+<ComponentExample
+  title="CustomLabelExample.tsx"
+  src="/static/images/expo-ui/examples/toggle-custom-label-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toggle-custom-label-ios-dark.webp"
+  alt="一个 Toggle 行，标题 Vibrate on ring 下方有一行灰色副标题">
+
+```tsx
+import { useState } from 'react';
+import { Host, Toggle, Text } from '@expo/ui/swift-ui';
+
+export default function CustomLabelExample() {
+  const [vibrateOnRing, setVibrateOnRing] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Toggle isOn={vibrateOnRing} onIsOnChange={setVibrateOnRing}>
+        <Text>Vibrate on ring</Text>
+        <Text>Enable vibration when the phone rings</Text>
+      </Toggle>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 隐藏标签
+
+使用 [`labelsHidden`](modifiers/#labelshidden) 修饰符隐藏标签，同时保留其无障碍功能。
+
+<ComponentExample
+  title="HiddenLabelExample.tsx"
+  src="/static/images/expo-ui/examples/toggle-hidden-label-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toggle-hidden-label-ios-dark.webp"
+  alt="一个单独显示的开关，没有可见的标签文本">
+
+```tsx
+import { useState } from 'react';
+import { Host, Toggle } from '@expo/ui/swift-ui';
+import { labelsHidden } from '@expo/ui/swift-ui/modifiers';
+
+export default function HiddenLabelExample() {
+  const [isOn, setIsOn] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Toggle
+        isOn={isOn}
+        onIsOnChange={setIsOn}
+        label="Hidden Label"
+        modifiers={[labelsHidden()]}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Toggle } from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/toggle"
+  apiName="Toggle"
+/>

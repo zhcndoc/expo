@@ -8,6 +8,7 @@ platforms: ['android', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 > **info** 有关跨平台用法，请参见通用的 [`Button`](../universal/button) —— 它会针对每个平台渲染相应的原生组件。
@@ -24,11 +25,11 @@ Expo UI 提供了五个按钮组件，与官方 Jetpack Compose [Button API](htt
 
 | 类型         | 外观                                    | 用途                                                                                                                                                                               |
 | ------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Filled       | 实心背景，搭配对比鲜明的文本。       | 用于“提交”和“保存”等主要操作的高强调按钮。                                                                                                                |
-| Filled tonal | 背景颜色会变化以匹配表面颜色。 | 同样用于主要或重要的操作。填充色调按钮具有更强的视觉重量，适合“添加到购物车”和“登录”等功能。                                      |
-| Elevated     | 通过阴影使按钮更加突出。                | 用途与色调按钮类似。提高高度可使按钮显得更加突出。                                                                        |
-| Outlined     | 带有边框但没有填充。               | 中等强调按钮，用于包含重要但非主要的操作。它们与其他按钮搭配良好，用于表示“取消”或“返回”等替代性次要操作。 |
-| Text         | 仅显示文本，没有背景或边框。   | 低强调按钮，适合导航链接等不太重要的操作，或“了解更多”“查看详情”等次要功能。                                         |
+| 填充       | 实心背景，搭配对比鲜明的文本。       | 用于“提交”和“保存”等主要操作的高强调按钮。                                                                                                                |
+| 填充色调 | 背景颜色会变化以匹配表面颜色。 | 同样用于主要或重要的操作。填充色调按钮具有更强的视觉重量，适合“添加到购物车”和“登录”等功能。                                      |
+| 提升     | 通过阴影使按钮更加突出。                | 用途与色调按钮类似。提高高度可使按钮显得更加突出。                                                                        |
+| 描边     | 带有边框但没有填充。               | 中等强调按钮，用于包含重要但非主要的操作。它们与其他按钮搭配良好，用于表示“取消”或“返回”等替代性次要操作。 |
+| 文本         | 仅显示文本，没有背景或边框。   | 低强调按钮，适合导航链接等不太重要的操作，或“了解更多”“查看详情”等次要功能。                                         |
 
 ## 安装
 
@@ -40,7 +41,13 @@ Expo UI 提供了五个按钮组件，与官方 Jetpack Compose [Button API](htt
 
 填充按钮是用于主要操作的默认高强调按钮。
 
-```tsx BasicButtonExample.tsx
+<ComponentExample
+  title="BasicButtonExample.tsx"
+  src="/static/images/expo-ui/examples/compose-button-basic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/compose-button-basic-android-dark.webp"
+  alt="一个标有“按我”的 Material 3 填充按钮">
+
+```tsx
 import { Host, Button, Text } from '@expo/ui/jetpack-compose';
 
 export default function BasicButtonExample() {
@@ -54,11 +61,19 @@ export default function BasicButtonExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 按钮变体
 
 使用不同的按钮组件来传达不同级别的强调程度。
 
-```tsx ButtonVariantsExample.tsx
+<ComponentExample
+  title="ButtonVariantsExample.tsx"
+  src="/static/images/expo-ui/examples/compose-button-variants-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/compose-button-variants-android-dark.webp"
+  alt="填充、填充色调、描边、提升和文本按钮纵向排列">
+
+```tsx
 import {
   Host,
   Button,
@@ -95,16 +110,25 @@ export default function ButtonVariantsExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 带图标的按钮
 
 由于按钮接受可组合子元素，你可以使用 `Icon` 组件添加前置和后置图标。这遵循 [带图标的 Material 3 按钮](https://m3.material.io/components/buttons/guidelines) 模式（[官方示例](https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:compose/material3/material3/samples/src/main/java/androidx/compose/material3/samples/ButtonSamples.kt;l=179?q=ButtonWithIconSample)），使用 18dp 的图标尺寸，以及图标和标签之间 8dp 的间距。
 
-```tsx ButtonWithIconsExample.tsx
+<ComponentExample
+  title="ButtonWithIconsExample.tsx"
+  src="/static/images/expo-ui/examples/compose-button-icons-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/compose-button-icons-android-dark.webp"
+  alt="三个按钮分别展示前置图标、后置图标以及同时显示前后图标">
+
+```tsx
 import {
   Host,
   Button,
   OutlinedButton,
   FilledTonalButton,
+  Column,
   Icon,
   Spacer,
   Text,
@@ -117,68 +141,100 @@ const sendIcon = require('./assets/send.png');
 export default function ButtonWithIconsExample() {
   return (
     <Host matchContents>
-      {/* 前置图标 */}
-      <Button onClick={() => {}}>
-        <Icon source={addIcon} size={18} tint="#FFFFFF" />
-        <Spacer modifiers={[width(8)]} />
-        <Text>添加项目</Text>
-      </Button>
+      <Column verticalArrangement={{ spacedBy: 8 }}>
+        {/* Leading icon */}
+        <Button onClick={() => {}}>
+          <Icon source={addIcon} size={18} tint="#FFFFFF" />
+          <Spacer modifiers={[width(8)]} />
+          <Text>Add item</Text>
+        </Button>
 
-      {/* 后置图标 */}
-      <OutlinedButton onClick={() => {}}>
-        <Text>发送</Text>
-        <Spacer modifiers={[width(8)]} />
-        <Icon source={sendIcon} size={18} />
-      </OutlinedButton>
+        {/* Trailing icon */}
+        <OutlinedButton onClick={() => {}}>
+          <Text>Send</Text>
+          <Spacer modifiers={[width(8)]} />
+          <Icon source={sendIcon} size={18} />
+        </OutlinedButton>
 
-      {/* 同时包含前置和后置图标 */}
-      <FilledTonalButton onClick={() => {}}>
-        <Icon source={addIcon} size={18} />
-        <Spacer modifiers={[width(8)]} />
-        <Text>创建并发送</Text>
-        <Spacer modifiers={[width(8)]} />
-        <Icon source={sendIcon} size={18} />
-      </FilledTonalButton>
+        {/* Both leading and trailing icons */}
+        <FilledTonalButton onClick={() => {}}>
+          <Icon source={addIcon} size={18} />
+          <Spacer modifiers={[width(8)]} />
+          <Text>Create & Send</Text>
+          <Spacer modifiers={[width(8)]} />
+          <Icon source={sendIcon} size={18} />
+        </FilledTonalButton>
+      </Column>
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ### 自定义颜色
 
 使用 `colors` 属性覆盖容器颜色和内容颜色。
 
-```tsx CustomColorsExample.tsx
+<ComponentExample
+  title="CustomColorsExample.tsx"
+  src="/static/images/expo-ui/examples/compose-button-custom-colors-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/compose-button-custom-colors-android-dark.webp"
+  alt="一个紫色按钮，白色文本，覆盖主题容器颜色和内容颜色">
+
+```tsx
 import { Host, Button, Text } from '@expo/ui/jetpack-compose';
 
 export default function CustomColorsExample() {
   return (
     <Host matchContents>
-      <Button onClick={() => {}} colors={{ containerColor: '#6200EE', contentColor: '#FFFFFF' }}>
-        <Text>紫色按钮</Text>
+      <Button
+        onClick={() => {}}
+        colors={{
+          containerColor: '#6200EE',
+          contentColor: '#FFFFFF',
+        }}>
+        <Text>Purple Button</Text>
       </Button>
     </Host>
   );
 }
 ```
 
+</ComponentExample>
+
 ### 自定义形状
 
-```tsx CustomShapeExample.tsx
-import { Host, Button, Shape, Text } from '@expo/ui/jetpack-compose';
+<ComponentExample
+  title="CustomShapeExample.tsx"
+  src="/static/images/expo-ui/examples/compose-button-custom-shape-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/compose-button-custom-shape-android-dark.webp"
+  alt="一个按钮，左上角和右下角为圆角，对角为直角">
+
+```tsx
+import {
+  Host,
+  Button,
+  Shape,
+  Text,
+} from '@expo/ui/jetpack-compose';
 
 export default function CustomShapeExample() {
   return (
     <Host matchContents>
       <Button
         onClick={() => {}}
-        shape={Shape.RoundedCorner({ cornerRadii: { topStart: 16, bottomEnd: 16 } })}>
-        <Text>自定义形状</Text>
+        shape={Shape.RoundedCorner({
+          cornerRadii: { topStart: 16, bottomEnd: 16 },
+        })}>
+        <Text>Custom Shape</Text>
       </Button>
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ## API
 
@@ -192,4 +248,7 @@ import {
 } from '@expo/ui/jetpack-compose';
 ```
 
-<APISection packageName="expo-ui/jetpack-compose/button" apiName="Button" />
+<APISection
+  packageName="expo-ui/jetpack-compose/button"
+  apiName="Button"
+/>

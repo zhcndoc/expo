@@ -1,0 +1,143 @@
+---
+title: FieldGroup
+description: 一个可滚动的设置样式行分组容器
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+用于分组设置样式行的可滚动容器，外观类似 iOS Settings 屏幕。在其中放置 `FieldGroup.Section`（用于显式分组）、`FieldGroup.SectionHeader` 和 `FieldGroup.SectionFooter` 插槽
+
+> **注意：** `FieldGroup` 可滚动，并且自身没有高度。它会拉伸以填充父容器，因此请为其提供具有明确尺寸的父容器，例如 `<Host style={{ flex: 1 }}>`，或具有明确高度的 host。它不会显示在类似 `<Host matchContents>` 的适应内容尺寸容器中，因为没有有界高度供该分组填充
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/fieldgroup/android-light.webp',
+    darkSrc: '/static/images/expo-ui/fieldgroup/android-dark.webp',
+    alt: 'A Notifications section with Push and Email switch rows',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/fieldgroup/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/fieldgroup/ios-dark.webp',
+    alt: 'A Notifications section with Push and Email switch rows',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 分组表单
+
+<ComponentExample
+  title="FieldGroupExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-fieldgroup-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-fieldgroup-basic-android-dark.webp',
+    alt: 'A Notifications section with Push on and Email off, above an About section',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-fieldgroup-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-fieldgroup-basic-ios-dark.webp',
+    alt: 'A Notifications section with Push on and Email off, above an About section',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { useColorScheme } from 'react-native';
+import { Host, FieldGroup, Switch, Text } from '@expo/ui';
+
+export default function FieldGroupExample() {
+  const [notifications, setNotifications] = useState(true);
+  const [analytics, setAnalytics] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <FieldGroup>
+        <FieldGroup.Section title="Notifications">
+          <Switch label="Push" value={notifications} onValueChange={setNotifications} />
+          <Switch label="Email" value={analytics} onValueChange={setAnalytics} />
+        </FieldGroup.Section>
+
+        <FieldGroup.Section title="About">
+          <Text textStyle={ink}>Version 1.0.0</Text>
+        </FieldGroup.Section>
+      </FieldGroup>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义分组标题和页脚
+
+使用 `FieldGroup.SectionHeader` 和 `FieldGroup.SectionFooter`，在默认的 `title` 文本位置渲染完全设置样式的标题和页脚插槽
+
+<ComponentExample
+  title="FieldGroupSlotsExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-fieldgroup-slots-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-fieldgroup-slots-android-dark.webp',
+    alt: 'A Privacy section with a Share usage switch and a footnote below it',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-fieldgroup-slots-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-fieldgroup-slots-ios-dark.webp',
+    alt: 'A Privacy section with a Share usage switch and a footnote below it',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { useColorScheme } from 'react-native';
+import { Host, FieldGroup, Switch, Text } from '@expo/ui';
+
+export default function FieldGroupSlotsExample() {
+  const [enabled, setEnabled] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <FieldGroup>
+        <FieldGroup.Section>
+          <FieldGroup.SectionHeader>
+            <Text textStyle={{ ...ink, fontSize: 16, fontWeight: '700' }}>Privacy</Text>
+          </FieldGroup.SectionHeader>
+
+          <Switch label="Share usage" value={enabled} onValueChange={setEnabled} />
+
+          <FieldGroup.SectionFooter>
+            <Text textStyle={{ fontSize: 12, color: '#8E8E93' }}>
+              Helps us improve the app. You can disable this at any time.
+            </Text>
+          </FieldGroup.SectionFooter>
+        </FieldGroup.Section>
+      </FieldGroup>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { FieldGroup } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/fieldgroup" apiName="FieldGroup" />
+
+</PlatformTabsGroup>

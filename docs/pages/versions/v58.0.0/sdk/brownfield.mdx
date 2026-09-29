@@ -1,0 +1,453 @@
+---
+title: Brownfield
+description: 用于将 Expo 集成到现有原生应用中的工具包和 API
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-brownfield'
+packageName: 'expo-brownfield'
+platforms: ['android', 'ios']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+import { Terminal } from '~/ui/components/Snippet';
+import { Tab, Tabs } from '~/ui/components/Tabs';
+
+`expo-brownfield` 是一个工具包，用于将 React Native 视图添加到现有的原生 Android 和 iOS 应用中。它提供：
+
+- **内置 API**，用于原生应用与 React Native 应用之间的双向通信和导航
+- **配置插件**，用于在 Expo 项目中自动设置 brownfield 目标
+- **CLI**，用于构建并发布制品到 Maven 仓库（Android）和 XCFrameworks（iOS）
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 通信 API
+
+通信 API 支持原生（宿主）应用与 React Native 之间基于消息的双向通信。
+
+#### 从 React Native 向原生端发送消息
+
+```typescript
+import * as Brownfield from 'expo-brownfield';
+
+Brownfield.sendMessage({
+  type: 'MyMessage',
+  data: {
+    language: 'TypeScript',
+    expo: true,
+    platforms: ['android', 'ios'],
+  },
+});
+```
+
+#### 在 React Native 中接收原生端消息
+
+```typescript
+import * as Brownfield, { type MessageEvent } from 'expo-brownfield';
+import { useEffect } from 'react';
+
+function MyComponent() {
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      console.log('Received message:', event);
+    };
+
+    Brownfield.addMessageListener(handleMessage);
+
+    return () => {
+      Brownfield.removeMessageListener(handleMessage);
+    };
+  }, []);
+
+  // ...
+}
+```
+
+#### 从原生端向 React Native 发送消息
+
+<Tabs>
+<Tab label="Android">
+
+```kotlin
+import expo.modules.brownfield.BrownfieldMessaging
+
+BrownfieldMessaging.sendMessage(mapOf(
+    "type" to "MyAndroidMessage",
+    "timestamp" to System.currentTimeMillis(),
+    "data" to mapOf(
+        "platform" to "android"
+    )
+))
+```
+
+</Tab>
+<Tab label="iOS">
+
+```swift
+import ExpoBrownfield
+
+BrownfieldMessaging.sendMessage([
+    "type": "MyIOSMessage",
+    "timestamp": Date().timeIntervalSince1970,
+    "data": [
+        "platform": "ios"
+    ]
+])
+```
+
+</Tab>
+</Tabs>
+
+#### 在原生端接收来自 React Native 的消息
+
+<Tabs>
+<Tab label="Android">
+
+```kotlin
+import expo.modules.brownfield.BrownfieldMessaging
+
+val listenerId = BrownfieldMessaging.addListener { event ->
+    println("Message from React Native: $event")
+}
+
+// Later, to remove the listener:
+BrownfieldMessaging.removeListener(listenerId)
+```
+
+</Tab>
+<Tab label="iOS">
+
+```swift
+import ExpoBrownfield
+
+let listenerId = BrownfieldMessaging.addListener { message in
+    print("Message from React Native: \(message)")
+}
+
+// Later, to remove the listener:
+BrownfieldMessaging.removeListener(id: listenerId)
+```
+
+</Tab>
+</Tabs>
+
+## 在应用配置中进行配置
+
+`expo-brownfield` 包提供了一个[配置插件](/config-plugins/introduction/)，可在使用[持续原生生成（CNG）](/workflow/continuous-native-generation/)时配置 brownfield 集成。此插件可自定义 Expo 项目打包并集成到现有原生应用中的方式。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-brownfield",
+        {
+          "ios": {
+            "targetName": "MyBrownfieldTarget",
+            "bundleIdentifier": "com.example.brownfield"
+          },
+          "android": {
+            "group": "com.example",
+            "libraryName": "brownfield",
+            "package": "com.example.brownfield",
+            "version": "1.0.0"
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'ios.targetName',
+      platform: 'ios',
+      description:
+        'brownfield 集成的 Xcode 目标名称。此名称用于在 Xcode 项目中为 React Native 代码创建单独的目标。',
+      default: '"<scheme>brownfield" or "<slug>brownfield"',
+    },
+    {
+      name: 'ios.bundleIdentifier',
+      platform: 'ios',
+      description:
+        'brownfield 目标的 Bundle 标识符。此标识符应当唯一，且与主应用的 Bundle 标识符不同。',
+      default: '"<ios.bundleIdentifier base>.<targetName>" or "com.example.<targetName>"',
+    },
+    {
+      name: 'ios.buildReactNativeFromSource',
+      platform: 'ios',
+      description:
+        '从源代码构建 React Native，而不是使用预构建框架。启用此选项会显著增加构建时间。',
+      default: 'false',
+    },
+    {
+      name: 'android.group',
+      platform: 'android',
+      description:
+        '生成的 Android 库的 Maven group ID。发布库到 Maven 仓库时会使用此 ID。',
+      default: '"<package without last segment>"',
+    },
+    {
+      name: 'android.libraryName',
+      platform: 'android',
+      description: '生成的 Android 库模块名称。',
+      default: '"brownfield"',
+    },
+    {
+      name: 'android.package',
+      platform: 'android',
+      description: '生成的 Android 库代码的 Java/Kotlin 包名称。',
+      default: '"<android.package>.brownfield" or "com.example.brownfield"',
+    },
+    {
+      name: 'android.version',
+      platform: 'android',
+      description:
+        '生成的 Android 库的版本字符串。发布到 Maven 仓库时会使用此版本。',
+      default: '"1.0.0"',
+    },
+    {
+      name: 'android.publishing',
+      platform: 'android',
+      description:
+        '生成的 Android 库的发布配置。支持 `localMaven`、`localDirectory`、`remotePublic` 和 `remotePrivate` 发布类型。每种类型都有不同的配置选项，用于指定库的发布位置和方式。',
+      default: '[{ type: "localMaven" }]',
+    },
+  ]}
+/>
+
+## 发布制品
+
+`expo-brownfield` CLI 会将 Android 制品推送到一个或多个 Maven 仓库，这些仓库通过应用配置中的 `android.publishing` 声明。支持的仓库类型如下：
+
+| `type`           | 说明                                                                                                                             |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `localMaven`     | 发布到 **~/.m2/repository**。默认选项。适合在开发期间与本地宿主应用集成。                        |
+| `localDirectory` | 发布到本地文件系统路径（`path` 字段）。适合将制品提交到同级 git 仓库。            |
+| `remotePublic`   | 发布到无需身份验证的公共 Maven 仓库。                                                               |
+| `remotePrivate`  | 发布到经过身份验证的远程 Maven 仓库。凭据可以是内联字符串，也可以是环境变量引用。 |
+
+`remotePrivate` 中的 `url`、`username` 和 `password` 接受普通字符串或 `EnvValue` 对象（`{ "variable": "SOME_ENV_VAR" }`），后者会在构建时通过 Gradle 的 `providers.environmentVariable(...)` 解析值。请将密钥设为环境变量，避免其出现在已提交的应用配置中。
+
+### 发布到 GitHub Packages
+
+GitHub Packages 为 GitHub 仓库提供私有 Maven 仓库。身份验证使用 `GITHUB_ACTOR`（用户或机器人名称）以及具有 `write:packages` 和 `read:packages` 权限范围的[个人访问令牌（PAT）](https://docs.github.com/en/packages/learn-github-packages/introduction-to-github-packages#authenticating-to-github-packages)。在 GitHub Actions 中，工作流的 `GITHUB_TOKEN` 已具有访问其所属仓库所需的权限范围。
+
+在 `android.publishing` 中添加一个 `remotePrivate` 条目，并将其指向测试仓库的 GitHub Packages URL：
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-brownfield",
+        {
+          "android": {
+            "group": "com.example",
+            "libraryName": "brownfield",
+            "publishing": [
+              { "type": "localMaven" },
+              {
+                "type": "remotePrivate",
+                "name": "GitHubPackages",
+                "url": "https://maven.pkg.github.com/<owner>/<repo>",
+                "username": { "variable": "GITHUB_ACTOR" },
+                "password": { "variable": "GITHUB_TOKEN" }
+              }
+            ]
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+`name` 字段同时决定 Gradle Maven 仓库名称和 `--repo` CLI 标志的值。使用 `"name": "GitHubPackages"` 时，发布 release 的任务会变为 `publishBrownfieldReleasePublicationToGitHubPackagesRepository`（debug 对应的任务则为 `publishBrownfieldDebugPublicationToGitHubPackagesRepository`）。默认调用会同时运行两者：
+
+<Terminal cmd={['$ npx expo-brownfield build:android --fused --repo GitHubPackages']} />
+
+### 仅发布融合制品
+
+非融合发布流程会为每个自动链接的 Expo Android 模块生成一个 Maven 坐标（每个版本通常有 20 到 40 个制品）。若要改为发布一小组经过筛选的制品，请使用 `--fused`。融合模式会跳过发布插件按模块逐个重新发布的循环，只生成胖 AAR 同级制品。始终需要指定仓库（`--repo`）或显式任务（`-t`），因为没有默认值：
+
+| 调用                                                     | 发布的坐标                                                                |
+| ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `--fused --release --repo <name>`                      | `<group>:<libraryName>-fused-release:<version>`                            |
+| `--fused --debug --repo <name>`                        | `<group>:<libraryName>-fused-debug:<version>`                              |
+| `--fused --all --repo <name>`（`--fused` 的默认值） | 上述两者（底层会针对每个变体分别调用一次 Gradle，共调用两次） |
+
+每个版本最多只会发布两个 Maven 坐标，与项目自动链接的 Expo 模块数量无关。其他所有内容（各模块 AAR、传递 Maven 依赖）都不会进入远程仓库。基础库（AndroidX、RN 运行时、Kotlin stdlib，以及宿主已具备的 Glide 替代库）仍会作为外部依赖保留在 POM 中，而不会融合进 AAR。
+
+### 融合模式
+
+`--fused` 会通过两个额外的 Gradle 子项目发布，这些子项目由 prebuild 始终生成：`:<libraryName>-fused-release` 和 `:<libraryName>-fused-debug`。每个子项目都会通过 [AGP 的 Fused Library 插件](https://developer.android.com/build/publish-library/fused-library)生成一个胖 AAR（这是一项预览功能；CLI 会暂时强制使用 AGP 8.13 进行这些构建）。在常规构建期间，这些子项目不会执行任何操作：其构建脚本仅在 CLI 传入 `-Pbrownfield.fused=true` 时才会启用，因此 `npx expo run:android` 和 IDE 同步不会产生额外的配置开销。如果不通过 CLI，而是直接调用融合 Gradle 任务，请自行传入 `-Pbrownfield.fused=true`。
+
+并非所有内容都会融合进 AAR。构建会将三类依赖保留在外部，并在已发布的 POM 和 Gradle Module Metadata 中将它们声明为普通 Maven 依赖，由宿主应用自行解析：
+
+- **brownfield 宿主基线依赖** — React Native 运行时（`react-android`、`hermes-android`、`fbjni`、`soloader`、`yoga`）、Kotlin stdlib，以及宿主提供的通用库（Material Components、Guava、Fresco、OkHttp、Okio）。融合这些依赖会重复包含宿主已经打包的类。
+- **`androidx.*` 库** — AGP Fused Library 的类重写器无法解析其样式表中的 `android:` 框架属性，因此除验证所需的依赖链（默认情况下为 `androidx.camera`、`androidx.media3`）外，所有 AndroidX 库都会保留为外部依赖。
+- **自动检测到的 KMP 伞形模块** — 仅包含 POM 的坐标，其所有变体都会重定向到某个平台模块。
+
+已发布的元数据还会使用同级项的构建类型标注 `react-android` 和 `hermes-android` 依赖边，确保宿主应用始终解析与融合 AAR 的原生库链接时所用版本相同的 React Native 变体，即使 debug 宿主使用的是 release AAR。
+
+当项目的依赖图需要调整时，可使用以下五个 Gradle 属性来控制此行为：
+
+| 属性                                  | 作用                                                                                                                                                                                             |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `brownfield.fused.skip`               | 以逗号分隔的 Gradle 项目名称列表，这些项目将完全排除在胖 AAR 之外。                                                                                                                         |
+| `brownfield.fused.strip-packages`     | 以逗号分隔的包前缀列表，从生成的 `ExpoModulesPackageList` 中移除。与 `skip` 配合使用，可避免跳过的模块在启动时触发 `NoClassDefFoundError`。                           |
+| `brownfield.fused.androidx-fuse`      | 要融合进 AAR 而不是保留为外部依赖的额外 `androidx.*` 组前缀。                                                                                                                |
+| `brownfield.fused.exclude-transitive` | 要保留为外部依赖的额外依赖组（在 POM 中声明，而不是融合）。                                                                                                                   |
+| `brownfield.fused.host-provided`      | 宿主应用已提供的依赖组（Glide、Compose 等）。与 `exclude-transitive` 一样，这些依赖不会进入 AAR；但它们也不会在 POM 中声明，因此不会影响宿主使用的版本。 |
+
+从 **android** 目录直接调用融合发布任务时，可通过 `-P` Gradle 属性传入这些参数：
+
+<Terminal
+  cmd={[
+    '$ ./gradlew :brownfield-fused-release:publishBrownfieldReleasePublicationToMavenLocal \\',
+    '    -Pbrownfield.fused=true \\',
+    '    -Pbrownfield.fused.skip=expo-camera \\',
+    '    -Pbrownfield.fused.strip-packages=expo.modules.camera.',
+  ]}
+/>
+
+> **注意**：融合之前，请检查宿主应用已经使用了哪些库。如果宿主自带 Glide（`expo-image` 会融合 Glide）、Jetpack Compose（`@expo/ui`）或类似库，融合 AAR 中的副本会在构建时与宿主发生冲突（类重复），或者通过 POM 强制升级这些库。建议将这些 Expo 模块排除在项目之外，或将共享依赖组标记为 `brownfield.fused.host-provided` 并手动对齐版本。
+
+### GitHub Actions 工作流示例
+
+```yaml .github/workflows/publish-brownfield.yml
+name: Publish brownfield fused AAR
+
+on:
+  push:
+    tags:
+      - 'brownfield-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - run: npx expo prebuild --platform android
+      - run: npx expo-brownfield build:android --fused --release --repo GitHubPackages
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+通过 `git tag brownfield-v1.0.0 && git push --tags` 触发（或通过 Actions 选项卡手动触发）。工作流内置的 `GITHUB_TOKEN` 仅适用于该工作流所属仓库，因此要发布到第三方仓库，必须改用仓库密钥中的 PAT。
+
+### 消费方配置（宿主 Android 应用）
+
+宿主应用的 **settings.gradle.kts**（或各模块的 **build.gradle.kts**）声明相同的 GitHub Packages URL 和凭据。宿主应用的 CI/本地构建必须设置 `GITHUB_ACTOR` 和 `GITHUB_TOKEN` 环境变量，或从 **~/.gradle/gradle.properties** 中读取它们。
+
+```kotlin android/settings.gradle.kts
+dependencyResolutionManagement {
+  repositories {
+    google()
+    mavenCentral()
+    maven {
+      url = uri("https://maven.pkg.github.com/<owner>/<repo>")
+      credentials {
+        username = providers.environmentVariable("GITHUB_ACTOR").orNull
+          ?: providers.gradleProperty("gpr.user").orNull
+        password = providers.environmentVariable("GITHUB_TOKEN").orNull
+          ?: providers.gradleProperty("gpr.token").orNull
+      }
+    }
+  }
+}
+```
+
+```kotlin android/app/build.gradle.kts
+dependencies {
+  releaseImplementation("com.example:brownfield-fused-release:1.0.0")
+  debugImplementation("com.example:brownfield-fused-debug:1.0.0")
+}
+```
+
+`releaseImplementation`/`debugImplementation` 会自动配对这些变体。Gradle 会根据宿主构建类型选择匹配的同级项。如果宿主只发布 release 构建，可以删除 `debugImplementation` 行，并使用 `--fused --release` 仅发布 release 同级项。
+
+宿主应用的一些要求和提示：
+
+- **`minSdk` 必须至少为 24**（React Native 的最低要求）。目标 API 级别较低的宿主在使用该 AAR 时会在清单合并阶段失败。
+- **融合模块中的权限会合并进来。**例如，媒体相关的 Expo 模块会声明存储权限。如果宿主强制执行权限允许列表，请使用 `tools:node="remove"` 在宿主清单中移除不需要的条目（或使用 `tools:replace` 解决属性冲突）。
+- **AAR 会包含发布时启用的所有 ABI 对应的原生库。**如果不进行筛选，宿主 APK 会因包含全部四种 ABI 的 React Native 库而增大。发布时限制 ABI（在 Expo 项目的 **gradle.properties** 中设置 `reactNativeArchitectures=arm64-v8a`），或在宿主中使用 `ndk.abiFilters`/APK 分割进行筛选。
+
+## CLI
+
+`expo-brownfield` 库包含一个 CLI，用于构建并发布制品到 Maven 仓库（Android）和 XCFrameworks（iOS）。
+
+<Terminal cmd={['$ npx expo-brownfield [command] [options]']} />
+
+### 命令
+
+#### `build:android`
+
+构建 brownfield 库及其依赖，并将它们发布到 Maven 仓库。
+
+<Terminal cmd={['$ npx expo-brownfield build:android [options]']} />
+
+| 选项                   | 说明                                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| `-d, --debug`          | 以 debug 模式构建                                                                       |
+| `-r, --release`        | 以 release 模式构建                                                                     |
+| `-a, --all`            | 同时以 debug 和 release 模式构建（默认）                                            |
+| `--fused`              | 通过 AGP Fused Library 为每个变体发布单个胖 AAR。参见[融合模式](#fused-mode) |
+| `-l, --library`        | 指定 brownfield 库名称                                                           |
+| `--repo, --repository` | 指定要发布到的 Maven 仓库                                                  |
+| `-t, --task`           | 指定要运行的 Gradle 发布任务                                                       |
+| `--verbose`            | 包含所有子进程日志                                                        |
+
+#### `build:ios`
+
+构建 brownfield XCFramework，并将 Hermes XCFramework 复制到制品目录。
+
+<Terminal cmd={['$ npx expo-brownfield build:ios [options]']} />
+
+| 选项                  | 说明                                                        |
+| ------------------- | -------------------------------------------------------- |
+| `-d, --debug`       | 以 debug 模式构建                                      |
+| `-r, --release`     | 以 release 模式构建（默认）                          |
+| `-a, --artifacts`   | 制品目录路径（默认值：`./artifacts`） |
+| `-s, --scheme`      | 要构建的 Xcode scheme                                    |
+| `-x, --xcworkspace` | Xcode workspace 路径                                     |
+| `-p, --package`     | 将制品作为 Swift Package 发布（名称可选）     |
+| `--verbose`         | 包含所有子进程日志                       |
+
+#### `tasks:android`
+
+列出所有可用的发布任务和 Maven 仓库。
+
+<Terminal cmd={['$ npx expo-brownfield tasks:android']} />
+
+## API
+
+```js
+import * as Brownfield from 'expo-brownfield';
+```
+
+<APISection packageName="expo-brownfield" apiName="Brownfield" />

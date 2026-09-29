@@ -17,7 +17,7 @@ import { RelatedSkills } from '~/ui/components/RelatedSkills';
 import { Terminal } from '~/ui/components/Snippet';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-> **重要** **EAS Observe** 处于[开放测试版](/more/release-statuses/#beta)阶段。每月活跃用户的前 10,000 名免费。更高用量请联系 [sales@expo.dev](mailto:sales@expo.dev)。
+> **信息** EAS Observe 在 Free 计划中每月包含 100,000 个事件，在付费计划中每月包含 500,000 个事件，分别约对应每月 10,000 和 50,000 名活跃用户。超出后将按使用量计费。详情请参见[定价](https://expo.dev/pricing)。
 
 **EAS Observe** 是 Expo 提供的一项性能监控服务，用于跟踪你的应用在生产环境中的表现。它能让你了解真实世界中的启动时间、渲染性能，以及不同设备、网络和条件下的用户体验。
 
@@ -48,7 +48,7 @@ React Native 中的性能调试传统上仅限于开发工具。EAS Observe 关�
   }}
 />
 
-使用 `AppMetricsRoot` 组件（SDK 55）或 `ObserveRoot` 组件（SDK 56 及更高版本）包裹你的根布局，并在应用准备好接受用户输入时调用 `markInteractive()`。完整设置指南请参见 [开始使用](/eas/observe/get-started/)。
+使用 `ObserveRoot` 组件（在 SDK 55 上使用 `AppMetricsRoot` 组件）包裹根布局，并在应用准备好接受用户输入时调用 `markInteractive()`。完整的设置指南请参见[开始使用](/eas/observe/get-started/)。
 
 ### 面向 AI 代理的 Expo Skills
 
@@ -66,27 +66,34 @@ React Native 中的性能调试传统上仅限于开发工具。EAS Observe 关�
 
 传统的开发期分析工具展示的是应用在你自己机器上的表现。EAS Observe 展示的是它在真实用户环境中的表现：
 
-- **生产环境性能数据**：从不同设备上的真实用户会话中跟踪启动时间、渲染性能和 bundle 加载时间
-- **版本发布对比**：查看不同应用版本和 OTA 更新之间的指标变化，以便及早发现性能回归
-- **会话调查**：深入了解单个用户会话，以弄清某些设备或条件导致性能变慢的原因
-- **用户定义事件**：使用 `Observe.logEvent` 从应用中记录自定义信号，并将其与性能数据一起分析
+- **生产环境性能数据**：跟踪真实用户会话在多种设备上的启动时间、渲染性能、bundle 加载时间和 EAS Update 下载时间
+- **版本对比**：查看不同应用版本和 OTA 更新之间的指标变化，以便及早发现性能回退
+- **按路由划分的导航指标**：通过 [Expo Router](/eas/observe/integrations/expo-router/) 或 [React Navigation](/eas/observe/integrations/react-navigation/) 集成，按路由比较渲染和交互耗时
+- **会话调查**：深入查看单个用户会话，了解特定设备或条件导致性能变慢的原因
+- **用户定义事件**：使用 `Observe.logEvent` 从应用中记录自定义信号，并与性能数据一起分析
+- **错误报告**（预览版）：[记录 JavaScript 错误和原生崩溃](/eas/observe/errors/)，并在仪表板中查看其堆栈跟踪
 - **CLI 和仪表板访问**：使用 `eas observe:` 命令从终端查询指标，或在 EAS 仪表板中查看指标
 
 ## 何时使用 EAS Observe
 
 | 场景                                               | 建议             |
 | --------------------------------------------------- | -------------- |
-| 在生产环境中监控应用启动性能                         | <YesIcon />    |
-| 比较不同版本发布和 OTA 更新之间的性能                 | <YesIcon />    |
-| 调查特定设备上的慢速会话                             | <YesIcon />    |
-| 从 CLI 查询性能指标                                  | <YesIcon />    |
-| 跟踪应用中的用户定义事件                             | <YesIcon />    |
-| 开发期分析与调试                                     | <NoIcon />     |
-| 崩溃报告和错误跟踪                                   | <NoIcon />     |
+| 监控生产环境中的应用启动性能       | <YesIcon />    |
+| 比较不同版本和 OTA 更新之间的性能 | <YesIcon />    |
+| 调查特定设备上的慢速会话       | <YesIcon />    |
+| 比较不同路由之间的导航性能        | <YesIcon />    |
+| 跟踪 EAS Update 下载时间                     | <YesIcon />    |
+| 从 CLI 查询性能指标              | <YesIcon />    |
+| 跟踪应用中的用户定义事件             | <YesIcon />    |
+| 跟踪生产环境中的 JavaScript 错误（预览版）  | <YesIcon />    |
+| 跟踪生产环境中的原生崩溃（预览版）     | <YesIcon />    |
+| 开发期性能分析与调试            | <NoIcon />     |
 
 **开发期分析与调试**：使用 [React Native DevTools](/debugging/tools/#debugging-with-react-native-devtools) 进行调试，并使用 [Expo Atlas](/guides/analyzing-bundles/) 检查 bundle。
 
-**崩溃报告和错误跟踪**：这是 EAS Observe 未来计划添加的功能。目前我们建议使用 [Sentry](/guides/using-sentry/) 或 [BugSnag](/guides/using-bugsnag/) 等崩溃报告服务。
+**JavaScript 错误**：在 SDK 57 及更高版本中，EAS Observe 会记录 JavaScript 错误，并在仪表板中显示符号化后的堆栈跟踪。此功能处于[预览版](/more/release-statuses/#preview)。设置和当前限制请参见[错误报告](/eas/observe/errors/)。
+
+**原生崩溃**：在 SDK 57 且 `expo-observe` 版本为 57.0.21 及更高版本时，EAS Observe 会记录 Android 和 iOS 上的原生崩溃，并在仪表板中与 JavaScript 错误一同显示。仪表板中不会对原生堆栈跟踪进行符号化。详情请参见[错误报告](/eas/observe/errors/)。
 
 ## 常见问题（FAQ）
 
@@ -94,19 +101,19 @@ React Native 中的性能调试传统上仅限于开发工具。EAS Observe 关�
 
 <Collapsible summary="EAS Observe 跟踪哪些指标？">
 
-EAS Observe 主要关注启动指标：冷启动时间、热启动时间、首次渲染时间、可交互时间和 bundle 加载时间。有关每项指标的详细说明，请参见[指标参考](/eas/observe/reference/metrics/)。你还可以将自己的信号记录为[用户定义事件](/eas/observe/events/)。
+EAS Observe 跟踪启动指标（冷启动时间、热启动时间、首次渲染时间、交互就绪时间和 bundle 加载时间）以及 [EAS Update 下载时间](/eas/observe/eas-update/)。在 SDK 56 及更高版本中，[导航集成](/eas/observe/integrations/expo-router/)会添加按路由划分的渲染和交互耗时。每项指标的详细说明请参见[指标参考](/eas/observe/reference/metrics/)。你还可以将自己的信号记录为[用户定义事件](/eas/observe/events/)，并记录 [JavaScript 错误和原生崩溃](/eas/observe/errors/)（预览版）。
 
 </Collapsible>
 
 <Collapsible summary="支持哪些平台？">
 
-EAS Observe 支持 Android 和 iOS。指标会从生产构建中收集，并可在仪表板和 CLI 中按平台筛选。
+EAS Observe 支持 Android、iOS 和 tvOS。指标从生产构建中收集，并可在仪表板和 CLI 中按平台筛选。
 
 </Collapsible>
 
 <Collapsible summary="EAS Observe 是否可在 Expo Go 中使用？">
 
-不可以。EAS Observe 依赖于 `expo-observe` 原生库，而该库不包含在 Expo Go 中。要使用它，请创建一个 [开发构建](/develop/development-builds/introduction/) 或生产构建。
+不可以。EAS Observe 依赖于 `expo-observe` 原生库，而该库不包含在 Expo Go 中。要使用它，请创建一个[开发构建](/develop/development-builds/introduction/)或生产构建。
 
 </Collapsible>
 
@@ -124,7 +131,7 @@ EAS Observe 支持 Android 和 iOS。指标会从生产构建中收集，并可�
 
 <Collapsible summary="我可以在开发期间测试指标吗？">
 
-默认情况下，从调试构建中收集的指标不会发送。不过，你仍可以通过 [`configure()`](/eas/observe/configuration/#configure) 将 `dispatchInDebug` 设置为 `true` 来进行测试。详情请参见[配置](/eas/observe/configuration/#enable-metrics-in-development)。
+默认情况下，不会发送从调试构建中收集的指标。你可以通过 [`configure()`](/versions/latest/sdk/observe/#configureconfig) 将 `dispatchInDebug` 设置为 `true`，以便在测试时发送这些指标。详情请参见[配置](/eas/observe/configuration/#enable-metrics-in-development)。
 
 </Collapsible>
 
@@ -160,6 +167,13 @@ EAS Observe 支持 Android 和 iOS。指标会从生产构建中收集，并可�
 />
 
 <BoxLink
+  title="错误报告"
+  description="记录 JavaScript 错误，并在仪表板中查看符号化后的堆栈跟踪。"
+  href="/eas/observe/errors"
+  Icon={ActivityIcon}
+/>
+
+<BoxLink
   title="配置"
   description="控制环境、事件发送和开发模式设置。"
   href="/eas/observe/configuration"
@@ -170,5 +184,12 @@ EAS Observe 支持 Android 和 iOS。指标会从生产构建中收集，并可�
   title="指标参考"
   description="每项指标、相关概念和数据处理方式的详细说明。"
   href="/eas/observe/reference/metrics"
+  Icon={ActivityIcon}
+/>
+
+<BoxLink
+  title="API 参考"
+  description="expo-observe 库 API 的完整参考。"
+  href="/versions/latest/sdk/observe"
   Icon={ActivityIcon}
 />

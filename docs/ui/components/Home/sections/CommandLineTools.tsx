@@ -29,7 +29,7 @@ export function CommandLineTools() {
               Deploy to TestFlight
             </h2>
             <div>
-              <Terminal cmd={['$ npx testflight']} className="rounded-md asset-shadow" />
+              <Terminal cmd={['$ npx testflight']} className="rounded-3xl asset-shadow" />
               <CALLOUT theme="secondary">
                 这是一个仅限 iOS 的命令，会将你的应用上传到 TestFlight。
               </CALLOUT>
@@ -54,7 +54,7 @@ export function CommandLineTools() {
               Deploy your web app
             </h2>
             <div>
-              <Terminal cmd={['$ npx eas-cli deploy']} className="rounded-md asset-shadow" />
+              <Terminal cmd={['$ npx eas-cli deploy']} className="rounded-3xl asset-shadow" />
               <CALLOUT theme="secondary">
                 有关前置条件和完整说明，请查看{' '}
                 <A href="/deploy/web/#export-your-web-project">指南</A>。

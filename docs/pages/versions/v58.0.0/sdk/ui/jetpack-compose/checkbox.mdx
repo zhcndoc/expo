@@ -1,0 +1,195 @@
+---
+title: 复选框
+description: 用于选择控件的 Jetpack Compose 复选框组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+> **info** 如需跨平台使用，请参阅通用的 [`Checkbox`](../universal/checkbox) — 它会根据平台渲染相应的原生组件。
+
+Expo UI Checkbox 与官方 Jetpack Compose [Checkbox](https://developer.android.com/develop/ui/compose/components/checkbox) API 相匹配。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/checkbox/android-light.webp"
+  darkSrc="/static/images/expo-ui/checkbox/android-dark.webp"
+  alt="已选中和未选中的 Material 3 复选框"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本复选框
+
+<ComponentExample
+  title="CheckboxExample.tsx"
+  src="/static/images/expo-ui/examples/checkbox-basic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/checkbox-basic-android-dark.webp"
+  alt="已选中的 Material 3 复选框">
+
+```tsx
+import { useState } from 'react';
+import { Host, Checkbox } from '@expo/ui/jetpack-compose';
+
+export default function CheckboxExample() {
+  const [checked, setChecked] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Checkbox value={checked} onCheckedChange={setChecked} />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义颜色
+
+<ComponentExample
+  title="CustomColorsExample.tsx"
+  src="/static/images/expo-ui/examples/checkbox-custom-colors-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/checkbox-custom-colors-android-dark.webp"
+  alt="已选中的复选框，填充为紫色并带有白色勾号">
+
+```tsx
+import { useState } from 'react';
+import { Host, Checkbox } from '@expo/ui/jetpack-compose';
+
+export default function CustomColorsExample() {
+  const [checked, setChecked] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Checkbox
+        value={checked}
+        onCheckedChange={setChecked}
+        colors={{
+          checkedColor: '#6200EE',
+          checkmarkColor: '#FFFFFF',
+        }}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 全选（TriStateCheckbox）
+
+使用 `TriStateCheckbox` 创建一个反映其子项状态的父级复选框。它支持三种状态：`'on'`、`'off'` 和 `'indeterminate'`。
+
+对每个 `Row` 应用 `toggleable` 修饰符，使整行（复选框 + 标签）都可点击，并具有正确的无障碍语义。在行上使用 `toggleable` 时，请省略复选框自身的 `onCheckedChange`/`onClick`，以避免重复处理。
+
+<ComponentExample
+  title="SelectAllExample.tsx"
+  src="/static/images/expo-ui/examples/checkbox-select-all-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/checkbox-select-all-android-dark.webp"
+  alt="全选行显示不确定状态的横线，其下方有一个已选中和两个未选中的选项">
+
+```tsx
+import { useState } from 'react';
+import {
+  Host,
+  Checkbox,
+  TriStateCheckbox,
+  Row,
+  Column,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import { toggleable } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function SelectAllExample() {
+  const [child1, setChild1] = useState(false);
+  const [child2, setChild2] = useState(false);
+  const [child3, setChild3] = useState(false);
+
+  const parentState =
+    child1 && child2 && child3
+      ? 'on'
+      : !child1 && !child2 && !child3
+        ? 'off'
+        : 'indeterminate';
+
+  return (
+    <Host matchContents>
+      <Column>
+        <Row
+          verticalAlignment="center"
+          modifiers={[
+            toggleable(
+              parentState === 'on',
+              () => {
+                const newState = parentState !== 'on';
+                setChild1(newState);
+                setChild2(newState);
+                setChild3(newState);
+              },
+              { role: 'checkbox' }
+            ),
+          ]}>
+          <TriStateCheckbox state={parentState} />
+          <Text>Select all</Text>
+        </Row>
+        <Row
+          verticalAlignment="center"
+          modifiers={[
+            toggleable(child1, () => setChild1(!child1), {
+              role: 'checkbox',
+            }),
+          ]}>
+          <Checkbox value={child1} />
+          <Text>选项 1</Text>
+        </Row>
+        <Row
+          verticalAlignment="center"
+          modifiers={[
+            toggleable(child2, () => setChild2(!child2), {
+              role: 'checkbox',
+            }),
+          ]}>
+          <Checkbox value={child2} />
+          <Text>选项 2</Text>
+        </Row>
+        <Row
+          verticalAlignment="center"
+          modifiers={[
+            toggleable(child3, () => setChild3(!child3), {
+              role: 'checkbox',
+            }),
+          ]}>
+          <Checkbox value={child3} />
+          <Text>选项 3</Text>
+        </Row>
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import {
+  Checkbox,
+  TriStateCheckbox,
+} from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/checkbox"
+  apiName="Checkbox"
+/>

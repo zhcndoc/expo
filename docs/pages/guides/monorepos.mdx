@@ -65,8 +65,9 @@ module.exports = config;
 
 ## 搭建 monorepo
 
-在 monorepo 中，你的应用通常会位于仓库的一个子目录中，而你的包管理器会配置为允许你在 monorepo 内为其他包添加依赖。
-例如，一个包含 Expo 应用的 monorepo 的基本结构可能如下所示：
+在 monorepo 中，你的应用通常位于仓库的某个子目录中，并且你的包管理器已配置为允许你从 monorepo 内部向其他包添加依赖。
+
+例如，一个包含 Expo 应用的基本 monorepo 结构可能如下所示：
 
 - **apps**：包含多个项目，包括 Expo 应用。
 - **packages**：包含应用使用的不同包。
@@ -99,10 +100,10 @@ packages:
 
 <Terminal
   cmd={{
-    npm: ['$ npx create-expo-app@latest --template default@sdk-57 apps/cool-app'],
-    yarn: ['$ yarn create expo-app --template default@sdk-57 apps/cool-app'],
-    pnpm: ['$ pnpm create expo-app --template default@sdk-57 apps/cool-app'],
-    bun: ['$ bun create expo --template default@sdk-57 apps/cool-app'],
+    npm: ['$ npx create-expo-app@latest apps/cool-app'],
+    yarn: ['$ yarn create expo-app apps/cool-app'],
+    pnpm: ['$ pnpm create expo-app apps/cool-app'],
+    bun: ['$ bun create expo apps/cool-app'],
   }}
 />
 
@@ -192,7 +193,7 @@ Monorepo 可能会带来普通项目不会遇到的解析和依赖问题。它�
 
 **hoisted** 安装的一个副作用是，你可能会意外依赖于自己 **package.json** 的 `dependencies` 或 `peerDependencies` 中并未指定的 Node 模块。相反，更多其他包所依赖的模块会被提升并变得可访问。这可能导致非确定性行为，并使你拥有有问题的依赖链；这些链更脆弱，并且在更新或升级包时可能引发解析错误。这在 monorepo 中尤其常见。
 
-**从 SDK 54 开始**，Expo 支持隔离依赖。不幸的是，并非你安装的所有包都能正常工作，有些 React Native 库在与隔离依赖一起使用时可能会导致构建或解析错误。如果你在使用 [pnpm](https://pnpm.io/settings#nodelinker) 的隔离安装时遇到问题，可以通过修改仓库根目录下 **pnpm-workspace.yaml** 文件中的 `nodeLinker` 设置，切换为 **hoisted** 安装策略：
+**从 SDK 54 开始**，Expo 支持隔离依赖。不幸的是，并非你安装的所有包都能正常工作，一些 React Native 库在使用隔离依赖时可能会导致构建或解析错误。如果你在使用 [pnpm](https://pnpm.io/settings#nodelinker) 进行隔离安装时遇到问题，请通过修改仓库根目录 **pnpm-workspace.yaml** 文件中的 `nodeLinker` 设置，切换到 **hoisted** 安装策略：
 
 ```yaml pnpm-workspace.yaml
 nodeLinker: hoisted
@@ -246,7 +247,9 @@ Expo 已改进对更完整的 **node_modules** 模式的支持，例如隔离模
 
 从 **SDK 55** 开始，这在 monorepo 中的应用里会自动启用。
 
-#### 带有 TV 项目的 Monorepo
+非原生模块的包在重复时也可能出现问题。创建 React context 的库就是一个常见示例。要对这些包应用相同的检查和解析，请参阅[检查非原生模块的包](/modules/autolinking/#checking-packages-that-arent-native-modules)。
+
+#### 包含 TV 项目的 Monorepo
 
 请查看 [为 TV 构建](/guides/building-for-tv/#modify-dependencies-for-tv) 文档中的依赖部分，了解当一个 TV 项目与其他 Expo 项目一起包含在 monorepo 中时，对 `react-native` 的特殊依赖要求。
 

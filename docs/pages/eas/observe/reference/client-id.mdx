@@ -1,0 +1,58 @@
+---
+title: 客户端 ID
+description: 读取 EAS Observe 记录在每项指标和事件上的 EAS 客户端 ID，并使用它将数据与其他服务关联。
+---
+
+EAS Observe 发送的每项指标、事件和日志记录都带有一个 **EAS 客户端 ID**：用于标识你的应用某次安装的随机标识符。仪表板和 EAS CLI 使用它按安装分组数据，而 `Observe.clientId` 会向你的应用公开同一个值。
+
+使用它从其他工具（例如崩溃报告工具、分析服务提供商或你自己的后端）查询某次安装的 Observe 数据。
+
+## 读取客户端 ID
+
+`Observe.clientId` 在 Android 和 iOS 上是一个字符串，在 Web 上为 `null`：
+
+```tsx
+import { Observe } from 'expo-observe';
+
+console.log(Observe.clientId);
+// 'f81d4fae-7dec-41d0-a765-00a0c91e6bf6'
+```
+
+导入 `expo-observe` 后即可使用该值。你不需要先调用 `configure()`。
+
+## 与其他服务关联
+
+将客户端 ID 附加到你发送到其他地方的数据中。然后，当你在该服务中发现问题时，就可以在 EAS Observe 中查询同一次安装。
+
+以下示例会将客户端 ID 与报告一并发送到你自己的后端：
+
+```tsx
+import { Observe } from 'expo-observe';
+
+async function reportFeedback(message: string) {
+  await fetch('https://example.com/feedback', {
+    method: 'POST',
+    body: JSON.stringify({
+      message,
+      easClientId: Observe.clientId,
+    }),
+  });
+}
+```
+
+崩溃报告和分析 SDK 通常会为此提供标签、自定义属性或上下文字段。在启动时设置一次，然后使用该值在 EAS Observe 中查找对应的安装。
+
+若要反向查询，请使用 `--json` 运行 [`eas observe:metrics`](/eas/observe/eas-cli/#eas-observemetrics) 或 [`eas observe:events`](/eas/observe/eas-cli/#eas-observeevents)。每个样本都包含其 `easClientId`。
+
+## 客户端 ID 的行为
+
+- 首次有 EAS 客户端库需要该 ID 时，会在设备上生成此 ID，并将其存储在原生偏好设置中。它并非根据任何硬件或账户标识符生成。
+- 在应用启动、应用更新和 EAS Updates 期间保持稳定。
+- 它会与你应用中的其他 EAS 客户端库共享，例如 `expo-updates`。同一次安装在所有这些库中使用同一个 ID。
+- 清除应用数据或重新安装应用时，ID 会改变，但备份恢复（包括重新安装时的 Android Auto Backup）可能会保留之前的 ID。
+
+由于该 ID 标识的是一次安装而非某个人，请将其视为假名化数据。如果你将其发送到第三方服务，请确认你的隐私政策涵盖了这种用途。
+
+## 抽样与客户端 ID
+
+[`sampleRate`](/eas/observe/configuration/#sampling) 的判定基于客户端 ID，因此某次安装在多次启动期间会始终处于采样范围内或范围外。无论某次安装是否处于采样范围内，`Observe.clientId` 都会返回该 ID，因此即使应用没有发送任何指标，你也可以记录它。

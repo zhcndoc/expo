@@ -1,0 +1,159 @@
+---
+title: Expo SDK 参考
+description: 使用 Expo SDK 软件包在 Expo 和 React Native 应用中访问设备和系统功能
+hideTOC: true
+---
+
+import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { CodeSquare01Icon } from '@expo/styleguide-icons/outline/CodeSquare01Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Collapsible } from '~/ui/components/Collapsible';
+import RedirectNotification from '~/ui/components/RedirectNotification';
+import {
+  AndroidIOSCompatibilityTable,
+  ReactNativeCompatibilityTable,
+} from '~/ui/components/SDKTables';
+import { Terminal } from '~/ui/components/Snippet';
+import { CODE } from '~/ui/components/Text';
+
+<RedirectNotification>
+  您要查找的页面在此 SDK 版本中不存在。它可能已被弃用或已添加到较新版本的 SDK 中
+</RedirectNotification>
+
+Expo SDK 是一组用于访问设备和系统功能的软件包，例如相机、联系人、位置、传感器、触觉反馈等。每个软件包都针对特定功能，并且可以独立使用。所有软件包都可以在安装了 `expo` 软件包的任何 React Native 应用中使用。
+
+您可以使用 [`npx expo install`](/more/expo-cli/#install) 命令安装任意 Expo SDK 软件包。例如，可以使用以下命令安装三个不同的软件包：
+
+<Terminal
+  cmd={{
+    npm: ['$ npx expo install expo-camera expo-contacts expo-sensors'],
+    yarn: ['$ yarn expo install expo-camera expo-contacts expo-sensors'],
+    pnpm: ['$ pnpm expo install expo-camera expo-contacts expo-sensors'],
+    bun: ['$ bun expo install expo-camera expo-contacts expo-sensors'],
+  }}
+/>
+
+安装一个或多个软件包后，您可以将它们导入 JavaScript 代码中：
+
+```ts
+import { CameraView } from 'expo-camera';
+import { Contact } from 'expo-contacts';
+import { Gyroscope } from 'expo-sensors';
+```
+
+这样，您就可以编写 [`Contact.getAll()`](./sdk/contacts#getalloptions) 来读取设备中的联系人，读取陀螺仪传感器以检测设备移动，或启动手机相机并拍摄照片。
+
+## 所有 Expo SDK 软件包都可以在任何 React Native 应用中使用
+
+Expo 应用是 React Native 应用，因此所有 Expo SDK 软件包都可以在安装并配置了 `expo` 软件包的任何 React Native 应用中使用。创建支持 Expo SDK 软件包的 React Native 应用最简单的方法是使用 `create-expo-app`。不过，您也可以使用 `npx install-expo-modules` 命令，将 Expo SDK 支持添加到现有的 React Native 应用中。
+
+<Terminal
+  cmd={{
+    npm: [
+      '# Create a project named my-app',
+      '$ npx create-expo-app my-app --template bare-minimum',
+    ],
+    yarn: [
+      '# Create a project named my-app',
+      '$ yarn create expo-app my-app --template bare-minimum',
+    ],
+    pnpm: [
+      '# Create a project named my-app',
+      '$ pnpm create expo-app my-app --template bare-minimum',
+    ],
+    bun: ['# Create a project named my-app', '$ bun create expo my-app --template bare-minimum'],
+  }}
+/>
+
+<BoxLink
+  title="在现有 React Native 应用中安装 Expo SDK 软件包"
+  href="/bare/installing-expo-modules"
+  description={
+    <>
+      详细了解如何配置使用{' '}
+      <CODE>npx @react-native-community/cli@latest init</CODE> 创建的项目以使用 Expo SDK 软件包
+    </>
+  }
+  Icon={BookOpen02Icon}
+/>
+
+<BoxLink
+  title="使用库"
+  description="了解如何在项目中安装 Expo SDK 软件包"
+  href="/workflow/using-libraries"
+  Icon={CodeSquare01Icon}
+/>
+
+## 使用预发布版本
+
+新的 Expo SDK 版本每年发布三次。在这些版本之间，我们会发布 `expo` 软件包以及所有 Expo SDK 软件包的预发布版本。预发布版本不被视为稳定版本，仅应在您能够接受遇到错误或其他问题的风险时使用。
+
+### Canary 版本
+
+Canary 版本代表发布时 `main` 分支状态的快照。Canary 软件包版本的名称中包含 `-canary`，以及日期和提交哈希，例如 `58.0.0-canary-20260909-ea7a89a`。要安装最新的 Canary 版本：
+
+<Terminal
+  cmd={{
+    npm: [
+      '# Install the alpha version of expo and its related packages',
+      '$ npm install expo@canary && npx expo install --fix',
+    ],
+    yarn: [
+      '# Install the alpha version of expo and its related packages',
+      '$ yarn add expo@canary && yarn expo install --fix',
+    ],
+    pnpm: [
+      '# Install the alpha version of expo and its related packages',
+      '$ pnpm add expo@canary && pnpm expo install --fix',
+    ],
+    bun: [
+      '# Install the alpha version of expo and its related packages',
+      '$ bun add expo@canary && bun expo install --fix',
+    ],
+  }}
+/>
+
+您通常可以将单个软件包的预发布版本与稳定版 Expo SDK 一起使用。Canary 质量的版本偶尔可能会出现不兼容或其他问题。如果您选择使用 Canary 软件包，并且确认它能够很好地满足您的使用场景，则可以考虑[静默依赖项验证警告](/more/expo-cli/#configuring-dependency-validation)。
+
+### Beta 版本
+
+在每个 Expo SDK 版本发布之前，我们会发布 `expo` 软件包以及所有 Expo SDK 软件包的 Beta 版本。Beta 版本被认为比 Canary 版本稳定得多，我们鼓励开发者在自己的应用中试用这些版本并分享反馈。Beta 版本在 npm 上使用 `beta` 标签，并遵循相关 [changelog](https://expo.dev/changelog) 文章中的说明。
+
+## 每个 Expo SDK 版本都依赖于一个 React Native 版本
+
+<ReactNativeCompatibilityTable />
+
+### 其他信息
+
+<Collapsible summary="Expo SDK 跟踪 React Native 发布版本的策略">
+
+- 每个 Expo SDK 版本都针对单一的 React Native 版本。通常，这是发布时最新的稳定版本
+- React Native 目前每年发布六个版本，并力求每个版本都不包含破坏性变更
+- Expo SDK 版本力求遵循这一节奏
+- 即将发布的 Expo SDK 的预发布版本将快速支持最新版本的 React Native，通常在其发布当天即可支持。Expo SDK 团队的一名成员会在每个版本发布期间加入 React Native 发布团队，负责持续更新 Expo 仓库中的 React Native 版本、验证兼容性，并向 React Native 团队报告回归问题
+
+</Collapsible>
+
+<Collapsible summary="如果我需要最新 React Native 版本中的某项变更，而它尚未包含在 Expo SDK 版本中，该怎么办？"
+>
+React Native 发布团队中的 Expo 工程师会确保任何紧急修复都包含在最新 Expo SDK 使用的 React Native 版本中。如果您的特定修复不会被反向移植到现有版本中，可能是因为它不被视为关键修复，或者涉及破坏性变更，那么您有两个选择：
+
+1. 使用 [`patch-package`](https://github.com/ds300/patch-package) 引入该修复
+2. 使用 [Expo SDK 的预发布版本](#using-pre-release-versions)
+
+</Collapsible>
+
+<Collapsible summary="我可以在最新 Expo SDK 中使用较旧版本的 React Native 吗？">
+
+Expo SDK 中的软件包旨在支持该 SDK 对应的目标 React Native 版本。通常，它们不支持较旧版本的 React Native，但也有可能支持。当新的 React Native 版本发布时，最新版本的 Expo SDK 软件包通常会更新以支持该版本。不过，根据该版本变更的范围，更新可能需要数周或更长时间
+
+</Collapsible>
+
+## Android 和 iOS 版本支持
+
+每个 Expo SDK 版本都支持 Android 和 iOS 的最低操作系统版本。对于 Android，系统会定义 `compileSdkVersion`，用于告知 [Gradle](https://developer.android.com/studio/build) 应使用哪个 Android SDK 版本来编译应用。这也意味着您可以使用该 SDK 版本及更早版本中包含的 Android API 功能。对于 iOS，[Xcode](https://developer.apple.com/news/upcoming-requirements/) 会告知用于编译应用的最低 Xcode SDK 版本。
+
+<AndroidIOSCompatibilityTable />
+
+在决定是否升级 Expo SDK 版本时，请同时考虑 Expo 的 SDK 版本和应用商店提交要求，如上表所述。Google Play Store 和 Apple App Store 会定期提高新应用提交所需的最低操作系统版本和 API 级别。Expo 无法控制应用商店的要求，您应查看 [Google](https://developer.android.com/studio/build) 和 [Apple](https://developer.apple.com/news/upcoming-requirements/) 以了解当前的应用商店提交要求。

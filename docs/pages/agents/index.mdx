@@ -4,7 +4,7 @@ sidebar_title: 概述
 description: 使用 Claude Code、Codex 和 Cursor 等 AI 编码代理构建并发布 Expo 和 React Native 应用。
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { Star06Icon } from '@expo/styleguide-icons/outline/Star06Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import {
@@ -14,33 +14,62 @@ import {
 } from '~/ui/components/CustomIcons/AIProviderIcons';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
+import { Tabs, Tab } from '~/ui/components/Tabs';
 
 Claude Code、Codex、Cursor 和其他 AI 编码代理可以帮助你构建、升级、调试和部署你的 Expo 和 React Native 项目。当你使用 [`create-expo-app`](/more/create-expo/) 创建一个新项目时，该新项目已经配置好了 AI 代理所需的配置文件。这个设置也会提交到你的项目中，因此你团队中的每个人都从相同的 SDK 版本和项目说明开始，并且他们的代理会读取相同的项目上下文。
+
+## 快速开始
+
+Claude Code 和 Codex 有官方 Expo 插件。一条命令即可安装 [Expo Skills](/skills/) 并注册 [Expo Model Context Protocol（MCP）Server](/mcp/)。
+
+<Tabs>
+
+<Tab label="Claude Code">
+
+<Terminal cmd={['$ claude plugin install expo@claude-plugins-official']} />
+
+然后在 Claude Code 会话中运行 `/mcp`，登录你的 Expo 账户。
+
+</Tab>
+
+<Tab label="Codex">
+
+<Terminal cmd={['$ codex plugin add expo@openai-curated']} />
+
+然后登录你的 Expo 账户：
+
+<Terminal cmd={['$ codex mcp login expo']} />
+
+</Tab>
+
+</Tabs>
+
+Cursor 和其他代理没有官方 Expo 插件。要配置它们，请分别安装 [Expo Skills](/skills/) 和 [Expo MCP Server](/mcp/)。
 
 ## Expo 如何支持 AI 代理
 
 有三个部分协同工作，为 AI 代理提供一致的、特定于 Expo 的上下文：
 
-- **Expo Skills：** 一个插件，会向代理添加 Expo 特定的说明和斜杠命令。代理会应用已知可靠的 Expo 模式（SDK 升级、EAS 工作流、使用 Jetpack Compose 和 SwiftUI 的原生 UI、API 路由），而不是根据训练数据去猜测。Skills 每台机器只需安装一次。
-- **Expo MCP Server：** 一个远程的 Model Context Protocol（MCP）服务器，为代理提供对最新 Expo 文档、EAS Build 历史记录、EAS Update 频道以及 TestFlight 元数据的实时访问。代理可以通过它安装与 SDK 匹配的包、读取构建日志，并获取模拟器截图。
-- **项目上下文文件：** `create-expo-app` 会在项目根目录写入 **AGENTS.md**、**CLAUDE.md** 和 **.claude/settings.json**。当你打开项目时，代理首先读取的就是这些文件。它们会将代理指向与你项目目标 Expo SDK 版本相对应的文档。
+- **Expo Skills：** `expo` 插件会向代理添加 Expo 专属说明和斜杠命令。代理会应用经过验证的 Expo 模式（SDK 升级、EAS Workflows、使用 Jetpack Compose 和 SwiftUI 构建原生 UI、API 路由），而不是根据训练数据进行猜测。Skills 在每台机器上只需安装一次。
+- **Expo MCP Server：** 一个远程 Model Context Protocol（MCP）服务器，为代理提供对最新 Expo 文档、EAS Build 历史记录、EAS Update 通道和 TestFlight 元数据的实时访问权限。代理可以通过它安装与 SDK 匹配的包、读取构建日志，以及截取模拟器屏幕截图。对于 Claude Code 和 Codex，`expo` 插件会注册此服务器，因此无需单独添加。
+- **项目上下文文件：** `create-expo-app` 会在项目根目录写入 **AGENTS.md**，指引代理查阅与你的项目目标 SDK 版本相匹配的 Expo 文档。安装 Claude Code 时，它还会写入 **.claude/settings.json** 以启用 Expo 插件。
 
 ## 设置 Expo Skills 和 Expo MCP Server
 
-Expo Skills 和 Expo MCP Server 可与每个受支持的代理配合使用。请按照下面的指南分别进行设置：
+Expo Skills 和 Expo MCP Server 适用于所有受支持的代理。如果你已安装上文中的 `expo` 插件，则两者都已设置完毕。以下指南介绍所有安装选项，包括没有插件的代理：
 
 <BoxLink
   title="Expo Skills"
   description="安装该插件，以便向代理教授已知良好的 Expo 模式，并浏览可用技能的完整列表。"
   href="/skills/"
-  Icon={BookOpen02Icon}
+  Icon={Star06Icon}
 />
 
 <BoxLink
   title="Expo MCP Server"
   description="连接远程 Expo MCP Server，使代理可以实时访问 Expo 文档和 EAS。"
   href="/mcp/"
-  Icon={BookOpen02Icon}
+  Icon={Star06Icon}
 />
 
 ## 选择一个代理
@@ -70,15 +99,14 @@ Expo Skills 和 Expo MCP Server 可与每个受支持的代理配合使用。请
 
 ## 代理的项目上下文文件
 
-每个代理都会在不同的位置查找项目上下文。与其强制使用单一约定，不如在你使用 CLI 创建新的 Expo 项目时，`create-expo-app` CLI 会将以下配置文件添加到项目根目录中：
+`create-expo-app` CLI 会将 **AGENTS.md** 添加到新项目的根目录。安装 Claude Code 时，它还会添加 **.claude/settings.json**：
 
-| 文件                      | 由谁读取                                                  | 用途                                                                                                                              |
-| ------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **AGENTS.md**             | Codex 和 Cursor 直接读取。Claude Code 通过 **CLAUDE.md** 读取。 | 将代理指向与你项目 SDK 匹配的 Expo 文档。这是项目级说明的权威来源。 |
-| **CLAUDE.md**             | Claude Code 在启动时读取。                                       | 包含 `@AGENTS.md`，它会将 **AGENTS.md** 导入 Claude Code 的上下文。                                                      |
-| **.claude/settings.json** | Claude Code 在启动时读取。                                       | 预先启用 Claude Code 插件市场中的官方 Expo 插件。                                                       |
+| 文件                      | 读取者                         | 用途                                                                                                                             |
+| ------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **AGENTS.md**             | Claude Code、Codex 和 Cursor。 | 指引代理查阅与你的项目 SDK 相匹配的 Expo 文档。这是项目级说明的事实来源。 |
+| **.claude/settings.json** | Claude Code 启动时。         | 预先启用 Claude Code 插件市场中的官方 Expo 插件。                                                       |
 
-每个文件都面向不同的代理约定，因此同一个项目无需针对每个代理单独配置，就能同时适用于 Claude Code、Codex 或 Cursor。
+将共享的项目说明添加到 **AGENTS.md**，这样 Claude Code、Codex 和 Cursor 就会读取相同的上下文。
 
 ## 设置现有项目
 
@@ -102,16 +130,6 @@ Expo Skills 和 Expo MCP Server 可与每个受支持的代理配合使用。请
 
 <Step label="2">
 
-### 创建 CLAUDE.md
-
-如果你使用 Claude Code，请创建 **CLAUDE.md**，其中只包含一行用于导入 **AGENTS.md** 的内容：
-
-<Terminal cmd={["$ echo '@AGENTS.md' > CLAUDE.md"]} />
-
-</Step>
-
-<Step label="3">
-
 ### 为 Claude Code 启用 Expo 插件
 
 创建 **.claude/settings.json**，以启用 Claude Code 插件市场中的官方 Expo 插件：
@@ -124,9 +142,11 @@ Expo Skills 和 Expo MCP Server 可与每个受支持的代理配合使用。请
 }
 ```
 
+此文件会为所有打开该项目的人启用插件。每位开发者仍需在自己的机器上安装一次，运行 `claude plugin install expo@claude-plugins-official` 即可。
+
 </Step>
 
-提交全部三个文件，这样你团队中的每个代理会话都能从相同的项目上下文开始。Codex 和 Cursor 只需要 **AGENTS.md**，因此步骤 2 和 3 仅适用于 Claude Code。
+提交这两个文件，使团队中的每个代理会话都从相同的项目上下文开始。Codex 和 Cursor 只需要 **AGENTS.md**，因此第 2 步仅适用于 Claude Code。
 
 ## 验证设置
 
@@ -140,18 +160,18 @@ Expo Skills 和 Expo MCP Server 可与每个受支持的代理配合使用。请
 
 ## 代理工具包
 
-在 [选择代理](#pick-an-agent) 中提到的代理会读取你的代码和文档等内容。若要让代理在运行时也能对你的 Expo 项目进行操作，可以将其与第三方工具包配对。然后，代理工具包就可以点击完成各种流程、读取日志、检查 React 组件树，并分析性能。
+在[选择代理](#pick-an-agent)中提到的代理会读取你的代码和文档等内容。若要让代理在运行时也能对你的 Expo 项目进行操作，可以将其与第三方工具包配对。然后，代理工具包就可以点击完成各种流程、读取日志、检查 React 组件树，并分析性能。
 
 <BoxLink
   title="agent-device"
   description="来自 Callstack 的开源、原生支持代理的 CLI，用于在模拟器、仿真器和实体设备上检查、控制、调试、分析和测试应用。"
   href="/agents/agent-device/"
-  Icon={BookOpen02Icon}
+  Icon={Star06Icon}
 />
 
 <BoxLink
   title="Argent"
   description="来自 Software Mansion 的一种代理工具包，通过 MCP 连接，可在 Android 模拟器或 iOS 模拟器上控制、调试并分析你的应用。"
   href="/agents/argent/"
-  Icon={BookOpen02Icon}
+  Icon={Star06Icon}
 />

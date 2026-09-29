@@ -1,7 +1,6 @@
 ---
 title: 数据加载器
-description: 了解如何使用 Expo Router 中的数据加载器在服务器上获取数据。
-isAlpha: true
+description: 了解如何在服务器上使用 Expo Router 中的数据加载器获取数据。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
@@ -10,7 +9,7 @@ import { RelatedSkills } from '~/ui/components/RelatedSkills';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **重要** 数据加载器处于 [alpha](/more/release-statuses/#alpha) 阶段，并且可在 SDK 55 及更高版本中使用。它们需要 [静态渲染](/router/web/static-rendering) 或 [服务器渲染](/router/web/server-rendering)。
+> **重要** 数据加载器在 SDK 58 及更高版本中已稳定。对于 SDK 55–57，请在 `expo-router` config plugin 中启用 `unstable_useServerDataLoaders`。它们需要使用[静态渲染](/router/web/static-rendering)或[服务器渲染](/router/web/server-rendering)。
 
 数据加载器为你的路由启用服务端数据获取。通过从路由文件中导出 `loader` 函数，你可以在服务器上获取数据，并使用 [`useLoaderData`](/versions/latest/sdk/router/#useloaderdata) 钩子在组件中访问这些数据。这让你能够将敏感数据和 API 密钥保留在服务器上，同时为组件提供所需的数据。
 
@@ -18,33 +17,7 @@ import { Step } from '~/ui/components/Step';
 
 <Step label="1">
 
-通过向 `expo-router` 插件添加 `unstable_useServerDataLoaders` 选项，在项目的 [app 配置](/versions/latest/config/app/) 中启用数据加载器：
-
-```json app.json
-{
-  "expo": {
-    /* @hide ... */
-    /* @end */
-    "plugins": [
-      [
-        "expo-router",
-        {
-          "unstable_useServerDataLoaders": true,
-          /* @info 服务器渲染所需 */
-          "unstable_useServerRendering": true
-          /* @end */
-        }
-      ]
-    ]
-  }
-}
-```
-
-</Step>
-
-<Step label="2">
-
-配置你的 web 输出模式。数据加载器同时适用于 [静态渲染](/router/web/static-rendering)（`web.output: 'static'`）和 [服务器渲染](/router/web/server-rendering)（`web.output: 'server'`）：
+配置你的 Web 输出模式。数据加载器适用于[静态渲染](/router/web/static-rendering)（`web.output: 'static'`）和[服务器渲染](/router/web/server-rendering)（`web.output: 'server'`）：
 
 ```json app.json
 {
@@ -64,7 +37,7 @@ import { Step } from '~/ui/components/Step';
 
 </Step>
 
-<Step label="3">
+<Step label="2">
 
 启动开发服务器：
 
@@ -151,7 +124,7 @@ function DataSection() {
 
 ### 错误处理
 
-当 loader 抛出错误时，它会传播到最近的 [错误边界](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)。你可以从同一个路由文件中导出一个 [`ErrorBoundary`](/versions/latest/sdk/router/#errorboundary) 组件来处理 loader 错误：
+当 loader 抛出错误时，它会传播到最近的[错误边界](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)。你可以从同一个路由文件中导出一个 [`ErrorBoundary`](/versions/latest/sdk/router/#errorboundary) 组件来处理 loader 错误：
 
 ```tsx src/app/data.tsx
 import { Text, View } from 'react-native';
@@ -215,7 +188,7 @@ export default function Post() {
 
 > **警告** 在使用静态渲染时，`request` 参数为 `undefined`，因为在构建时没有 HTTP 请求。
 
-在使用 [服务器渲染](/router/web/server-rendering) 时，loader 会将传入的 HTTP 请求作为第一个参数接收。这使你能够访问请求头、cookie 和其他请求信息：
+在使用[服务器渲染](/router/web/server-rendering)时，loader 会将传入的 HTTP 请求作为第一个参数接收。这使你能够访问请求头、cookie 和其他请求信息：
 
 ```tsx src/app/profile.tsx
 import { Text, View } from 'react-native';
@@ -267,7 +240,7 @@ export async function loader() {
 
 ## 运行时 API
 
-数据加载器可以完整访问来自 [`expo-server`](/versions/latest/sdk/server/) 的 [运行时 API](/router/web/api-routes/#runtime-api)。这包括用于设置响应头、抛出 HTTP 错误以及运行后台任务的工具：
+数据加载器可以完整访问来自 [`expo-server`](/versions/latest/sdk/server/) 的[运行时 API](/router/web/api-routes/#runtime-api)。这包括用于设置响应头、抛出 HTTP 错误以及运行后台任务的工具：
 
 ```tsx src/app/example.tsx
 import { setResponseHeaders, StatusError } from 'expo-server';
@@ -285,7 +258,7 @@ export async function loader(request) {
 }
 ```
 
-有关可用函数的完整列表，请参阅 [运行时 API 文档](/router/web/api-routes/#runtime-api)。
+有关可用函数的完整列表，请参阅[运行时 API 文档](/router/web/api-routes/#runtime-api)。
 
 ## 环境变量
 
@@ -445,16 +418,16 @@ export default function Post() {
 
 ## 已知限制
 
-- Loaders **必须** 返回可 JSON 序列化的数据。从 loader 返回 streams 或 async iterable 不受支持。此问题将在未来版本中解决。
-- Loader 数据会在导航过程中缓存在客户端。目前没有内置方式来使此缓存失效。此问题将在未来版本中解决。
+- 加载器**必须**返回可 JSON 序列化的数据。从 loader 返回 streams 或 async iterable 不受支持。此问题将在未来版本中解决。
+- Loader 数据会在导航过程中缓存在客户端。目前没有内置方式使此缓存失效。此问题将在未来版本中解决。
 
 ## 常见问题
 
 <FAQ>
 
-<Collapsible summary="我可以在没有服务端渲染的情况下使用数据加载器吗？">
+<Collapsible summary="我可以在没有服务器渲染的情况下使用数据加载器吗？">
 
-可以。数据加载器既适用于静态渲染（`web.output: 'static'`），也适用于服务端渲染（`web.output: 'server'`）。
+可以。数据加载器既适用于静态渲染（`web.output: 'static'`），也适用于服务器渲染（`web.output: 'server'`）。
 
 </Collapsible>
 

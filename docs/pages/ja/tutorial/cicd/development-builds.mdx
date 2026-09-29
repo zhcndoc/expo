@@ -1,0 +1,405 @@
+---
+title: '使用 EAS Workflows 自动化开发构建'
+sidebar_title: 开发构建
+description: 学习如何使用 EAS Workflows 自动化 Android 和 iOS 开发构建，并在仅修改 JavaScript 时使用指纹跳过重新构建。
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { FingerprintFlow } from '~/ui/components/FlowDiagram/Diagrams/FingerprintFlow';
+import { UnitTestGate } from '~/ui/components/FlowDiagram/Diagrams/UnitTestGate';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { ProgressTracker } from '~/ui/components/ProgressTracker';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+
+每次向 GitHub 仓库推送时手动重新构建开发客户端都很耗时。引入原生更改（新模块、新权限、SDK 升级）的团队成员或新贡献者，在运行项目之前都得等待新构建完成。
+
+在 `main` 分支上自动构建开发版本，可以确保始终有可安装的最新构建。运行 `eas build:dev` 即可安装最新的兼容构建。如果项目的指纹与现有构建匹配，EAS 会下载该构建，而不会重新构建。
+
+## 本章将学到什么
+
+- 使用 `build` 作业类型自动构建 Android 和 iOS 的[开发版本](/develop/development-builds/introduction/)
+- 使用 `fingerprint` 作业和 `get-build` 作业，在原生代码没有更改时跳过重新构建
+- 添加用于单元测试的自定义作业，将测试成功设为工作流的通过条件
+
+<Prerequisites>
+
+<Requirement title="配置 EAS Build 的 development 配置文件">
+
+EAS CLI 会在某个配置文件首次触发构建时提示生成凭据。为确保工作流启动前凭据已准备就绪，请先在 Android 和 iOS 上手动触发开发版本构建。
+
+<Terminal cmd={['$ eas build --profile development --platform all']} />
+
+</Requirement>
+
+</Prerequisites>
+
+## 用于开发版本的 `build` 作业类型
+
+`build` 作业类型是 EAS Workflows 的[预打包作业](/ja/tutorial/cicd/first-workflow/#eas-workflows-のジョブの種類)之一。无需自行定义构建过程中的每个步骤，只需使用 `build` 作业类型即可运行 Android 和 iOS 的 EAS Build。
+
+本章使用 **eas.json** 中的 `development` 构建配置文件。此配置文件用于开发 Expo 应用时。
+
+<Step label="1">
+
+### 添加 build.yml
+
+在 **.eas/workflows/** 中添加名为 **build.yml** 的新文件。在此文件中，为 `build` 作业类型指定 `profile` 和 `platform` 参数，以创建 Android 和 iOS 的开发版本。
+
+将以下代码添加到 **build.yml** 文件中。
+
+```yaml .eas/workflows/build.yml
+name: Development builds
+
+jobs:
+  build_android:
+    name: Build Android
+    type: build
+    params:
+      platform: android
+      profile: development
+  build_ios:
+    name: Build iOS
+    type: build
+    params:
+      platform: ios
+      profile: development
+```
+
+我们添加了两个作业：`build_android` 和 `build_ios`。两者都属于 `build` 类型，区别仅在于平台和构建配置文件参数。
+
+每个作业的 `params` 键中指定了以下内容：
+
+- [`platform`](/eas/workflows/pre-packaged-jobs/#build) 指定构建的目标操作系统（`android` 或 `ios`）
+- [`profile`](/build/eas-json/#build-profiles) 指定 **eas.json** 中定义的构建配置文件
+
+</Step>
+
+<Step label="2">
+
+### 手动运行工作流
+
+试着使用以下命令手动运行工作流。
+
+<Terminal cmd={['$ eas workflow:run .eas/workflows/build.yml']} />
+
+</Step>
+
+<Step label="3">
+
+### 在 EAS 控制面板中查看
+
+查看 EAS 控制面板中的 **Workflow graph** 选项卡，会看到显示为 "Triggered manually"。当 **Trigger** 为 **Manual** 时，表示该工作流是通过 `eas workflow:run` 命令启动的。
+
+<ContentSpotlight
+  alt="EAS Workflows 控制面板显示了手动触发的运行，并行创建 Android 和 iOS 开发版本。"
+  src="/static/images/tutorial/cicd/eas-workflows-development-build-manual-run.png"
+  className="max-w-160"
+/>
+
+每个构建的日志都会显示在工作流页面中。点击构建 ID，即可打开该构建的 EAS Build 页面。
+
+<ContentSpotlight
+  alt="Android 开发版本的 EAS Build 详情页面，显示了构建状态、指纹哈希、提交 SHA 和展开的日志输出。"
+  src="/static/images/tutorial/cicd/eas-build-android-development-build-logs.webp"
+  className="max-w-160"
+/>
+
+> **important** 在 EAS Workflows 中，没有依赖关系的作业默认会并行运行。在上述工作流中，`build_android` 和 `build_ios` 作业都没有依赖关系，因此会同时启动。
+
+继续下一步之前，请等待两个构建都完成。完成后，可以使用 **Install** 或 **Open with [Orbit](/build/orbit/)** 按钮，或从 **Artifacts** 下载，然后安装到设备/模拟器/仿真器上。
+
+</Step>
+
+## 使用指纹跳过不必要的构建
+
+如果项目仅更改了 TypeScript/JavaScript，现有开发版本仍可继续使用，因此不需要新构建。
+
+[**Expo Fingerprint**](/versions/latest/sdk/fingerprint/) 可以自动完成这一判断。它会对项目的原生特征（依赖项、原生项目文件、配置）进行哈希计算。如果该哈希与现有构建匹配，则说明原生代码没有更改，EAS 会跳过重新构建。如果哈希不同，则说明原生代码已更改，EAS 会创建新构建。
+
+<FingerprintFlow />
+
+让我们逐步更新 **build.yml**，使其检测原生更改，并仅在需要时构建。
+
+<Step label="1">
+
+### 添加 fingerprint 作业
+
+预打包的 [`fingerprint`](/eas/workflows/pre-packaged-jobs/#fingerprint) 作业会对项目的原生特征进行哈希计算，并为每个平台输出指纹哈希。`environment` 字段会告知 EAS 要使用哪种[环境变量配置](/eas/environment-variables/)。请注意，`environment` 和 `profile` 可能同名，但含义不同。`profile` 指 **eas.json** 中的构建配置文件（如何构建），而 `environment` 指 EAS 上配置的环境变量（构建时注入哪些值）。
+
+更新 **build.yml**，在构建作业之前添加 `fingerprint` 作业。
+
+```yaml .eas/workflows/build.yml
+name: Development builds
+
+jobs:
+  # @info #
+  fingerprint:
+    name: Fingerprint
+    type: fingerprint
+    environment: development
+  # @end #
+  build_android:
+    # ...
+  build_ios:
+    # ...
+```
+
+`fingerprint` 作业会生成两个输出：`android_fingerprint_hash` 和 `ios_fingerprint_hash`。下一步将使用这些哈希检查是否已存在兼容的构建。
+
+</Step>
+
+<Step label="2">
+
+### 添加 get-build 作业
+
+预打包的 [`get-build`](/eas/workflows/pre-packaged-jobs/#get-build) 作业会检查是否已存在与指定指纹哈希和配置文件对应的构建。如果存在匹配的构建，它会输出 `build_id`；否则，`build_id` 将为空。
+
+在工作流文件中 `fingerprint` 作业和构建作业之间添加 `get_android_build` 和 `get_ios_build` 作业。两者都使用 `needs: [fingerprint]` 等待 fingerprint 作业完成，并访问其输出。
+
+```yaml .eas/workflows/build.yml
+name: Development builds
+
+jobs:
+  fingerprint:
+    # ...
+  # @info #
+  get_android_build:
+    name: Check for existing Android build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      profile: development
+  get_ios_build:
+    name: Check for existing iOS build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      profile: development
+  # @end #
+  build_android:
+    # ...
+  build_ios:
+    # ...
+```
+
+在上述工作流中，`get-build` 作业使用 `${{ needs.fingerprint.outputs.* }}` 表达式语法，从前一个作业中获取指纹哈希。
+
+</Step>
+
+<Step label="3">
+
+### 添加条件构建
+
+[`if`](/eas/workflows/syntax/#jobsjob_idif) 字段用于控制是否运行作业。表达式 `${{ !needs.get_android_build.outputs.build_id }}` 表示_仅当 `get-build` 未找到匹配的构建时才运行该作业_。`!` 是取反运算符。如果已经存在与该指纹匹配的兼容构建，则会跳过构建作业。
+
+更新每个构建作业，使其依赖于对应的 `get-build` 作业，并添加 `if` 条件。
+
+```yaml .eas/workflows/build.yml
+name: Development builds
+
+jobs:
+  fingerprint:
+    # ...
+  get_android_build:
+    # ...
+  get_ios_build:
+    # ...
+  build_android:
+    name: Build Android
+    # @info #
+    needs: [get_android_build]
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    # @end #
+    type: build
+    params:
+      platform: android
+      profile: development
+  build_ios:
+    name: Build iOS
+    # @info #
+    needs: [get_ios_build]
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    # @end #
+    type: build
+    params:
+      platform: ios
+      profile: development
+```
+
+</Step>
+
+<Step label="4">
+
+### 添加触发器并运行工作流
+
+在工作流中添加 `on.push` 触发器，使其在每次推送到 `main` 时自动运行。
+
+```yaml .eas/workflows/build.yml
+name: Development builds
+
+# @info #
+on:
+  push:
+    branches: ['main']
+# @end #
+
+jobs:
+  fingerprint:
+    name: Fingerprint
+    type: fingerprint
+    environment: development
+  get_android_build:
+    name: Check for existing Android build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      profile: development
+  get_ios_build:
+    name: Check for existing iOS build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      profile: development
+  build_android:
+    name: Build Android
+    needs: [get_android_build]
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    type: build
+    params:
+      platform: android
+      profile: development
+  build_ios:
+    name: Build iOS
+    needs: [get_ios_build]
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    type: build
+    params:
+      platform: ios
+      profile: development
+```
+
+假设你对 Expo 项目进行了 TypeScript/JavaScript 更改，例如更改按钮颜色或更新屏幕文本。完成更改后，将提交推送到 `main` 分支，即可从 GitHub 仓库触发工作流。
+
+<Terminal
+  cmd={[
+    '$ git add .',
+    '$ git commit -m "Update button label and tweak styling"',
+    '$ git push origin main',
+  ]}
+  cmdCopy="git add . && git commit -m 'Update button label and tweak styling' && git push origin main"
+/>
+
+这会触发新的工作流，并在几秒内完成。在 EAS 控制面板中可以看到，Android 和 iOS 构建都已跳过，因为前一节创建的匹配构建已经存在。
+
+<ContentSpotlight
+  alt="EAS Workflows 运行中的 fingerprint 作业和 get-build 作业找到了兼容的现有构建，因此跳过了 Android 和 iOS 构建作业。"
+  src="/static/images/tutorial/cicd/eas-workflows-fingerprint-skips-existing-build.png"
+  className="max-w-160"
+/>
+
+从 `main` 分支获取最新代码并运行 `npx expo start`。现有开发版本会加载 JS 更改。
+
+</Step>
+
+## 用于单元测试的自定义作业
+
+> **info** 本节假设项目已配置 Jest。有关配置方法，请参阅[使用 Jest 进行单元测试](/develop/unit-testing/)。
+
+团队协作时，我们希望推送到 `main` 分支的所有更改都通过测试，然后再触发新构建。
+
+如果没有自动化，团队必须记得在推送到 `main` 之前于本地运行测试。如果忘记运行并推送了会导致测试失败的代码，下一个工作流可能会使用有问题的代码构建。
+
+使用 **EAS Workflows**，可以将自定义作业与现有预打包作业结合起来，从而自动化这一流程。此自定义作业会在 fingerprint 作业和构建作业之前运行。如果测试失败，EAS 会停止工作流，也不会创建构建。
+
+<UnitTestGate />
+
+<Step label="1">
+
+### 添加用于单元测试的自定义作业
+
+在 **build.yml** 工作流文件中添加一个自定义作业，使其在构建开始前运行单元测试。
+
+```yaml .eas/workflows/build.yml
+name: Development builds
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  # @info #
+  run_tests:
+    name: Run unit tests
+    steps:
+      - uses: eas/checkout # Check out the repo
+      - uses: eas/install_node_modules
+      - run: npx jest --ci
+  # @end #
+  fingerprint:
+    name: Fingerprint
+    # @info 将此项添加到 fingerprint 作业中。只有测试成功后才会运行；如果测试失败，则不会进行任何构建。 #
+    needs: [run_tests]
+    # @end #
+    type: fingerprint
+    environment: development
+  get_android_build:
+    # ...
+  get_ios_build:
+    # ...
+  build_android:
+    # ...
+  build_ios:
+    # ...
+```
+
+自定义作业 `run_tests` 执行以下操作：
+
+- `uses: eas/checkout` 会从 GitHub 仓库检出项目源文件。由于自定义作业会在新的虚拟机上运行，因此默认情况下无法访问代码。在访问项目文件之前，必须执行此步骤。
+- `uses: eas/install_node_modules` 会使用项目中检测到的包管理器（bun、npm、pnpm、Yarn）安装依赖项。在运行 Jest 等依赖 **node_modules** 中的软件包的命令之前，必须执行此步骤。
+- `run: npx jest --ci` 会运行测试套件。`run` 键可以像前面的 `echo` 命令一样运行任意 shell 命令。`--ci` 标志指示 Jest 在 CI 模式下运行，不监视文件更改，并在运行所有测试后退出。
+
+现在，`fingerprint` 作业中已添加 `needs: [run_tests]`，因此只有在测试成功后才会运行。如果测试失败，EAS 会跳过工作流的其余部分。
+
+</Step>
+
+<Step label="2">
+
+### 触发工作流
+
+提交更新后的工作流和测试文件，并推送到 `main`。
+
+<Terminal
+  cmd={[
+    '$ git add .',
+    '$ git commit -m "Add unit tests to development builds workflow"',
+    '$ git push origin main',
+  ]}
+  cmdCopy="git add . && git commit -m 'Add unit tests to development builds workflow' && git push origin main"
+/>
+
+触发工作流后，打开 EAS 控制面板，查看工作流中的作业流程。
+
+<ContentSpotlight
+  alt="EAS Workflows 运行通过指纹匹配重用现有开发版本，并跳过 Android 和 iOS 构建作业。"
+  src="/static/images/tutorial/cicd/eas-workflows-fingerprint-reuses-build.png"
+  className="max-w-160"
+/>
+
+</Step>
+
+## 总结
+
+<ProgressTracker
+  currentChapterSlug="/tutorial/cicd/development-builds"
+  name="CICD_TUTORIAL"
+  chapterTitle="第 2 章：开发版本"
+  summary="使用预打包作业自动构建开发版本，添加指纹以跳过不必要的重新构建，并在构建流水线前添加自定义作业来运行单元测试。"
+  nextChapterDescription="下一章将介绍如何创建带有 Slack 通知的预览版本，以及 PR 预览更新。"
+  nextChapterTitle="预览版本"
+  nextChapterLink="/ja/tutorial/cicd/preview-builds"
+/>

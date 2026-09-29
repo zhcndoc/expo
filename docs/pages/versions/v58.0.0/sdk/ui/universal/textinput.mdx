@@ -1,0 +1,199 @@
+---
+title: TextInput
+description: 基于原生 SwiftUI 和 Jetpack Compose 组件构建的文本输入框，提供与 React Native 兼容的 API。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+一个文本输入框，在 Android 上会路由到 `@expo/ui/jetpack-compose` 中的 [`TextField`](../jetpack-compose/textfield)，在 iOS 上会路由到 `@expo/ui/swift-ui` 中的 [`TextField`](../swift-ui/textfield)，在 Web 上则会路由到 React Native 的 [`TextInput`](https://reactnative.dev/docs/textinput)。
+
+此 API 与 React Native 的 [`TextInput`](https://reactnative.dev/docs/textinput) 保持一致，有两处变化：[`value`](#value) 和 [`selection`](#selection) 是可观察的状态对象（使用 `useNativeState` 创建），而 [`onChangeText`](#onchangetext) 可以是一个 worklet，用于在 UI 线程上同步更新状态。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/textinput/android-light.webp',
+    darkSrc: '/static/images/expo-ui/textinput/android-dark.webp',
+    alt: '一个文本框，包含 hello，下方有一个 Clear 按钮',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/textinput/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/textinput/ios-dark.webp',
+    alt: '一个文本框，包含 hello，下方有一个 Clear 按钮',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 非受控
+
+省略 [`value`](#value)，文本框便会在内部管理自己的文本。使用 [`onChangeText`](#onchangetext) 监听编辑，并使用 [ref](#textinputref) 执行 `focus`、`blur` 和 `clear` 等命令式操作。
+
+<ComponentExample
+  title="UncontrolledTextInputExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-textinput-uncontrolled-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-uncontrolled-android-dark.webp',
+    alt: '一个 Material 3 文本框，包含 hello，下方有一个 Clear 按钮',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-textinput-uncontrolled-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-uncontrolled-ios-dark.webp',
+    alt: '一个文本框，包含 hello，下方有一个 Clear 按钮',
+  }}>
+
+```tsx
+import { Button, Column, Host, TextInput, type TextInputRef } from '@expo/ui';
+import { useRef } from 'react';
+
+export default function UncontrolledTextInputExample() {
+  const inputRef = useRef<TextInputRef>(null);
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <Column spacing={8}>
+        <TextInput
+          ref={inputRef}
+          defaultValue="hello"
+          placeholder="Type here"
+          onChangeText={value => console.log(value)}
+        />
+        <Button label="Clear" onPress={() => inputRef.current?.clear()} />
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 受控
+
+传入 [`value`](#value)，通过 `useNativeState` 可观察状态驱动文本框。下面的示例会在输入时将 `Hello` 替换为 `World`。
+
+<ComponentExample
+  title="ControlledTextInputExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-textinput-controlled-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-controlled-android-dark.webp',
+    alt: '一个包含 Hello 的 Material 3 文本框',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-textinput-controlled-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-controlled-ios-dark.webp',
+    alt: '一个包含 Hello 的文本框',
+  }}>
+
+```tsx
+import { Host, TextInput, useNativeState } from '@expo/ui';
+import { useCallback } from 'react';
+
+export default function ControlledTextInputExample() {
+  const text = useNativeState('Hello');
+
+  const handleChangeText = useCallback(
+    (value: string) => {
+      'worklet';
+      text.value = value === 'Hello' ? 'World' : value;
+    },
+    [text]
+  );
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <TextInput value={text} placeholder="Type here" onChangeText={handleChangeText} />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### Worklet 输入掩码
+
+在 [`onChangeText`](#onchangetext) 中添加 `'worklet'` 指令，以便在 UI 线程上同步更新状态。对 `value` 的写入会直接生效，无需经过可能导致光标闪烁的 JS 线程往返。
+
+> **注意：** Worklet 需要安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。
+
+<ComponentExample
+  title="PhoneMaskExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-textinput-mask-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-mask-android-dark.webp',
+    alt: '一个包含格式化电话号码的 Material 3 文本框',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-textinput-mask-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-mask-ios-dark.webp',
+    alt: '一个包含格式化电话号码的文本框',
+  }}>
+
+```tsx
+import { Host, TextInput, useNativeState } from '@expo/ui';
+import { useCallback } from 'react';
+
+function formatPhone(input: string) {
+  'worklet';
+  const digits = input.replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+export default function PhoneMaskExample() {
+  const phone = useNativeState('(555) 123-4567');
+  const selection = useNativeState({ start: 0, end: 0 });
+
+  const handleChangeText = useCallback(
+    (value: string) => {
+      'worklet';
+      const formatted = formatPhone(value);
+      if (formatted !== value) {
+        phone.value = formatted;
+        // Snaps to end for demo. Real masks need smarter cursor handling.
+        selection.value = { start: formatted.length, end: formatted.length };
+      }
+    },
+    [phone, selection]
+  );
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <TextInput
+        value={phone}
+        selection={selection}
+        keyboardType="phone-pad"
+        placeholder="(555) 123-4567"
+        onChangeText={handleChangeText}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## 不支持的 React Native 属性
+
+某些 React Native `TextInput` 属性不受支持，因为 Compose 的 `TextField` 或 SwiftUI 的 `TextField` 没有提供对应功能，或者该属性已由其他机制取代。请参阅下方的 [API](#api) 部分，了解支持的属性。如果缺少的属性影响了你的使用场景，请[提交问题](https://github.com/expo/expo/issues/new/choose)，以便我们安排优先级。
+
+## API
+
+```tsx
+import { TextInput, useNativeState } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/textinput" apiName="TextInput" />
+
+</PlatformTabsGroup>

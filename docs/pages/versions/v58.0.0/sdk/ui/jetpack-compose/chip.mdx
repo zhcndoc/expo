@@ -1,0 +1,199 @@
+---
+title: Chip
+description: 用于显示紧凑元素的 Jetpack Compose Chip 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI Chips 与官方 Jetpack Compose [Chip API](https://developer.android.com/develop/ui/compose/components/chip) 匹配。每种芯片都是单独的组件：`AssistChip`、`FilterChip`、`InputChip` 和 `SuggestionChip`。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/chip/android-light.webp"
+  darkSrc="/static/images/expo-ui/chip/android-dark.webp"
+  alt="筛选、辅助和建议类 Material 3 芯片"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 辅助芯片
+
+辅助芯片可帮助用户执行操作或开始任务，例如预订航班或打开地图。它们通常作为临时 UI 元素，在用户输入后显示。
+
+<ComponentExample
+  title="AssistChipExample.tsx"
+  src="/static/images/expo-ui/examples/chip-assist-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/chip-assist-android-dark.webp"
+  alt="一个带有飞机图标、标签为预订航班的轮廓辅助芯片">
+
+```tsx
+import {
+  Host,
+  AssistChip,
+  Icon,
+  Text,
+} from '@expo/ui/jetpack-compose';
+
+export default function AssistChipExample() {
+  return (
+    <Host matchContents>
+      <AssistChip
+        onClick={() => console.log('Opening flight booking...')}>
+        <AssistChip.Label>
+          <Text>Book flight</Text>
+        </AssistChip.Label>
+        <AssistChip.LeadingIcon>
+          <Icon source={require('./assets/flight.xml')} size={18} />
+        </AssistChip.LeadingIcon>
+      </AssistChip>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 筛选芯片
+
+筛选芯片允许用户从一组选项中筛选内容。它们支持选中状态，常用于搜索栏或内容筛选。
+
+<ComponentExample
+  title="FilterChipExample.tsx"
+  src="/static/images/expo-ui/examples/chip-filter-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/chip-filter-android-dark.webp"
+  alt="一个标签为图片且处于选中填充状态的筛选芯片">
+
+```tsx
+import { useState } from 'react';
+import { Host, FilterChip, Text } from '@expo/ui/jetpack-compose';
+
+export default function FilterChipExample() {
+  const [selected, setSelected] = useState(false);
+
+  return (
+    <Host matchContents>
+      <FilterChip
+        selected={selected}
+        onClick={() => setSelected(!selected)}>
+        <FilterChip.Label>
+          <Text>Images</Text>
+        </FilterChip.Label>
+      </FilterChip>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 输入芯片
+
+输入芯片表示用户输入的独立信息片段，例如文本字段中的标签。它们支持头像、尾随图标，也可以关闭。
+
+<ComponentExample
+  title="InputChipExample.tsx"
+  src="/static/images/expo-ui/examples/chip-input-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/chip-input-android-dark.webp"
+  alt="三个标签分别为工作、旅行和新闻的输入芯片，每个芯片都带有关闭图标">
+
+```tsx
+import { useState } from 'react';
+import {
+  Host,
+  InputChip,
+  Icon,
+  Text,
+  FlowRow,
+} from '@expo/ui/jetpack-compose';
+
+export default function InputChipExample() {
+  const [chips, setChips] = useState(['Work', 'Travel', 'News']);
+
+  return (
+    <Host matchContents>
+      <FlowRow horizontalArrangement={{ spacedBy: 8 }}>
+        {chips.map(label => (
+          <InputChip
+            key={label}
+            selected
+            onClick={() =>
+              setChips(prev => prev.filter(c => c !== label))
+            }>
+            <InputChip.Label>
+              <Text>{label}</Text>
+            </InputChip.Label>
+            <InputChip.TrailingIcon>
+              <Icon
+                source={require('./assets/close.xml')}
+                size={18}
+              />
+            </InputChip.TrailingIcon>
+          </InputChip>
+        ))}
+      </FlowRow>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 建议芯片
+
+建议芯片通过动态生成的建议帮助用户明确意图，例如聊天中的快速回复选项或搜索筛选条件。
+
+<ComponentExample
+  title="SuggestionChipExample.tsx"
+  src="/static/images/expo-ui/examples/chip-suggestion-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/chip-suggestion-android-dark.webp"
+  alt="一个标签为附近的轮廓建议芯片">
+
+```tsx
+import {
+  Host,
+  SuggestionChip,
+  Text,
+} from '@expo/ui/jetpack-compose';
+
+export default function SuggestionChipExample() {
+  return (
+    <Host matchContents>
+      <SuggestionChip
+        onClick={() => console.log('Searching nearby...')}>
+        <SuggestionChip.Label>
+          <Text>Nearby</Text>
+        </SuggestionChip.Label>
+      </SuggestionChip>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import {
+  AssistChip,
+  FilterChip,
+  InputChip,
+  SuggestionChip,
+} from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/chip"
+  apiName="Chip"
+/>

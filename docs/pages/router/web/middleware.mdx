@@ -1,14 +1,15 @@
 ---
 title: 服务器中间件
-description: 了解如何创建在 Expo Router 中对服务器的每个请求都运行的中间件。
-isAlpha: true
+description: 了解如何创建在每个发送到 Expo Router 服务器的请求中运行的中间件。
 ---
 
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-> **重要** Server middleware 处于 [alpha](/more/release-statuses/#alpha) 阶段，并且可在 SDK 54 及更高版本中使用。它在生产环境中使用时需要一个[已部署的服务器](/router/web/api-routes/#deployment)。
+> **重要** 服务器中间件在 SDK 58 及更高版本中已稳定。在 SDK 54–57 中，请在 `expo-router` 配置插件中启用 `unstable_useServerMiddleware`。服务器中间件在生产环境中需要[已部署的服务器](/router/web/api-routes/#deployment)。
+
+在 SDK 58 及更高版本中，`unstable_useServerMiddleware` 已弃用且不起作用。请将其从配置中移除，以避免弃用警告。
 
 Expo Router 中的服务器中间件允许你在请求到达路由之前运行代码，从而为每个请求启用强大的服务端功能，例如身份验证和日志记录。与处理特定端点的 [API 路由](/router/web/api-routes) 不同，middleware 会对应用中的**每一个**请求运行，因此它应尽可能快速，以避免拖慢应用性能。在原生端进行的客户端导航，或在 Web 应用中使用 [`<Link />`](/versions/latest/sdk/router/link/#link) 时，都不会经过服务器中间件。
 
@@ -26,23 +27,16 @@ Expo Router 中的服务器中间件允许你在请求到达路由之前运行�
     /* @hide ... */
     /* @end */
     "web": {
-      /* @info 中间件仅在服务器模式下受支持 */
+      /* @info Enable server rendering */
       "output": "server"
       /* @end */
     },
-    "plugins": [
-      [
-        "expo-router",
-        {
-          /* @info 启用服务器中间件 */
-          "unstable_useServerMiddleware": true
-          /* @end */
-        }
-      ]
-    ]
+    "plugins": ["expo-router"]
   }
 }
 ```
+
+在 SDK 58 及更高版本中，当 `expo-router` 配置插件中设置了 `apiRoutes: true` 时，你可以在 `web.output: "static"` 模式下使用 middleware。这使 middleware 能够在[预渲染 HTML 和 API 路由](/router/web/api-routes/#create-an-api-route)之前运行。
 
 </Step>
 

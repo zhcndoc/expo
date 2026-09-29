@@ -1,0 +1,131 @@
+---
+title: DevClient
+description: 一个用于创建开发版本并包含实用开发工具的库
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-dev-client'
+packageName: 'expo-dev-client'
+iconUrl: '/static/images/packages/expo-dev-client.png'
+platforms: ['android', 'ios', 'tvos']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+
+`expo-dev-client` 为调试版本添加了各种实用的开发工具：
+
+- 可配置的启动器 UI，因此你可以启动更新（例如来自 [PR 预览](/develop/development-builds/development-workflows#pr-previews)的更新），并在不同开发服务器之间切换，而无需重新编译原生应用
+- 改进的调试工具（例如支持[检查网络请求](/debugging/tools/#inspecting-network-requests-expo-only)）
+- [功能强大且可扩展的开发者菜单 UI](/debugging/tools#developer-menu)
+
+Expo 文档将包含 `expo-dev-client` 的调试版本称为[开发版本](/develop/development-builds/introduction/)。
+
+## 安装
+
+<APIInstallSection hideBareInstructions />
+
+使用 EAS Build 创建版本时，请在 **eas.json** 中的构建配置文件上将 `developmentClient` 设置为 `true`。如果不设置，EAS Build 将生成不包含开发工具的独立版本。例如：
+
+```json eas.json
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+      /* @hide ... */ /* @end */
+    }
+  }
+  /* @hide ... */ /* @end */
+}
+```
+
+有关更多信息，请参阅 [eas.json 参考中的 `developmentClient` 属性](/eas/json/#developmentclient)。
+
+如果你要将其安装到[现有的 React Native 应用](/bare/overview/)中，请先在项目中安装 [`expo`](/bare/installing-expo-modules/)。然后，按照[在现有 React Native 项目中安装 `expo-dev-client`](/bare/install-dev-builds-in-bare/)中的说明操作。
+
+## 在应用配置中进行配置
+
+如果你的项目使用配置插件（[Continuous Native Generation（CNG）](/workflow/continuous-native-generation/)），则可以使用其内置的[配置插件](/config-plugins/introduction/)配置开发客户端启动器。该插件允许你配置各种无法在运行时设置、且必须构建新的应用二进制文件才能生效的属性。如果你的应用**不**使用 CNG，则需要手动配置此库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent",
+          "defaultLaunchURL": "http://localhost:8081",
+          "android": {
+            "defaultLaunchURL": "http://10.0.2.2:8081"
+          },
+          "toolsButton": true,
+          "skipOnboarding": false,
+          "showMenuAtLaunch": true
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'launchMode',
+      description: [
+        'Determines whether to launch the most recently opened project or navigate to the launcher screen.',
+        '* `most-recent` - Attempt to launch directly into a previously opened project and if unable to connect, fall back to the launcher screen.',
+        '* `launcher` - Opens the launcher screen.',
+      ].join('\n'),
+      default: '"most-recent"',
+    },
+    {
+      name: 'addGeneratedScheme',
+      description: [
+        'By default, `expo-dev-client` will register a custom URL scheme to open a project. Set this property to `false` to disable this scheme.',
+      ].join('\n'),
+      default: 'true',
+    },
+    {
+      name: 'defaultLaunchURL',
+      description: [
+        'Launch directly into this URL instead of navigating to launcher screen.',
+        'If `launchMode` is set to `most-recent`, then launcher will use the `defaultLaunchURL` as a fallback.',
+      ].join('\n'),
+    },
+    {
+      name: 'toolsButton',
+      description:
+        'Whether to show the floating tools button by default. Use `setToolsButtonVisible` from `expo-dev-client` to change it at runtime.',
+      default: 'true',
+    },
+    {
+      name: 'skipOnboarding',
+      description:
+        'Skip the onboarding screen that shows in the dev menu on the first launch of the app.',
+      default: 'false',
+    },
+    {
+      name: 'showMenuAtLaunch',
+      description: 'Show the developer menu immediately after launching the app.',
+      default: 'true',
+    },
+  ]}
+/>
+
+## TV 支持
+
+- **Android TV**：支持所有操作，与 Android 手机类似
+- **Apple TV**：支持使用本地或隧道打包器进行基本操作。目前尚不支持向 EAS 进行身份验证以及列出 EAS 版本和更新
+
+## API
+
+```js
+import * as DevClient from 'expo-dev-client';
+```
+
+<APISection packageName={['expo-dev-client']} apiName="DevClient" />

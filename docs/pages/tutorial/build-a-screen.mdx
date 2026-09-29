@@ -74,13 +74,13 @@ Image 组件会将图片的 source 作为其值。source 可以是 [静态资源
   className="max-w-[250px]"
 />
 
-要在 **app/(tabs)/index.tsx** 文件中使用 Image 组件：
+要在 **src/app/(tabs)/index.tsx** 文件中使用 Image 组件：
 
 1. 从 `expo-image` 库中导入 `Image`。
 2. 创建一个 `PlaceholderImage` 变量，将 **assets/images/background-image.png** 文件作为 `Image` 组件的 `source` 属性使用。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx|collapseHeight=380
+```tsx src/app/(tabs)/index.tsx|collapseHeight=380
 import { View, StyleSheet } from 'react-native';
 /* @tutinfo 导入 `Image` 组件。 */ import { Image } from 'expo-image'; /* @end */
 
@@ -129,11 +129,11 @@ const styles = StyleSheet.create({
 
 随着我们向这个屏幕添加更多组件，让我们把代码拆分到多个文件中。在整个教程中，我们将使用 components 目录来创建自定义组件。
 
-1. 创建一个顶层 **components** 目录，并在其中创建 **ImageViewer.tsx** 文件。
+1. 在 **src** 中创建一个 **components** 目录，然后在其中创建 **image-viewer.tsx** 文件。
 2. 将显示图片的代码以及 `image` 样式移到这个文件中。
 
 {/* prettier-ignore */}
-```tsx components/ImageViewer.tsx|collapseHeight=280
+```tsx src/components/image-viewer.tsx|collapseHeight=280
 import { ImageSourcePropType, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 
@@ -154,15 +154,15 @@ const styles = StyleSheet.create({
 });
 ```
 
-> **info** 由于 **ImageViewer** 是一个自定义组件，因此我们将其放在单独的目录中，而不是 **app** 目录中。**app** 目录中的每个文件要么是布局文件，要么是路由文件。有关更多信息，请参阅[非导航组件位于 src/app 目录之外](/router/basics/core-concepts/#6-non-navigation-components-live-outside-the-srcapp-directory)。
+> **info** 由于 **ImageViewer** 是一个自定义组件，我们将它放在单独的目录中，而不是 **src/app** 目录中。**src/app** 目录中的每个文件要么是布局文件，要么是路由文件。有关更多信息，请参阅[非导航组件应放在 src/app 目录之外](/router/basics/core-concepts/#6-non-navigation-components-live-outside-the-srcapp-directory)。
 
-导入 `ImageViewer` 并在 **app/(tabs)/index.tsx** 中使用它：
+导入 `ImageViewer` 并在 **src/app/(tabs)/index.tsx** 中使用它：
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx|collapseHeight=320
+```tsx src/app/(tabs)/index.tsx|collapseHeight=320
 import { StyleSheet, View } from 'react-native';
 
-/* @tutinfo */import ImageViewer from '@/components/ImageViewer'; /* @end */
+/* @tutinfo */import ImageViewer from '@/components/image-viewer'; /* @end */
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
@@ -204,10 +204,10 @@ const styles = StyleSheet.create({
 
 React Native 包含一些用于处理触摸事件的不同组件，但由于 [`<Pressable>`](https://reactnative.dev/docs/pressable) 的灵活性，它是推荐使用的。它可以检测单次点击、长按，在按钮按下和释放时触发不同的事件，等等。
 
-在设计中，我们需要创建两个按钮。每个按钮都有不同的样式和标签。让我们先创建一个可复用的按钮组件。在 **components** 目录中创建一个 **Button.tsx** 文件，并使用以下代码：
+在设计中，我们需要创建两个按钮。每个按钮都有不同的样式和标签。让我们先为这些按钮创建一个可复用组件。在 **src/components** 目录中创建一个 **button.tsx** 文件，并添加以下代码：
 
 {/* prettier-ignore */}
-```tsx components/Button.tsx|collapseHeight=280
+```tsx src/components/button.tsx|collapseHeight=280
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 
 type Props = {
@@ -248,14 +248,14 @@ const styles = StyleSheet.create({
 });
 ```
 
-当用户点击屏幕上的任意按钮时，应用会显示一个提醒。这是因为 `<Pressable>` 在其 `onPress` 属性中调用了 `alert()`。让我们将这个组件导入到 **app/(tabs)/index.tsx** 文件中，并为包裹这些按钮的 `<View>` 添加样式：
+当用户点击屏幕上的任意按钮时，应用会显示一条警告。这是因为 `<Pressable>` 会在其 `onPress` 属性中调用 `alert()`。让我们将这个组件导入 **src/app/(tabs)/index.tsx** 文件，并为包含这些按钮的 `<View>` 添加样式：
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
+```tsx src/app/(tabs)/index.tsx
 import { View, StyleSheet } from 'react-native';
 
-/* @tutinfo */import Button from '@/components/Button'; /* @end */
-import ImageViewer from '@/components/ImageViewer';
+/* @tutinfo */import Button from '@/components/button'; /* @end */
+import ImageViewer from '@/components/image-viewer';
 
 const PlaceholderImage = require("@/assets/images/background-image.png");
 
@@ -311,10 +311,10 @@ const styles = StyleSheet.create({
 
 “Choose a photo” 按钮所需的样式与“Use this photo” 按钮不同，因此我们将添加一个新的 button theme 属性，使我们能够应用 `primary` 主题。这个按钮在标签前面还有一个图标。我们将使用 `@expo/vector-icons` 库中的图标。
 
-要在按钮上加载并显示图标，让我们使用库中的 `FontAwesome`。修改 **components/Button.tsx**，添加以下代码片段：
+要在按钮上加载和显示图标，让我们使用该库中的 `FontAwesome`。修改 **src/components/button.tsx**，添加以下代码片段：
 
 {/* prettier-ignore */}
-```tsx components/Button.tsx
+```tsx src/components/button.tsx
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 /* @tutinfo 导入 FontAwesome。 */import FontAwesome from '@expo/vector-icons/FontAwesome';/* @end */
 
@@ -390,14 +390,14 @@ const styles = StyleSheet.create({
 - primary 主题中的 `<Pressable>` 组件使用 `backgroundColor` 属性，值为 `#fff`，将按钮背景设置为白色。如果我们把这个属性加到 `styles.button` 中，那么这个背景色值将同时应用于 primary 主题和未设置样式的按钮。
 - 内联样式使用 JavaScript，并会覆盖特定值的默认样式。
 
-现在，修改 **app/(tabs)/index.tsx** 文件，为第一个按钮使用 `theme="primary"` 属性。
+现在，修改 **src/app/(tabs)/index.tsx** 文件，在第一个按钮上使用 `theme="primary"` 属性。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
+```tsx src/app/(tabs)/index.tsx
 import { View, StyleSheet } from 'react-native';
 
-import Button from '@/components/Button';
-import ImageViewer from '@/components/ImageViewer';
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
 

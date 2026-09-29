@@ -8,10 +8,27 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
 
 一个文本输入框，在 Android 上路由到 `@expo/ui/jetpack-compose` 中的 [`TextField`](../jetpack-compose/textfield)，在 iOS 上路由到 `@expo/ui/swift-ui` 中的 [`TextField`](../swift-ui/textfield)，在 web 上则路由到 React Native 的 [`TextInput`](https://reactnative.dev/docs/textinput)。
 
 该 API 与 React Native 的 [`TextInput`](https://reactnative.dev/docs/textinput) 保持一致，但有两个变化：[`value`](#value) 和 [`selection`](#selection) 是可观察状态对象（使用 `useNativeState` 创建），并且 [`onChangeText`](#onchangetext) 可以是一个 worklet，用于在 UI 线程上同步更新状态。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/textinput/android-light.webp',
+    darkSrc: '/static/images/expo-ui/textinput/android-dark.webp',
+    alt: '包含 hello 的文本字段，下方有一个清除按钮',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/textinput/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/textinput/ios-dark.webp',
+    alt: '包含 hello 的文本字段，下方有一个清除按钮',
+  }}
+/>
 
 ## 安装
 
@@ -23,7 +40,20 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 省略 [`value`](#value)，字段将自行在内部管理文本。使用 [`onChangeText`](#onchangetext) 观察编辑内容，并使用 [ref](#textinputref) 执行 `focus`、`blur` 和 `clear` 等命令式操作。
 
-```tsx UncontrolledTextInputExample.tsx
+<ComponentExample
+  title="UncontrolledTextInputExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-textinput-uncontrolled-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-uncontrolled-android-dark.webp',
+    alt: '包含 hello 的 Material 3 文本字段，下方有一个清除按钮',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-textinput-uncontrolled-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-uncontrolled-ios-dark.webp',
+    alt: '包含 hello 的文本字段，下方有一个清除按钮',
+  }}>
+
+```tsx
 import { Button, Column, Host, TextInput, type TextInputRef } from '@expo/ui';
 import { useRef } from 'react';
 
@@ -31,7 +61,7 @@ export default function UncontrolledTextInputExample() {
   const inputRef = useRef<TextInputRef>(null);
 
   return (
-    <Host matchContents={{ vertical: true }}>
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
       <Column spacing={8}>
         <TextInput
           ref={inputRef}
@@ -46,16 +76,31 @@ export default function UncontrolledTextInputExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 受控
 
 传入 [`value`](#value) 以通过 `useNativeState` 可观察对象驱动字段。下面的示例会在你输入时将 `Hello` 替换为 `World`。
 
-```tsx ControlledTextInputExample.tsx
+<ComponentExample
+  title="ControlledTextInputExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-textinput-controlled-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-controlled-android-dark.webp',
+    alt: '包含 Hello 的 Material 3 文本字段',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-textinput-controlled-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-controlled-ios-dark.webp',
+    alt: '包含 Hello 的文本字段',
+  }}>
+
+```tsx
 import { Host, TextInput, useNativeState } from '@expo/ui';
 import { useCallback } from 'react';
 
 export default function ControlledTextInputExample() {
-  const text = useNativeState('');
+  const text = useNativeState('Hello');
 
   const handleChangeText = useCallback(
     (value: string) => {
@@ -66,12 +111,14 @@ export default function ControlledTextInputExample() {
   );
 
   return (
-    <Host matchContents={{ vertical: true }}>
-      <TextInput value={text} placeholder="在此输入" onChangeText={handleChangeText} />
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <TextInput value={text} placeholder="Type here" onChangeText={handleChangeText} />
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ### Worklet 遮罩
 
@@ -79,7 +126,20 @@ export default function ControlledTextInputExample() {
 
 > **注意：** Worklet 需要安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。
 
-```tsx PhoneMaskExample.tsx
+<ComponentExample
+  title="PhoneMaskExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-textinput-mask-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-mask-android-dark.webp',
+    alt: '包含格式化电话号码的 Material 3 文本字段',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-textinput-mask-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-textinput-mask-ios-dark.webp',
+    alt: '包含格式化电话号码的文本字段',
+  }}>
+
+```tsx
 import { Host, TextInput, useNativeState } from '@expo/ui';
 import { useCallback } from 'react';
 
@@ -92,7 +152,7 @@ function formatPhone(input: string) {
 }
 
 export default function PhoneMaskExample() {
-  const phone = useNativeState('');
+  const phone = useNativeState('(555) 123-4567');
   const selection = useNativeState({ start: 0, end: 0 });
 
   const handleChangeText = useCallback(
@@ -109,7 +169,7 @@ export default function PhoneMaskExample() {
   );
 
   return (
-    <Host matchContents={{ vertical: true }}>
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
       <TextInput
         value={phone}
         selection={selection}
@@ -122,7 +182,9 @@ export default function PhoneMaskExample() {
 }
 ```
 
-## 不支持的 React Native props
+</ComponentExample>
+
+## 不受支持的 React Native 属性
 
 由于 Compose 的 `TextField` 或 SwiftUI 的 `TextField` 没有提供等效功能，或者该 prop 已被不同机制替代，因此某些 React Native `TextInput` props 不受支持。有关受支持的 props，请参见下方的 [API](#api) 部分。如果缺少的 prop 阻碍了你的使用场景，请 [提交 issue](https://github.com/expo/expo/issues/new/choose)，以便将其优先处理。
 
@@ -133,3 +195,5 @@ import { TextInput, useNativeState } from '@expo/ui';
 ```
 
 <APISection packageName="expo-ui/universal/textinput" apiName="TextInput" />
+
+</PlatformTabsGroup>

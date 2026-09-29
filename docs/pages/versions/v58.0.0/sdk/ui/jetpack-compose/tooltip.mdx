@@ -1,0 +1,219 @@
+---
+title: Tooltip
+description: 用于在长按时显示上下文信息的 Jetpack Compose Tooltip 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI Tooltip 与官方 Jetpack Compose [Tooltip](https://developer.android.com/develop/ui/compose/components/tooltip) API 保持一致。`TooltipBox` 包裹锚点内容并显示工具提示。工具提示内容通过 `TooltipBox.PlainTooltip` 或 `TooltipBox.RichTooltip` 复合组件提供，分别对应 [`PlainTooltip`](https://developer.android.com/develop/ui/compose/components/tooltip#display-plain) 和 [`RichTooltip`](https://developer.android.com/develop/ui/compose/components/tooltip#display-rich)。工具提示可以通过长按触发，也可以通过 `ref` 以编程方式显示。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/tooltip/android-light.webp"
+  darkSrc="/static/images/expo-ui/tooltip/android-dark.webp"
+  alt="Material 3 富文本工具提示，包含标题、正文、了解详情操作和锚点按钮"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 纯文本工具提示
+
+长按锚点内容以显示工具提示。
+
+<ComponentExample
+  title="PlainTooltipExample.tsx"
+  src="/static/images/expo-ui/examples/tooltip-plain-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/tooltip-plain-android-dark.webp"
+  alt="收藏按钮上方显示着添加到收藏夹的纯文本工具提示">
+
+```tsx
+import {
+  Host,
+  TooltipBox,
+  Button,
+  Text,
+} from '@expo/ui/jetpack-compose';
+
+export default function PlainTooltipExample() {
+  return (
+    <Host matchContents>
+      <TooltipBox>
+        <TooltipBox.PlainTooltip>
+          <Text>Add to favorites</Text>
+        </TooltipBox.PlainTooltip>
+        <Button onClick={() => {}}>
+          <Text>Favorite</Text>
+        </Button>
+      </TooltipBox>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 包含标题和正文的富文本工具提示
+
+使用 `TooltipBox.RichTooltip`，并采用 `Title` 和 `Text` 复合组件模式来提供更详细的上下文信息。
+
+<ComponentExample
+  title="RichTooltipExample.tsx"
+  src="/static/images/expo-ui/examples/tooltip-rich-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/tooltip-rich-android-dark.webp"
+  alt="打开相机按钮上方显示着包含相机标题和正文的富文本工具提示">
+
+```tsx
+import {
+  Host,
+  TooltipBox,
+  Button,
+  Text,
+} from '@expo/ui/jetpack-compose';
+
+export default function RichTooltipExample() {
+  return (
+    <Host matchContents>
+      <TooltipBox>
+        <TooltipBox.RichTooltip>
+          <TooltipBox.RichTooltip.Title>
+            <Text>Camera</Text>
+          </TooltipBox.RichTooltip.Title>
+          <TooltipBox.RichTooltip.Text>
+            <Text>
+              Take photos and record videos with your device camera.
+            </Text>
+          </TooltipBox.RichTooltip.Text>
+        </TooltipBox.RichTooltip>
+        <Button onClick={() => {}}>
+          <Text>Open Camera</Text>
+        </Button>
+      </TooltipBox>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带操作的富文本工具提示
+
+使用 `TooltipBox.RichTooltip.Action` 添加交互操作。设置 `isPersistent`，让工具提示保持显示，以便用户点击。存在操作插槽时，会自动推导 `hasAction`。
+
+<ComponentExample
+  title="RichTooltipActionExample.tsx"
+  src="/static/images/expo-ui/examples/tooltip-rich-action-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/tooltip-rich-action-android-dark.webp"
+  alt="录制视频按钮上方显示着包含标题、正文和了解详情操作的持久富文本工具提示">
+
+```tsx
+import {
+  Host,
+  TooltipBox,
+  Button,
+  TextButton,
+  Text,
+} from '@expo/ui/jetpack-compose';
+
+export default function RichTooltipActionExample() {
+  return (
+    <Host matchContents>
+      <TooltipBox isPersistent>
+        <TooltipBox.RichTooltip>
+          <TooltipBox.RichTooltip.Title>
+            <Text>Permissions required</Text>
+          </TooltipBox.RichTooltip.Title>
+          <TooltipBox.RichTooltip.Text>
+            <Text>
+              This feature requires camera and microphone access.
+            </Text>
+          </TooltipBox.RichTooltip.Text>
+          <TooltipBox.RichTooltip.Action>
+            <TextButton onClick={() => {}}>
+              <Text>Learn more</Text>
+            </TextButton>
+          </TooltipBox.RichTooltip.Action>
+        </TooltipBox.RichTooltip>
+        <Button onClick={() => {}}>
+          <Text>Record video</Text>
+        </Button>
+      </TooltipBox>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 以编程方式显示和关闭
+
+使用 `ref` 命令式地调用 `show()` 或 `dismiss()` 显示或关闭工具提示，无需长按。
+
+<ComponentExample
+  title="ProgrammaticTooltipExample.tsx"
+  src="/static/images/expo-ui/examples/tooltip-programmatic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/tooltip-programmatic-android-dark.webp"
+  alt="锚点按钮上方显示着以编程方式显示的工具提示，内容为已通过编程方式显示；下方有显示和关闭按钮">
+
+```tsx
+import { useRef } from 'react';
+import {
+  Host,
+  TooltipBox,
+  type TooltipBoxRef,
+  Button,
+  Text,
+  Column,
+  Row,
+} from '@expo/ui/jetpack-compose';
+
+export default function ProgrammaticTooltipExample() {
+  const tooltipRef = useRef<TooltipBoxRef>(null);
+
+  return (
+    <Host matchContents>
+      <Column verticalArrangement={{ spacedBy: 8 }}>
+        <TooltipBox ref={tooltipRef} isPersistent>
+          <TooltipBox.PlainTooltip>
+            <Text>Shown programmatically!</Text>
+          </TooltipBox.PlainTooltip>
+          <Button onClick={() => {}}>
+            <Text>Anchor</Text>
+          </Button>
+        </TooltipBox>
+        <Row horizontalArrangement={{ spacedBy: 8 }}>
+          <Button onClick={() => tooltipRef.current?.show()}>
+            <Text>Show</Text>
+          </Button>
+          <Button onClick={() => tooltipRef.current?.dismiss()}>
+            <Text>Dismiss</Text>
+          </Button>
+        </Row>
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { TooltipBox } from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/tooltip"
+  apiName="TooltipBox"
+/>

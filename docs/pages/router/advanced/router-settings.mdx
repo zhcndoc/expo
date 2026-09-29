@@ -10,9 +10,9 @@ import { FileTree } from '~/ui/components/FileTree';
 
 > **warning** **警告：** `unstable_settings` 目前无法与 [async routes](/router/web/async-routes/) 配合使用（仅限开发环境）。这就是该功能被标记为 _unstable_ 的原因。
 
-<PaddedAPIBox header="initialRouteName">
+<PaddedAPIBox header="anchor">
 
-当深度链接到某个路由时，你可能希望为用户提供一个“返回”按钮。`initialRouteName` 用于设置栈的默认屏幕，并且应与一个有效的文件名匹配（不含扩展名）。
+深度链接到某个路由时，你可能希望为用户提供一个“返回”按钮。`anchor` 设置堆栈的默认屏幕，并且应与有效的文件名匹配（不包含扩展名）。
 
 <FileTree files={['src/app/_layout.tsx', 'src/app/index.tsx', 'src/app/other.tsx']} />
 
@@ -20,8 +20,8 @@ import { FileTree } from '~/ui/components/FileTree';
 import { Stack } from 'expo-router';
 
 export const unstable_settings = {
-  // 确保任何路由都可以链接回 `/`
-  initialRouteName: 'index',
+  // Ensure any route can link back to `/`
+  anchor: 'index',
 };
 
 export default function Layout() {
@@ -31,26 +31,32 @@ export default function Layout() {
 
 现在，直接深度链接到 `/other` 或重新加载页面时，仍然会显示返回箭头。
 
-当使用 [array syntax](/router/advanced/shared-routes/#arrays) `(foo,bar)` 时，你可以在 `unstable_settings` 对象中指定某个分组的名称，以定位到特定的片段。
+使用 [array syntax](/router/advanced/shared-routes/#arrays) `(foo,bar)` 时，你可以在 `unstable_settings` 对象中指定某个分组的名称，以定位到特定片段。
 
 ```tsx other.tsx
 export const unstable_settings = {
-  // 用于 `(foo)`
-  initialRouteName: 'first',
-  // 用于 `(bar)`
+  // Used for `(foo)`
+  anchor: 'first',
+  // Used for `(bar)`
   bar: {
-    initialRouteName: 'second',
+    anchor: 'second',
   },
 };
 ```
 
-`initialRouteName` 仅在深度链接到某个路由时使用。在应用导航过程中，你正在前往的路由将成为初始路由。你可以通过在 `<Link />` 组件上使用 `initial` 属性，或通过在命令式 API 中传入该选项来禁用此行为。
+`anchor` 仅在深度链接到某个路由时使用。在应用内导航期间，你要导航到的路由将成为锚点路由。若要同时在目标路由下方加载锚点路由，请在 `<Link />` 组件上使用 `withAnchor` 属性。命令式 API 接受相同的选项。
 
 ```js
-// 如果这会导航到一个新的 _layout，不要覆盖初始路由
-<Link href="/route" initial={false} />;
+// If this navigates to a new _layout, load the anchor route below the target route
+<Link href="/route" withAnchor />;
 
-router.push('/route', { overrideInitialScreen: false });
+router.push('/route', { withAnchor: true });
 ```
+
+</PaddedAPIBox>
+
+<PaddedAPIBox header="initialRouteName">
+
+> **warning** `initialRouteName` 已弃用。请改用 [`anchor`](#anchor)。
 
 </PaddedAPIBox>

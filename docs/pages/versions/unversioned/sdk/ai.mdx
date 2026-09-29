@@ -1,0 +1,582 @@
+---
+title: Expo AI
+sidebar_title: AI
+description: 一个用于通过系统提供的设备端语言模型生成文本、结构化值和工具调用的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ai'
+packageName: 'expo-ai'
+platforms: ['android', 'ios', 'macos', 'web']
+isAlpha: true
+isNew: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigPluginExample, ConfigReactNative } from '~/ui/components/ConfigSection';
+
+> **重要** **此库目前处于 [alpha](/more/release-statuses/#alpha) 阶段，可能会频繁发生破坏性变更。**
+
+`expo-ai` 提供对 Apple [Foundation Models framework](https://developer.apple.com/documentation/foundationmodels/)、通过 Google [ML Kit Prompt API](https://developers.google.com/ml-kit/genai/prompt/android) 使用 Gemini Nano，以及浏览器 [Prompt API](https://developer.chrome.com/docs/ai/prompt-api) 的访问能力。它在设备本地运行推理；此软件包不会将提示、图像或结果发送到外部服务。你可以用它总结文本、对内容分类、生成结构化值，并让模型调用应用工具。每次顶层生成调用都拥有独立会话，并会在任务完成后释放该会话。
+
+## 平台支持
+
+在 iOS 26 及更高版本和 macOS 26 及更高版本上，设备必须支持 Apple Intelligence、启用 Apple Intelligence，并且系统模型必须处于就绪状态。
+
+在 Android 上，此预览版使用 ML Kit Prompt `1.0.0-beta4` 进行文本生成和流式传输。设备必须支持 Prompt API，并通过 Android AICore 提供就绪的 Gemini Nano 模型。可用性取决于设备及其 AICore 配置，因此仅凭 Android 版本无法确定是否支持。请参阅 Google 的 [Prompt API 设备支持](https://developers.google.com/ml-kit/genai)，并在实际设备上检查可用性。
+
+Android 推理要求应用保持在前台。应用切换到后台时，活动任务会以 `ERR_APP_BACKGROUND` 被拒绝，包括 JavaScript 正在等待工具审批或运行工具时。请观察提供的信号，以关闭待处理的审批界面并停止协作式工具任务。此前成功的会话轮次仍然可用。应用返回前台后是否提交新请求由你决定；此软件包不会自动重试。
+
+在 Web 上，浏览器必须提供现代 `LanguageModel` API。[Chrome Prompt API](https://developer.chrome.com/docs/ai/prompt-api) 从 Chrome 148 起可在受支持的桌面设备上使用。[Microsoft Edge 提供开发者预览版](https://learn.microsoft.com/en-us/microsoft-edge/web-platform/prompt-api)，但需要额外设置。移动浏览器和不支持此 API 的浏览器会返回 `unavailable`。硬件、浏览器设置和模型就绪状态也会影响可用性。
+
+此表比较的是平台满足使用条件后的功能；它不保证设备一定受支持。Apple 条目要求使用支持 Apple Intelligence 且模型已就绪的硬件。Android 条目要求应用的 `minSdk` 为 26 或更高、设备支持 Prompt API，且 Gemini Nano 模型已就绪。
+
+| 功能 | Apple | Android（minSdk 为 26 或更高） | Web |
+| ----------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------- | ------------------------------------------- |
+| 文本生成和流式传输 | 在支持 Apple Intelligence 的设备上受支持 | 在兼容设备上受支持 | 在兼容的桌面浏览器中受支持 |
+| 运行时 schema | 在受支持设备上使用原生受约束输出 | 由库进行验证并执行有限次数的修复 | 原生受约束输出 |
+| 应用工具 | 在受支持设备上使用原生编排 | 由库进行编排和验证 | 由库进行编排和验证 |
+| 模型准备 | 在受支持设备上由系统设置管理 | 显式下载，可选择显示进度 | 显式准备，可选择显示进度 |
+| 光学字符识别（OCR）和条码工具 | 在受支持设备上的 iOS 26 和 macOS 26 或更高版本 | 不包含 | 不包含 |
+| 模型图像理解 | 在具备视觉能力的模型和受支持设备上的 iOS 27 和 macOS 27 | 不包含 | 不包含 |
+
+在不受支持的平台上导入此软件包并检查可用性是安全的。可用性检查成功并不保证后续生成一定成功。此预览版不包含可下载的第三方模型后端。较新的操作系统不会自动启用模型图像理解：它还需要兼容的 SDK 和所选模型的视觉能力。
+
+浏览器会选择并管理其模型。Web 结果会将提供方标识为 `browser-prompt-api`；模型标识符仍为 `null`。Web 不支持 `maximumOutputTokens`，如果提供此选项则会拒绝。此软件包不会使用实验性的浏览器原生工具声明。
+
+生成使用设备上的系统模型。工具执行应用代码，因此工具中的任何网络访问或数据存储都由你的应用负责。
+
+## 安装
+
+<APIInstallSection cmd={['$ npx expo install expo-ai']} />
+
+添加原生软件包后，请创建新的[开发版本](/develop/development-builds/introduction/)。构建 Apple 实现需要 Xcode 26.4 或更高版本。你的应用可以继续将 iOS 部署目标设为 16.4 或更高版本；模型生成需要在运行时使用 iOS 26 或更高版本。请在启用了 Apple Intelligence 的受支持硬件上测试模型生成。此预览版不包含在 Expo Go 中，也无法在 Snack 中运行。
+
+模型图像理解需要使用 Xcode 27 或更高版本构建。使用 Xcode 26.4 或更高版本构建的应用在较新的操作系统上运行时，仍可使用文本生成和图像工具。
+
+### Android 构建配置
+
+Android 后端要求最低 SDK 版本为 26，并且 Kotlin 版本为 2.2.21 或更高版本，才能编译其 ML Kit 依赖项。创建 Android 开发版本之前，请安装 `expo-build-properties`：
+
+<APIInstallSection cmd={['$ npx expo install expo-build-properties']} />
+
+然后将[配置插件](/versions/latest/sdk/build-properties/)添加到应用配置中。如果应用已配置更高的兼容版本，请保留这些版本：
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "kotlinVersion": "2.2.21"
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+该插件会在 [Prebuild](/workflow/continuous-native-generation/) 期间写入这些 Android 设置。单独安装或导入 `expo-ai` 不会更改原生构建设置。这些构建要求并不能证明设备支持 Gemini Nano；请在运行时检查模型可用性。
+
+<ConfigReactNative>
+
+如果你没有使用连续原生生成（[CNG](/workflow/continuous-native-generation/)），或者手动使用原生 **android** 项目，则需要将应用的最低 SDK 设为 26 或更高版本，并在根项目的 Kotlin Gradle 插件依赖项中使用 Kotlin 2.2.21 或更高版本。
+
+</ConfigReactNative>
+
+如果应用的最低 SDK 低于 26，Android 构建会在合并清单时失败：
+
+```text
+uses-sdk:minSdkVersion 24 cannot be smaller than version 26 declared in library [:expo-ai]
+	Suggestion: use a compatible library with a minSdk of at most 24,
+		or increase this project's minSdk version to at least 26,
+		or use tools:overrideLibrary="expo.modules.ai" to force usage (may lead to runtime failures)
+```
+
+如上所示，将应用的最低 SDK 提高到 26。不要使用 `tools:overrideLibrary` 建议。它只会绕过检查，并不会改变要求，而且 ML Kit 依赖项在运行时仍需要 Android 8.0 或更高版本。
+
+## 生成文本
+
+使用提示调用 `generateAsync()`。从 `result.value` 读取完成后的文本：
+
+```ts
+import { generateAsync } from 'expo-ai';
+
+export async function suggestTitle(notes: string) {
+  const result = await generateAsync(notes, {
+    instructions: 'Suggest a short title for these notes.',
+  });
+
+  return result.value;
+}
+```
+
+每个成功的单次调用辅助函数都会返回相同的结果封装。除 `value` 外，它还会标识所选的提供方和模型、报告输出格式，并在提供方能够提供时包含 token 用量：
+
+```ts
+const result = await generateAsync('Suggest a short title for my notes.');
+
+console.log({
+  title: result.value,
+  provider: result.provider,
+  model: result.model,
+  format: result.format, // 'text', 'constrained', or 'validated'
+  usage: result.usage,
+});
+```
+
+可选地先调用 `getAvailabilityAsync()`。模型就绪时会继续生成，否则会以实际的就绪状态或可用性错误拒绝。生成不会请求准备模型。在 Web 上，浏览器管理的资源还有额外的[准备注意事项](#show-preparation-progress)。不同调用拥有不同的历史记录，并且软件包会在成功、失败或取消时释放其临时会话。
+
+在 Android 上，如果设备的模型支持，软件包会将 `instructions` 作为原生系统指令传递。否则，它会将其加入提示中，其优先级低于原生系统指令。
+
+## 总结和分类
+
+`summarizeAsync()` 和 `categorizeAsync()` 会将任务指令添加到相同的生成管线中。它们返回相同的结果封装，并接受适用的生成选项，包括取消、更新和截止时间：
+
+```ts
+import { categorizeAsync, summarizeAsync } from 'expo-ai';
+
+export async function organizeNote(text: string) {
+  const summary = await summarizeAsync(text, { length: 'short' });
+  const category = await categorizeAsync(text, {
+    categories: ['work', 'personal', 'other'],
+  });
+
+  return {
+    summary: summary.value,
+    category: category.value, // 'work' | 'personal' | 'other'
+  };
+}
+```
+
+摘要长度可以是 `short`、`medium` 或 `long`，默认为 `medium`。它是生成偏好，而不是精确的字数要求。分类要求提供非空类别列表，并会根据该列表验证结果。软件包会在支持时使用原生受约束输出，否则会使用库验证并执行有限次数的修复。两个辅助函数都使用与 `generateAsync()` 相同的提供方和执行控制选项。
+
+## 生成结构化值
+
+传入 `schema` 以请求结构化结果。提供方支持时，软件包会自动使用原生 schema 约束，并在 JavaScript 中验证已完成的值。否则，它会请求 JSON 并验证响应，同时进行有限次数的修复。请求成功时会返回经过验证的值；失败时会以错误拒绝。可选的 schema 辅助函数可以推断结果的 TypeScript 类型，无需使用 `as const`：
+
+```ts
+import { generateAsync, schema } from 'expo-ai';
+
+const noteSchema = schema.object({
+  category: schema.enum(['work', 'personal', 'other']),
+  summary: schema.string({ description: 'A one-sentence summary.' }),
+  confidence: schema.number({ minimum: 0, maximum: 1 }),
+  suggestedTitle: schema.optional(schema.string()),
+});
+
+export async function describeNote(text: string) {
+  const result = await generateAsync(text, { schema: noteSchema });
+  return result.value;
+  // { category: 'work' | 'personal' | 'other'; summary: string; suggestedTitle?: string }
+}
+```
+
+使用 `schema.object()` 创建的对象默认是封闭的，除非字段使用 `schema.optional()` 包装，否则每个字段都是必需的。这些辅助函数生成的 JSON Schema 方言与普通 schema 对象支持的方言相同。你仍然可以传入普通 schema；单独声明时使用 `as const satisfies ModelSchema` 可保留字面量类型。
+
+### Schema 辅助函数
+
+| 辅助函数 | 结果 |
+| ------------------------------------- | -------------------------------------------------------- |
+| `schema.string(options?)` | 字符串 schema。 |
+| `schema.enum(values, options?)` | 限定为非空值列表的字符串 schema。 |
+| `schema.number(options?)` | 带可选包含边界的有限数值。 |
+| `schema.integer(options?)` | 带可选包含边界的安全整数。 |
+| `schema.boolean(options?)` | 布尔值 schema。 |
+| `schema.array(items, options?)` | 使用所提供项 schema 的数组。 |
+| `schema.object(properties, options?)` | 使用所提供属性 schema 的封闭对象。 |
+| `schema.optional(propertySchema)` | 用于 `schema.object()` 的可选属性标记。 |
+
+所有 `options` 都接受 `description`。数值和整数选项还接受包含边界 `minimum` 和 `maximum`。整数边界必须是安全的 JavaScript 整数。数组选项接受 `minItems` 和 `maxItems`。可选属性标记只能在 `schema.object()` 中使用；它不是独立的 schema。
+
+<a id="inferschema" />
+<a id="s" />
+
+导出的 `InferSchema<S>` 类型会将 schema 映射为其结果类型，包括字符串枚举和可选对象字段。`S` 表示 schema 的 TypeScript 类型。例如，`InferSchema<typeof noteSchema>` 会得到与上文 `result.value` 相同的类型。
+
+### 支持的 schema 子集
+
+此软件包接受有限的 JSON Schema 方言：
+
+- 字符串，包括非空字符串枚举。
+- 有限数值和安全整数，可带可选的包含边界 `minimum` 和 `maximum`，以及布尔值。
+- 带项 schema 且可选包含 `minItems` 和 `maxItems` 边界的数组。
+- 带已声明 `properties`、可选 `required` 列表以及 `additionalProperties: false` 的对象。
+- 每种 schema 均可带可选描述。
+
+普通对象的 `required` 列表中未列出的字段均为可选字段。不支持的关键字和无效 schema 会在生成前被拒绝。不支持字符串模式、`null`、联合、引用和递归 schema。验证会检查值的形状，但不会确认内容的事实准确性，也不会判断内容是否符合应用的需求。
+
+### 验证和修复限制
+
+每个结构化结果都会在 JavaScript 中验证。生成路径取决于平台以及模型是否能够应用所请求的 schema 约束：
+
+| 平台 | 生成和验证路径 |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Apple | 当所选模型支持该 schema 时使用原生受约束输出，然后在 JavaScript 中验证完成后的值。否则，请求 JSON 并使用库验证，执行有限次数的修复。 |
+| Android | 请求 JSON 并使用库验证，执行有限次数的修复。 |
+| Web | 对支持的 schema 使用浏览器原生受约束输出，然后在 JavaScript 中验证。包含数值边界的 schema 则使用库验证并执行有限次数的修复。 |
+
+Apple Foundation Models 会将数值边界表示为原生生成指南。对于包含数值边界的 schema，Android 和 Web 会使用 JSON 加修复路径。与原生受约束输出相比，此路径对模型的引导较弱，并且可能在修复次数耗尽后失败。在所有平台上，最终值仍必须在 JavaScript 验证中通过相同的包含边界检查。
+
+使用 `maximumRetries` 限制每个响应的额外库修复次数。此选项不会改变所使用的提供方能力。提供方失败和拒绝会结束任务；它们不会触发通过较弱生成路径进行重试：
+
+```ts
+import { generateAsync, schema } from 'expo-ai';
+
+export async function detectQuestion(text: string) {
+  const result = await generateAsync(`Is this text a question? ${text}`, {
+    schema: schema.boolean(),
+    maximumRetries: 1,
+    maximumSteps: 4,
+  });
+
+  return result.value;
+}
+```
+
+`maximumRetries` 默认为 `1`，接受从 `0` 到 `3` 的整数。将其设为 `0` 可在第一个无效响应后直接拒绝，不进行修复尝试。原生受约束输出不会使用这些库修复。
+
+`maximumSteps` 限制由库发起的模型完成次数，包括修复。默认预算为 `8`，显式设置时接受从 `1` 到 `32` 的整数。使用原生工具时，设置显式限制会导致拒绝，因为提供方不会公开其内部模型调用次数。使用 `maximumToolCalls` 可限制所有提供方的处理程序启动次数。
+
+## 显示生成更新
+
+传入可选的 `onUpdate` 回调，以在生成响应时显示内容。每次更新都包含当前文本的完整快照。应使用快照替换显示的文本，而不是追加文本。返回的 promise 会提供最终结果：
+
+```ts
+import { generateAsync } from 'expo-ai';
+
+export async function previewSummary(text: string, setPreview: (text: string) => void) {
+  const result = await generateAsync(`Summarize: ${text}`, {
+    onUpdate: ({ text }) => setPreview(text),
+  });
+
+  setPreview(result.value);
+  return result.value;
+}
+```
+
+更新内容是临时的。对于结构化生成，请等待最终经过验证的 `result.value` 后再使用该值。使用库验证或工具编排的任务可能不会产生中间文本更新。如果 `onUpdate` 抛出错误或返回拒绝的 promise，任务会以 `ERR_UPDATE_FAILED` 拒绝。
+
+## 提供应用工具
+
+通过 `tools` 传入普通工具定义对象。每个定义都包含名称、描述、对象输入 schema 和处理程序。对于可复用的类型化定义，使用 `ToolDefinition<S>`，其中 `S` 是输入 schema 的类型：
+
+```ts
+import { generateAsync, schema, type ToolDefinition } from 'expo-ai';
+
+const categoryInput = schema.object({
+  category: schema.enum(['work', 'personal']),
+});
+
+const lookupCategory: ToolDefinition<typeof categoryInput> = {
+  name: 'lookupCategory',
+  description: 'Read the description of a category.',
+  inputSchema: categoryInput,
+  execute: ({ category }, { signal }) => {
+    if (signal.aborted) {
+      throw new Error('Tool canceled.');
+    }
+    return {
+      category,
+      description: category === 'work' ? 'Projects and professional tasks.' : 'Home and leisure.',
+    };
+  },
+};
+
+export async function explainCategory() {
+  const result = await generateAsync('Look up and explain the work category.', {
+    tools: [lookupCategory],
+    maximumToolCalls: 2,
+  });
+
+  return result.value;
+}
+```
+
+支持时，软件包会使用原生工具编排。否则，它会请求模型提出调用，并在 JavaScript 中管理循环。所有提供方都会在审批或执行前验证参数。在兼容的浏览器中，库会保留用于生成工具决策和最终值的原生 schema 约束，同时自行管理工具执行。
+
+<a id="tooldefinition" />
+<a id="tooldefinitions" />
+
+导出的 `ToolDefinition<S>` 类型描述以下字段：
+
+| 字段 | 类型 | 描述 |
+| ------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `name` | `string` | 唯一名称，长度为 1–64 个字母、数字或下划线，且必须以字母或下划线开头。 |
+| `description` | `string` | 说明模型何时应使用该工具的非空描述。 |
+| `inputSchema` | `S` | 工具参数所用的受支持对象 schema。 |
+| `execute` | `(input: InferSchema<S>, context: ToolContext) => unknown` | 返回 JSON 兼容数据的同步或异步处理程序。 |
+
+任务启动时会验证并复制工具定义。处理程序可以直接返回数据，也可以通过 promise 返回数据。字符串会作为文本传递。普通对象、数组、有限数值、布尔值和 `null` 会序列化后传递给提供方。不支持的值（例如 `undefined`、函数、大整数、类实例或循环结构）会被拒绝，而不会静默丢失数据。
+
+### 审批工具调用
+
+除非提供 `beforeTool`，否则提供的工具会自动运行。此可选回调会接收工具名称、经过验证的参数、调用 ID 和取消信号。返回 `true` 以允许调用，或返回 `false` 以 `ERR_TOOL_DENIED` 拒绝任务且不运行处理程序。应用显示审批界面时，回调可以返回 promise：
+
+```ts
+import { generateAsync, type ToolCall, type ToolDefinition } from 'expo-ai';
+
+export async function runWithApproval(
+  prompt: string,
+  tools: ToolDefinition[],
+  requestApproval: (call: ToolCall) => Promise<boolean>
+) {
+  return await generateAsync(prompt, {
+    tools,
+    beforeTool: requestApproval,
+  });
+}
+```
+
+请观察回调的信号，以便在任务取消时关闭待处理的审批界面。如果提供了截止时间，等待审批的时间也会计入其中。
+
+### 工具执行限制
+
+`maximumToolCalls` 适用于原生和库工具编排，默认为 `4`，接受从 `0` 到 `16` 的整数。它会限制一次请求中可以启动的处理程序数量。值为 `0` 时会阻止处理程序执行。
+
+处理程序失败会结束任务。软件包不会重试处理程序，也不会重复执行相同的调用 ID。已完成的工具观察结果在库修复尝试期间仍然可用。模型仍可能使用新的调用 ID 请求类似操作，因此，如果重复操作可能造成损害，请使用应用级幂等性控制。
+
+## 使用图像和 Apple 工具
+
+通过 `images` 传入本地图像文件。从 `expo-ai/apple` 导入预定义工具对象，以读取文本、条码或二维码：
+
+```ts
+import { generateAsync, schema } from 'expo-ai';
+import { Tools } from 'expo-ai/apple';
+
+export async function readReceipt(uri: string) {
+  return await generateAsync('Read the receipt image and return its total.', {
+    images: [{ uri, label: 'receipt' }],
+    tools: [Tools.ocr],
+    schema: schema.object({
+      total: schema.string({
+        description: 'The total, including the currency shown.',
+      }),
+    }),
+  });
+}
+```
+
+`Tools.ocr` 和 `Tools.barcode` 是普通工具定义。可与自己的工具一起传入其中一个或两个。在 iOS 26 及更高版本和 macOS 26 及更高版本上，它们使用 [Apple Vision](https://developer.apple.com/documentation/vision)。这些工具的参数中包含 `image` 标签，用于标识附加到当前请求的文件。OCR 会向模型返回 `{ text: string }`。条码识别会返回文本载荷 `{ barcodes: [{ payload: string, symbology: string }] }`。如果图像中没有识别到内容，则会返回空文本或空数组。
+
+现有的 `beforeTool`、`maximumToolCalls`、取消和截止时间选项均适用。审批完成后，图像工具才会开始识别。工具无法通过编造文件路径或引用先前请求的标签来读取图像。Android 和 Web 会以 `ERR_UNSUPPORTED_FEATURE` 拒绝这些 Apple 工具。
+
+在 iOS 26 上，语言模型会接收标签和图像工具识别出的数据；它无法看到图像像素。在 iOS 27 上，如果系统模型报告支持视觉能力，软件包会使用[原生图像附件](https://developer.apple.com/documentation/foundationmodels/analyzing-images-with-multimodal-prompting)。对于常规视觉描述，请求时需提供 `images` 支持：
+
+```ts
+import { generateAsync } from 'expo-ai';
+
+export async function describeImage(uri: string) {
+  return await generateAsync('Describe the image in one sentence.', {
+    images: [{ uri }],
+    requires: ['images'],
+  });
+}
+```
+
+`requires: ['images']` 会检查模型的视觉能力。`requires: ['imageTools']` 会检查 Apple 图像工具支持。提供图像工具时，纯文本 Apple 模型也可以使用附加图像。如果既没有模型视觉能力，也没有图像工具，图像请求会以 `ERR_UNSUPPORTED_FEATURE` 拒绝。
+
+最多可提供八个 `file://` URL。网络 URL、数据 URL 以及指向其他主机的文件 URL 都会被拒绝。每个标签在请求中必须唯一，长度为 1–128 个字符，且不得包含控制字符。未提供的标签会依次设为 `image-1`、`image-2` 等。请确保文件在请求完成前一直可用。原生图像附件会在成功的会话历史中保留已解码的图像；更改原始文件不会更改已保留的附件。其他请求可以重复使用相同的公开标签。
+
+## 读取 token 用量
+
+成功的结果会包含 `usage`。如果提供方无法报告计数，则计数会保持为 `null`。使用 Xcode 27 或更高版本构建时，在 iOS 27 和 macOS 27 上，软件包会返回测得的输入和输出计数，并在 Foundation Models 报告时提供缓存输入和推理计数。缓存和推理计数会计入相应的总数。
+
+在 iOS 26.4 和 macOS 26.4 或更高版本上，如果计数成功，`usage.contextTokens` 会报告已完成上下文的 token 数量。它描述的是上下文占用量，而不是该请求消耗的输入 token 数量。更早版本的 Apple 系统、Android 和 Web 会将不可用的测量值保留为未知。
+
+```ts
+import { generateAsync } from 'expo-ai';
+
+export async function suggestTitleWithUsage(notes: string) {
+  const result = await generateAsync(notes, {
+    instructions: 'Suggest a short title.',
+  });
+  return {
+    title: result.value,
+    inputTokens: result.usage.inputTokens,
+    outputTokens: result.usage.outputTokens,
+    contextTokens: result.usage.contextTokens ?? null,
+  };
+}
+```
+
+对于库修复循环，仅当每次调用都报告了输入和输出计数时，才会累加这些计数。上下文 token 描述最后一次调用的上下文，不会跨独立调用累加。Token 计数不会触发额外的生成；如果计数器不可用，也不会导致原本成功的结果失败。
+
+## 取消任务或设置截止时间
+
+取消和截止时间都是可选的。传入 `AbortSignal` 可取消任务。设置 `timeoutMs` 可施加一个总截止时间，涵盖会话创建、生成、工具处理函数、等待审批和库修复。省略时，库不会施加截止时间。提供方限制以及工具或修复预算仍然适用。
+
+```ts
+import { generateAsync } from 'expo-ai';
+
+export async function summarizeWithCancellation(text: string, signal: AbortSignal) {
+  const result = await generateAsync(`Summarize: ${text}`, {
+    signal,
+    timeoutMs: 60_000,
+  });
+
+  return result.value;
+}
+```
+
+将控制器的 `signal` 传给此函数，并在应用的取消操作中调用 `AbortController.abort()`。即使取消，也要处理返回的 promise。取消时会以 `ERR_ABORTED` 拒绝；截止时间到期时会以 `ERR_TIMEOUT` 拒绝。显式截止时间接受 `1` 到 `2147483647` 毫秒的整数值。
+
+取消会停止更新、传递到待处理的审批和工具处理函数，并释放临时会话。处理函数应将 signal 传递给可取消的工作，并在开始操作前检查它。取消无法强制停止任意应用代码，也无法撤销工具已执行的操作。
+
+## 检查可用性并处理错误
+
+如果就绪状态或能力信息有助于构建界面，请使用 `getAvailabilityAsync()`：
+
+```ts
+import { getAvailabilityAsync } from 'expo-ai';
+
+export async function canCategorize() {
+  const availability = await getAvailabilityAsync();
+
+  return availability.status === 'available';
+}
+```
+
+当结果为 `unavailable` 时，检查其 `reason`。`downloadable` 结果表示可以下载模型；`downloading` 表示正在准备；`not-ready` 表示尚未准备好使用。`available` 结果包含提供方的能力信息。能力可以是 `supported`、`unsupported` 或 `unknown`。如果提供方未报告模型标识符、上下文限制和 token 用量，它们将保持为 `null`。
+
+能力要求描述的是原生提供方支持。例如，`requires: ['constrainedOutput']` 要求原生架构约束。在 Android 上，即使库能够执行结构化任务和编排工具，要求 `constrainedOutput` 或 `runtimeToolDeclarations` 也会返回 `unavailable`。在 web 上，要求 `runtimeToolDeclarations` 同样会返回 `unavailable`，但支持库级工具编排。仅当应用需要这种原生保证时，才包含这些要求。
+
+Android SDK 不会公开受支持语言查询。显式的 `inputLanguages` 或 `outputLanguage` 要求会以原因 `language-support-unknown` 返回 `unavailable`；这并不表示该语言本身不受支持。不带语言要求的请求可以继续执行。
+
+公共操作会以 `LanguageModelError` 拒绝，该错误具有稳定的 `code`、易读的消息，并在可用时包含底层 `cause`。请根据错误代码进行处理，而不要解析错误消息。就绪检查失败时，可以显示准备按钮：
+
+```ts
+import { generateAsync, LanguageModelError } from 'expo-ai';
+
+export async function generateWhenReady(prompt: string, offerPreparation: () => void) {
+  try {
+    return await generateAsync(prompt);
+  } catch (error) {
+    if (error instanceof LanguageModelError && error.code === 'ERR_MODEL_NOT_READY') {
+      offerPreparation();
+    }
+    throw error;
+  }
+}
+```
+
+准备操作是显式的，并且取决于提供方。在 Android 上，设置 `allowDownload: true` 可以请求系统下载模型。在 web 上，请从按钮按下等用户操作中调用准备方法，以便浏览器获得所需的用户激活权限。生成失败后运行的 catch 处理程序可能已不再拥有该权限。准备操作报告 `available` 后，应用可以重试任务。
+
+Apple 的适配器会再次检查就绪状态，但模型准备由 Apple 通过系统设置管理。即使设置了 `allowDownload: true`，它也无法启动下载或报告下载进度。不要将不受支持的设备或取消操作视为准备请求。
+
+省略 `allowDownload` 或将其设为 `false` 只会检查当前可用性，不会启动下载，也不会等待下载完成。
+
+### 显示准备进度
+
+在应用中执行显式准备操作时调用 `prepareAsync()`。传入 `onProgress` 以更新界面，并传入 `signal` 以取消应用的准备请求：
+
+```ts
+import { prepareAsync } from 'expo-ai';
+
+export async function prepareModel(
+  signal: AbortSignal,
+  setProgress: (progress: number | null) => void
+) {
+  const availability = await prepareAsync({
+    allowDownload: true,
+    signal,
+    onProgress: setProgress,
+  });
+
+  return availability.status === 'available';
+}
+```
+
+在 Android 和 web 上，进度回调是可选的。进度是从 `0` 到 `1` 的数字；如果无法获取进度比例，则为 `null`。当值为 `null` 时，请显示不确定进度指示器。如果进度回调抛出错误，或返回的 promise 被拒绝，准备操作将以 `ERR_PREPARATION_FAILED` 拒绝。
+
+取消会停止应用的准备请求和进度更新。系统可能会继续其已负责的下载。在决定是否需要再次执行准备操作前，请重新检查可用性。
+
+在 web 上，生成会在创建会话前检查浏览器是否报告 `available`。但是，浏览器的 `LanguageModel.create()` API 没有禁止下载资源的选项。如果两次调用之间就绪状态发生变化，适配器只能在检测到意外下载进度时中止。它无法保证浏览器不会传输任何资源，也无法停止浏览器已经管理的下载。
+
+| 错误代码 | 含义 |
+| ---------------------------------- | ------------------------------------------------------------ |
+| `ERR_MODEL_NOT_READY` | 模型受支持，但尚未准备好生成。 |
+| `ERR_MODEL_UNAVAILABLE` | 请求的模型或能力不可用。 |
+| `ERR_PREPARATION_FAILED` | 模型准备或其进度回调失败。 |
+| `ERR_ABORTED` | 调用方取消了任务。 |
+| `ERR_APP_BACKGROUND` | Android 工作因应用进入后台而停止。 |
+| `ERR_TIMEOUT` | 任务截止时间或提供方时间限制已到期。 |
+| `ERR_TOOL_DENIED` | 审批回调拒绝了工具调用。 |
+| `ERR_RESPONSE_INVALID` | 完成的响应未通过验证。 |
+| `ERR_VALIDATION_RETRIES_EXHAUSTED` | 库验证修复已耗尽其预算。 |
+| `ERR_CONTEXT_WINDOW_EXCEEDED` | 请求超出模型可用的上下文范围。 |
+| `ERR_UPDATE_FAILED` | 更新回调抛出了错误。 |
+
+其他类型化代码涵盖无效选项和架构、工具故障及执行限制。诊断提供方故障时，请检查 `cause`。
+
+## 使用显式会话
+
+当任务需要在多次请求之间保留对话历史时，请使用 `createSessionAsync()`。顶层函数彼此独立；显式会话会保留自身成功的历史记录。完成后调用 `dispose()`：
+
+```ts
+import { createSessionAsync } from 'expo-ai';
+
+export async function refineTitle(notes: string) {
+  const session = await createSessionAsync({
+    instructions: 'Suggest concise note titles.',
+  });
+
+  try {
+    await session.generateAsync(notes);
+    const result = await session.generateAsync('Make that title shorter.');
+    return result.value;
+  } finally {
+    session.dispose();
+  }
+}
+```
+
+Apple 使用 Foundation Models 会话。在 Android 上，此软件包会将成功的对话轮次序列化为 JSON，并将其包含在每个 Prompt API 请求中。库级编排会在 JavaScript 中保留自己的成功历史记录。更长的历史记录会占用更多模型输入预算。
+
+在 web 上，适配器会在已提交浏览器会话的副本上生成内容，并在模型成功完成后提交。如果浏览器报告上下文溢出，任务会以 `ERR_CONTEXT_WINDOW_EXCEEDED` 拒绝，而不会悄悄丢弃历史记录。
+
+每个会话同一时间只能运行一次生成。此软件包不会悄悄截断对话历史记录。提供方可能会在后续 JavaScript 验证或更新回调失败之前提交模型响应。会话之外已完成的工具操作无法撤销。
+
+`dispose()` 是同步的，可以安全地重复调用。它会释放会话，并以 `ERR_SESSION_DISPOSED` 拒绝活动中的工作。
+
+### 遍历流
+
+<a id="asynciterable" />
+
+显式会话还提供 `generateStream()`，它会返回一个异步可迭代对象。文本事件包含累积快照；成功的流最终会以一个经过验证的 `result` 事件结束：
+
+```ts
+import { createSessionAsync } from 'expo-ai';
+
+export async function streamSummary(text: string, onText: (text: string) => void) {
+  const session = await createSessionAsync();
+
+  try {
+    for await (const event of session.generateStream(`Summarize: ${text}`)) {
+      if (event.type === 'text') {
+        onText(event.text);
+      } else if (event.type === 'result') {
+        onText(event.result.value);
+      }
+    }
+  } finally {
+    session.dispose();
+  }
+}
+```
+
+跳出循环会取消该次生成。流发生错误时，会从迭代器中抛出。即使缓慢的使用方跳过中间文本快照，仍会收到工具事件和最终结果。
+
+## API
+
+```ts
+import * as ExpoAI from 'expo-ai';
+```
+
+<APISection packageName="expo-ai" apiName="ExpoAI" />

@@ -1,0 +1,272 @@
+---
+title: Image
+description: 用于显示 SF Symbols 的 SwiftUI Image 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+> **info** 如需跨平台使用，请参阅通用的 [`Icon`](../universal/icon) — 它会根据平台渲染相应的原生组件。
+
+Expo UI Image 使用 SwiftUI [Image API](https://developer.apple.com/documentation/swiftui/image) 显示 SF Symbols。SF Symbols 是 Apple 提供的可配置符号库。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/image/ios-light.webp"
+  darkSrc="/static/images/expo-ui/image/ios-dark.webp"
+  alt="一排彩色 SF Symbol 图像"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本 SF Symbol
+
+<ComponentExample
+  title="BasicImageExample.tsx"
+  src="/static/images/expo-ui/examples/image-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/image-basic-ios-dark.webp"
+  alt="以默认大小渲染的星形 SF Symbol">
+
+```tsx
+import { Host, Image } from '@expo/ui/swift-ui';
+
+export default function BasicImageExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Image systemName="star.fill" />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义 SF Symbol
+
+使用 `assetName` 属性显示作为符号集导入应用资源目录中的自定义 SF Symbol。
+
+```tsx CustomImageExample.tsx
+import { Host, Image } from '@expo/ui/swift-ui';
+
+export default function CustomImageExample() {
+  return (
+    <Host matchContents>
+      <Image assetName="acme.mark" />
+    </Host>
+  );
+}
+```
+
+### 设置大小和颜色
+
+<ComponentExample
+  title="ImageSizeColorExample.tsx"
+  src="/static/images/expo-ui/examples/image-size-color-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/image-size-color-ios-dark.webp"
+  alt="不同大小的红色心形、橙色星形和蓝色铃铛 SF Symbol">
+
+```tsx
+import { Host, HStack, Image } from '@expo/ui/swift-ui';
+
+export default function ImageSizeColorExample() {
+  return (
+    <Host matchContents>
+      <HStack spacing={16}>
+        <Image systemName="heart.fill" size={24} color="red" />
+        <Image systemName="star.fill" size={32} color="orange" />
+        <Image systemName="bell.fill" size={40} color="blue" />
+      </HStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 设置变量值
+
+某些 SF Symbols 会根据变量值改变外观。使用 `variableValue` 属性并传入 0.0 到 1.0 之间的值来控制渲染的符号。需要 iOS 16.0+ 和 SF Symbols 4.0+。
+
+<ComponentExample
+  title="ImageVariableExample.tsx"
+  src="/static/images/expo-ui/examples/image-variable-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/image-variable-ios-dark.webp"
+  alt="三个变量值分别为 0.3、0.6 和 1.0 的条形图 SF Symbol">
+
+```tsx
+import { Host, HStack, Image } from '@expo/ui/swift-ui';
+
+export default function ImageVariableExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <HStack spacing={16}>
+        <Image
+          systemName="chart.bar.fill"
+          size={32}
+          variableValue={0.3}
+        />
+        <Image
+          systemName="chart.bar.fill"
+          size={32}
+          variableValue={0.6}
+        />
+        <Image
+          systemName="chart.bar.fill"
+          size={32}
+          variableValue={1.0}
+        />
+      </HStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 使用符号效果
+
+通过传入来自 `@expo/ui/swift-ui/modifiers` 的 [`symbolEffect`](modifiers/#symboleffecteffect-args) 修饰符，为符号应用 SF Symbol 效果并使其动起来。默认情况下，此效果会持续运行。你也可以传入 `value`，以便在每次值变化时触发一次效果；或者传入 `isActive`，通过布尔值开关控制效果在值为 `true` 时运行。需要 iOS 17.0 或更高版本。
+
+<ComponentExample
+  title="ImageSymbolEffectExample.tsx"
+  src="/static/images/expo-ui/examples/image-symbol-effect-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/image-symbol-effect-ios-dark.webp"
+  alt="蓝色 wifi SF Symbol，显示可变颜色效果动画中的一帧">
+
+```tsx
+import { Host, Image } from '@expo/ui/swift-ui';
+import { symbolEffect } from '@expo/ui/swift-ui/modifiers';
+
+export default function ImageSymbolEffectExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Image
+        systemName="wifi"
+        size={48}
+        color="blue"
+        modifiers={[
+          symbolEffect({
+            effect: 'variableColor',
+            fillStyle: 'iterative',
+            playbackStyle: 'reversing',
+          }),
+        ]}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+以下示例使用 `value`，在每次按下按钮时播放 `bounce`。从 worklet 中（或通过 [`scheduleOnUI`](https://docs.swmansion.com/react-native-worklets/docs/threading/scheduleOnUI)）向 `state.value` 写入值以触发效果。
+
+<ComponentExample
+  title="ImageSymbolEffectValueExample.tsx"
+  src="/static/images/expo-ui/examples/image-symbol-effect-value-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/image-symbol-effect-value-ios-dark.webp"
+  alt="橙色铃铛 SF Symbol，下方是 Bounce 按钮">
+
+```tsx
+import {
+  Button,
+  Host,
+  Image,
+  useNativeState,
+  VStack,
+} from '@expo/ui/swift-ui';
+import { symbolEffect } from '@expo/ui/swift-ui/modifiers';
+import { scheduleOnUI } from 'react-native-worklets';
+
+export default function ImageSymbolEffectValueExample() {
+  const trigger = useNativeState(0);
+
+  return (
+    <Host matchContents>
+      <VStack spacing={16}>
+        <Image
+          systemName="bell.fill"
+          size={48}
+          color="orange"
+          modifiers={[
+            symbolEffect(
+              { effect: 'bounce', direction: 'up' },
+              { value: trigger }
+            ),
+          ]}
+        />
+        <Button
+          label="Bounce"
+          onPress={() =>
+            scheduleOnUI(() => {
+              'worklet';
+              trigger.value = trigger.value + 1;
+            })
+          }
+        />
+      </VStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+以下示例使用 `isActive` 来切换持续运行的 `breathe` 动画。
+
+<ComponentExample
+  title="ImageSymbolEffectIsActiveExample.tsx"
+  src="/static/images/expo-ui/examples/image-symbol-effect-isactive-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/image-symbol-effect-isactive-ios-dark.webp"
+  alt="青色云朵 SF Symbol，下方是已开启的 Breathe 开关">
+
+```tsx
+import {
+  Host,
+  Image,
+  SyncToggle,
+  useNativeState,
+  VStack,
+} from '@expo/ui/swift-ui';
+import { symbolEffect } from '@expo/ui/swift-ui/modifiers';
+
+export default function ImageSymbolEffectIsActiveExample() {
+  const isActive = useNativeState(true);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={16}>
+        <Image
+          systemName="cloud.fill"
+          size={48}
+          color="cyan"
+          modifiers={[
+            symbolEffect({ effect: 'breathe' }, { isActive }),
+          ]}
+        />
+        <SyncToggle label="Breathe" isOn={isActive} />
+      </VStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Image } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/image" apiName="Image" />

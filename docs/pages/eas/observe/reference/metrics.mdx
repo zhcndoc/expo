@@ -143,21 +143,37 @@ import { Tabs, Tab, TabsGroup } from '~/ui/components/Tabs';
 
 每个 TTI 事件都包含额外参数，以帮助排查问题：
 
-- **`expo.frameRate.slowFrames`** (count): 渲染耗时 17ms 或更长的帧数。如果该值相对于启动时长很高，则说明主线程在启动期间持续繁忙。指向繁重的布局工作、同步桥接调用，或一次渲染过多组件。
-- **`expo.frameRate.frozenFrames`** (count): 渲染耗时 700ms 或更长的帧数。这些是严重冻结，应用会明显卡住。即使启动期间只出现一次，也说明问题非常严重。通常由同步 I/O、大型 JSON 解析，或主线程上的阻塞式网络调用引起。
-- **`expo.frameRate.totalDelay`** (seconds): 所有帧超出目标时长的累计总时间。这是单一最佳的“流畅度”指标。将其与 TTI 对比：如果 TTI 是 2.5s，而 `totalDelay` 是 0.1s，那么启动慢但流畅（时间花在了合理的工作上）。如果 `totalDelay` 是 1.5s，那么应用在大部分启动过程中都很卡顿，用户一直盯着一个抖动的屏幕。
-- **`expo.device.lowPowerMode`** (boolean): 报告 TTI 时操作系统省电模式（iOS 上的低电量模式、Android 上的省电模式）是否处于开启状态。省电模式会限制 CPU、GPU 和后台活动，因此如果过滤掉该标志后 TTI 回归消失，则原因是环境因素而不是代码变更。
-- **`expo.device.batteryLevel`** (number, 0–1): TTI 时的电池电量比例。对于在低电量时会积极管理性能的设备，排查热/限频影响很有用。如果操作系统不报告该值，则会省略。
-- **`expo.device.batteryCharging`** (boolean): 设备是否接入电源或正在无线充电。充电通常会提高 iOS 和某些 Android OEM 的持续 CPU 性能上限，因此未充电样本更适合作为保守比较对象。
-- **`expo.device.thermalState`** (string): `nominal`、`fair`、`serious`、`critical`、`unknown` 之一。持续处于 `serious`/`critical` 状态会导致操作系统限制 CPU/GPU，并可能在不依赖任何应用变更的情况下显著减慢启动。
-- **`expo.network.connected`** (boolean): TTI 时设备是否具有可访问互联网的网络。如果 TTI 仅在该值为 `true` 时变差，则原因很可能是受网络限制的启动路径；如果在 `false` 时变差，则说明应用在显示缓存内容之前做了过多工作。
-- **`expo.network.type`** (string): `wifi`、`cellular`、`ethernet`、`none`、`other`、`unknown` 之一。用于比较蜂窝网络与 Wi-Fi 人群——较大的差距通常指向受网络限制的启动工作。VPN 流量会按其底层传输方式报告（通常是 `wifi` 或 `cellular`），因为 VPN 是在其之上隧穿的。该取值集合在 Android 和 iOS 上保持一致，因此仪表盘不需要按平台分支。
+- **`expo.frameRate.slowFrames`**（计数）：耗时 17 毫秒或更长时间渲染的帧。如果相对于启动时长而言该值较高，则说明启动期间主线程一直很忙。这可能是由繁重的布局工作、同步桥接调用或同时渲染过多组件造成的。
+- **`expo.frameRate.frozenFrames`**（计数）：耗时 700 毫秒或更长时间渲染的帧。这些是导致应用明显卡住的严重冻结。启动期间即使只有一帧也属于严重问题。通常由同步 I/O、大型 JSON 解析或主线程上的阻塞网络调用造成。
+- **`expo.frameRate.totalDelay`**（秒）：所有帧超过其目标时长的累计总时间。这是衡量“流畅度”的最佳单一指标。将其与 TTI 对比：如果 TTI 为 2.5 秒，而 `totalDelay` 为 0.1 秒，则启动速度较慢但过程流畅（时间花在了合理的工作上）。如果 `totalDelay` 为 1.5 秒，则应用在启动的大部分时间里都很卡顿，用户看到的是一个不断掉帧的屏幕。
+- **`expo.device.lowPowerMode`**（布尔值）：报告 TTI 时操作系统的省电模式（iOS 上的低电量模式，Android 上的省电模式）是否处于启用状态。省电模式会限制 CPU、GPU 和后台活动，因此如果排除此标志后 TTI 回归消失，则问题是由环境导致的，而非代码变更。
+- **`expo.device.batteryLevel`**（数字，0–1）：记录 TTI 时的电池电量比例。可用于排除在低电量时积极管理性能的设备所产生的热影响/降频影响。操作系统未报告该值时会省略。
+- **`expo.device.batteryCharging`**（布尔值）：设备是否已插入电源或正在无线充电。在 iOS 和部分 Android OEM 设备上，充电通常会提高持续 CPU 性能上限，因此与未充电样本进行比较更为保守。
+- **`expo.device.thermalState`**（字符串）：取值为 `nominal`、`fair`、`serious`、`critical`、`unknown`。持续处于 `serious`/`critical` 状态会导致操作系统限制 CPU/GPU，并可能大幅减慢启动速度，与应用是否发生变更无关。
+- **`expo.network.connected`**（布尔值）：记录 TTI 时设备是否连接了可访问互联网的网络。如果只有该值为 `true` 时 TTI 才会变差，则原因可能是启动流程依赖网络；如果该值为 `false` 时 TTI 变差，则说明应用在显示缓存内容之前做了过多工作。
+- **`expo.network.type`**（字符串）：取值为 `wifi`、`cellular`、`ethernet`、`none`、`other`、`unknown`。可用于比较蜂窝网络与 Wi-Fi 用户群体——两者差距较大通常说明启动工作依赖网络。VPN 流量会报告底层传输方式（通常为 `wifi` 或 `cellular`），因为 VPN 是通过该传输方式建立隧道的。Android 和 iOS 上的取值集合刻意保持一致，因此仪表板无需按平台分别处理。
+- **`expo.network.isExpensive`**（布尔值）：操作系统是否将该连接视为按流量计费，例如蜂窝网络或个人热点。两个平台都会报告此值，且仅在存在网络连接时报告。
+- **`expo.network.isConstrained`**（布尔值，仅 iOS）：此网络路径是否启用了低数据模式。在此模式下，系统会延迟后台传输，因此等待后台传输的启动过程可能比在不受限制的网络路径上使用相同代码时更慢。
+- **`expo.network.dataSaverEnabled`**（布尔值，仅 Android）：是否启用了流量节省程序。这是 Android 上最接近低数据模式的功能，但它是进程范围的设置，而不是针对单条网络路径的设置，因此使用单独的键。
 
 **如何解读它们：**
 
 - **高 TTI + 低总延迟：** 启动慢但流畅。优化阻塞启动流程的内容（bundle 大小、数据获取、初始化链）。
 - **高 TTI + 高总延迟 + 很多慢帧：** 主线程争用。卸载工作并简化初始渲染树。
 - **高 TTI + 高延迟 + 冻结帧：** 有东西在严重阻塞。检查同步 I/O、大型 JSON 解析或阻塞式 API 调用。
+
+#### 网络请求参数
+
+TTI 事件还会汇总应用在启动期间发出的 HTTP 请求，让你能够区分由网络导致的启动缓慢与由应用自身工作导致的启动缓慢。统计窗口从原生启动结束开始，到调用 `markInteractive()` 时结束。系统会自动监测请求：iOS 上的 `URLSession` 流量和 Android 上的 `OkHttpClient` 流量，其中包括 React Native 中的 `fetch`。EAS Observe 不会统计其自身的遥测上传。窗口内没有请求时会省略这些参数。
+
+- **`expo.network.requests.count`**（计数）：窗口内开始的请求数。
+- **`expo.network.requests.failed`**（计数）：出错或返回非 2xx 状态码的请求数。这一指标可用于判断启动是否因某个迟迟未返回的请求而停滞。
+- **`expo.network.requests.bytesReceived`** 和 **`expo.network.requests.bytesSent`**（字节）：窗口内的接收和发送总量，按实际传输量测量。
+- **`expo.network.requests.totalDuration`**（秒）：所有请求耗时之和，包括失败的请求。请求重叠时，该值可能超过实际经过的时间；单个超时请求会计入客户端的整个超时时间。
+- **`expo.network.requests.throughputBytesPerSecond`**（字节/秒）：数据实际传输期间的接收字节数。分母为所有传输窗口的并集，从每个请求收到第一个响应字节时开始计算，因此不包括 DNS、连接建立和服务器处理时间。缓存命中和失败的请求不计入。未接收到任何数据时会省略。
+- **`expo.network.requests.slowest.*`**：关于已完成的最长请求的信息——`duration`（秒）、`host`（字符串）、`statusCode`（数字）、`timeToFirstByte`（秒）和 `bytesReceived`（字节）。请结合这些参数一起查看：如果 `duration` 大部分是 `timeToFirstByte`，说明服务器响应缓慢；如果 `timeToFirstByte` 较短但 `bytesReceived` 较大，则说明传输耗时较长。`statusCode` 有助于解释空响应——`bytesReceived` 为 0 在 304 响应中是正常的，在 200 响应中则是问题。
+
+> **信息** 汇总受限于一个内存缓冲区，该缓冲区最多保存最近 200 个请求。启动期间发出的请求超过此数量时，统计值会偏低，因此应将这些参数视为请求非常繁忙的窗口的样本，而非完整统计。
 
 #### 自定义事件参数
 
@@ -262,11 +278,53 @@ function Feed({ items }) {
 
 该标记器只会在挂载时触发一次，因此其 `params` 取自首次渲染。之后修改它们不会产生任何效果，并且会在开发环境中记录警告。如果你需要附加那些只会在稍后才知道的参数，请改为直接调用 `useObserve().markInteractive(...)`。
 
+### 更新下载时间
+
+**它衡量什么：** 在用户设备上下载 EAS Update OTA bundle 所需的时间。当应用使用 [EAS Update](/eas-update/introduction/) 和 `expo-observe` 时，会自动收集此指标。无需额外埋点。
+
+有关仪表板视图、各更新的详细数据和 CLI 查询，请参见 [EAS Update 下载性能](/eas/observe/eas-update/)。
+
+### 导航指标
+
+> **信息** 导航指标要求使用 SDK 56 或更高版本，并启用导航集成。
+
+启用 [Expo Router](/eas/observe/integrations/expo-router/) 或 [React Navigation](/eas/observe/integrations/react-navigation/) 集成后，EAS Observe 会收集三个逐路由指标：
+
+- **逐路由首次渲染（`cold_ttr`）**：从导航操作到目标屏幕首次获得焦点所用的时间。
+- **逐路由热渲染（`warm_ttr`）**：对获得焦点前已渲染的屏幕进行相同测量，例如预加载后或返回导航时。
+- **逐路由可交互时间（`tti`）**：从导航操作到目标屏幕调用 `markInteractive()` 所用的时间。
+
+有关设置说明以及每个指标的完整事件参数，请参见 [Expo Router](/eas/observe/integrations/expo-router/#metrics) 或 [React Navigation](/eas/observe/integrations/react-navigation/#metrics) 集成页面。
+
+## 内存警告
+
+> **信息** 内存警告要求使用 SDK 57 或更高版本，且仅在 iOS 上记录。
+
+当 iOS 向应用发送低内存警告时，EAS Observe 会记录一个严重级别为 `warn` 的 `expo.memory.warning` 事件。该事件标记系统开始承受内存压力的时刻。事件会携带收到警告时的内存使用情况快照，此时应用的其他部分尚未对警告作出反应并释放内存。
+
+内存警告表示操作系统内存不足，可能会终止应用以回收内存。如果会话在此事件发生后不久结束，很可能是由于内存耗尽而终止；此类终止不会报告为崩溃。
+
+此事件会自动记录，无需埋点。它会显示在会话时间线和 [`eas observe:events`](/eas/observe/eas-cli/#eas-observeevents) 中，与用户定义的事件并列显示。
+
+### 事件参数
+
+- **`expo.memory.allocated`**（字节）：计入应用进程的内存占用。这是系统与应用内存限制进行比较的值，因此应重点关注此数字。
+- **`expo.memory.physical`**（字节）：常驻内存，即当前保留在物理 RAM 中的应用页面。
+- **`expo.memory.available`**（字节）：应用在达到内存限制之前还可以分配的内存。iOS 模拟器不会强制执行内存限制，因此会省略此值。
+- **`expo.memory.warningsCount`**（计数）：截至目前本次会话中记录的警告数，包括此次警告。同一会话中该计数持续上升，说明可能存在内存泄漏，或缓存始终未释放内存。
+
+**如何改进：**
+
+- 在解码大型图像前，将其缩小到实际显示尺寸。保存在内存中的全分辨率资源是内存压力的常见原因。
+- 应用转入后台时，释放缓存和其他不可见资源。
+- 避免将整个网络响应或文件内容保存在内存中。改用流式处理或分页处理。
+- 检查是否存在保留环，以及是否有从未移除的事件监听器。
+
 ## 数据处理
 
 ### 离线收集
 
-在设备离线时收集的指标会保存在设备上。只要应用切到后台时设备有网络连接，它们就会自动发送到服务器。你也可以随时调用 [`Observe.dispatchEvents()`](/eas/observe/configuration/#dispatchevents) 手动刷新事件。
+设备离线时收集的指标会存储在设备上。只要网络连接可用，应用转入后台时就会自动将其发送到服务器。你也可以随时调用 [`Observe.dispatchEvents()`](/versions/latest/sdk/observe/#dispatchevents) 手动刷新事件。
 
 ### 数据保留
 
@@ -274,18 +332,18 @@ function Feed({ items }) {
 
 ### 采样
 
-默认情况下，所有安装实例都会发送其指标。若要改为仅从一部分安装实例发送，请在调用 `configure()` 时设置 [`sampleRate`](/eas/observe/configuration/#sampling)。该决策对每个安装实例都是确定性的，因此同一安装实例在应用启动之间始终会处于采样内或采样外。
+默认情况下，所有安装实例都会发送其指标。你可以通过设置 `sampleRate`，改为只从部分安装实例发送。详情请参见[采样](/eas/observe/configuration/#sampling)。
 
 ### 环境
 
-所有指标按环境分组。默认情况下，环境值由 `process.env.NODE_ENV` 派生（如果未设置，则回退为 `'production'`），也可以通过 [`configure({ environment })`](/eas/observe/configuration/#configure) 覆盖。环境是附加到每个指标上的元数据标签，不会影响指标是否被发送。
+所有指标都按环境分组，环境是附加到每个指标上的元数据标签。有关该值的来源以及如何覆盖，请参见[环境](/eas/observe/configuration/#environments)。
 
 ### 调试构建
 
-除非通过 [`configure()`](/eas/observe/configuration/#configure) 将 `dispatchInDebug` 设为 `true`（更多信息参见 [在开发中启用指标](/eas/observe/configuration/#enable-metrics-in-development)），否则从调试构建中收集的指标会在发送前被丢弃。如果原生应用是调试构建，或者 JS bundle 是开发 bundle（`__DEV__` 为 `true`），则会被视为调试构建。此检测与 `environment` 值无关。
+除非将 `dispatchInDebug` 设置为 `true`，否则从调试构建中收集的指标会在发送前被丢弃。详情请参见[在开发环境中启用指标](/eas/observe/configuration/#enable-metrics-in-development)。
 
 ### 禁用发送
 
-你可以使用 `configure({ dispatchingEnabled: false })` 全局禁用所有发送。在禁用期间，任何待发送的指标都会在不发送的情况下被丢弃，并且在重新设为 `true` 之前不会再发送任何后续指标。
+你可以使用 `configure({ dispatchingEnabled: false })` 全局禁用所有发送。禁用期间，任何待发送的指标都会被丢弃而不发送；在重新将其设为 `true` 之前，后续指标也不会发送。
 
 </TabsGroup>

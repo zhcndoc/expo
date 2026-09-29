@@ -8,15 +8,32 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
 
 一个与 `@react-native-picker/picker` 兼容 API 的 `Picker` 组件。它在 iOS 上使用 SwiftUI 的轮盘式 `Picker`，在 Android 上使用 Material 3 的 `ExposedDropdownMenuBox`，在 Web 上使用原生 `<select>` 元素。
 
 在底层，这个组件封装了平台特定的 `@expo/ui` 基础组件：
 
-- **Android**: [Jetpack Compose ExposedDropdownMenuBox](../jetpack-compose/exposeddropdownmenubox)
-- **iOS**: [SwiftUI Picker](../swift-ui/picker) 并使用 `pickerStyle('wheel')`
+- **Android**：[Jetpack Compose ExposedDropdownMenuBox](../jetpack-compose/exposeddropdownmenubox)
+- **iOS**：[SwiftUI Picker](../swift-ui/picker) 并使用 `pickerStyle('wheel')`
 
 如果你需要更低层级的控制，请直接使用这些基础组件。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/community-picker/android-light.webp',
+    darkSrc: '/static/images/expo-ui/community-picker/android-dark.webp',
+    alt: '一个显示 Java 的下拉字段',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/community-picker/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/community-picker/ios-dark.webp',
+    alt: '一个选中了 Java 的滚轮选择器',
+  }}
+/>
 
 ## 安装
 
@@ -32,13 +49,27 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 ## 基本用法
 
-```tsx PickerExample.tsx
+<ComponentExample
+  title="PickerExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-picker-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-basic-android-dark.webp',
+    alt: '一个下拉字段，在 Selected 标签上方显示 Java',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-picker-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-basic-ios-dark.webp',
+    alt: '一个滚轮选择器，在 Selected 标签上方选中了 Java',
+  }}>
+
+```tsx
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, useColorScheme, View } from 'react-native';
 import { Picker } from '@expo/ui/community/picker';
 
 export default function PickerExample() {
   const [language, setLanguage] = useState('java');
+  const colorScheme = useColorScheme();
 
   return (
     <View>
@@ -48,19 +79,36 @@ export default function PickerExample() {
         <Picker.Item label="Objective C" value="objc" />
         <Picker.Item label="Swift" value="swift" />
       </Picker>
-      <Text>已选择：{language}</Text>
+      <Text style={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>
+        Selected: {language}
+      </Text>
     </View>
   );
 }
 ```
 
-## 单项样式与状态
+</ComponentExample>
+
+## 单项样式和状态
 
 向 `Picker.Item` 传入 `style` 可分别控制每一项的 `color`、`backgroundColor`、`fontFamily` 和 `fontSize`，并且在 Android 上使用 `enabled={false}` 可禁用特定项。
 
 `fontFamily` 在 iOS 上接受 iOS 字体名称（例如 `'Menlo'`），在 Android 上接受 Compose 的通用字体族（`'monospace'`、`'serif'`、`'sansSerif'`、`'cursive'`）或使用 [`expo-font`](../../font) 加载的字体。
 
-```tsx StyledPickerExample.tsx
+<ComponentExample
+  title="StyledPickerExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-picker-styled-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-styled-android-dark.webp',
+    alt: '一个已打开的下拉菜单，每种语言均使用不同的颜色和字体',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-picker-styled-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-styled-ios-dark.webp',
+    alt: '一个滚轮选择器，每种语言均使用不同的颜色和字体',
+  }}>
+
+```tsx
 import { useState } from 'react';
 import { Platform } from 'react-native';
 import { Picker } from '@expo/ui/community/picker';
@@ -100,11 +148,26 @@ export default function StyledPickerExample() {
 }
 ```
 
+</ComponentExample>
+
 ## 命令式聚焦和失焦（Android）
 
 使用 ref 可以以编程方式在 Android 上打开和关闭下拉菜单。在 iOS 上，这些方法不会生效，因为滚轮选择器始终可见。
 
-```tsx RefPickerExample.tsx
+<ComponentExample
+  title="RefPickerExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-picker-ref-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-ref-android-dark.webp',
+    alt: '通过上方按钮打开的下拉菜单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-picker-ref-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-ref-ios-dark.webp',
+    alt: '一个按钮位于选中了 Java 的滚轮选择器上方',
+  }}>
+
+```tsx
 import { useRef, useState } from 'react';
 import { Button } from 'react-native';
 import { Picker, type PickerRef } from '@expo/ui/community/picker';
@@ -133,6 +196,8 @@ export default function RefPickerExample() {
 }
 ```
 
+</ComponentExample>
+
 ## API
 
 ```tsx
@@ -140,3 +205,5 @@ import { Picker } from '@expo/ui/community/picker';
 ```
 
 <APISection packageName="expo-ui/community/picker" apiName="Picker" />
+
+</PlatformTabsGroup>

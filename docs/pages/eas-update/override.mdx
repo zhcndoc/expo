@@ -6,15 +6,15 @@ description: 了解如何在运行时覆盖更新 URL 和请求头，以控制�
 
 import { Collapsible } from '~/ui/components/Collapsible';
 
-使用 EAS Update 的典型方式是在你的应用构建中嵌入单一的更新 URL 和一组请求头（例如更新通道名称）。要控制加载哪个更新，你可以通过 `eas update` 命令或 EAS 控制台在服务器端进行更改。例如，你将一个新更新发布到与你的构建所指向的通道，然后该构建会在下次启动时获取该更新。使用这种方法，发布到与你的构建所指向通道不同的更新将不会被下载。
+使用 EAS Update 的典型方式是在应用构建中嵌入单一的更新 URL 和一组请求头（例如更新通道名称）。要控制加载哪个更新，你可以通过 `eas update` 命令或 EAS 控制台在服务器端进行更改。例如，你可以将一个新更新发布到构建所指向的通道，然后该构建会在下次启动时获取该更新。使用这种方法，发布到与构建所指向通道不同的更新将不会被下载。
 
-本指南解释了如何在运行时更改更新 URL 和请求头，从而可以通过 ID 加载特定更新，或者更改从哪个通道拉取更新，而无需创建并安装新的构建。
+本指南解释了如何在运行时更改更新 URL 和请求头，从而可以通过 ID 加载特定更新，或者更改拉取更新的通道，而无需创建并安装新的构建。
 
 ## 覆盖请求头
 
 > **warning** 本节描述的功能可在 Expo SDK 54 中使用，且需要 `expo-updates` 0.29.0 及更高版本。
 
-对于使用 EAS Update 的应用，此功能的主要用例是 [channel surfing](/eas-update/channel-surfing/)。Channel surfing 会在完整的通道切换流程中，在运行时切换 `expo-channel-name` 请求头。
+对于使用 EAS Update 的应用，此功能的主要用例是 [通道切换](/eas-update/channel-surfing/)。通道切换会在完整的通道切换流程中，在运行时切换 `expo-channel-name` 请求头。
 
 例如，如果你有一个用于生产更新的 `default` 通道，以及一个用于预览更新的 `preview` 通道，你可以覆盖 `expo-channel-name` 请求头，使其指向 `preview` 通道。这样就可以在当前生产构建中测试预览更新。
 
@@ -22,7 +22,7 @@ import { Collapsible } from '~/ui/components/Collapsible';
 
 另一个潜在的用例是向不同用户提供不同的更新，例如，让一组内部用户（如员工）比最终用户更早收到更新。
 
-### 它是如何工作的
+### 工作原理
 
 你可以通过调用 [`Updates.setUpdateRequestHeadersOverride`](/versions/latest/sdk/updates/#updatessetupdaterequestheadersoverriderequestheaders) 来覆盖请求头。对于 EAS Update，覆盖 `expo-channel-name` 请求头会使应用从指定通道请求更新。
 
@@ -49,11 +49,11 @@ await Updates.reloadAsync();
 
 ## 同时覆盖更新 URL 和请求头
 
-> **warning** 本节描述的功能可在 Expo SDK 52 中使用，且需要 `expo-updates` 0.27.0 及更高版本。对于生产应用，不建议使用 `disableAntiBrickingMeasures` 选项，它当前主要面向预览环境。
+> **warning** 本节描述的功能可在 Expo SDK 52 中使用，且需要 `expo-updates` 0.27.0 及更高版本。在预览环境中使用 `disableAntiBrickingMeasures` 选项。避免在生产应用中使用。
 
-与 [覆盖请求头](#override-request-headers) 类似，如果你想进一步将更新 URL 覆盖为某个特定更新，可以使用 [`Updates.setUpdateURLAndRequestHeadersOverride`](/versions/latest/sdk/updates/#updatessetupdateurlandrequestheadersoverrideconfigoverride) 方法。这使你即使在当前构建创建之前发布的更新，也能按 ID 加载特定更新。
+与[覆盖请求头](#override-request-headers)类似，如果你想进一步将更新 URL 覆盖为某个特定更新，可以使用 [`Updates.setUpdateURLAndRequestHeadersOverride`](/versions/latest/sdk/updates/#updatessetupdateurlandrequestheadersoverrideconfigoverride) 方法。这使你即使在当前构建创建之前发布的更新，也能按 ID 加载特定更新。
 
-在决定在生产环境中使用此功能之前，务必要熟悉 [安全注意事项](#security-considerations)。未来我们可能会增加对该功能更受限版本的支持，以更适合此类用例。
+在决定在生产环境中使用此功能之前，务必要熟悉[安全注意事项](#security-considerations)。未来我们可能会增加对该功能更受限版本的支持，以更适合此类用例。
 
 ### 工作原理
 
@@ -65,11 +65,11 @@ await Updates.reloadAsync();
 如何使用这些 API：
 
 1. **覆盖更新 URL／请求头，并提示用户关闭应用**：在应用中的某个位置，你需要提供一种方式让用户触发对 URL 和／或请求头的更改。这可以是只有受信任用户才能访问的隐藏菜单，或其他机制，具体取决于你的用例。参数更改后，通过提示框等方式通知用户需要关闭并重新打开应用。`expo-updates` 库中的方法，例如 `checkForUpdateAsync()`，在应用关闭并重新打开之前，不会使用新的已覆盖 URL 和请求头。
-2. **新更新将在下次打开应用时下载并启动**：当应用完全关闭（“杀死”状态，而不仅仅是进入后台）并重新打开后，更新及其相关资源都会被下载。准备就绪后，应用将启动。在下载期间，用户需要等待启动画面。我们理解在启动画面等待并不理想，如果此功能被广泛使用，我们计划在未来改进这一体验。对于当前推荐的用例（预览），这可能是一个可接受的折中。
+2. **新更新将在下次打开应用时下载并启动**：当应用完全关闭（“杀死”状态，而不仅仅是进入后台）并重新打开后，更新及其相关资源都会被下载。准备就绪后，应用将启动。在下载期间，用户需要等待启动画面。我们理解在启动画面等待并不理想，如果此功能被广泛使用，我们计划在未来改进这一体验。对于当前推荐的用例（预览），这可能是一个可接受的折中方案。
 
 ### 安全注意事项
 
-可以通过 `disableAntiBrickingMeasures` 禁用的防变砖措施可确保无论发布了什么更新，你之后总能再发布另一个更新并让其生效。禁用防变砖措施后，某些类别的攻击和利用会变得可行，尤其是在内部（被入侵的员工）发布恶意更新方面。例如，拥有发布更新能力的员工可以发布一个恶意更新，将更新 URL 和请求头改为指向他们自己的服务器，从而接管该应用的安装。通过对生产更新使用 [代码签名](/eas-update/code-signing/) 并限制密钥访问，可以缓解但不能消除这一风险。
+可以通过 `disableAntiBrickingMeasures` 禁用的防变砖措施可确保无论发布了什么更新，你之后总能再发布另一个更新并让其生效。禁用防变砖措施后，某些类别的攻击和利用会变得可行，尤其是在内部（被入侵的员工）发布恶意更新方面。例如，拥有发布更新能力的员工可以发布一个恶意更新，将更新 URL 和请求头改为指向他们自己的服务器，从而接管该应用的安装。通过对生产更新使用[代码签名](/eas-update/code-signing/)并限制密钥访问，可以缓解但不能消除这一风险。
 
 <Collapsible summary="CodePush 的类似用法是否也有同样的风险？">
 
@@ -103,7 +103,7 @@ function overrideUpdateURLAndHeaders() {
       // 我们建议仅在预览构建中启用此项。
       // 你可以使用 app.config.js 动态配置它。
       "disableAntiBrickingMeasures": true
-      // 等等..
+      // etc.
     }
   }
 }

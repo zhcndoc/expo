@@ -1,17 +1,17 @@
 ---
 title: 迁移到新的 expo-media-library API
 sidebar_title: expo-media-library/legacy
-description: 从旧版 expo-media-library API 迁移到基于类的新的 expo-media-library API，包含 Asset、Album 和 Query。
+description: 从旧版 expo-media-library API 迁移到基于类的新 expo-media-library API，该 API 包含 Asset、Album 和 Query。
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { DocsLogo } from '@expo/styleguide';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Terminal } from '~/ui/components/Snippet';
 
-新的基于类的 `expo-media-library` API 现在已经稳定。旧版 API 可从 `expo-media-library/legacy` 获取。请迁移到根目录的 `expo-media-library` 导入，以便使用新 API 并获得未来修复。
+新的基于类的 `expo-media-library` API 现在已稳定。旧版 API 可从 `expo-media-library/legacy` 获取。请迁移到从根路径 `expo-media-library` 导入，以便使用新 API 并获得后续修复。
 
-新的 API 用 `Asset`、`Album` 和 `Query` 类取代了基于函数的 `MediaLibrary.getAssetsAsync({ ... })` 风格。相册和资产现在都表示为类实例，仅持有原生资产的 ID。资产属性变为异步 getter，而不是预先获取的字段。`Query` 用可链式调用的构建器模式替代了 `getAssetsAsync` 函数。
+新的 API 使用 `Asset`、`Album` 和 `Query` 类，取代了基于函数的 `MediaLibrary.getAssetsAsync({ ... })` 风格。相册和资产现在都表示为类实例，仅持有原生资产的 ID。资产属性现在通过异步 getter 获取，而不是预先获取的字段。`Query` 使用可链式调用的构建器模式，取代了 `getAssetsAsync` 函数。
 
 ## 安装
 
@@ -110,7 +110,7 @@ await Asset.delete([asset1, asset2]);
 
 > 如果可能，请将你的应用迁移为端到端使用新 API。下面这些辅助方法是为渐进式迁移准备的，即旧版 API 和新版 API 会同时使用。
 
-如果你内存中有一个旧版 `Asset` 对象，并且需要一个新版 `Asset` 实例，在 iOS 上使用 `asset.uri`（它已经是新 API 接受的 `ph://` URI），在 Android 上使用 `getAssetContentUriAsync` 将数值型 MediaStore ID 转换为 `content://` URI。
+如果内存中有一个旧版 `Asset` 对象，并且需要一个新版 `Asset` 实例，在 iOS 上使用 `asset.uri`（它已经是新 API 接受的 `ph://` URI），在 Android 上使用 `getAssetContentUriAsync` 将数值型 MediaStore ID 转换为 `content://` URI。
 
 ```ts
 import { Asset } from 'expo-media-library';
@@ -131,7 +131,7 @@ async function toNewAsset(legacyAsset: LegacyMediaLibrary.Asset): Promise<Asset>
 }
 ```
 
-如果你的应用存储了旧版 API 返回的资产 ID（例如在数据库中），在创建 `Asset` 实例之前先进行转换。在 iOS 上，将旧版 ID 前加上 `ph://`。在 Android 上，使用 `getAssetContentUriAsync` 将数值型 MediaStore ID 解析为 `content://` URI。
+如果你的应用存储了旧版 API 返回的资产 ID（例如在数据库中），请在创建 `Asset` 实例之前先进行转换。在 iOS 上，将旧版 ID 前加上 `ph://`。在 Android 上，使用 `getAssetContentUriAsync` 将数值型 MediaStore ID 解析为 `content://` URI。
 
 ```ts
 async function convertStoredId(legacyId: string): Promise<Asset> {
@@ -283,5 +283,5 @@ removeAllListeners();
   title="MediaLibrary"
   description="查看 expo-media-library 的完整 API 参考。"
   href="/versions/latest/sdk/media-library/"
-  Icon={BookOpen02Icon}
+  Icon={DocsLogo}
 />

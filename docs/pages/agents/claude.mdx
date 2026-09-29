@@ -4,14 +4,14 @@ sidebar_title: Claude Code
 description: 使用 Claude Code 构建、升级、调试和部署你的 Expo 和 React Native 项目。
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { Star06Icon } from '@expo/styleguide-icons/outline/Star06Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
 import { Step } from '~/ui/components/Step';
 import { Terminal } from '~/ui/components/Snippet';
 
-Claude Code 是 Anthropic 的基于终端的 AI 编程代理。它可以理解你的整个代码库，提出修改建议，运行终端命令，并管理 git 操作。使用 `create-expo-app` 创建的 Expo 项目会通过 **CLAUDE.md** 和 **.claude/settings.json** 为 Claude Code 搭建脚手架。它还可以检查 EAS 和 Expo CLI 日志，从 Expo Model Context Protocol (MCP) 服务器获取文档，使用 Expo Skills 了解最佳实践，管理你的 EAS 部署工作流，等等。
+Claude Code 是 Anthropic 基于终端的 AI 编码代理。它可以理解你的整个代码库、提出编辑建议、运行终端命令并管理 git 操作。使用 `create-expo-app` 创建的 Expo 项目包含 **AGENTS.md**，用于提供项目上下文。安装 Claude Code 后，这些项目还会包含 **.claude/settings.json**，以启用 Expo 插件。它还可以检查 EAS 和 Expo CLI 日志，从 Expo Model Context Protocol（MCP）Server 获取文档，使用 Expo Skills 获取最佳实践，管理 EAS 部署工作流等。
 
 ## 快速开始
 
@@ -33,10 +33,10 @@ Claude Code 是 Anthropic 的基于终端的 AI 编程代理。它可以理解�
 
 <Terminal
   cmd={{
-    npm: ['$ npx create-expo-app@latest --template default@sdk-57'],
-    yarn: ['$ yarn create expo-app --template default@sdk-57'],
-    pnpm: ['$ pnpm create expo-app --template default@sdk-57'],
-    bun: ['$ bun create expo --template default@sdk-57'],
+    npm: ['$ npx create-expo-app@latest'],
+    yarn: ['$ yarn create expo-app'],
+    pnpm: ['$ pnpm create expo-app'],
+    bun: ['$ bun create expo'],
   }}
 />
 
@@ -44,22 +44,28 @@ Claude Code 是 Anthropic 的基于终端的 AI 编程代理。它可以理解�
 
 <Step label="3">
 
-### 设置 Expo Skills 和 Expo MCP Server
+### 安装 Expo 插件
 
-安装 Expo Skills 并连接 Expo MCP Server，这样 Claude Code 就能了解 Expo 约定并访问你的 EAS。
+安装官方 Expo 插件，让 Claude Code 了解 Expo 约定，并能够使用你的 EAS 项目。一条命令即可安装 Expo Skills 并注册 Expo MCP Server：
+
+<Terminal cmd={['$ claude plugin install expo@claude-plugins-official']} />
+
+然后在 Claude Code 会话中运行 `/mcp`，登录你的 Expo 账号。
+
+以下指南介绍了可用的 skills，以及 MCP Server 可以执行的其他操作：
 
 <BoxLink
   title="Expo Skills"
-  description="安装这个插件，让 agent 学习已知良好的 Expo 模式，并浏览可用技能的完整列表。"
+  description="浏览插件提供的完整 skills 列表，并查看其他 agents 的安装选项。"
   href="/skills/#install-expo-skills"
-  Icon={BookOpen02Icon}
+  Icon={Star06Icon}
 />
 
 <BoxLink
   title="Expo MCP Server"
   description="连接远程 Expo MCP Server，让 agent 可以实时访问 Expo 文档和 EAS。"
   href="/mcp/#installation-and-setup"
-  Icon={BookOpen02Icon}
+  Icon={Star06Icon}
 />
 
 </Step>
@@ -92,10 +98,12 @@ Claude Code 是 Anthropic 的基于终端的 AI 编程代理。它可以理解�
 
 当你在项目中启动 Claude Code 时，它会读取两个脚手架生成的文件：
 
-- **CLAUDE.md** 包含一行：`@AGENTS.md`。这一行会将 **AGENTS.md** 导入到 Claude Code 的上下文中。**AGENTS.md** 会将 Claude Code 指向与你项目的 Expo SDK 版本对应的文档。请将项目级说明添加到 **AGENTS.md**，而不是 **CLAUDE.md**，这样它们就能保留在同一个地方。
+- **AGENTS.md** 会指引 Claude Code 查阅与你的项目 Expo SDK 版本对应的文档。将项目级指令添加到此文件中，以便你的 agents 读取相同的上下文。
 - **.claude/settings.json** 会从 Claude Code 插件市场启用官方 Expo 插件（[`expo@claude-plugins-official`](https://claude.com/plugins/expo)）。
 
 这两个文件都会提交到你的项目中，因此开发者的 Claude Code 会话会从相同的上下文开始。
+
+> **info** 直接读取 **AGENTS.md** 需要 Claude Code v2.1.277 或更高版本。有关加载规则和可用性，请参阅 [Claude Code 文档](https://code.claude.com/docs/en/memory#agentsmd)。
 
 ## 示例提示词
 

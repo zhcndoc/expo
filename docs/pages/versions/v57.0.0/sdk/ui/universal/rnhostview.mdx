@@ -8,8 +8,27 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
 
 在通用的 `@expo/ui` 布局中承载一个 React Native 视图子树。在 Android 和 iOS 上，它重新导出平台原生的 [适用于 Jetpack Compose 的 `RNHostView`](../jetpack-compose/rnhostview)/[适用于 SwiftUI 的 `RNHostView`](../swift-ui/rnhostview)，因此 React Native 子组件会桥接到外部的 Compose/SwiftUI 树中。在 web 上，没有可供桥接的原生宿主树，因此它会回退到一个 React Native [`View`](https://reactnative.dev/docs/view)，用来包裹这些子组件。
+
+> **注意：** 将单个 React Native 元素作为子元素传入。`RNHostView` 只测量和布局其第一个子元素，因此请将多个视图包裹在一个父级 `View` 中，并让该视图负责排列它们。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/rnhostview/android-light.webp',
+    darkSrc: '/static/images/expo-ui/rnhostview/android-dark.webp',
+    alt: '紫色 React Native 芯片上方的粗体标签',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/rnhostview/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/rnhostview/ios-dark.webp',
+    alt: '紫色 React Native 芯片上方的粗体标签',
+  }}
+/>
 
 ## 安装
 
@@ -21,15 +40,33 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 将一个 React Native 视图子树放置在任意通用的 `@expo/ui` 布局中。
 
-```tsx RNHostViewExample.tsx
+<ComponentExample
+  title="RNHostViewExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-rnhostview-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-rnhostview-basic-android-dark.webp',
+    alt: '紫色 React Native 芯片上方的粗体标签',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-rnhostview-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-rnhostview-basic-ios-dark.webp',
+    alt: '紫色 React Native 芯片上方的粗体标签',
+  }}>
+
+```tsx
 import { Host, Column, RNHostView, Text } from '@expo/ui';
-import { Text as RNText, View } from 'react-native';
+import { Text as RNText, View, useColorScheme } from 'react-native';
 
 export default function RNHostViewExample() {
+  const colorScheme = useColorScheme();
+
   return (
     <Host matchContents>
       <Column spacing={12} style={{ padding: 16 }}>
-        <Text textStyle={{ fontWeight: 'bold' }}>原生 UI 标签</Text>
+        <Text
+          textStyle={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000', fontWeight: 'bold' }}>
+          Native UI label
+        </Text>
         <RNHostView matchContents>
           <View
             style={{
@@ -47,20 +84,38 @@ export default function RNHostViewExample() {
 }
 ```
 
-### 填充父级 vs. 匹配子级
+</ComponentExample>
+
+### 填充父级与匹配子级
 
 默认情况下，`RNHostView` 会填充其原生父级。设置 `matchContents` 后，它会缩小以适配其 React Native 子组件。
 
-```tsx RNHostViewExample.tsx
-import { Host, Column, Row, Text, RNHostView } from '@expo/ui';
-import { View } from 'react-native';
+<ComponentExample
+  title="RNHostViewSizingExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-rnhostview-sizing-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-rnhostview-sizing-android-dark.webp',
+    alt: '两个部分进行对比：一个紫色正方形填充 100×100 的框架，另一个较小的正方形为 50×50',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-rnhostview-sizing-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-rnhostview-sizing-ios-dark.webp',
+    alt: '两个部分进行对比：一个紫色正方形填充 100×100 的框架，另一个较小的正方形为 50×50',
+  }}>
 
-export default function RNHostViewExample() {
+```tsx
+import { Host, Column, Row, Text, RNHostView } from '@expo/ui';
+import { View, useColorScheme } from 'react-native';
+
+export default function RNHostViewSizingExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
   return (
     <Host matchContents>
       <Column spacing={24} style={{ padding: 16 }}>
         <Column spacing={8}>
-          <Text textStyle={{ fontSize: 18, fontWeight: 'bold' }}>填充父级尺寸</Text>
+          <Text textStyle={{ ...ink, fontSize: 18, fontWeight: 'bold' }}>Fill parent size</Text>
           <Text textStyle={{ fontSize: 12, color: '#666666' }}>
             RNHostView 会填充原生父级的 100×100 框架。
           </Text>
@@ -72,7 +127,7 @@ export default function RNHostViewExample() {
         </Column>
 
         <Column spacing={8}>
-          <Text textStyle={{ fontSize: 18, fontWeight: 'bold' }}>匹配子级尺寸</Text>
+          <Text textStyle={{ ...ink, fontSize: 18, fontWeight: 'bold' }}>Match child size</Text>
           <Text textStyle={{ fontSize: 12, color: '#666666' }}>
             RNHostView 会缩小以包裹其 50×50 的子元素。
           </Text>
@@ -90,6 +145,8 @@ export default function RNHostViewExample() {
 }
 ```
 
+</ComponentExample>
+
 ## API
 
 ```tsx
@@ -97,3 +154,5 @@ import { RNHostView } from '@expo/ui';
 ```
 
 <APISection packageName="expo-ui/universal/rnhostview" apiName="RNHostView" />
+
+</PlatformTabsGroup>

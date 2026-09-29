@@ -1,7 +1,7 @@
 ---
-modificationDate: 2023年3月13日
-title: Expo 更新 v1
-description: 版本 1
+modificationDate: August 12, 2026
+title: Expo Updates v1
+description: Version 1
 searchRank: 1
 searchPosition: 999
 ---
@@ -14,7 +14,7 @@ searchPosition: 999
 
 符合规范的服务器和客户端库必须满足所有规范性要求。本文档通过描述性断言和具有明确定义含义的关键词来描述一致性要求。
 
-本文档规范性部分中的关键词 “MUST”、“MUST NOT”、“REQUIRED”、“SHALL”、“SHALL NOT”、“SHOULD”、“SHOULD NOT”、“RECOMMENDED”、“MAY” 和 “OPTIONAL” 应按照 [IETF RFC 2119](https://tools.ietf.org/html/rfc2119) 中的描述进行解释。这些关键词可以以小写形式出现，但除非明确声明为非规范性，否则仍保留其含义。
+本文档规范性部分中的关键词“MUST”、“MUST NOT”、“REQUIRED”、“SHALL”、“SHALL NOT”、“SHOULD”、“SHOULD NOT”、“RECOMMENDED”、“MAY”和“OPTIONAL”应按照 [IETF RFC 2119](https://tools.ietf.org/html/rfc2119) 中的描述进行解释。这些关键词可以以小写形式出现，但除非明确声明为非规范性，否则仍保留其含义。
 
 该协议的符合规范实现 MAY 提供额外功能，但在明确禁止的地方或会导致不符合规范的情况下 MUST NOT 提供额外功能。凡相关之处，符合规范的客户端应允许并忽略未知字段。
 
@@ -54,7 +54,7 @@ Expo Updates 是一种用于向客户端组装并交付更新和指令的协议�
 3. `expo-runtime-version` MUST 是与客户端兼容的运行时版本。运行时版本规定了客户端所运行的原生代码配置。它应在客户端构建时设置。例如，在 iOS 客户端中，该值可以设置在 plist 文件中。
 4. 任何前一个响应的[服务器定义的请求头](#response)所规定的请求头。
 
-符合规范的客户端库 MAY 基于[支持的响应结构](#response)发送 `accept: application/expo+json`、`accept: application/json` 或 `accept: multipart/mixed` 之一，尽管它 SHOULD 发送 `accept: application/expo+json, application/json, multipart/mixed`。符合规范的客户端库 MAY 按照 [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.1) 的规定使用 "q" 参数表达偏好，其默认值为 `1`。
+符合规范的客户端库 MAY 基于[支持的响应结构](#response)发送 `accept: application/expo+json`、`accept: application/json` 或 `accept: multipart/mixed` 之一，尽管它 SHOULD 发送 `accept: application/expo+json, application/json, multipart/mixed`。符合规范的客户端库 MAY 按照 [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.1) 的规定使用“q”参数表达偏好，其默认值为 `1`。
 
 配置为执行[代码签名](#code-signing)验证的符合规范的客户端库 MUST 发送 `expo-expect-signature` 请求头，以表明它期望符合规范的服务器在 manifest 响应中包含 `expo-signature` 请求头。`expo-expect-signature` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，其中 MAY 包含以下任意键值对：
 
@@ -76,11 +76,11 @@ expo-expect-signature: sig, keyid="root", alg="rsa-v1_5-sha256"
 
 符合规范的服务器 MUST 返回至少符合以下两种响应结构之一的响应，MAY 支持其中一种或两种响应结构；当请求了不受支持的响应结构时，服务器 SHOULD 返回 HTTP `406` 错误状态。如果服务器希望针对所请求的协议版本返回不兼容的响应，也 SHOULD 改为返回 HTTP `406` 错误状态。
 
-- 对于 `content-type: application/json` 或 `content-type: application/expo+json` 的响应，[common response headers](#common-response-headers) 和 [other response headers](#other-response-headers) MUST 在响应头中发送，而 [manifest body](#manifest-body) MUST 在响应体中发送。此响应格式不支持多个响应部分，因此不支持 _directives_；当要提供的最新响应不是 _update_ 时，SHOULD 返回 HTTP `406` 错误状态。
-- 对于 `content-type: multipart/mixed` 的响应，响应 MUST 按照 [multipart response](#multipart-response) 部分中的规定进行结构化。
-- 没有任何部分的 [multipart response](#multipart-response) MAY 返回 HTTP `204` 状态且无内容，因此也没有 `content-type` 响应头。
+- 对于 `content-type: application/json` 或 `content-type: application/expo+json` 的响应，[通用响应头](#common-response-headers)和[其他响应头](#other-response-headers) MUST 在响应头中发送，而 [manifest body](#manifest-body) MUST 在响应体中发送。此响应格式不支持多个响应部分，因此不支持 _directives_；当要提供的最新响应不是 _update_ 时，SHOULD 返回 HTTP `406` 错误状态。
+- 对于 `content-type: multipart/mixed` 的响应，响应 MUST 按照[多部分响应](#multipart-response)部分中的规定进行结构化。
+- 没有任何部分的[多部分响应](#multipart-response) MAY 返回 HTTP `204` 状态且无内容，因此也没有 `content-type` 响应头。
 
-update 和 headers 的选择取决于请求头的值。符合规范的服务器 MUST 返回按创建时间排序、满足 [request headers](#request) 所施加的所有参数和约束的最新 update。服务器 MAY 使用请求的任何属性，如其 headers 和源 IP 地址，在多个都满足请求约束的更新之间进行选择。
+update 和 headers 的选择取决于请求头的值。符合规范的服务器 MUST 返回按创建时间排序、满足[请求头](#request)所施加的所有参数和约束的最新 update。服务器 MAY 使用请求的任何属性，如其 headers 和源 IP 地址，在多个都满足请求约束的更新之间进行选择。
 
 ### 通用响应头
 
@@ -98,7 +98,7 @@ content-type: *
 - `expo-manifest-filters` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典。它用于根据 [manifest](#manifest-body) 中 `metadata` 属性的值，过滤客户端库存储的更新。如果筛选器中提到了某个字段，则相应 metadata 字段必须缺失或相等，更新才会被包含。客户端库 MUST 存储 manifest filters，直到它被更新的响应覆盖。
 - `expo-server-defined-headers` 是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典。它定义了客户端库 MUST 存储的请求头，直到被更新的字典覆盖，并且它们 MUST 包含在之后每次 [update request](#request) 中。
 - `cache-control` MUST 设置为一个足够短的时间段。建议使用 `cache-control: private, max-age=0`，以确保返回最新 manifest。设置更长的缓存时间可能导致返回过期更新。
-- `content-type` MUST 通过 [RFC 7231](https://tools.ietf.org/html/rfc7231#section-3.4.1) 中定义的 _proactive negotiation_ 决定。由于客户端库 [要求](#request) 在每次 manifest 请求中发送 `accept` 请求头，因此这里总是会是 `application/expo+json`、`application/json`；否则请求将返回 `406` 错误。
+- `content-type` MUST 通过 [RFC 7231](https://tools.ietf.org/html/rfc7231#section-3.4.1) 中定义的 _proactive negotiation_ 决定。由于客户端库[要求](#request)在每次 manifest 请求中发送 `accept` 请求头，因此这里总是会是 `application/expo+json`、`application/json`；否则请求将返回 `406` 错误。
 
 ### 其他响应头
 
@@ -106,7 +106,7 @@ content-type: *
 expo-signature: *
 ```
 
-- `expo-signature` SHOULD 包含 manifest 的签名，以便在 [code signing](#code-signing) 的验证步骤中使用，前提是对 manifest 的请求包含了 `expo-expect-signature` 请求头。这是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，其中 MAY 包含以下任意键值对：
+- `expo-signature` SHOULD 包含 manifest 的签名，以便在[代码签名](#code-signing)的验证步骤中使用，前提是对 manifest 的请求包含了 `expo-expect-signature` 请求头。这是一个 [Expo SFV](/technical-specs/expo-sfv-0/) 字典，其中 MAY 包含以下任意键值对：
   - `sig` MUST 包含 manifest 的签名。此字段的名称与 `expo-expect-signature` 一致。
   - `keyid` MAY 包含服务器用于对响应签名的密钥的 keyId。客户端 SHOULD 使用与此 `keyid` 匹配的证书来验证签名。
   - `alg` MAY 包含服务器用于对响应签名的算法。客户端 SHOULD 仅在其与 `keyid` 所匹配证书定义的算法一致时使用此字段。
@@ -115,7 +115,7 @@ expo-signature: *
 
 这种格式的更新响应由 [RFC 2046](https://tools.ietf.org/html/rfc2046#section-5.1) 中定义的 `multipart/mixed` MIME 类型定义。
 
-此响应格式的头部是 [common response headers](#common-response-headers)，但有以下例外：
+此响应格式的头部是[通用响应头](#common-response-headers)，但有以下例外：
 
 - `content-type` SHOULD 具有 [RFC 2046](https://tools.ietf.org/html/rfc2046#section-5.1) 中定义的 `multipart/mixed` 值
 
@@ -126,7 +126,7 @@ expo-signature: *
 1. 可选的 `"manifest"` 部分：
    - MUST 具有分部头 `content-disposition: form-data; name="manifest"`。第一个参数（`form-data`）不一定需要是 `form-data`，但 `name` 参数必须取值为 `manifest`。
    - MUST 具有分部头 `content-type: application/json` 或 `application/expo+json`。
-   - 如果正在使用 code signing，则 SHOULD 具有 [other response headers](#other-response-headers) 中定义的分部头 `expo-signature`。
+   - 如果正在使用代码签名，则 SHOULD 具有[其他响应头](#other-response-headers)中定义的分部头 `expo-signature`。
    - [manifest body](#manifest-body) MUST 作为分部内容发送。
 2. 可选的 `"extensions"` 部分：
    - MUST 具有分部头 `content-disposition: form-data; name="extensions"`。第一个参数（`form-data`）不一定需要是 `form-data`，但 `name` 参数必须取值为 `extensions`。
@@ -135,7 +135,7 @@ expo-signature: *
 3. 可选的 `"directive"` 部分：
    - MUST 具有分部头 `content-disposition: form-data; name="directive"`。第一个参数（`form-data`）不一定需要是 `form-data`，但 `name` 参数必须取值为 `directive`。
    - MUST 具有分部头 `content-type: application/json` 或 `application/expo+json`。
-   - 如果正在使用 code signing，则 SHOULD 具有 [other response headers](#other-response-headers) 中定义的分部头 `expo-signature`。
+   - 如果正在使用代码签名，则 SHOULD 具有[其他响应头](#other-response-headers)中定义的分部头 `expo-signature`。
    - [directive body](#directive-body) MUST 作为分部内容发送。
 
 ### Manifest body
@@ -175,7 +175,7 @@ type Asset = {
     符合规范的客户端 SHOULD 在文件扩展名非空但缺少 `.` 前缀时，为其添加 `.` 前缀。
   - `url`：文件可获取的位置。
 - `metadata`：与更新相关联的元数据。它是一个以字符串为值的字典。服务器 MAY 返回它希望用于过滤更新的任何内容。metadata MUST 满足随附的 `expo-manifest-filters` 请求头定义的过滤条件。
-- `extra`：用于存储可选的 “extra” 信息，例如第三方配置。例如，如果更新托管在 Expo Application Services (EAS) 上，则可以包含 EAS 项目 ID：
+- `extra`：用于存储可选的“extra”信息，例如第三方配置。例如，如果更新托管在 Expo Application Services (EAS) 上，则可以包含 EAS 项目 ID：
 
   ```json
   "extra": {
@@ -218,7 +218,7 @@ type Directive = {
 
 - `type`：指令的类型。
 - `parameters`：MAY 包含任何与 `type` 相关的附加信息。
-- `extra`：用于存储可选的 “extra” 信息，例如第三方信息。例如，如果更新托管在 Expo Application Services (EAS) 上，则可以包含 EAS 项目 ID。
+- `extra`：用于存储可选的“extra”信息，例如第三方信息。例如，如果更新托管在 Expo Application Services (EAS) 上，则可以包含 EAS 项目 ID。
 
 符合规范的客户端库和服务器 MAY 指定并实现适用于应用需求的特定指令类型。例如，到目前为止，Expo Application Services 使用了一种类型：`rollBackToEmbedded`，它指示 expo-updates 库使用宿主应用中嵌入的更新，而不是任何其他已下载的更新。
 

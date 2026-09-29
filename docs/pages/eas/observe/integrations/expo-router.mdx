@@ -5,6 +5,7 @@ description: 通过启用 EAS Observe 的 Expo Router 集成来跟踪每个路�
 ---
 
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
 EAS Observe 为 [Expo Router](/router/introduction/) 提供了一个可选集成，用于收集按路由标记的每路由指标（例如 `/(tabs)/sessions/[sessionId]`）。这样你就可以在仪表盘中按路由比较导航性能，而不只是查看应用整体汇总。
@@ -133,7 +134,25 @@ Observe.configure({
 | `routeParams` | `object`  | 解析后的路由参数。                                                           |
 | `...`         | `any`     | 通过 `markInteractive({ params: { ... } })` 传递的任何自定义参数。           |
 
-## 说明与故障排查
+## 查看导航指标
+
+在仪表盘中打开你的项目，前往 [**Observe**](https://expo.dev/accounts/[account]/projects/[project]/observe)，然后选择 **Navigation** 页面。该页面会显示按路由划分的导航耗时，包括冷启动和热启动首屏渲染时间以及可交互时间。
+
+在 CLI 中，你可以运行以下命令：
+
+<Terminal
+  cmd={[
+    '# Navigation metrics grouped by route name',
+    '$ eas observe:routes',
+    '',
+    '# Filter to specific metrics or routes',
+    '$ eas observe:routes --metric cold_ttr --route-name "/(tabs)/sessions/[sessionId]"',
+  ]}
+/>
+
+运行 `eas observe:routes --help` 查看完整的标志列表（时间范围、平台、应用版本等）。有关其他 `eas observe` 命令，请参阅 [使用 EAS CLI 查询](/eas/observe/eas-cli/)。
+
+## 注意事项和故障排查
 
 - `routeName` 是一个模式（`/(tabs)/sessions/[sessionId]`），而不是解析后的 URL（`/sessions/abc`）。这样可以让不同参数值下的指标保持稳定，仪表盘也能将它们归为同一组。解析后的值仍可在事件的 `url` 和 `routeParams` 中获取。
 - 调用 `router.prefetch()` 不算作用户导航，也不会触发 `cold_ttr` 或 `warm_ttr` 的测量。随后用户对该路由发起的下一次导航会发出 `warm_ttr`，因为该屏幕已经渲染过了。

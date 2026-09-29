@@ -1,0 +1,171 @@
+---
+title: Snackbar
+description: 显示在屏幕底部的简短通知，用于提供反馈而不会打断用户
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI 提供了两个组件，对应 Jetpack Compose 的 [Snackbar](https://developer.android.com/develop/ui/compose/components/snackbar) API：
+
+- [`SnackbarHost`](#snackbarhost) 包装了 Compose 的 [SnackbarHost](https://developer.android.com/reference/kotlin/androidx/compose/material3/SnackbarHost.composable) 和 [SnackbarHostState](https://developer.android.com/reference/kotlin/androidx/compose/material3/SnackbarHostState)。在布局中放置一次，然后调用 `ref` 上的 `showSnackbar`。Snackbar 会根据 `duration` 自动关闭，也可以通过操作按钮或可选的关闭图标将其关闭。
+- [`Snackbar`](#snackbar) 是 [`SnackbarHost`](#snackbarhost) 的纯样式子组件。传入该组件可覆盖颜色，或将操作按钮放到新的一行。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/snackbar/android-light.webp"
+  darkSrc="/static/images/expo-ui/snackbar/android-dark.webp"
+  alt="Material 3 snackbar，显示消息“Item archived”和“Undo”操作"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 显示 snackbar
+
+在布局中放置一次 [`SnackbarHost`](#snackbarhost)，并调用其 ref 上的 `showSnackbar` 来显示消息。Snackbar 消失后，返回的 promise 会解析为 `'actionPerformed'` 或 `'dismissed'`。
+
+<ComponentExample
+  title="SnackbarExample.tsx"
+  src="/static/images/expo-ui/examples/snackbar-basic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/snackbar-basic-android-dark.webp"
+  alt="屏幕底部的 Material 3 snackbar，显示“Item archived”和“Undo”操作">
+
+```tsx
+import { useRef } from 'react';
+import {
+  Box,
+  Button,
+  Column,
+  Host,
+  SnackbarHost,
+  Text,
+  type SnackbarHostRef,
+} from '@expo/ui/jetpack-compose';
+import {
+  align,
+  fillMaxSize,
+  fillMaxWidth,
+  padding,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function SnackbarExample() {
+  const hostRef = useRef<SnackbarHostRef>(null);
+
+  const onArchive = async () => {
+    const result = await hostRef.current?.showSnackbar({
+      message: 'Item archived',
+      actionLabel: 'Undo',
+      duration: 'short',
+    });
+    if (result === 'actionPerformed') {
+      // The user tapped Undo, restore the item.
+    }
+  };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Box modifiers={[fillMaxSize()]}>
+        <Column modifiers={[padding(16, 16, 16, 16)]}>
+          <Button onClick={onArchive}>
+            <Text>Archive</Text>
+          </Button>
+        </Column>
+
+        <Box modifiers={[align('bottomCenter'), fillMaxWidth()]}>
+          <SnackbarHost ref={hostRef} />
+        </Box>
+      </Box>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义样式
+
+向 [`SnackbarHost`](#snackbarhost) 传入一个 [`Snackbar`](#snackbar) 子组件，即可覆盖颜色或将操作按钮放到新的一行。[`Snackbar`](#snackbar) 本身不接受内容，消息和操作按钮由每次 `showSnackbar` 调用提供。
+
+<ComponentExample
+  title="StyledSnackbar.tsx"
+  src="/static/images/expo-ui/examples/snackbar-styled-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/snackbar-styled-android-dark.webp"
+  alt="深海军蓝容器的 snackbar，浅薰衣草色消息“Saved”、一个“Undo”操作和一个关闭图标">
+
+```tsx
+import { useRef } from 'react';
+import {
+  Box,
+  Button,
+  Column,
+  Host,
+  Snackbar,
+  SnackbarHost,
+  Text,
+  type SnackbarHostRef,
+} from '@expo/ui/jetpack-compose';
+import {
+  align,
+  fillMaxSize,
+  fillMaxWidth,
+  padding,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function StyledSnackbar() {
+  const hostRef = useRef<SnackbarHostRef>(null);
+
+  const onSave = () => {
+    hostRef.current?.showSnackbar({
+      message: 'Saved',
+      actionLabel: 'Undo',
+      withDismissAction: true,
+    });
+  };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Box modifiers={[fillMaxSize()]}>
+        <Column modifiers={[padding(16, 16, 16, 16)]}>
+          <Button onClick={onSave}>
+            <Text>Save</Text>
+          </Button>
+        </Column>
+
+        <Box modifiers={[align('bottomCenter'), fillMaxWidth()]}>
+          <SnackbarHost ref={hostRef}>
+            <Snackbar
+              containerColor="#1E1E2E"
+              contentColor="#CDD6F4"
+              actionContentColor="#F38BA8"
+              dismissActionContentColor="#CDD6F4"
+            />
+          </SnackbarHost>
+        </Box>
+      </Box>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Snackbar, SnackbarHost } from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/snackbar"
+  apiName="Snackbar"
+/>

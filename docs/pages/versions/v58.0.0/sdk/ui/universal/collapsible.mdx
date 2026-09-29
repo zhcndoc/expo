@@ -1,0 +1,144 @@
+---
+title: Collapsible
+description: 可点击的带标签标题，用于切换其内容的可见性
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+`Collapsible` 是一种基本组件，点击带标签的标题即可显示或隐藏其内容。通过 [`isOpen`](#isopen) 和 [`onOpenChange`](#onopenchange) 控制 — 每个 `Collapsible` 都管理独立的状态。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/collapsible/android-light.webp',
+    darkSrc: '/static/images/expo-ui/collapsible/android-dark.webp',
+    alt: '展开的 About 区域，其中包含一个箭头和描述文本',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/collapsible/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/collapsible/ios-dark.webp',
+    alt: '展开的 About 区域，其中包含一个箭头和描述文本',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本的可折叠区域
+
+<ComponentExample
+  title="CollapsibleExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-collapsible-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-collapsible-basic-android-dark.webp',
+    alt: '折叠的 About 行，带有一个箭头',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-collapsible-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-collapsible-basic-ios-dark.webp',
+    alt: '折叠的 About 行，带有一个箭头',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { useColorScheme } from 'react-native';
+import { Host, Column, Collapsible, Text } from '@expo/ui';
+
+export default function CollapsibleExample() {
+  const [open, setOpen] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <Column spacing={8} style={{ padding: 16 }}>
+        <Collapsible isOpen={open} onOpenChange={setOpen} label="About">
+          <Text textStyle={ink}>
+            A primitive that toggles visibility of its content via a labelled tappable header.
+          </Text>
+        </Collapsible>
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 手风琴（一次展开一个区域）
+
+将每个 `Collapsible` 的 `isOpen` 连接到共享的父级值。该组件不会强制互斥 — 如何组合由使用者决定。
+
+<ComponentExample
+  title="CollapsibleAccordionExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-collapsible-accordion-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-collapsible-accordion-android-dark.webp',
+    alt: '三个区域，第一个区域已展开并显示其内容',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-collapsible-accordion-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-collapsible-accordion-ios-dark.webp',
+    alt: '三个区域，第一个区域已展开并显示其内容',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { useColorScheme } from 'react-native';
+import { Host, Column, Collapsible, Text } from '@expo/ui';
+
+type Section = 'a' | 'b' | 'c' | null;
+
+export default function CollapsibleAccordionExample() {
+  const [openSection, setOpenSection] = useState<Section>('a');
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <Column spacing={8} style={{ padding: 16 }}>
+        <Collapsible
+          isOpen={openSection === 'a'}
+          onOpenChange={open => setOpenSection(open ? 'a' : null)}
+          label="Section A">
+          <Text textStyle={ink}>Opening B or C closes this one.</Text>
+        </Collapsible>
+        <Collapsible
+          isOpen={openSection === 'b'}
+          onOpenChange={open => setOpenSection(open ? 'b' : null)}
+          label="Section B">
+          <Text textStyle={ink}>Opening A or C closes this one.</Text>
+        </Collapsible>
+        <Collapsible
+          isOpen={openSection === 'c'}
+          onOpenChange={open => setOpenSection(open ? 'c' : null)}
+          label="Section C">
+          <Text textStyle={ink}>Opening A or B closes this one.</Text>
+        </Collapsible>
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Collapsible } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/collapsible" apiName="Collapsible" />
+
+</PlatformTabsGroup>

@@ -8,11 +8,11 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal, DiffBlock } from '~/ui/components/Snippet';
 
-`expo-updates` 是一个库，可让你的应用管理应用代码的远程更新。它会与已配置的远程更新服务通信，以获取可用更新的信息。本指南说明如何为现有的 React Native 项目配置，以便与 [EAS Update](/eas-update/introduction) 一起使用。EAS Update 是一项托管的远程更新服务，包含用于简化 `expo-updates` 库安装和配置的工具。
+`expo-updates` 是一个库，可让你的应用管理应用代码的远程更新。它会与已配置的远程更新服务通信，以获取可用更新的信息。本指南说明如何为现有的 React Native 项目进行配置，以便与 [EAS Update](/eas-update/introduction) 一起使用。EAS Update 是一项托管的远程更新服务，包含用于简化 `expo-updates` 库安装和配置的工具。
 
 <Collapsible summary="你在项目中使用 Continuous Native Generation（CNG）吗？">
 
-你可能正在查看错误的指南。要在使用 [CNG](/workflow/continuous-native-generation/) 的项目中使用 `expo-updates`，请参阅 [EAS Update “开始使用”](/eas-update/getting-started/)。
+你可能正在查看错误的指南。要在使用 [CNG](/workflow/continuous-native-generation/) 的项目中使用 `expo-updates`，请参阅 [EAS Update“开始使用”](/eas-update/getting-started/)。
 
 </Collapsible>
 
@@ -135,9 +135,39 @@ index 0000000..1111111 100644
 </plist>
 ```
 
+## 在构建时配置更新通道
+
+构建中的 `channel` 属性允许你将更新指向特定类型的构建。例如，它允许你向预览版构建发布更新，而不影响生产环境部署。
+
+此属性最终也会设置在上文修改的 **AndroidManifest.xml** 和 **Expo.plist** 文件中。通常会在构建前设置，以便在生产构建和非生产构建之间切换。如果你使用 EAS Build 构建项目，`channel` 会在 **eas.json** 构建配置文件中设置。然后，EAS Build 会在原生构建步骤开始前将其应用到这些文件中。
+
+如果你在本地或使用其他服务构建，则需要自行在这些文件中设置通道：
+
+### Android
+
+在 **android/app/src/main/AndroidManifest.xml** 中，在 `<application>` 元素内添加请求标头 `meta-data` 条目：
+
+```xml android/app/src/main/AndroidManifest.xml
+<meta-data android:name="expo.modules.updates.UPDATES_CONFIGURATION_REQUEST_HEADERS_KEY" android:value="{&quot;expo-channel-name&quot;:&quot;your-channel-name&quot;}"/>
+```
+
+### iOS
+
+在 **Expo.plist** 中，在现有的 `<dict>` 元素内添加 `EXUpdatesRequestHeaders` 字典：
+
+```xml ios/project-name/Supporting/Expo.plist
+<key>EXUpdatesRequestHeaders</key>
+<dict>
+  <key>expo-channel-name</key>
+  <string>your-channel-name</string>
+</dict>
+```
+
+> **info** 如果你之后采用 CNG，也可以改为在 **app.json** 中通过 [`updates.requestHeaders`](/versions/latest/config/app/#requestheaders) 配置通道。随后，在你的流水线中运行 `npx expo prebuild`，即可将通道写入这些文件。请参阅[在 app.json 中配置更新通道](/eas-update/getting-started/#configure-update-channels-in-appjson)。
+
 ## 后续步骤
 
-- 要开始将 EAS Update 与 EAS Build 一起使用，请参阅 EAS Update 的 [开始使用](/eas-update/getting-started/)。
+- 要开始将 EAS Update 与 EAS Build 一起使用，请参阅 EAS Update 的[开始使用](/eas-update/getting-started/)。
 - 有关如何使用该库的更多信息，请参阅 [`expo-updates` API 参考](/versions/latest/sdk/updates/)。
-- 了解如何直接在本地构建中使用 [EAS Update with a local build directly](/eas-update/standalone-service/)。
-- 你也可以将 `expo-updates` 与实现了 [Expo Updates protocol](/technical-specs/expo-updates-1/) 的自定义服务器一起使用。请参阅 [`custom-expo-updates-server` README](https://github.com/expo/custom-expo-updates-server#readme)。
+- 了解如何直接在本地构建中使用 [EAS Update 与本地构建](/eas-update/standalone-service/)。
+- 你也可以将 `expo-updates` 与实现了 [Expo Updates 协议](/technical-specs/expo-updates-1/) 的自定义服务器一起使用。请参阅 [`custom-expo-updates-server` README](https://github.com/expo/custom-expo-updates-server#readme)。

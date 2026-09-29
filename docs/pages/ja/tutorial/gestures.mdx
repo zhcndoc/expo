@@ -28,12 +28,12 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 ## 添加 GestureHandlerRootView
 
-为了让应用中的手势交互生效，请在 `Index` 组件的最顶层渲染 `react-native-gesture-handler` 的 `<GestureHandlerRootView>`。将 **app/(tabs)/index.tsx** 中根级别的 `<View>` 组件替换为 `<GestureHandlerRootView>`。
+为了让手势操作在应用中生效，请在 `Index` 组件的最顶层渲染 `react-native-gesture-handler` 的 `<GestureHandlerRootView>`。将 **src/app/(tabs)/index.tsx** 中根级别的 `<View>` 组件替换为 `<GestureHandlerRootView>`。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
-// ... 其余导入语句保持不变
-/* @tutinfo 从 `react-native-gesture-handler-library` 导入 `GestureHandlerRootView`。 */import { GestureHandlerRootView } from 'react-native-gesture-handler';/* @end */
+```tsx src/app/(tabs)/index.tsx
+// ... rest of the import statements remain same
+/* @tutinfo `react-native-gesture-handler-library` から `GestureHandlerRootView` をインポートします。 */import { GestureHandlerRootView } from 'react-native-gesture-handler';/* @end */
 
 export default function Index() {
   return (
@@ -56,11 +56,11 @@ export default function Index() {
 
 `Animated` 组件会根据组件的 `style` 属性来判断需要动画化的值，并应用更新来创建动画。Reanimated 导出了诸如 `<Animated.View>`、`<Animated.Text>`、`<Animated.ScrollView>` 等支持动画的组件。这里我们将把动画应用到 `<Animated.Image>` 组件上，以实现双击手势。
 
-1. 打开 **components** 目录中的 **EmojiSticker.tsx** 文件。为了使用支持动画的组件，请从 `react-native-reanimated` 库导入 `Animated`。
+1. 打开 **src/components** 目录中的 **emoji-sticker.tsx** 文件。为了使用支持动画的组件，从 `react-native-reanimated` 库导入 `Animated`。
 2. 将 `Image` 组件替换为 `<Animated.Image>`。
 
 {/* prettier-ignore */}
-```tsx components/EmojiSticker.tsx
+```tsx src/components/emoji-sticker.tsx
 import { ImageSourcePropType, View } from 'react-native';
 /* @tutinfo 从 `react-native-reanimated` 导入 `Animated`。 */import Animated from 'react-native-reanimated';/* @end */
 
@@ -94,17 +94,17 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 
 使用 React Native Gesture Handler，可以在检测到双击等触摸输入时添加相应行为。
 
-在 **EmojiSticker.tsx** 文件中：
+在 **src/components/emoji-sticker.tsx** 文件中：
 
 1. 从 `react-native-gesture-handler` 导入 `Gesture` 和 `GestureDetector`。
 2. 为了使贴纸点击生效，从 `react-native-reanimated` 导入 `useAnimatedStyle`、`useSharedValue`、`withSpring`，并为 `<Animated.Image>` 的样式添加动画。
 3. 在 `EmojiSticker` 组件中，使用 `useSharedValue()` 钩子创建一个名为 `scaleImage` 的引用。初始值使用 `imageSize`。
 
 {/* prettier-ignore */}
-```tsx components/EmojiSticker.tsx
-// ...其余导入语句保持不变
-/* @tutinfo 从 `react-native-gesture-handler` 导入 `Gesture` 和 `GestureDetector`。 */import { Gesture, GestureDetector } from 'react-native-gesture-handler';/* @end */
-/* @tutinfo 从 `react-native-reanimated` 导入 `useAnimatedStyle`、`useSharedValue`、`withSpring`。 */import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';/* @end */
+```tsx src/components/emoji-sticker.tsx
+// ...rest of the import statements remain same
+/* @tutinfo `react-native-gesture-handler` から `Gesture` と `GestureDetector` をインポートします。 */import { Gesture, GestureDetector } from 'react-native-gesture-handler';/* @end */
+/* @tutinfo `react-native-reanimated` から `useAnimatedStyle`、`useSharedValue`、`withSpring` をインポートします。 */import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';/* @end */
 
 export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   /* @tutinfo 创建名为 `scaleImage` 的 shared value，并将初始值设置为 `imageSize`。 */const scaleImage = useSharedValue(imageSize);/* @end */
@@ -119,7 +119,7 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 
 在 `EmojiSticker` 组件内创建如下对象：
 
-```tsx components/EmojiSticker.tsx
+```tsx src/components/emoji-sticker.tsx
 const doubleTap = Gesture.Tap()
   .numberOfTaps(2)
   .onStart(() => {
@@ -137,7 +137,7 @@ const doubleTap = Gesture.Tap()
 
 创建 `imageStyle` 变量，并将其添加到 `EmojiSticker` 组件中。
 
-```tsx components/EmojiSticker.tsx
+```tsx src/components/emoji-sticker.tsx
 const imageStyle = useAnimatedStyle(() => {
   return {
     width: withSpring(scaleImage.value),
@@ -152,7 +152,7 @@ const imageStyle = useAnimatedStyle(() => {
 2. 将 `containerStyle` 添加到 `<Animated.View>` 组件中，以应用变换样式。
 
 {/* prettier-ignore */}
-```tsx components/EmojiSticker.tsx
+```tsx src/components/emoji-sticker.tsx
 import { ImageSourcePropType, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -212,13 +212,13 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 
 ## 添加平移手势
 
-为了识别贴纸上的拖拽手势并跟踪其移动，我们使用平移手势。在 **components/EmojiSticker.tsx** 中：
+为了识别贴纸上的拖动手势并跟踪其移动，我们使用平移手势。在 **src/components/emoji-sticker.tsx** 中：
 
 1. 新建两个共享值 `translateX` 和 `translateY`。
 2. 将 `<View>` 替换为 `<Animated.View>` 组件。
 
 {/* prettier-ignore */}
-```tsx components/EmojiSticker.tsx
+```tsx src/components/emoji-sticker.tsx
 export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   const scaleImage = useSharedValue(imageSize);
   /* @tutinfo 添加 `translateX` 和 `translateY` 共享值。*/
@@ -247,7 +247,7 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 1. 创建处理平移手势的 `drag` 对象。`onChange()` 回调会接收 `event` 作为参数。`changeX` 和 `changeY` 属性保存自上次事件以来的位置变化量，并用于更新存储在 `translateX` 和 `translateY` 中的值。
 2. 使用 `useAnimatedStyle()` 钩子定义 `containerStyle` 对象。它会返回一个变换数组。在 `<Animated.View>` 组件中，需要将 `transform` 属性设置为 `translateX` 和 `translateY` 的值。这样在手势激活时贴纸的位置就会改变。
 
-```tsx components/EmojiSticker.tsx
+```tsx src/components/emoji-sticker.tsx
 const drag = Gesture.Pan().onChange(event => {
   translateX.value += event.changeX;
   translateY.value += event.changeY;
@@ -273,7 +273,7 @@ const containerStyle = useAnimatedStyle(() => {
 2. 为 `<Animated.View>` 组件添加 `containerStyle`，以应用变换样式。
 
 {/* prettier-ignore */}
-```tsx components/EmojiSticker.tsx
+```tsx src/components/emoji-sticker.tsx
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { ImageSourcePropType } from 'react-native';

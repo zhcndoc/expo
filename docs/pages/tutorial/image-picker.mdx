@@ -52,12 +52,12 @@ React Native 提供了内置组件，作为标准构建块，例如 `<View>`、`
 
 `expo-image-picker` 提供 `launchImageLibraryAsync()` 方法，通过从设备的媒体库中选择图片或视频来显示系统 UI。我们将使用上一章创建的主主题按钮，从设备的媒体库中选择图片，并创建一个函数来打开设备的图片库以实现此功能。
 
-在 **app/(tabs)/index.tsx** 中，导入 `expo-image-picker` 库，并在 `Index` 组件内部创建一个 `pickImageAsync()` 函数：
+在 **src/app/(tabs)/index.tsx** 中，导入 `expo-image-picker` 库，并在 `Index` 组件中创建 `pickImageAsync()` 函数：
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx|collapseHeight=440
-// ...其余导入语句保持不变
-/* @tutinfo 导入 `ImagePicker`。 */ import * as ImagePicker from 'expo-image-picker';/* @end */
+```tsx src/app/(tabs)/index.tsx|collapseHeight=440
+// ...rest of the import statements remain unchanged
+/* @tutinfo Import `ImagePicker`. */ import * as ImagePicker from 'expo-image-picker';/* @end */
 
 export default function Index() {
   /* @tutinfo 将图片选择器选项传递给 `launchImageLibraryAsync()` */
@@ -95,10 +95,10 @@ export default function Index() {
 
 ## 更新按钮组件
 
-按下主按钮时，我们会在 `Button` 组件上调用 `pickImageAsync()` 函数。更新 **components/Button.tsx** 中 `Button` 组件的 `onPress` 属性：
+按下主按钮时，我们会在 `Button` 组件上调用 `pickImageAsync()` 函数。更新 **src/components/button.tsx** 中 `Button` 组件的 `onPress` 属性：
 
 {/* prettier-ignore */}
-```tsx components/Button.tsx
+```tsx src/components/button.tsx
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -162,15 +162,15 @@ const styles = StyleSheet.create({
 });
 ```
 
-在 **app/(tabs)/index.tsx** 中，将 `pickImageAsync()` 函数添加到第一个 `<Button>` 的 `onPress` 属性中。
+在 **src/app/(tabs)/index.tsx** 中，将 `pickImageAsync()` 函数添加到第一个 `<Button>` 的 `onPress` 属性中。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
+```tsx src/app/(tabs)/index.tsx
 import { View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-import Button from '@/components/Button';
-import ImageViewer from '@/components/ImageViewer';
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
@@ -303,22 +303,22 @@ const styles = StyleSheet.create({
 
 `result` 对象提供了 `assets` 数组，其中包含所选图片的 `uri`。让我们从图片选择器中取出这个值，并将其用于在应用中显示所选图片。
 
-修改 **app/(tabs)/index.tsx** 文件：
+修改 **src/app/(tabs)/index.tsx** 文件：
 
 1. 使用 React 的 [`useState`](https://react.dev/learn/state-a-components-memory#adding-a-state-variable) 钩子声明一个名为 `selectedImage` 的状态变量。我们将使用这个状态变量来保存所选图片的 URI。
 2. 更新 `pickImageAsync()` 函数，将图片 URI 保存到 `selectedImage` 状态变量中。
 3. 将 `selectedImage` 作为 prop 传递给 `ImageViewer` 组件。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
+```tsx src/app/(tabs)/index.tsx
 import { View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 /* @tutinfo 从 `react` 中导入 `useState` 钩子。*/
 import { useState } from 'react';
 /* @end */
 
-import Button from '@/components/Button';
-import ImageViewer from '@/components/ImageViewer';
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
@@ -376,12 +376,12 @@ const styles = StyleSheet.create({
 
 将 `selectedImage` prop 传递给 `ImageViewer` 组件，以显示所选图片而不是占位图片。
 
-1. 修改 **components/ImageViewer.tsx** 文件，以接收 `selectedImage` prop。
-2. 图片的源代码现在变得很长，所以我们也把它移动到一个单独的变量 `imageSource` 中。
-3. 将 `imageSource` 作为 `Image` 组件上 `source` prop 的值传入。
+1. 修改 **src/components/image-viewer.tsx** 文件以接收 `selectedImage` prop。
+2. 图片源代码变得很长，因此我们也将它移至一个名为 `imageSource` 的单独变量中。
+3. 将 `imageSource` 作为 `Image` 组件的 `source` prop 值传入。
 
 {/* prettier-ignore */}
-```tsx components/ImageViewer.tsx
+```tsx src/components/image-viewer.tsx
 import { ImageSourcePropType, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 

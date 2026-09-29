@@ -1,0 +1,292 @@
+---
+title: BottomSheet
+description: 从屏幕底部向上滑出的模态表单
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+从屏幕底部向上滑出的模态表单。表单的可见性由 [`isPresented`](#ispresented) 控制——从 React state 切换该属性，并在 [`onDismiss`](#ondismiss) 中将其关闭（用户向下滑动或点击遮罩层时调用）。
+
+> **info** 在 iOS 上，要在另一个底部表单上方显示底部表单，请将第二个 `BottomSheet` 嵌套在第一个表单的内容中，而不是与其并列。这是底层 SwiftUI [`sheet`](<https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)>) 修饰符的限制。更多信息请参阅[如何显示多个表单](https://www.hackingwithswift.com/quick-start/swiftui/how-to-present-multiple-sheets)。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/bottomsheet/android-light.webp',
+    darkSrc: '/static/images/expo-ui/bottomsheet/android-dark.webp',
+    alt: '带有标题、描述和操作按钮的模态底部表单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/bottomsheet/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/bottomsheet/ios-dark.webp',
+    alt: '处于中等停靠位置的 BottomSheet，显示按排序列表，其中最新项已选中',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本底部表单
+
+<ComponentExample
+  title="BottomSheetExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-basic-android-dark.webp',
+    alt: '一个打开的表单，标题为表单内容，带有关闭按钮，位于变暗的屏幕上方',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-basic-ios-dark.webp',
+    alt: '一个打开的表单，标题为表单内容，带有关闭按钮，位于变暗的屏幕上方',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { useColorScheme } from 'react-native';
+import { Host, Column, Button, BottomSheet, Text } from '@expo/ui';
+
+export default function BottomSheetExample() {
+  const [isPresented, setIsPresented] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <>
+      <Host matchContents>
+        <Button label="Open sheet" onPress={() => setIsPresented(true)} />
+      </Host>
+      <BottomSheet isPresented={isPresented} onDismiss={() => setIsPresented(false)}>
+        <Column spacing={12}>
+          <Text textStyle={{ ...ink, fontSize: 18, fontWeight: '700' }}>Sheet contents</Text>
+          <Text textStyle={ink}>Drag down or tap the overlay to dismiss.</Text>
+          <Button label="Close" onPress={() => setIsPresented(false)} />
+        </Column>
+      </BottomSheet>
+    </>
+  );
+}
+```
+
+</ComponentExample>
+
+### 隐藏拖动指示器
+
+对于没有拖动手柄的表单，传入 [`showDragIndicator={false}`](#showdragindicator)。
+
+<ComponentExample
+  title="BottomSheetNoIndicatorExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-no-indicator-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-no-indicator-android-dark.webp',
+    alt: '位于变暗屏幕底部的短表单，没有拖动手柄',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-no-indicator-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-no-indicator-ios-dark.webp',
+    alt: '位于变暗屏幕底部的短表单，没有拖动手柄',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { useColorScheme } from 'react-native';
+import { Host, Button, BottomSheet, Text } from '@expo/ui';
+
+export default function BottomSheetNoIndicatorExample() {
+  const [isPresented, setIsPresented] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <>
+      <Host matchContents>
+        <Button label="Open" onPress={() => setIsPresented(true)} />
+      </Host>
+      <BottomSheet
+        isPresented={isPresented}
+        onDismiss={() => setIsPresented(false)}
+        showDragIndicator={false}>
+        <Text textStyle={ink}>No drag handle.</Text>
+      </BottomSheet>
+    </>
+  );
+}
+```
+
+</ComponentExample>
+
+### 内容内边距
+
+表单默认会为其内容添加内边距。传入 [`contentPadding`](#contentpadding) 可更改该内边距——`0` 可让行、图像或分隔线延伸到表单边缘。
+
+<ComponentExample
+  title="BottomSheetContentPaddingExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-content-padding-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-content-padding-android-dark.webp',
+    alt: '蓝色横幅延伸到表单边缘且没有内容内边距的底部表单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-content-padding-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-content-padding-ios-dark.webp',
+    alt: '蓝色横幅延伸到表单边缘且没有内容内边距的底部表单',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { Host, BottomSheet, Button, Column, Text } from '@expo/ui';
+
+export default function BottomSheetContentPaddingExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <>
+      <Host matchContents>
+        <Button label="Open" onPress={() => setIsPresented(true)} />
+      </Host>
+      <BottomSheet
+        isPresented={isPresented}
+        onDismiss={() => setIsPresented(false)}
+        contentPadding={0}>
+        <Column>
+          <Column style={{ backgroundColor: '#0a84ff', padding: 16 }}>
+            <Text textStyle={{ color: '#FFFFFF' }}>This banner reaches the sheet's edge.</Text>
+          </Column>
+          <Button label="Close" onPress={() => setIsPresented(false)} />
+        </Column>
+      </BottomSheet>
+    </>
+  );
+}
+```
+
+</ComponentExample>
+
+### 吸附点
+
+传入 [`snapPoints`](#snappoints)，允许用户在多个停靠高度之间拖动表单。你可以使用语义值 `'half'` 和 `'full'` 来实现跨平台一致性。`{ fraction }` 和 `{ height }` 形式在 iOS 和 web 上会被精确采用。
+
+当表单内容可能高于最小吸附点时，请将其包裹在 `ScrollView` 中，以便正确滚动溢出内容。
+
+<ComponentExample
+  title="BottomSheetSnapPointsExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-snap-points-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-snap-points-android-dark.webp',
+    alt: '一个半高度的表单，标题为半屏／全屏表单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-snap-points-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-snap-points-ios-dark.webp',
+    alt: '一个半高度的表单，标题为半屏／全屏表单',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { useColorScheme } from 'react-native';
+import { Host, BottomSheet, Button, Column, ScrollView, Text } from '@expo/ui';
+
+export default function BottomSheetSnapPointsExample() {
+  const [isPresented, setIsPresented] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <>
+      <Host matchContents>
+        <Button label="Open" onPress={() => setIsPresented(true)} />
+      </Host>
+      <BottomSheet
+        isPresented={isPresented}
+        onDismiss={() => setIsPresented(false)}
+        snapPoints={['half', 'full']}>
+        <ScrollView>
+          <Column spacing={12}>
+            <Text textStyle={{ ...ink, fontSize: 20, fontWeight: '700' }}>Half / full sheet</Text>
+            <Text textStyle={ink}>Drag the sheet between half and full screen height.</Text>
+          </Column>
+        </ScrollView>
+      </BottomSheet>
+    </>
+  );
+}
+```
+
+</ComponentExample>
+
+> 在 Android 上，`{ fraction }` 和 `{ height }` 会吸附到 `'half'`／`'full'` 中距离最近的一个——底层 `ModalBottomSheet` 仅支持两种停靠状态。只有当内容高度足够大、超过 Material 的部分显示阈值时，部分状态才可见；如果需要在短内容上显示半屏状态，请为内容指定明确高度，或填充可用空间。
+
+### 可滚动的 React Native 内容
+
+底部表单支持将 React Native 列表（例如 `FlatList`，或 [FlashList](https://shopify.github.io/flash-list/)、[Legend List](https://github.com/LegendApp/legend-list) 等高性能列表）作为子元素，但需要将其包裹在 [`RNHostView`](rnhostview) 中。 [`snapPoints`](#snappoints) 设置表单大小，列表会在该高度范围内滚动。启用 `nestedScrollEnabled` 后，列表会先滚动自身内容；到达顶部边缘后，剩余的拖动操作会移动表单。
+
+<ComponentExample
+  title="BottomSheetScrollableExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-scrollable-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-scrollable-android-dark.webp',
+    alt: '一个容纳可滚动物品列表的半高度表单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-bottomsheet-scrollable-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-bottomsheet-scrollable-ios-dark.webp',
+    alt: '一个容纳可滚动物品列表的半高度表单',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { FlatList, Text, useColorScheme } from 'react-native';
+import { Host, BottomSheet, Button, RNHostView } from '@expo/ui';
+
+const DATA = Array.from({ length: 50 }, (_, i) => `Item ${i + 1}`);
+
+export default function BottomSheetScrollableExample() {
+  const [isPresented, setIsPresented] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <>
+      <Host matchContents>
+        <Button label="Open" onPress={() => setIsPresented(true)} />
+      </Host>
+      <BottomSheet
+        isPresented={isPresented}
+        onDismiss={() => setIsPresented(false)}
+        snapPoints={['half', 'full']}>
+        <RNHostView>
+          <FlatList
+            nestedScrollEnabled
+            style={{ flex: 1 }}
+            data={DATA}
+            keyExtractor={item => item}
+            renderItem={({ item }) => <Text style={[ink, { padding: 16 }]}>{item}</Text>}
+          />
+        </RNHostView>
+      </BottomSheet>
+    </>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { BottomSheet } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/bottomsheet" apiName="BottomSheet" />
+
+</PlatformTabsGroup>

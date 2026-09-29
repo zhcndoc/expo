@@ -210,6 +210,12 @@ const RENAMED_PAGES: Record<string, string> = {
   '/versions/v55.0.0/sdk/ui/jetpack-compose/textinput/':
     '/versions/v55.0.0/sdk/ui/jetpack-compose/textfield/',
 
+  // Expo UI guides merged into the versioned reference
+  '/guides/expo-ui-swift-ui/': '/versions/latest/sdk/ui/swift-ui/',
+  '/guides/expo-ui-swift-ui/extending/': '/versions/latest/sdk/ui/swift-ui/extending/',
+  '/guides/expo-ui-jetpack-compose/extending/':
+    '/versions/latest/sdk/ui/jetpack-compose/extending/',
+
   // Old redirects
   '/versions/latest/sdk/': '/versions/latest/',
   '/versions/latest/sdk/overview/': '/versions/latest/',
@@ -544,9 +550,6 @@ const RENAMED_PAGES: Record<string, string> = {
   '/versions/latest/sdk/register-root-component/':
     '/versions/latest/sdk/expo/#registerrootcomponentcomponent',
 
-  // Temporary redirects
-  '/router/advanced/singular/': '/preview/singular/',
-
   // After adding System bars
   '/guides/configuring-statusbar/': '/develop/user-interface/system-bars/',
 
@@ -651,4 +654,7 @@ const RENAMED_PAGES: Record<string, string> = {
   '/module-config/': '/modules/module-config/',
   '/troubleshooting/clear-cache-mac/': '/troubleshooting/clear-cache-macos-linux/',
   '/router/advance/router-setttings/': '/router/advanced/router-settings/',
+
+  // After removing the Vexo guide
+  '/guides/using-vexo/': '/guides/using-analytics/',
 };

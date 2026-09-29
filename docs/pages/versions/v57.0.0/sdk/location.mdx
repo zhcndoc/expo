@@ -74,6 +74,13 @@ import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
       default: '"允许 $(PRODUCT_NAME) 使用你的位置"',
     },
     {
+      name: 'motionUsagePermission',
+      platform: 'ios',
+      description:
+        '用于设置首次调用 `getMotionActivityAsync` 或 `watchMotionActivityAsync` 时显示的 `NSMotionUsageDescription` 权限提示信息的字符串。',
+      default: '"允许 $(PRODUCT_NAME) 检测你当前的运动状态"',
+    },
+    {
       name: 'isIosBackgroundLocationEnabled',
       platform: 'ios',
       description: '用于在 **Info.plist** 中的 `UIBackgroundModes` 里启用 `location` 的布尔值。',
@@ -175,21 +182,21 @@ import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
 - 在 Android 上，你必须同时请求前台和后台权限。
 - 在 iOS 上，必须通过 [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync) 使用 `Always` 选项授予权限。
 
-<Collapsible summary="Expo 与 iOS 权限">
-iOS 权限分为 `When In Use` 和 `Always` 两类，并映射到 Expo 的前台和后台位置权限，请求方式如下：
+<Collapsible summary="Expo 和 iOS 权限">
+iOS 权限分为 `When In Use` 和 `Always` 两类，分别对应 Expo 的前台和后台位置权限，可通过以下方法请求：
 
 - [`requestForegroundPermissionsAsync`](#locationrequestforegroundpermissionsasync) 映射到 `When In Use`
 - [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync) 映射到 `Always`
 
 > **注意：** 在请求 `When In Use` 授权时，用户可以在系统权限对话框中选择 `Allow Once` 来授予**临时访问权限**。该授权将**仅在当前应用会话中有效**，并会在应用关闭时自动撤销。
 
-**检测 “允许一次” 与 “使用 App 期间允许” 的区别**
+**检测“允许一次”与“使用 App 期间允许”的区别**
 
 遗憾的是，**iOS 无法提供一种方式来判断用户选择的是 `Allow Once` 还是 `Allow While Using the App`**。这两种响应都会导致 `When In Use` 授权。
 
 如果用户选择了 `Allow Once`，并且你在同一会话中随后调用了 [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync)，系统**不会再显示另一个提示**。相反，这个请求会**静默失败**，返回的后台权限状态将是**被拒绝**。
 
-**处理 “允许一次” 的场景**
+**处理“允许一次”的场景**
 
 如果你怀疑用户选择了 `Allow Once`，而你需要请求后台权限，那么他们必须在设置应用中**手动启用后台定位**。你可以使用 `Linking` 在应用内打开设置应用：
 
@@ -310,12 +317,12 @@ const styles = StyleSheet.create({
 
 ### iOS 模拟器
 
-打开 Simulator 后，前往 **功能** > **位置**，并选择除 **无** 之外的任意选项。
+打开 Device Hub 后，前往 **Device** > **Location**，并选择除 **None** 以外的任一选项。
 
 <ContentSpotlight
-  alt="iOS 模拟器中的位置设置"
-  src="/static/images/sdk/location/ios-simulator-location.webp"
-  className="max-w-[480px]"
+  alt="Device Hub 中的 Device 菜单，已打开 Location 子菜单。"
+  src="/static/images/sdk/location/device-hub-location.webp"
+  className="max-w-[640px]"
 />
 
 ## API
@@ -330,7 +337,7 @@ import * as Location from 'expo-location';
 
 ### Android
 
-> **警告** Foreground 和 background services 在 Android 的 Expo Go 中不可用。我们建议改用[开发构建](/develop/development-builds/introduction/)以避免限制。
+> **警告** 前台和后台服务在 Android 的 Expo Go 中不可用。我们建议改用[开发构建](/develop/development-builds/introduction/)以避免限制。
 
 当你安装 `expo-location` 模块时，它会自动添加以下权限：
 
@@ -358,7 +365,7 @@ import * as Location from 'expo-location';
 
 当你的 Expo 项目不需要包含某些特定权限时，你可以省略它。例如，如果你的应用不需要访问精确位置，你可以排除 `ACCESS_FINE_LOCATION` 权限。
 
-另一个例子可以用[可用的位置精度](#accuracy)来说明。Android 将大致位置精度定义为约 3 平方公里以内，将精确位置精度定义为约 50 米以内。例如，如果位置精度值为 [低](#low)，你可以排除 `ACCESS_FINE_LOCATION` 权限。要了解有关位置精度等级的更多信息，请参阅 [Android 文档](https://developer.android.com/training/location/permissions#accuracy)。
+另一个例子可以用[可用的位置精度](#accuracy)来说明。Android 将大致位置精度定义为约 3 平方公里以内，将精确位置精度定义为约 50 米以内。例如，如果位置精度值为[低](#low)，你可以排除 `ACCESS_FINE_LOCATION` 权限。要了解有关位置精度等级的更多信息，请参阅 [Android 文档](https://developer.android.com/training/location/permissions#accuracy)。
 
 要详细了解如何排除权限，请参阅[排除 Android 权限](/guides/permissions/#android)。
 

@@ -33,19 +33,32 @@ import {
 function ModifiersExample() {
   return (
     <Host style={{ flex: 1 }}>
-      {/* 基本样式修饰符 */}
-      <Button modifiers={[paddingAll(16), fillMaxWidth(), background('#FF6B6B')]}>
-        全宽带内边距按钮
+      {/* Basic styling modifiers */}
+      <Button
+        modifiers={[
+          paddingAll(16),
+          fillMaxWidth(),
+          background('#FF6B6B'),
+        ]}>
+        Full-width padded button
       </Button>
 
-      {/* 带边框和阴影的复杂组合 */}
-      <Button modifiers={[paddingAll(12), background('#4ECDC4'), border(2, '#2C3E50'), shadow(4)]}>
-        使用边框和阴影进行样式设置
+      {/* Complex combination with border and shadow */}
+      <Button
+        modifiers={[
+          paddingAll(12),
+          background('#4ECDC4'),
+          border(2, '#2C3E50'),
+          shadow(4),
+        ]}>
+        Styled with border and shadow
       </Button>
     </Host>
   );
 }
 ```
+
+> **info** 你也可以创建适用于任何 Expo UI 组件的自定义修饰符。详情请参阅[自定义 Jetpack Compose 组件](extending)指南。
 
 ## 内边距
 
@@ -204,7 +217,9 @@ import { offset } from '@expo/ui/jetpack-compose/modifiers';
 ```tsx
 import { background } from '@expo/ui/jetpack-compose/modifiers';
 
-<Button modifiers={[background('#3498DB')]}>蓝色背景</Button>;
+<Button modifiers={[background('#3498DB')]}>
+  蓝色背景
+</Button>;
 ```
 
 ### `border(borderWidth, borderColor)`
@@ -251,13 +266,21 @@ import { shadow } from '@expo/ui/jetpack-compose/modifiers';
 | `config.alpha`   | `number` | 阴影不透明度（0.0–1.0）。                               |
 
 ```tsx
-import { dropShadow, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+import {
+  dropShadow,
+  Shapes,
+} from '@expo/ui/jetpack-compose/modifiers';
 
 <Button
   modifiers={[
-    dropShadow(Shapes.RoundedCorner(24), { radius: 16, spread: 4, color: '#6200EE', offsetY: 8 }),
+    dropShadow(Shapes.RoundedCorner(24), {
+      radius: 16,
+      spread: 4,
+      color: '#6200EE',
+      offsetY: 8,
+    }),
   ]}>
-  Drop shadow
+  投影
 </Button>;
 ```
 
@@ -276,14 +299,22 @@ import { dropShadow, Shapes } from '@expo/ui/jetpack-compose/modifiers';
 | `config.alpha`   | `number` | 阴影不透明度（0.0–1.0）。                               |
 
 ```tsx
-import { innerShadow, background, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+import {
+  innerShadow,
+  background,
+  Shapes,
+} from '@expo/ui/jetpack-compose/modifiers';
 
 <Button
   modifiers={[
     background('#FFFFFF'),
-    innerShadow(Shapes.RoundedCorner(24), { radius: 16, spread: 2, offsetY: 6 }),
+    innerShadow(Shapes.RoundedCorner(24), {
+      radius: 16,
+      spread: 2,
+      offsetY: 6,
+    }),
   ]}>
-  Inner shadow
+  内阴影
 </Button>;
 ```
 
@@ -315,7 +346,28 @@ import { blur } from '@expo/ui/jetpack-compose/modifiers';
 <Button modifiers={[blur(4)]}>模糊按钮</Button>;
 ```
 
-## 阴影配方
+### `cornerRadius(radius)`
+
+为组件添加圆角。
+
+> **info** 仅适用于使用 `expo-widgets` 构建的 Android 小组件，且要求 Android 12（API 级别 31）或更高版本。
+
+Jetpack Compose 没有与 Glance 的 `cornerRadius` 完全等效的功能，因此 Expo UI 会忽略此修饰符。若要在应用中添加圆角，请使用 [`clip(Shapes.RoundedCorner(radius))`](#clipshape)。
+
+| 参数 | 类型     | 描述          |
+| --------- | -------- | -------------------- |
+| `radius`  | `number` | 圆角半径，单位为 dp。 |
+
+```tsx
+import {
+  background,
+  cornerRadius,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+<Box modifiers={[cornerRadius(12), background('#3498DB')]} />;
+```
+
+## 阴影样式
 
 常见的阴影样式通常是 `dropShadow` 和 `innerShadow` 修饰符的组合，而不是单独的 API。由于 `modifiers` prop 接受一个数组，因此你可以叠加并微调阴影修饰符来构建每种样式。
 
@@ -324,7 +376,12 @@ import { blur } from '@expo/ui/jetpack-compose/modifiers';
 新野兽派阴影是一种边缘硬朗、无模糊且边框较粗的投影。将 `radius` 和 `spread` 设为 `0`，然后再调整阴影偏移。
 
 ```tsx
-import { dropShadow, border, background, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+import {
+  dropShadow,
+  border,
+  background,
+  Shapes,
+} from '@expo/ui/jetpack-compose/modifiers';
 
 <Box
   modifiers={[
@@ -346,14 +403,28 @@ import { dropShadow, border, background, Shapes } from '@expo/ui/jetpack-compose
 新拟态阴影是在与背景同色的表面上叠加两层投影：一层朝向光源的浅色阴影，以及另一侧较深的阴影。请在 `background` 之前应用这两层阴影。
 
 ```tsx
-import { dropShadow, background, Shapes } from '@expo/ui/jetpack-compose/modifiers';
+import {
+  dropShadow,
+  background,
+  Shapes,
+} from '@expo/ui/jetpack-compose/modifiers';
 
 const shape = Shapes.RoundedCorner(24);
 
 <Box
   modifiers={[
-    dropShadow(shape, { radius: 15, offsetX: -10, offsetY: -10, color: '#FFFFFF' }),
-    dropShadow(shape, { radius: 15, offsetX: 10, offsetY: 10, color: '#B1B1B1' }),
+    dropShadow(shape, {
+      radius: 15,
+      offsetX: -10,
+      offsetY: -10,
+      color: '#FFFFFF',
+    }),
+    dropShadow(shape, {
+      radius: 15,
+      offsetX: 10,
+      offsetY: 10,
+      color: '#B1B1B1',
+    }),
     background('#E0E0E0'),
   ]}
 />;
@@ -466,7 +537,9 @@ import { matchParentSize } from '@expo/ui/jetpack-compose/modifiers';
 ```tsx
 import { clickable } from '@expo/ui/jetpack-compose/modifiers';
 
-<Button modifiers={[clickable(() => console.log('Clicked!'))]}>可点击</Button>;
+<Button modifiers={[clickable(() => console.log('Clicked!'))]}>
+  可点击
+</Button>;
 ```
 
 ### `combinedClickable(handlers, options?)`
@@ -480,6 +553,7 @@ import { clickable } from '@expo/ui/jetpack-compose/modifiers';
 | `options.indication`   | `boolean`    | 是否显示波纹效果。默认值为 `true`。 |
 
 ```tsx
+import { Text } from '@expo/ui/jetpack-compose';
 import { combinedClickable } from '@expo/ui/jetpack-compose/modifiers';
 
 <Text
@@ -505,8 +579,11 @@ import { combinedClickable } from '@expo/ui/jetpack-compose/modifiers';
 ```tsx
 import { selectable } from '@expo/ui/jetpack-compose/modifiers';
 
-<Button modifiers={[selectable(isSelected, () => setIsSelected(!isSelected))]}>
-  可选择选项
+<Button
+  modifiers={[
+    selectable(isSelected, () => setIsSelected(!isSelected)),
+  ]}>
+  可选项
 </Button>;
 ```
 
@@ -552,7 +629,7 @@ import { Shapes } from '@expo/ui/jetpack-compose/modifiers';
 </Button>
 
 // 切角
-<Button modifiers={[clip(Shapes.CutCorner(8))]}>切角</Button>
+<Button modifiers={[clip(Shapes.CutCorner(8))}>切角</Button>
 ```
 
 ## 工具
@@ -568,7 +645,25 @@ import { Shapes } from '@expo/ui/jetpack-compose/modifiers';
 ```tsx
 import { testID } from '@expo/ui/jetpack-compose/modifiers';
 
-<Button modifiers={[testID('submit-button')]}>Submit</Button>;
+<Button modifiers={[testID('submit-button')]}>提交</Button>;
+```
+
+### `semantics(params)`
+
+设置无障碍和自动填充服务读取的语义属性。
+
+| 参数                   | 类型     | 描述                                                                                 |
+| --------------------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `params.contentDescription` | `string` | TalkBack 为该元素播报的内容，用于替代不适合朗读的内容。 |
+| `params.contentType`        | `string` | 自动填充提示，例如 `'email'` 或 `'password'`。                                        |
+
+```tsx
+import { semantics } from '@expo/ui/jetpack-compose/modifiers';
+
+// 可见标签是缩写；TalkBack 会读出完整短语。
+<Text modifiers={[semantics({ contentDescription: '1 week' })]}>
+  1W
+</Text>;
 ```
 
 ## API

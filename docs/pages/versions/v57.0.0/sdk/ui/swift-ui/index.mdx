@@ -12,7 +12,7 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 import { APIInstallSection } from '~/components/plugins/InstallSection';
 import { BoxLink } from '~/ui/components/BoxLink';
-import { CODE } from '~/ui/components/Text';
+import { ComponentExample } from '~/ui/components/ComponentExample';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 import SwiftUICards from '~/scenes/versions/v57.0.0/ui/swift-ui.mdx';
 
@@ -24,7 +24,7 @@ import SwiftUICards from '~/scenes/versions/v57.0.0/ui/swift-ui.mdx';
 
 ## 用法
 
-使用 `@expo/ui/swift-ui` 中的组件需要将其包装在 [`Host`](./host) 组件中。`Host` 是 SwiftUI 视图的容器。
+Expo UI 提供了多个 SwiftUI 组件。你可以通过从 `@expo/ui/swift-ui` 导入这些组件，在应用中使用它们。不过，要从 React Native（UIKit）跨越到 SwiftUI，你需要使用 [`Host`](host) 组件。[`Host`](host) 是 SwiftUI 视图的容器。你可以把它想象成 DOM 中的 [`<svg>`](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/svg)，或 [`react-native-skia`](https://shopify.github.io/react-native-skia/) 中的 [`<Canvas>`](https://shopify.github.io/react-native-skia/docs/canvas/overview/)。在底层，它使用 [`UIHostingController`](https://developer.apple.com/documentation/swiftui/uihostingcontroller) 在 UIKit 中渲染 SwiftUI 视图。
 
 ```tsx
 import { Host, Button } from '@expo/ui/swift-ui';
@@ -38,23 +38,10 @@ export function SaveButton() {
 }
 ```
 
-更多信息请参见以下资源：
-
-<BoxLink
-  title="Expo UI Swift UI 指南"
-  description={
-    <>
-      了解 <CODE>@expo/ui/swift-ui</CODE> 的基础知识
-    </>
-  }
-  href="/guides/expo-ui-swift-ui/"
-  Icon={BookOpen02Icon}
-/>
-
 <BoxLink
   title="使用 SwiftUI 扩展"
-  description="创建可与 Expo UI 集成的自定义 SwiftUI 组件和修饰器。"
-  href="/guides/expo-ui-swift-ui/extending/"
+  description="创建可与 Expo UI 集成的自定义 SwiftUI 组件和修饰符。"
+  href="swift-ui/extending"
   Icon={BookOpen02Icon}
 />
 
@@ -67,3 +54,431 @@ export function SaveButton() {
 ## 可用组件
 
 <SwiftUICards />
+
+## 示例
+
+### 修饰符
+
+[SwiftUI 修饰符](<https://developer.apple.com/documentation/swiftui/view/modifier(_:)>) 可自定义 SwiftUI 组件的外观和行为。Expo UI 也为 SwiftUI 组件提供了修饰符。你可以从 `@expo/ui/swift-ui/modifiers` 导入修饰符，并将它们作为数组传入 `modifiers` 属性。下面的示例将 [`expo-mesh-gradient`](../../mesh-gradient) 与 `glassEffect` 修饰符结合，创建 Liquid Glass 文本。
+
+> **提示** `glassEffect` 修饰符需要 Xcode 26+ 和 iOS 26+。
+
+<ComponentExample
+  title="GlassEffectExample.tsx"
+  src="/static/images/expo-ui/examples/swift-ui-index-glass-effect-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/swift-ui-index-glass-effect-ios-dark.webp"
+  alt="彩虹网格渐变上方半透明胶囊中的大型 Glass 效果文本">
+
+```tsx
+import { Host, Text } from '@expo/ui/swift-ui';
+import {
+  font,
+  glassEffect,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+import { MeshGradientView } from 'expo-mesh-gradient';
+import { View } from 'react-native';
+
+export default function GlassEffectExample() {
+  return (
+    <View style={{ flex: 1 }}>
+      <MeshGradientView
+        style={{ flex: 1 }}
+        columns={3}
+        rows={3}
+        colors={[
+          'red',
+          'purple',
+          'indigo',
+          'orange',
+          'white',
+          'blue',
+          'yellow',
+          'green',
+          'cyan',
+        ]}
+        points={[
+          [0.0, 0.0],
+          [0.5, 0.0],
+          [1.0, 0.0],
+          [0.0, 0.5],
+          [0.5, 0.5],
+          [1.0, 0.5],
+          [0.0, 1.0],
+          [0.5, 1.0],
+          [1.0, 1.0],
+        ]}
+      />
+      <Host
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          left: 0,
+          bottom: 0,
+        }}>
+        <Text
+          modifiers={[
+            font({ size: 32 }),
+            padding({
+              all: 16,
+            }),
+            glassEffect({
+              glass: {
+                variant: 'clear',
+              },
+            }),
+          ]}>
+          Glass effect text
+        </Text>
+      </Host>
+    </View>
+  );
+}
+```
+
+</ComponentExample>
+
+### iOS 设置应用
+
+结合使用 Expo UI 组件和修饰符，你可以构建类似 iOS 设置应用的界面。
+
+<ComponentExample
+  title="SettingsFormExample.tsx"
+  src="/static/images/expo-ui/examples/swift-ui-index-settings-form-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/swift-ui-index-settings-form-ios-dark.webp"
+  alt="飞行模式一行带有绿色开关，其下方是带有展开箭头的 Wi-Fi 一行">
+
+```tsx
+import {
+  Button,
+  Form,
+  Host,
+  HStack,
+  Image,
+  Section,
+  Spacer,
+  Toggle,
+  Text,
+} from '@expo/ui/swift-ui';
+import {
+  background,
+  buttonStyle,
+  foregroundStyle,
+  clipShape,
+  frame,
+} from '@expo/ui/swift-ui/modifiers';
+import { Link } from 'expo-router';
+import { useState } from 'react';
+
+export default function SettingsFormExample() {
+  const [isAirplaneMode, setIsAirplaneMode] = useState(true);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section>
+          <HStack spacing={8}>
+            <Image
+              systemName="airplane"
+              color="white"
+              size={18}
+              modifiers={[
+                frame({ width: 28, height: 28 }),
+                background('#ffa500'),
+                clipShape('roundedRectangle'),
+              ]}
+            />
+            <Text>Airplane Mode</Text>
+            <Spacer />
+            <Toggle
+              isOn={isAirplaneMode}
+              onIsOnChange={setIsAirplaneMode}
+            />
+          </HStack>
+
+          <Link href="/wifi" asChild>
+            {/* Use buttonStyle('plain') to prevent default blue button styling */}
+            <Button modifiers={[buttonStyle('plain')]}>
+              <HStack spacing={8}>
+                <Image
+                  systemName="wifi"
+                  color="white"
+                  size={18}
+                  modifiers={[
+                    frame({ width: 28, height: 28 }),
+                    background('#007aff'),
+                    clipShape('roundedRectangle'),
+                  ]}
+                />
+                {/* Text inside a Link needs an explicit color. A hierarchical style adapts to light and dark mode. */}
+                <Text
+                  modifiers={[
+                    foregroundStyle({
+                      type: 'color',
+                      color: 'primary',
+                    }),
+                  ]}>
+                  Wi-Fi
+                </Text>
+                <Spacer />
+                <Image
+                  systemName="chevron.right"
+                  size={14}
+                  color="secondary"
+                />
+              </HStack>
+            </Button>
+          </Link>
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 次要文本样式
+
+使用 `foregroundStyle` 应用[层级样式](modifiers/#foregroundstylestyle)，让文本显示得更浅、更柔和。
+
+<ComponentExample
+  title="SecondaryTextExample.tsx"
+  src="/static/images/expo-ui/examples/swift-ui-index-secondary-text-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/swift-ui-index-secondary-text-ios-dark.webp"
+  alt="夜间模式一行显示较浅的次要文本作为时间安排，下方是次要页脚段落">
+
+```tsx
+import {
+  Button,
+  Form,
+  Host,
+  HStack,
+  Image,
+  List,
+  Section,
+  Spacer,
+  Text,
+} from '@expo/ui/swift-ui';
+import {
+  buttonStyle,
+  font,
+  foregroundStyle,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function SecondaryTextExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section>
+          <List>
+            <Button
+              onPress={() => console.log('Navigate')}
+              modifiers={[buttonStyle('plain')]}>
+              <HStack>
+                <Text>Night Shift</Text>
+                <Spacer />
+                <Text
+                  modifiers={[
+                    foregroundStyle({
+                      type: 'hierarchical',
+                      style: 'secondary',
+                    }),
+                    padding({ trailing: 8 }),
+                  ]}>
+                  22:00 to 07:00
+                </Text>
+                <Image
+                  systemName="chevron.right"
+                  size={14}
+                  color="#C7C7CC"
+                />
+              </HStack>
+            </Button>
+          </List>
+          <List>
+            <Text
+              modifiers={[
+                foregroundStyle({
+                  type: 'hierarchical',
+                  style: 'secondary',
+                }),
+                font({ size: 14 }),
+              ]}>
+              最多可节省 280.7 MB。此操作将永久删除“最近删除”相册中的所有照片和视频。
+            </Text>
+          </List>
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带图标的滑块
+
+亮度或音量控制常用的一种模式是在 `Slider` 两侧放置图标。
+
+<ComponentExample
+  title="SliderWithIconsExample.tsx"
+  src="/static/images/expo-ui/examples/swift-ui-index-slider-with-icons-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/swift-ui-index-slider-with-icons-ios-dark.webp"
+  alt="亮度滑块两侧分别是小太阳和大太阳图标，其上方是原彩显示开关">
+
+```tsx
+import { useState } from 'react';
+import {
+  Form,
+  Host,
+  HStack,
+  Image,
+  List,
+  Section,
+  Slider,
+  Spacer,
+  Text,
+  Toggle,
+} from '@expo/ui/swift-ui';
+import { padding } from '@expo/ui/swift-ui/modifiers';
+
+export default function SliderWithIconsExample() {
+  const [brightness, setBrightness] = useState(0.5);
+  const [trueToneEnabled, setTrueToneEnabled] = useState(true);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section
+          header={<Text>亮度</Text>}
+          footer={
+            <Text>
+              根据环境光照条件自动调整 iPhone 显示屏，让颜色在不同环境下看起来一致。
+            </Text>
+          }>
+          <List>
+            <HStack modifiers={[padding({ vertical: 6 })]}>
+              <Image
+                systemName="sun.min.fill"
+                size={22}
+                color="#8E8E93"
+              />
+              <Spacer />
+              <Slider
+                value={brightness}
+                onValueChange={setBrightness}
+              />
+              <Spacer />
+              <Image
+                systemName="sun.max.fill"
+                size={22}
+                color="#8E8E93"
+              />
+            </HStack>
+            <Toggle
+              label="原彩显示"
+              isOn={trueToneEnabled}
+              onIsOnChange={setTrueToneEnabled}
+            />
+          </List>
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 多行列表项
+
+对于带有标题和副标题的列表项，使用 `VStack` 并设置 `alignment="leading"`。
+
+<ComponentExample
+  title="MultiLineListItemExample.tsx"
+  src="/static/images/expo-ui/examples/swift-ui-index-multi-line-list-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/swift-ui-index-multi-line-list-ios-dark.webp"
+  alt="Chrome 一行以“上次使用：今天”作为副标题，右侧显示 1.57 GB">
+
+```tsx
+import {
+  Button,
+  Form,
+  Host,
+  HStack,
+  Image,
+  List,
+  Section,
+  Spacer,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  buttonStyle,
+  font,
+  foregroundStyle,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function MultiLineListItemExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section>
+          <List>
+            <HStack>
+              <Image
+                systemName="safari"
+                size={22}
+                modifiers={[padding({ trailing: 6 })]}
+              />
+              <Spacer />
+              <Button
+                onPress={() => console.log('Navigate')}
+                modifiers={[
+                  buttonStyle('plain'),
+                  padding({ vertical: 6 }),
+                ]}>
+                <VStack spacing={4} alignment="leading">
+                  <Text>Chrome</Text>
+                  <Text
+                    modifiers={[
+                      foregroundStyle({
+                        type: 'hierarchical',
+                        style: 'secondary',
+                      }),
+                      font({ size: 14 }),
+                    ]}>
+                    上次使用：今天
+                  </Text>
+                </VStack>
+                <Spacer />
+                <Text
+                  modifiers={[
+                    foregroundStyle({
+                      type: 'hierarchical',
+                      style: 'secondary',
+                    }),
+                    font({ size: 16 }),
+                  ]}>
+                  1.57 GB
+                </Text>
+                <Image
+                  systemName="chevron.right"
+                  size={14}
+                  color="#C7C7CC"
+                />
+              </Button>
+            </HStack>
+          </List>
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>

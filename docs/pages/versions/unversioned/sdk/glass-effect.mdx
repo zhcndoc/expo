@@ -14,10 +14,6 @@ import { SnackInline } from '~/ui/components/Snippet';
 
 使用 [`UIVisualEffectView`](https://developer.apple.com/documentation/uikit/uivisualeffectview) 渲染原生 iOS 液态玻璃效果的 React 组件。支持可自定义的玻璃样式和色调颜色。
 
-## 已知问题
-
-- 将 `GlassView` 或其任何父视图的 `opacity` 设置为 `0` 会导致玻璃效果完全无法渲染。要淡入/淡出玻璃效果，请使用 `glassEffectStyle` 中内置的 [`animate` 和 `animationDuration`](#animated-glass-effect-style) 属性，而不是修改 `opacity`。如果你仍然想使用 `opacity`，请查看 [opacity 动画解决方案](#opacity-animation-workaround) 示例。更多详情请参阅 [Apple 的文档](https://developer.apple.com/documentation/uikit/uivisualeffectview#Set-the-correct-alpha-value) 和 [GitHub issue #41024](https://github.com/expo/expo/issues/41024)。
-
 ## 安装
 
 <APIInstallSection />
@@ -239,7 +235,7 @@ const styles = StyleSheet.create({
 
 ### 透明度动画解决方案
 
-由于将 `GlassView` 或其父视图的 `opacity` 设置为 `0` 会导致玻璃效果完全无法渲染，因此你可以使用 Reanimated 在切换包装视图透明度的同时，将 `glassEffectStyle` 在所需样式和 `'none'` 之间切换。
+Apple 不建议在 `GlassView` 或其父视图上使用小于 `1` 的 `opacity` 值，具体说明请参阅[设置正确的 alpha 值](https://developer.apple.com/documentation/uikit/uivisualeffectview#Set-the-correct-alpha-value)。当透明度非常低时，玻璃效果不会渲染。若仍要为透明度添加动画，可使用 Reanimated 为包装视图的透明度添加动画，同时在所需样式与 `'none'` 之间切换 `glassEffectStyle`。
 
 <SnackInline label='玻璃效果透明度动画解决方案' dependencies={['expo-glass-effect', 'react-native-reanimated']} platforms={['ios']}>
 
@@ -259,7 +255,7 @@ export default function GlassOpacityAnimationExample() {
   const fadeOpacity = useSharedValue(0);
 
   const glassViewProps = useAnimatedProps(() => {
-    const glassEffectStyle = fadeOpacity.value > 0.01 ? 'regular' : 'none';
+    const glassEffectStyle = fadeOpacity.value > 0.02 ? 'regular' : 'none';
     return {
       glassEffectStyle,
       style: {
@@ -299,7 +295,7 @@ export default function GlassOpacityAnimationExample() {
         onPress={() => {
           fadeOpacity.value = withTiming(fadeOpacity.value > 0.5 ? 0 : 1, { duration: 500 });
         }}>
-        <Text style={styles.toggleButtonText}>Toggle glass visibility</Text>
+        <Text style={styles.toggleButtonText}>切换玻璃可见性</Text>
       </Pressable>
     </>
   );
@@ -343,6 +339,7 @@ const styles = StyleSheet.create({
 它会验证系统和编译器版本，以及 [**Info.plist**](https://developer.apple.com/documentation/BundleResources/Information-Property-List/UIDesignRequiresCompatibility) 设置。
 
 ```tsx
+import { Text } from 'react-native';
 import { isLiquidGlassAvailable } from 'expo-glass-effect';
 
 export default function CheckLiquidGlass() {
@@ -363,6 +360,7 @@ export default function CheckLiquidGlass() {
 > **警告** 添加此 API 的原因是某些 iOS 26 测试版中没有提供 Liquid Glass API，这可能导致崩溃。在你的应用中使用 `GlassView` 之前，应先进行检查以确保兼容性。更多信息请参阅 [GitHub issue #40911](https://github.com/expo/expo/issues/40911)。
 
 ```tsx
+import { Text } from 'react-native';
 import { isGlassEffectAPIAvailable } from 'expo-glass-effect';
 
 export default function CheckGlassEffectAPI() {

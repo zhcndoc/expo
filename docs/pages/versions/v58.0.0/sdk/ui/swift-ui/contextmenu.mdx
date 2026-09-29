@@ -1,0 +1,416 @@
+---
+title: ContextMenu
+description: 用于显示上下文菜单的 SwiftUI ContextMenu 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI ContextMenu 与官方 SwiftUI [contextMenu API](<https://developer.apple.com/documentation/swiftui/view/contextmenu(menuitems:)>) 相匹配，并在长按时显示菜单。对于单击菜单交互，请改用 [`Menu`](menu)。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/contextmenu/ios-light.webp"
+  darkSrc="/static/images/expo-ui/contextmenu/ios-dark.webp"
+  alt="长按一个图块后，它会显示为放大的预览，下方有一个包含 Share、Favorite、Delete 的菜单"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基础上下文菜单
+
+<ComponentExample
+  title="BasicContextMenuExample.tsx"
+  src="/static/images/expo-ui/examples/contextmenu-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/contextmenu-basic-ios-dark.webp"
+  alt="上下文菜单在抬起的触发项下方打开，列出 Edit 和红色的 Delete">
+
+```tsx
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+
+export default function BasicContextMenuExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button
+            label="Edit"
+            onPress={() => console.log('Edit')}
+          />
+          <Button
+            label="Delete"
+            role="destructive"
+            onPress={() => console.log('Delete')}
+          />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>Long press me</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带系统图像的上下文菜单
+
+<ComponentExample
+  title="ContextMenuWithImagesExample.tsx"
+  src="/static/images/expo-ui/examples/contextmenu-with-images-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/contextmenu-with-images-ios-dark.webp"
+  alt="上下文菜单列出 Share、Favorite 和红色的 Delete，每项均带有一个 SF Symbol">
+
+```tsx
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+
+export default function ContextMenuWithImagesExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button
+            label="Share"
+            systemImage="square.and.arrow.up"
+            onPress={() => console.log('Share')}
+          />
+          <Button
+            label="Favorite"
+            systemImage="heart"
+            onPress={() => console.log('Favorite')}
+          />
+          <Button
+            label="Delete"
+            systemImage="trash"
+            role="destructive"
+            onPress={() => console.log('Delete')}
+          />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>Long press me</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带预览的上下文菜单
+
+使用 `ContextMenu.Preview` 可在菜单打开时于其上方显示自定义预览。
+
+<ComponentExample
+  title="ContextMenuWithPreviewExample.tsx"
+  src="/static/images/expo-ui/examples/contextmenu-with-preview-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/contextmenu-with-preview-ios-dark.webp"
+  alt="上下文菜单中，Edit 和 Delete 项上方有一张 Preview 内容卡片">
+
+```tsx
+import { View, Text as RNText } from 'react-native';
+import {
+  Host,
+  ContextMenu,
+  Button,
+  RNHostView,
+  Text,
+} from '@expo/ui/swift-ui';
+
+export default function ContextMenuWithPreviewExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button
+            label="Edit"
+            onPress={() => console.log('Edit')}
+          />
+          <Button
+            label="Delete"
+            role="destructive"
+            onPress={() => console.log('Delete')}
+          />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>Long press me</Text>
+        </ContextMenu.Trigger>
+        <ContextMenu.Preview>
+          <RNHostView matchContents>
+            <View
+              style={{
+                width: 200,
+                height: 100,
+                backgroundColor: '#f0f0f0',
+                padding: 16,
+              }}>
+              <RNText>Preview content</RNText>
+            </View>
+          </RNHostView>
+        </ContextMenu.Preview>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带选择器的上下文菜单
+
+<ComponentExample
+  title="ContextMenuWithPickerExample.tsx"
+  src="/static/images/expo-ui/examples/contextmenu-with-picker-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/contextmenu-with-picker-ios-dark.webp"
+  alt="上下文菜单列出 Action，以及带有子菜单箭头的 Size 行">
+
+```tsx
+import { useState } from 'react';
+import {
+  Host,
+  ContextMenu,
+  Button,
+  Text,
+  Picker,
+} from '@expo/ui/swift-ui';
+import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
+
+export default function ContextMenuWithPickerExample() {
+  const [selectedIndex, setSelectedIndex] = useState<
+    number | undefined
+  >(0);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button
+            label="Action"
+            onPress={() => console.log('Action')}
+          />
+          <Picker
+            label="Size"
+            modifiers={[pickerStyle('menu')]}
+            selection={selectedIndex}
+            onSelectionChange={setSelectedIndex}>
+            {['Small', 'Medium', 'Large'].map((option, index) => (
+              <Text key={index} modifiers={[tag(index)]}>
+                {option}
+              </Text>
+            ))}
+          </Picker>
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>Long press me</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带分区的上下文菜单
+
+使用 `Section` 和 `Divider` 组件对菜单项进行分组。
+
+<ComponentExample
+  title="ContextMenuWithSectionsExample.tsx"
+  src="/static/images/expo-ui/examples/contextmenu-with-sections-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/contextmenu-with-sections-ios-dark.webp"
+  alt="上下文菜单中有一个包含 Edit 和 Duplicate 的 Actions 分区、一条分隔线，以及 Delete">
+
+```tsx
+import {
+  Host,
+  ContextMenu,
+  Button,
+  Text,
+  Section,
+  Divider,
+} from '@expo/ui/swift-ui';
+
+export default function ContextMenuWithSectionsExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Section title="Actions">
+            <Button
+              label="Edit"
+              onPress={() => console.log('Edit')}
+            />
+            <Button
+              label="Duplicate"
+              onPress={() => console.log('Duplicate')}
+            />
+          </Section>
+          <Divider />
+          <Button
+            label="Delete"
+            role="destructive"
+            onPress={() => console.log('Delete')}
+          />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>Long press me</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 禁用的菜单项
+
+在菜单 `Button` 上使用 [`disabled(true)`](modifiers/#disableddisabled) 修饰符，可将其显示为灰色且不可交互。
+
+<ComponentExample
+  title="DisabledContextMenuItemExample.tsx"
+  src="/static/images/expo-ui/examples/contextmenu-disabled-item-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/contextmenu-disabled-item-ios-dark.webp"
+  alt="上下文菜单列出 Edit 和灰显的 Locked 项，后者带有锁图标">
+
+```tsx
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+import { disabled } from '@expo/ui/swift-ui/modifiers';
+
+export default function DisabledContextMenuItemExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button
+            label="Edit"
+            onPress={() => console.log('Edit')}
+          />
+          <Button
+            label="Locked"
+            systemImage="lock"
+            modifiers={[disabled(true)]}
+            onPress={() => console.log('This never fires')}
+          />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>Long press me</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 可选菜单项（勾选标记）
+
+`ContextMenu.Items` 中的 SwiftUI [`Toggle`](toggle) 在 `isOn` 为 `true` 时，会自动显示为一行，左侧带有 SF Symbol，右侧带有勾选标记。
+
+<ComponentExample
+  title="CheckmarkContextMenuItemExample.tsx"
+  src="/static/images/expo-ui/examples/contextmenu-checkmark-item-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/contextmenu-checkmark-item-ios-dark.webp"
+  alt="上下文菜单中有一个标记为 Pin 的行，带有图钉图标和左侧勾选标记">
+
+```tsx
+import { Host, ContextMenu, Toggle, Text } from '@expo/ui/swift-ui';
+import { useState } from 'react';
+
+export default function CheckmarkContextMenuItemExample() {
+  const [pinned, setPinned] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Toggle
+            isOn={pinned}
+            label="Pin"
+            systemImage="pin"
+            onIsOnChange={setPinned}
+          />
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>Long press me</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 嵌套上下文菜单
+
+使用嵌套的 `ContextMenu` 组件创建子菜单。
+
+<ComponentExample
+  title="NestedContextMenuExample.tsx"
+  src="/static/images/expo-ui/examples/contextmenu-nested-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/contextmenu-nested-ios-dark.webp"
+  alt="上下文菜单列出 Action 和 More Options">
+
+```tsx
+import { Host, ContextMenu, Button, Text } from '@expo/ui/swift-ui';
+
+export default function NestedContextMenuExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <ContextMenu>
+        <ContextMenu.Items>
+          <Button
+            label="Action"
+            onPress={() => console.log('Action')}
+          />
+          <ContextMenu>
+            <ContextMenu.Items>
+              <Button
+                label="Sub Action 1"
+                onPress={() => console.log('Sub 1')}
+              />
+              <Button
+                label="Sub Action 2"
+                onPress={() => console.log('Sub 2')}
+              />
+            </ContextMenu.Items>
+            <ContextMenu.Trigger>
+              <Button label="More Options" />
+            </ContextMenu.Trigger>
+          </ContextMenu>
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <Text>Long press me</Text>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { ContextMenu } from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/contextmenu"
+  apiName="ContextMenu"
+/>

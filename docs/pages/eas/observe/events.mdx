@@ -9,7 +9,7 @@ import { Terminal } from '~/ui/components/Snippet';
 
 用户定义事件可让你从应用中记录任意命名事件。可用它们跟踪任何你的应用特有、而内置性能指标未覆盖的信号。
 
-事件会保留在设备上、批量处理，并在下次 flush 时作为 OpenTelemetry 日志记录发送。它们会显示在 EAS Observe 仪表板的 **事件** 选项卡中，并可通过 EAS CLI 查询。
+事件会持久保存在设备上，经过批处理后，在下一次刷新时以 OpenTelemetry 日志记录的形式发送。它们会显示在 EAS Observe 仪表板的 **事件** 页面中，并可通过 EAS CLI 查询。
 
 ## 记录事件
 
@@ -91,12 +91,19 @@ Observe.logEvent('onboarding.completed', {
   darkSrc="/static/images/expo-observe/observe-log-event-display-name-dark.webp"
 />
 
+## SDK 和集成发出的事件
+
+除了你自己的事件之外，你还可能会看到 EAS Observe 及其集成发出的事件：
+
+- 以 `expo.` 开头的事件名称是 EAS Observe 自身发出的保留事件。例如，当 iOS 向应用发送低内存警告时，会记录 `expo.memory.warning`。请参阅[内存警告](/eas/observe/reference/metrics/#memory-warnings)。`logEvent` 会丢弃使用保留前缀的事件，并丢弃 `expo.` 命名空间中的属性键；在开发环境中会记录警告。
+- 已启用的集成会记录各自的事件。例如，[`expo-image` 集成](/eas/observe/integrations/expo-image/)会在图像解码尺寸远大于屏幕可显示尺寸时记录 `expo-image.oversized`。
+
 ## 查看事件
 
-在仪表板中：打开您的项目，然后导航到 [**观察 > 事件**](https://expo.dev/accounts/[account]/projects/[project]/observe/events)。默认视图会列出所选时间范围内不同的事件名称及其计数。点击事件名称即可查看单个事件，包括其时间戳、属性以及所属的会话。
+在仪表板中：打开你的项目，然后导航到 [**观察 > 事件**](https://expo.dev/accounts/[account]/projects/[project]/observe/events)。默认视图会列出所选时间范围内不同的事件名称及其计数。点击事件名称即可查看单个事件，包括其时间戳、属性以及所属的会话。
 
 <ContentSpotlight
-  alt="EAS Observe 仪表板中的事件选项卡，列出不同的事件名称及其计数。"
+  alt="EAS Observe 仪表板中的事件页面，列出不同的事件名称及其计数。"
   src="/static/images/expo-observe/observe-events-light.webp"
   darkSrc="/static/images/expo-observe/observe-events-dark.webp"
 />
@@ -116,4 +123,4 @@ Observe.logEvent('onboarding.completed', {
   ]}
 />
 
-运行 `eas observe:events --help` 查看全部标志列表（时间范围、平台、会话 ID 等更多内容）。
+运行 `eas observe:events --help` 可查看完整的标志列表（时间范围、平台、会话 ID 等）。请参阅[使用 EAS CLI 查询](/eas/observe/eas-cli/)，了解其他 `eas observe` 命令。

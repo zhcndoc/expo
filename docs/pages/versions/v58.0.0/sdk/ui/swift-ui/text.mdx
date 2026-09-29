@@ -1,0 +1,402 @@
+---
+title: 文本
+description: 一个用于显示样式化文本并支持嵌套文本的 SwiftUI Text 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+> **信息** 如需跨平台使用，请参阅通用的 [`Text`](../universal/text) ——它会根据平台渲染相应的原生组件。
+
+Expo UI Text 匹配官方 SwiftUI [Text API](https://developer.apple.com/documentation/swiftui/text)。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/text/ios-light.webp"
+  darkSrc="/static/images/expo-ui/text/ios-dark.webp"
+  alt="使用不同字体大小、粗细和层级辅助样式渲染的 Text"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 使用
+
+### 基本文本
+
+<ComponentExample
+  title="BasicTextExample.tsx"
+  src="/static/images/expo-ui/examples/text-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-basic-ios-dark.webp"
+  alt="使用默认系统字体显示的 Hello world">
+
+```tsx
+import { Host, Text } from '@expo/ui/swift-ui';
+
+export default function BasicTextExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Text>Hello world</Text>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带修饰符的文本
+
+使用修饰符设置整个文本的样式。
+
+<ComponentExample
+  title="StyledTextExample.tsx"
+  src="/static/images/expo-ui/examples/text-styled-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-styled-ios-dark.webp"
+  alt="使用大号粗体蓝色字体渲染的 Large Bold Blue Text">
+
+```tsx
+import { Host, Text } from '@expo/ui/swift-ui';
+import { font, foregroundStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function StyledTextExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Text
+        modifiers={[
+          font({ size: 24, weight: 'bold' }),
+          foregroundStyle('blue'),
+        ]}>
+        Large Bold Blue Text
+      </Text>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 嵌套文本（按片段设置样式）
+
+嵌套 `Text` 组件，为不同片段设置不同样式。这适用于行内格式设置，例如在句子中使用粗体或彩色文字。
+
+> **注意：** 嵌套文本使用 SwiftUI 的 [Text 拼接](https://developer.apple.com/documentation/swiftui/text)，因此只有返回 `Text` 的修饰符（例如 `bold`、`italic`、`font`、`foregroundColor` 以及带颜色的 `foregroundStyle`）才会应用于嵌套片段。
+
+<ComponentExample
+  title="NestedTextExample.tsx"
+  src="/static/images/expo-ui/examples/text-nested-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-nested-ios-dark.webp"
+  alt="句子 Hello world！，其中单词 world 为粗体红色">
+
+```tsx
+import { Host, Text } from '@expo/ui/swift-ui';
+import {
+  bold,
+  italic,
+  foregroundStyle,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function NestedTextExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Text>
+        Hello{' '}
+        <Text modifiers={[bold(), foregroundStyle('red')]}>
+          world
+        </Text>
+        !
+      </Text>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 混合行内样式
+
+组合多个带样式的片段，实现丰富的文本格式。
+
+<ComponentExample
+  title="MixedStylesExample.tsx"
+  src="/static/images/expo-ui/examples/text-mixed-styles-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-mixed-styles-ios-dark.webp"
+  alt="一个句子，其中单词 bold 为粗体，italic 为斜体，colored 为橙色">
+
+```tsx
+import { Host, Text } from '@expo/ui/swift-ui';
+import {
+  bold,
+  italic,
+  foregroundStyle,
+  font,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function MixedStylesExample() {
+  return (
+    <Host matchContents>
+      <Text>
+        This is <Text modifiers={[bold()]}>bold</Text>,{' '}
+        <Text modifiers={[italic()]}>italic</Text>, and{' '}
+        <Text modifiers={[foregroundStyle('orange')]}>colored</Text>{' '}
+        text.
+      </Text>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 字体粗细
+
+使用 `font` 修饰符应用不同的字体粗细。
+
+<ComponentExample
+  title="FontWeightsExample.tsx"
+  src="/static/images/expo-ui/examples/text-font-weights-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-font-weights-ios-dark.webp"
+  alt="八行堆叠的文字，显示从 Ultra Light 到 Black 的字体粗细">
+
+```tsx
+import { Host, Text, VStack } from '@expo/ui/swift-ui';
+import { font } from '@expo/ui/swift-ui/modifiers';
+
+export default function FontWeightsExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={4}>
+        <Text modifiers={[font({ weight: 'ultraLight' })]}>
+          Ultra Light
+        </Text>
+        <Text modifiers={[font({ weight: 'light' })]}>Light</Text>
+        <Text modifiers={[font({ weight: 'regular' })]}>
+          Regular
+        </Text>
+        <Text modifiers={[font({ weight: 'medium' })]}>Medium</Text>
+        <Text modifiers={[font({ weight: 'semibold' })]}>
+          Semibold
+        </Text>
+        <Text modifiers={[font({ weight: 'bold' })]}>Bold</Text>
+        <Text modifiers={[font({ weight: 'heavy' })]}>Heavy</Text>
+        <Text modifiers={[font({ weight: 'black' })]}>Black</Text>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 字体设计
+
+使用 `font` 修饰符应用不同的字体设计。
+
+<ComponentExample
+  title="FontDesignsExample.tsx"
+  src="/static/images/expo-ui/examples/text-font-designs-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-font-designs-ios-dark.webp"
+  alt="四行堆叠的文字，显示默认、圆体、衬线和等宽字体设计">
+
+```tsx
+import { Host, Text, VStack } from '@expo/ui/swift-ui';
+import { font } from '@expo/ui/swift-ui/modifiers';
+
+export default function FontDesignsExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={4}>
+        <Text modifiers={[font({ design: 'default', size: 18 })]}>
+          Default Design
+        </Text>
+        <Text modifiers={[font({ design: 'rounded', size: 18 })]}>
+          Rounded Design
+        </Text>
+        <Text modifiers={[font({ design: 'serif', size: 18 })]}>
+          Serif Design
+        </Text>
+        <Text
+          modifiers={[font({ design: 'monospaced', size: 18 })]}>
+          Monospaced Design
+        </Text>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义字体
+
+使用带有 `family` 参数的 `font` 修饰符来使用自定义字体。你可以使用 [`expo-font`](/versions/latest/sdk/font/) 库加载自定义字体。
+
+<ComponentExample
+  title="CustomFontExample.tsx"
+  src="/static/images/expo-ui/examples/text-custom-font-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-custom-font-ios-dark.webp"
+  alt="两行文本，Inter Bold 位于 Inter Regular 上方。">
+
+```tsx
+import { Host, Text, VStack } from '@expo/ui/swift-ui';
+import { font } from '@expo/ui/swift-ui/modifiers';
+
+export default function CustomFontExample() {
+  return (
+    <Host matchContents style={{ alignSelf: 'center' }}>
+      <VStack spacing={4}>
+        <Text
+          modifiers={[font({ family: 'Inter-Bold', size: 18 })]}>
+          Inter Bold
+        </Text>
+        <Text
+          modifiers={[font({ family: 'Inter-Regular', size: 18 })]}>
+          Inter Regular
+        </Text>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带行数限制的文本
+
+使用 `lineLimit` 修饰符，在达到指定行数后截断文本。
+
+<ComponentExample
+  title="LineLimitExample.tsx"
+  src="/static/images/expo-ui/examples/text-line-limit-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-line-limit-ios-dark.webp"
+  alt="一段较长的文字，在两行后截断并显示省略号">
+
+```tsx
+import { Host, Text } from '@expo/ui/swift-ui';
+import { lineLimit } from '@expo/ui/swift-ui/modifiers';
+
+export default function LineLimitExample() {
+  const longText =
+    'This is a very long text that will be truncated after two lines. '.repeat(
+      5
+    );
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Text modifiers={[lineLimit(2)]}>{longText}</Text>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### Markdown
+
+使用 `markdownEnabled` 属性，为文本内容启用 Markdown 格式。
+
+<ComponentExample
+  title="MarkdownTextExample.tsx"
+  src="/static/images/expo-ui/examples/text-markdown-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-markdown-ios-dark.webp"
+  alt="五行文字，显示粗体、斜体、删除线和等宽文本，以及蓝色链接">
+
+```tsx
+import { Host, Text, VStack } from '@expo/ui/swift-ui';
+
+export default function MarkdownTextExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={4}>
+        <Text markdownEnabled>Regular text.</Text>
+        <Text markdownEnabled>
+          This is **bold text**, *italic text* and ***text in both
+          bold and italic***.
+        </Text>
+        <Text markdownEnabled>~~Strikethrough text~~</Text>
+        <Text markdownEnabled>`This is monospaced text`</Text>
+        <Text markdownEnabled>
+          Visit the [Expo
+          Docs](https://docs.expo.dev/versions/latest/sdk/ui/) to
+          learn more about Expo UI
+        </Text>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自动更新的日期
+
+使用 `date` 和 `dateStyle` 属性显示会随着时间推移自动更新的日期。这在 widgets 和 Live Activities 中尤其有用。
+
+<ComponentExample
+  title="DateTextExample.tsx"
+  src="/static/images/expo-ui/examples/text-date-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-date-ios-dark.webp"
+  alt="显示 4 分钟 53 秒的倒计时">
+
+```tsx
+import { Host, Text } from '@expo/ui/swift-ui';
+
+export default function DateTextExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Text
+        date={new Date(Date.now() + 300000)}
+        dateStyle="timer"
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 计时器间隔
+
+使用 `timerInterval` 显示实时倒计时或正计时器。这需要 iOS/tvOS 16+。
+
+<ComponentExample
+  title="TimerIntervalExample.tsx"
+  src="/static/images/expo-ui/examples/text-timer-interval-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/text-timer-interval-ios-dark.webp"
+  alt="显示 9 分钟 54 秒的倒计时">
+
+```tsx
+import { Host, Text } from '@expo/ui/swift-ui';
+
+export default function TimerIntervalExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Text
+        timerInterval={{
+          lower: new Date(),
+          upper: new Date(Date.now() + 600000),
+        }}
+        countsDown
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+> **注意：** `timerInterval`、`countsDown` 和 `pauseTime` 需要 iOS 16.0+ / tvOS 16.0+。在较低版本中，计时器间隔不会渲染。
+
+## API
+
+```tsx
+import { Text } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/text" apiName="Text" />

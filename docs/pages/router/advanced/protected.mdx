@@ -110,9 +110,9 @@ export function AppLayout() {
 - 仅当用户已登录且是管理员时，`/private` 才受保护。
 - `/about` 对任何已登录用户受保护。
 
-## 回退到特定屏幕
+## 使用默认重定向
 
-你可以配置导航器在访问被拒绝时回退到某个特定屏幕。
+如果访问被拒绝，导航器会将用户重定向到其锚点路由或第一个可用屏幕。
 
 <FileTree
   files={[
@@ -145,14 +145,38 @@ export function AppLayout() {
 }
 ```
 
-在上面的示例中，由于 **index** 屏幕受保护且 `guard` 为 **false**，路由器会重定向到第一个可用屏幕——**login**。
+在这个示例中，**index** 屏幕受到保护，且 `guard` 为 **false**，因此路由器会将用户重定向到第一个可用屏幕：**login**。
+
+## 重定向到指定路由
+
+> **info** 适用于 **SDK 58 及更高版本**。
+
+当受保护路由需要重定向到指定路由时，使用 `redirectTo` 属性。它接受与 [`Link`](/router/basics/navigation/#links-and-buttons) 相同的字符串或对象 href。
+
+```tsx src/app/_layout.tsx
+import { Stack } from 'expo-router';
+
+const isLoggedIn = false;
+
+export function AppLayout() {
+  return (
+    <Stack>
+      <Stack.Protected guard={isLoggedIn} redirectTo="/login">
+        <Stack.Screen name="private" />
+      </Stack.Protected>
+
+      <Stack.Screen name="login" />
+    </Stack>
+  );
+}
+```
 
 ## Tabs 和 Drawer
 
 受保护路由也适用于 [Tabs](/router/advanced/tabs/) 和 [Drawer](/router/advanced/drawer/) 导航器。
 
 ```tsx src/app/_layout.tsx
-import { Tabs } from 'expo-router';
+import { Tabs } from 'expo-router/js-tabs';
 
 const isLoggedIn = false;
 
@@ -175,7 +199,9 @@ export default function TabLayout() {
 
 ## 自定义导航器
 
-`Protected` 也可用于使用 `withLayoutContext` 钩子的[自定义导航器](/router/migrate/from-react-navigation/#rewrite-custom-navigators)。
+> **info** 稳定版自定义导航器 API 适用于 **SDK 58 及更高版本**。
+
+通过 `createStandardRouterNavigator` 或 `integrateWithRouter` 创建的导航器包含一个 `.Protected` 子项。请参阅[自定义导航器](/router/advanced/custom-navigators/)以创建或集成一个导航器。
 
 ## 静态渲染注意事项
 

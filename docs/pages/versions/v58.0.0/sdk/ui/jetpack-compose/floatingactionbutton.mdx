@@ -1,0 +1,268 @@
+---
+title: FloatingActionButton
+description: 遵循 Material Design 3 的 Jetpack Compose FloatingActionButton 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI 提供四种 FloatingActionButton 变体，与 Material Design 3 的 [`FloatingActionButton`](https://developer.android.com/develop/ui/compose/components/fab) API 相匹配：
+
+- `SmallFloatingActionButton` — 紧凑型 FAB
+- `FloatingActionButton` — 标准 FAB（默认尺寸）
+- `LargeFloatingActionButton` — 较大的 FAB
+- `ExtendedFloatingActionButton` — 带有图标和文本标签的 FAB，支持动画展开/收起
+
+每个组件都使用基于插槽的子组件（`.Icon`，以及 `ExtendedFloatingActionButton` 的 `.Text`）来组合内容。
+
+> **注意：**如果你需要在浮动工具栏中放置多个操作按钮，请改用 [`HorizontalFloatingToolbar`](/versions/latest/sdk/ui/jetpack-compose/horizontalfloatingtoolbar/)
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/floatingactionbutton/android-light.webp"
+  darkSrc="/static/images/expo-ui/floatingactionbutton/android-dark.webp"
+  alt="小型、标准和大型 Material 3 浮动操作按钮"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 标准 FloatingActionButton
+
+<ComponentExample
+  title="StandardFABExample.tsx"
+  src="/static/images/expo-ui/examples/fab-standard-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/fab-standard-android-dark.webp"
+  alt="带加号图标的标准浮动操作按钮">
+
+```tsx
+import {
+  FloatingActionButton,
+  Host,
+  Icon,
+} from '@expo/ui/jetpack-compose';
+
+export default function StandardFABExample() {
+  return (
+    <Host matchContents>
+      <FloatingActionButton
+        onClick={() => console.log('FAB pressed')}>
+        <FloatingActionButton.Icon>
+          <Icon source={require('./assets/add.xml')} />
+        </FloatingActionButton.Icon>
+      </FloatingActionButton>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### FAB 变体
+
+<ComponentExample
+  title="FABVariantsExample.tsx"
+  src="/static/images/expo-ui/examples/fab-variants-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/fab-variants-android-dark.webp"
+  alt="并排显示的小型、标准和大型浮动操作按钮，每个按钮都带有加号图标">
+
+```tsx
+import {
+  FloatingActionButton,
+  Host,
+  Icon,
+  LargeFloatingActionButton,
+  SmallFloatingActionButton,
+} from '@expo/ui/jetpack-compose';
+import { View } from 'react-native';
+
+export default function FABVariantsExample() {
+  return (
+    <View style={{ flexDirection: 'row', gap: 16 }}>
+      <Host matchContents>
+        <SmallFloatingActionButton onClick={() => {}}>
+          <SmallFloatingActionButton.Icon>
+            <Icon source={require('./assets/add.xml')} />
+          </SmallFloatingActionButton.Icon>
+        </SmallFloatingActionButton>
+      </Host>
+      <Host matchContents>
+        <FloatingActionButton onClick={() => {}}>
+          <FloatingActionButton.Icon>
+            <Icon source={require('./assets/add.xml')} />
+          </FloatingActionButton.Icon>
+        </FloatingActionButton>
+      </Host>
+      <Host matchContents>
+        <LargeFloatingActionButton onClick={() => {}}>
+          <LargeFloatingActionButton.Icon>
+            <Icon source={require('./assets/add.xml')} />
+          </LargeFloatingActionButton.Icon>
+        </LargeFloatingActionButton>
+      </Host>
+    </View>
+  );
+}
+```
+
+</ComponentExample>
+
+### ExtendedFloatingActionButton
+
+<ComponentExample
+  title="ExtendedFABExample.tsx"
+  src="/static/images/expo-ui/examples/fab-extended-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/fab-extended-android-dark.webp"
+  alt="带铅笔图标和“编辑”标签的扩展浮动操作按钮">
+
+```tsx
+import {
+  ExtendedFloatingActionButton,
+  Host,
+  Icon,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import { useState } from 'react';
+
+export default function ExtendedFABExample() {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <Host matchContents>
+      <ExtendedFloatingActionButton
+        expanded={expanded}
+        onClick={() => setExpanded(v => !v)}>
+        <ExtendedFloatingActionButton.Icon>
+          <Icon source={require('./assets/edit.xml')} />
+        </ExtendedFloatingActionButton.Icon>
+        <ExtendedFloatingActionButton.Text>
+          <Text>Edit</Text>
+        </ExtendedFloatingActionButton.Text>
+      </ExtendedFloatingActionButton>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 在内容上方浮动
+
+使用 Compose `Box` 和 `align('bottomEnd')`，即可在 Compose 层内将 FAB 定位在可滚动内容上方。
+
+<ComponentExample
+  title="FloatingFABExample.tsx"
+  src="/static/images/expo-ui/examples/fab-floating-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/fab-floating-android-dark.webp"
+  alt="位于右下角、显示在可滚动项目列表上方的浮动操作按钮">
+
+```tsx
+import {
+  Box,
+  FloatingActionButton,
+  Host,
+  Icon,
+  LazyColumn,
+  ListItem,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import {
+  align,
+  fillMaxSize,
+  offset,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+const ITEMS = Array.from(
+  { length: 20 },
+  (_, index) => `Item ${index + 1}`
+);
+
+export default function FloatingFABExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Box modifiers={[fillMaxSize()]}>
+        <LazyColumn modifiers={[fillMaxSize()]}>
+          {ITEMS.map(item => (
+            <ListItem key={item}>
+              <ListItem.HeadlineContent>
+                <Text>{item}</Text>
+              </ListItem.HeadlineContent>
+            </ListItem>
+          ))}
+        </LazyColumn>
+
+        <FloatingActionButton
+          modifiers={[align('bottomEnd'), offset(-16, -16)]}
+          onClick={() => console.log('pressed')}>
+          <FloatingActionButton.Icon>
+            <Icon source={require('./assets/add.xml')} />
+          </FloatingActionButton.Icon>
+        </FloatingActionButton>
+      </Box>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义颜色
+
+<ComponentExample
+  title="FABCustomColorExample.tsx"
+  src="/static/images/expo-ui/examples/fab-custom-color-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/fab-custom-color-android-dark.webp"
+  alt="带浅紫色容器和“新建项目”标签的扩展浮动操作按钮">
+
+```tsx
+import {
+  ExtendedFloatingActionButton,
+  Host,
+  Icon,
+  Text,
+} from '@expo/ui/jetpack-compose';
+
+export default function FABCustomColorExample() {
+  return (
+    <Host matchContents>
+      <ExtendedFloatingActionButton
+        containerColor="#E8DEF8"
+        onClick={() => console.log('pressed')}>
+        <ExtendedFloatingActionButton.Icon>
+          <Icon source={require('./assets/add.xml')} />
+        </ExtendedFloatingActionButton.Icon>
+        <ExtendedFloatingActionButton.Text>
+          <Text>New item</Text>
+        </ExtendedFloatingActionButton.Text>
+      </ExtendedFloatingActionButton>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import {
+  SmallFloatingActionButton,
+  FloatingActionButton,
+  LargeFloatingActionButton,
+  ExtendedFloatingActionButton,
+} from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/floatingactionbutton"
+  apiName="FloatingActionButton"
+/>

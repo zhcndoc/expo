@@ -1,0 +1,135 @@
+---
+title: ScrollView
+description: 支持垂直或水平滚动的可滚动容器。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+可滚动容器，默认采用垂直滚动。对于水平列表，请使用 [`direction="horizontal"`](#direction)。
+
+## 原生实现
+
+| 平台    | 底层组件                                                                                                                                                                                                                              |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Android | 使用带有 [`verticalScroll 或 horizontalScroll 修饰符`](https://developer.android.com/develop/ui/compose/touch-input/pointer-input/scroll#scroll-modifiers) 的 Jetpack Compose `Column` 或 `Row`。此实现会渲染所有子项，不是惰性容器。 |
+| iOS     | SwiftUI [`ScrollView`](https://developer.apple.com/documentation/swiftui/scrollview)。                                                                                                                                                |
+| Web     | React Native [`ScrollView`](https://reactnative.dev/docs/scrollview)。                                                                                                                                                                |
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/scrollview/android-light.webp',
+    darkSrc: '/static/images/expo-ui/scrollview/android-dark.webp',
+    alt: '滚动视图中的六个项目组成的垂直列表',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/scrollview/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/scrollview/ios-dark.webp',
+    alt: '滚动视图中的项目组成的垂直列表',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 垂直滚动
+
+<ComponentExample
+  title="VerticalScrollViewExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-scrollview-vertical-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-scrollview-vertical-android-dark.webp',
+    alt: '填满屏幕的编号行组成的垂直列表',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-scrollview-vertical-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-scrollview-vertical-ios-dark.webp',
+    alt: '填满屏幕的编号行组成的垂直列表',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
+import { Host, ScrollView, Column, Text } from '@expo/ui';
+
+export default function VerticalScrollViewExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <ScrollView>
+        <Column spacing={8}>
+          {Array.from({ length: 30 }).map((_, i) => (
+            <Text key={i} textStyle={ink}>
+              {`Row ${i + 1}`}
+            </Text>
+          ))}
+        </Column>
+      </ScrollView>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 水平滚动
+
+<ComponentExample
+  title="HorizontalScrollViewExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-scrollview-horizontal-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-scrollview-horizontal-android-dark.webp',
+    alt: '超出屏幕边缘的编号项目水平条带',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-scrollview-horizontal-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-scrollview-horizontal-ios-dark.webp',
+    alt: '超出屏幕边缘的编号项目水平条带',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
+import { Host, ScrollView, Row, Text } from '@expo/ui';
+
+export default function HorizontalScrollViewExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <ScrollView direction="horizontal">
+        <Row spacing={12}>
+          {Array.from({ length: 20 }).map((_, i) => (
+            <Text key={i} textStyle={ink}>
+              {`Item ${i + 1}`}
+            </Text>
+          ))}
+        </Row>
+      </ScrollView>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { ScrollView } from '@expo/ui';
+```
+
+<APISection packageName="expo-ui/universal/scrollview" apiName="ScrollView" />
+
+</PlatformTabsGroup>

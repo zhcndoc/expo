@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 import { Input, Textarea } from '~/ui/components/Form';
 import { InlineHelp } from '~/ui/components/InlineHelp';
-import { CALLOUT, LABEL, RawH2 } from '~/ui/components/Text';
+import { CALLOUT, LABEL, RawH3 } from '~/ui/components/Text';
 
 const isDev = process.env.NODE_ENV === 'development';
 const URL = isDev
@@ -64,7 +64,7 @@ export const FeedbackDialog = ({ pathname }: Props) => {
           <Dialog.Content
             className={mergeClasses(
               'dialog-content',
-              'top-0 left-0 max-h-[90vh] w-[90vw] max-w-125 overflow-hidden rounded-lg border border-default bg-default wrap-break-word shadow-md outline-0 backface-hidden',
+              'top-0 left-0 max-h-[90vh] w-[90vw] max-w-125 overflow-hidden rounded-[40px] border border-default bg-default wrap-break-word shadow-md outline-0 backface-hidden',
               'data-[state=open]:animate-slideUpAndFadeIn',
               'data-[state=closed]:animate-fadeOut'
             )}>
@@ -74,14 +74,16 @@ export const FeedbackDialog = ({ pathname }: Props) => {
                   <div className="flex size-18 items-center justify-center rounded-full border-2 border-success bg-success">
                     <CheckIcon aria-hidden="true" className="icon-2xl text-icon-success" />
                   </div>
-                  <RawH2 className="mt-5! mb-2!">已收到反馈</RawH2>
+                  <RawH3 className="mt-5! mb-2!">已收到反馈</RawH3>
                   <CALLOUT theme="secondary">
                     你的反馈将帮助我们改进文档，感谢分享！
                   </CALLOUT>
                 </div>
-                <div className="flex min-h-14 items-center justify-end gap-2 bg-subtle px-3">
+                <div className="flex items-center gap-4 px-6 pb-6">
                   <Dialog.Close asChild>
-                    <Button type="submit">完成</Button>
+                    <Button type="submit" className="flex-1 justify-center">
+                      完成
+                    </Button>
                   </Dialog.Close>
                 </div>
               </>
@@ -91,13 +93,14 @@ export const FeedbackDialog = ({ pathname }: Props) => {
                   event.preventDefault();
                   sendFeedback();
                 }}>
-                <div className="px-6 py-5">
+                <div className="p-6">
                   <div className="flex justify-between">
-                    <RawH2 className="my-0!">分享反馈</RawH2>
+                    <RawH3 className="my-0!">分享反馈</RawH3>
                     <Dialog.Close asChild>
                       <Button
                         aria-label="关闭"
                         theme="quaternary"
+                        className="bg-element"
                         leftSlot={<XIcon aria-hidden="true" className="icon-md" />}
                       />
                     </Dialog.Close>
@@ -144,11 +147,15 @@ export const FeedbackDialog = ({ pathname }: Props) => {
                     </InlineHelp>
                   )}
                 </div>
-                <div className="flex min-h-14 items-center justify-end gap-2 bg-subtle px-3">
+                <div className="flex items-center gap-4 px-6 pb-6">
                   <Dialog.Close asChild>
-                    <Button theme="quaternary">No thanks</Button>
+                    <Button theme="secondary" className="flex-1 justify-center">
+                      No thanks
+                    </Button>
                   </Dialog.Close>
-                  <Button type="submit">提交</Button>
+                  <Button type="submit" className="flex-1 justify-center">
+                    提交
+                  </Button>
                 </div>
               </form>
             )}

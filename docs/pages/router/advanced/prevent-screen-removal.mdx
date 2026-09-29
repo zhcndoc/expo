@@ -1,0 +1,73 @@
+---
+title: 防止屏幕移除
+description: 了解如何在 Expo Router 移除屏幕前确认导航
+---
+
+> **重要** `usePreventRemove()` 在 **Expo SDK 58** 及更高版本中可用
+
+当屏幕包含未保存的更改时，使用 `usePreventRemove()` 保持屏幕打开。当导航尝试移除屏幕时，该 Hook 会运行你的回调。
+
+```tsx src/app/edit-profile.tsx
+import { usePreventRemove } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Platform, TextInput } from 'react-native';
+
+export default function EditProfile() {
+  const [name, setName] = useState('');
+  const hasUnsavedChanges = name.length > 0;
+
+  usePreventRemove(hasUnsavedChanges, ({ repeat }) => {
+    const discardChanges = () => {
+      setName('');
+      repeat();
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Discard your unsaved changes?')) {
+        discardChanges();
+      }
+      return;
+    }
+
+    Alert.alert('Discard changes?', 'You have unsaved changes.', [
+      { text: 'Keep editing', style: 'cancel' },
+      {
+        text: 'Discard',
+        style: 'destructive',
+        onPress: discardChanges,
+      },
+    ]);
+  });
+
+  return <TextInput value={name} onChangeText={setName} placeholder="Name" />;
+}
+```
+
+在调用 `repeat()` 前，将传递给 `usePreventRemove()` 的值设置为 `false`。这样可以使你的状态与移除防止保持同步。
+
+## 禁用移除防止
+
+该 Hook 还会返回一个禁用防止功能的函数。当你想要取消被阻止的操作并导航到其他位置时，可以使用它。
+
+```tsx src/app/edit-profile.tsx
+import { router, usePreventRemove } from 'expo-router';
+import { useState } from 'react';
+import { Button } from 'react-native';
+
+export default function EditProfile() {
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(true);
+  const disablePrevention = usePreventRemove(hasUnsavedChanges);
+
+  function leaveForm() {
+    setHasUnsavedChanges(false);
+    disablePrevention();
+    router.replace('/profile');
+  }
+
+  return <Button title="Leave without saving" onPress={leaveForm} />;
+}
+```
+
+> **信息** 在 Web 上，`usePreventRemove()` 还会在刷新、关闭标签页或进行外部导航之前请求浏览器确认。是否显示对话框及其消息由浏览器控制
+
+有关所有移除防止选项，请参阅 [Expo Router API 参考](/versions/latest/sdk/router/)。

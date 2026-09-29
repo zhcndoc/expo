@@ -8,8 +8,25 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
 
 一个用于显示文本的组件。默认会适配平台的颜色方案（浅色/深色），并通过 [`textStyle`](#textstyle) 暴露一组精简的排版相关设置。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/text/android-light.webp',
+    darkSrc: '/static/images/expo-ui/text/android-dark.webp',
+    alt: 'Material 3 typography hierarchy: headline, title, body, and label',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/text/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/text/ios-dark.webp',
+    alt: 'Text rendered with different font sizes, weights, and a hierarchical secondary style',
+  }}
+/>
 
 ## 安装
 
@@ -19,51 +36,115 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 ### 基本文本
 
-```tsx TextExample.tsx
+<ComponentExample
+  title="TextExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-text-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-text-basic-android-dark.webp',
+    alt: 'The text Hello, world!',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-text-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-text-basic-ios-dark.webp',
+    alt: 'The text Hello, world!',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
 import { Host, Text } from '@expo/ui';
 
 export default function TextExample() {
+  const colorScheme = useColorScheme();
+
   return (
     <Host matchContents>
-      <Text>你好，世界！</Text>
-    </Host>
-  );
-}
-```
-
-### 带样式的文本
-
-使用 [`textStyle`](#textstyle) 来设置与排版相关的属性（字号、字重、对齐方式）。
-
-```tsx StyledTextExample.tsx
-import { Host, Text } from '@expo/ui';
-
-export default function TextExample() {
-  return (
-    <Host matchContents>
-      <Text textStyle={{ fontSize: 24, fontWeight: '700', textAlign: 'center' }}>标题</Text>
-    </Host>
-  );
-}
-```
-
-### 截断长文本
-
-使用 [`numberOfLines`](#numberoflines) 来限制长文本，并在末尾显示省略号。
-
-```tsx TruncatedTextExample.tsx
-import { Host, Text } from '@expo/ui';
-
-export default function TextExample() {
-  return (
-    <Host style={{ flex: 1 }}>
-      <Text numberOfLines={1}>
-        一行很长的文本，当它无法在单行中完整显示时会被截断。
+      <Text textStyle={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>
+        Hello, world!
       </Text>
     </Host>
   );
 }
 ```
+
+</ComponentExample>
+
+### 设置文本样式
+
+使用 [`textStyle`](#textstyle) 来设置与排版相关的属性（字号、字重、对齐方式）。
+
+<ComponentExample
+  title="StyledTextExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-text-styled-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-text-styled-android-dark.webp',
+    alt: 'The word Headline in large bold type',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-text-styled-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-text-styled-ios-dark.webp',
+    alt: 'The word Headline in large bold type',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
+import { Host, Text } from '@expo/ui';
+
+export default function StyledTextExample() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <Host matchContents>
+      <Text
+        textStyle={{
+          color: colorScheme === 'dark' ? '#FFFFFF' : '#000000',
+          fontSize: 24,
+          fontWeight: '700',
+          textAlign: 'center',
+        }}>
+        Headline
+      </Text>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 截断过长文本
+
+使用 [`numberOfLines`](#numberoflines) 来限制长文本，并在末尾显示省略号。
+
+<ComponentExample
+  title="TruncatedTextExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-text-truncated-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-text-truncated-android-dark.webp',
+    alt: 'A long line of text cut off at the screen edge',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-text-truncated-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-text-truncated-ios-dark.webp',
+    alt: 'A long line of text truncated with an ellipsis',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
+import { Host, Text } from '@expo/ui';
+
+export default function TruncatedTextExample() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+      <Text numberOfLines={1} textStyle={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>
+        A very long line of text that will be truncated when it does not fit on a single line.
+      </Text>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
 
 ## API
 
@@ -72,3 +153,5 @@ import { Text } from '@expo/ui';
 ```
 
 <APISection packageName="expo-ui/universal/text" apiName="Text" />
+
+</PlatformTabsGroup>

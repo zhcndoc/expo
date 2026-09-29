@@ -5,7 +5,7 @@ sidebar_title: 导航
 hasVideoLink: true
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { DocsLogo, RouterLogo } from '@expo/styleguide';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { FileTree } from '~/ui/components/FileTree';
@@ -45,7 +45,7 @@ Expo Router 应用默认使用栈导航，其中导航到新路由会将一个�
   title="路由器命令式导航 API 参考"
   description="了解如何使用命令式导航提供的所有函数。"
   href="/versions/latest/sdk/router/#imperativerouter"
-  Icon={BookOpen02Icon}
+  Icon={DocsLogo}
 />
 
 ## 链接和按钮
@@ -70,7 +70,7 @@ export default function Page() {
 }
 ```
 
-默认情况下，`Link` 组件会将其子元素渲染在一个 `<Text>` 元素内。这意味着非文本子元素（例如 `View`）可能会出现意外的布局行为。若要完全控制布局，请将 `asChild` 属性与 `Pressable` 或其他接受 `onPress`/`onClick` 属性的组件一起使用：
+默认情况下，`Link` 组件会将其子元素渲染在一个 `<Text>` 元素内。这意味着非文本子元素（例如 `View`）可能会出现意外的布局行为。若要完全控制布局，请将 `asChild` 属性与 `Pressable` 或其他接受 `onPress`／`onClick` 属性的组件一起使用：
 
 {/* prettier-ignore */}
 ```tsx
@@ -94,14 +94,14 @@ export default function Page() {
   title="Link API 参考"
   description="了解在使用链接进行导航时可用的选项。"
   href="/versions/latest/sdk/router/link/#link"
-  Icon={BookOpen02Icon}
+  Icon={DocsLogo}
 />
 
 <BoxLink
   title="Link 预览"
   description="了解在使用 Expo Router 时，如何在 iOS 上为你的链接添加预览。"
   href="/router/reference/link-preview/"
-  Icon={BookOpen02Icon}
+  Icon={RouterLogo}
 />
 
 ## 相对路由
@@ -235,7 +235,7 @@ export default function Users() {
   title="使用 URL 参数"
   description="了解更多关于如何在 Expo Router 中设置和使用 URL 参数。"
   href="/router/reference/url-parameters/"
-  Icon={BookOpen02Icon}
+  Icon={RouterLogo}
 />
 
 ## 重定向
@@ -319,9 +319,9 @@ if (navigation.isFocused()) {
 
 通过 app links 和 universal links，你也可以使用 `https` URL 链接到你的应用。有关更多信息，请参阅 [通用链接](/linking/overview/#universal-linking)。
 
-## 初始路由
+## 锚点路由
 
-当打开指向你应用中某个页面的深度链接时，你通常会希望返回导航的行为与用户从首页导航到该页面时一样。为此，你可以指定 `initialRouteName` 配置，它定义了某个布局中应在深度链接页面之前加载的页面。
+当打开指向应用中某个页面的深度链接时，你可能希望返回导航的行为与用户从主页导航到该页面时一致。为此，你可以指定 `anchor` 配置，它定义了在深度链接页面之前应在布局中加载的页面。
 
 考虑以下文件结构：
 
@@ -336,16 +336,16 @@ if (navigation.isFocused()) {
 
 `stack` 是一个栈导航器，而 `/stack/index` 始终是栈中的第一个路由。
 
-为了确保 `/stack/index` 始终最先加载，即使用户深度链接到 `/stack/second`，你也可以在 **src/app/stack/_layout.tsx** 中设置 `initialRouteName`：
+为确保 `/stack/index` 始终首先加载，即使用户通过深度链接打开 `/stack/second`，你可以在 **src/app/stack/\_layout.tsx** 中设置 `anchor`：
 
 ```tsx
 export const unstable_settings = {
   // 确保任何路由都可以链接回 `/`
-  initialRouteName: 'index',
+  anchor: 'index',
 };
 ```
 
-默认情况下，`initialRouteName` 只在深度链接时被考虑，而不会在应用内部导航时生效。不过，你可以在 `Link` 上使用 `withAnchor` 属性，强制在直接导航到应用内另一个栈时先加载初始路由。
+默认情况下，只有在深度链接时才会考虑 `anchor`，而在应用内导航时不会考虑。不过，你可以在 `Link` 上使用 `withAnchor` 属性，强制在应用内直接导航到另一个栈时加载锚点路由。
 
 因此，如果 **src/app/index.tsx** 中包含一个指向 `/stack/second` 的链接，添加 `withAnchor` 属性可确保 `/stack/index` 先被加载，这样当用户从 `/stack/second` 按下返回按钮时，就会回到 `/stack/index`：
 
@@ -355,4 +355,4 @@ export const unstable_settings = {
 </Link>
 ```
 
-> **info** 如果你在测试深度链接时缺少返回按钮，这通常可以通过设置 `initialRouteName` 来修复。
+> **info** 如果在测试深度链接时看不到返回按钮，通常可以通过设置 `anchor` 来解决。

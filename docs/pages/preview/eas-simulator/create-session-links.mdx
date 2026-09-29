@@ -1,0 +1,140 @@
+---
+title: 从链接启动 EAS Simulator 会话
+sidebar_title: 创建会话链接
+description: 构建经过身份验证的 expo.dev URL，从 EAS Build、构建指纹、应用程序归档文件或 Expo Go 创建 EAS Simulator 会话，并打开其全屏浏览器预览。
+---
+
+import { Terminal } from '~/ui/components/Snippet';
+
+> **重要** **EAS Simulator 是有限开放的预览版。**它不包含在付费或免费套餐中，目前仅向部分合作伙伴开放。如果你有兴趣试用，请[加入候补名单](https://expo.dev/services/simulators)。
+
+创建会话链接可从 EAS Build、构建指纹、应用程序归档或 Expo Go 启动 iOS Simulator 会话。预览准备就绪后，链接会以全屏模式打开该会话的浏览器预览。你可以使用此链接将 EAS Simulator 操作添加到拉取请求、CI 结果或内部工具中，而无需集成 [REST API](/preview/eas-simulator/rest-api/)。
+
+创建会话链接会启动仅提供浏览器预览的会话。它们不会配置 agent-device、Appium 或 Argent。若需要控制器、Android Emulator、空白设备或自定义持续时间和空闲限制，请使用 [EAS CLI](/preview/eas-simulator/cli-reference/) 或 [REST API](/preview/eas-simulator/rest-api/)。
+
+> **警告** 打开创建会话链接会直接启动新会话，不会要求确认。该链接不是幂等的：再次打开可能会创建另一个会话并消耗 EAS Simulator 用量。若要避免启动新会话，请从项目的 **Simulator sessions** 页面打开现有会话，并分享其会话页面 URL。
+
+## 构造 URL
+
+在 URL 中使用 Expo 账户名称和项目 slug：
+
+```text
+https://expo.dev/accounts/<account>/projects/<project>/simulator-sessions/create?<parameters>
+```
+
+打开链接的人必须登录有权访问该项目的 Expo 账户。如果他们尚未登录，expo.dev 会在身份验证期间保留完整 URL，并在登录后启动会话。
+
+### 选择应用来源
+
+每个创建会话链接必须且只能包含一个应用来源：
+
+| 参数                    | 描述                                                                                                                                                                                                                              |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `buildId`               | 已完成且未过期的 iOS Simulator EAS Build 的 ID。构建决定平台。                                                                                                                                                                     |
+| `buildFingerprint`      | EAS Build 的指纹哈希。需要 `platform`。EAS 会在所请求的平台上将其解析为具有此指纹的最新可安装构建。                                                                                                                                |
+| `applicationArchiveUrl` | 可下载的 iOS 应用程序归档的 URL。此 URL 嵌套在创建会话 URL 中，因此需要对其进行编码。支持的扩展名为 **.tar.gz**、**.tgz**、**.app** 和 **.app.zip**。                                                                            |
+| `expoGo`                | 设置为 `true`，以安装并启动 Expo Go，而不是项目构建。需要 `platform`。使用 `sdkVersion` 选择 Expo Go 版本，并使用 `openUrl` 从 Metro 加载项目。`false` 和 `0` 会被视为未提供。                                                |
+
+不要包含多个应用来源。如果链接包含多个应用来源，例如同时包含 `buildId` 和 `expoGo=true`，则会显示验证错误，且不会创建会话。没有应用来源的链接无法创建会话。
+
+EAS 会将空的应用来源值（例如 `buildId=`）视为未提供。
+
+### 添加其他参数
+
+| 参数               | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `platform`         | `buildFingerprint`、`applicationArchiveUrl` 或 `expoGo` 的平台。创建会话链接目前支持 `ios`。与 `buildFingerprint` 和 `expoGo` 一起使用时为必填项；如果归档 URL 使用受支持的 iOS 扩展名，则可省略。应用来源为 `buildId` 时会忽略此参数，因为平台由构建决定。                                                                                                                      |
+| `sdkVersion`       | 用于选择 Expo Go 的 Expo SDK 版本，例如 `54`。接受主版本号或语义化版本号。仅在 `expoGo=true` 时有效。省略则使用该平台当前的 Expo Go 版本。                                                                                                                                                                                                                                                                                   |
+| `launchArgs`       | 应用启动时传入的参数。重复此参数即可传入多个参数。参数顺序会保留。                                                                                                                                                                                                                                                                                                                                       |
+| `openUrl`          | 应用启动后要打开的 Expo、development-client 或应用深层链接。对于 Expo Go，请传入远程模拟器可以访问的 Metro 服务器的 `exp://` URL，例如通过隧道访问的 Metro URL。对于开发构建，请传入 `<scheme>://expo-development-client/?url=<encoded-public-metro-url>`，如[使用开发构建进行实时更改](/preview/eas-simulator/run-and-control/#use-a-development-build-for-live-changes)中所述。 |
+| `deviceIdentifier` | iOS Simulator 名称或唯一设备标识符（UDID），例如 `iPhone 16 Pro`。省略此参数时，运行器会选择默认设备。                                                                                                                                                                                                                                                                                                                  |
+| `name`             | 描述性会话名称，最多 255 个字符。                                                                                                                                                                                                                                                                                                                                                                                                             |
+
+对参数值进行 URL 编码，尤其是嵌套的 URL 和包含空格的值。大多数编程语言都提供可处理此编码的 URL 构造器。例如：
+
+```js
+const url = new URL('https://expo.dev/accounts/acme/projects/my-app/simulator-sessions/create');
+
+url.searchParams.set('buildFingerprint', 'FINGERPRINT_HASH');
+url.searchParams.set('platform', 'ios');
+url.searchParams.set('name', 'PR preview');
+url.searchParams.set('deviceIdentifier', 'iPhone 16 Pro');
+url.searchParams.append('launchArgs', '-UITestMode');
+url.searchParams.append('launchArgs', '1');
+url.searchParams.set('openUrl', 'myapp://profile/42');
+
+console.log(url.toString());
+```
+
+## 示例
+
+### 从 EAS Build 启动会话
+
+```text
+https://expo.dev/accounts/acme/projects/my-app/simulator-sessions/create?buildId=BUILD_UUID
+```
+
+构建必须已完成，其构建产物不得过期，并且目标平台必须是 iOS Simulator，而非实体 iOS 设备。
+
+### 使用指纹启动最新的可安装构建
+
+```text
+https://expo.dev/accounts/acme/projects/my-app/simulator-sessions/create?buildFingerprint=FINGERPRINT_HASH&platform=ios
+```
+
+EAS 会将指纹解析为最新的可安装 iOS Simulator 构建。如果不存在具有此指纹的可安装构建，链接会显示验证错误。如果需要选择某个特定构建，请改用 `buildId`。
+
+### 为会话命名并选择设备
+
+```text
+https://expo.dev/accounts/acme/projects/my-app/simulator-sessions/create?buildId=BUILD_UUID&name=PR%20preview&deviceIdentifier=iPhone%2016%20Pro
+```
+
+### 从应用程序归档启动会话
+
+```text
+https://expo.dev/accounts/acme/projects/my-app/simulator-sessions/create?applicationArchiveUrl=https%3A%2F%2Fcdn.example.com%2FMyApp.app.zip&platform=ios
+```
+
+### 传入启动参数并打开深层链接
+
+```text
+https://expo.dev/accounts/acme/projects/my-app/simulator-sessions/create?buildId=BUILD_UUID&launchArgs=-UITestMode&launchArgs=1&openUrl=myapp%3A%2F%2Fprofile%2F42
+```
+
+### 启动 Expo Go 并从 Metro 加载项目
+
+```text
+https://expo.dev/accounts/acme/projects/my-app/simulator-sessions/create?expoGo=true&platform=ios&sdkVersion={{expoSdkMajorVersion}}&openUrl=exp%3A%2F%2Fmetro.example.ngrok.dev
+```
+
+EAS 会安装所请求 SDK 版本对应的 Expo Go 版本，并在其中打开 `openUrl` 值。省略 `sdkVersion` 则使用当前的 Expo Go 版本。远程模拟器必须能够访问 Metro。打开链接前，请通过公共隧道启动 Metro：
+
+<Terminal cmd={['$ EXPO_UNSTABLE_TUNNEL_V2=1 npx expo start --tunnel']} />
+
+有关详情，请参阅[使用 Expo Go](/preview/eas-simulator/run-and-control/#use-expo-go)。
+
+如果所请求的 SDK 版本没有已发布的 Expo Go 版本，链接会显示验证错误。
+
+## 打开链接时会发生什么
+
+身份验证完成后，expo.dev 会验证参数和构建，然后创建会话。它会显示会话的启动进度，同时预留模拟器并准备浏览器预览。这可能需要约一分钟。浏览器预览可用后，expo.dev 会直接重定向到其 `webPreviewUrl` 并附加 `fullscreen=1`，使预览铺满整个页面。
+
+若要返回或分享同一会话而不启动另一个会话，请从项目的 **Simulator sessions** 页面打开它。其会话页面 URL 格式如下：
+
+```text
+https://expo.dev/accounts/<account>/projects/<project>/simulator-sessions/<session-id>
+```
+
+关闭页面或离开页面，不会取消服务已接受的会话创建，也不会停止正在运行的会话。使用完毕后请停止会话，以免继续消耗用量。
+
+如果参数或构建无效，expo.dev 会改为显示 **Cannot start simulator session** 错误。常见原因包括：
+
+- 构建尚未完成或已过期
+- iOS 设备构建
+- 指纹或 `expoGo` 链接缺少 `platform`
+- 指纹没有对应的可安装构建
+- 不受支持的归档 URL
+- 未设置 `expoGo=true` 却提供了 `sdkVersion`
+- SDK 版本没有已发布的 Expo Go 版本
+- 包含多个应用来源

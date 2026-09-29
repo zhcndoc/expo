@@ -1,0 +1,184 @@
+---
+title: 'CI/CD 教程：入门'
+sidebar_title: 入门
+description: 介绍 EAS Workflows 教程，并介绍为 Expo 和 React Native 应用构建 CI/CD 流水线的核心概念。
+---
+
+import { Dataflow03Icon } from '@expo/styleguide-icons/outline/Dataflow03Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { BuildsVsUpdates } from '~/ui/components/FlowDiagram/Diagrams/BuildsVsUpdates';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+
+Expo 和 React Native 应用的构建、测试和分发很少能一步完成。每次更改代码后，你通常都要重复相似的流程：为 Android 和 iOS 构建应用、运行单元测试和端到端（E2E）测试，然后将应用交给队友、QA 团队或应用商店。每次提交都手动完成这些工作很快就会变得繁琐，而这正是 CI/CD 流水线应该承担的任务。
+
+完成本教程后，你的 Expo 项目每次推送都会自动构建、测试和分发应用。实现这一目标的服务是 [EAS Workflows](/eas/workflows/introduction/)。这是 Expo Application Services（EAS）为 Expo 和 React Native 应用提供的持续集成（CI）/持续交付（CD）服务。
+
+工作流定义在 Expo 项目根目录下 **.eas/workflows/** 目录中的 [YAML](https://ja.wikipedia.org/wiki/YAML) 文件里。以下示例是一个完整的工作流，每次向 GitHub 仓库的 `main` 分支推送时，都会构建 Android 开发版本。
+
+```yaml .eas/workflows/build.yml
+name: Build Android
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  build:
+    type: build
+    params:
+      platform: android
+      profile: development
+```
+
+这几行就是工作流的全部内容，其余工作由 EAS 处理。在本教程中，我们将以此为基础逐步构建工作流。
+
+## 为什么使用 EAS Workflows
+
+EAS Workflows 可以构建 Android、iOS 和 web 应用，发布 [OTA 更新](/deploy/send-over-the-air-updates/)，提交应用到应用商店，以及使用 Maestro 运行 E2E 测试。所有这些都通过类似上方示例的 YAML 文件定义。作业在托管的云环境中运行，因此你无需自行搭建和维护构建服务器。
+
+工作流可以由 GitHub 事件（推送、拉取请求、标签、标记）、定时计划（cron）或通过 [EAS CLI](/eas/cli/) 手动运行来触发。
+
+## 涵盖的主题
+
+本教程分为 3 个部分。
+
+- **开发。** 创建自定义作业，使用[指纹](/ja/tutorial/cicd/development-builds/)自动化[开发构建](/develop/development-builds/introduction/)，并向利益相关者分发[拉取请求（PR）预览更新](/ja/tutorial/cicd/preview-builds/)。
+- **测试与发布。** 在工作流中使用 Maestro 运行 E2E 测试，然后创建一个生产工作流，根据指纹在原生构建和 OTA 更新之间进行选择。
+- **进阶。** 将生产触发条件从分支切换为版本标签，并使用 [EAS Hosting](/eas/hosting/introduction/) 部署 web 构建。
+
+## 需要先了解的概念
+
+> **info** **提示：** 如果你已经熟悉 EAS Build 和 EAS Update，可以跳过到下一节。
+
+创建第一个工作流之前，需要先了解几个概念。
+
+<Collapsible summary="Expo 应用会分发到哪里">
+
+Expo 应用有 3 种分发目标。具体选择哪种目标，以及由哪个 EAS 服务负责分发，取决于代码发生了什么变化。
+
+| 分发目标                 | EAS 服务                | 适用场景                                                               |
+| ------------------------ | ----------------------- | ---------------------------------------------------------------------- |
+| 应用商店                 | EAS Build 和 EAS Submit | 新版本发布、原生代码变更                                               |
+| 已安装的设备             | EAS Update              | 仅修改 TypeScript/JavaScript。更新会在几秒内通过无线方式（OTA）分发 |
+| web                      | EAS Hosting             | 与原生版本并行分发的 web 应用                                          |
+
+</Collapsible>
+
+<Collapsible summary="构建配置">
+
+[EAS Build](/build/introduction/) 是一项用于构建 Expo 项目应用二进制文件的服务。默认支持 `development`、`preview` 和 `production` 这 3 种构建配置。每种配置对应开发的不同阶段，本教程会使用这 3 种配置。
+
+</Collapsible>
+
+<Collapsible summary="构建与更新的区别">
+
+与 EAS Build 一样，[EAS Update](/eas-update/introduction/) 也是一项面向 Expo 项目的服务，它使用 [`expo-updates`](/versions/latest/sdk/updates/) 库分发 OTA 更新。
+
+<BuildsVsUpdates />
+
+- EAS Build 会编译原生代码，创建完整的应用二进制文件。构建需要一些时间。项目的原生代码发生变化时，需要进行新的构建。例如，添加新的原生库、更改权限或升级 Expo SDK。
+- EAS Update 会将 TypeScript/JavaScript 变更通过无线方式分发到已安装兼容原生构建版本的设备。如果变更涉及原生代码，需要先创建并安装该构建版本，再发布更新。这样可以确保每次更新都与目标构建版本兼容。发布更新本身只需几秒钟。例如，可以将 UI 错误修复或按钮文案更改作为更新发布。
+
+根据变更内容选择其中一项服务。EAS Workflows 将两者结合起来，让流水线能够判断何时构建、何时发布更新。
+
+</Collapsible>
+
+## 前提条件
+
+> **info** **提示：** 如果你已经有一个配置好 EAS Build 和 EAS Update 的 Expo 项目，可以跳过到下一章。
+
+本教程需要你动手实践。要跟着教程操作，你需要一个使用 [Continuous Native Generation](/workflow/continuous-native-generation/) 的现有 Expo 项目。请按照以下要求配置本地计算机和 EAS。
+
+<Prerequisites>
+
+<Requirement title="Expo 账户">
+
+你需要先注册一个 Expo 账户：[注册](https://expo.dev/signup)。
+
+</Requirement>
+
+<Requirement title="安装 EAS CLI 并登录">
+
+运行以下命令安装 EAS CLI。
+
+<Terminal
+  cmd={{
+    npm: ['$ npm install --global eas-cli'],
+    yarn: ['$ yarn global add eas-cli'],
+    pnpm: ['$ pnpm add -g eas-cli'],
+    bun: ['$ bun add -g eas-cli'],
+  }}
+/>
+
+接着，运行以下登录命令，使用 Expo 账户验证 EAS CLI。
+
+<Terminal cmd={['$ eas login']} />
+
+</Requirement>
+
+<Requirement title="创建 Expo 项目">
+
+运行以下命令创建新的 Expo 项目。
+
+<Terminal
+  cmd={{
+    npm: ['$ npx create-expo-app@latest'],
+    yarn: ['$ yarn create expo-app'],
+    pnpm: ['$ pnpm create expo-app'],
+    bun: ['$ bun create expo'],
+  }}
+/>
+
+使用 `create-expo-app` 创建新项目时，项目默认不会提交原生 **android** 和 **ios** 目录。这种模式称为 Continuous Native Generation（CNG），EAS Build 会自动生成这些原生项目目录。
+
+</Requirement>
+
+<Requirement title="在项目中初始化 EAS">
+
+运行以下命令，在项目中初始化 EAS。
+
+<Terminal cmd={['$ eas build:configure']} />
+
+这会在 Expo 项目根目录生成 **eas.json** 文件，并创建一个与本地项目关联的 EAS 项目。
+
+</Requirement>
+
+<Requirement title="连接到 EAS 控制面板的 GitHub 仓库">
+
+你需要为项目准备一个 GitHub 仓库。可以创建新仓库，也可以使用现有仓库。准备好后，将 GitHub 仓库连接到 EAS。
+
+1. 在 EAS 控制面板中打开项目的 [GitHub 设置](https://expo.dev/accounts/[account]/projects/[projectName]/github)。
+2. 按照控制面板中的说明安装 Expo GitHub 应用。
+3. 选择并连接与 Expo 项目对应的 GitHub 仓库。
+
+</Requirement>
+
+<Requirement title="用于 EAS Submit 的应用商店提交凭据（可选）">
+
+只有在第五章之后的进阶内容中自动提交应用到应用商店时，才需要此项。有关如何设置 EAS Submit 凭据，请参阅 [Google Play Store](/submit/android/) 和 [Apple App Store](/submit/ios/) 指南。
+
+</Requirement>
+
+</Prerequisites>
+
+## 从 GitHub Actions 迁移的用户
+
+EAS Workflows 文件存放在 Expo 项目根目录的 **.eas/workflows/** 目录中，类似于 GitHub Actions 工作流存放在 **.github/workflows/** 中。触发器语法（`on.push`、`on.pull_request` 等）也很相似。
+
+主要区别在于，EAS Workflows 提供了预先打包好的作业。只需指定 `type: build`，即可让 EAS 负责准备环境和处理构建产物，无需编写 `runs-on` 或设置步骤。我们会在后续章节中逐步讲解这些内容。
+
+> **注：** EAS Workflows 可以与 GitHub Actions 配合使用，也可以从 GitHub Actions 作业中通过 `eas workflow:run` 触发工作流。详情请参阅 [How to integrate EAS Workflows with GitHub Actions](https://expo.dev/blog/how-to-integrate-eas-workflows-with-github-actions)。
+
+## 下一步
+
+项目已经准备就绪，接下来进入第 1 章，编写你的第一个工作流。
+
+<BoxLink
+  title="开始使用"
+  description="使用 EAS Workflows 创建并运行你的第一个工作流。"
+  Icon={Dataflow03Icon}
+  href="/ja/tutorial/cicd/first-workflow/"
+/>

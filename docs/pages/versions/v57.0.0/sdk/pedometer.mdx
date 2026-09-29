@@ -52,13 +52,16 @@ export default function App() {
   };
 
   useEffect(() => {
-    const subscription = subscribe();
-    return () => subscription && subscription.remove();
+    const subscriptionPromise = subscribe();
+
+    return () => {
+      subscriptionPromise.then(subscription => subscription?.remove());
+    };
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text>Pedometer.isAvailableAsync(): {isPedometerAvailable}</Text>
+      <Text>Pedometer.isAvailableAsync()：{isPedometerAvailable}</Text>
       <Text>过去 24 小时内走的步数：{pastStepCount}</Text>
       <Text>走起来！看看这个数字往上升：{currentStepCount}</Text>
     </View>

@@ -1,11 +1,11 @@
 ---
 title: 错误处理和加载状态
-description: 了解在使用 Expo Router 时，如何在应用中处理未匹配的路由、错误和加载状态。
+description: 了解在使用 Expo Router 时，如何在应用中处理未匹配的路由、错误和加载状态
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-本指南说明在使用 Expo Router 时，如何处理应用中的未匹配路由、错误和加载状态。
+本指南介绍在使用 Expo Router 时，如何处理应用中的未匹配路由、错误和加载状态。
 
 ## 未匹配的路由
 
@@ -15,7 +15,7 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
   className="max-w-[720px]"
 />
 
-原生应用没有服务器，因此从技术上讲并不存在 404。不过，如果你正在通用地实现一个路由器，那么处理缺失路由就很有意义。这会为每个应用自动完成，但你也可以自定义它。
+原生应用没有服务器，因此严格来说并不存在 404。不过，如果你正在通用地实现路由器，那么处理缺失路由就很有意义。这会自动为每个应用完成，但你也可以自定义。
 
 ```tsx src/app/+not-found.tsx
 import { Unmatched } from 'expo-router';
@@ -31,19 +31,19 @@ export default Unmatched;
 1. **public** 目录中的静态文件。
 2. app 目录中的标准路由和动态路由。
 3. app 目录中的 [API 路由](/router/web/api-routes)。
-4. 未找到路由将最后被提供，并返回 404 状态码。
+4. 未找到的路由最后提供，并返回 404 状态码。
 
 ## 错误处理
 
-Expo Router 支持细粒度的错误处理，以便在未来启用更具约束性的数据加载策略。
+Expo Router 支持细粒度的错误处理，以便将来启用更具约束性的数据加载策略。
 
 <ContentSpotlight
-  alt="在 Expo Router 中使用 ErrorBoundary 来捕获路由组件中的错误。"
+  alt="在 Expo Router 中使用 ErrorBoundary 捕获路由组件中的错误。"
   src="/static/images/expo-router/error-boundaries.webp"
   className="max-w-[720px]"
 />
 
-你可以从任意路由中导出一个嵌套的 [`ErrorBoundary`](/versions/latest/sdk/router/#errorboundary) 组件，以便使用 [React 错误边界](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary) 拦截并格式化组件级错误：
+你可以从任意路由中导出一个嵌套的 [`ErrorBoundary`](/versions/latest/sdk/router/#errorboundary) 组件，以使用 [React 错误边界](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary) 拦截并格式化组件级错误：
 
 {/* prettier-ignore */}
 ```tsx src/app/home.tsx
@@ -78,7 +78,53 @@ function Route({ ErrorBoundary, Component }) {
 
 当 `ErrorBoundary` 不存在时，错误将抛给最近的父级 `ErrorBoundary`，并接受 [`error`](/versions/latest/sdk/router/#error) 和 [`retry`](/versions/latest/sdk/router/#retry) 属性。
 
-### 进行中
+### 布局中屏幕的错误边界
+
+屏幕错误边界会在屏幕抛出错误时，让导航器 UI（例如标题栏和标签栏）保持挂载。可在布局或导航器上配置：
+
+```tsx src/app/_layout.tsx
+import { Stack, type ErrorBoundaryProps } from 'expo-router';
+import { Text } from 'react-native';
+
+function ScreenErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return <Text onPress={retry}>Try again: {error.message}</Text>;
+}
+
+// 为此布局及嵌套布局中的屏幕配置错误边界。
+export const unstable_settings = {
+  screenErrorBoundary: ScreenErrorBoundary,
+};
+
+export default function Layout() {
+  return <Stack />;
+}
+```
+
+或者，也可以在导航器上配置错误边界：
+
+```tsx src/app/_layout.tsx
+import { Stack, type ErrorBoundaryProps } from 'expo-router';
+import { Text } from 'react-native';
+
+function ScreenErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return <Text onPress={retry}>Try again: {error.message}</Text>;
+}
+
+// 此属性会覆盖同一批屏幕的 unstable_settings.screenErrorBoundary。
+export default function Layout() {
+  return <Stack unstable_screenErrorBoundary={ScreenErrorBoundary} />;
+}
+```
+
+Expo Router 按以下顺序应用错误边界：
+
+1. 从屏幕导出的 `ErrorBoundary`
+2. 导航器级属性（例如 `Stack`）
+3. 在 **\_layout.tsx** 文件中声明的 `unstable_settings.screenErrorBoundary`
+
+嵌套布局会继承 `unstable_settings.screenErrorBoundary`，除非它们定义了自己的屏幕错误边界。在嵌套布局中将 `screenErrorBoundary` 设为 `null`，即可停止继承。
+
+### 正在进行的工作
 
 React Native 的 LogBox 需要以更不激进的方式呈现，以便在存在错误时进行开发。目前，它会针对 `console.error` 和 `console.warn` 显示。但理想情况下，它只应在出现未捕获错误时显示。
 
@@ -86,7 +132,9 @@ React Native 的 LogBox 需要以更不激进的方式呈现，以便在存在�
 
 > **重要** 自定义 suspense fallback 在 SDK 56 及更高版本中可用。
 
-Expo Router 会将每个路由包裹在一个 [React Suspense](https://react.dev/reference/react/Suspense) 边界中。你可以从布局文件中导出一个 [`SuspenseFallback`](/versions/latest/sdk/router/#suspensefallback) 组件，以自定义任何子路由挂起时显示的加载界面：
+在 SDK 58 及更高版本中，[异步路由](/router/web/async-routes/)默认在 web 上启用，并使用默认加载 fallback，而不是自定义的 `SuspenseFallback` 导出。若要在 web 上使用以下示例，请在[应用配置](/workflow/configuration/)的 `expo-router` config plugin 中设置 `asyncRoutes: { web: false }`。这会恢复同步路由加载和自定义 fallback 支持。Native 默认设置不变。
+
+Expo Router 会将每个路由包装在 [React Suspense](https://react.dev/reference/react/Suspense) 边界中。你可以从布局文件导出 [`SuspenseFallback`](/versions/latest/sdk/router/#suspensefallback) 组件，自定义任意子路由处于挂起状态时显示的加载 UI：
 
 ```tsx src/app/_layout.tsx
 import { ActivityIndicator, View } from 'react-native';

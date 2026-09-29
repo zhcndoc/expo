@@ -5,15 +5,12 @@ sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-app-integri
 packageName: '@expo/app-integrity'
 exampleName: 'with-app-integrity'
 platforms: ['android', 'ios', 'expo-go']
-isAlpha: true
 ---
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
 
-> **重要** **此库目前处于 [alpha](/more/release-statuses/#alpha) 阶段，并且会频繁出现破坏性变更。**
-
-`@expo/app-integrity` 提供了一组 API，帮助确保你的后端资源仅被运行在真实设备上的合法应用安装访问。它在 Android 上使用 Google 的 [Play Integrity APIs](https://developer.android.com/google/play/integrity)，在 iOS 上使用 Apple 的 [App Attest service](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity) 来验证应用真实性，帮助防止未授权客户端、被修改的应用或自动化脚本向你的服务器发起请求。
+`@expo/app-integrity` 提供 API，帮助确保你的后端资源只被运行在真实设备上的合法应用安装实例访问。它在 Android 上使用 Google 的 [Play Integrity API](https://developer.android.com/google/play/integrity)，在 iOS 上使用 Apple 的 [App Attest service](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity) 来验证应用真实性，从而帮助防止未经授权的客户端、被修改的应用或自动化脚本向你的服务器发起请求。
 
 通常，`@expo/app-integrity` 帮助你的服务器区分以下两者：
 
@@ -113,7 +110,7 @@ const keyId = await AppIntegrity.generateKeyAsync();
 
 成功后，该方法会返回一个密钥标识符（`keyId`），你稍后会用它来访问该密钥。请将该标识符记录到持久化存储中，因为没有标识符就无法使用该密钥，而且之后也无法再获取该标识符。设备会自动将关联的私钥存储在 Secure Enclave 中，App Attest 服务可以从中使用它来创建签名，但任何进程都无法直接读取或修改它，从而确保其安全性。
 
-> **信息** 如果你在 App Clip 中创建了一个密钥对，请在对应的完整应用中使用同一密钥对。为此，请确保将该标识符存储在完整应用可访问的共享容器中。有关在应用/扩展之间共享数据库，请参见 Expo 关于使用 [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/#sharing-a-database-between-appsextensions-ios) 的指南，或使用 React Native MMKV 的 [App Groups / extensions](https://github.com/mrousavy/react-native-mmkv?tab=readme-ov-file#app-groups-or-extensions) 共享存储，以便在两个目标之间持久保存该标识符。
+> **信息** 如果你在 App Clip 中创建了一个密钥对，请在对应的完整应用中使用同一密钥对。为此，请确保将该标识符存储在完整应用可访问的共享容器中。有关在应用／扩展之间共享数据库，请参见 Expo 关于使用 [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/#sharing-a-database-between-appsextensions-ios) 的指南，或使用 React Native MMKV 的 [App Groups／extensions](https://github.com/mrousavy/react-native-mmkv?tab=readme-ov-file#app-groups-or-extensions) 共享存储，以便在两个目标之间持久保存该标识符。
 
 不要在同一设备上的多个用户之间复用同一个密钥，因为这会削弱安全保护。特别是，这会使检测利用一台被攻破的设备为多个运行被篡改版本应用的远程用户提供服务的攻击变得更加困难。更多信息请参见 [评估欺诈风险](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk)。
 

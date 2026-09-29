@@ -3,7 +3,7 @@ title: iOS 模拟器
 description: 了解如何在你的 Mac 上安装 iOS 模拟器，并使用它来开发你的应用。
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { Cube01Icon } from '@expo/styleguide-icons/outline/Cube01Icon';
 import XcodeInstructions from '~/scenes/get-started/set-up-your-environment/instructions/_xcodeInstructions.mdx';
 
 import { BoxLink } from '~/ui/components/BoxLink';
@@ -11,7 +11,7 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 
-直接在电脑上开发你的应用，可能比不断与 iPhone 或 iPad 交互更方便，尤其是在网络条件较慢，或者由于 LAN 限制需要使用 [隧道连接](/more/expo-cli/#tunneling) 时。
+直接在电脑上开发应用，可能比不断与 iPhone 或 iPad 交互更方便，尤其是在网络条件较慢，或者由于 LAN 限制需要使用 [隧道连接](/more/expo-cli/#tunneling) 时。
 
 本指南说明如何在 Mac 上安装 iOS 模拟器以进行应用开发。请注意，iOS 模拟器只能安装在 macOS 上。如果你正在使用 Windows 或 Linux 机器开发 iOS 应用，则需要一台实体 iOS 设备。
 
@@ -34,7 +34,7 @@ import { Step } from '~/ui/components/Step';
 <ContentSpotlight
   alt="Expo CLI UI 中的 iOS 模拟器列表。"
   src="/static/images/ios-simulator/simulators-list.webp"
-  className="max-w-[480px]"
+  className="max-w-[720px]"
 />
 
 </Step>
@@ -47,7 +47,7 @@ import { Step } from '~/ui/components/Step';
   title="使用 Expo Orbit"
   description="了解更多关于如何使用 Expo Orbit。"
   href="/build/orbit/"
-  Icon={BookOpen02Icon}
+  Icon={Cube01Icon}
 />
 
 ## 限制
@@ -67,14 +67,26 @@ import { Step } from '~/ui/components/Step';
 
 ### 打开模拟器时，CLI 似乎卡住了
 
-有时 iOS 模拟器不会响应打开命令。如果它似乎卡在这个提示上，你可以手动打开 iOS 模拟器（`open -a Simulator`），然后在 macOS 工具栏中选择 **文件** &gt; **打开模拟器**，并选择你想打开的 iOS 版本和设备。
+有时 iOS 模拟器不会响应 open 命令。如果它似乎卡在此提示上，请自行启动一个模拟器，然后再次运行应用。
 
-<ContentSpotlight
-  alt="从 macOS 工具栏手动打开模拟器。"
-  src="/static/images/ios-simulator/open-simulator-manually.webp"
+<Terminal
+  cmd={[
+    '# List the simulators installed on your Mac',
+    '$ xcrun simctl list devices available',
+    '',
+    '# Start one of them by name',
+    '$ xcrun simctl boot "iPhone 17"',
+  ]}
 />
 
-你可以使用此菜单打开任意版本的模拟器。你也可以同时打开多个模拟器，不过，Expo CLI 始终会以最近打开的模拟器为目标。
+Xcode 27 用 Device Hub 替代了 Simulator 应用。运行 `open -a DeviceHub` 将其打开。每台正在运行的设备都会显示在侧边栏中。在 Xcode 26 上，则运行 `open -a Simulator`。
+
+<ContentSpotlight
+  alt="macOS 上的 Device Hub 在侧边栏中列出正在运行的 iPhone 17 模拟器。"
+  src="/static/images/ios-simulator/device-hub.webp"
+/>
+
+你可以同时运行多个模拟器。Expo CLI 始终以最近打开的模拟器为目标。
 
 ### 模拟器已打开，但 Expo Go 应用没有在其中启动
 
@@ -132,6 +144,7 @@ import { Step } from '~/ui/components/Step';
 
 对于其他错误，请尝试以下操作：
 
-- 在你的模拟器上手动卸载 Expo Go，然后在 Expo CLI 终端 UI 中按 <kbd>Shift</kbd> + <kbd>I</kbd>，并选择所需的模拟器以重新安装。
-- 如果这没有帮助，请将焦点切换到模拟器窗口，然后在 Mac 工具栏中选择 **设备** &gt; **抹掉所有内容和设置...**<br/>
-  这会从一个空白镜像重新初始化你的模拟器。当你的电脑内存较低，导致模拟器无法存储某些内部文件并使设备处于损坏状态时，这有时会很有用。
+- 手动卸载模拟器上的 Expo Go，然后在 Expo CLI Terminal UI 中按 <kbd>Shift</kbd> + <kbd>I</kbd>，并选择所需的模拟器重新安装。
+- 如果这没有帮助，请在 Device Hub 中选择模拟器，然后选择 **Device** &gt; **Reset Content and Settings...**<br/>
+  Xcode 26 上的 Simulator 应用将此菜单项称为 **Erase All Content and Settings...**<br/>
+  这会从空白映像重新初始化模拟器。当电脑内存不足，导致模拟器无法存储某些内部文件并使设备进入损坏状态时，这有时会很有用。

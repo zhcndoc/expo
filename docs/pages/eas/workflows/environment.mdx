@@ -4,9 +4,11 @@ sidebar_title: 环境变量
 description: EAS Workflows 作业中可用的环境变量参考，包括 env 上下文和其他工作器变量。
 ---
 
+import { Dataflow03Icon } from '@expo/styleguide-icons/outline/Dataflow03Icon';
+
 import { BoxLink } from '~/ui/components/BoxLink';
 
-每个工作流作业都会在一个工作器上运行，该工作器为其提供了一组可用的环境变量。你可以通过以下两种方式读取这些变量：
+每个工作流作业都会在一个工作器上运行，该工作器会为其提供一组可用的环境变量。你可以通过以下两种方式读取这些变量：
 
 - 使用 [`${{ env.NAME }}`](/eas/workflows/syntax/#env) 插值语法，可在作业插值值的任何位置使用（例如 `params`、`if`、`env` 和 `run` 中）。
 - 使用标准 Shell 变量（`$NAME`），或在 [`run`](/eas/workflows/syntax/#jobsjob_idstepssteprun) 步骤中通过 `process.env.NAME` 访问。
@@ -205,8 +207,8 @@ jobs:
     type: slack
     params:
       message: |
-        Workflow run completed: ${{ workflow.name }}
-        View details: ${{ workflow.url }}
+        工作流运行已完成：${{ workflow.name }}
+        查看详情：${{ workflow.url }}
 ```
 
 ### `app_store_connect`
@@ -249,17 +251,17 @@ jobs:
     params:
       webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
       message: |
-        Upload complete for app: ${{ app_store_connect.app.id }}
-        Upload state: ${{ app_store_connect.build_upload.state }}
+        应用上传完成：${{ app_store_connect.app.id }}
+        上传状态：${{ app_store_connect.build_upload.state }}
 ```
 
 有关填充各字段的事件域和完整示例，请参阅语法指南中的 [`app_store_connect`](/eas/workflows/syntax/#app_store_connect)。
 
 ## 额外的环境变量
 
-除了您设置的变量外，worker 还会在虚拟机（VM）上运行的每个作业中提供多个变量，例如 `EAS_BUILD_ID`、`EAS_BUILD_PROJECT_ID` 和 `CI`。这些变量在运行时读取，因此请在 `run` 步骤中引用它们。完整列表请参见[内置环境变量](/eas/environment-variables/usage/#built-in-environment-variables)。
+除了你设置的变量外，工作器还会在虚拟机（VM）上运行的每个作业中提供多个变量，例如 `EAS_BUILD_ID`、`EAS_BUILD_PROJECT_ID` 和 `CI`。这些变量在运行时读取，因此请在 `run` 步骤中引用它们。完整列表请参见[内置环境变量](/eas/environment-variables/usage/#built-in-environment-variables)。
 
-Worker 还会公开标准工具链变量，例如 `HOME`、`PATH`、`LANG`、`ANDROID_HOME`、`ANDROID_SDK_ROOT` 和 `JAVA_HOME`。它们的确切值取决于 worker [镜像](/eas/workflows/syntax/#jobsjob_idimage)，并且可能发生变化。
+工作器还会公开标准工具链变量，例如 `HOME`、`PATH`、`LANG`、`ANDROID_HOME`、`ANDROID_SDK_ROOT` 和 `JAVA_HOME`。它们的确切值取决于工作器[镜像](/eas/workflows/syntax/#jobsjob_idimage)，并且可能发生变化。
 
 ## 在作业中设置环境变量
 
@@ -277,14 +279,14 @@ jobs:
 
 ### 与同一作业中的后续步骤共享值
 
-使用 [`set-env`](/eas/workflows/syntax/#set-env) 命令在一个步骤中计算值，并在同一作业的后续步骤中读取该值。该命令位于工作线程的 `PATH` 中。它是 [`set-output`](/eas/workflows/syntax/#set-output) 的环境变量对应命令：`set-output` 会公开一个命名的作业输出，而 `set-env` 会向作业的后续步骤公开一个环境变量。
+使用 [`set-env`](/eas/workflows/syntax/#set-env) 命令在一个步骤中计算值，并在同一作业的后续步骤中读取该值。该命令位于工作器的 `PATH` 中。它是 [`set-output`](/eas/workflows/syntax/#set-output) 的环境变量对应命令：`set-output` 会公开一个命名的作业输出，而 `set-env` 会向作业的后续步骤公开一个环境变量。
 
 ```yaml
 jobs:
   my_job:
     steps:
       - run: set-env GENERATED_TAG "v$(date +%Y%m%d)"
-      # `set-env` only affects later steps, so the value is available here.
+      # `set-env` 只影响后续步骤，因此该值在此处可用。
       - run: echo "Tag is $GENERATED_TAG"
 ```
 
@@ -298,4 +300,5 @@ jobs:
   title="EAS Workflows 语法"
   description="工作流中可用的完整插值上下文和函数集参考。"
   href="/eas/workflows/syntax/#interpolation"
+  Icon={Dataflow03Icon}
 />

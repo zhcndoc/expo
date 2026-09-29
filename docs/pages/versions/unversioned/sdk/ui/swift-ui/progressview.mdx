@@ -8,9 +8,10 @@ platforms: ['ios', 'tvos', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-Expo UI ProgressView 与官方 SwiftUI [ProgressView API](https://developer.apple.com/documentation/swiftui/progressview) 保持一致，并支持通过 [`progressViewStyle`](modifiers/#progressviewstylestyle) 修饰符进行样式设置。
+Expo UI ProgressView 与官方 SwiftUI [ProgressView API](https://developer.apple.com/documentation/swiftui/progressview) 保持一致，并支持通过 [`progressViewStyle`](modifiers/#progressviewstylestyle) 修饰符设置样式。
 
 <ContentSpotlight
   variant="component"
@@ -26,13 +27,19 @@ Expo UI ProgressView 与官方 SwiftUI [ProgressView API](https://developer.appl
 
 ## 用法
 
-> **注意：** 当使用 `linear` 样式（这是确定性进度的默认样式）时，`ProgressView` 是一个可变宽度组件，它会扩展以填充可用的水平空间。当在 `Host` 上使用 `matchContents` 时，你应当在 `ProgressView` 上应用 [`frame`](modifiers/#frameparams) 修饰符，以给它一个明确的宽度。或者，使用 `style` 为 `Host` 提供一个明确的尺寸（例如，`style={{ width: 300 }}` 或 `style={{ flex: 1 }}`）。`circular` 样式和不确定性加载指示器具有固定大小，并且可以与 `matchContents` 一起工作。
+> **注意：** 使用 `linear` 样式（确定性进度的默认样式）时，`ProgressView` 是一个可变宽度组件，会扩展以填充可用的水平空间。在 `Host` 上使用 `matchContents` 时，应在 `ProgressView` 上应用 [`frame`](modifiers/#frameparams) 修饰符，为其指定明确的宽度。或者，使用 `style` 为 `Host` 指定明确的尺寸（例如，`style={{ width: 300 }}` 或 `style={{ flex: 1 }}`）。`circular` 样式和不确定性加载指示器大小固定，可以与 `matchContents` 一起使用。
 
 ### 不确定性进度
 
-当未提供 `value` 时，进度视图会显示不确定性指示器（spinner）。
+未提供 `value` 时，进度视图会显示不确定性指示器（spinner）。
 
-```tsx IndeterminateExample.tsx
+<ComponentExample
+  title="IndeterminateExample.tsx"
+  src="/static/images/expo-ui/examples/progressview-indeterminate-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progressview-indeterminate-ios-dark.webp"
+  alt="An indeterminate spinner sized to its content at the leading edge">
+
+```tsx
 import { Host, ProgressView } from '@expo/ui/swift-ui';
 
 export default function IndeterminateExample() {
@@ -44,11 +51,19 @@ export default function IndeterminateExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 确定性进度
 
-提供一个介于 `0` 和 `1` 之间的 `value` 来显示确定性进度。
+提供一个介于 `0` 和 `1` 之间的 `value`，以显示确定性进度。
 
-```tsx DeterminateExample.tsx
+<ComponentExample
+  title="DeterminateExample.tsx"
+  src="/static/images/expo-ui/examples/progressview-determinate-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progressview-determinate-ios-dark.webp"
+  alt="A linear progress bar filled to the halfway point">
+
+```tsx
 import { Host, ProgressView } from '@expo/ui/swift-ui';
 
 export default function DeterminateExample() {
@@ -60,28 +75,60 @@ export default function DeterminateExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 进度视图样式
 
-使用 [`progressViewStyle`](modifiers/#progressviewstylestyle) 修饰符来改变进度视图的外观。可用样式包括：`automatic`、`linear` 和 `circular`。
+使用 [`progressViewStyle`](modifiers/#progressviewstylestyle) 修饰符更改进度视图的外观。可用样式包括：`automatic`、`linear` 和 `circular`。
 
-```tsx ProgressViewStylesExample.tsx
-import { Host, ProgressView, VStack } from '@expo/ui/swift-ui';
+<ComponentExample
+  title="ProgressViewStylesExample.tsx"
+  src="/static/images/expo-ui/examples/progressview-styles-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progressview-styles-ios-dark.webp"
+  alt="A half-filled linear progress bar labelled Linear, above a circular spinner labelled Circular">
+
+```tsx
+import {
+  Host,
+  ProgressView,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import { progressViewStyle } from '@expo/ui/swift-ui/modifiers';
 
 export default function ProgressViewStylesExample() {
   return (
     <Host style={{ flex: 1 }}>
-      <ProgressView value={0.5} modifiers={[progressViewStyle('linear')]} />
+      <VStack spacing={16}>
+        <Text>Linear</Text>
+        <ProgressView
+          value={0.5}
+          modifiers={[progressViewStyle('linear')]}
+        />
+        <Text>Circular</Text>
+        <ProgressView
+          value={0.5}
+          modifiers={[progressViewStyle('circular')]}
+        />
+      </VStack>
     </Host>
   );
 }
 ```
 
+</ComponentExample>
+
 ### 带标签
 
-你可以将自定义组件作为 `children` 传入，为进度视图提供一个标签。
+你可以将自定义组件作为 `children` 传入，为进度视图提供标签。
 
-```tsx LabelExample.tsx
+<ComponentExample
+  title="LabelExample.tsx"
+  src="/static/images/expo-ui/examples/progressview-label-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progressview-label-ios-dark.webp"
+  alt="A progress bar filled to one quarter, with the label Loading above it">
+
+```tsx
 import { Host, ProgressView, Text } from '@expo/ui/swift-ui';
 
 export default function LabelExample() {
@@ -95,11 +142,19 @@ export default function LabelExample() {
 }
 ```
 
-### 着色进度视图
+</ComponentExample>
 
-使用 `tint` 修饰符来更改进度视图的颜色。
+### 着色的进度视图
 
-```tsx TintedExample.tsx
+使用 `tint` 修饰符更改进度视图的颜色。
+
+<ComponentExample
+  title="TintedExample.tsx"
+  src="/static/images/expo-ui/examples/progressview-tinted-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progressview-tinted-ios-dark.webp"
+  alt="A red progress bar filled to roughly seventy percent">
+
+```tsx
 import { Host, ProgressView } from '@expo/ui/swift-ui';
 import { tint } from '@expo/ui/swift-ui/modifiers';
 
@@ -112,14 +167,27 @@ export default function TintedExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 基于计时器的进度
 
-使用 `timerInterval` 属性创建一个会在时间范围内自动动画的进度视图。这对于显示倒计时器或定时操作很有用。
+使用 `timerInterval` 属性创建一个会在指定时间范围内自动播放动画的进度视图。这适用于显示倒计时或定时操作。
 
-> **注意：** 基于计时器的进度仅在 iOS 16+ 和 tvOS 16+ 上可用。
+> **注意：** 基于计时器的进度仅适用于 iOS 16+ 和 tvOS 16+。
 
-```tsx TimerExample.tsx
-import { Host, ProgressView, Text, VStack } from '@expo/ui/swift-ui';
+<ComponentExample
+  title="TimerExample.tsx"
+  src="/static/images/expo-ui/examples/progressview-timer-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progressview-timer-ios-dark.webp"
+  alt="Two timer progress bars part way through a ten second range, one labeled Counting up">
+
+```tsx
+import {
+  Host,
+  ProgressView,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 
 export default function TimerExample() {
   const startDate = new Date();
@@ -128,9 +196,13 @@ export default function TimerExample() {
   return (
     <Host style={{ flex: 1 }}>
       <VStack spacing={16}>
-        <ProgressView timerInterval={{ lower: startDate, upper: endDate }} />
-        <ProgressView timerInterval={{ lower: startDate, upper: endDate }} countsDown={false}>
-          <Text>向上计时</Text>
+        <ProgressView
+          timerInterval={{ lower: startDate, upper: endDate }}
+        />
+        <ProgressView
+          timerInterval={{ lower: startDate, upper: endDate }}
+          countsDown={false}>
+          <Text>Counting up</Text>
         </ProgressView>
       </VStack>
     </Host>
@@ -138,10 +210,15 @@ export default function TimerExample() {
 }
 ```
 
+</ComponentExample>
+
 ## API
 
 ```tsx
 import { ProgressView } from '@expo/ui/swift-ui';
 ```
 
-<APISection packageName="expo-ui/swift-ui/progressview" apiName="ProgressView" />
+<APISection
+  packageName="expo-ui/swift-ui/progressview"
+  apiName="ProgressView"
+/>

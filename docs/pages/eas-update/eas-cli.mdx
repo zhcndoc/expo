@@ -4,6 +4,7 @@ sidebar_title: 管理分支和渠道
 description: 了解如何将分支链接到渠道，并使用 EAS CLI 发布更新。
 ---
 
+import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
@@ -126,4 +127,48 @@ EAS Update 的工作方式是将 _分支_ 关联到 _渠道_。渠道在构建�
   ]}
 />
 
-> 如果你不知道确切的更新组 ID，可以使用 `--branch` 标志。这会显示该分支上最近更新的列表，并允许你选择要重新发布的更新组。
+> 如果你不知道确切的更新组 ID，可以使用 `--branch` 标志。这会显示分支上的近期更新列表，并允许你选择要重新发布的更新组。
+
+### 暂停渠道上的更新
+
+暂停渠道会阻止 EAS Update 向在该渠道上检查更新的构建提供更新。
+
+暂停操作可以撤销。取消暂停渠道后，该渠道的更新和任何正在进行的[分阶段发布](/eas-update/rollouts/)都会恢复。
+
+<Terminal
+  cmd={['$ eas channel:pause [channel-name]', '', '# 示例', '$ eas channel:pause production']}
+  cmdCopy="eas channel:pause [channel-name]"
+/>
+
+不指定渠道名称运行此命令，可以从列表中选择一个渠道。在 CI 中，使用 `--non-interactive` 传入渠道名称，或使用 `--json` 以 JSON 格式打印渠道。`--json` 标志隐含了 `--non-interactive`。
+
+<Collapsible summary="渠道暂停期间会发生什么？">
+
+- 暂停渠道上的每个客户端仍会检查更新，但不会收到新更新。对于已暂停的渠道，EAS 通常会以不带响应正文的 HTTP 204 响应，因此这些检查几乎不会占用带宽。
+- 每个客户端都会继续运行其已有的最新更新。如果客户端从未收到较新的更新，这可能是随构建一起发布的代码。用户看到的应用运行状态不会发生变化。
+- 由于没有客户端下载更新，因此渠道暂停期间，[月活跃用户](/eas-update/introduction/#how-are-monthly-active-users-counted-for)的数量不会增加。这可以防止[计费用户](/billing/usage-based-pricing/)数量增长。
+- `eas channel:view [channel-name]` 和 `eas channel:list` 会将渠道状态显示为**已暂停**。
+- 你可以继续向分支发布更新。更新会照常存储，并在取消暂停渠道后变为可用。
+
+暂停操作仅适用于单个渠道，因此暂停 `production` 不会影响 `preview` 或 `development` 渠道。暂停生产渠道期间，你可以继续在开发和预览渠道上发布和测试更新。
+
+</Collapsible>
+
+<Collapsible summary="暂停渠道与回滚有何不同？">
+
+暂停会让客户端继续使用当前更新，并阻止它们接收新更新；回滚则会指示客户端运行较早的更新。
+
+- `eas update:rollback` 和 `eas update:republish` 会再次发布之前的更新，使其成为分支上的最新更新。客户端会下载并运行该更新。请参阅[回滚](/eas-update/rollbacks/)。
+- 带有嵌入式选项的 `eas update:rollback`（也可通过 `eas update:roll-back-to-embedded` 使用）会发布一条指令，告知客户端停止使用已下载的更新，改为运行构建中嵌入的更新。
+- `eas channel:pause` 不会发布任何内容，而是指示 EAS 不要为指定渠道发送更新。该渠道上的客户端会继续运行当前已有的最新更新，且在渠道取消暂停之前不会收到新更新。
+
+</Collapsible>
+
+### 恢复渠道上的更新
+
+<Terminal
+  cmd={['$ eas channel:resume [channel-name]', '', '# 示例', '$ eas channel:resume production']}
+  cmdCopy="eas channel:resume [channel-name]"
+/>
+
+通过恢复渠道来取消暂停。该渠道将开始提供与其关联的分支中的更新。该渠道上的任何分阶段发布也会恢复。用户打开应用并检查更新时，会像往常一样收到最新的兼容更新。

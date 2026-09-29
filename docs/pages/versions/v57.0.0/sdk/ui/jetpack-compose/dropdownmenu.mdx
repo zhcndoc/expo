@@ -8,9 +8,10 @@ platforms: ['android', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-Expo UI DropdownMenu 与官方 Jetpack Compose [Menu API](https://developer.android.com/develop/ui/compose/components/menu) 保持一致，并且会在按下触发元素时显示下拉菜单。
+Expo UI DropdownMenu 与官方 Jetpack Compose [菜单 API](https://developer.android.com/develop/ui/compose/components/menu) 保持一致，并且会在按下触发元素时显示下拉菜单。
 
 <ContentSpotlight
   variant="component"
@@ -28,7 +29,13 @@ Expo UI DropdownMenu 与官方 Jetpack Compose [Menu API](https://developer.andr
 
 ### 基本下拉菜单
 
-```tsx BasicDropdownMenuExample.tsx
+<ComponentExample
+  title="BasicDropdownMenuExample.tsx"
+  src="/static/images/expo-ui/examples/dropdownmenu-basic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/dropdownmenu-basic-android-dark.webp"
+  alt="一个带轮廓的“显示菜单”按钮，下方打开的菜单中包含一个带房屋图标的主页项目">
+
+```tsx
 import {
   Host,
   DropdownMenu,
@@ -45,9 +52,13 @@ export default function BasicDropdownMenuExample() {
   const [isExpanded, setIsExpanded] = useState(false);
   return (
     <Host matchContents>
-      <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
+      <DropdownMenu
+        expanded={isExpanded}
+        onDismissRequest={() => setIsExpanded(false)}>
         <DropdownMenu.Trigger>
-          <OutlinedButton onClick={() => setIsExpanded(true)}>Show menu</OutlinedButton>
+          <OutlinedButton onClick={() => setIsExpanded(true)}>
+            <Text>Show menu</Text>
+          </OutlinedButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Items>
           <DropdownMenuItem
@@ -69,11 +80,19 @@ export default function BasicDropdownMenuExample() {
 }
 ```
 
-### 将 React Native 组件作为触发器
+</ComponentExample>
+
+### 将 React Native 组件用作触发器
 
 你可以通过将 React Native 视图（例如 `Pressable`）包裹在 [`RNHostView`](rnhostview) 中，将其用作下拉菜单的触发器。
 
-```tsx RNTriggerDropdownMenuExample.tsx
+<ComponentExample
+  title="RNTriggerDropdownMenuExample.tsx"
+  src="/static/images/expo-ui/examples/dropdownmenu-rn-trigger-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/dropdownmenu-rn-trigger-android-dark.webp"
+  alt="一个紫色的 React Native 按钮，下方打开的菜单中包含项目 1 和项目 2">
+
+```tsx
 import {
   Host,
   DropdownMenu,
@@ -88,7 +107,9 @@ export default function RNTriggerDropdownMenuExample() {
   const [isExpanded, setIsExpanded] = useState(false);
   return (
     <Host matchContents>
-      <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
+      <DropdownMenu
+        expanded={isExpanded}
+        onDismissRequest={() => setIsExpanded(false)}>
         <DropdownMenu.Trigger>
           <RNHostView matchContents>
             <Pressable
@@ -100,7 +121,9 @@ export default function RNTriggerDropdownMenuExample() {
                 borderRadius: 8,
                 backgroundColor: '#9B59B6',
               }}>
-              <Text style={{ color: 'white', fontWeight: '600' }}>RN Pressable 触发器</Text>
+              <Text style={{ color: 'white', fontWeight: '600' }}>
+                RN Pressable Trigger
+              </Text>
             </Pressable>
           </RNHostView>
         </DropdownMenu.Trigger>
@@ -122,20 +145,38 @@ export default function RNTriggerDropdownMenuExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 长按触发器
 
 Jetpack Compose 没有专门的长按菜单原语——你可以通过在触发视图上使用 [`combinedClickable`](./modifiers.mdx) 修饰符，并配合现有的受控 `DropdownMenu` 来组合实现。菜单会自动锚定到触发器。
 
-```tsx LongPressDropdownMenuExample.tsx
-import { Host, DropdownMenu, DropdownMenuItem, Text } from '@expo/ui/jetpack-compose';
-import { background, combinedClickable } from '@expo/ui/jetpack-compose/modifiers';
+<ComponentExample
+  title="LongPressDropdownMenuExample.tsx"
+  src="/static/images/expo-ui/examples/dropdownmenu-long-press-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/dropdownmenu-long-press-android-dark.webp"
+  alt="通过长按打开的菜单，包含“复制”和红色的“删除”项目">
+
+```tsx
+import {
+  Host,
+  DropdownMenu,
+  DropdownMenuItem,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import {
+  background,
+  combinedClickable,
+} from '@expo/ui/jetpack-compose/modifiers';
 import { useState } from 'react';
 
 export default function LongPressDropdownMenuExample() {
   const [isExpanded, setIsExpanded] = useState(false);
   return (
     <Host matchContents>
-      <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
+      <DropdownMenu
+        expanded={isExpanded}
+        onDismissRequest={() => setIsExpanded(false)}>
         <DropdownMenu.Trigger>
           <Text
             modifiers={[
@@ -168,10 +209,63 @@ export default function LongPressDropdownMenuExample() {
 }
 ```
 
+</ComponentExample>
+
+### 圆角
+
+使用 `cornerRadius` 覆盖默认的 Material3 菜单形状，设置自定义圆角半径（单位为 dp）。
+
+<ComponentExample
+  title="RoundedDropdownMenuExample.tsx"
+  src="/static/images/expo-ui/examples/dropdownmenu-rounded-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/dropdownmenu-rounded-android-dark.webp"
+  alt="一个带圆角的菜单，在“显示菜单”按钮下方打开">
+
+```tsx
+import {
+  Host,
+  DropdownMenu,
+  DropdownMenuItem,
+  OutlinedButton,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import { useState } from 'react';
+
+export default function RoundedDropdownMenuExample() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  return (
+    <Host matchContents>
+      <DropdownMenu
+        expanded={isExpanded}
+        onDismissRequest={() => setIsExpanded(false)}
+        cornerRadius={16}>
+        <DropdownMenu.Trigger>
+          <OutlinedButton onClick={() => setIsExpanded(true)}>
+            <Text>Show menu</Text>
+          </OutlinedButton>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Items>
+          <DropdownMenuItem onClick={() => setIsExpanded(false)}>
+            <DropdownMenuItem.Text>
+              <Text>Item 1</Text>
+            </DropdownMenuItem.Text>
+          </DropdownMenuItem>
+        </DropdownMenu.Items>
+      </DropdownMenu>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
 ## API
 
 ```tsx
 import { DropdownMenu } from '@expo/ui/jetpack-compose';
 ```
 
-<APISection packageName="expo-ui/jetpack-compose/dropdownmenu" apiName="DropdownMenu" />
+<APISection
+  packageName="expo-ui/jetpack-compose/dropdownmenu"
+  apiName="DropdownMenu"
+/>

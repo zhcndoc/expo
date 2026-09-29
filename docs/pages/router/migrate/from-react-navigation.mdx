@@ -8,7 +8,7 @@ import { Collapsible } from '~/ui/components/Collapsible';
 import { FileTree } from '~/ui/components/FileTree';
 import { DiffBlock } from '~/ui/components/Snippet';
 
-> **info** 本指南适用于 **SDK 56 及更高版本**。在 SDK 56 中，Expo Router 停止接受来自 `@react-navigation/*.` 的应用代码导入。它们现在来自 `expo-router/\*` 入口点。如果你正在将现有的 Expo Router 应用从 SDK 55 或更早版本升级，请按照 [SDK 55 到 56 迁移指南](/router/migrate/sdk-55-to-56) 进行操作。下面的示例已经使用了 SDK 56 及更高版本的导入路径。
+> **信息** 本指南面向 **SDK 56 及更高版本**。在 SDK 56 中，Expo Router 不再接受来自 `@react-navigation/*` 的应用代码导入。现在应从 `expo-router/*` 入口导入。 如果你要将现有的 Expo Router 应用从 SDK 55 或更早版本升级，请遵循 [SDK 55 到 56 迁移指南](/router/migrate/sdk-55-to-56)。下面的示例已经使用 SDK 56 及更高版本的导入路径。
 
 ## 前言
 
@@ -149,7 +149,7 @@ function App() {
 
 **Expo Router：**
 
-- 将 “main” 路由从 **Home** 重命名为 **index**，以确保它与 `/` 路径匹配。
+- 将“main”路由从 **Home** 重命名为 **index**，以确保它与 `/` 路径匹配。
 - 将名称转换为小写。
 - 将所有屏幕移动到 app 目录内相应的文件位置。这可能需要一些尝试。
 
@@ -186,7 +186,7 @@ export default function RootLayout() {
 标签导航器将被移动到一个子目录中。
 
 ```tsx src/app/(home)/_layout.tsx
-import { Tabs } from 'expo-router';
+import { Tabs } from 'expo-router/js-tabs';
 
 export default function HomeLayout() {
   return <Tabs />;
@@ -301,7 +301,7 @@ function Example() {
 
 #### `initialState`
 
-在 Expo Router 中，你可以从路由字符串重新恢复应用状态（例如，`/user/evanbacon`）。使用 [重定向](/router/reference/redirects/) 处理初始状态。有关高级重定向，请参阅[共享路由](/router/advanced/shared-routes/)。
+在 Expo Router 中，你可以从路由字符串重新恢复应用状态（例如，`/user/evanbacon`）。使用[重定向](/router/reference/redirects/)处理初始状态。有关高级重定向，请参阅[共享路由](/router/advanced/shared-routes/)。
 
 建议避免使用这种模式，而是采用深度链接（例如，用户直接打开你的应用到 `/profile`，而不是从首页打开），因为它与 Web 最为相似。如果某个特定屏幕导致应用崩溃，最好避免在应用启动时自动导航回那个确切的屏幕，因为这可能需要重新安装应用才能修复。
 
@@ -370,63 +370,20 @@ Expo Router 不支持 [`independent`](https://reactnavigation.org/docs/navigatio
 
 </Collapsible>
 
-### 重写自定义导航器
+### 迁移自定义导航器
 
-如果你的项目有自定义导航器，你可以重写它，或将其移植到 Expo Router。
+> **info** 本节中的稳定 API 适用于 **SDK 58 及更高版本**。在 SDK 56 和 SDK 57 中，请改用 `unstable_createStandardRouterNavigator` 和 `unstable_integrateWithRouter`。
 
-要进行移植，只需使用 `withLayoutContext` 函数：
+当导航器属于你的应用时，请使用 `createStandardRouterNavigator`：
 
-```js
-import { createCustomNavigator } from './my-navigator';
+```tsx src/components/CustomTabs.tsx
+import { createStandardRouterNavigator, TabRouter } from 'expo-router';
+import { CustomTabsContent } from './CustomTabsContent';
 
-export const CustomNavigator = withLayoutContext(createCustomNavigator().Navigator);
+export const CustomTabs = createStandardRouterNavigator(CustomTabsContent, TabRouter);
 ```
 
-要重写，请使用 `Navigator` 组件，它封装了 React Navigation 中的 [`useNavigationBuilder`](https://reactnavigation.org/docs/custom-navigators#usenavigationbuilder) hook。
-
-`useNavigationBuilder` 的返回值可以从 `<Navigator />` 组件内部通过 `Navigator.useContext()` hook 访问。属性可以通过 `<Navigator />` 组件的 props 传递给 `useNavigationBuilder`，这包括 `initialRouteName`、`screenOptions`、`router`。
-
-`<Navigator />` 组件的所有 `children` 都将按原样渲染。
-
-- `Navigator.useContext`：访问自定义导航器的 React Navigation `state`、`navigation`、`descriptors` 和 `router`。
-- `Navigator.Slot`：用于渲染当前所选路由的 React 组件。此组件只能在 `<Navigator />` 组件内部渲染。
-
-#### 示例
-
-自定义布局具有一个内部上下文，当在没有用 `<Navigator />` 组件包裹的情况下使用 `<Slot />` 组件时，该上下文会被忽略。
-
-{/* prettier-ignore */}
-```jsx
-import { View } from 'react-native';
-import { TabRouter } from 'expo-router/react-navigation';
-
-import { Navigator, usePathname, Slot, Link } from 'expo-router';
-
-export default function App() {
-  return (
-    /* @info */<Navigator router={TabRouter}>/* @end */
-      <Header />
-      <Slot />
-    </Navigator>
-  );
-}
-
-function Header() {;
-  const pathname = usePathname();
-
-  return (
-    <View>
-      <Link href="/">首页</Link>
-      <Link
-        href="/profile"
-        style={/* @info 使用 `pathname` 来判断链接是否处于激活状态。 */[pathname === '/profile' && { color: 'blue' }]/* @end */}>
-        个人资料
-      </Link>
-      <Link href="/settings">设置</Link>
-    </View>
-  );
-}
-```
+如果某个库已提供 `standard-navigation` 导航器，请改用 `integrateWithRouter`。有关完整集成以及 JavaScript 堆栈、JavaScript 标签页和原生堆栈的辅助工具，请参阅[自定义导航器](/router/advanced/custom-navigators/)。
 
 ### 使用 Expo Router 的启动屏包装器
 
@@ -438,7 +395,7 @@ Expo Router 对 `expo-splash-screen` 进行了包装，并添加了特殊处理�
 
 ### 向嵌套屏幕传递参数
 
-不要使用 [嵌套屏幕导航事件](https://reactnavigation.org/docs/params/#passing-params-to-nested-navigators)，而是使用带限定的 href：
+不要使用[嵌套屏幕导航事件](https://reactnavigation.org/docs/params/#passing-params-to-nested-navigators)，而是使用带限定的 href：
 
 ```js
 // React Navigation

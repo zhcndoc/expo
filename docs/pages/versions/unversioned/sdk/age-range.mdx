@@ -14,9 +14,9 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 `expo-age-range` 提供访问用户年龄范围信息的功能。在 Android 上，它使用 Google 的 [Play 年龄信号 API](https://developer.android.com/google/play/age-signals/use-age-signals-api)，在 iOS 上使用 Apple 的[已声明年龄范围框架](https://developer.apple.com/documentation/declaredagerange/)。
 
-此库允许你向应用用户请求年龄范围信息，以帮助你遵守适龄内容法规（例如 [美国得克萨斯州](https://developer.apple.com/news/?id=btkirlj8)）并在应用中提供适合年龄的体验。
+此库允许你向应用用户请求年龄范围信息，以帮助你遵守适龄内容法规（例如 [美国得克萨斯州](https://developer.apple.com/news/?id=btkirlj)）并在应用中提供适合年龄的体验。
 
-> **重要** **Google 和 Apple 提供的底层原生 API 正在积极开发中。虽然此库已经稳定，但为了适应这些变化，可能需要进行更多破坏性更改。**
+> **important** **Google 和 Apple 提供的底层原生 API 仍在积极开发中。虽然此库是稳定的，但为了适应这些 API，可能需要进行更多破坏性更改。**
 
 ### 限制
 
@@ -87,7 +87,7 @@ export default function App() {
       });
       setResult(ageRange);
     } catch (error) {
-      setResult({ error: error.message });
+      setResult({ error: error instanceof Error ? error.message : String(error) });
     }
   };
 
@@ -118,6 +118,37 @@ const styles = StyleSheet.create({
 
 </SnackInline>
 
+## 在 Android 上测试年龄信号
+
+Google Play 只会向已启用年龄信号的账号报告年龄信号，因此你的测试账号可能没有所需的年龄范围。请使用 [`setFakeAgeSignals`](#agerangesetfakeagesignalsfake)，通过 Google Play 的 [`FakeAgeSignalsManager`](https://developer.android.com/google/play/age-signals/test-age-signals-api) 模拟年龄信号。
+
+只有可调试构建才能模拟信号，因为伪造的信号会让应用中的任何代码绕过年龄限制。如果在不可调试的构建中传入除 `null` 以外的任何值，则会抛出 `ERR_AGE_RANGE_FAKE_SIGNALS_NOT_DEBUGGABLE`。
+
+你的请求无需更改，只有报告的内容会改变：
+
+```ts
+// Report a supervised 13 to 15 year old with a change waiting for approval.
+AgeRange.setFakeAgeSignals({
+  ageSignalsStatus: 'SHARED',
+  lowerBound: 13,
+  upperBound: 15,
+  ageRangeSource: 'TIER_B',
+  significantChangeStatus: 'PENDING',
+});
+
+const status = await AgeRange.requestAgeSignalsAccessAsync();
+const { lowerBound } = await AgeRange.requestAgeRangeAsync({ threshold1: 18 });
+
+// Report the real signals again.
+AgeRange.setFakeAgeSignals(null);
+```
+
+要模拟失败，请传入[错误代码](https://developer.android.com/google/play/age-signals/handle-errors)，而不是信号：
+
+```ts
+AgeRange.setFakeAgeSignals({ errorCode: -4 });
+```
+
 ## 其他资源
 
 - [Play 年龄信号 API](https://developer.android.com/google/play/age-signals/use-age-signals-api)：Android 的年龄信号文档
@@ -135,9 +166,11 @@ import * as AgeRange from 'expo-age-range';
 
 可在原生模块抛出的任何错误的 `code` 属性中获取。对于 Android 特定的错误代码，请参阅[使用 Play 年龄信号 API 文档](https://developer.android.com/google/play/age-signals/handle-errors)中的“错误代码参考”。
 
-| Code                            | Platform                                 | Description                                                                                                        |
-| ------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `ERR_AGE_RANGE_USER_DECLINED`   | <PlatformTags platforms={['ios']} />     | 用户拒绝分享其年龄范围。                                                                                           |
-| `ERR_AGE_RANGE_NOT_AVAILABLE`   | <PlatformTags platforms={['ios']} />     | 年龄范围不可用。最可能的原因是用户未在设备上登录其 Apple 账户。                                                     |
-| `ERR_AGE_RANGE_INVALID_REQUEST` | <PlatformTags platforms={['ios']} />     | 提供的参数无效。年龄范围之间至少需要相隔 2 年。                                                                    |
-| `ERR_AGE_RANGE_TASK_CANCELLED`  | <PlatformTags platforms={['android']} /> | 用户关闭了 Play 年龄信号的年龄分享同意页面。                                                                     |
+| 代码                                        | 平台                                     | 描述                                                                                                             |
+| ------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `ERR_AGE_RANGE_USER_DECLINED`               | <PlatformTags platforms={['ios']} />     | 用户拒绝分享其年龄范围。                                                                                         |
+| `ERR_AGE_RANGE_NOT_AVAILABLE`               | <PlatformTags platforms={['ios']} />     | 年龄范围不可用。最可能的原因是用户未在设备上登录其 Apple 账号。                                                  |
+| `ERR_AGE_RANGE_INVALID_REQUEST`             | <PlatformTags platforms={['ios']} />     | 提供的参数无效。年龄范围之间至少需要相差 2 年。                                                                  |
+| `ERR_AGE_RANGE_TASK_CANCELLED`              | <PlatformTags platforms={['android']} /> | 用户关闭了 Play 年龄信号年龄分享同意界面。                                                                      |
+| `ERR_AGE_RANGE_FAKE_SIGNALS_CONFLICT`       | <PlatformTags platforms={['android']} /> | `setFakeAgeSignals` 同时传入了 `errorCode` 和年龄信号。                                                          |
+| `ERR_AGE_RANGE_FAKE_SIGNALS_NOT_DEBUGGABLE` | <PlatformTags platforms={['android']} /> | `setFakeAgeSignals` 被要求在不可调试的构建中模拟信号。                                                           |

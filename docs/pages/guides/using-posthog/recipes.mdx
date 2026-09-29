@@ -50,16 +50,19 @@ jobs:
         with:
           event: ota_update_published
           properties:
+            eas/account: ${{ account.name }}
+            eas/project_id: ${{ app.id }}
+            eas/workflow_id: ${{ workflow.id }}
+            eas/update_id: ${{ needs.publish.outputs.first_update_group_id }}
+            eas/runtime_version: ${{ fromJSON(needs.publish.outputs.updates_json || '[]')[0].runtimeVersion }}
             branch: main
-            runtime_version: ${{ fromJSON(needs.publish.outputs.updates_json || '[]')[0].runtimeVersion }}
-            update_group_id: ${{ needs.publish.outputs.first_update_group_id }}
 ```
 
 ### 工作原理
 
-1. [`update`](/eas/workflows/pre-packaged-jobs#update) 任务会将 EAS Update 发布到 `main` 分支。
-2. [`eas/posthog_capture_event`](/eas/workflows/syntax/#easposthog_capture_event) 随后运行并记录此次部署。这两个属性都来自更新任务的[输出](/eas/workflows/pre-packaged-jobs#update)：运行时版本表示哪些构建可以运行该更新，而更新组 ID 则指向确切的更新。使用 [`fingerprint` 运行时版本策略](/eas-update/runtime-versions/)时，每当原生运行时发生变化，运行时版本也会随之变化，其依据是项目的 [fingerprint](/versions/latest/sdk/fingerprint/)。
-3. 由于未设置 `distinct_id`，该事件是匿名的，不会创建人员档案。
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业会将 EAS Update 发布到 `main` 分支。
+2. [`eas/posthog_capture_event`](/eas/workflows/syntax/#easposthog_capture_event) 会在其运行后，使用[标准 EAS 属性](/guides/using-posthog/#standard-eas-properties)记录此次部署。`eas/account`、`eas/project_id` 和 `eas/workflow_id` 来自始终可用的工作流上下文；`eas/update_id` 和 `eas/runtime_version` 来自更新作业的[输出](/eas/workflows/pre-packaged-jobs#update)。使用[`fingerprint`运行时版本策略](/eas-update/runtime-versions/)时，运行时版本会根据项目的[指纹](/versions/latest/sdk/fingerprint/)，在原生运行时发生变化时随之更新。
+3. 由于未设置 `distinct_id`，该事件是匿名的，不会创建个人资料。
 
 ## 标注发布版本
 
@@ -88,8 +91,8 @@ jobs:
 
 ### 工作原理
 
-1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业发布更新。
-2. [`eas/posthog_annotation`](/eas/workflows/syntax/#easposthog_annotation) 将注释固定到当前时间，内容中的运行时版本用于标识此次发布。
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业会发布更新。
+2. [`eas/posthog_annotation`](/eas/workflows/syntax/#easposthog_annotation) 会将注释固定在当前时间，内容中的运行时版本用于标识此次发布。
 
 ## 上传用于错误追踪的源代码映射
 
@@ -112,7 +115,7 @@ jobs:
       profile: production
 ```
 
-更新只会发布 JavaScript，因此需要在发布后上传其源代码映射。 [`update`](/eas/workflows/pre-packaged-jobs#update) 任务无法运行额外步骤，并且源代码映射必须存在于执行上传操作的任务磁盘上。因此，请在自定义任务中使用 `eas update` 发布一个平台的更新，并在那里添加上传步骤：
+更新只会发布 JavaScript，因此需要在发布后上传其源代码映射。[`update`](/eas/workflows/pre-packaged-jobs#update) 任务无法运行额外步骤，并且源代码映射必须存在于执行上传操作的任务磁盘上。因此，请在自定义任务中使用 `eas update` 发布一个平台的更新，并在那里添加上传步骤：
 
 ```yaml .eas/workflows/update-with-sourcemaps.yml
 name: Publish update with source maps
@@ -246,8 +249,8 @@ jobs:
 
 ### 工作原理
 
-1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业发布代码，然后 [`eas/posthog_flag_rollout`](/eas/workflows/syntax/#easposthog_flag_rollout) 将其提供给 25% 的用户。
-2. [`eas/posthog_wait_for_metric`](/eas/workflows/syntax/#easposthog_wait_for_metric) 运行一个 [HogQL](https://posthog.com/docs/hogql) 查询，并等待过去 30 分钟内的异常数量降至 5 个或更少。门槛通过后，`full_rollout` 会将功能标记扩大到 100%。如果糟糕的发布导致数量持续偏高，门槛会超时并失败，而 `full_rollout` 永远不会运行。
+1. [`update`](/eas/workflows/pre-packaged-jobs#update) 作业会发布代码，然后 [`eas/posthog_flag_rollout`](/eas/workflows/syntax/#easposthog_flag_rollout) 将其提供给 25% 的用户。
+2. [`eas/posthog_wait_for_metric`](/eas/workflows/syntax/#easposthog_wait_for_metric) 会运行 [HogQL](https://posthog.com/docs/hogql) 查询，并等待过去 30 分钟内的异常数量降至 5 个或更少。门槛通过后，`full_rollout` 会将功能标记扩大到 100%。如果糟糕的发布导致数量持续偏高，门槛会超时并失败，而 `full_rollout` 永远不会运行。
 3. 发生失败时，`roll_back` 会关闭功能标记。它使用 [`after`](/eas/workflows/syntax/#jobsjob_idafter) 和 [`if: ${{ failure() }}`](/eas/workflows/syntax/#jobsjob_idif)，因为 `needs` 依赖在这里无法正常工作。当 `needs` 依赖失败时，作业会在其 `if` 条件求值之前被跳过。`failure()` 反映整个工作流运行的状态，因此请确保此工作流专注于发布及其门槛。
 
 ## 发布 EAS Update channel，或在失败时回滚
@@ -287,6 +290,9 @@ jobs:
         with:
           event: channel_rollout_cleared
           properties:
+            eas/account: ${{ account.name }}
+            eas/project_id: ${{ app.id }}
+            eas/workflow_id: ${{ workflow.id }}
             error_count: ${{ steps.gate.outputs.value }}
 
   widen:
@@ -336,6 +342,9 @@ jobs:
         with:
           event: feature_went_ga
           properties:
+            eas/account: ${{ account.name }}
+            eas/project_id: ${{ app.id }}
+            eas/workflow_id: ${{ workflow.id }}
             flag: new-checkout
 ```
 
@@ -367,6 +376,9 @@ jobs:
         with:
           event: kill_switch_pulled
           properties:
+            eas/account: ${{ account.name }}
+            eas/project_id: ${{ app.id }}
+            eas/workflow_id: ${{ workflow.id }}
             flag: new-checkout
 ```
 
@@ -418,6 +430,9 @@ jobs:
         with:
           event: auto_kill_switch_pulled
           properties:
+            eas/account: ${{ account.name }}
+            eas/project_id: ${{ app.id }}
+            eas/workflow_id: ${{ workflow.id }}
             flag: new-checkout
 ```
 
@@ -540,19 +555,24 @@ jobs:
       profile: production
 
   mark_release:
-    needs: [submit]
+    needs: [submit, build]
     steps:
       - uses: eas/posthog_capture_event
         with:
           event: store_build_submitted
           properties:
+            eas/account: ${{ account.name }}
+            eas/project_id: ${{ app.id }}
+            eas/workflow_id: ${{ workflow.id }}
+            eas/build_id: ${{ needs.build.outputs.build_id }}
+            eas/channel: ${{ needs.build.outputs.channel }}
             platform: ios
             profile: production
 ```
 
 ## 重要说明
 
-- **凭据来自 connect 命令。** 每个函数默认使用 `eas integrations:posthog:connect` 设置的环境变量，并且都接受 `api_key` 输入，以便你在需要时覆盖这些变量。若要自行设置，请将以下变量添加为 [EAS 环境变量](/eas/environment-variables/manage/)：`eas/posthog_capture_event` 使用 `EXPO_PUBLIC_POSTHOG_API_KEY`，其他所有函数使用 `POSTHOG_CLI_API_KEY` 和 `POSTHOG_CLI_PROJECT_ID`。[语法参考](/eas/workflows/syntax/#easposthog_capture_event)列出了每个函数所需的作用域。
-- **超时的门禁会使步骤失败。** `eas/posthog_wait_for_metric` 和 `eas/posthog_wait_for_query` 没有 `ignore_error` 输入，因此未通过的门禁会停止发布流程，而不是让流程继续。
-- **条件满足后，门禁会立即通过。** 检查低错误数量的门禁可能在第一次检查时就通过，包括部署后立即检查、用户尚未使用新更新之前。需要先让错误有机会显现时，请将其与采用率门禁结合使用，例如[用户采用后再宣布发布](#announce-a-release-once-users-adopt-it)中的门禁。
-- **将查询限定在当前运行范围内。** 事件和指标查询会返回历史数据。添加 `timestamp > now() - INTERVAL ...` 过滤条件，或添加当前运行独有的属性，以免旧事件立即解除门禁。设置[发布标记](/guides/using-posthog/#release-tagging)后，每个客户端事件都会附带 `expo_update_id`、`expo_channel` 和 `expo_runtime_version`，因此你可以通过 `properties.expo_update_id` 过滤门禁，将其限定到确切的发布版本。
+- **凭据来自 connect 命令。** 每个函数默认使用 `eas integrations:posthog:connect` 设置的环境变量，并且在需要覆盖时都接受 `api_key` 输入。要自行设置这些变量，请将以下内容添加为 [EAS 环境变量](/eas/environment-variables/manage/)：`eas/posthog_capture_event` 使用 `EXPO_PUBLIC_POSTHOG_API_KEY`，其他所有函数使用 `POSTHOG_CLI_API_KEY` 和 `POSTHOG_CLI_PROJECT_ID`。[语法参考](/eas/workflows/syntax/#easposthog_capture_event) 列出了每个函数所需的作用域。
+- **超时的门控会使步骤失败。** `eas/posthog_wait_for_metric` 和 `eas/posthog_wait_for_query` 不接受 `ignore_error` 输入，因此未通过的门控会停止发布流程，而不是让流程继续。
+- **条件满足后，门控会立即通过。** 检查低错误数量的门控可能在第一次检查时就通过，包括部署后立即检查的情况，此时用户可能尚未使用新更新。当你需要先让错误有机会显现时，请将其与采用率门控结合使用，例如[用户采用后宣布发布](#announce-a-release-once-users-adopt-it)中的门控。
+- **将查询限定到当前运行。** 事件和指标查询会返回历史数据。添加 `timestamp > now() - INTERVAL ...` 过滤条件，或添加当前运行专用的属性，以免旧事件立即解除门控。设置 [release tagging](/guides/using-posthog/#release-tagging) 后，每个客户端事件都会附加 `eas/update_id`、`eas/channel` 和 `eas/runtime_version`，因此你可以使用 `properties['eas/update_id']` 过滤门控，将其限定到确切的发布版本。

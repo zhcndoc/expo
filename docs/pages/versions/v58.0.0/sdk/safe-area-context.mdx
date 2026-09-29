@@ -1,0 +1,226 @@
+---
+title: react-native-safe-area-context
+description: 一个提供灵活 API 用于访问设备安全区域内边距信息的库。
+sourceCodeUrl: 'https://github.com/AppAndFlow/react-native-safe-area-context'
+packageName: react-native-safe-area-context
+platforms: ['android', 'ios', 'web', 'tvos', 'expo-go']
+inExpoGo: true
+---
+
+import { CornerDownRightIcon } from '@expo/styleguide-icons/outline/CornerDownRightIcon';
+
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { PaddedAPIBox } from '~/components/plugins/PaddedAPIBox';
+import { APIBoxSectionHeader } from '~/components/plugins/api/components/APIBoxSectionHeader';
+import { CALLOUT, A } from '~/ui/components/Text';
+
+`react-native-safe-area-context` 提供了灵活的 API，用于访问设备安全区域的内边距信息。这使你可以围绕刘海、状态栏、主屏幕指示器以及其他设备和操作系统界面元素妥善放置内容。它还提供了 `SafeAreaView` 组件，你可以用它替代 `View`，自动为视图添加内边距以适应安全区域。
+
+## 安装
+
+<APIInstallSection href="https://appandflow.github.io/react-native-safe-area-context/" />
+
+## API
+
+```js
+import {
+  SafeAreaView,
+  SafeAreaProvider,
+  SafeAreaInsetsContext,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+```
+
+## 组件
+
+<PaddedAPIBox header="SafeAreaView">
+
+`SafeAreaView` 是一个常规的 `View` 组件，会将安全区域边缘应用为内边距。
+
+如果你为视图设置了自己的内边距，它会与安全区域的内边距叠加。
+
+> **info** 如果目标平台是 Web，必须按照[上下文](#context)部分的说明设置 `SafeAreaProvider`。
+
+```jsx
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+function SomeComponent() {
+  return (
+    <SafeAreaView>
+      <View />
+    </SafeAreaView>
+  );
+}
+```
+
+<APIBoxSectionHeader text="SafeAreaView Props" />
+
+<PaddedAPIBox header="edges" headerNestingLevel={4}>
+
+{/* prettier-ignore */}
+<CALLOUT theme="tertiary" className="text-xs">
+  {'Optional\u2002•\u2002Type: '}
+  <A href="#edge">
+    <code>Edge[]</code>
+  </A>
+  {'\u2002•\u2002Default: '}
+  <code>["top", "right", "bottom", "left"]</code>
+</CALLOUT>
+<br />
+
+设置要应用安全区域内边距的边缘。
+
+</PaddedAPIBox>
+
+<PaddedAPIBox header="emulateUnlessSupported" headerNestingLevel={4}>
+
+<CALLOUT theme="tertiary" className="text-xs">
+  {'Optional\u2002•\u2002Type: '}
+  <code>boolean</code>
+  {'\u2002•\u2002Default: '}
+  <code>true</code>
+</CALLOUT>
+<br />
+
+在 iOS 10 及更高版本中，使用状态栏高度和主屏幕指示器尺寸模拟安全区域。
+
+</PaddedAPIBox>
+</PaddedAPIBox>
+
+## Hooks
+
+<PaddedAPIBox header="useSafeAreaInsets()">
+
+这个 Hook 可让你直接访问安全区域内边距。这属于较高级的用法，在旋转设备时可能不如 `SafeAreaView` 性能好。
+
+<APIBoxSectionHeader text="示例" />
+
+```jsx
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+function HookComponent() {
+  const insets = useSafeAreaInsets();
+
+  return <View style={{ paddingTop: insets.top }} />;
+}
+```
+
+<APIBoxSectionHeader text="返回值" />
+
+<CornerDownRightIcon
+  aria-hidden="true"
+  className="icon-sm text-icon-secondary mr-2 inline-block align-middle"
+/>
+[`EdgeInsets`](#edgeinsets)
+
+</PaddedAPIBox>
+
+## 类型
+
+<PaddedAPIBox header="Edge">
+
+可能边缘值的字符串联合类型。
+
+可接受的值为：`'top'`、`'right'`、`'bottom'`、`'left'`。
+
+</PaddedAPIBox>
+
+<PaddedAPIBox header="EdgeInsets">
+
+表示 Hook 的结果。
+
+<APIBoxSectionHeader text="EdgeInsets 属性" />
+
+| 名称     | 类型     | 描述                 |
+| -------- | -------- | -------------------- |
+| `bottom` | `number` | 底部内边距的值。     |
+| `left`   | `number` | 左侧内边距的值。     |
+| `right`  | `number` | 右侧内边距的值。     |
+| `top`    | `number` | 顶部内边距的值。     |
+
+</PaddedAPIBox>
+
+## 指南
+
+### 上下文
+
+要使用安全区域上下文，需要在应用的根组件中添加 `SafeAreaProvider`。
+
+> 使用 `react-native-screen` 时，你可能还需要在其他位置添加它，包括任何模态框或路由的根部。
+
+```jsx
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+function App() {
+  return <SafeAreaProvider>...</SafeAreaProvider>;
+}
+```
+
+然后，你可以使用 [`useSafeAreaInsets()`](#usesafeareainsets) Hook，也可以使用消费者 API 来访问内边距数据：
+
+```jsx
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+
+function Component() {
+  return (
+    <SafeAreaInsetsContext.Consumer>
+      {insets => <View style={{ paddingTop: insets.top }} />}
+    </SafeAreaInsetsContext.Consumer>
+  );
+}
+```
+
+### 优化
+
+如果可以，请使用 `SafeAreaView`。它是原生实现的，因此旋转设备时不会因异步桥接而产生延迟。
+
+要加快首次渲染速度，可以从此程序包导入 `initialWindowMetrics`，并按照 Web SSR 部分的说明，将其设置为 Provider 的 `initialMetrics` 属性。如果 Provider 会重新挂载，或者你使用的是 `react-native-navigation`，则无法这样做。
+
+```jsx
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+
+function App() {
+  return <SafeAreaProvider initialMetrics={initialWindowMetrics}>...</SafeAreaProvider>;
+}
+```
+
+### Web SSR
+
+如果你要在 Web 上进行服务器端渲染，可以使用 `initialSafeAreaInsets`，根据用户所用设备注入相应的值，也可以直接传入零。否则，由于内边距测量是异步的，会导致页面内容渲染出错。
+
+### 从 CSS 迁移
+
+#### 之前
+
+在仅面向 Web 的应用中，你可以使用 CSS 环境变量获取屏幕安全区域内边距的大小。
+
+```css styles.css
+div {
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-right: env(safe-area-inset-right);
+}
+```
+
+#### 之后
+
+在所有平台上，都可以使用 Hook `useSafeAreaInsets()` 访问这些信息。
+
+```jsx App.js
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+function App() {
+  const insets = useSafeAreaInsets();
+  return (
+    <View
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingBottom: insets.bottom,
+        paddingRight: insets.right,
+      }}
+    />
+  );
+}
+```

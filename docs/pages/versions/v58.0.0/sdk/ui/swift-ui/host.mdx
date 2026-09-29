@@ -1,0 +1,233 @@
+---
+title: Host
+description: 一个 SwiftUI Host 组件，可在 React Native 中使用 SwiftUI 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+> **信息** 如需跨平台使用，请参阅通用 [`Host`](../universal/host) — 它会根据平台渲染相应的原生组件。
+
+一个可让你在 React Native 中使用其他 `@expo/ui/swift-ui` 组件的组件。它的作用类似于 DOM 中的 [`<svg>`](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/svg)、[`react-native-skia`](https://shopify.github.io/react-native-skia/) 中的 [`<Canvas>`](https://shopify.github.io/react-native-skia/docs/canvas/overview/)，内部使用 [`UIHostingController`](https://developer.apple.com/documentation/swiftui/uihostingcontroller) 在 UIKit 中渲染 SwiftUI 视图。
+
+由于 `Host` 组件是 React Native [`View`](https://reactnative.dev/docs/view)，你可以向它传递 [`style`](https://reactnative.dev/docs/style) 属性，或使用 `matchContents` 属性让 `Host` 组件适应内容尺寸。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 匹配内容尺寸
+
+使用 `matchContents` 让 `Host` 自动调整自身大小以适应 SwiftUI 内容，而无需指定尺寸。
+
+> **注意：** `matchContents` 仅适用于具有固有尺寸或显式 [`frame`](modifiers/#frameparams) 的组件（例如 `Button`、`Toggle`、`Text`）。`Slider` 和线性 `ProgressView` 等宽度灵活的组件会扩展以填充可用空间，且没有固有宽度；对这些组件使用 `matchContents` 会导致宽度接近于零。对于这些组件，可以在组件上应用 [`frame`](modifiers/#frameparams) 修饰符以指定明确的宽度，或者改为在 `Host` 上使用 `style` 显式设置尺寸（例如 `style={{ flex: 1 }}` 或 `style={{ width: 300 }}`）。
+
+```tsx MatchContentsExample.tsx
+import { Button, Host } from '@expo/ui/swift-ui';
+
+export default function MatchContentsExample() {
+  return (
+    <Host matchContents>
+      <Button
+        onPress={() => {
+          console.log('Pressed');
+        }}
+        label="Click"
+      />
+    </Host>
+  );
+}
+```
+
+> **注意：** 不要在与滚动容器（`ScrollView`、`List`、`Form`、`LazyHStack`、`LazyVStack`）相同的轴上使用 `matchContents`。`matchContents` 会解析为 SwiftUI 的 `.fixedSize`，使滚动容器的尺寸适应其内容。这样视口之外就没有可滚动的内容，因此滚动会悄然失效。请使用 `matchContents={{ vertical: true }}` 并配合 `style={{ width: '100%' }}`（或滚动轴上任意有限宽度）。
+
+```tsx ScrollViewMatchContents.tsx
+import { Host, HStack, ScrollView, Text } from '@expo/ui/swift-ui';
+
+export default function ScrollViewMatchContents() {
+  return (
+    <Host
+      matchContents={{ vertical: true }}
+      style={{ width: '100%' }}>
+      <ScrollView axes="horizontal">
+        <HStack spacing={12}>
+          {Array.from({ length: 20 }).map((_, i) => (
+            <Text key={i}>Item {i}</Text>
+          ))}
+        </HStack>
+      </ScrollView>
+    </Host>
+  );
+}
+```
+
+### 使用 style 显式设置尺寸
+
+使用 `style` 为 `Host` 设置明确的尺寸，例如使用 `flex: 1` 填充可用空间。
+
+```tsx ExplicitSizingExample.tsx
+import { Button, Host, VStack, Text } from '@expo/ui/swift-ui';
+
+export default function ExplicitSizingExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <VStack spacing={8}>
+        <Text>Hello, world!</Text>
+        <Button
+          onPress={() => {
+            console.log('Pressed');
+          }}
+          label="Click"
+        />
+      </VStack>
+    </Host>
+  );
+}
+```
+
+### 将组件放入 React Native 视图
+
+`Host` 使用 SwiftUI 渲染其子组件。`Host` 内部的 React Native 视图（例如 `View` 或 `ScrollView`）会切换回 React Native 渲染。要在该视图中使用 SwiftUI 组件，请将组件包裹在新的 `Host` 中。即使视图外层的树中已经有一个 `Host`，也要这样做。
+
+```tsx ReactNativeLayoutExample.tsx
+import { useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
+import { Host, Toggle } from '@expo/ui/swift-ui';
+
+export default function ReactNativeLayoutExample() {
+  const [isOn, setIsOn] = useState(false);
+
+  return (
+    <ScrollView>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 16,
+        }}>
+        <Text>Notifications</Text>
+        <Host matchContents>
+          <Toggle isOn={isOn} onIsOnChange={setIsOn} />
+        </Host>
+      </View>
+    </ScrollView>
+  );
+}
+```
+
+要将 React Native 视图放入 SwiftUI 组件中，请使用 [`RNHostView`](rnhostview)。
+
+### 忽略键盘安全区域
+
+当 React Native 已处理键盘避让时（例如使用 `react-native-keyboard-controller`），请使用 `ignoreSafeArea="keyboard"`，以防止 SwiftUI Host 应用自身的键盘内边距。
+
+```tsx IgnoreKeyboardExample.tsx
+import { Host, TextField } from '@expo/ui/swift-ui';
+import {
+  KeyboardProvider,
+  KeyboardStickyView,
+} from 'react-native-keyboard-controller';
+import { View } from 'react-native';
+
+export default function IgnoreKeyboardExample() {
+  return (
+    <KeyboardProvider>
+      <View style={{ flex: 1, backgroundColor: 'black' }}>
+        <KeyboardStickyView
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: 16,
+            backgroundColor: 'green',
+          }}>
+          <Host
+            matchContents
+            ignoreSafeArea="keyboard"
+            style={{ backgroundColor: 'red' }}>
+            <TextField placeholder="Enter text" axis="vertical" />
+          </Host>
+        </KeyboardStickyView>
+      </View>
+    </KeyboardProvider>
+  );
+}
+```
+
+### 忽略容器安全区域
+
+使用 `ignoreSafeArea="container"` 仅移除容器安全区域（刘海、主屏幕指示条、状态栏和导航栏）。键盘安全区域仍然生效。
+
+```tsx IgnoreContainerSafeAreaExample.tsx
+import { Button, Host, HStack, Spacer } from '@expo/ui/swift-ui';
+import { labelStyle } from '@expo/ui/swift-ui/modifiers';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+export default function IgnoreContainerSafeAreaExample() {
+  const insets = useSafeAreaInsets();
+  return (
+    <Host
+      style={{ width: '100%', paddingTop: insets.top }}
+      matchContents={{ vertical: true }}
+      ignoreSafeArea="container">
+      <HStack>
+        <Button
+          systemImage="chevron.backward"
+          label="Back"
+          modifiers={[labelStyle('iconOnly')]}
+        />
+        <Spacer />
+        <Button
+          systemImage="square.and.arrow.up"
+          label="Share"
+          modifiers={[labelStyle('iconOnly')]}
+        />
+      </HStack>
+    </Host>
+  );
+}
+```
+
+### 忽略所有安全区域
+
+当你希望 SwiftUI 内容延伸到状态栏和键盘后方时，请使用 `ignoreSafeArea="all"`；这适用于全屏叠加层或背景。
+
+```tsx IgnoreAllSafeAreasExample.tsx
+import { Host, Text, VStack } from '@expo/ui/swift-ui';
+
+export default function IgnoreAllSafeAreasExample() {
+  return (
+    <Host
+      ignoreSafeArea="all"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}>
+      <VStack>
+        <Text>
+          This content extends behind the status bar and home
+          indicator.
+        </Text>
+      </VStack>
+    </Host>
+  );
+}
+```
+
+## API
+
+```tsx
+import { Host } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/host" apiName="Host" />

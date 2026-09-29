@@ -8,8 +8,25 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
 
-一个水平布局容器，将其子元素从起始排列到结束。在 Android 上委托给 Jetpack Compose 的 [`Row`](../jetpack-compose/row)，在 iOS 上委托给 SwiftUI 的 [`HStack`](../swift-ui/hstack)，在 Web 上委托给 flex `View`。
+一个水平布局容器，将其子元素从起始位置排列到结束位置。在 Android 上委托给 Jetpack Compose 的 [`Row`](../jetpack-compose/row)，在 iOS 上委托给 SwiftUI 的 [`HStack`](../swift-ui/hstack)，在 Web 上委托给 flex `View`。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/row/android-light.webp',
+    darkSrc: '/static/images/expo-ui/row/android-dark.webp',
+    alt: '三个彩色方框在 Row 中水平排列',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/row/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/row/ios-dark.webp',
+    alt: '三个彩色方框在 Row 中水平排列',
+  }}
+/>
 
 ## 安装
 
@@ -19,60 +36,117 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 ### 基础行
 
-```tsx RowExample.tsx
+<ComponentExample
+  title="RowExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-row-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-row-basic-android-dark.webp',
+    alt: '三个文本标签在水平行中排列',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-row-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-row-basic-ios-dark.webp',
+    alt: '三个文本标签在水平行中排列',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
 import { Host, Row, Text } from '@expo/ui';
 
 export default function RowExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
   return (
     <Host matchContents>
       <Row spacing={8}>
-        <Text>One</Text>
-        <Text>Two</Text>
-        <Text>Three</Text>
+        <Text textStyle={ink}>One</Text>
+        <Text textStyle={ink}>Two</Text>
+        <Text textStyle={ink}>Three</Text>
       </Row>
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ### 对齐
 
 使用 [`alignment`](#alignment) 沿交叉（垂直）轴定位子元素。
 
-```tsx RowAlignmentExample.tsx
+<ComponentExample
+  title="RowAlignmentExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-row-alignment-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-row-alignment-android-dark.webp',
+    alt: '一个大标签和一个小标签共享同一条中心线',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-row-alignment-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-row-alignment-ios-dark.webp',
+    alt: '一个大标签和一个小标签共享同一条中心线',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
 import { Host, Row, Text } from '@expo/ui';
 
 export default function RowAlignmentExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
   return (
-    <Host style={{ flex: 1 }}>
+    <Host style={{ width: '100%', height: 160 }}>
       <Row spacing={8} alignment="center">
-        <Text>居中</Text>
-        <Text>居中</Text>
+        <Text textStyle={{ ...ink, fontSize: 30 }}>Large</Text>
+        <Text textStyle={ink}>centered</Text>
       </Row>
     </Host>
   );
 }
 ```
 
-### 使用 Spacer 分隔内容
+</ComponentExample>
+
+### 使用 Spacer 推开内容
 
 将 `Row` 与灵活的 [`Spacer`](spacer) 搭配使用，把其子元素推到相对两端。
 
-```tsx RowSpacerExample.tsx
+<ComponentExample
+  title="RowSpacerExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-row-spacer-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-row-spacer-android-dark.webp',
+    alt: '首尾标签被推到相对两侧',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-row-spacer-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-row-spacer-ios-dark.webp',
+    alt: '首尾标签被推到相对两侧',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
 import { Host, Row, Text, Spacer } from '@expo/ui';
 
 export default function RowSpacerExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
   return (
-    <Host style={{ flex: 1 }}>
+    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
       <Row>
-        <Text>前导</Text>
+        <Text textStyle={ink}>Leading</Text>
         <Spacer flexible />
-        <Text>尾随</Text>
+        <Text textStyle={ink}>Trailing</Text>
       </Row>
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ## API
 
@@ -81,3 +155,5 @@ import { Row } from '@expo/ui';
 ```
 
 <APISection packageName="expo-ui/universal/row" apiName="Row" />
+
+</PlatformTabsGroup>

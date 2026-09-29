@@ -17,11 +17,11 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 <APIInstallSection />
 
-## Usage
+## 用法
 
-> **Note:** Using worklets requires installing [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/) in your project. `useNativeState` itself works without it, but the synchronous UI-thread updates shown below depend on the worklet runtime.
+> **注意：** 使用 worklet 需要在项目中安装 [`react-native-worklets`](https://docs.swmansion.com/react-native-worklets/)。`useNativeState` 本身无需安装它即可使用，但下方展示的 UI 线程同步更新依赖 worklet 运行时。
 
-The following example masks a phone number as the user types. Both the formatting and the writes to `maskedPhone.value` (text) and `selection.value` (cursor position) happen synchronously on the UI thread, so there is no flicker between the raw input and the masked value.
+以下示例会在用户输入时对电话号码进行格式化。格式化以及对 `maskedPhone.value`（文本）和 `selection.value`（光标位置）的写入都会在 UI 线程上同步进行，因此原始输入与格式化后的值之间不会出现闪烁。
 
 ```tsx WorkletPhoneMaskExample.tsx
 import { Host, TextField, useNativeState } from '@expo/ui/swift-ui';
@@ -48,8 +48,11 @@ export default function WorkletPhoneMaskExample() {
       }
       if (formatted !== v) {
         maskedPhone.value = formatted;
-        // The demo jumps straight to the end. Real masking needs smarter cursor handling.
-        selection.value = { start: formatted.length, end: formatted.length };
+        // Snaps to end for demo. Real masks need smarter cursor handling.
+        selection.value = {
+          start: formatted.length,
+          end: formatted.length,
+        };
       }
     },
     [maskedPhone, selection]
@@ -75,4 +78,7 @@ export default function WorkletPhoneMaskExample() {
 import { useNativeState } from '@expo/ui/swift-ui';
 ```
 
-<APISection packageName="expo-ui/swift-ui/usenativestate" apiName="useNativeState" />
+<APISection
+  packageName="expo-ui/swift-ui/usenativestate"
+  apiName="useNativeState"
+/>

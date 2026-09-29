@@ -53,6 +53,23 @@ API 路由是在路由匹配时于服务器上执行的函数。它们可用于�
 }
 ```
 
+在 SDK 58 及更高版本中，API 路由默认启用，`web.output` 的值为 `"server"`。若要将 API 路由与构建时生成的 HTML 相结合，请使用 `web.output: "static"`，并在 `expo-router` 配置插件中启用 `apiRoutes`：
+
+```json app.json
+{
+  "expo": {
+    "web": {
+      "output": "static"
+    },
+    "plugins": [["expo-router", { "apiRoutes": true }]]
+  }
+}
+```
+
+这会将预渲染的 HTML 和 API 路由导出到 **dist/server**，并将客户端资源导出到 **dist/client**。这需要[已部署的服务器](#deployment)。
+
+将 `apiRoutes` 设为 `false`，即可在保留所选渲染模式的同时禁用 API 路由。启用 API 路由需要使用 `static` 或 `server` 输出。任何输出模式下都可以显式设置 `apiRoutes: false`。
+
 </Step>
 
 <Step label="2">
@@ -372,7 +389,7 @@ export default function middleware(request: Request) {
 API 路由会与 Expo CLI 和 [Metro bundler](/guides/customizing-metro) 一起打包。它们可以使用与你的客户端代码相同的所有语言特性：
 
 - [TypeScript](/guides/typescript) — 类型和 [**tsconfig.json** 路径别名](/guides/typescript/#path-aliases-optional)。
-- [Environment variables](/guides/environment-variables) — 服务器路由可以访问所有环境变量，而不只是以 `EXPO_PUBLIC_` 为前缀的那些。
+- [环境变量](/guides/environment-variables) — 服务器路由可以访问所有环境变量，而不只是以 `EXPO_PUBLIC_` 为前缀的那些。
 - Node.js 标准库 — 确保你在本地使用的 Node.js 版本与服务器环境所需版本一致。
 - **babel.config.js** 和 **metro.config.js** 支持 — 配置可同时作用于客户端和服务器代码。
 
@@ -388,7 +405,7 @@ API 路由会与 Expo CLI 和 [Metro bundler](/guides/customizing-metro) 一起�
 
 ## 部署
 
-当你准备将其部署到生产环境时，运行以下命令，在 **dist** 目录中创建 server bundle（更多细节请参阅 [Expo CLI 文档](/more/expo-cli#exporting)）：
+当你准备将其部署到生产环境时，运行以下命令，在 **dist** 目录中创建服务器 bundle（更多细节请参阅 [Expo CLI 文档](/more/expo-cli#exporting)）：
 
 <Terminal
   cmd={{

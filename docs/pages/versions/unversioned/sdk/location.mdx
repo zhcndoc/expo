@@ -26,7 +26,7 @@ import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
 
 <APIInstallSection />
 
-## 在 app 配置中进行配置
+## 在应用配置中进行配置
 
 如果你的项目使用 config plugins（[Continuous Native Generation (CNG)](/workflow/continuous-native-generation/)），你可以使用 `expo-location` 内置的 [config plugin](/config-plugins/introduction/) 来进行配置。该插件允许你配置一些无法在运行时设置、且需要构建新的应用二进制文件才会生效的属性。如果你的应用**不**使用 CNG，那么你需要手动配置该库。
 
@@ -74,6 +74,13 @@ import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
       default: '"允许 $(PRODUCT_NAME) 使用你的位置信息"',
     },
     {
+      name: 'motionUsagePermission',
+      platform: 'ios',
+      description:
+        '设置权限提示信息的字符串。当首次调用 `getMotionActivityAsync` 或 `watchMotionActivityAsync` 时会显示此提示。',
+      default: '"允许 $(PRODUCT_NAME) 检测你当前的运动活动"',
+    },
+    {
       name: 'isIosBackgroundLocationEnabled',
       platform: 'ios',
       description: '一个布尔值，用于在 **Info.plist** 的 `UIBackgroundModes` 中启用 `location`。',
@@ -96,7 +103,7 @@ import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
       name: 'androidForegroundServiceIcon',
       platform: 'android',
       description:
-        '用于作为 `startLocationUpdatesAsync` 启动的前台服务图标的本地图片路径。要求为 96x96、全白色、带透明通道的 png 图片。如果未设置，则会回退到 `notification_icon` drawable（如果已通过 `expo-notifications` config plugin 配置），再回退到应用启动图标。启动图标是全彩色的，并且由于 Android 要求通知图标必须是单色的，因此可能会渲染成纯白色方块。',
+        '用作 `startLocationUpdatesAsync` 启动的前台服务图标的本地图片路径。图片必须为 96x96、全白色且带透明通道的 PNG 图片。如果未设置，则会回退到 `notification_icon` drawable（如果已通过 `expo-notifications` config plugin 配置），再回退到应用启动图标。启动图标是全彩色的，并且由于 Android 要求通知图标必须是单色的，因此可能会渲染成纯白色方块。',
     },
   ]}
 />
@@ -176,12 +183,12 @@ import { PlatformTag } from '~/ui/components/Tag/PlatformTag';
 - 在 iOS 上，必须使用 [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync) 以 `Always` 选项授予权限。
 
 <Collapsible summary="Expo 和 iOS 权限">
-iOS 权限分为 `When In Use` 和 `Always` 两类，并映射到 Expo 请求的前台和后台位置权限：
+iOS 权限分为 `When In Use` 和 `Always` 两类，分别对应通过以下方法请求的 Expo 前台和后台位置权限：
 
 - [`requestForegroundPermissionsAsync`](#locationrequestforegroundpermissionsasync) 对应 `When In Use`
 - [`requestBackgroundPermissionsAsync`](#locationrequestbackgroundpermissionsasync) 对应 `Always`
 
-> **注意：** 在请求 `When In Use` 授权时，用户可以在系统权限对话框中选择 `Allow Once` 来授予**临时访问**。此授权将**仅对当前应用会话有效**，并会在应用关闭时自动撤销。
+> **注意：** 请求 `When In Use` 授权时，用户可以在系统权限对话框中选择 `Allow Once`，授予**临时访问权限**。此授权**仅对当前应用会话有效**，并会在应用关闭时自动撤销。
 
 **区分 “Allow Once” 与 “Allow While Using the App”**
 
@@ -223,7 +230,7 @@ function openSettings() {
 
 ## 用法
 
-如果你正在使用 Android 模拟器或 iOS 模拟器，请确保 [已启用位置](#enable-emulator-location)。
+如果你正在使用 Android 模拟器或 iOS 模拟器，请确保[已启用位置](#enable-emulator-location)。
 
 <SnackInline label='位置' dependencies={['expo-location', 'expo-constants', 'expo-device']}>
 
@@ -304,18 +311,18 @@ const styles = StyleSheet.create({
   className="max-w-[360px]"
 />
 
-如果你没有在模拟器中接收到位置，你可能需要关闭 **提高位置精度** 设置。这将关闭 Wi-Fi 定位并且仅使用 GPS。然后你可以通过模拟器使用 GPS 数据来操控位置。
+如果你没有在模拟器中接收到位置，你可能需要关闭**提高位置精度**设置。这将关闭 Wi-Fi 定位并且仅使用 GPS。然后你可以通过模拟器使用 GPS 数据来操控位置。
 
-对于 Android 12 及更高版本，进入 **设置** > **位置** > **位置服务** > **Google 位置精度**，并关闭 **提高位置精度**。对于 Android 11 及更低版本，进入 **设置** > **位置** > **高级** > **Google 位置精度**，并关闭 **Google 位置精度**。
+对于 Android 12 及更高版本，进入**设置** > **位置** > **位置服务** > **Google 位置精度**，并关闭**提高位置精度**。对于 Android 11 及更低版本，进入**设置** > **位置** > **高级** > **Google 位置精度**，并关闭**Google 位置精度**。
 
 ### iOS 模拟器
 
-在模拟器打开的情况下，进入 **功能** > **位置**，并选择除 **无** 之外的任意选项。
+打开 Device Hub 后，进入**设备** > **位置**，并选择 **无** 以外的任一选项。
 
 <ContentSpotlight
-  alt="iOS 模拟器中的位置设置。"
-  src="/static/images/sdk/location/ios-simulator-location.webp"
-  className="max-w-[480px]"
+  alt="Device Hub 中打开了位置子菜单的设备菜单。"
+  src="/static/images/sdk/location/device-hub-location.webp"
+  className="max-w-[640px]"
 />
 
 ## API
@@ -356,7 +363,7 @@ import * as Location from 'expo-location';
 
 > **注意**：在你的应用中从某个模块排除一个**必需权限**可能会破坏该权限对应的功能。请始终确保包含模块所依赖的所有权限。
 
-当你的 Expo 项目从包含某些特定权限中无法获益时，你可以省略它。例如，如果你的应用不需要访问精确位置，你可以排除 `ACCESS_FINE_LOCATION` 权限。
+当你的 Expo 项目无法从包含某些特定权限中获益时，你可以省略这些权限。例如，如果你的应用不需要访问精确位置，你可以排除 `ACCESS_FINE_LOCATION` 权限。
 
 另一个示例可以使用[可用的位置精度](#accuracy)来说明。Android 将近似位置精度估计定义为约 3 平方公里，将精确位置精度估计定义为约 50 米。例如，如果位置精度值为 [Low](#low)，你可以排除 `ACCESS_FINE_LOCATION` 权限。要了解有关位置精度级别的更多信息，请参阅[Android 文档](https://developer.android.com/training/location/permissions#accuracy)。
 

@@ -1,6 +1,6 @@
 ---
 title: 主机
-description: 一个 SwiftUI Host 组件，可在 React Native 中启用 SwiftUI 组件。
+description: 一个 SwiftUI 宿主组件，可在 React Native 中启用 SwiftUI 组件。
 sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-ui'
 packageName: '@expo/ui'
 platforms: ['ios', 'tvos', 'expo-go']
@@ -36,9 +36,9 @@ export default function MatchContentsExample() {
       <Button
         onPress={() => {
           console.log('Pressed');
-        }}>
-        点击
-      </Button>
+        }}
+        label="Click"
+      />
     </Host>
   );
 }
@@ -51,7 +51,9 @@ import { Host, HStack, ScrollView, Text } from '@expo/ui/swift-ui';
 
 export default function ScrollViewMatchContents() {
   return (
-    <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
+    <Host
+      matchContents={{ vertical: true }}
+      style={{ width: '100%' }}>
       <ScrollView axes="horizontal">
         <HStack spacing={12}>
           {Array.from({ length: 20 }).map((_, i) => (
@@ -79,14 +81,47 @@ export default function ExplicitSizingExample() {
         <Button
           onPress={() => {
             console.log('Pressed');
-          }}>
-          点击
-        </Button>
+          }}
+          label="Click"
+        />
       </VStack>
     </Host>
   );
 }
 ```
+
+### 在 React Native 视图中放置组件
+
+`Host` 使用 SwiftUI 渲染其子组件。`Host` 内部的 React Native 视图（例如 `View` 或 `ScrollView`）会切换回 React Native 渲染。要在该视图中使用 SwiftUI 组件，请将该组件包装在一个新的 `Host` 中。即使树中更高层级的 `Host` 已经包装了该视图，也需要这样做。
+
+```tsx ReactNativeLayoutExample.tsx
+import { useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
+import { Host, Toggle } from '@expo/ui/swift-ui';
+
+export default function ReactNativeLayoutExample() {
+  const [isOn, setIsOn] = useState(false);
+
+  return (
+    <ScrollView>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 16,
+        }}>
+        <Text>通知</Text>
+        <Host matchContents>
+          <Toggle isOn={isOn} onIsOnChange={setIsOn} />
+        </Host>
+      </View>
+    </ScrollView>
+  );
+}
+```
+
+要在 SwiftUI 组件中放置 React Native 视图，请使用 [`RNHostView`](rnhostview)。
 
 ### 忽略键盘安全区域
 
@@ -94,7 +129,10 @@ export default function ExplicitSizingExample() {
 
 ```tsx IgnoreKeyboardExample.tsx
 import { Host, TextField } from '@expo/ui/swift-ui';
-import { KeyboardProvider, KeyboardStickyView } from 'react-native-keyboard-controller';
+import {
+  KeyboardProvider,
+  KeyboardStickyView,
+} from 'react-native-keyboard-controller';
 import { View } from 'react-native';
 
 export default function IgnoreKeyboardExample() {
@@ -110,7 +148,10 @@ export default function IgnoreKeyboardExample() {
             padding: 16,
             backgroundColor: 'green',
           }}>
-          <Host matchContents ignoreSafeArea="keyboard" style={{ backgroundColor: 'red' }}>
+          <Host
+            matchContents
+            ignoreSafeArea="keyboard"
+            style={{ backgroundColor: 'red' }}>
             <TextField placeholder="输入文本" axis="vertical" />
           </Host>
         </KeyboardStickyView>
@@ -137,7 +178,11 @@ export default function IgnoreContainerSafeAreaExample() {
       matchContents={{ vertical: true }}
       ignoreSafeArea="container">
       <HStack>
-        <Button systemImage="chevron.backward" label="Back" modifiers={[labelStyle('iconOnly')]} />
+        <Button
+          systemImage="chevron.backward"
+          label="Back"
+          modifiers={[labelStyle('iconOnly')]}
+        />
         <Spacer />
         <Button
           systemImage="square.and.arrow.up"
@@ -161,9 +206,17 @@ export default function IgnoreAllSafeAreasExample() {
   return (
     <Host
       ignoreSafeArea="all"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}>
       <VStack>
-        <Text>此内容会延伸到状态栏和底部 Home 指示器后方。</Text>
+        <Text>
+          此内容延伸到状态栏和主屏幕指示器后方。
+        </Text>
       </VStack>
     </Host>
   );

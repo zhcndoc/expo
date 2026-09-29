@@ -4,14 +4,14 @@ description: 了解如何在 Expo Router 中使用原生标签页布局
 hasVideoLink: true
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { RouterLogo } from '@expo/styleguide';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { Collapsible } from '~/ui/components/Collapsible';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { FileTree } from '~/ui/components/FileTree';
 import { DiffBlock, Terminal } from '~/ui/components/Snippet';
-import { TabsGroup, Tabs, Tab } from '~/ui/components/Tabs';
+import { Tabs, Tab } from '~/ui/components/Tabs';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 <VideoBoxLink
@@ -21,24 +21,24 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
   className="mb-6"
 />
 
-> **重要** 原生标签页目前处于 [alpha](/more/release-statuses/#alpha) 阶段，并且在 SDK 54 及更高版本中可用。其 API 可能会发生变化。
+标签页是用于在应用不同部分之间导航的常见方式。在 Expo Router 中，你可以根据需要使用不同的标签页布局。本指南介绍原生标签页。与[其他标签页布局](/router/advanced/tabs/#multiple-tab-layouts)不同，原生标签页使用系统原生标签栏。
 
-标签页是用于在应用不同部分之间导航的常见方式。在 Expo Router 中，你可以根据需求使用不同的标签页布局。本指南介绍原生标签页。与[其他标签页布局](/router/advanced/tabs/#multiple-tab-layouts)不同，原生标签页使用原生系统标签栏。
+示例使用 `expo-router/native-tabs`，该模块在 SDK 58 及更高版本中可用。在 SDK 54 至 57 中，请改用 `expo-router/unstable-native-tabs`。
 
 有关其他标签页布局，请参阅：
 
 <BoxLink
   title="自定义标签页"
   href="/router/advanced/custom-tabs/"
-  description="如果你的应用需要系统标签页无法实现的完全自定义设计，请参阅自定义标签页。"
-  Icon={BookOpen02Icon}
+  description="如果你的应用需要无法通过系统标签页实现的完全自定义设计，请参阅自定义标签页。"
+  Icon={RouterLogo}
 />
 
 <BoxLink
   title="JavaScript 标签页"
   href="/router/advanced/tabs/"
   description="如果你已经在使用 React Navigation 的标签页，请参阅 JavaScript 标签页。"
-  Icon={BookOpen02Icon}
+  Icon={RouterLogo}
 />
 
 ## 开始使用
@@ -57,11 +57,32 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 你可以使用 **src/app/\_layout.tsx** 文件，通过标签页定义应用的根布局。此文件是标签栏和每个标签页的主要布局文件。在其中，你可以控制标签栏和每个标签项的外观与行为。
 
-<TabsGroup>
-
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 and later">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Icon sf="gear" md="settings" />
+        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -155,7 +176,31 @@ const styles = StyleSheet.create({
 
 <Tabs>
 
-<Tab label="SDK 56 及更高版本">
+<Tab label="SDK 58 and later">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'house', selected: 'house.fill' }}
+          md={{ default: 'home', selected: 'home_filled' }}
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Icon src={require('../../../assets/setting_icon.png')} />
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 56–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -227,7 +272,46 @@ iOS 上的 Liquid Glass 会根据背景颜色是浅色还是深色自动改变�
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 and later">
+
+```tsx src/app/_layout.tsx
+import { DynamicColorIOS } from 'react-native';
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs
+      labelStyle={{
+        // For the text color
+        color: DynamicColorIOS({
+          dark: 'white',
+          light: 'black',
+        }),
+      }}
+      // For the selected icon color
+      tintColor={DynamicColorIOS({
+        dark: 'white',
+        light: 'black',
+      })}>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Icon
+          src={{
+            default: require('../assets/setting_icon.png'),
+            selected: require('../assets/selected_setting_icon.png'),
+          }}
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { DynamicColorIOS } from 'react-native';
@@ -318,7 +402,36 @@ export default function TabLayout() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 and later">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      {/* Icon with original colors preserved (e.g., for gradient or multi-color icons) */}
+      <NativeTabs.Trigger name="colorful">
+        <NativeTabs.Trigger.Icon
+          src={require('../../../assets/colorful_icon.png')}
+          renderingMode="original"
+        />
+      </NativeTabs.Trigger>
+      {/* Icon rendered as a template (default behavior) */}
+      <NativeTabs.Trigger name="simple">
+        <NativeTabs.Trigger.Icon
+          src={require('../../../assets/simple_icon.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -383,7 +496,7 @@ export default function TabLayout() {
 传入包含资源名称的字符串，可在默认状态和选中状态下使用相同图标：
 
 ```tsx app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function TabLayout() {
   return (
@@ -399,7 +512,7 @@ export default function TabLayout() {
 要为默认状态和选中状态使用不同的图标，请传入一个对象：
 
 ```tsx app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function TabLayout() {
   return (
@@ -450,7 +563,7 @@ export default function TabLayout() {
 
 ```tsx src/app/_layout.tsx
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 const homeIcon = MaterialDesignIcons.getImageSourceSync('home', 24, 'black');
 const starOutlineIcon = MaterialDesignIcons.getImageSourceSync('star-outline', 24, 'black');
@@ -485,7 +598,28 @@ export default function TabLayout() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 and later">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Label hidden />
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -535,7 +669,28 @@ export default function TabLayout() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 及更高版本">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="messages">
+        <NativeTabs.Trigger.Badge>9+</NativeTabs.Trigger.Badge>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Badge />
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -608,7 +763,7 @@ export const TabBarContext = createContext<{
 ```
 
 ```tsx src/app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 import { useState } from 'react';
 
 import { TabBarContext } from '@/context/TabBarContext';
@@ -657,7 +812,7 @@ export default function HomeScreen() {
 如果你想根据条件隐藏标签页，可以移除触发器，或者将 `hidden` 属性传给 `NativeTabs.Trigger` 组件。
 
 ```tsx src/app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function TabLayout() {
   const shouldHideMessagesTab = true; // Replace with your condition
@@ -679,7 +834,28 @@ export default function TabLayout() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 及更高版本">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index" disablePopToTop>
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -731,7 +907,28 @@ export default function TabLayout() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 及更高版本">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index" disableScrollToTop>
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -784,7 +981,7 @@ export default function TabLayout() {
 > **注意：** `disabled` 只会抑制原生点击交互。它不是“受保护”或授权门禁——JavaScript 导航（例如 `router.push('/settings')` 或 `<Link href="/settings" />`）仍然可以导航到该标签页。
 
 ```tsx src/app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function TabLayout() {
   return (
@@ -803,7 +1000,7 @@ export default function TabLayout() {
 你也可以在屏幕内部动态切换 `disabled`。
 
 ```tsx src/app/checkout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 import { View } from 'react-native';
 
 export default function CheckoutScreen() {
@@ -833,7 +1030,28 @@ export default function CheckoutScreen() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 及更高版本">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="search" role="search">
+        <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -897,7 +1115,7 @@ export default function TabLayout() {
 />
 
 ```tsx src/app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function TabLayout() {
   return (
@@ -948,7 +1166,28 @@ export default function SearchIndex() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 及更高版本">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs minimizeBehavior="onScrollDown">
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="tab-1">
+        <NativeTabs.Trigger.Label>Tab 1</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -1009,7 +1248,7 @@ export default function TabLayout() {
 以下示例展示了一个由父组件提升状态的迷你播放器：
 
 ```tsx src/app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
@@ -1075,7 +1314,7 @@ const styles = StyleSheet.create({
 默认情况下，在 Android 上键盘会覆盖原生标签栏。如果希望标签栏改为移动到键盘上方，请在 `NativeTabs` 上传入 `tabBarRespectsIMEInsets` 属性：
 
 ```tsx app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function TabLayout() {
   return (
@@ -1104,7 +1343,25 @@ export default function TabLayout() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 及更高版本">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs>
+      <NativeTabs.Trigger name="index" disableAutomaticContentInsets>
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -1295,7 +1552,7 @@ export default function Layout() {
 ```
 
 ```tsx components/app-tabs.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function AppTabs() {
   return (
@@ -1349,15 +1606,15 @@ const styles = StyleSheet.create({
 <BoxLink
   title="自定义标签页"
   href="/router/advanced/custom-tabs/"
-  description="详细了解如何从 expo-router/ui 自定义无头标签页。"
-  Icon={BookOpen02Icon}
+  description="详细了解如何从 expo-router/ui 自定义无头标签页"
+  Icon={RouterLogo}
 />
 
 <BoxLink
   title="平台特定的扩展"
   href="/router/advanced/platform-specific-modules/"
-  description="了解 Expo Router 中 .web.tsx 等平台特定文件扩展名的工作方式。"
-  Icon={BookOpen02Icon}
+  description="了解 Expo Router 中 .web.tsx 等平台特定文件扩展名的工作方式"
+  Icon={RouterLogo}
 />
 
 ## 将原生标签页从 SDK 54 迁移到 55
@@ -1393,7 +1650,7 @@ JavaScript `<Tabs />` 具有一个原生标签页中不存在的模拟堆栈标�
 你可以使用 [`disableTransparentOnScrollEdge`](/versions/latest/sdk/router/native-tabs/#disabletransparentonscrolledge) 属性禁用此行为。
 
 ```tsx src/app/_layout.tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 function TabLayout() {
   return (
@@ -1432,7 +1689,7 @@ export default function HomeScreen() {
 
 ```tsx src/app/_layout.tsx
 import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 import { useColorScheme } from 'react-native';
 
 export default function TabLayout() {
@@ -1457,7 +1714,7 @@ export default function TabLayout() {
 
 ```tsx src/app/_layout.tsx
 import { ThemeProvider, DarkTheme } from 'expo-router';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function TabLayout() {
   return (
@@ -1520,7 +1777,7 @@ export default function HomeScreen() {
 
 ```tsx app/_layout.tsx
 import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 import { useColorScheme } from 'react-native';
 
 export default function TabLayout() {
@@ -1545,7 +1802,7 @@ export default function TabLayout() {
 
 ```tsx app/_layout.tsx
 import { ThemeProvider, DarkTheme } from 'expo-router';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 export default function TabLayout() {
   return (
@@ -1560,7 +1817,39 @@ export default function TabLayout() {
 
 ## 已知限制
 
-<Collapsible summary="Android 上最多只能有 5 个标签页">
+<Collapsible summary="iOS 上默认图标和选中图标共用一种渲染模式">
+
+在 iOS 上，标签页的默认图标和选中图标必须使用相同的[渲染模式](#icon-rendering-mode)。当它们解析为不同的模式时，两个图标都会使用默认图标的模式，并且 Expo Router 会在开发环境中记录警告。
+
+当图标颜色仅应用于其中一种状态时，模式会不一致。如果你设置了 `tintColor`、`iconColor={{ selected }}`，或设置了 `Icon` 的 `selectedColor` 属性，却没有同时为默认状态设置颜色，就会发生这种情况。有颜色的图标会使用 `'template'` 渲染，而无颜色的图标默认为 `'original'`。仅为一种状态设置 `renderingMode` 也会产生相同的效果。
+
+要使两个图标以相同方式渲染，请为两种状态都设置颜色，或在 `Icon` 上设置 `renderingMode`：
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    // `iconColor` applies to both states, so both icons render as templates
+    <NativeTabs iconColor={{ default: 'gray', selected: 'black' }}>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Icon
+          src={{
+            default: require('../assets/setting_icon.png'),
+            selected: require('../assets/selected_setting_icon.png'),
+          }}
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+此限制不适用于 SF Symbols，因为系统始终会为其添加色调。
+
+</Collapsible>
+
+<Collapsible summary="Android 上最多只能包含 5 个标签页">
 
 在 Android 上，标签栏最多只能包含 5 个标签页。此限制来自平台的 Material Tabs 组件。
 
@@ -1584,7 +1873,25 @@ export default function TabLayout() {
 
 <Tabs>
 
-<Tab label="SDK 55 及更高版本">
+<Tab label="SDK 58 及更高版本">
+
+```tsx src/app/_layout.tsx
+import { NativeTabs } from 'expo-router/native-tabs';
+
+export default function TabLayout() {
+  return (
+    <NativeTabs disableTransparentOnScrollEdge>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+```
+
+</Tab>
+
+<Tab label="SDK 55–57">
 
 ```tsx src/app/_layout.tsx
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
@@ -1629,5 +1936,3 @@ export default function TabLayout() {
 不支持在运行时动态添加或移除标签页。标签页应在布局文件中静态定义，并在应用整个生命周期内保持一致。这符合 [Apple 人机界面指南](https://developer.apple.com/design/human-interface-guidelines/tab-bars#Best-practices)中的平台指南，该指南建议保持标签栏内容稳定，以帮助用户建立对应用导航结构的认知模型。如果动态添加或移除标签页，内容将被重新挂载，状态也会丢失。
 
 </Collapsible>
-
-</TabsGroup>

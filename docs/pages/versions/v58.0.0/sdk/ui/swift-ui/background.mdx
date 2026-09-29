@@ -1,0 +1,135 @@
+---
+title: 背景
+description: 用于在另一个视图后方分层显示内容的 SwiftUI Background 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+
+Expo UI Background 与官方 SwiftUI [background](<https://developer.apple.com/documentation/swiftui/view/background(alignment:content:)>) 修饰符相匹配，会在视图后方绘制背景内容，并按照指定的对齐方式定位。基础视图会保持自身尺寸。
+
+> **info** 要用颜色、材质或渐变填充视图，请使用 `@expo/ui/swift-ui/modifiers` 中的 [`background`](modifiers/#backgroundstyle-options) 修饰符。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本背景
+
+<ComponentExample
+  title="BackgroundExample.tsx"
+  src="/static/images/expo-ui/examples/background-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/background-basic-ios-dark.webp"
+  alt="浅蓝色圆角矩形背景上的 Card title 标签">
+
+```tsx
+import {
+  Background,
+  Host,
+  RoundedRectangle,
+  Text,
+} from '@expo/ui/swift-ui';
+import {
+  font,
+  foregroundStyle,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function BackgroundExample() {
+  return (
+    <Host
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Background>
+        <Text
+          modifiers={[
+            font({ size: 17, weight: 'semibold' }),
+            padding({ all: 16 }),
+            foregroundStyle('#1C1C1E'),
+          ]}>
+          Card title
+        </Text>
+        <Background.Content>
+          <RoundedRectangle
+            cornerRadius={12}
+            modifiers={[foregroundStyle('#E8F0FE')]}
+          />
+        </Background.Content>
+      </Background>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 背景对齐方式
+
+使用 `alignment` 属性相对于基础视图定位背景内容。由于背景不会影响基础视图的布局，因此较小的背景可以固定在基础视图的某个边缘上。
+
+<ComponentExample
+  title="BackgroundAlignmentExample.tsx"
+  src="/static/images/expo-ui/examples/background-alignment-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/background-alignment-ios-dark.webp"
+  alt="标签的背景底边与一条蓝色横条对齐">
+
+```tsx
+import {
+  Background,
+  Host,
+  Rectangle,
+  Text,
+} from '@expo/ui/swift-ui';
+import {
+  font,
+  foregroundStyle,
+  frame,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function BackgroundAlignmentExample() {
+  return (
+    <Host
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Background alignment="bottom">
+        <Text modifiers={[font({ size: 17 })]}>
+          Underlined by its background
+        </Text>
+        <Background.Content>
+          <Rectangle
+            modifiers={[
+              frame({ height: 3 }),
+              foregroundStyle('#007AFF'),
+            ]}
+          />
+        </Background.Content>
+      </Background>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Background } from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/background"
+  apiName="Background"
+/>

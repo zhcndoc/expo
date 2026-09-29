@@ -13,8 +13,8 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 在内部，这个组件封装了平台特定的 `@expo/ui` 原语：
 
-- **Android**: [Jetpack Compose DropdownMenu](../jetpack-compose/dropdownmenu)，锚定到一个 `Pressable` 触发器。
-- **iOS**: 用于点击触发器的 [SwiftUI Menu](../swift-ui/menu) 以及用于长按触发器的 [SwiftUI ContextMenu](../swift-ui/contextmenu)。
+- **Android**：锚定到 `Pressable` 触发器的 [Jetpack Compose DropdownMenu](../jetpack-compose/dropdownmenu)。
+- **iOS**：用于点击触发器的 [SwiftUI Menu](../swift-ui/menu)，以及用于长按触发器的 [SwiftUI ContextMenu](../swift-ui/contextmenu)。
 
 如果你需要更底层的控制，请直接使用这些原语。
 
@@ -25,9 +25,9 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 ## 从 `@react-native-menu/menu` 迁移
 
 - 将导入从 `import { MenuView } from '@react-native-menu/menu'` 更新为 `import { MenuView } from '@expo/ui/community/menu'`。
-- Android 上的 `action.image` 与上游不同。`@react-native-menu/menu` 期望的是一个 **drawable 资源名** 字符串（例如 `'ic_menu_add'`），它会在 `android/app/src/main/res/drawable/` 中解析该资源。这个即插即用版本**不会**解析 drawable 资源名——请改为传入 `ImageSourcePropType`（例如，`require('@expo/material-symbols/edit.xml')`）。在 iOS 上，字符串值会作为 SF Symbol 名称被接受。使用 [`Icon.select`](../universal/icon) 可以在两个平台上分别定义，这样未使用的一侧会按平台被 tree-shake 掉。
+- Android 上的 `action.image` 与上游不同。`@react-native-menu/menu` 期望的是一个 **drawable 资源名** 字符串（例如 `'ic_menu_add'`），并会在 `android/app/src/main/res/drawable/` 中解析该资源。这个即插即用版本**不会**解析 drawable 资源名——请改为传入 `ImageSourcePropType`（例如，`require('@expo/material-symbols/edit.xml')`）。在 iOS 上，字符串值会作为 SF Symbol 名称被接受。使用 [`Icon.select`](../universal/icon) 可以分别为两个平台定义图标，这样未使用的一侧会按平台被 tree-shake 掉。
 - `title` 只会在 iOS 上作为分组标题渲染；Android 的 Material `DropdownMenu` 没有标题插槽。
-- 在 Android 上，`MenuView` 会将触发器包裹在自己的 `Pressable` 中以打开菜单，因此你传入作为 `children` 的 `Pressable` 上绑定的 `onPress`/`onLongPress` 处理器不会触发——外层包装器会抢占该手势。请把该处理器移到你的 `onPressAction` 分支判断中，或者如果你需要在触发器上保留独立的点击和长按行为，请直接使用更底层的 [`DropdownMenu`](../jetpack-compose/dropdownmenu) 原语。
+- 在 Android 上，`MenuView` 会将触发器包裹在自己的 `Pressable` 中以打开菜单，因此你传入作为 `children` 的 `Pressable` 上绑定的 `onPress`/`onLongPress` 处理器不会触发——外层包装器会抢占该手势。请把该处理器移到你的 `onPressAction` 分支判断中；如果你需要在触发器上保留独立的点击和长按行为，请直接使用更底层的 [`DropdownMenu`](../jetpack-compose/dropdownmenu) 原语。
 - 命令式的 `ref.show()` API **仅适用于 Android**。SwiftUI 的 `Menu`/`ContextMenu` 没有程序化打开 API，因此在 iOS 上该调用不会生效（并会在开发环境中显示一次性警告）。
 - 以下来自 `@react-native-menu/menu` 的属性不受支持：`themeVariant`、`hitSlop`、`isAnchoredToRight`、`subtitle`、`keepsMenuPresented`、`preferredElementSize`，以及 `state: 'mixed'`。
 
@@ -102,7 +102,7 @@ export default function LongPressMenuExample() {
 
 ## 子菜单和内联分组
 
-默认情况下，`subactions` 会将嵌套操作渲染为子菜单。将父项的 `displayInline: true` 设置为内联分组而不是子菜单，这对于分组很有用。在 Android 上，只会显示分隔线（Material 的 `DropdownMenu` 没有分组原语）。在 iOS 上，父项的 `title` 会成为分组标题。
+默认情况下，`subactions` 会将嵌套操作渲染为子菜单。将父项的 `displayInline: true` 设置为内联分组，而不是子菜单，这对于分组很有用。在 Android 上，只会显示分隔线（Material 的 `DropdownMenu` 没有分组原语）。在 iOS 上，父项的 `title` 会成为分组标题。
 
 ```tsx SubmenuExample.tsx
 import { MenuView } from '@expo/ui/community/menu';
@@ -143,7 +143,7 @@ export default function SubmenuExample() {
 
 ## 带勾选标记的切换项
 
-将 `state` 设置为 `'on'` 或 `'off'`，即可将某个操作渲染为可切换项，并在为 on 时显示前导勾选标记。选择该操作会触发 `onPressAction`，调用方负责更新状态。
+将 `state` 设为 `'on'` 或 `'off'`，可将操作渲染为可切换项；开启时会显示前置勾选标记。选择该操作会触发 `onPressAction`，调用方负责更新状态。
 
 ```tsx ToggleMenuExample.tsx
 import { MenuView } from '@expo/ui/community/menu';

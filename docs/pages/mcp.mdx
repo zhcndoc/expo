@@ -5,19 +5,21 @@ description: 一份关于将模型上下文协议集成到 Expo 项目中以增�
 hasVideoLink: true
 ---
 
+import { Button } from '@expo/styleguide';
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
-import { Collapsible } from '~/ui/components/Collapsible';
+import { ClaudeLogoIcon } from '~/ui/components/CustomIcons/AIProviderIcons';
 import { ExpoMCPToolsTable, ExpoMCPPromptsTable } from '~/ui/components/ExpoMCPToolsTable';
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
 import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
+import { Tab, Tabs } from '~/ui/components/Tabs';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 模型上下文协议（MCP）是一种标准协议，允许 AI 模型与外部数据源集成，为更精准的响应提供增强的上下文。它使代理等 AI 辅助工具能够更深入地了解你的开发环境，从而更好地协助你处理代码库。
 
-Expo MCP Server 是由 Expo 托管的远程 MCP 服务器，可与 Claude Code、Cursor、VS Code 等常见的 AI 辅助工具集成，使它们能够直接与你的 Expo 项目交互。
+Expo MCP Server 是由 Expo 托管的远程 MCP 服务器，可与 Claude、Claude Code、Cursor、VS Code 等热门 AI 辅助工具集成，使它们能够直接与你的 Expo 项目交互。Expo MCP 也可通过 [Claude Connectors](https://claude.ai/directory/expo) 使用，因此你可以在 Claude 网页版、桌面版和移动应用中连接，无需本地安装。
 
 <VideoBoxLink
   videoId="dp9dpIgDxZQ"
@@ -38,30 +40,30 @@ Expo MCP Server 会让你的 AI 辅助工具了解 Expo SDK，并允许它们与
 
 **了解 Expo 开发。** 你的 AI 辅助工具可以按需获取最新的官方 Expo 文档，并用它来回复如下提示：
 
-- "我该如何使用 Expo Router？"
-- "搜索 Expo 文档，了解如何实现深度链接"
-- "阅读 Expo Router 文档页面"
-- "什么是 Expo CNG？"
+- “我该如何使用 Expo Router？”
+- “搜索 Expo 文档，了解如何实现深度链接”
+- “阅读 Expo Router 文档页面”
+- “什么是 Expo CNG？”
 
 **管理依赖。** Expo MCP Server 会引导你安装我们推荐的包，并使用 `npx expo install` 来安装已知兼容的版本。
 
-- "添加带基本 CRUD 操作的 SQLite"
-- "安装 `expo-camera` 并告诉我如何拍照"
-- "添加 `expo-notifications` 用于推送通知"
+- “添加带基本 CRUD 操作的 SQLite”
+- “安装 `expo-camera` 并告诉我如何拍照”
+- “添加 `expo-notifications` 用于推送通知”
 
 **管理构建和工作流。** Expo MCP Server 可以触发并监控 EAS 构建、运行工作流，并从 TestFlight 拉取崩溃数据：
 
-- "调查我最近一次 iOS EAS 构建为什么失败了"
-- "识别最近失败的工作流中的任何模式"
-- "创建一个运行 Maestro 测试的工作流"
-- "显示我最近的 TestFlight 崩溃"
-- "显示我应用的 TestFlight 反馈"
+- “调查我最近一次 iOS EAS 构建为什么失败了”
+- “识别最近失败的工作流中的任何模式”
+- “创建一个运行 Maestro 测试的工作流”
+- “显示我最近的 TestFlight 崩溃”
+- “显示我应用的 TestFlight 反馈”
 
 **自动化视觉验证和测试。** 多模态 AI 辅助工具可以截取屏幕截图，并与你在模拟器中运行的应用交互。通过将 `expo-mcp` 包添加到项目依赖中，Expo MCP Server 还包括本地能力。
 
-- "添加一个蓝色圆形视图并确保它正确渲染"
-- "添加一个按钮并点击它以验证交互是否正常工作"
-- "添加一个计数按钮，点击时递增，并验证状态更新是否正确"
+- “添加一个蓝色圆形视图并确保它正确渲染”
+- “添加一个按钮并点击它以验证交互是否正常工作”
+- “添加一个计数按钮，点击时递增，并验证状态更新是否正确”
 
 你的 AI 辅助工具可以自主编写代码、截取屏幕截图以验证 UI 是否正确、测试交互，并修复它们发现的问题。
 
@@ -72,11 +74,11 @@ Expo MCP Server 会让你的 AI 辅助工具了解 Expo SDK，并允许它们与
     使用 Expo MCP Server 需要一个 Expo 账户。
   </Requirement>
   <Requirement title="使用最新 SDK 的 Expo 项目">
-    使用 `npx create-expo-app@latest --template default@sdk-57` 创建项目，或确保你的
-    现有项目已安装最新的 `expo` 软件包。
+    使用 `npx create-expo-app@latest` 创建项目，或确保现有项目已安装最新的
+    `expo` 包。
   </Requirement>
   <Requirement title="支持远程 MCP 的 AI 辅助工具">
-    Claude Code、Cursor、VS Code，或任何其他支持远程 MCP 服务器的工具。
+    Claude、Claude Code、Cursor、VS Code，或任何其他支持远程 MCP 服务器的工具。
   </Requirement>
 </Prerequisites>
 
@@ -92,15 +94,36 @@ Expo MCP Server 支持与各种 AI 辅助工具集成。请使用下面的通用
 - **URL**：`https://mcp.expo.dev/mcp`
 - **认证**：OAuth
 
-<Collapsible summary="Claude Code 设置">
+<Tabs>
+
+<Tab label="Claude">
+
+**Claude 网页版、桌面版和移动应用**
+
+Expo MCP 可通过 [Claude Connectors](https://claude.ai/directory/expo) 使用。此设置无需在你的机器上安装任何内容。点击以下按钮，并按照提示将 Expo connector 添加到你的 Claude 账户：
+
+<Button
+  theme="secondary"
+  href="https://claude.ai/directory/expo"
+  openInNewTab
+  className="mb-4"
+  leftSlot={<ClaudeLogoIcon className="icon-md text-button-secondary-icon" />}>
+  {'将 Expo connector 添加到 Claude'}
+</Button>
+
+对于 Claude Team 或 Enterprise 方案，可以为整个组织启用 Expo connector。该组织的成员随后可以在任何设备上使用它，包括手机，无需手动安装。
+
+**Claude Code**
+
+如果你已安装 [`expo` 插件](/skills/#install-expo-skills)，它已经注册了此服务器。跳过下面的命令，在会话中运行 `/mcp` 以进行身份验证。
 
 <Terminal cmd={['$ claude mcp add --transport http expo https://mcp.expo.dev/mcp']} />
 
 安装后，在 Claude Code 会话中运行 `/mcp` 以进行身份验证。
 
-</Collapsible>
+</Tab>
 
-<Collapsible summary="Cursor 设置">
+<Tab label="Cursor">
 
 点击以下链接为 Cursor 安装 MCP 服务器：
 
@@ -117,9 +140,9 @@ Expo MCP Server 支持与各种 AI 辅助工具集成。请使用下面的通用
   />
 </a>
 
-</Collapsible>
+</Tab>
 
-<Collapsible summary="VS Code 设置">
+<Tab label="VS Code">
 
 1. 打开命令面板（<kbd>Cmd ⌘</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> 或 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>）
 2. 运行 **MCP: Add Server**
@@ -128,15 +151,19 @@ Expo MCP Server 支持与各种 AI 辅助工具集成。请使用下面的通用
    - **URL**：`https://mcp.expo.dev/mcp`
    - **Name**：expo
 
-</Collapsible>
+</Tab>
 
-<Collapsible summary="Codex 设置">
+<Tab label="Codex">
+
+如果你已安装 [`expo` 插件](/skills/#install-expo-skills)，它已经注册了此服务器。跳过下面的命令，运行 `codex mcp login expo` 以进行身份验证。
 
 <Terminal cmd={['$ codex mcp add expo --url https://mcp.expo.dev/mcp']} />
 
 上面的命令会将 MCP 服务器添加到你的 Codex 配置文件中，并提示你使用 Expo 账户进行身份验证。
 
-</Collapsible>
+</Tab>
+
+</Tabs>
 
 </Step>
 
@@ -261,7 +288,7 @@ Expo MCP Server 根据你的设置提供两种类型的能力：
 
 ## 数据隐私
 
-Expo 不会使用发送到 Expo MCP Server 的数据来训练 AI 模型。Expo MCP Server 本身不会运行 AI 模型。它会为你连接的 AI 辅助工具提供 MCP 工具和提示词，例如 Claude Code、Cursor 或 VS Code。
+Expo 不会使用发送到 Expo MCP Server 的数据来训练 AI 模型。Expo MCP Server 本身不会运行 AI 模型。它会向你连接的 AI 辅助工具（例如 Claude、Claude Code、Cursor 或 VS Code）提供 MCP 工具和提示词。
 
 对于服务器能力，Expo MCP Server 可能会访问完成所请求工具调用所需的 Expo 账户和项目数据，例如构建、工作流、文档或 TestFlight 相关数据。结果会通过 MCP 连接返回给你的 AI 辅助工具。
 
@@ -271,7 +298,7 @@ Expo 不会使用发送到 Expo MCP Server 的数据来训练 AI 模型。Expo M
 2. 截图发送到 Expo MCP Server。
 3. Expo MCP Server 将截图返回给你的本地 MCP 客户端或 AI 辅助工具。
 
-Expo MCP Server 会将数据返回给你连接的 MCP 客户端，例如 Claude Code、Cursor、VS Code 或 Codex。之后，客户端及其模型提供方可能会应用各自的数据保留、零数据保留（ZDR）和训练策略。在为处理敏感数据的项目启用 MCP 访问之前，请先审查这些策略，包括 HIPAA、SOC 2 或其他受监管工作负载。
+Expo MCP Server 会将数据返回给你连接的 MCP 客户端，例如 Claude、Claude Code、Cursor、VS Code 或 Codex。随后，客户端及其模型提供商可能会应用各自的数据保留、零数据保留（ZDR）和训练政策。在为处理敏感数据（包括 HIPAA、SOC 2 或其他受监管工作负载）的项目启用 MCP 访问权限之前，请先查看这些政策。
 
 ## 其他资源
 

@@ -1,0 +1,114 @@
+---
+title: DocumentPicker
+description: 一个用于访问系统 UI 的库，可从用户设备上的可用提供程序中选择文档。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-document-picker'
+packageName: 'expo-document-picker'
+iconUrl: '/static/images/packages/expo-document-picker.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+`expo-document-picker` 提供了访问系统 UI 的功能，用于从用户设备上可用的提供程序中选择文档
+
+<ContentSpotlight file="sdk/documentpicker.mp4" loop={false} />
+
+## 安装
+
+<APIInstallSection />
+
+## 在应用配置中进行配置
+
+如果项目中使用配置插件（[Continuous Native Generation（CNG）](/workflow/continuous-native-generation/)），则可以使用内置的[配置插件](/config-plugins/introduction/)配置 `expo-document-picker`。该插件允许你配置各种无法在运行时设置、且必须构建新的应用二进制文件才能生效的属性。如果应用**不**使用 CNG，则需要手动配置此库。
+
+<ConfigPluginExample>
+
+如果想启用 [iCloud 存储功能][icloud-entitlement]，请按照[配置属性](../config/app/#usesicloudstorage)中的说明，在[应用配置](/workflow/configuration/)文件中将 `expo.ios.usesIcloudStorage` 键设置为 `true`
+
+在本地运行 [EAS Build](/build/introduction) 时，会使用 [iOS capabilities signing](/build-reference/ios-capabilities) 在构建前启用所需的 capabilities
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'iCloudContainerEnvironment',
+      platform: 'ios',
+      description:
+        '设置用于 AdHoc iOS 构建的 iOS `com.apple.developer.icloud-container-environment` entitlement。可能的值：`Development`、`Production`。请参阅[关于内部分发构建的 eas-cli issue #693](https://github.com/expo/eas-cli/issues/693)。',
+      default: 'undefined',
+    },
+    {
+      name: 'kvStoreIdentifier',
+      platform: 'ios',
+      description:
+        '覆盖默认的 iOS `com.apple.developer.ubiquity-kvstore-identifier` entitlement，该 entitlement 使用你的 Apple Team ID 和 bundle identifier。如果应用在启用 iCloud 存储后被转移到另一个 Apple Team，可能需要此配置。',
+      default: 'undefined',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+不使用 [EAS Build](/build/introduction) 且需要 [iCloud 存储功能][icloud-entitlement]的应用，必须为其 bundle identifier[手动配置](/build-reference/ios-capabilities#manual-setup)[**支持 CloudKit 的 iCloud service**](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_icloud-container-environment)
+
+如果通过 [Apple Developer Console](/build-reference/ios-capabilities#apple-developer-console) 启用了 **iCloud** capability，请务必在 `ios/[app]/[app].entitlements` 文件中添加以下 entitlements（其中 `dev.expo.my-app` 是你的 bundle identifier）：
+
+```xml
+<key>com.apple.developer.icloud-container-identifiers</key>
+<array>
+    <string>iCloud.dev.expo.my-app</string>
+</array>
+<key>com.apple.developer.icloud-services</key>
+<array>
+    <string>CloudDocuments</string>
+</array>
+<key>com.apple.developer.ubiquity-container-identifiers</key>
+<array>
+    <string>iCloud.dev.expo.my-app</string>
+</array>
+<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+<string>$(TeamIdentifierPrefix)dev.expo.my-app</string>
+```
+
+Apple Developer Console 还要求创建一个 **iCloud Container**。注册新容器时，系统会要求你提供容器的描述和标识符。你可以在描述中输入任意名称。在标识符中添加 `iCloud.<your_bundle_identifier>`（与 `com.apple.developer.icloud-container-identifiers` 和 `com.apple.developer.ubiquity-container-identifiers` entitlements 中使用的值相同）
+
+</ConfigReactNative>
+
+## 与 `expo-file-system` 一起使用
+
+将 `expo-document-picker` 与 [`expo-file-system`](./filesystem/) 一起使用时，文件系统不一定能在 `expo-document-picker` 选中文件后立即读取该文件
+
+要允许 `expo-file-system` 在文件选中后立即读取该文件，需要确保 [`copyToCacheDirectory`](#documentpickeroptions) 选项设置为 `true`
+
+## API
+
+```js
+import * as DocumentPicker from 'expo-document-picker';
+```
+
+<APISection packageName="expo-document-picker" apiName="DocumentPicker" />
+
+[icloud-entitlement]: https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_icloud-services

@@ -21,7 +21,7 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
 
 [Android 媒体格式支持文档](https://developer.android.com/media/media3/exoplayer/supported-formats) 说明了在 Android 上使用 Expo Player 时支持的格式。[iOS 音频和视频格式文档](https://developer.apple.com/documentation/coreaudiotypes/audio-format-identifiers) 列出了 Apple 设备支持的媒体格式。
 
-请注意，如果耳机/Bluetooth 音频设备断开连接，音频会自动停止。
+请注意，如果耳机／Bluetooth 音频设备断开连接，音频会自动停止。
 
 ## 安装
 
@@ -58,8 +58,8 @@ import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
       name: 'microphonePermission',
       platform: 'ios',
       description:
-        '用于设置 `NSMicrophoneUsageDescription` 权限消息的字符串。将其设置为 `false` 将禁用该权限。',
-      default: '"Allow $(PRODUCT_NAME) to access your microphone"',
+        '用于设置 `NSMicrophoneUsageDescription` 权限提示信息的字符串。将其设为 `false` 会禁用该权限，此时将无法录音，且 `getRecordingPermissionsAsync()` 会解析为 `denied` 状态。',
+      default: '"允许 $(PRODUCT_NAME) 访问你的麦克风"',
     },
     {
       name: 'recordAudioAndroid',
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
 
 ```jsx
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, Button } from 'react-native';
+import { View, StyleSheet, Button, Alert } from 'react-native';
 import {
   useAudioRecorder,
   AudioModule,
@@ -176,7 +176,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Button
-        title={recorderState.isRecording ? 'Stop recording' : 'Start recording'}
+        title={recorderState.isRecording ? '停止录音' : '开始录音'}
         onPress={recorderState.isRecording ? stopRecording : record}
       />
     </View>
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
 
 #### 配置
 
-要启用后台音频播放，请在你的 [应用配置](/workflow/configuration/) 中使用 config plugin：
+要启用后台音频播放，请在你的[应用配置](/workflow/configuration/)中使用 config plugin：
 
 ```json app.json
 {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
 
 使用 config plugin 配置好应用后，你需要：
 
-1. **配置音频会话** 以允许后台播放
+1. **配置音频会话**以允许后台播放
 2. **启用锁屏控制**（在 Android 上持续后台播放所必需）
 
 ```jsx
@@ -282,7 +282,7 @@ export default function AudioPlayerScreen() {
 
 <PlatformTags platforms={['android']} />
 
-> **注意**：在 Android 上，你必须使用 [`setActiveForLockScreen`](#setactiveforlockscreenactive-metadata-options) 启用锁屏控制，才能持续后台播放。否则，音频会在大约 3 分钟的后台播放后停止（操作系统限制）。请确保正确 [配置 config plugin](#configuration-in-app-config)。
+> **注意**：在 Android 上，你必须使用 [`setActiveForLockScreen`](#setactiveforlockscreenactive-metadata-options) 启用锁屏控制，才能持续后台播放。否则，音频会在大约 3 分钟的后台播放后停止（操作系统限制）。请确保正确[配置 config plugin](#configuration-in-app-config)。
 
 - 通知栏中会出现带播放控制的媒体通知
 - 音频会在后台持续无限播放
@@ -329,11 +329,11 @@ export default function AudioPlayerScreen() {
 
 ### 在后台录制音频
 
-> **警告** 后台录制可能会显著影响电池续航。仅在你的应用功能确有必要时启用它。
+> **警告**：后台录制可能会显著影响电池续航。仅在你的应用功能确有必要时启用它。
 
 后台音频录制允许你的应用在进入后台或设备屏幕锁定时继续录制。
 
-要启用后台录制，请在你的 [应用配置](/workflow/configuration/) 中使用 config plugin：
+要启用后台录制，请在你的[应用配置](/workflow/configuration/)中使用 config plugin：
 
 ```json app.json
 {

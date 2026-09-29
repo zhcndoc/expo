@@ -13,6 +13,10 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 
 `--help` 标志会显示 `simulator:start` 的可用选项。
 
+启动命令也可写作 `eas simulator`、`eas sim` 和 `eas sim:start`。其他命令也有对应的 `eas sim:*` 别名，例如 `eas sim:list` 和 `eas sim:stop`。
+
+如需在不使用 EAS CLI 的情况下管理会话，请使用 [REST API](/preview/eas-simulator/rest-api/)。
+
 ## 命令
 
 | 命令                                               | 用途                                  |
@@ -34,7 +38,7 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 
 ## `simulator:start`
 
-控制器是通过远程设备提供的工具，用于安装、检查和操作应用。启动会话时选择控制器类型：
+会话类型决定 EAS 会通过远程设备配置哪种接口。在 iOS 上，每种类型都包含网页预览。选择 agent-device、Argent 或 Appium 可添加程序化控制，或者选择 `web-preview-only` 仅使用网页预览：
 
 <Tabs>
 
@@ -42,7 +46,11 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 
 使用 [agent-device](/agents/agent-device/) 执行基于无障碍功能的设备操作和应用安装。
 
-<Terminal cmd={['$ eas simulator:start --platform ios --type agent-device --non-interactive']} />
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type agent-device --name "Checkout flow screenshots" --non-interactive',
+  ]}
+/>
 
 </Tab>
 
@@ -50,7 +58,35 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 
 使用 [Argent](/agents/argent/) 通过会话运行其远程设备工具。
 
-<Terminal cmd={['$ eas simulator:start --platform ios --type argent --non-interactive']} />
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type argent --name "Checkout flow screenshots" --non-interactive',
+  ]}
+/>
+
+</Tab>
+
+<Tab label="Appium">
+
+如果要连接现有的 Appium 客户端或测试套件，请使用 Appium。
+
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type appium --name "Checkout flow tests" --non-interactive',
+  ]}
+/>
+
+</Tab>
+
+<Tab label="仅网页预览">
+
+使用 iOS 网页预览，不配置程序化控制器。
+
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type web-preview-only --name "Design review" --non-interactive',
+  ]}
+/>
 
 </Tab>
 
@@ -58,15 +94,27 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 
 重要标志：
 
-| 标志                | 描述                                                                                                                                |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-p, --platform`    | `android` 或 `ios`。在非交互模式下为必需项；在交互式终端中会提示输入                                              |
-| `--type`            | 为会话提供的控制器。使用 `agent-device` 或 `argent` 进行程序化控制，或使用 `serve-sim` 进行仅限浏览器的预览 |
-| `--package-version` | 控制器软件包版本。默认为服务的最新版本                                                                       |
-| `--out-config-type` | `dotenv` 用于写入 **.env.eas-simulator**，或 `env` 用于打印 shell 导出变量                                                                  |
-| `--[no-]force`      | 当环境中已存在会话 ID 时，是否创建新会话。默认为 `true`                                    |
-| `--non-interactive` | 控制器就绪后返回，而不是保持连接                                                                           |
-| `--json`            | 打印机器可读的输出，并隐式启用非交互模式                                                                               |
+| 标志                        | 描述                                                                                                                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `-p, --platform`            | `android` 或 `ios`。在非交互模式下为必填项；在交互式终端中会提示输入                                                                                  |
+| `--name`                    | 人类可读的会话名称，会显示在 `simulator:list`、`simulator:get` 和 expo.dev 中                                                                                           |
+| `--device`                  | iOS Simulator 名称或唯一设备标识符（UDID），或 Android 虚拟设备硬件配置文件。省略时由运行器选择设备                                    |
+| `--build-id`                | 在会话就绪前安装并启动的 EAS Build                                                                                                                    |
+| `--application-archive-url` | 在会话就绪前下载、安装并启动的应用归档                                                                                               |
+| `--expo-go`                 | 安装并启动与当前项目 Expo SDK 版本匹配的 Expo Go                                                                                             |
+| `--sdk-version`             | 用于选择 Expo Go 的 Expo SDK 版本。仅在使用 `--expo-go` 时有效；默认为当前项目的 SDK 版本                                                                              |
+| `--launch-arg`              | 应用启动时传递给已安装应用的参数。多个参数需重复使用该标志                                                                                  |
+| `--open-url`                | 启动后在已安装应用中打开的 Expo 或开发客户端 URL                                                                                                       |
+| `--type`                    | 会话类型。在 iOS 上，每种类型都包含网页预览。使用 `agent-device`、`appium` 或 `argent` 可添加程序化控制，使用 `web-preview-only` 则仅使用网页预览 |
+| `--package-version`         | 控制器软件包版本。默认为服务的最新版本                                                                                                           |
+| `--max-duration-minutes`    | 自动停止会话的时间。付费方案可使用自定义值；否则默认值取决于作业优先级                                                          |
+| `--max-idle-time-minutes`   | 会话没有活动达到指定分钟数后停止。省略时，会话没有空闲超时，并会一直运行到最长持续时间                                       |
+| `--out-config-type`         | 使用 `dotenv` 写入 **.env.eas-simulator**，或使用 `env` 输出 shell 环境变量导出语句                                                                                                      |
+| `--[no-]force`              | 当环境中已存在会话 ID 时，是否创建新会话。默认为 `true`                                                                        |
+| `--non-interactive`         | 会话就绪后返回，而不是保持连接                                                                                                                  |
+| `--json`                    | 输出机器可读内容，并启用非交互模式                                                                                                                   |
+
+`--build-id`、`--application-archive-url` 和 `--expo-go` 是互斥的应用来源。`--launch-arg` 和 `--open-url` 必须与其中一个应用来源搭配使用，因为启动命令需要已安装的应用才能启动。
 
 即使使用 `--json`，默认的 `dotenv` 输出也会写入配置。明确不想写入文件时，请使用 `--out-config-type env`。
 
@@ -74,9 +122,10 @@ import { Tab, Tabs } from '~/ui/components/Tabs';
 
 ```json
 {
-  "id": "<会话 ID>",
-  "type": "<控制器类型>",
-  "deviceRunSessionUrl": "https://expo.dev/accounts/<账户>/projects/<项目>/simulator-sessions/<会话 ID>",
+  "id": "<session-id>",
+  "name": "Checkout flow screenshots",
+  "type": "<controller-type>",
+  "deviceRunSessionUrl": "https://expo.dev/accounts/<account>/projects/<project>/simulator-sessions/<session-id>",
   "remoteConfig": {
     "<控制器特定键>": "<值>"
   }
@@ -151,11 +200,11 @@ JSON 对象包含 `deviceRunSessionId` 和 `events` 数组。常见的事件字�
 
 响应包括：
 
-- ID、类型、状态和平台
-- 创建、启动、完成和更新时间戳
+- ID、名称、类型、状态和平台
+- 创建、启动、结束和更新时间戳
 - expo.dev 模拟器会话 URL
 - 控制器连接配置
-- 会话构件（如果存在）
+- 会话产物（如果存在）
 
 ## `simulator:list`
 
@@ -165,11 +214,12 @@ JSON 对象包含 `deviceRunSessionId` 和 `events` 数组。常见的事件字�
 
 筛选条件可以重复使用：
 
-| 筛选条件       | 值                                     |
-| ------------ | ------------------------------------------ |
-| `--platform` | `ios`、`android`                           |
-| `--type`     | `agent-device`、`argent`、`serve-sim`      |
-| `--status`   | `new`、`in-progress`、`stopped`、`errored` |
+| 筛选条件       | 值                                                 |
+| ------------ | ------------------------------------------------------ |
+| `--platform` | `ios`、`android`                                       |
+| `--type`     | `agent-device`、`appium`、`argent`、`web-preview-only` |
+| `--status`   | `new`、`in-progress`、`stopped`、`errored`             |
+| `--name`     | 不区分大小写的会话名称前缀                   |
 
 使用 `--limit` 控制页面大小，并将上一响应中的 `endCursor` 与 `--after` 一起使用进行分页。
 
@@ -185,6 +235,8 @@ JSON 对象包含 `deviceRunSessionId` 和 `events` 数组。常见的事件字�
 
 停止变更具有幂等性。
 
+使用 `--json` 输出包含会话 `id` 和最终 `status` 的机器可读对象。
+
 ## **.env.eas-simulator**
 
 托管文件始终包含会话 ID：
@@ -198,7 +250,8 @@ EAS_SIMULATOR_SESSION_ID="<session-id>"
 | 控制器       | 连接变量                                                         |
 | ------------ | ---------------------------------------------------------------- |
 | agent-device | `AGENT_DEVICE_DAEMON_BASE_URL`、`AGENT_DEVICE_DAEMON_AUTH_TOKEN` |
-| Argent       | `ARGENT_TOOLS_URL`，以及在需要时使用的 `ARGENT_AUTH_TOKEN`         |
+| Argent       | `ARGENT_TOOLS_URL`，以及在需要时使用的 `ARGENT_AUTH_TOKEN`       |
+| Appium       | `APPIUM_URL`、`APPIUM_CAPS`                                      |
 
 将该文件添加到 **.gitignore**：
 

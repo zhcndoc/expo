@@ -1,0 +1,209 @@
+---
+title: 选择器
+description: 与 @react-native-picker/picker 兼容的选择器。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+一个 API 与 `@react-native-picker/picker` 兼容的 `Picker` 组件。在 iOS 上使用 SwiftUI 滚轮式 `Picker`，在 Android 上使用 Material 3 `ExposedDropdownMenuBox`，在 web 上使用原生 `<select>` 元素。
+
+在底层，此组件封装了平台专属的 `@expo/ui` 原语：
+
+- **Android**：[Jetpack Compose ExposedDropdownMenuBox](../jetpack-compose/exposeddropdownmenubox)
+- **iOS**：搭配 `pickerStyle('wheel')` 的 [SwiftUI Picker](../swift-ui/picker)
+
+如果需要更精细的控制，请直接使用这些原语。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/community-picker/android-light.webp',
+    darkSrc: '/static/images/expo-ui/community-picker/android-dark.webp',
+    alt: '一个显示 Java 的下拉字段',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/community-picker/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/community-picker/ios-dark.webp',
+    alt: '一个选中了 Java 的滚轮选择器',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@react-native-picker/picker` 迁移
+
+- 将导入语句从 `import { Picker } from '@react-native-picker/picker'` 更新为 `import { Picker } from '@expo/ui/community/picker'`。
+- 不支持 `mode`、`prompt`、`dropdownIconColor`、`dropdownIconRippleColor`、`numberOfLines`、`selectionColor`、`itemStyle` 和 `accessibilityLabel` 属性。
+- 在 `Picker.Item` 上，`style` 属性仅作用于 `color`、`backgroundColor`、`fontFamily` 和 `fontSize`。顶层的 `color` 和 `fontFamily` 属性仍受支持，可作为对应 `style` 值的别名。
+- `Picker.Item` 上的 `enabled` 仅适用于 Android。
+- `ref` 的 `focus()` 和 `blur()` 方法仅在 Android 上生效（打开/关闭下拉菜单）。在 iOS 上，滚轮选择器始终可见。
+
+## 基本用法
+
+<ComponentExample
+  title="PickerExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-picker-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-basic-android-dark.webp',
+    alt: '一个在 Selected 标签上方显示 Java 的下拉字段',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-picker-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-basic-ios-dark.webp',
+    alt: '一个在 Selected 标签上方选中了 Java 的滚轮选择器',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { Text, useColorScheme, View } from 'react-native';
+import { Picker } from '@expo/ui/community/picker';
+
+export default function PickerExample() {
+  const [language, setLanguage] = useState('java');
+  const colorScheme = useColorScheme();
+
+  return (
+    <View>
+      <Picker selectedValue={language} onValueChange={value => setLanguage(value)}>
+        <Picker.Item label="Java" value="java" />
+        <Picker.Item label="JavaScript" value="js" />
+        <Picker.Item label="Objective C" value="objc" />
+        <Picker.Item label="Swift" value="swift" />
+      </Picker>
+      <Text style={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>
+        Selected: {language}
+      </Text>
+    </View>
+  );
+}
+```
+
+</ComponentExample>
+
+## 单项样式与状态
+
+为 `Picker.Item` 传入 `style`，即可控制每个选项的 `color`、`backgroundColor`、`fontFamily` 和 `fontSize`；传入 `enabled={false}` 可在 Android 上禁用指定选项。
+
+在 iOS 上，`fontFamily` 接受 iOS 字体名称（例如 `'Menlo'`）；在 Android 上，则接受 Compose 通用字体系列（`'monospace'`、`'serif'`、`'sansSerif'`、`'cursive'`）或通过 [`expo-font`](../../font) 加载的字体。
+
+<ComponentExample
+  title="StyledPickerExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-picker-styled-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-styled-android-dark.webp',
+    alt: '一个已展开的下拉菜单，其中每种语言都使用各自的颜色和字体',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-picker-styled-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-styled-ios-dark.webp',
+    alt: '一个滚轮选择器，其中每种语言都使用各自的颜色和字体',
+  }}>
+
+```tsx
+import { useState } from 'react';
+import { Platform } from 'react-native';
+import { Picker } from '@expo/ui/community/picker';
+
+const monospace = Platform.select({ ios: 'Menlo', android: 'monospace' });
+const serif = Platform.select({ ios: 'Georgia', android: 'serif' });
+
+export default function StyledPickerExample() {
+  const [language, setLanguage] = useState('java');
+
+  return (
+    <Picker selectedValue={language} onValueChange={value => setLanguage(value)}>
+      <Picker.Item
+        label="Java"
+        value="java"
+        style={{ color: '#e11d48', fontFamily: monospace, fontSize: 14 }}
+      />
+      <Picker.Item
+        label="JavaScript"
+        value="js"
+        style={{ color: '#2563eb', fontFamily: serif, fontSize: 18 }}
+        enabled={false}
+      />
+      <Picker.Item
+        label="Objective C"
+        value="objc"
+        style={{ color: '#059669', fontFamily: monospace, fontSize: 16 }}
+      />
+      <Picker.Item
+        label="Swift"
+        value="swift"
+        style={{ color: '#d97706', fontFamily: serif, fontSize: 30 }}
+        enabled={false}
+      />
+    </Picker>
+  );
+}
+```
+
+</ComponentExample>
+
+## 命令式聚焦与失焦（Android）
+
+使用 ref 在 Android 上以编程方式打开和关闭下拉菜单。在 iOS 上，这些方法无效，因为滚轮选择器始终可见。
+
+<ComponentExample
+  title="RefPickerExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-picker-ref-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-ref-android-dark.webp',
+    alt: '由上方按钮打开的下拉菜单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-picker-ref-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-picker-ref-ios-dark.webp',
+    alt: '一个滚轮选择器上方有一个按钮，且已选中 Java',
+  }}>
+
+```tsx
+import { useRef, useState } from 'react';
+import { Button } from 'react-native';
+import { Picker, type PickerRef } from '@expo/ui/community/picker';
+
+export default function RefPickerExample() {
+  const [language, setLanguage] = useState('java');
+  const pickerRef = useRef<PickerRef>(null);
+
+  return (
+    <>
+      <Button
+        title="打开，并在 2 秒后关闭"
+        onPress={() => {
+          pickerRef.current?.focus();
+          setTimeout(() => pickerRef.current?.blur(), 2000);
+        }}
+      />
+      <Picker ref={pickerRef} selectedValue={language} onValueChange={setLanguage}>
+        <Picker.Item label="Java" value="java" />
+        <Picker.Item label="JavaScript" value="js" />
+        <Picker.Item label="Objective C" value="objc" />
+        <Picker.Item label="Swift" value="swift" />
+      </Picker>
+    </>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Picker } from '@expo/ui/community/picker';
+```
+
+<APISection packageName="expo-ui/community/picker" apiName="Picker" />
+
+</PlatformTabsGroup>

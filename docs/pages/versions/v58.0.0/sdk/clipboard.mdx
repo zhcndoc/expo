@@ -1,0 +1,103 @@
+---
+title: 剪贴板
+description: 一个允许获取和设置剪贴板内容的通用库
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-clipboard'
+packageName: 'expo-clipboard'
+iconUrl: '/static/images/packages/expo-clipboard.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { SnackInline } from '~/ui/components/Snippet';
+
+`expo-clipboard` 提供了在 Android、iOS 和 Web 上获取和设置 Clipboard 内容的接口
+
+## 安装
+
+<APIInstallSection />
+
+## 使用
+
+<SnackInline label='Clipboard' dependencies={['expo-clipboard']} platforms={['ios', 'android', 'web']}>
+
+```tsx
+import { useState } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+
+export default function App() {
+  const [copiedText, setCopiedText] = useState('');
+
+  const copyToClipboard = async () => {
+    /* @info Copy the text to the clipboard */
+    await Clipboard.setStringAsync('hello world');
+    /* @end */
+  };
+
+  const fetchCopiedText = async () => {
+    const text = /* @info Paste the text from the clipboard */ await Clipboard.getStringAsync();
+    /* @end */
+    setCopiedText(text);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Button title="Click here to copy to Clipboard" onPress={copyToClipboard} />
+      <Button title="View copied text" onPress={fetchCopiedText} />
+      <Text style={styles.copiedText}>{copiedText}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  copiedText: {
+    marginTop: 10,
+    color: 'red',
+  },
+});
+```
+
+</SnackInline>
+
+## 将 Clipboard 内容标记为敏感内容（Android）
+
+复制密码、一次性密码（OTP）、访问令牌、支付信息或个人身份信息（PII）等敏感数据时，请在 `setStringAsync` 和 `setImageAsync` 中设置 `android.isSensitive`
+
+设置 `android.isSensitive: true` 会根据 Android 关于[安全处理 Clipboard](https://developer.android.com/privacy-and-security/risks/secure-clipboard-handling#flag-sensitive-data) 的指导，将 Clipboard 内容标记为敏感内容。这有助于：
+
+- 模糊键盘显示的 Clipboard 预览
+- 隐藏 Android 13 及更高版本中的 Clipboard 预览浮层
+- 减少因旁观窥视导致的意外泄露
+
+```ts
+import * as Clipboard from 'expo-clipboard';
+
+// Sensitive text
+await Clipboard.setStringAsync('my-secret-token', {
+  android: { isSensitive: true },
+});
+
+// Sensitive image
+await Clipboard.setImageAsync(base64Image, {
+  android: { isSensitive: true },
+});
+```
+
+## API
+
+```ts
+import * as Clipboard from 'expo-clipboard';
+```
+
+> **警告** 在 Web 上，此模块使用 [`AsyncClipboard` API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API)，
+> 其行为可能因浏览器而异，或者可能不受完全支持
+> 尤其是在 WebKit 上，存在一个问题，导致此 API 无法在异步代码中使用
+> [点击此处了解更多详情](https://bugs.webkit.org/show_bug.cgi?id=222262)
+
+<APISection packageName="expo-clipboard" />

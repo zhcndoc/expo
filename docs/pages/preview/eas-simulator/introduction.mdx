@@ -1,7 +1,7 @@
 ---
-title: EAS 模拟器简介
+title: EAS Simulator 简介
 sidebar_title: 简介
-description: 通过 CLI、AI 代理或浏览器，在 EAS 基础设施上运行和控制远程 iOS 模拟器与 Android 模拟器。
+description: 通过 CLI、REST API、AI agent 或浏览器，在 EAS 基础设施上运行和控制远程 iOS Simulators 和 Android Emulators。
 ---
 
 import { Cloud01Icon } from '@expo/styleguide-icons/outline/Cloud01Icon';
@@ -10,7 +10,7 @@ import { BoxLink } from '~/ui/components/BoxLink';
 import { NoIcon, YesIcon } from '~/ui/components/DocIcons';
 import { RelatedSkills } from '~/ui/components/RelatedSkills';
 
-> **重要** **EAS Simulator 是一项访问受限的预览功能。** 它不包含在付费或免费计划中，目前仅向部分合作伙伴提供。如果你有兴趣试用，请[加入候补名单](https://expo.dev/services/simulator)。
+> **重要** **EAS Simulator 是一项访问受限的预览功能。** 它不包含在付费或免费套餐中，目前仅向部分合作伙伴开放。如果你有兴趣试用，请[加入候补名单](https://expo.dev/services/simulators)。
 
 **EAS Simulator** 可在 EAS 基础设施上运行远程 iOS Simulator 或 Android Emulator。你可以安装应用、检查其用户界面并与之交互。你还可以收集屏幕截图和录屏，或分享 iOS 浏览器预览，而无需在本地运行设备。
 
@@ -29,7 +29,7 @@ EAS Simulator 专为代理式开发而构建。它为编码代理提供真实的
 
 ## 使用 EAS 模拟器与编码代理
 
-对于代理式开发，请从官方 EAS 模拟器技能开始。要求您的编码代理使用该技能，而不是单独提供 EAS CLI 和控制器命令。该技能涵盖访问检查、构建准备、远程会话、控制器工作流、证据收集和清理。
+对于代理式开发，请从官方 EAS Simulator 技能开始。让你的编码代理使用该技能，而不是向它提供单独的 EAS CLI 和控制器命令。该技能涵盖访问权限检查、构建准备、会话命名和限制、远程会话、控制器工作流、证据收集和清理。
 
 <RelatedSkills names={['eas-simulator']} />
 
@@ -49,25 +49,26 @@ EAS Simulator 专为代理式开发而构建。它为编码代理提供真实的
 
 EAS 模拟器工作流分为四个阶段：
 
-1. **使用 EAS CLI 启动会话**。EAS 会启动远程设备和选定的控制器。
-2. **安装应用**。远程设备启动时为空白状态，因此请安装本地构建版本或 EAS Build 构建产物。
-3. **操作设备**。使用 [agent-device](/agents/agent-device/)、[Argent](/agents/argent/) 或 iOS 浏览器预览。
-4. **停止会话**。无人值守的非交互式会话会持续消耗用量，直到停止。
+1. **使用 EAS CLI、[REST API](/preview/eas-simulator/rest-api/) 或经过身份验证的[创建会话链接](/preview/eas-simulator/create-session-links/)启动会话。** 为会话指定一个描述性名称，选择远程设备和会话类型，还可以设置自动时长或闲置时限。
+2. **安装应用。** 在启动命令中传入 EAS Build、应用归档 URL 或 Expo Go；也可以在会话启动后通过控制器安装本地构建。不提供应用来源的会话将以空白设备启动。
+3. **驱动设备。** 使用 [agent-device](/agents/agent-device/)、[Argent](/agents/argent/) 或 [Appium](https://appium.io/docs/en/) 进行程序化控制。受支持的 iOS 会话还包括网页预览。
+4. **停止会话。** 完成后显式停止会话。无人值守的非交互式会话会继续消耗用量，直到停止或达到配置的限制。
 
-EAS CLI 管理会话生命周期和连接配置。控制器提供设备操作，例如打开应用、按下按钮、输入文本、检查无障碍树以及截取屏幕截图。
+EAS CLI 管理会话生命周期和连接配置。使用 REST API 可通过你自己的 HTTP 客户端管理会话。控制器提供设备操作，例如打开应用、按下按钮、输入文本、检查无障碍树以及截取屏幕截图。
 
 ## 可用平台
 
-| 功能                                           | 可用性       |
-| ---------------------------------------------- | ------------ |
-| 远程 iOS 模拟器                                | <YesIcon />  |
-| 远程 Android 模拟器                            | <YesIcon />  |
-| 使用 agent-device 进行程序化控制               | <YesIcon />  |
-| 使用 Argent 进行程序化控制                     | <YesIcon />  |
-| iOS 浏览器实时预览                             | <YesIcon />  |
-| Android 浏览器实时预览                         | <NoIcon />   |
-| 物理设备访问                                   | <NoIcon />   |
-| 使用开发构建和 Metro 进行快速刷新              | <YesIcon />  |
+| 功能                                                           | 可用性       |
+| -------------------------------------------------------------- | ------------ |
+| 远程 iOS Simulator                                             | <YesIcon />  |
+| 远程 Android Emulator                                          | <YesIcon />  |
+| 使用 agent-device 进行程序化控制                               | <YesIcon />  |
+| 使用 Argent 进行程序化控制                                     | <YesIcon />  |
+| 使用 [Appium](https://appium.io/docs/en/) 进行程序化控制       | <YesIcon />  |
+| iOS 实时浏览器预览                                             | <YesIcon />  |
+| Android 实时浏览器预览                                         | 即将推出     |
+| 物理设备访问                                                   | <NoIcon />   |
+| 使用 Expo Go 或开发构建，通过 Metro 实现快速刷新               | <YesIcon />  |
 
 使用 [EAS Build](/build/introduction/) 创建可安装的构建，并使用本地设备工具处理物理设备。
 
@@ -88,6 +89,13 @@ EAS CLI 管理会话生命周期和连接配置。控制器提供设备操作，
 />
 
 <BoxLink
+  title="创建会话链接"
+  description="构建一个 URL，从 EAS Build 或应用归档启动浏览器预览。"
+  href="/preview/eas-simulator/create-session-links/"
+  Icon={Cloud01Icon}
+/>
+
+<BoxLink
   title="CLI 参考"
   description="查看实验性模拟器命令、标志、输出和托管环境文件。"
   href="/preview/eas-simulator/cli-reference/"
@@ -95,8 +103,15 @@ EAS CLI 管理会话生命周期和连接配置。控制器提供设备操作，
 />
 
 <BoxLink
+  title="REST API"
+  description="通过 CI 或你自己的 HTTP 客户端创建、检查、连接和停止会话。"
+  href="/preview/eas-simulator/rest-api/"
+  Icon={Cloud01Icon}
+/>
+
+<BoxLink
   title="故障排除"
-  description="解决帐户不可用、会话过期、隧道断开和构建不正确等问题。"
+  description="解决账户不可用、会话过期、隧道中断和构建错误等问题。"
   href="/preview/eas-simulator/troubleshooting/"
   Icon={Cloud01Icon}
 />

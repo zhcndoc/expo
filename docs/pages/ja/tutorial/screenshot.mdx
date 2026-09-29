@@ -10,7 +10,7 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-在这一章中，你将学习如何使用第三方库拍摄屏幕截图，并将其保存到设备的媒体库中。我们将使用 [`react-native-view-shot`](https://github.com/gre/react-native-view-shot) 来拍摄屏幕截图，并使用 [`expo-media-library`](/versions/v54.0.0/sdk/media-library/) 将图像保存到设备的媒体库中。
+この章では、サードパーティライブラリを使ってスクリーンショットを撮影し、デバイスのメディアライブラリに保存する方法を学びます。スクリーンショットの撮影には [`react-native-view-shot`](https://github.com/gre/react-native-view-shot) を、デバイスのメディアライブラリへの画像の保存には [`expo-media-library`](/versions/v57.0.0/sdk/media-library/) を使用します。
 
 > **信息** 到目前为止，我们已经使用了 `react-native-gesture-handler` 和 `react-native-reanimated` 等第三方库。根据不同用途，你还可以在 [React Native Directory](https://reactnative.directory/) 中找到另外数百个第三方库。
 
@@ -45,7 +45,7 @@ import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
 对于需要访问设备媒体库等敏感信息的应用，你需要请求权限，以便用户允许或拒绝访问。使用 `expo-image-picker` 的 `useMediaLibraryPermissions()` 钩子，你可以通过 `permissionResponse` 和 `requestPermission()` 方法来请求访问权限。这个钩子会同时请求读取和写入权限，因此既适用于从媒体库中选择图片，也适用于保存屏幕截图。
 
-当应用首次启动且权限状态既未被允许也未被拒绝时，`permissionResponse` 的值为 `null`。当请求权限时，用户可以选择允许或拒绝权限。添加一个条件来判断是否未被允许。如果未被允许，则调用 `requestPermission()` 方法。获得访问权限后，`permissionResponse` 的值会变为 `granted`。
+当应用首次启动且权限状态既未被允许也未被拒绝时，`permissionResponse` 的值为 `null`。请求权限时，用户可以选择允许或拒绝。如果未获得许可，则调用 `requestPermission()` 方法。获得访问权限后，`permissionResponse` 的值会变为 `granted`。
 
 将以下代码片段添加到 **src/app/(tabs)/index.tsx** 中。
 
@@ -78,14 +78,14 @@ export default function Index() {
 
 ## 创建一个 ref 来保存当前视图
 
-为了让用户能够在应用中拍摄屏幕截图，我们将使用 `react-native-view-shot`。该库通过 `captureRef()` 方法对 `<View>` 截图并将其作为图像返回。拍摄到的截图图像文件的 URI 会被返回。
+为了让用户能够在应用中拍摄屏幕截图，我们将使用 `react-native-view-shot`。该库通过 `captureRef()` 方法对 `<View>` 截图并将其作为图像返回。拍摄的截图图像文件 URI 会被返回。
 
 1. 从 `react-native-view-shot` 中导入 `captureRef`，并从 React 中导入 `useRef`。
-2. 创建一个 `imageRef` 引用变量，用于保存拍摄的截图图像引用。
+2. 创建一个 `imageRef` 引用变量，用于保存截图视图的引用。
 3. 使用 `<View>` 包裹 `<ImageViewer>` 和 `<EmojiSticker>` 组件，并将引用变量传给它。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx|collapseHeight=440
+```tsx src/app/(tabs)/index.tsx|collapseHeight=440
 import { useState, /* @tutinfo 从 `react` 中导入 `useRef` 钩子。 */useRef/* @end */ } from 'react';
 /* @tutinfo 从 `react-native-view-shot` 导入 `captureRef`。 */import { captureRef } from 'react-native-view-shot';/* @end */
 
@@ -108,7 +108,7 @@ export default function Index() {
 }
 ```
 
-在上面的代码片段中，我们将 `collapsable` 属性设置为 `false`。这样 `<View>` 组件就可以只对背景图片和表情贴纸进行截图。
+在上面的代码片段中，我们将 `collapsable` 属性设置为 `false`。这样 `<View>` 组件就只会对背景图片和表情贴纸进行截图。
 
 </Step>
 
@@ -118,12 +118,12 @@ export default function Index() {
 
 你可以在 `onSaveImageAsync()` 函数中调用 `react-native-view-shot` 的 `captureRef()` 方法来拍摄视图截图。该方法接受可选参数，你可以传入截图区域的 `width` 和 `height`。有关可用选项的更多详情，请参阅[库文档](https://github.com/gre/react-native-view-shot#capturerefview-options-lower-level-imperative-api)。
 
-此外，`captureRef()` 方法会返回一个 Promise，并在完成后解析为截图的 URI。你可以将这个 URI 作为 [`MediaLibrary.saveToLibraryAsync()`](/versions/v54.0.0/sdk/media-library/#medialibrarysavetolibraryasynclocaluri) 的参数传入，从而将截图保存到设备的媒体库中。
+此外，`captureRef()` 方法会返回一个 Promise，解析为截图的 URI。将此 URI 作为参数传递给 [`MediaLibrary.saveToLibraryAsync()`](/versions/v57.0.0/sdk/media-library/#medialibrarysavetolibraryasynclocaluri)，即可将截图保存到设备的媒体库中。
 
-在 **app/(tabs)/index.tsx** 中，将 `onSaveImageAsync()` 函数更新为以下代码。
+在 **src/app/(tabs)/index.tsx** 中，将 `onSaveImageAsync()` 函数更新为以下代码。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx|collapseHeight=440
+```tsx src/app/(tabs)/index.tsx|collapseHeight=440
 import * as ImagePicker from 'expo-image-picker';
 /* @tutinfo 从 `expo-media-library` 导入 `MediaLibrary`。 */import * as MediaLibrary from 'expo-media-library';/* @end */
 import { useEffect, useRef, useState } from 'react';
@@ -131,14 +131,14 @@ import { ImageSourcePropType, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { captureRef } from 'react-native-view-shot';
 
-import Button from '@/components/Button';
-import CircleButton from '@/components/CircleButton';
-import EmojiList from '@/components/EmojiList';
-import EmojiPicker from '@/components/EmojiPicker';
-import IconButton from '@/components/IconButton';
-import ImageViewer from '@/components/ImageViewer';
+import Button from '@/components/button';
+import CircleButton from '@/components/circle-button';
+import EmojiList from '@/components/emoji-list';
+import EmojiPicker from '@/components/emoji-picker';
+import IconButton from '@/components/icon-button';
+import ImageViewer from '@/components/image-viewer';
 
-import EmojiSticker from '@/components/EmojiSticker';
+import EmojiSticker from '@/components/emoji-sticker';
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
@@ -264,6 +264,6 @@ const styles = StyleSheet.create({
 
 </Step>
 
-## Summary
+## 总结
 
 <ProgressTracker name="GET_STARTED" currentChapterSlug="/tutorial/screenshot" />

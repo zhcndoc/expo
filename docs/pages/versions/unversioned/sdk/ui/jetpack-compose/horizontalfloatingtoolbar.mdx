@@ -8,6 +8,7 @@ platforms: ['android', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 Expo UI HorizontalFloatingToolbar 封装了官方 Jetpack Compose [`HorizontalFloatingToolbar`](https://kotlinlang.org/api/compose-multiplatform/material3/androidx.compose.material3/-horizontal-floating-toolbar.html)，并显示一个悬浮在内容上方的水平工具栏，其中包含操作按钮。
@@ -32,7 +33,13 @@ Expo UI HorizontalFloatingToolbar 封装了官方 Jetpack Compose [`HorizontalFl
 
 将工具栏放在带有 `floatingToolbarExitAlwaysScrollBehavior` 的 `Box` 中，以获得随滚动隐藏/显示的行为。使用 `align('bottomCenter')` 将工具栏定位在屏幕底部。整个布局都保留在 Compose 层中——不需要 React Native 的绝对定位。
 
-```tsx FloatingToolbarExample.tsx
+<ComponentExample
+  title="FloatingToolbarExample.tsx"
+  src="/static/images/expo-ui/examples/toolbar-floating-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toolbar-floating-android-dark.webp"
+  alt="一个悬浮工具栏，包含编辑按钮和添加按钮，居中显示在可滚动列表上方">
+
+```tsx
 import {
   Box,
   HorizontalFloatingToolbar,
@@ -41,14 +48,34 @@ import {
   IconButton,
   LazyColumn,
   ListItem,
+  Text,
 } from '@expo/ui/jetpack-compose';
-import { align, fillMaxSize, fillMaxWidth, offset } from '@expo/ui/jetpack-compose/modifiers';
+import {
+  align,
+  fillMaxSize,
+  offset,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+const ITEMS = Array.from(
+  { length: 20 },
+  (_, index) => `Item ${index + 1}`
+);
 
 export default function FloatingToolbarExample() {
   return (
     <Host style={{ flex: 1 }}>
-      <Box modifiers={[fillMaxSize()]} floatingToolbarExitAlwaysScrollBehavior="bottom">
-        <LazyColumn modifiers={[fillMaxSize()]}>{/* ...列表项... */}</LazyColumn>
+      <Box
+        modifiers={[fillMaxSize()]}
+        floatingToolbarExitAlwaysScrollBehavior="bottom">
+        <LazyColumn modifiers={[fillMaxSize()]}>
+          {ITEMS.map(item => (
+            <ListItem key={item}>
+              <ListItem.HeadlineContent>
+                <Text>{item}</Text>
+              </ListItem.HeadlineContent>
+            </ListItem>
+          ))}
+        </LazyColumn>
 
         <HorizontalFloatingToolbar
           variant="vibrant"
@@ -67,31 +94,56 @@ export default function FloatingToolbarExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 带有 FloatingActionButton 的工具栏
 
 将 `IconButton` 作为工具栏项目的直接子元素，并将 `HorizontalFloatingToolbar.FloatingActionButton` 用作主要操作。
 
-```tsx ToolbarWithFABExample.tsx
-import { Host, HorizontalFloatingToolbar, IconButton, Icon } from '@expo/ui/jetpack-compose';
+<ComponentExample
+  title="ToolbarWithFABExample.tsx"
+  src="/static/images/expo-ui/examples/toolbar-with-fab-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toolbar-with-fab-android-dark.webp"
+  alt="一个胶囊形工具栏，包含编辑和分享按钮，旁边还有一个独立的添加按钮">
+
+```tsx
+import {
+  Host,
+  HorizontalFloatingToolbar,
+  IconButton,
+  Icon,
+} from '@expo/ui/jetpack-compose';
 
 export default function ToolbarWithFABExample() {
   return (
     <Host matchContents>
       <HorizontalFloatingToolbar>
-        <IconButton onClick={() => console.log('编辑被点击')}>
-          <Icon source={require('./assets/edit.xml')} contentDescription="编辑" />
+        <IconButton onClick={() => console.log('Edit pressed')}>
+          <Icon
+            source={require('./assets/edit.xml')}
+            contentDescription="Edit"
+          />
         </IconButton>
-        <IconButton onClick={() => console.log('分享被点击')}>
-          <Icon source={require('./assets/share.xml')} contentDescription="分享" />
+        <IconButton onClick={() => console.log('Share pressed')}>
+          <Icon
+            source={require('./assets/share.xml')}
+            contentDescription="Share"
+          />
         </IconButton>
-        <HorizontalFloatingToolbar.FloatingActionButton onPress={() => console.log('添加被点击')}>
-          <Icon source={require('./assets/add.xml')} contentDescription="添加" />
+        <HorizontalFloatingToolbar.FloatingActionButton
+          onPress={() => console.log('Add pressed')}>
+          <Icon
+            source={require('./assets/add.xml')}
+            contentDescription="Add"
+          />
         </HorizontalFloatingToolbar.FloatingActionButton>
       </HorizontalFloatingToolbar>
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ## API
 

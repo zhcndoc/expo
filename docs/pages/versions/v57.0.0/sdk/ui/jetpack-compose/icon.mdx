@@ -8,6 +8,7 @@ platforms: ['android', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 import { Terminal } from '~/ui/components/Snippet';
 
@@ -37,54 +38,103 @@ import { Terminal } from '~/ui/components/Snippet';
 
 直接从 `@expo/material-symbols` 的各个子路径导入任意图标——每个图标都会解析为可由 `Icon` 原生渲染的 Metro 资源。对于你添加到项目中的本地 XML 文件，请改用 `require()`（见下面的 [自定义样式](#custom-styles-via-expomaterial-symbols-cli)）。
 
-```tsx BasicIcon.tsx
-import { Host, Icon } from '@expo/ui/jetpack-compose';
+<ComponentExample
+  title="BasicIcon.tsx"
+  src="/static/images/expo-ui/examples/icon-basic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/icon-basic-android-dark.webp"
+  alt="默认尺寸的房屋轮廓图标">
+
+```tsx
+import {
+  Host,
+  Icon,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
 import Home from '@expo/material-symbols/home.xml';
 
 export default function BasicIcon() {
+  const colors = useMaterialColors();
+
   return (
     <Host matchContents>
-      <Icon source={Home} contentDescription="主页" />
+      <Icon
+        source={Home}
+        tint={colors.onBackground}
+        contentDescription="Home"
+      />
     </Host>
   );
 }
 ```
 
-### 带 tint 颜色的图标
+</ComponentExample>
+
+### 带色调的图标
 
 使用 `tint` 属性为图标应用颜色叠加。
 
-```tsx TintedIcon.tsx
+<ComponentExample
+  title="TintedIcon.tsx"
+  src="/static/images/expo-ui/examples/icon-tinted-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/icon-tinted-android-dark.webp"
+  alt="以紫色绘制的心形轮廓图标">
+
+```tsx
 import { Host, Icon } from '@expo/ui/jetpack-compose';
 import Favorite from '@expo/material-symbols/favorite.xml';
 
 export default function TintedIcon() {
   return (
     <Host matchContents>
-      <Icon source={Favorite} tint="#6200ee" contentDescription="收藏" />
+      <Icon
+        source={Favorite}
+        tint="#6200ee"
+        contentDescription="Favorite"
+      />
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ### 带尺寸的图标
 
 使用 `size` 属性以 dp 为单位指定自定义尺寸。
 
-```tsx SizedIcon.tsx
-import { Host, Icon } from '@expo/ui/jetpack-compose';
+<ComponentExample
+  title="SizedIcon.tsx"
+  src="/static/images/expo-ui/examples/icon-sized-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/icon-sized-android-dark.webp"
+  alt="以 48 个密度无关像素绘制的齿轮图标">
+
+```tsx
+import {
+  Host,
+  Icon,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
 import Settings from '@expo/material-symbols/settings.xml';
 
 export default function SizedIcon() {
+  const colors = useMaterialColors();
+
   return (
     <Host matchContents>
-      <Icon source={Settings} size={48} contentDescription="设置" />
+      <Icon
+        source={Settings}
+        size={48}
+        tint={colors.onBackground}
+        contentDescription="Settings"
+      />
     </Host>
   );
 }
 ```
 
-### 通过 `@expo/material-symbols` CLI 自定义样式
+</ComponentExample>
+
+### 通过 `@expo/material-symbols` CLI 使用自定义样式
 
 `@expo/material-symbols` 默认提供带有默认轴的 **outlined** 样式。当你需要其他样式（`rounded`、`sharp`）、填充版本，或自定义字重、等级或光学尺寸时，可以使用其 CLI 直接从 Google Fonts 获取特定 drawable 到你的项目中。
 
@@ -115,17 +165,36 @@ export default function SizedIcon() {
 
 CLI 会将可直接使用的 XML 矢量 drawable 写入你的项目。使用 `require()` 加载它们，并将其传递给 `Icon`。
 
-```tsx CustomIcon.tsx
-import { Host, Icon } from '@expo/ui/jetpack-compose';
+<ComponentExample
+  title="CustomIcon.tsx"
+  src="/static/images/expo-ui/examples/icon-custom-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/icon-custom-android-dark.webp"
+  alt="使用 Material Symbols 命令行工具下载的圆角星形轮廓图标">
+
+```tsx
+import {
+  Host,
+  Icon,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
 
 export default function CustomIcon() {
+  const colors = useMaterialColors();
+
   return (
     <Host matchContents>
-      <Icon source={require('./assets/star-rounded.xml')} size={32} contentDescription="星标" />
+      <Icon
+        source={require('./assets/star_rounded.xml')}
+        size={32}
+        tint={colors.onBackground}
+        contentDescription="Star"
+      />
     </Host>
   );
 }
 ```
+
+</ComponentExample>
 
 ## API
 
@@ -133,4 +202,7 @@ export default function CustomIcon() {
 import { Icon } from '@expo/ui/jetpack-compose';
 ```
 
-<APISection packageName="expo-ui/jetpack-compose/icon" apiName="Icon" />
+<APISection
+  packageName="expo-ui/jetpack-compose/icon"
+  apiName="Icon"
+/>

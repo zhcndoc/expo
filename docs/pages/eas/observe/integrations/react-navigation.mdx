@@ -5,6 +5,7 @@ description: 通过启用 EAS Observe 的 React Navigation 集成，跟踪每个
 ---
 
 import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
@@ -131,7 +132,7 @@ export default function Home() {
 }
 ```
 
-> **info** 如果集成被禁用，或者未安装 `@react-navigation/native`，`useObserve()` 会回退到全局的 `AppMetrics.markInteractive`。无论集成状态如何，你都可以保留这个 hook。
+> **info** 如果集成已禁用或未安装 `@react-navigation/native`，`useObserve()` 会回退到全局的 `Observe.markInteractive`。无论集成状态如何，你都可以保留此 hook。
 
 </Step>
 
@@ -159,7 +160,7 @@ Observe.configure({
 
 ### 按屏幕首次渲染（`cold_ttr`）
 
-**它衡量的内容：** 从导航动作被派发时开始计算（例如 `navigation.navigate()`），到目标屏幕首次获得焦点为止的时间。对于应用启动后的第一次获得焦点，该测量从 JS bundle 加载时开始，且事件会包含 `isAppLaunch: true`。
+**衡量内容：** 从导航动作被派发时开始计算（例如 `navigation.navigate()`），到目标屏幕首次获得焦点为止的时间。对于应用启动后的第一次获得焦点，该测量从 JS bundle 加载时开始，且事件会包含 `isAppLaunch: true`。
 
 在单个会话中，每个屏幕实例最多发出一次。
 
@@ -174,7 +175,7 @@ Observe.configure({
 
 ### 按屏幕热渲染（`warm_ttr`）
 
-**它衡量的内容：** 与 `cold_ttr` 相同，但适用于在获得焦点之前就已经渲染过的屏幕，通常是因为它们已被预加载，或者用户返回到了这些屏幕。选项卡导航器中的兄弟屏幕只有在挂载之后才算作热渲染。使用 React Navigation v7 的默认 `lazy: true` 时，未聚焦的选项卡会保持未挂载状态，它们的首次聚焦会被记录为 `cold_ttr`。
+**衡量内容：** 与 `cold_ttr` 相同，但适用于在获得焦点之前就已经渲染过的屏幕，通常是因为它们已被预加载，或者用户返回到了这些屏幕。选项卡导航器中的兄弟屏幕只有在挂载之后才算作热渲染。使用 React Navigation v7 的默认 `lazy: true` 时，未聚焦的选项卡会保持未挂载状态，它们的首次聚焦会被记录为 `cold_ttr`。
 
 **事件参数：**
 
@@ -186,7 +187,7 @@ Observe.configure({
 
 ### 按屏幕交互就绪时间（`tti`）
 
-**它衡量的内容：** 从导航动作被派发时开始计算，到目标屏幕调用 `markInteractive()` 为止的时间。每次导航只记录第一次调用，因此可以安全地多次调用 `markInteractive()`。
+**衡量内容：** 从导航动作被派发时开始计算，到目标屏幕调用 `markInteractive()` 为止的时间。每次导航只记录第一次调用，因此可以安全地多次调用 `markInteractive()`。
 
 **事件参数：**
 
@@ -197,6 +198,24 @@ Observe.configure({
 | `routeParams` | `object`  | 获得焦点的路由参数。                                   |
 | `...`         | `any`     | 通过 `markInteractive({ ... })` 传递的任意自定义参数。 |
 
+## 查看导航指标
+
+在仪表板中打开你的项目，前往 [**Observe**](https://expo.dev/accounts/[account]/projects/[project]/observe)，然后选择 **Navigation** 页面。该页面会显示按屏幕划分的导航耗时，包括冷启动和热启动时的首次渲染时间，以及交互就绪时间。
+
+在 CLI 中，你可以运行以下命令：
+
+<Terminal
+  cmd={[
+    '# 按路由名称分组的导航指标',
+    '$ eas observe:routes',
+    '',
+    '# 筛选特定指标或路由',
+    '$ eas observe:routes --metric cold_ttr --route-name /Tabs/Sessions',
+  ]}
+/>
+
+运行 `eas observe:routes --help` 查看完整的标志列表（时间范围、平台、应用版本等）。关于其他 `eas observe` 命令，请参阅[使用 EAS CLI 进行查询](/eas/observe/eas-cli/)。
+
 ## 注意事项和故障排查
 
 - `routeName` 是根据路由名构建的（`/Tabs/Sessions`），因此路由参数永远不会出现在路径中。这使得指标在不同参数值之间保持稳定，仪表板会将它们归为同一类。参数值仍可通过 `routeParams` 在事件中获取。
@@ -205,4 +224,4 @@ Observe.configure({
 - 使用静态配置时，请将同一个 ref 同时传给 `<ObserveNavigationProvider>` 和 `<Navigation>` 元素。如果 provider 接收到的 ref 并未连接到导航容器，则不会发出按屏幕指标。
 - `markInteractive()` 只有在屏幕获得焦点后才会记录。在未聚焦的屏幕上调用会更新内部状态，但在该屏幕获得焦点之前不会发出 `tti` 事件。
 - 请在屏幕组件内部调用 `useObserve()`，不要放在更高层的包装组件中。如果屏幕的身份在渲染之间发生变化，hook 会记录警告。如果 `markInteractive()` 记录了 `Calling markInteractive on unmounted screen` 或 `No metadata available for the current screen`，说明该调用发生在屏幕组件之外或在卸载之后。请将调用移动到屏幕组件内的 `useEffect` 中。
-- 关于 EAS Observe 的常规问题，请参阅 [故障排查](/eas/observe/reference/troubleshooting/)。
+- 关于 EAS Observe 的常规问题，请参阅[故障排查](/eas/observe/reference/troubleshooting/)。

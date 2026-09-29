@@ -4,6 +4,7 @@ description: 了解如何通过使用审计日志来跟踪和分析你的账户�
 ---
 
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { Terminal } from '~/ui/components/Snippet';
 
 > **info** 审计日志适用于 [Enterprise plan](https://expo.dev/pricing) 客户。
 
@@ -11,10 +12,10 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 ## 重点
 
-- 审计日志只能创建，不能修改或删除；它们作为事实来源，帮助监控事件并调试帐户内发生的问题。
-- **审计日志适用于 Enterprise plan 客户**。订阅后，Expo 内部使用的部分日志会立即可用，而其他类型的日志会在订阅激活后开始收集。
+- 审计日志只能创建，不能修改或删除；它们是事实来源，可帮助监控事件并调试帐户中出现的问题。
+- **审计日志适用于 Enterprise plan 客户**。订阅后，Expo 内部使用的部分日志会立即开放，而其他类型的日志将在订阅激活后开始收集。
 - 审计日志会保存 1.5 年。如果帐户被删除，其审计日志将在 90 天后删除。
-- 要访问它们，请前往 **账户设置**/**组织设置** > [**审计日志**](https://expo.dev/accounts/[account]/settings/audit-logs)。
+- 若要访问审计日志，请前往 **Account settings**/**Organization settings** > [**Audit logs**](https://expo.dev/accounts/[account]/settings/audit-logs)，或使用 [EAS CLI](#view-audit-logs-with-eas-cli)。
 
 <ContentSpotlight
   alt="显示某个帐户审计日志页面的截图。"
@@ -29,6 +30,8 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 审计日志可以跟踪组织内的用户邀请和权限变更。一个安全事件示例可能包括：某个被入侵的员工帐户将攻击者邀请进组织，并将其权限更改为 [管理员](/accounts/account-types/#manage-access)。
 
 在这种情况下，审计日志会记录是哪个员工帐户邀请了攻击者并修改了权限。由于审计日志是不可变的，攻击者将无法删除这段已记录的历史。其他组织成员可以查看审计日志，以确定哪个帐户遭到入侵，采取措施撤销攻击者的权限，并保护员工的帐户。
+
+审计日志按权限名称记录权限变更，而非按角色记录。例如，`PUBLISH_PROTECTED` 包含在 Release Manager、Admin 和 Owner [角色](/accounts/account-types/#manage-access)中。它允许管理处于 private beta 阶段的受保护渠道，并向这些渠道所指向的分支发布更新。
 
 ### 访问历史
 
@@ -85,22 +88,34 @@ Expo 团队设置中列出的 Apple 设备只会显示当前已注册到帐户�
   darkSrc="/static/images/accounts/audit-logs-details-dark.webp"
 />
 
-## Export
+## 导出
 
-**Audit logs are available to Enterprise plan customers**. After subscribing, some logs used internally by Expo will become available immediately, while other types of logs will begin collecting after the subscription is activated.
+**审计日志适用于 Enterprise plan 客户**。订阅后，Expo 内部使用的部分日志会立即开放，而其他类型的日志将在订阅激活后开始收集。
 
-You can export audit logs so that you can view them outside the Expo dashboard. To export audit logs:
+你可以导出审计日志，以便在 Expo 控制面板之外查看。导出审计日志的步骤如下：
 
-1. In the sidebar menu, under **Account/Organization settings**, click [**Audit logs**](https://expo.dev/accounts/[account]/settings/audit-logs).
-2. Click the **Export** button in the upper-right corner of the audit logs page.
+1. 在侧边栏菜单的 **Account/Organization settings** 下，点击 [**Audit logs**](https://expo.dev/accounts/[account]/settings/audit-logs)。
+2. 点击审计日志页面右上角的 **Export** 按钮。
    <ContentSpotlight
-     alt="Audit logs export button."
+     alt="审计日志导出按钮。"
      src="/static/images/accounts/audit-logs-export-button-light.webp"
      darkSrc="/static/images/accounts/audit-logs-export-button-dark.webp"
    />
-3. Select the time range you want. Exports support a time range of up to 30 days.
-4. The audit logs will be exported as a file for download.
+3. 选择所需的时间范围。导出支持最长 30 天的时间范围。
+4. 审计日志将导出为可下载的文件。
 
-The exported file will contain all fields shown on the audit logs page, except for the **Message** field.
+导出的文件将包含审计日志页面上显示的所有字段，但不包括 **Message** 字段。
 
-> **Note:** Export is currently only available through the Expo website. There is currently no API available for programmatically exporting audit logs.
+> **注意：** **Export** 按钮仅在 Expo 网站上提供。若要以编程方式读取审计日志，请使用 [EAS CLI](#view-audit-logs-with-eas-cli)。
+
+## 使用 EAS CLI 查看审计日志
+
+你也可以在终端中以编程方式读取审计日志。使用帐户名称运行 `eas account:audit` 命令：
+
+<Terminal cmd={['$ eas account:audit my-account']} />
+
+如果省略帐户名称，命令会提示你选择一个帐户。若要在脚本中读取日志，请传入 `--json` 标志：
+
+<Terminal cmd={['$ eas account:audit my-account --json']} />
+
+有关分页和其余标志的信息，请参阅 [`eas account:audit`](/eas/cli/#eas-account-audit-account-name) 参考。

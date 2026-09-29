@@ -1,0 +1,226 @@
+---
+title: 进度指示器
+description: 用于显示操作状态的 Jetpack Compose 进度指示器组件
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI Progress Indicators 与官方 Jetpack Compose [Progress Indicator API](https://developer.android.com/develop/ui/compose/components/progress) 保持一致。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/progress/android-light.webp"
+  darkSrc="/static/images/expo-ui/progress/android-dark.webp"
+  alt="带有两个分别处于 30% 和 75% 的确定性线性进度条的不确定性圆形进度指示器"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 线性进度
+
+用于指示进度的水平填充条。在确定性模式下，提供一个介于 `0` 和 `1` 之间的 `progress` 值。
+
+<ComponentExample
+  title="LinearExample.tsx"
+  src="/static/images/expo-ui/examples/progress-linear-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progress-linear-android-dark.webp"
+  alt="填充至轨道一半的水平进度条">
+
+```tsx
+import {
+  Host,
+  LinearProgressIndicator,
+} from '@expo/ui/jetpack-compose';
+
+export default function LinearExample() {
+  return (
+    <Host matchContents>
+      <LinearProgressIndicator progress={0.5} />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 圆形进度
+
+通过增大描边来指示进度的旋转圆环。
+
+<ComponentExample
+  title="CircularExample.tsx"
+  src="/static/images/expo-ui/examples/progress-circular-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progress-circular-android-dark.webp"
+  alt="绘制了四分之三圆周的圆形进度环">
+
+```tsx
+import {
+  Host,
+  CircularProgressIndicator,
+} from '@expo/ui/jetpack-compose';
+
+export default function CircularExample() {
+  return (
+    <Host matchContents>
+      <CircularProgressIndicator progress={0.75} />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 不确定性进度
+
+省略 `progress` 属性，即可在不指示具体完成程度的情况下持续播放动画。
+
+<ComponentExample
+  title="IndeterminateExample.tsx"
+  src="/static/images/expo-ui/examples/progress-indeterminate-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progress-indeterminate-android-dark.webp"
+  alt="线性、圆形、波浪形圆形和波浪形线性指示器在未设置值的情况下播放动画">
+
+```tsx
+import {
+  CircularProgressIndicator,
+  CircularWavyProgressIndicator,
+  Column,
+  Host,
+  LinearProgressIndicator,
+  LinearWavyProgressIndicator,
+} from '@expo/ui/jetpack-compose';
+
+export default function IndeterminateExample() {
+  return (
+    <Host matchContents>
+      <Column verticalArrangement={{ spacedBy: 16 }}>
+        <LinearProgressIndicator />
+        <CircularProgressIndicator />
+        <CircularWavyProgressIndicator />
+        <LinearWavyProgressIndicator />
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义颜色
+
+使用 `color` 设置指示器颜色，使用 `trackColor` 设置背景轨道颜色。
+
+<ComponentExample
+  title="ColorsExample.tsx"
+  src="/static/images/expo-ui/examples/progress-colors-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progress-colors-android-dark.webp"
+  alt="在灰色轨道上以红色绘制的圆形进度环">
+
+```tsx
+import {
+  Host,
+  CircularProgressIndicator,
+} from '@expo/ui/jetpack-compose';
+
+export default function ColorsExample() {
+  return (
+    <Host matchContents>
+      <CircularProgressIndicator
+        progress={0.6}
+        color="red"
+        trackColor="#cccccc"
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 波浪变体
+
+`LinearWavyProgressIndicator` 和 `CircularWavyProgressIndicator` 添加了来自 Material 3 Expressive 的富有表现力的波浪动画。
+
+<ComponentExample
+  title="WavyExample.tsx"
+  src="/static/images/expo-ui/examples/progress-wavy-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progress-wavy-android-dark.webp"
+  alt="一个填充至百分之六十的波浪形线性条和一个填充至百分之六十的波浪形圆环">
+
+```tsx
+import {
+  Host,
+  LinearWavyProgressIndicator,
+  CircularWavyProgressIndicator,
+  Column,
+} from '@expo/ui/jetpack-compose';
+
+export default function WavyExample() {
+  return (
+    <Host matchContents>
+      <Column verticalArrangement={{ spacedBy: 16 }}>
+        <LinearWavyProgressIndicator progress={0.6} />
+        <CircularWavyProgressIndicator progress={0.6} />
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 波浪配置
+
+使用 `amplitude` 设置波浪高度，从表示平直线条的 `0` 到表示完整高度的 `1`。使用 `wavelength` 设置单个波浪的长度，单位为 dp；使用 `waveSpeed` 设置波浪移动的速度，单位为每秒 dp。`waveSpeed` 默认为 `wavelength`。设置 `waveSpeed={0}` 可渲染静态波浪。
+
+<ComponentExample
+  title="WaveConfigExample.tsx"
+  src="/static/images/expo-ui/examples/progress-wave-config-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/progress-wave-config-android-dark.webp"
+  alt="填充至百分之六十的波浪形进度指示器，其后为平直轨道">
+
+```tsx
+import {
+  Host,
+  LinearWavyProgressIndicator,
+} from '@expo/ui/jetpack-compose';
+
+export default function WaveConfigExample() {
+  return (
+    <Host matchContents>
+      <LinearWavyProgressIndicator
+        progress={0.6}
+        amplitude={0.4}
+        wavelength={24}
+        waveSpeed={18}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import {
+  LinearProgressIndicator,
+  CircularProgressIndicator,
+  LinearWavyProgressIndicator,
+  CircularWavyProgressIndicator,
+} from '@expo/ui/jetpack-compose';
+```
+
+<APISection packageName="expo-ui/jetpack-compose/progress" />

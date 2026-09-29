@@ -1,0 +1,291 @@
+---
+title: BottomSheet
+description: 与 @gorhom/bottom-sheet 兼容的底部弹出层。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { YesIcon, NoIcon } from '~/ui/components/DocIcons';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+一个 API 与 `@gorhom/bottom-sheet` 兼容的 `BottomSheet` 组件。它封装了平台专属的 `@expo/ui` 基元：Android 上的 [Jetpack Compose ModalBottomSheet](../jetpack-compose/bottomsheet)，以及 iOS 上的 [SwiftUI BottomSheet](../swift-ui/bottomsheet)。在 web 上，它使用 HTML `<dialog>` 底部弹出面板。
+
+如果你需要更精细地控制平台专属的样式、修饰符或布局行为，请直接使用原生基元。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/community-bottomsheet/android-light.webp',
+    darkSrc: '/static/images/expo-ui/community-bottomsheet/android-dark.webp',
+    alt: '在变暗的屏幕上显示的底部弹出面板',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/community-bottomsheet/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/community-bottomsheet/ios-dark.webp',
+    alt: '在变暗的屏幕上显示的底部弹出面板',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@gorhom/bottom-sheet` 迁移
+
+- 将导入语句从：
+
+  ```tsx
+  import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+  ```
+
+  更新为使用 `@expo/ui/community/bottom-sheet`：
+
+  ```tsx
+  import BottomSheet, { BottomSheetView } from '@expo/ui/community/bottom-sheet';
+  ```
+
+- 此实现不需要来自 `react-native-gesture-handler` 的 `GestureHandlerRootView`。如果应用的其他部分需要它，可以保留。
+- 不支持 `BottomSheetBackdrop`、`BottomSheetHandle`、`BottomSheetFooter`、`BottomSheetDraggableView`、`BottomSheetVirtualizedList`、`BottomSheetFlashList`、`useBottomSheetModal`、`useBottomSheetSpringConfigs` 和 `useBottomSheetTimingConfigs` 等组件与 hook 导出。为了保持 API 兼容性，会导出部分相关属性类型。
+
+## 基本用法
+
+<ComponentExample
+  title="BottomSheetExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-bottomsheet-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-bottomsheet-basic-android-dark.webp',
+    alt: '位于 Open 按钮下方、处于最小吸附点的弹出面板',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-bottomsheet-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-bottomsheet-basic-ios-dark.webp',
+    alt: '位于 Open 按钮下方、处于最小吸附点的弹出面板',
+  }}>
+
+```tsx
+import { useRef } from 'react';
+import { Button, Text, useColorScheme, View } from 'react-native';
+import BottomSheet, { BottomSheetView } from '@expo/ui/community/bottom-sheet';
+
+export default function BottomSheetExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+  const sheetRef = useRef<BottomSheet>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Open" onPress={() => sheetRef.current?.snapToIndex(0)} />
+
+      <BottomSheet
+        ref={sheetRef}
+        snapPoints={['25%', '50%', '90%']}
+        index={-1}
+        onChange={index => {
+          console.log('onChange', index);
+        }}
+        onClose={() => {
+          console.log('closed');
+        }}
+        enablePanDownToClose>
+        <BottomSheetView style={{ flex: 1, padding: 24, alignItems: 'center' }}>
+          <Text style={ink}>Sheet content</Text>
+        </BottomSheetView>
+      </BottomSheet>
+    </View>
+  );
+}
+```
+
+</ComponentExample>
+
+## `BottomSheetModal`
+
+从 `@gorhom/bottom-sheet` 的 modal API 迁移时，请使用 `BottomSheetModal`。它初始处于关闭状态，并通过 `present()` 打开。
+
+<ComponentExample
+  title="BottomSheetModalExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-bottomsheet-modal-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-bottomsheet-modal-android-dark.webp',
+    alt: '半屏高度的模态弹出面板，包含 Modal 内容和 Dismiss 按钮',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-bottomsheet-modal-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-bottomsheet-modal-ios-dark.webp',
+    alt: '半屏高度的模态弹出面板，包含 Modal 内容和 Dismiss 按钮',
+  }}>
+
+```tsx
+import { useRef } from 'react';
+import { Button, Text, useColorScheme, View } from 'react-native';
+import { BottomSheetModal, BottomSheetView } from '@expo/ui/community/bottom-sheet';
+
+export default function BottomSheetModalExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+  const modalRef = useRef<BottomSheetModal>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Present" onPress={() => modalRef.current?.present()} />
+
+      <BottomSheetModal ref={modalRef} snapPoints={['50%', '90%']} enablePanDownToClose>
+        <BottomSheetView style={{ padding: 24 }}>
+          <Text style={ink}>Modal content</Text>
+          <Button title="Dismiss" onPress={() => modalRef.current?.dismiss()} />
+        </BottomSheetView>
+      </BottomSheetModal>
+    </View>
+  );
+}
+```
+
+</ComponentExample>
+
+## 动态尺寸
+
+未提供 `snapPoints` 时，弹出面板默认会根据内容调整尺寸。请使用 `BottomSheetView` 作为弹出面板内容的包装组件。
+
+<ComponentExample
+  title="DynamicBottomSheetExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-bottomsheet-dynamic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-bottomsheet-dynamic-android-dark.webp',
+    alt: '尺寸适配一行内容的弹出面板',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-bottomsheet-dynamic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-bottomsheet-dynamic-ios-dark.webp',
+    alt: '尺寸适配一行内容的弹出面板',
+  }}>
+
+```tsx
+import { useRef } from 'react';
+import { Button, Text, useColorScheme, View } from 'react-native';
+import BottomSheet, { BottomSheetView } from '@expo/ui/community/bottom-sheet';
+
+export default function DynamicBottomSheetExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+  const sheetRef = useRef<BottomSheet>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Open" onPress={() => sheetRef.current?.present()} />
+
+      <BottomSheet ref={sheetRef} index={-1} enablePanDownToClose>
+        <BottomSheetView style={{ padding: 24 }}>
+          <Text style={ink}>This sheet sizes itself to its content.</Text>
+        </BottomSheetView>
+      </BottomSheet>
+    </View>
+  );
+}
+```
+
+</ComponentExample>
+
+### 可滚动的 React Native 内容
+
+底部弹出面板支持将 React Native `FlatList` 或 `ScrollView`（或 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list) 等高性能列表）作为子组件，以显示可滚动内容。启用 `nestedScrollEnabled` 后，列表会先滚动自身内容。到达顶部边缘后，剩余的拖动操作会移动弹出面板。为了兼容 `@gorhom/bottom-sheet`，还会导出 `BottomSheetFlatList` 和 `BottomSheetScrollView`，但它们只是 React Native 组件的直接重新导出。
+
+<ComponentExample
+  title="BottomSheetScrollableExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-bottomsheet-scrollable-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-bottomsheet-scrollable-android-dark.webp',
+    alt: '列出可滚动项目的半屏高度弹出面板',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-bottomsheet-scrollable-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-bottomsheet-scrollable-ios-dark.webp',
+    alt: '列出可滚动项目的半屏高度弹出面板',
+  }}>
+
+```tsx
+import { useRef } from 'react';
+import { Button, FlatList, Text, useColorScheme, View } from 'react-native';
+import BottomSheet from '@expo/ui/community/bottom-sheet';
+
+const DATA = Array.from({ length: 50 }, (_, i) => `Item ${i + 1}`);
+
+export default function BottomSheetScrollableExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+  const sheetRef = useRef<BottomSheet>(null);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Open" onPress={() => sheetRef.current?.snapToIndex(0)} />
+
+      <BottomSheet ref={sheetRef} snapPoints={['50%', '90%']} index={-1} enablePanDownToClose>
+        <FlatList
+          nestedScrollEnabled
+          style={{ flex: 1 }}
+          data={DATA}
+          keyExtractor={item => item}
+          contentContainerStyle={{ padding: 24 }}
+          renderItem={({ item }) => <Text style={{ ...ink, paddingVertical: 16 }}>{item}</Text>}
+        />
+      </BottomSheet>
+    </View>
+  );
+}
+```
+
+</ComponentExample>
+
+## 平台行为
+
+`@gorhom/bottom-sheet` 会以内嵌方式显示在其父视图底部。此组件在 Android 和 iOS 上使用原生模态呈现，在 web 上使用 HTML `<dialog>`。
+
+这是有意为之的差异。`@gorhom/bottom-sheet` 通过 `react-native-gesture-handler` 和 `react-native-reanimated` 管理手势与动画层，而 `@expo/ui/community/bottom-sheet` 则将这些行为交由 Jetpack Compose、SwiftUI 以及 web 上的 HTML `<dialog>` 处理。因此，此组件最适合模态底部弹出面板流程，包括使用 `BottomSheet` API 而非 `BottomSheetModal` 的调用场景。
+
+| 功能                | Android                          | iOS                  | Web                                   |
+| ------------------- | -------------------------------- | -------------------- | ------------------------------------- |
+| 呈现方式            | Jetpack Compose 模态底部弹出面板 | SwiftUI sheet        | HTML `<dialog>` 底部弹出面板          |
+| 吸附点              | 映射为部分展开和完全展开状态     | 支持提供的吸附点     | 支持提供的吸附点                      |
+| 未设置 `snapPoints` | 适配内容                         | 适配内容             | 适配内容                              |
+| 向下滑动关闭        | 同时启用返回按钮和点击遮罩关闭   | 同时启用点击背景关闭 | 启用点击遮罩、Escape 键和向下滑动关闭 |
+| 持久内嵌预览        | 不支持                           | 不支持               | 不支持                                |
+
+> **info** 在 iOS 上，如果要在一个底部弹出面板上方显示另一个，请将第二个 `BottomSheet` 嵌套在第一个弹出面板的内容中，而不是与其并列。这是底层 SwiftUI [`sheet`](<https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)>) 修饰符的限制。有关详细信息，请参阅[如何呈现多个弹出面板](https://www.hackingwithswift.com/quick-start/swiftui/how-to-present-multiple-sheets)。
+
+## 支持的导出项
+
+| 导出项                     | 支持        | 备注                                                        |
+| -------------------------- | ----------- | ----------------------------------------------------------- |
+| `BottomSheet`              | <YesIcon /> | 在 Android 和 iOS 上使用模态呈现，在 web 上使用 HTML 对话框 |
+| `BottomSheetModal`         | <YesIcon /> | 初始关闭，通过 `present()` 打开                             |
+| `BottomSheetModalProvider` | <YesIcon /> | 为保持兼容性，直接渲染子项                                  |
+| `BottomSheetView`          | <YesIcon /> | 包装弹出面板内容                                            |
+| `BottomSheetScrollView`    | <YesIcon /> | 重新导出 React Native `ScrollView`                          |
+| `BottomSheetFlatList`      | <YesIcon /> | 重新导出 React Native `FlatList`                            |
+| `BottomSheetSectionList`   | <YesIcon /> | 重新导出 React Native `SectionList`                         |
+| `BottomSheetTextInput`     | <YesIcon /> | 重新导出 React Native `TextInput`                           |
+| `useBottomSheet`           | <YesIcon /> | 从 context 返回弹出面板 ref 方法                            |
+| `BottomSheetBackdrop`      | <NoIcon />  | 原生弹出面板或 HTML 对话框会处理背景遮罩                    |
+| `BottomSheetHandle`        | <NoIcon />  | 原生弹出面板或 HTML 对话框会处理拖动指示器                  |
+| `BottomSheetFooter`        | <NoIcon />  | 此实现没有对应项                                            |
+
+## 兼容性说明
+
+- 支持 `snapPoints`、`index`、`onChange`、`onClose`、`onDismiss`、`enablePanDownToClose` 和 `enableDynamicSizing`。
+- `handleComponent={null}` 会隐藏原生或 web 拖动指示器。在原生平台上不会渲染自定义手柄组件。
+- `backgroundStyle` 在 web 上完全生效。在 Android 上，`backgroundColor` 用于设置原生容器颜色。在 iOS 上，则使用系统弹出面板背景。
+- 为保持 API 兼容性，可以接受动画、过度拖动、内容平移、手柄平移、键盘行为、自定义背景遮罩、自定义背景、自定义页脚、动画值和分离式属性，但不会改变行为。
+
+## API
+
+```tsx
+import BottomSheet from '@expo/ui/community/bottom-sheet';
+```
+
+<APISection packageName="expo-ui/community/bottom-sheet" apiName="BottomSheet" />
+
+</PlatformTabsGroup>

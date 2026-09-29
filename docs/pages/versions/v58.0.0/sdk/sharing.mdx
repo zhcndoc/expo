@@ -1,0 +1,259 @@
+---
+title: 分享
+description: 一个提供与其他应用共享和接收数据功能的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-sharing'
+packageName: 'expo-sharing'
+iconUrl: '/static/images/packages/expo-sharing.png'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigPluginExample, ConfigPluginProperties } from '~/ui/components/ConfigSection';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+`expo-sharing` 允许你直接与其他兼容应用分享文件，并接收从其他应用分享的兼容数据。
+
+<ContentSpotlight file="sdk/sharing.mp4" loop={false} />
+
+#### Web 平台上的分享限制
+
+- Web 版 `expo-sharing` 基于 Web Share API 构建，该 API 目前仍然只有[非常有限的浏览器支持](https://caniuse.com/#feat=web-share)。调用前，请使用 `Sharing.isAvailableAsync()` 检查是否可以使用该 API。
+- **Web 平台需要 HTTPS**：只有在页面通过 https 提供服务时，Web Share API 才能在 Web 平台上使用。运行应用时使用 `npx expo start --tunnel` 即可启用此功能。
+- **Web 平台不支持分享本地文件**：通过 URI 分享本地文件在 Android 和 iOS 上可行，但在 Web 平台上不可行。你无法在 Web 平台上通过 URI 分享本地文件——需要先将文件上传到某处，再分享该 URI。
+
+## 安装
+
+<APIInstallSection />
+
+## 在应用配置中配置
+
+如果项目使用配置插件（[Continuous Native Generation（CNG）](/workflow/continuous-native-generation/)），你可以通过内置的[配置插件](/config-plugins/introduction/)配置 `expo-sharing`。该插件允许你配置各种无法在运行时设置、需要重新构建应用二进制文件才能生效的属性。如果应用**不**使用 CNG，则需要手动配置此库。
+
+<ConfigPluginExample>
+
+以下示例展示了如何配置，以便在 Android 和 iOS 上分享一张或多张图片：
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-sharing",
+        {
+          "ios": {
+            "enabled": true,
+            "activationRule": {
+              "supportsImageWithMaxCount": 5
+            }
+          },
+          "android": {
+            "enabled": true,
+            "singleShareMimeTypes": ["image/*"],
+            "multipleShareMimeTypes": ["image/*"]
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'ios.enabled',
+      description:
+        '一个布尔值，用于启用 iOS 分享扩展。如果为 `true`，则会向项目添加一个分享扩展目标。',
+      default: 'false',
+    },
+    {
+      name: 'ios.extensionBundleIdentifier',
+      description: 'iOS 分享扩展的捆绑包标识符。',
+      default: '{appBundleIdentifier}.ShareExtension',
+    },
+    {
+      name: 'ios.appGroupId',
+      description: '用于在应用和扩展之间分享数据的 App Group ID。',
+      default: 'group.{appBundleIdentifier}',
+    },
+    {
+      name: 'ios.activationRule',
+      description:
+        '**Info.plist** 中 `NSExtensionActivationRule` 的配置。可以是符合 [`ActivationRuleOptions`](#activationruleoptions) 类型的对象，用于生成标准谓词；也可以是原始字符串，用于直接指定自定义谓词（例如，`SUBQUERY(...)`）。',
+      default: '{}',
+    },
+    {
+      name: 'android.enabled',
+      description:
+        '一个布尔值，用于启用 Android 分享 Intent 处理。如果为 `true`，则会向 **AndroidManifest.xml** 添加必要的 `intent-filter`。',
+      default: 'false',
+    },
+    {
+      name: 'android.singleShareMimeTypes',
+      description:
+        '用于单个文件分享（使用 `ACTION_SEND` Intent）时接受的 MIME 类型数组。',
+      default: '[]',
+    },
+    {
+      name: 'android.multipleShareMimeTypes',
+      description:
+        '用于多个文件分享（使用 `ACTION_SEND_MULTIPLE` Intent）时接受的 MIME 类型数组。',
+      default: '[]',
+    },
+  ]}
+/>
+
+## 从其他应用向你的应用分享内容
+
+> **important** **注意**：此功能目前处于[实验性阶段](/more/release-statuses/#experimental)。在 iOS 上，分享扩展会打开主目标，而不是在分享 `ViewController` 中处理分享；这并未得到 Apple 的官方支持，并且可能会在未来的 iOS 版本中停止工作。
+
+当应用用户向你的应用分享内容时，操作系统会启动你的应用（也称为将应用带到前台）。要处理此操作，你需要配置导航来处理传入的深层链接。
+
+### Expo Router
+
+如果你使用 [Expo Router](/router/introduction/)，可以使用 [**+native-intent.ts**](/router/advanced/native-intent/) 文件处理传入的分享 Intent。这样你就可以检查传入路径并重定向到特定路由。
+
+```tsx app/+native-intent.ts
+import { getSharedPayloads } from 'expo-sharing';
+
+export async function redirectSystemPath({ path, initial }: { path: string; initial: boolean }) {
+  try {
+    // Check if the URL is from the share extension/intent
+    if (new URL(path).hostname === 'expo-sharing') {
+      return '/handle-share';
+    }
+    return path;
+  } catch {
+    // Fallback to the root path on error
+    return '/';
+  }
+}
+```
+
+### React Navigation
+
+如果你使用 [React Navigation](https://reactnavigation.org/)，可以使用 `linking` 属性拦截深层链接。你应检查传入 URL 的主机名是否与 `expo-sharing` scheme 匹配，并将用户重定向到特定的处理屏幕。
+
+```tsx
+import * as Linking from 'expo-linking';
+import { createStaticNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HandleShare from './HandleShare';
+
+const RootStack = createNativeStackNavigator({
+  screens: {
+    // Other screens
+    HandleShare: {
+      screen: HandleShare,
+      linking: {
+        path: '/handle-share',
+      },
+    },
+  },
+});
+
+const Navigation = createStaticNavigation(RootStack);
+
+function processUrl(url: string | null) {
+  if (!url) return null;
+
+  // The path to your share handler screen
+  const handlerUrl = Linking.createURL('/handle-share');
+
+  // Check if the URL is from the share extension/intent
+  if (new URL(url).hostname === 'expo-sharing') {
+    return handlerUrl;
+  }
+  return url;
+}
+
+export default function App() {
+  return (
+    <Navigation
+      // The rest of your navigation config
+      linking={{
+        prefixes: [Linking.createURL('/')],
+        async getInitialURL() {
+          const initialUrl = await Linking.getInitialURL();
+          return processUrl(initialUrl);
+        },
+        subscribe(listener) {
+          const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+            const processedUrl = processUrl(url) ?? url;
+            listener(processedUrl);
+          });
+
+          return () => {
+            linkingSubscription.remove();
+          };
+        },
+      }}
+    />
+  );
+}
+```
+
+### 不使用导航库
+
+如果你正在创建一个不使用导航库的基础应用，那么主屏幕就是处理屏幕。你可以继续阅读下一节。
+
+## 显示分享的内容
+
+将用户重定向到处理屏幕后，可以使用 `useIncomingShare` hook 访问并显示分享的数据。
+
+以下示例展示了一个用于显示分享图片的屏幕：
+
+```tsx
+import { Image } from 'expo-image';
+import { useIncomingShare } from 'expo-sharing';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
+
+export default function ShareReceived() {
+  const { resolvedSharedPayloads, isResolving } = useIncomingShare();
+
+  if (isResolving) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {resolvedSharedPayloads.map((payload, index) => {
+        if (payload.contentType === 'image') {
+          return <Image source={{ uri: payload.contentUri }} style={styles.image} key={index} />;
+        }
+        return null;
+      })}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+  },
+  image: {
+    width: 300,
+    height: 300,
+    marginBottom: 20,
+    borderRadius: 10,
+  },
+});
+```
+
+## API
+
+```js
+import * as Sharing from 'expo-sharing';
+```
+
+<APISection packageName="expo-sharing" apiName="Sharing" />

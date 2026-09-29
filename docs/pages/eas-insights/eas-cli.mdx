@@ -1,0 +1,175 @@
+---
+title: 使用 EAS CLI 查询 EAS Insights
+sidebar_title: EAS CLI
+description: 使用 eas workflow:insights 命令从终端查询 EAS Workflows 和 Maestro insights。
+---
+
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+
+[Workflows](/eas-insights/workflows/) 和 [Maestro](/eas-insights/maestro/) 标签页在 EAS Insights 中显示的指标，也可以从终端获取。使用 `eas workflow:insights` 命令检查运行状况、找出不稳定的流程，并将数据纳入你自己的报告。
+
+有关更新和通道用量，请参阅 EAS CLI 参考中的 [`eas update:insights`](/eas/cli/#eas-update-insights-groupid) 和 [`eas channel:insights`](/eas/cli/#eas-channel-insights)。
+
+## 前置条件
+
+<Prerequisites>
+  <Requirement title="EAS CLI">
+    全局安装 EAS CLI：
+
+    <Terminal
+      cmd={{
+        npm: ['$ npm install --global eas-cli'],
+        yarn: ['$ yarn global add eas-cli'],
+        pnpm: ['$ pnpm add --global eas-cli'],
+        bun: ['$ bun add --global eas-cli'],
+      }}
+    />
+
+  </Requirement>
+  <Requirement title="运行 EAS Workflows 的项目">
+    按照[开始使用 EAS Workflows](/eas/workflows/get-started/)中的说明操作。若要查看 Maestro 洞察信息，项目还需要包含一个带有 [`maestro` job](/eas/workflows/pre-packaged-jobs/#maestro) 的工作流。
+    随着工作流运行，结果会自动显示。
+  </Requirement>
+  <Requirement title="从项目目录对 EAS CLI 进行身份验证">
+    使用 `eas login` 登录。默认情况下，每条命令都会从当前目录的应用配置中读取项目 ID。若要在任意位置查询项目，请传入 `--project-id`，并使用有权访问该项目的账户：
+    <Terminal cmd={['$ eas workflow:insights --project-id <project-id>']} />
+  </Requirement>
+</Prerequisites>
+
+## 套餐与回溯时长限制
+
+Production 和 Enterprise 套餐提供 Workflows 和 Maestro 洞察信息。有关各套餐包含的内容，请参阅 [EAS 定价](https://expo.dev/pricing)。
+
+每种套餐还会限制时间范围最早可以追溯到何时：
+
+- **Production**：最近 30 天。
+- **Enterprise**：最近 365 天。
+
+该限制取决于拥有项目的账户所使用的套餐。如果时间范围早于套餐允许的范围，命令会失败，并告知套餐包含多少天的数据。
+
+## 命令
+
+| 命令                            | 显示内容                                                                   |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| `eas workflow:insights`         | 运行次数、成功率和各工作流趋势                                             |
+| `eas workflow:insights:maestro` | Maestro 流程的通过率和不稳定率，或单个流程的历史记录                       |
+
+这两条命令都支持以下标志：
+
+- `--days <number>`：显示最近 N 天的数据。默认为 7。
+- `--start <ISO date>` 和 `--end <ISO date>`：设置明确的时间范围。不能与 `--days` 同时使用。单独传入 `--start` 可包含截至当前的所有数据。单独传入 `--end` 会导致命令失败。
+- `--workflow <file name>`：仅包含此工作流文件的运行，例如 **ci.yml**。请包含扩展名；若要指定多个工作流，请重复此标志。工作流首次运行后，该标志才可使用此工作流。若项目不认识指定的名称，命令会失败并列出已知名称。
+- `--git-ref <ref>`：仅包含针对此 git ref 请求的运行。命令会将 `main` 这类普通名称视为分支，并将其扩展为 `refs/heads/main`。其他情况请传入完整 ref，例如 `refs/tags/v1.0.0`。命令会匹配 `eas workflow:run` 记录的完整 40 字符提交 SHA。
+- `--limit <number>`：列出的行数。默认为 50。命令会拒绝超出 1 到 100 范围的值。
+- `--project-id <id>`：无需在项目目录内运行即可查询项目。
+- `--json`：输出机器可读内容。隐含 `--non-interactive`。
+- `--non-interactive`：遇到需要提示的情况时直接失败，而不显示提示。
+
+洞察信息仅包含已完成的运行。时间范围按完整的 UTC 周期查询，因此命令报告的范围可能略宽于你指定的范围。概览指标会将所选时间范围与长度相同的上一周期进行比较。例外情况是 `eas workflow:insights:maestro --flow`，它仅报告所选时间范围内单个流程的数据。数据会经过聚合以进行趋势分析，可能会有延迟。请将其用于调查趋势，而不要视为权威记录。
+
+运行任意命令并传入 `--help`，即可查看已安装的 EAS CLI 版本支持的标志。
+
+## `eas workflow:insights`
+
+显示与 Workflows 标签页相同的概览、运行次数随时间变化的明细以及工作流表格。使用它查看工作流运行和成功的频率，以及失败次数最多的工作流。
+
+<Terminal
+  cmd={[
+    '# Last 7 days, all workflows',
+    '$ eas workflow:insights',
+    '',
+    '# One workflow, last 30 days',
+    '$ eas workflow:insights --workflow ci.yml --days 30',
+    '',
+    '# Only failed runs on the main branch',
+    '$ eas workflow:insights --status FAILURE --git-ref main',
+    '',
+    '# Only runs started by a GitHub push',
+    '$ eas workflow:insights --trigger GITHUB_PUSH',
+  ]}
+/>
+
+命令标志：
+
+- `--status <status>`：仅包含此状态的运行。可选值为 `SUCCESS`、`FAILURE` 或 `CANCELED`。若要指定多个状态，请重复此标志。
+- `--trigger <type>`：仅包含由此触发类型启动的运行，例如 `MANUAL`、`SCHEDULE` 或 `GITHUB_PUSH`。若要指定多个触发类型，请重复此标志。运行 `eas workflow:insights --help` 可查看完整列表。
+
+输出分为三部分：
+
+- **概览**：运行总数、成功率、活跃工作流和失败运行数，每项均显示相较上一周期的变化。
+- **运行次数随时间变化**：每个周期的运行总数、成功、失败和取消次数。周期为完整的 UTC 时间间隔，其粒度取决于时间范围的长度。表格仅列出有运行的周期，并会在标题中说明是否省略了部分周期。如果范围内没有运行，则不会显示此表格。
+- **工作流**：时间范围内运行次数最多的工作流，以及它们的运行次数、成功率和上次运行时间。**Workflow** 列显示文件名，因此你可以直接将表格中的值传给 `--workflow`。
+
+使用 `--json` 时，这些部分对应 `overview`、`runsOverTime` 和 `workflows` 键；设置筛选条件时，还会包含 `project`、`timespan` 和 `filters`。每个概览指标都是包含 `current` 和 `previous` 值的对象。`runsOverTime` 是一个包含 `granularity` 和 `buckets` 数组的对象；该数组会保留每个周期，包括表格省略的空周期。`workflows` 中的每个条目都包含工作流文件中的 `name` 以及对应的 `fileName`，而 `hasMoreWorkflows` 会告知你表格是否因 `--limit` 而被截断。
+
+## `eas workflow:insights:maestro`
+
+显示与 Maestro 标签页相同的概览和流程表格。使用它找出失败或不稳定次数最多的流程。传入 `--flow` 可深入查看单个流程，效果与在仪表板中选择流程相同。
+
+<Terminal
+  cmd={[
+    '# Last 7 days, flows with the most failures first',
+    '$ eas workflow:insights:maestro',
+    '',
+    '# Flakiest flows over the last 30 days',
+    '$ eas workflow:insights:maestro --days 30 --sort flake-rate',
+    '',
+    '# Only failed runs of flows tagged smoke',
+    '$ eas workflow:insights:maestro --status FAILED --tag smoke',
+    '',
+    '# The history of one flow, by its path in the repository',
+    '$ eas workflow:insights:maestro --flow .maestro/login.yml --days 30',
+  ]}
+/>
+
+命令标志：
+
+- `--status <status>`：仅包含此状态的流程运行。可选值为 `PASSED`、`FLAKY` 或 `FAILED`，其中 `PASSED` 表示首次尝试即通过。若要指定多个状态，请重复此标志。
+- `--tag <tag>`：仅包含带有此标签的流程运行。若要指定多个标签，请重复此标志。
+- `--search <text>`：仅列出路径包含此文本的流程。此筛选条件仅缩小流程表格的范围，因此概览仍会涵盖其他筛选条件匹配的所有流程。
+- `--sort <column>`：按 `fails`（默认值）、`runs`、`flakes`、`pass-rate`、`flake-rate`、`p90` 或 `last-run` 对流程表格排序。
+- `--sort-direction <direction>`：`desc`（默认值）或 `asc`。
+- `--flow <path>`：显示单个流程的历史记录，而不是概览。使用 **Flow** 列中的确切路径，且不能与 `--status`、`--tag`、`--search`、`--sort` 或 `--sort-direction` 同时使用。
+
+概览显示 Maestro 运行次数、通过率、不稳定流程数和平均时长，每项均显示相较上一周期的变化。不稳定运行也计为通过，因此流程可能在通过率较高的同时仍有非零的不稳定率。概览下方的运行次数随时间变化部分使用与 `eas workflow:insights` 相同的时间分桶。流程表格列出各流程及其运行次数、通过率、失败次数和不稳定率。表格还会显示 P90（第 90 百分位）时长、上次运行时间和上次运行状态。使用 `--json` 时，这些内容对应 `totals`、`runsOverTime` 和 `flows` 键。`totalFlows` 和 `hasMoreFlows` 会告知匹配的流程数量，以及表格是否因 `--limit` 而被截断。
+
+使用 `--flow` 时，输出会先显示该流程的运行次数、通过率、不稳定运行次数和 P90 时长。然后会列出该流程随时间变化的运行情况、最常见的五种错误模式，以及最近的运行记录。`--limit` 适用于最近的运行记录。使用 `--json` 时，请查找 `totals`、`errorPatterns` 和 `recentRuns` 键，以及 `totalRecentRuns` 和 `hasMoreRecentRuns`。
+
+表格会将时长显示为 `450ms` 或 `12.3s`，没有运行报告时长时则显示 `n/a`。`--json` 输出以毫秒为单位报告时长，并省略值为 null 的键。读取这些值时请提供回退值，例如 `jq '.flows[] | {path, p90: (.p90DurationMs // "n/a")}'`。
+
+## 常见任务
+
+**检查主分支上的工作流运行情况：**
+
+<Terminal cmd={['$ eas workflow:insights --git-ref main --days 30']} />
+
+**找出需要优先修复的 Maestro 流程：**
+
+<Terminal
+  cmd={[
+    '# Flows with the most failures over the last 30 days',
+    '$ eas workflow:insights:maestro --days 30',
+    '',
+    '# Then look at the error patterns of the worst one',
+    '$ eas workflow:insights:maestro --flow <flow-path> --days 30',
+  ]}
+/>
+
+**从 CI 构建自动化报告：**
+
+1. 在拥有项目的账户上创建一个 [robot user](/accounts/programmatic-access/#robot-users-and-access-tokens)。
+2. 将其访问令牌设置为 CI 作业中的 `EXPO_TOKEN` 环境变量。
+3. 按 ID 查询项目，并从 JSON 输出中读取所需数据。
+
+非 JSON 消息会发送到 stderr，因此你可以将输出直接传递给 `jq` 等工具。命令失败时，stdout 会保持为空，消息会发送到 stderr。退出码为非零，因此请在解析前检查退出码：
+
+<Terminal
+  cmd={[
+    '# Success rate of all workflows over the last 7 days, as a number',
+    "$ eas workflow:insights --project-id <project-id> --json | jq '.overview.successRatePercent.current'",
+    '',
+    '# Pass rate and P90 duration per flow over the last 7 days, up to 100 flows',
+    "$ eas workflow:insights:maestro --project-id <project-id> --limit 100 --json | jq '.flows[] | {path, passRatePercent, p90DurationMs}'",
+  ]}
+/>

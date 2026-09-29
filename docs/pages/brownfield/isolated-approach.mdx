@@ -4,6 +4,7 @@ sidebar_title: 隔离方法
 description: 一份关于将 Expo 和 React Native 作为原生库添加，并使用隔离方法将其集成到现有（brownfield）原生应用中的指南。
 ---
 
+import { DocsLogo } from '@expo/styleguide';
 import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
@@ -14,9 +15,9 @@ import { Terminal } from '~/ui/components/Snippet';
 import { Step } from '~/ui/components/Step';
 import { Tabs, Tab } from '~/ui/components/Tabs';
 
-在隔离式方案中，你的 React Native 代码是独立于原生项目进行开发和维护的。你将其打包为原生库，Android 使用 AAR，iOS 使用 XCFramework，并像其他依赖一样将其集成到原生应用中。
+在隔离式方案中，你的 React Native 代码独立于原生项目开发和维护。你可以将其打包为原生库：Android 使用 AAR，iOS 使用 XCFramework，然后像其他依赖一样将其集成到原生应用中。
 
-当你希望尽量减少 React Native 对现有原生构建流程的影响，或者原生开发与 React Native 开发由不同团队负责时，这种方案最为理想。使用这种方案后，原生开发者不需要 Node.js、Yarn 或任何 React Native 构建工具链，他们只需使用已经构建好的产物即可。
+当你希望尽量减少 React Native 对现有原生构建流程的影响，或者原生开发和 React Native 开发由不同团队负责时，这种方案最为理想。采用这种方案后，原生开发者不需要 Node.js、Yarn 或任何 React Native 构建工具链，只需使用已经构建好的产物即可。
 
 > **信息** 如果你想了解另一种将 React Native 直接集成到原生项目中的方案，请参阅 [集成式方案指南](/brownfield/integrated-approach/)。
 
@@ -25,7 +26,7 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
     安装 [Node.js](https://nodejs.org/en/) 以运行 JavaScript 代码和 Expo CLI。
   </Requirement>
   <Requirement title="Yarn">
-    安装 [Yarn](https://yarnpkg.com/) 作为 JavaScript 依赖的包管理器。
+    安装 [Yarn](https://yarnpkg.com/) 作为 JavaScript 依赖项的包管理器。
   </Requirement>
 </Prerequisites>
 
@@ -37,25 +38,25 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 
 ### 创建新的 Expo 项目
 
-运行以下命令创建一个名为 **my-project** 的新目录，其中包含你的新 Expo 项目。虽然你可以将项目命名为任意名称，但本指南为保持一致性，使用 **my-project**。
+运行以下命令，在名为 **my-project** 的新目录中创建 Expo 项目。虽然你可以为项目指定任意名称，但本指南为保持一致性，使用 **my-project**。
 
 <Terminal
   cmd={{
-    npm: ['$ npx create-expo-app@latest my-project --template default@sdk-57'],
-    yarn: ['$ yarn create expo-app my-project --template default@sdk-57'],
-    pnpm: ['$ pnpm create expo-app my-project --template default@sdk-57'],
-    bun: ['$ bun create expo my-project --template default@sdk-57'],
+    npm: ['$ npx create-expo-app@latest my-project'],
+    yarn: ['$ yarn create expo-app my-project'],
+    pnpm: ['$ pnpm create expo-app my-project'],
+    bun: ['$ bun create expo my-project'],
   }}
 />
 
-**my-project** 不需要放在现有原生应用内部，也可以创建在单独的仓库中或 monorepo 中。新项目包含一个示例 TypeScript 应用，帮助你快速开始。
+**my-project** 不需要位于现有原生应用内部，也可以创建在单独的仓库或 monorepo 中。新项目包含一个示例 TypeScript 应用，帮助你快速开始。
 
 </Step>
 
 <Step label="2">
 ### 安装 expo-brownfield
 
-进入你的新 Expo 项目并安装 `expo-brownfield` 库，它提供了将 React Native 代码构建为原生库并集成到现有原生应用中的工具。
+进入新建的 Expo 项目并安装 `expo-brownfield` 库。该库提供将 React Native 代码构建为原生库并集成到现有原生应用中的工具。
 
 <Terminal
   cmd={{
@@ -71,7 +72,7 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 <Step label="3">
 ### 调整配置插件（可选）
 
-`expo-brownfield` 应会自动使用默认配置在你的 **app.json** 中的 `plugins` 数组里添加一项，这对于大多数项目来说已经足够。
+`expo-brownfield` 应会自动使用默认配置，在 **app.json** 的 `plugins` 数组中添加一项。对于大多数项目来说，这已经足够。
 
 ```json app.json
 {
@@ -81,7 +82,7 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 }
 ```
 
-默认值会根据你的应用配置推导而来（例如，目标名称会基于应用的 scheme 或 slug）。你也可以传入选项来自定义目标名称、包标识符和发布配置。
+默认值会根据应用配置推导而来（例如，目标名称会基于应用的 scheme 或 slug）。你也可以传入选项，自定义目标名称、包标识符和发布配置。
 
 <Collapsible summary="自定义 expo-brownfield 配置">
 ```json app.json
@@ -115,12 +116,12 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 
 ## 将 Expo 项目导出为原生库
 
-完成 Expo 项目设置后，使用 `expo-brownfield` CLI 将你的 React Native 代码构建为 Android 的 AAR 和 iOS 的 XCFramework。
+完成 Expo 项目设置后，使用 `expo-brownfield` CLI 将 React Native 代码构建为 Android 的 AAR 和 iOS 的 XCFramework。
 
 <Tabs>
 <Tab label="Android">
 
-在你的 Expo 项目目录中运行：
+在 Expo 项目目录中运行：
 
 <Terminal
   cmd={{
@@ -131,15 +132,15 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
   }}
 />
 
-这会构建 AAR 并将其发布到 Maven 仓库。默认情况下，它会发布到你的本地 Maven 仓库（`~/.m2`），但也可以配置为发布到远程仓库。
-生成的产物名称将由你的配置插件设置决定，在这个例子中是 `com.username.myproject:brownfield:1.0.0`。
+此命令会构建 AAR 并将其发布到 Maven 仓库。默认情况下，它会发布到本地 Maven 仓库（`~/.m2`），但也可以配置为发布到远程仓库。
+生成的产物名称取决于配置插件设置。在此示例中，名称为 `com.username.myproject:brownfield:1.0.0`。
 
 有关构建选项的更多详情，请参阅 [API 参考](/versions/latest/sdk/brownfield/)，例如仅构建 debug 或 release、指定自定义输出目录等。
 
 </Tab>
 <Tab label="iOS">
 
-在你的 Expo 项目目录中运行：
+在 Expo 项目目录中运行：
 
 <Terminal
   cmd={{
@@ -150,18 +151,18 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
   }}
 />
 
-这会构建 XCFramework 产物：为设备和模拟器架构分别编译 framework 目标，将它们打包为 XCFramework，并复制 Hermes 引擎 framework。
+此命令会构建 XCFramework 产物：分别为设备和模拟器架构编译 framework 目标，将其打包为 XCFramework，并复制 Hermes 引擎 framework。
 
-构建过程完成后，输出会放在 **./artifacts** 目录中，并包含：
+构建完成后，输出会放在 **./artifacts** 目录中，其中包含：
 
-- **\{TargetName\}.xcframework** - 你的 Expo 项目作为原生库
+- **\{TargetName\}.xcframework** - Expo 项目对应的原生库
 - **hermesvm.xcframework** - Hermes JavaScript 引擎
 
 有关构建选项的更多详情，请参阅 [`expo-brownfield` API 参考](/versions/latest/sdk/brownfield/)，例如仅构建 debug 或 release、指定自定义输出目录等。
 
 ### 将产物作为 Swift 包发布
 
-传入 `--package [name]` 标志，可以将构建输出打包为一个独立的 Swift 包，而不是分别生成 **.xcframework** 目录。然后，你可以在 Xcode 中将其作为本地依赖添加到宿主应用，而不是手动将 framework 拖入项目。
+传入 `--package [name]` 标志，可将构建输出打包为一个独立的 Swift 包，而不是分别生成 **.xcframework** 目录。然后，你可以在 Xcode 中将其作为本地依赖添加到宿主应用，而无需手动将 framework 拖入项目。
 
 <Terminal
   cmd={{
@@ -172,7 +173,7 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
   }}
 />
 
-该标志接受一个可选名称。如果省略，包默认命名为 **\{TargetName\}Artifacts**。生成的目录是一个完整的 Swift 包，其结构如下：
+此标志接受一个可选名称。如果省略，包默认命名为 **\{TargetName\}Artifacts**。生成的目录是一个完整的 Swift 包，结构如下：
 
 <FileTree
   files={[
@@ -189,7 +190,7 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 
 <Collapsible summary="调试原生目标">
 
-如果你需要调试 Expo 项目目标的原生代码，可以运行 `npx expo prebuild` 来生成带有 brownfield 库目标的原生项目，位于 **android** 和 **ios** 目录中。
+如果需要调试 Expo 项目目标中的原生代码，可以运行 `npx expo prebuild`，在 **android** 和 **ios** 目录中生成包含 brownfield 库目标的原生项目。
 
 <Terminal
   cmd={{
@@ -202,14 +203,14 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 
 上述命令会生成以下内容：
 
-- **Android**：一个单独的库模块，包含 `ReactNativeHostManager`、`BrownfieldActivity`、`ReactNativeFragment`、`ReactNativeViewFactory` 和 `BrownfieldMessaging`。
-- **iOS**：一个单独的 Xcode framework 目标，包含 `ReactNativeHostManager`、`ReactNativeViewController`、`ReactNativeView`（SwiftUI）、`BrownfieldMessaging` 和 `ReactNativeDelegate`。
+- **Android**：一个独立的库模块，包含 `ReactNativeHostManager`、`BrownfieldActivity`、`ReactNativeFragment`、`ReactNativeViewFactory` 和 `BrownfieldMessaging`。
+- **iOS**：一个独立的 Xcode framework 目标，包含 `ReactNativeHostManager`、`ReactNativeViewController`、`ReactNativeView`（SwiftUI）、`BrownfieldMessaging` 和 `ReactNativeDelegate`。
 
 </Collapsible >
 
-## 集成到你的原生应用中
+## 集成到原生应用中
 
-在构建好产物后，你现在可以将它们集成到现有原生应用中。具体步骤将取决于你的项目结构和构建系统，但整体流程包括将预构建产物作为依赖添加进去，并初始化 React Native host。
+构建好产物后，即可将其集成到现有原生应用中。具体步骤取决于项目结构和构建系统，但整体流程包括将预构建产物作为依赖添加，并初始化 React Native host。
 
 <Tabs>
 <Tab label="Android">
@@ -217,7 +218,7 @@ import { Tabs, Tab } from '~/ui/components/Tabs';
 <Step label="1">
 ### 添加 Maven 依赖
 
-首先将依赖添加到你的应用 **build.gradle.kts** 中。group、artifact 名称和版本应与你的配置插件设置一致：
+首先，将依赖添加到应用的 **build.gradle.kts** 中。group、artifact 名称和版本应与你的配置插件设置一致：
 
 ```kotlin app/build.gradle.kts
 dependencies {
@@ -225,7 +226,7 @@ dependencies {
 }
 ```
 
-如果该库是发布到本地 Maven，请确保在仓库配置中添加 `mavenLocal()`：
+如果该库发布到本地 Maven，请确保在仓库配置中添加 `mavenLocal()`：
 
 ```kotlin settings.gradle.kts
 dependencyResolutionManagement {
@@ -257,7 +258,7 @@ class ExpoActivity : BrownfieldActivity() {
 }
 ```
 
-在你的 **AndroidManifest.xml** 中添加该 activity，并使用一个非 ActionBar 主题：
+在 **AndroidManifest.xml** 中添加该 activity，并使用非 ActionBar 主题：
 
 ```xml AndroidManifest.xml
 <activity
@@ -267,13 +268,13 @@ class ExpoActivity : BrownfieldActivity() {
 />
 ```
 
-然后在应用中的任意位置启动它：
+然后，在应用中的任意位置启动该 activity：
 
 ```kotlin
 startActivity(Intent(this, ExpoActivity::class.java))
 ```
 
-`BrownfieldActivity` 继承自 `AppCompatActivity`，并负责将配置变化转发给 Expo 模块。`showReactNativeFragment()` 扩展方法也会自动配置原生返回按钮处理。
+`BrownfieldActivity` 继承自 `AppCompatActivity`，负责将配置变化转发给 Expo 模块。`showReactNativeFragment()` 扩展方法也会自动配置原生返回按钮处理。
 
 </Step>
 
@@ -291,11 +292,11 @@ startActivity(Intent(this, ExpoActivity::class.java))
 将两个 XCFramework 文件（\{TargetName\}**.xcframework** 和 **hermesvm.xcframework**）拖入 Xcode 项目导航器。在弹出的对话框中：
 
 - 勾选 **复制项目所需的项目**
-- 将它们添加到你的 app target
+- 将它们添加到 app target
 
 {/* vale off */}
 
-然后，在你的 target 的 **常规** 选项卡中，找到 **框架、库和嵌入内容**，确保这两个 framework 都设置为 **嵌入并签名**。
+然后，在 target 的 **常规**选项卡中，找到 **框架、库和嵌入内容**，并确保这两个 framework 都设置为 **嵌入并签名**。
 
 {/* vale on */}
 
@@ -314,7 +315,7 @@ startActivity(Intent(this, ExpoActivity::class.java))
 <Step label="2">
 ### 初始化 React Native
 
-在应用生命周期的早期调用 `ReactNativeHostManager.shared.initialize()`。一个合适的位置是你的 `AppDelegate`：
+在应用生命周期早期调用 `ReactNativeHostManager.shared.initialize()`。一个合适的位置是 `AppDelegate`：
 
 ```swift AppDelegate.swift
 import UIKit
@@ -391,13 +392,13 @@ struct ContentView: View {
 </Tab>
 </Tabs>
 
-## 测试你的集成
+## 测试集成
 
-你已经完成了将 React Native 集成到应用中的所有基础步骤。现在是时候测试一下了。具体流程取决于你运行的是 debug 还是 release 构建。
+你已经完成了将 React Native 集成到应用中的所有基础步骤。现在可以进行测试了。具体流程取决于运行的是 debug 还是 release 构建。
 
 ### 开发（debug 构建）
 
-现在在 React Native 目录中运行以下命令，以启动 [Metro bundler](https://metrobundler.dev/)
+现在，在 React Native 目录中运行以下命令，以启动 [Metro bundler](https://metrobundler.dev/)
 
 <Terminal
   cmd={{
@@ -408,17 +409,17 @@ struct ContentView: View {
   }}
 />
 
-然后，从 Android Studio 或 Xcode 构建并运行原生应用。当你进入 React Native 屏幕时，它会从 Metro 开发服务器加载，并支持热重载。
+然后，从 Android Studio 或 Xcode 构建并运行原生应用。当进入 React Native 屏幕时，应用会从 Metro 开发服务器加载，并支持热重载。
 
 ### 生产（release 构建）
 
-在 release 构建中，JavaScript bundle 会嵌入到产物（AAR 或 XCFramework）中，因此不需要 Metro 服务器。以 Release 配置构建原生应用，并确认 React Native 屏幕能够正确加载。
+在 release 构建中，JavaScript bundle 会嵌入产物（AAR 或 XCFramework）中，因此不需要 Metro 服务器。使用 Release 配置构建原生应用，并确认 React Native 屏幕能够正确加载。
 
 ## 下一步
 
 <BoxLink
   title="生命周期监听器"
-  description="为 Expo 模块配置应用生命周期监听器，以实现更深度的集成。"
+  description="为 Expo 模块配置应用生命周期监听器，以实现更深入的集成。"
   href="/brownfield/lifecycle-listeners/"
   Icon={BookOpen02Icon}
 />
@@ -426,5 +427,5 @@ struct ContentView: View {
   title="expo-brownfield API 参考"
   description="探索用于通信、导航等功能的完整 JavaScript API。"
   href="/versions/latest/sdk/brownfield/"
-  Icon={BookOpen02Icon}
+  Icon={DocsLogo}
 />

@@ -9,7 +9,7 @@ import { ProgressTracker } from '~/ui/components/ProgressTracker';
 import { Step } from '~/ui/components/Step';
 import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
 
-React Native provides a [`<Modal>` component](https://reactnative.dev/docs/modal) that presents content above the rest of your app. In general, modals are used to draw a user's attention toward critical information or guide them to take action. For example, in the [third chapter](/tutorial/build-a-screen/#enhance-the-reusable-button-component), after pressing the button, we used `alert()` to display some placeholder text. That's how a modal component displays an overlay.
+React Native 提供了一个[ `<Modal>` 组件](https://reactnative.dev/docs/modal)，用于在应用的其余内容之上显示内容。通常，模态框用于吸引用户注意关键信息，或引导他们采取行动。例如，在[第三章](/tutorial/build-a-screen/#enhance-the-reusable-button-component)中，按下按钮后，我们使用 `alert()` 显示了一些占位文本。这就是模态组件显示覆盖层的方式。
 
 在本章中，我们将创建一个显示表情选择器列表的模态框。
 
@@ -27,20 +27,20 @@ React Native provides a [`<Modal>` component](https://reactnative.dev/docs/modal
 
 在实现模态框之前，我们先添加三个新按钮。这些按钮会在用户从媒体库中选择图片或使用占位图片后显示。其中一个按钮将触发表情选择器模态框。
 
-在 **app/(tabs)/index.tsx** 中：
+在 **src/app/(tabs)/index.tsx** 中：
 
 1. 声明一个布尔类型的状态变量 `showAppOptions`，用于显示或隐藏打开模态框以及其他几个选项的按钮。当应用屏幕加载时，我们将其设置为 `false`，这样在选择图片之前不会显示这些选项。当用户选择图片或使用占位图片时，我们会将其设置为 `true`。
 2. 更新 `pickImageAsync()` 函数，在用户选择图片后将 `showAppOptions` 的值设为 `true`。
 3. 为没有主题的按钮添加 `onPress` 属性，并使用以下值。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
+```tsx src/app/(tabs)/index.tsx
 import { View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 
-import Button from '@/components/Button';
-import ImageViewer from '@/components/ImageViewer';
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
@@ -106,11 +106,11 @@ const styles = StyleSheet.create({
 
 在上面的代码片段中，我们根据 `showAppOptions` 的值来渲染 `Button` 组件，并将按钮移动到三元运算块中。当 `showAppOptions` 的值为 `true` 时，渲染一个空的 `<View>` 组件。我们将在下一步处理这个状态。
 
-现在，我们可以移除 `Button` 组件上的 `alert`，并在 **components/Button.tsx** 中渲染第二个按钮时更新 `onPress` 属性：
+现在，我们可以移除 `Button` 组件中的 `alert`，并更新在 **src/components/button.tsx** 中渲染第二个按钮时的 `onPress` 属性：
 
 {/* prettier-ignore */}
-```tsx components/Button.tsx
-<Pressable style={styles.button} /* @tutinfo 用 `onPress` 替换 `alert()`。*/ onPress={onPress}/* @end */>
+```tsx src/components/button.tsx
+<Pressable style={styles.button} /* @tutinfo Replace the `alert()` with the `onPress`.*/ onPress={onPress}/* @end */>
 ```
 
 </Step>
@@ -129,9 +129,9 @@ const styles = StyleSheet.create({
 
 它包含一个父级 `<View>`，其中有三个按钮横向排列。中间带有加号图标（+）的按钮会打开模态框，并且样式与另外两个按钮不同。
 
-在 **components** 目录中，创建一个新的 **CircleButton.tsx** 文件，并添加以下代码：
+在 **src/components** 目录中，创建一个名为 **circle-button.tsx** 的新文件，并添加以下代码：
 
-```tsx components/CircleButton.tsx
+```tsx src/components/circle-button.tsx
 import { View, Pressable, StyleSheet } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
@@ -171,13 +171,13 @@ const styles = StyleSheet.create({
 
 为了渲染加号图标，这个按钮使用了 `@expo/vector-icons` 库中的 `<MaterialIcons>` 图标集。
 
-另外两个按钮也使用 `<MaterialIcons>` 来显示垂直对齐的文本标签和图标。在 **components** 目录中创建一个名为 **IconButton.tsx** 的文件。这个组件接受三个 props：
+另外两个按钮也使用 `<MaterialIcons>` 来显示垂直排列的文本标签和图标。在 **src/components** 目录中创建一个名为 **icon-button.tsx** 的文件。此组件接受三个属性：
 
 - `icon`：对应 `MaterialIcons` 图标库图标名称。
 - `label`：按钮上显示的文本标签。
 - `onPress`：用户按下按钮时调用的函数。
 
-```tsx components/IconButton.tsx
+```tsx src/components/icon-button.tsx
 import { Pressable, StyleSheet, Text } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
@@ -208,22 +208,22 @@ const styles = StyleSheet.create({
 });
 ```
 
-在 **app/(tabs)/index.tsx** 中：
+在 **src/app/(tabs)/index.tsx** 中：
 
 1. 导入 `CircleButton` 和 `IconButton` 组件以便显示它们。
 2. 为这些按钮添加三个占位函数。`onReset()` 函数会在用户按下重置按钮时调用，使图片选择按钮再次显示。其他两个函数的功能我们稍后再添加。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
+```tsx src/app/(tabs)/index.tsx
 import { View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 
-import Button from '@/components/Button';
-import ImageViewer from '@/components/ImageViewer';
-/* @tutinfo 导入 `IconButton` 和 `CircleButton` 组件。*/
-import IconButton from '@/components/IconButton';
-import CircleButton from '@/components/CircleButton';
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+/* @tutinfo Import `IconButton` and `CircleButton` components.*/
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
 /* @end */
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
 让我们看看应用在 Android、iOS 和 Web 上的效果：
 
 <ContentSpotlight
-  alt="Button options displayed after a image is selected."
+  alt="选择图片后显示的按钮选项。"
   src="/static/images/tutorial/button-options.webp"
   className="max-w-[720px]"
 />
@@ -326,14 +326,14 @@ const styles = StyleSheet.create({
 
 ## 创建一个表情选择器模态框
 
-这个模态框允许用户从可用表情列表中选择一个表情。请在 **components** 目录中创建一个 **EmojiPicker.tsx** 文件。这个组件接受三个 props：
+模态框允许用户从可用表情列表中选择一个表情。在 **src/components** 目录中创建一个 **emoji-picker.tsx** 文件。此组件接受三个属性：
 
 - `isVisible`：用于确定模态框可见状态的布尔值。
 - `onClose`：用于关闭模态框的函数。
 - `children`：稍后用于显示表情列表。
 
 {/* prettier-ignore */}
-```tsx components/EmojiPicker.tsx|collapseHeight=430
+```tsx src/components/emoji-picker.tsx|collapseHeight=430
 import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
 import { PropsWithChildren } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
 - 它的 `animationType` 属性决定模态框进入和离开屏幕的方式。在这里，它从屏幕底部滑入。
 - 最后，当用户按下关闭的 `<Pressable>` 时，`<EmojiPicker>` 会调用 `onClose` 属性。
 
-现在，让我们修改 **app/(tabs)/index.tsx**：
+现在，让我们修改 **src/app/(tabs)/index.tsx**：
 
 1. 导入 `<EmojiPicker>` 组件。
 2. 使用 `useState` 钩子创建一个 `isModalVisible` 状态变量。它的默认值为 `false`，这会在用户按下打开按钮之前隐藏模态框。
@@ -405,17 +405,17 @@ const styles = StyleSheet.create({
 5. 将 `<EmojiPicker>` 组件放在 `Index` 组件底部。
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
+```tsx src/app/(tabs)/index.tsx
 import { View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 
-import Button from '@/components/Button';
-import ImageViewer from '@/components/ImageViewer';
-import IconButton from '@/components/IconButton';
-import CircleButton from '@/components/CircleButton';
-/* @tutinfo 导入 `EmojiPicker` 组件。 */
-import EmojiPicker from '@/components/EmojiPicker';
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
+/* @tutinfo import the `EmojiPicker` component. */
+import EmojiPicker from '@/components/emoji-picker';
 /* @end */
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
 以下是这一步之后的结果：
 
 <ContentSpotlight
-  alt="A modal working on all platforms"
+  alt="可在所有平台上正常工作的模态框"
   src="/static/images/tutorial/modal-creation.webp"
   className="max-w-[720px]"
 />
@@ -528,10 +528,10 @@ const styles = StyleSheet.create({
 
 现在，让我们在模态框内容中添加一个横向的表情列表。为此我们将使用 React Native 的 [`<FlatList>`](https://reactnative.dev/docs/flatlist) 组件。
 
-在 **components** 目录中创建一个 **EmojiList.tsx** 文件，并添加以下代码：
+在 **src/components** 目录中创建一个 **emoji-list.tsx** 文件，并添加以下代码：
 
 {/* prettier-ignore */}
-```tsx components/EmojiList.tsx
+```tsx src/components/emoji-list.tsx
 import { useState } from 'react';
 import { ImageSourcePropType, StyleSheet, FlatList, Platform, Pressable } from 'react-native';
 import { Image } from 'expo-image';
@@ -543,12 +543,12 @@ type Props = {
 
 export default function EmojiList({ onSelect, onCloseModal }: Props) {
   const [emoji] = useState<ImageSourcePropType[]>([
-    require("../assets/images/emoji1.png"),
-    require("../assets/images/emoji2.png"),
-    require("../assets/images/emoji3.png"),
-    require("../assets/images/emoji4.png"),
-    require("../assets/images/emoji5.png"),
-    require("../assets/images/emoji6.png"),
+    require("@/assets/images/emoji1.png"),
+    require("@/assets/images/emoji2.png"),
+    require("@/assets/images/emoji3.png"),
+    require("@/assets/images/emoji4.png"),
+    require("@/assets/images/emoji5.png"),
+    require("@/assets/images/emoji6.png"),
   ]);
 
   return (
@@ -593,21 +593,21 @@ const styles = StyleSheet.create({
 - 它还接受由 `emoji` 数组变量提供的项目数组，作为 `data` 属性的值。`renderItem` 属性取出 `data` 中的项目并返回列表中的该项。最后，我们添加了 `Image` 和 `<Pressable>` 组件来显示该项目。
 - `horizontal` 属性使列表水平而不是垂直渲染。`showsHorizontalScrollIndicator` 使用 React Native 的 `Platform` 模块来检查该值，并在 Web 上显示横向滚动条。
 
-现在，更新 **app/(tabs)/index.tsx**，导入 `<EmojiList>` 组件，并将 `<EmojiPicker>` 组件内部的注释替换为以下代码片段：
+现在，更新 **src/app/(tabs)/index.tsx**，导入 `<EmojiList>` 组件，并用以下代码片段替换 `<EmojiPicker>` 组件中的注释：
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx|collapseHeight=440
+```tsx src/app/(tabs)/index.tsx|collapseHeight=440
 import { ImageSourcePropType, View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 
-import Button from '@/components/Button';
-import ImageViewer from '@/components/ImageViewer';
-import IconButton from '@/components/IconButton';
-import CircleButton from '@/components/CircleButton';
-import EmojiPicker from '@/components/EmojiPicker';
-/* @tutinfo 导入 `EmojiList` 组件。 */
-import EmojiList from '@/components/EmojiList';
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
+import EmojiPicker from '@/components/emoji-picker';
+/* @tutinfo Import the `EmojiList` component. */
+import EmojiList from '@/components/emoji-list';
 /* @end */
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
 让我们看看应用在 Android、iOS 和 Web 上的效果：
 
 <ContentSpotlight
-  alt="Emoji list displayed on all platforms"
+  alt="所有平台上显示的表情列表"
   src="/static/images/tutorial/emoji-picker.webp"
   className="max-w-[720px]"
 />
@@ -719,9 +719,9 @@ const styles = StyleSheet.create({
 
 ## 显示选中的表情
 
-现在，我们要把表情贴纸放到图片上。请在 **components** 目录中新建一个文件，命名为 **EmojiSticker.tsx**。然后添加以下代码：
+现在，我们将在图片上放置表情贴纸。在 **src/components** 目录中创建一个新文件，并将其命名为 **emoji-sticker.tsx**。然后，添加以下代码：
 
-```tsx components/EmojiSticker.tsx|collapseHeight=300
+```tsx src/components/emoji-sticker.tsx|collapseHeight=300
 import { ImageSourcePropType, View } from 'react-native';
 import { Image } from 'expo-image';
 
@@ -744,21 +744,21 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 - `imageSize`：在 `Index` 组件内部定义的值。我们将在下一章中使用这个值来在点击时缩放图片大小。
 - `stickerSource`：所选表情图片的来源。
 
-在 **app/(tabs)/index.tsx** 文件中导入该组件，并更新 `Index` 组件以在图片上显示表情贴纸。我们会检查 `pickedEmoji` 状态是否不为 `undefined`：
+在 **src/app/(tabs)/index.tsx** 文件中导入此组件，并更新 `Index` 组件，以便在图片上显示表情贴纸。我们将检查 `pickedEmoji` 状态是否不为 `undefined`：
 
 {/* prettier-ignore */}
-```tsx app/(tabs)/index.tsx
+```tsx src/app/(tabs)/index.tsx
 import { ImageSourcePropType, View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 
-import Button from '@/components/Button';
-import ImageViewer from '@/components/ImageViewer';
-import IconButton from '@/components/IconButton';
-import CircleButton from '@/components/CircleButton';
-import EmojiPicker from '@/components/EmojiPicker';
-import EmojiList from '@/components/EmojiList';
-/* @tutinfo 导入 `EmojiSticker` 组件。 */import EmojiSticker from '@/components/EmojiSticker';/* @end */
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
+import EmojiPicker from '@/components/emoji-picker';
+import EmojiList from '@/components/emoji-list';
+/* @tutinfo Import the `EmojiSticker` component. */import EmojiSticker from '@/components/emoji-sticker';/* @end */
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
 

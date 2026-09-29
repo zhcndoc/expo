@@ -1,0 +1,369 @@
+---
+title: FileSystem
+description: 一个提供访问设备本地文件系统功能的库
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-file-system'
+packageName: 'expo-file-system'
+iconUrl: '/static/images/packages/expo-file-system.png'
+platforms: ['android', 'ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { Collapsible } from '~/ui/components/Collapsible';
+import {
+  ConfigReactNative,
+  ConfigPluginExample,
+  ConfigPluginProperties,
+} from '~/ui/components/ConfigSection';
+import { CODE } from '~/ui/components/Text';
+
+`expo-file-system` 提供对设备上存储的文件和目录，或作为资源捆绑到原生项目中的文件和目录的访问权限。它还支持从网络下载文件。
+
+## 安装
+
+<APIInstallSection />
+
+## 在应用配置中配置
+
+如果项目中使用配置插件（[Continuous Native Generation（CNG）](/workflow/continuous-native-generation/)），则可以使用内置的[配置插件](/config-plugins/introduction/)配置 `expo-file-system`。该插件允许配置各种无法在运行时设置的属性，并且需要构建新的应用二进制文件才能生效。如果应用**不**使用 CNG，则需要手动配置此库。
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-file-system",
+        {
+          "supportsOpeningDocumentsInPlace": true,
+          "enableFileSharing": true
+        }
+      ]
+    ]
+  }
+}
+```
+
+</ConfigPluginExample>
+
+<ConfigPluginProperties
+  properties={[
+    {
+      name: 'supportsOpeningDocumentsInPlace',
+      platform: 'ios',
+      description:
+        '一个用于在 **Info.plist** 中启用 `LSSupportsOpeningDocumentsInPlace` 的布尔值。这允许应用就地打开文档。',
+      default: 'false',
+    },
+    {
+      name: 'enableFileSharing',
+      platform: 'ios',
+      description:
+        "一个用于在 **Info.plist** 中启用 `UIFileSharingEnabled` 的布尔值。这会在 iOS Files 应用中启用文件共享，使用户能够通过 Files 应用、iTunes File Sharing 以及其他文件管理工具访问应用的 Documents 目录。",
+      default: 'false',
+    },
+  ]}
+/>
+
+<ConfigReactNative>
+
+如果不使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者手动使用原生 **ios** 项目，则需要将 `LSSupportsOpeningDocumentsInPlace` 和 `UIFileSharingEnabled` 键添加到项目的 **ios/[app]/Info.plist** 中：
+
+```xml
+<key>LSSupportsOpeningDocumentsInPlace</key>
+<true/>
+<key>UIFileSharingEnabled</key>
+<true/>
+```
+
+</ConfigReactNative>
+
+## 使用
+
+```js
+import { File, Directory, Paths } from 'expo-file-system';
+```
+
+`File` 和 `Directory` 实例保存对文件、内容或资源 URI 的引用。
+
+文件或目录不需要存在——仅当使用错误的类来表示现有路径时，构造函数才会抛出错误（例如，尝试创建 `File` 实例并传入一个已经存在的目录路径）。
+
+## 功能
+
+- 对文件内容进行同步和异步读写
+- 创建、修改和删除
+- 可用属性，例如 `type`、`size`、`creationDate` 等
+- 能够将文件作为流或使用 `FileHandle` 类进行读写
+- 使用 `downloadFileAsync` 或 `expo/fetch` 轻松下载和上传文件
+- 使用平台原生流程预览文件
+
+## 示例
+
+<Collapsible summary="写入和读取文本文件">
+
+```ts example.ts
+import { File, Paths } from 'expo-file-system';
+
+try {
+  const file = new File(Paths.cache, 'example.txt');
+  file.create(); // can throw an error if the file already exists or no permission to create it
+  await file.write('Hello, world!'); // or `file.writeSync('Hello, world!');` for synchronous call
+  console.log(file.textSync()); // Hello, world!
+} catch (error) {
+  console.error(error);
+}
+```
+
+</Collapsible>
+
+<Collapsible summary="使用系统选择器选择文件">
+
+使用 `expo-document-picker`：
+
+```ts example.ts
+import { File } from 'expo-file-system';
+import * as DocumentPicker from 'expo-document-picker';
+
+try {
+  const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true });
+  if (!result.canceled) {
+    const { uri } = result.assets[0];
+    const file = new File(uri);
+    console.log(file.textSync());
+  }
+} catch (error) {
+  console.error(error);
+}
+```
+
+在 Android 上使用内置的 `pickFileAsync` 或 `pickDirectoryAsync` 方法：
+
+```ts example.ts
+import { File } from 'expo-file-system';
+
+try {
+  const file = new File.pickFileAsync();
+  console.log(file.textSync());
+} catch (error) {
+  console.error(error);
+}
+```
+
+</Collapsible>
+
+<Collapsible summary="下载文件">
+
+使用 `downloadFileAsync`：
+
+```ts example.ts
+import { Directory, File, Paths } from 'expo-file-system';
+
+const url = 'https://pdfobject.com/pdf/sample.pdf';
+const destination = new Directory(Paths.cache, 'pdfs');
+try {
+  destination.create();
+  const output = await File.downloadFileAsync(url, destination);
+  console.log(output.exists); // true
+  console.log(output.uri); // path to the downloaded file, e.g., '${cacheDirectory}/pdfs/sample.pdf'
+} catch (error) {
+  console.error(error);
+}
+```
+
+或者使用 `expo/fetch`：
+
+```ts example.ts
+import { fetch } from 'expo/fetch';
+import { File, Paths } from 'expo-file-system';
+
+const url = 'https://pdfobject.com/pdf/sample.pdf';
+const response = await fetch(url);
+const src = new File(Paths.cache, 'file.pdf');
+await src.write(await response.bytes());
+```
+
+</Collapsible>
+
+<Collapsible summary="预览文件">
+
+使用 `File.preview()` 通过平台的文件预览流程打开本地文件。目前 Android 和 iOS 支持文件预览。在 iOS 上，这会显示 Quick Look，它支持许多常见文件类型，例如 PDF、图像、文本文件、CSV 文件和 Office 文档。在 Android 上，这会打开 `ACTION_VIEW` intent，因此支持情况取决于设备上安装的、能够处理该文件 MIME 类型的应用。
+
+```ts example.ts
+import { File, Paths } from 'expo-file-system';
+
+const file = await File.downloadFileAsync(
+  'https://pdfobject.com/pdf/sample.pdf',
+  new File(Paths.cache, 'sample.pdf')
+);
+
+if (await file.canPreview()) {
+  await file.preview({ title: 'Sample PDF' });
+}
+```
+
+`mimeType` 选项默认为文件的 `type` 属性。如果文件扩展名无法正确识别类型，请显式传入 `mimeType`，尤其是在 Android 上，因为系统会使用 MIME 类型查找兼容的应用。当 Android 无法解析 MIME 类型时，`canPreview()` 会解析为 `false`，而 `preview()` 会拒绝。
+
+如果文件无效或无法读取，`canPreview()` 会拒绝。当文件不存在或平台无法预览该文件时，它会解析为 `false`。
+
+`preview()` 会在原生预览显示出来或交由其他应用处理后解析。文件不存在、无法读取或没有可用预览时，它会拒绝。它不会等待用户关闭查看器。
+
+如果应用中使用分享面板很有帮助，可以在预览失败时将其与 [`expo-sharing`](./sharing/) 组合使用：
+
+```ts example.ts
+import { File, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
+// This can be a file created, picked, or downloaded earlier.
+const file = new File(Paths.cache, 'report.pdf');
+
+try {
+  await file.preview({ title: 'Report' });
+} catch {
+  if (await Sharing.isAvailableAsync()) {
+    await Sharing.shareAsync(file.uri, {
+      dialogTitle: 'Share report',
+      mimeType: file.type || 'application/pdf',
+    });
+  }
+}
+```
+
+</Collapsible>
+
+<Collapsible summary={<>使用 <CODE>expo/fetch</CODE> 上传文件</>}>
+
+你可以直接使用 Expo 包内置的 `fetch` 将文件作为 blob 上传：
+
+```ts example.ts
+import { fetch } from 'expo/fetch';
+import { File, Paths } from 'expo-file-system';
+
+const file = new File(Paths.cache, 'file.txt');
+await file.write('Hello, world!');
+
+const response = await fetch('https://example.com', {
+  method: 'POST',
+  body: file,
+});
+```
+
+或者使用 `FormData` 构造函数：
+
+```ts example.ts
+import { fetch } from 'expo/fetch';
+import { File, Paths } from 'expo-file-system';
+
+const file = new File(Paths.cache, 'file.txt');
+await file.write('Hello, world!');
+const formData = new FormData();
+formData.append('data', file);
+const response = await fetch('https://example.com', {
+  method: 'POST',
+  body: formData,
+});
+```
+
+</Collapsible>
+
+<Collapsible summary="移动和复制文件">
+
+```ts example.ts
+import { Directory, File, Paths } from 'expo-file-system';
+try {
+  const file = new File(Paths.document, 'example.txt');
+  file.create();
+  console.log(file.uri); // '${documentDirectory}/example.txt'
+  const copiedFile = new File(Paths.cache, 'example-copy.txt');
+  file.copy(copiedFile);
+  console.log(copiedFile.uri); // '${cacheDirectory}/example-copy.txt'
+  file.move(Paths.cache);
+  console.log(file.uri); // '${cacheDirectory}/example.txt'
+  file.move(new Directory(Paths.cache, 'newFolder'));
+  console.log(file.uri); // '${cacheDirectory}/newFolder/example.txt'
+} catch (error) {
+  console.error(error);
+}
+```
+
+</Collapsible>
+
+<Collapsible summary="使用 FileHandle 进行随机访问读取">
+
+使用 [`FileHandle`](#filehandle) 可以高效地随机访问读取大型文件，而无需将整个文件加载到内存中。调用 `file.open()` 获取句柄，使用 `offset` 属性在任意位置读取或写入，并在完成后始终关闭句柄。
+
+```ts example.ts
+import { File, Paths, FileMode } from 'expo-file-system';
+
+const file = new File(Paths.document, 'recording.wav');
+const handle = file.open(FileMode.ReadOnly);
+
+// Read the WAV header (first 44 bytes)
+const header = handle.readBytesSync(44);
+const sampleRate = new DataView(header.buffer).getUint32(24, true);
+console.log(`Sample rate: ${sampleRate} Hz`);
+
+// Seek to a specific offset and read a chunk
+handle.offset = 1024;
+const chunk = await handle.readBytes(4096);
+console.log(`Read ${chunk.length} bytes from offset 1024`);
+
+// Read an entire file in 64 KB chunks
+handle.offset = 0;
+const CHUNK_SIZE = 64 * 1024;
+while (handle.offset! < handle.size!) {
+  const data = await handle.readBytes(CHUNK_SIZE);
+  // Process data...
+}
+
+handle.close();
+```
+
+</Collapsible>
+
+<Collapsible summary="使用旧版 FileSystem API">
+
+```ts example.ts
+import * as FileSystem from 'expo-file-system/legacy';
+import { File, Paths } from 'expo-file-system';
+
+try {
+  const file = new File(Paths.cache, 'example.txt');
+  const content = await FileSystem.readAsStringAsync(file.uri);
+  console.log(content);
+} catch (error) {
+  console.error(error);
+}
+```
+
+</Collapsible>
+
+<Collapsible summary="递归列出目录内容">
+
+```ts example.ts
+import { Directory, Paths } from 'expo-file-system';
+
+function printDirectory(directory: Directory, indent: number = 0) {
+  console.log(`${' '.repeat(indent)} + ${directory.name}`);
+  const contents = directory.list();
+  for (const item of contents) {
+    if (item instanceof Directory) {
+      printDirectory(item, indent + 2);
+    } else {
+      console.log(`${' '.repeat(indent + 2)} - ${item.name} (${item.size} bytes)`);
+    }
+  }
+}
+
+try {
+  printDirectory(new Directory(Paths.cache));
+} catch (error) {
+  console.error(error);
+}
+```
+
+</Collapsible>
+
+## API
+
+<APISection packageName="expo-file-system" apiName="FileSystem" />

@@ -1,0 +1,202 @@
+---
+title: BackgroundFetch
+description: 一个用于执行后台提取任务的库
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-background-fetch'
+packageName: 'expo-background-fetch'
+platforms: ['android', 'ios']
+isDeprecated: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { AndroidPermissions } from '~/components/plugins/permissions';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+import { SnackInline } from '~/ui/components/Snippet';
+import { PlatformTags } from '~/ui/components/Tag/PlatformTags';
+
+> **warning** **[Deprecated](/more/release-statuses/#deprecated)：** `expo-background-fetch` 库正被 [`expo-background-task`](background-task.mdx) 中的新版本替代。`expo-background-fetch` 不再接收补丁，并将在即将发布的版本中移除
+
+`expo-background-fetch` 提供了执行[后台获取](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh)任务的 API，允许你在后台定期运行特定代码来更新应用。此模块在底层使用 [TaskManager](task-manager.mdx) Native API。
+
+## 已知问题&ensp;<PlatformTags platforms={['ios']} />
+
+`BackgroundFetch` 仅在应用处于后台时有效，如果应用已终止或设备重新启动则无效。你可以查看[相关 GitHub issue](https://github.com/expo/expo/issues/3582)了解更多详情。
+
+在 iOS 上，`BackgroundFetch` 库要求你使用[开发构建](/develop/development-builds/introduction/)，因为 iOS Expo Go 应用未启用 Background Fetch。
+
+## 安装
+
+<APIInstallSection />
+
+## 配置&ensp;<PlatformTags platforms={['ios']} />
+
+为了能够在 iOS 上运行后台获取任务，你需要将 `fetch` 值添加到应用 **Info.plist** 文件中的 `UIBackgroundModes` 数组。后台获取要正常工作，这是必需的。
+
+**如果你使用的是 [CNG](/workflow/continuous-native-generation/)**，所需的 `UIBackgroundModes` 配置将由 prebuild 自动应用。
+
+<Collapsible summary="在 iOS 上手动配置 UIBackgroundModes">
+
+如果你不使用 Continuous Native Generation（[CNG](/workflow/continuous-native-generation/)），或者你手动使用原生 **ios** 项目，则需要将以下内容添加到你的 **Expo.plist** 文件中：
+
+```xml ios/project-name/Supporting/Expo.plist
+<key>UIBackgroundModes</key>
+<array>
+  <string>fetch</string>
+</array>
+```
+
+</Collapsible>
+
+## 使用
+
+下面是一个演示如何使用 `expo-background-fetch` 的示例。
+
+<SnackInline label="Background Fetch usage" dependencies={['expo-background-fetch', 'expo-task-manager']}>
+
+```tsx
+import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Button } from 'react-native';
+import * as BackgroundFetch from 'expo-background-fetch';
+import * as TaskManager from 'expo-task-manager';
+
+const BACKGROUND_FETCH_TASK = 'background-fetch';
+
+// 1. Define the task by providing a name and the function that should be executed
+// Note: This needs to be called in the global scope (e.g outside of your React components)
+TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
+  const now = Date.now();
+
+  console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
+
+  // Be sure to return the successful result type!
+  return BackgroundFetch.BackgroundFetchResult.NewData;
+});
+
+// 2. Register the task at some point in your app by providing the same name,
+// and some configuration options for how the background fetch should behave
+// Note: This does NOT need to be in the global scope and CAN be used in your React components!
+async function registerBackgroundFetchAsync() {
+  return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+    minimumInterval: 60 * 15, // 15 minutes
+    stopOnTerminate: false, // android only,
+    startOnBoot: true, // android only
+  });
+}
+
+// 3. (Optional) Unregister tasks by specifying the task name
+// This will cancel any future background fetch calls that match the given name
+// Note: This does NOT need to be in the global scope and CAN be used in your React components!
+async function unregisterBackgroundFetchAsync() {
+  return BackgroundFetch.unregisterTaskAsync(BACKGROUND_FETCH_TASK);
+}
+
+export default function BackgroundFetchScreen() {
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
+
+  useEffect(() => {
+    checkStatusAsync();
+  }, []);
+
+  const checkStatusAsync = async () => {
+    const status = await BackgroundFetch.getStatusAsync();
+    const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
+    setStatus(status);
+    setIsRegistered(isRegistered);
+  };
+
+  const toggleFetchTask = async () => {
+    if (isRegistered) {
+      await unregisterBackgroundFetchAsync();
+    } else {
+      await registerBackgroundFetchAsync();
+    }
+
+    checkStatusAsync();
+  };
+
+  return (
+    <View style={styles.screen}>
+      <View style={styles.textContainer}>
+        <Text>
+          Background fetch status:{' '}
+          <Text style={styles.boldText}>
+            {status && BackgroundFetch.BackgroundFetchStatus[status]}
+          </Text>
+        </Text>
+        <Text>
+          Background fetch task name:{' '}
+          <Text style={styles.boldText}>
+            {isRegistered ? BACKGROUND_FETCH_TASK : 'Not registered yet!'}
+          </Text>
+        </Text>
+      </View>
+      <View style={styles.textContainer}></View>
+      <Button
+        title={isRegistered ? 'Unregister BackgroundFetch task' : 'Register BackgroundFetch task'}
+        onPress={toggleFetchTask}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textContainer: {
+    margin: 10,
+  },
+  boldText: {
+    fontWeight: 'bold',
+  },
+});
+```
+
+</SnackInline>
+
+## 触发后台获取
+
+后台获取可能很难测试，因为它们可能不一致地发生。幸运的是，你可以在开发应用时手动触发后台获取。
+
+对于 iOS，你可以在 macOS 上使用 `Instruments` 应用手动触发后台获取：
+
+1. 打开 Instruments 应用。可以通过 Spotlight（<kbd>Cmd ⌘</kbd> + <kbd>Space</kbd>）搜索 Instruments 应用，或从 `/Applications/Xcode.app/Contents/Applications/Instruments.app` 打开
+2. 选择 `Time Profiler`
+3. 选择你的设备／模拟器，然后选择 `Expo Go` 应用
+4. 按下左上角的 `Record` 按钮
+5. 导航到 `Document` 菜单，然后选择 `Simulate Background Fetch - Expo Go`：
+
+<ContentSpotlight
+  alt="包含 Simulate Background Fetch 选项的 Xcode 菜单"
+  src="/static/images/simulate-background-fetch-instruments.webp"
+/>
+
+对于 Android，你可以将任务的 `minimumInterval` 选项设置为较小的数值，然后像这样将应用置于后台：
+
+```tsx
+async function registerBackgroundFetchAsync() {
+  return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+    minimumInterval: 1 * 60, // task will fire 1 minute after app is backgrounded
+  });
+}
+```
+
+## API
+
+```js
+import * as BackgroundFetch from 'expo-background-fetch';
+```
+
+<APISection packageName="expo-background-fetch" apiName="BackgroundFetch" />
+
+## 权限
+
+### Android
+
+在 Android 上，此模块可能会在设备启动时监听。这对于继续执行使用 `startOnBoot` 启动的任务是必要的。它还会让即将进入空闲并快速休眠的设备保持“唤醒”，从而提高任务的可靠性。因此，`RECEIVE_BOOT_COMPLETED` 和 `WAKE_LOCK` 权限会自动添加。
+
+<AndroidPermissions permissions={['RECEIVE_BOOT_COMPLETED', 'WAKE_LOCK']} />

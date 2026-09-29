@@ -8,18 +8,20 @@ import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
 import { BoxLink } from '~/ui/components/BoxLink';
 import { FileTree } from '~/ui/components/FileTree';
 
-> **重要** 本页描述的自定义导航器 API 处于 [alpha](/more/release-statuses/#alpha) 状态，并且可在 SDK 56 及更高版本中使用。该 API 可能会有破坏性更改。
-
-Expo Router 提供了最常见模式的导航器——[Stack](/router/advanced/stack/)、[Tabs](/router/advanced/tabs/)、[Native tabs](/router/advanced/native-tabs/) 和 [Drawer](/router/advanced/drawer/)。当它们都不适用时，你可以构建自己的导航器，并将其作为布局使用，同时文件式路由、深度链接和类型化路由都能像在内置导航器中一样正常工作。
+Expo Router 内置了适用于最常见模式的导航器 — [Stack](/router/advanced/stack/)、[Tabs](/router/advanced/tabs/)、[Native tabs](/router/advanced/native-tabs/) 和 [Drawer](/router/advanced/drawer/)。如果这些导航器都不符合你的需求，你可以构建自己的导航器并将其用作布局，同时继续使用基于文件的路由、深度链接和类型化路由，体验与内置导航器完全一致。
 
 请选择与你的目标相匹配的入口点：
 
-- **应用开发者** 为单个应用构建导航器时，使用 [`unstable_createStandardRouterNavigator`](#create-a-navigator-in-your-app)。
-- **库作者** 为 Expo Router 和 React Navigation 提供可复用导航器时，使用 [`unstable_integrateWithRouter`](#integrate-an-existing-navigator-library-authors)。
+- **应用开发者**：为单个应用构建导航器，请使用 [`createStandardRouterNavigator`](#create-a-navigator-in-your-app)。
+- **库作者**：发布可供 Expo Router 和 React Navigation 共用的可复用导航器，请使用 [`integrateWithRouter`](#integrate-an-existing-navigator-library-authors)。
+
+> **提示** `createStandardRouterNavigator` 和 `integrateWithRouter` 这两个稳定 API 从 **SDK 58** 起可用。在 SDK 56 和 SDK 57 中，请改用 `unstable_createStandardRouterNavigator` 和 `unstable_integrateWithRouter`。
+
+对于将路由渲染为 Web 模态覆盖层的栈导航器，请参阅[构建自定义 Web 模态框](/router/advanced/web-modals/)。
 
 ## 在应用中创建导航器
 
-使用 `unstable_createStandardRouterNavigator` 可以将内容组件转换为一个导航器，你可以将其作为布局来渲染。它需要两个必需参数：
+使用 `createStandardRouterNavigator` 将内容组件转换为可作为布局渲染的导航器。它需要两个参数：
 
 - **`NavigatorContent`**：一个渲染导航器 UI 的组件。它会接收当前的导航 `state`、每个屏幕的 `descriptors`、用于导航的 `actions`，以及用于发送事件的 `emitter`。
 - **`router`**：要使用的路由行为。从 `expo-router` 中导入 `StackRouter` 以实现类似栈的导航，或导入 `TabRouter` 以实现类似标签页的导航。
@@ -27,11 +29,7 @@ Expo Router 提供了最常见模式的导航器——[Stack](/router/advanced/s
 下面的示例构建了一个最小的标签页导航器：
 
 ```tsx components/Tabs.tsx
-import {
-  unstable_createStandardRouterNavigator,
-  TabRouter,
-  type NavigatorContentProps,
-} from 'expo-router';
+import { createStandardRouterNavigator, TabRouter, type NavigatorContentProps } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
 // 第一个类型参数是你可以为每个屏幕设置的选项
@@ -60,7 +58,7 @@ function TabsContent({ state, descriptors, actions }: TabsContentProps) {
   );
 }
 
-export const Tabs = unstable_createStandardRouterNavigator(TabsContent, TabRouter);
+export const Tabs = createStandardRouterNavigator(TabsContent, TabRouter);
 ```
 
 返回的导航器有一个用于声明屏幕的 `.Screen` 子组件，因此你可以像其他布局一样在 `_layout` 文件中使用它：
@@ -103,18 +101,14 @@ function TabsContent({ emitter }: TabsContentProps) {
 }
 ```
 
-`unstable_createStandardRouterNavigator` 会从组件中推断事件映射，因此你无需在调用处再次传入。对于不发出任何事件的导航器，可以省略第二个类型参数。
+`createStandardRouterNavigator` 会从组件推断事件映射，因此你无需在调用处再次传入。对于不发出任何事件的导航器，请省略第二个类型参数。
 
 ### 选项
 
-`unstable_createStandardRouterNavigator` 和 `unstable_integrateWithRouter` 都接受一个可选的 `options` 对象作为第三个参数：
-
-- **`useOnlyUserDefinedScreens`**：当为 `true` 时，只会渲染你通过 `<Navigator.Screen>` 声明的屏幕。Expo Router 会忽略那些从文件系统中发现但你未声明的路由。默认值为 `false`，此时 Expo Router 也会渲染从文件系统中发现的路由，并将其与您声明的屏幕一起显示。
-- **`createProps`**：从底层路由状态中为 `NavigatorContent` 派生额外的 props。用于那些不属于标准 `state` 和 `actions` 的、特定于路由器的信息。
+`createStandardRouterNavigator` 和 `integrateWithRouter` 都接受一个可选的 `options` 对象作为第三个参数。使用 `createProps` 派生标准 `state` 和 `actions` 之外的导航器专属属性：
 
 ```tsx
-export const Tabs = unstable_createStandardRouterNavigator(TabsContent, TabRouter, {
-  useOnlyUserDefinedScreens: true,
+export const Tabs = createStandardRouterNavigator(TabsContent, TabRouter, {
   createProps: ({ state, dispatch }) => ({
     activeRouteKey: state.routes[state.index].key,
     preload: (name: string) => dispatch({ type: 'PRELOAD', payload: { name } }),
@@ -122,14 +116,16 @@ export const Tabs = unstable_createStandardRouterNavigator(TabsContent, TabRoute
 });
 ```
 
-将 `createProps` 返回的 props 声明在 `NavigatorContentProps` 的第三个类型参数中，这样 `NavigatorContent` 就能以类型安全的方式接收它们：
+在 `NavigatorContentProps` 的第四个类型参数中声明 `createProps` 返回的属性，以便 `NavigatorContent` 以类型化方式接收它们：
 
 ```tsx
 type TabsContentProps = NavigatorContentProps<
   { title?: string },
   // 本示例中没有自定义事件。
   Record<string, never>,
-  // 由 `createProps` 注入的 props。
+  // 本示例中没有自定义导航器属性。
+  object,
+  // 由 `createProps` 注入的属性。
   { activeRouteKey: string; preload: (name: string) => void }
 >;
 
@@ -138,15 +134,15 @@ function TabsContent({ activeRouteKey, preload }: TabsContentProps) {
 }
 ```
 
-> **info** `createProps` 接收原始的 Expo Router `state` 和 `dispatch`。这些属于内部实现，可能会在不同版本之间发生破坏性变更，因此当 `NavigatorContent` 所提供的 `state` 和 `actions` 已经足够时，优先使用它们。如果你构建导航器所需的某些内容在标准的 `state`、`actions` 或 `emitter` 中缺失，请 [在 GitHub 上提交 issue](https://github.com/expo/expo/issues)。
+> **提示** `createProps` 接收经过 Expo Router 处理的 `state` 和原始 `dispatch`。这些属于内部实现，不同版本之间可能会有小幅变更，因此如果传递给 `NavigatorContent` 的 `state` 和 `actions` 足以满足需求，建议优先使用它们。如果标准 `state`、`actions` 或 `emitter` 中缺少你需要的内容，请[在 GitHub 上提交 issue](https://github.com/expo/expo/issues)。
 
 ## 集成现有导航器（库作者）
 
 ### 标准导航器 API
 
-上面展示的 `NavigatorContent` 组件是一个 [标准导航器](https://github.com/react-navigation/standard-navigation)。它实现了由 [`standard-navigation`](https://www.npmjs.com/package/standard-navigation) 包定义的最小化、与框架无关的契约。你的内容接收到的 `state`、`descriptors`、`actions` 和 `emitter`，与上面的应用内导航器所使用的 [同一 API](#what-navigatorcontent-receives) 完全一致。唯一的区别在于是谁创建了这个导航器。
+上面展示的 `NavigatorContent` 组件是一个[标准导航器](https://github.com/react-navigation/standard-navigation)。它实现了由 [`standard-navigation`](https://www.npmjs.com/package/standard-navigation) 包定义的最小化、与框架无关的契约。你的内容接收到的 `state`、`descriptors`、`actions` 和 `emitter`，与上面的应用内导航器所使用的[同一 API](#what-navigatorcontent-receives) 完全一致。唯一的区别在于是谁创建了这个导航器。
 
-`unstable_createStandardRouterNavigator` 是一个快捷方式，它会替你调用 `createStandardNavigator`（来自 `standard-navigation`），并将结果与 Expo Router 一步集成。作为库作者，你应自己调用 `createStandardNavigator` 并保留对该导航器的引用：
+`createStandardRouterNavigator` 是一个快捷方式：它会为你调用 `standard-navigation` 中的 `createStandardNavigator`，并一步将结果集成到 Expo Router 中。作为库作者，请自行调用 `createStandardNavigator` 并保留对导航器的引用：
 
 ```tsx src/index.ts
 import { createStandardNavigator } from 'standard-navigation';
@@ -164,16 +160,42 @@ export const navigator = createStandardNavigator<
 
 ### 与 Expo Router 集成
 
-使用 `unstable_integrateWithRouter` 将你的导航器接入 Expo Router：
+使用 `integrateWithRouter` 将导航器接入 Expo Router：
 
 ```tsx src/expo-router.ts
-import { unstable_integrateWithRouter, TabRouter } from 'expo-router';
+import { integrateWithRouter, TabRouter } from 'expo-router';
 import { navigator } from './index';
 
-export const Tabs = unstable_integrateWithRouter(navigator, TabRouter);
+export const Tabs = integrateWithRouter(navigator, TabRouter);
 ```
 
-返回的组件的工作方式与 `unstable_createStandardRouterNavigator` 完全一致，包括 `.Screen` 子组件以及相同的 [选项](#options)。
+返回的组件与 `createStandardRouterNavigator` 返回的组件完全相同，包括 `.Screen` 子组件和相同的[选项](#options)。
+
+### 为内置导航器添加属性
+
+> **提示** 本节中的辅助函数从 **SDK 58** 起可用。
+
+当你的库封装了 Expo Router 导航器时，请将其 `createProps` 辅助函数传递给 `integrateWithRouter`。该辅助函数会添加 Expo Router 所需的导航器专属行为。
+
+| 导航器         | 辅助函数                 | 导入位置               | 路由器        |
+| -------------- | ------------------------ | ---------------------- | ------------- |
+| JavaScript 栈  | `createJSStackProps`     | `expo-router/js-stack` | `StackRouter` |
+| JavaScript 标签页 | `createJSTabsProps`      | `expo-router/js-tabs`  | `TabRouter`   |
+| 原生栈         | `createNativeStackProps` | `expo-router`          | `StackRouter` |
+
+例如，按以下方式集成 JavaScript 栈：
+
+```tsx src/expo-router.ts
+import { StackRouter, integrateWithRouter } from 'expo-router';
+import { createJSStackProps } from 'expo-router/js-stack';
+import { navigator } from './navigator';
+
+export const Stack = integrateWithRouter(navigator, StackRouter, {
+  createProps: createJSStackProps,
+});
+```
+
+如需更底层的实现，请使用 `expo-router` 中的 `createBaseStackProps` 或 `createBaseTabProps`，并添加导航器所需的行为。
 
 ### 库入口点
 
@@ -183,13 +205,13 @@ export const Tabs = unstable_integrateWithRouter(navigator, TabRouter);
   files={[
     ['./src/TabsContent.tsx', '实现标准导航器 API 的导航器 UI'],
     ['./src/index.ts', '根入口 — 导出与框架无关的导航器'],
-    ['./src/react-navigation.ts', 'React Navigation 入口 — 集成相同的导航器'],
-    ['./src/expo-router.ts', 'Expo Router 入口 — unstable_integrateWithRouter(navigator, ...)'],
-    ['./package.json', '将子路径导出映射到各个框架入口'],
+    ['./src/react-navigation.ts', 'React Navigation 入口 — 集成同一个导航器'],
+    ['./src/expo-router.ts', 'Expo Router 入口 — integrateWithRouter(navigator, ...)'],
+    ['./package.json', '将子路径导出映射到各框架入口'],
   ]}
 />
 
-在库的 **package.json** 中，将每个入口点映射为一个 [子路径导出](https://nodejs.org/api/packages.html#subpath-exports)，并指向你的构建输出：
+在库的 **package.json** 中，将每个入口点映射为一个[子路径导出](https://nodejs.org/api/packages.html#subpath-exports)，并指向你的构建输出：
 
 ```json package.json
 {
@@ -218,3 +240,49 @@ export const Tabs = unstable_integrateWithRouter(navigator, TabRouter);
   description="了解如何将同一个标准导航器与 React Navigation 集成，并阅读定义 NavigatorContent 接收到的 state、descriptors、actions 和 emitter 的契约。"
   Icon={BookOpen02Icon}
 />
+
+## 自定义路由器行为
+
+> **提示** `extendRouter` 和 `extendRouterActions` 从 **SDK 58** 起可用。
+
+如果你只需要处理或拒绝导航操作，请使用 `extendRouterActions`。返回一个结果以处理该操作，返回 `null` 以拒绝该操作，或返回 `undefined` 以交由基础路由器处理。
+
+如果你需要自定义其他路由器成员，例如 `actionCreators`、`getStateForRouteFocus` 或 `normalizeState`，请使用 `extendRouter`。你未返回的成员会继承自基础路由器。
+
+下面的示例添加了一个 `CLEAR` 操作及其对应的操作创建器：
+
+```tsx src/router.ts
+import {
+  extendRouter,
+  extendRouterActions,
+  StackRouter,
+  type CommonNavigationAction,
+  type StackActionType,
+} from 'expo-router';
+
+type ClearAction = { type: 'CLEAR' };
+
+const RouterWithClearAction = extendRouterActions(
+  StackRouter,
+  (state, action: CommonNavigationAction | StackActionType | ClearAction, { nextKey }) => {
+    if (action.type !== 'CLEAR') {
+      return undefined;
+    }
+
+    const route = { key: nextKey('index'), name: 'index' };
+    return {
+      state: { ...state, index: 0, routes: [route] },
+      affectedRouteKey: route.key,
+    };
+  }
+);
+
+export const Router = extendRouter(RouterWithClearAction, ({ baseRouter }) => ({
+  actionCreators: {
+    ...baseRouter.actionCreators,
+    clear: (): ClearAction => ({ type: 'CLEAR' }),
+  },
+}));
+```
+
+这两个辅助函数都会提供 `baseRouter`、`options` 和 `nextKey`。使用 `baseRouter` 委托现有行为，使用 `options` 读取传递给路由器工厂的值，并在向状态添加路由时使用 `nextKey`。

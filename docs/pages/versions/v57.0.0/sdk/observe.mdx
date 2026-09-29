@@ -1,0 +1,68 @@
+---
+title: Observe
+description: 一个收集应用性能指标和用户定义事件，并将其发送到 EAS Observe 的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-57/packages/expo-observe'
+packageName: 'expo-observe'
+iconUrl: '/static/images/packages/expo-observe.png'
+platforms: ['android', 'ios', 'tvos']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+> **信息** EAS Observe 在 Free 方案中每月包含 100,000 个事件，在付费方案中每月包含 500,000 个事件，分别约对应 10,000 和 50,000 个月活跃用户。超出后将按用量计费。详情请参阅 [定价](https://expo.dev/pricing)。
+
+`expo-observe` 是一个库，用于收集应用的性能指标和用户定义的事件，并将它们发送到 [EAS Observe](/eas/observe/introduction/)（Expo 提供的性能监控服务）或你偏好的 OpenTelemetry（OTEL）兼容后端。它可以衡量生产环境中运行的应用的实际启动性能，例如 [首次渲染时间（TTR）](/eas/observe/reference/metrics/#time-to-first-render-ttr) 和 [交互就绪时间（TTI）](/eas/observe/reference/metrics/#time-to-interactive-tti)。
+
+除了应用启动指标外，该库还可以：
+
+- 使用 [Expo Router](/eas/observe/integrations/expo-router/) 或 [React Navigation](/eas/observe/integrations/react-navigation/) 集成收集各路由的导航指标。
+- 使用 `Observe.logEvent` 记录[用户定义的事件](/eas/observe/events/)。
+- 自动跟踪 [EAS Update 下载时间](/eas/observe/eas-update/)。
+- 使用 `ObserveErrorBoundary` 和 `Observe.reportError` 记录 [JavaScript 错误](/eas/observe/errors/)，并在 EAS Observe 控制面板中查看带有符号化堆栈跟踪的错误（处于[预览](/more/release-statuses/#preview)阶段）。
+- 允许第三方软件包使用 `Observe.registerIntegration` [注册自己的集成](/eas/observe/integrations/third-party/)。
+
+> **警告** `expo-observe` 无法在 Expo Go 中使用。要使用它，请创建一个[开发构建](/develop/development-builds/introduction/)。
+
+## 安装
+
+<APIInstallSection />
+
+## 配置
+
+在发布构建中，只需安装 `expo-observe` 库即可将其配置为开始发送启动指标（不过，你需要按照下方的使用说明调用 `markInteractive` 来跟踪 TTI）。该库不会在调试构建中发送事件，但你可以通过调用 `Observe.configure({})` 更改此行为以及其他配置选项，例如采样率、环境名称和启用集成。有关所有可用选项，请参阅 [EAS Observe 配置指南](/eas/observe/configuration/)。
+
+## 使用方法
+
+使用 `ObserveRoot` 包裹根布局，即可自动测量首次渲染时间。然后，在应用准备好与用户交互时调用 `markInteractive`，以记录交互就绪时间：
+
+```tsx src/app/_layout.tsx
+import { ObserveRoot, useObserve } from 'expo-observe';
+import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+
+function RootLayout() {
+  const { markInteractive } = useObserve();
+
+  useEffect(() => {
+    // Replace this effect with your own readiness signal: only call
+    // markInteractive() after initialization work behind the splash screen
+    // (such as loading initial data) completes.
+    markInteractive();
+  }, [markInteractive]);
+
+  return <Stack />;
+}
+
+export default ObserveRoot.wrap(RootLayout);
+```
+
+如需分步说明，包括完整的启动屏幕示例以及如何处理具有多个入口屏幕的应用，请参阅 [EAS Observe 入门指南](/eas/observe/get-started/)。如需从应用发送自定义事件，请参阅[用户定义的事件](/eas/observe/events/)。
+
+## API
+
+```ts
+import { Observe, ObserveRoot, useObserve } from 'expo-observe';
+```
+
+<APISection packageName="expo-observe" apiName="Observe" />

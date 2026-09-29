@@ -1,0 +1,177 @@
+---
+title: 错误报告
+sidebar_title: 错误
+description: 记录应用中的 JavaScript 错误和原生崩溃，并在 EAS Observe 控制面板中调查堆栈跟踪
+---
+
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+> **重要**：EAS Observe 中的错误报告目前处于[预览](/more/release-statuses/#preview)阶段，且要求使用 SDK 57 或更高版本。原生崩溃还要求使用 `expo-observe` 57.0.21 或更高版本。EAS Update 的源映射等功能仍在开发中。
+
+`expo-observe` 库会记录应用中的 JavaScript 错误和原生崩溃，以及性能指标。错误会保存在设备上，批量处理，并在下一次刷新时发送。它们会显示在 EAS Observe 信息中心的 **Errors** 页面中。
+
+<ContentSpotlight
+  alt="EAS Observe 信息中心的 Errors 页面，显示无崩溃会话图表和不同错误的列表。"
+  src="/static/images/expo-observe/observe-errors-light.webp"
+  darkSrc="/static/images/expo-observe/observe-errors-dark.webp"
+/>
+
+## JavaScript 错误
+
+JavaScript 错误通过三种方式捕获：未处理的错误会自动记录，渲染错误由 `ObserveErrorBoundary` 捕获，已处理的错误则可以通过 `Observe.reportError` 报告。
+
+### 未处理的错误
+
+未处理的 JavaScript 错误会自动记录。该库在首次导入时会安装全局错误处理程序，因此无需进行任何设置。React Native 本身的行为不会改变：开发模式下仍会显示红色错误框，生产环境中的致命错误仍会终止应用。
+
+要关闭自动记录，请通过 [`configure()`](/versions/latest/sdk/observe/#configureconfig) 将 `errorHandlingEnabled` 设为 `false`：
+
+```tsx
+import { Observe } from 'expo-observe';
+
+Observe.configure({
+  errorHandlingEnabled: false,
+});
+```
+
+这只会影响未处理的 JavaScript 错误。由 `ObserveErrorBoundary` 捕获的错误、通过 `Observe.reportError` 报告的错误以及原生崩溃仍会被记录。
+
+### 渲染错误
+
+如果没有错误边界，渲染过程中抛出的错误会被全局错误处理程序作为未处理的错误记录。使用 `ObserveErrorBoundary` 包裹一个子树，即可连同 React 组件堆栈一起记录该错误，并在抛出错误的子树位置显示备用 UI：
+
+```tsx
+import { ObserveErrorBoundary } from 'expo-observe';
+
+export default function FeedScreen() {
+  return (
+    <ObserveErrorBoundary
+      fallback={({ error, resetError }) => <ErrorScreen error={error} onRetry={resetError} />}>
+      <Feed />
+    </ObserveErrorBoundary>
+  );
+}
+```
+
+`fallback` 属性接受 React 元素、`null`，或接收抛出的 `error` 和 `resetError` 回调的函数。调用 `resetError()` 会清除捕获的错误并重新挂载子组件，使其从干净的状态重新开始。
+
+要在整个应用外层放置边界，请将 `errorBoundaryFallback` 传给 `ObserveRoot` 组件，而不是手动包裹它：
+
+```tsx src/app/_layout.tsx
+import { ObserveRoot } from 'expo-observe';
+
+export default function RootLayout() {
+  return (
+    <ObserveRoot errorBoundaryFallback={<FallbackScreen />}>
+      <Stack />
+    </ObserveRoot>
+  );
+}
+```
+
+未被任何边界捕获的渲染错误仍会由全局错误处理程序记录。
+
+### 已处理的错误
+
+代码捕获并恢复的错误既不会到达全局处理程序，也不会到达错误边界。请使用 `Observe.reportError` 报告这些错误：
+
+```tsx
+import { Observe } from 'expo-observe';
+
+async function handleSync() {
+  try {
+    await syncCart();
+  } catch (error) {
+    Observe.reportError(error);
+  }
+}
+```
+
+`reportError` 接受任何抛出的值。`Error` 会提供其名称、消息和堆栈跟踪。其他任何值（字符串、普通对象、数字）都会转换为字符串并写入消息，不包含堆栈跟踪。
+
+请避免在错误消息中包含个人身份信息（PII）。你报告的所有内容都会显示在信息中心中，并会从设备发送出去。
+
+## 原生崩溃
+
+原生崩溃会在 JavaScript 作出响应之前终止应用，因此报告会写入设备，并在下次启动应用时发送。使用 `expo-observe` 57.0.21 或更高版本时，Android 和 iOS 上的原生崩溃会自动记录，无需进行任何设置。它们会在信息中心中标记为 **Native** 来源。
+
+在 Android 上，EAS Observe 会记录未捕获的 Java 和 Kotlin 异常，包括 `Caused by` 链。在 Android 11 及更高版本上，它还会读取操作系统为你的应用保留的崩溃记录，因此可以涵盖原生代码中的崩溃，例如 `SIGSEGV` 和 `SIGABRT`。
+
+在 iOS 上，EAS Observe 使用 MetricKit 收集系统为你的应用生成的崩溃报告。这些报告涵盖 `EXC_BAD_ACCESS` 和 `EXC_BREAKPOINT` 等 Mach 异常，以及 `SIGSEGV`、`SIGBUS` 和 `SIGTRAP` 等 Unix 信号。在 iOS 17 及更高版本上，这些报告还涵盖未捕获的 Objective-C 和 Swift 异常。
+
+> **注意：** tvOS 和 iOS 模拟器上不会记录原生崩溃。任一平台上都不会记录应用程序无响应（ANR）事件和内存不足导致的终止。
+
+## 调查错误
+
+点击列表中的错误即可打开其详情页面。该页面会显示错误发生的频率、影响的用户数、首次和最后一次出现的时间，以及错误在不同平台上的分布。
+
+<ContentSpotlight
+  alt="EAS Observe 信息中心的错误详情页面，显示原生崩溃的堆栈跟踪，以及崩溃前的会话记录。"
+  src="/static/images/expo-observe/observe-error-details-light.webp"
+  darkSrc="/static/images/expo-observe/observe-error-details-dark.webp"
+/>
+
+摘要下方的 **Occurrence** 会逐个显示报告，每个报告都包含其对应的应用版本、设备和操作系统。**Stack trace** 显示所选报告的堆栈帧，**Before the crash** 列出崩溃前的最后几条会话记录。打开 **Session timeline** 可查看完整会话。使用 **Breakdown** 部分查看受错误影响的应用版本、操作系统、设备和国家/地区，并点击某个值以按该值筛选页面。
+
+**Occurrences** 选项卡会列出该错误组中的每份报告，方便你查看错误出现在哪些版本和设备上。
+
+### 交接给 AI
+
+在错误详情页面选择 **Hand off to AI**，即可使用编码代理开始调查错误。此功能会准备一段提示，其中描述了错误、堆栈跟踪、当前应用的筛选条件，以及按版本、操作系统、设备和国家/地区划分的情况。你可以将提示直接发送给 Claude Code 或 Codex，也可以复制后粘贴到其他助手中。
+
+代理会使用该提示将堆栈跟踪映射到你的源代码，并通过 `eas observe:` 命令获取更多上下文，例如崩溃发生时所在的会话。
+
+## 符号化的堆栈跟踪
+
+在生产应用中，JavaScript 会被打包并压缩。堆栈跟踪指向生成的包中的行和列位置，而不是源文件中的位置。源映射可将这些位置转换回源代码中的位置。如果某个构建已存储源映射，信息中心就会显示每个堆栈帧对应的原始文件、行和列，并在堆栈跟踪旁链接到发生错误的构建。
+
+如果构建未存储源映射，信息中心会原样显示报告的堆栈跟踪。此时堆栈帧会引用压缩包中的位置，例如 `index.android.bundle:1:481231`，因此很难将其映射回你的代码。
+
+### 使用 EAS Build 上传源映射
+
+要为每个构建存储源映射，请在 **eas.json** 中的构建配置文件内将 `uploadSourceMaps` 设为 `true`：
+
+```json eas.json
+{
+  "build": {
+    "production": {
+      "uploadSourceMaps": true
+    }
+  }
+}
+```
+
+启用此设置后，EAS Build 会上传应用 JavaScript 打包时生成的源映射。此后，该构建报告的所有错误都可以进行符号化。无需更改应用代码。
+
+> **注意**：上传源映射要求 EAS CLI 版本为 22.0.0 或更高版本，且仅适用于在 EAS Build 服务器上运行的构建。使用 `eas build --local` 创建的本地构建不会上传源映射。
+
+源映射中嵌入的源代码（`sourcesContent`）会在上传前移除。只会存储文件名和位置映射。如果上传失败，构建仍会完成，并在构建日志中显示警告。
+
+### 原生堆栈跟踪
+
+源映射仅适用于 JavaScript。信息中心不会对原生堆栈跟踪进行符号化。
+
+在 Android 上，Java 和 Kotlin 异常中的堆栈帧已包含类、方法和行号。在 iOS 上，堆栈帧会在发生崩溃的设备上解析为符号名称，因此你可以看到函数名称，但看不到文件名或行号。无法解析的堆栈帧会显示为二进制文件名称和偏移量，例如 `MyApp + 19160`。
+
+## 查看错误
+
+打开你的项目，然后导航至 [**Observe** > **Errors**](https://expo.dev/accounts/[account]/projects/[project]/observe/errors)。
+
+**Crash-free sessions** 卡片会显示所选时间范围内无致命错误结束的会话所占比例。该卡片还会显示无崩溃用户数、致命和非致命错误计数，以及受影响的用户数。
+
+**Distinct errors** 会列出所选时间范围内记录的错误，并按错误分组。**Source** 列会指出错误的来源：
+
+| Source     | Description                                        |
+| ---------- | -------------------------------------------------- |
+| JavaScript | 应用 JavaScript 抛出的错误                         |
+| Native     | Android 或 iOS 报告的原生代码崩溃                 |
+| Other      | 由运行时的其他部分记录的错误                       |
+
+可按来源、严重程度（**Fatal** 或 **Non-fatal**）、平台、环境和版本筛选列表。致命错误会在应用下次启动时报告，因此最近发生的崩溃可能需要一段时间才会显示。
+
+## 后续功能
+
+错误报告目前处于预览阶段，以下功能尚不可用：
+
+- **EAS Update 的源映射**：运行 OTA 更新的应用发生错误时，会显示未经符号化的堆栈跟踪。
+- **原生崩溃的符号化**：目前尚不支持上传调试符号，例如 Android ProGuard 映射和 iOS dSYM。

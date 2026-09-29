@@ -1,6 +1,6 @@
 ---
 title: 共享路由
-description: 了解如何定义共享路由，或者使用数组在不同布局中多次使用同一路由，使用 Expo Router。
+description: 了解如何使用 Expo Router 定义共享路由，或通过数组在不同布局中多次使用同一路由。
 ---
 
 import { FileTree } from '~/ui/components/FileTree';
@@ -21,9 +21,11 @@ import { FileTree } from '~/ui/components/FileTree';
   ]}
 />
 
-> 当页面重新加载时，会渲染第一个按字母顺序匹配的结果。
+组片段不属于 URL，因此每个共享路由都匹配相同的 URL。Expo Router 会使用你所在的组来选择对应路由。应用内导航会保留当前组。页面重新加载、书签、共享 URL 和深层链接都属于冷链接。冷链接没有当前组，因此 Expo Router 会渲染按字母顺序排列的第一个匹配项。因此，同一个 URL 在应用内导航后可能会渲染一个屏幕，而在页面重新加载后则会渲染另一个屏幕。
 
-可以通过在路由中包含组名来直接导航到共享路由。例如，`/(search)/baconbrix` 会在“search”布局中导航到 `/baconbrix`。
+可以在路由中包含组名，以直接导航到共享路由。例如，`/(search)/baconbrix` 会导航到「search」布局中的 `/baconbrix`。当链接必须始终打开某个特定组时，请使用这种形式。
+
+> **warning** 不要使用共享路由为不同用户角色提供不同版本的屏幕。URL 不包含用户角色，因此冷链接无法选择正确的组，而[受保护路由](/router/advanced/protected/)也无法改变这一点。只声明一次屏幕，并使用 `Stack.Protected` 控制访问权限。
 
 ## 数组
 
@@ -43,14 +45,14 @@ export default function DynamicLayout({ segment }) {
 }
 ```
 
-要启用 **数组语法**，请在动态布局中使用 `unstable_settings` 对象，为每个组指定 [`initialRouteName`](/router/advanced/router-settings/#initialroutename)：
+要启用**数组语法**，请使用动态布局中的 `unstable_settings` 对象为每个组指定 [`anchor`](/router/advanced/router-settings/#anchor)：
 
 {/* prettier-ignore */}
 ```tsx src/app/(home,search)/_layout.tsx
 export const unstable_settings = {
-  initialRouteName: 'home',
+  anchor: 'home',
   search: {
-    initialRouteName: 'search',
+    anchor: 'search',
   },
 };
 
@@ -63,6 +65,6 @@ export default function DynamicLayout({ segment }) {
 
 ## 要点
 
-- 你只能为当前导航器提供分组。
-- 使用数组语法时，如果有两个组（例如，`(one)/(two)`），则只使用最后一个组的 segment 来匹配路由。
-- 如果至少有两个组的 `initialRouteName`，但没有提供默认的 `initialRouteName`，则使用第一个组的 `initialRouteName`。
+- 只能为当前导航器提供组。
+- 使用数组语法时，如果有两个组（例如，`(one)/(two)`），匹配路由时只使用最后一个组的片段。
+- 如果至少有两个组锚点，但未提供默认的 `anchor`，则使用第一个组的锚点。

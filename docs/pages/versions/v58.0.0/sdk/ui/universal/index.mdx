@@ -1,0 +1,71 @@
+---
+title: 通用
+sidebar_title: 概述
+description: 使用 @expo/ui 构建跨 Android、iOS 和 web 的共享 UI 的跨平台组件
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'web', 'expo-go']
+---
+
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import UniversalCards from '~/scenes/versions/unversioned/ui/universal.mdx';
+import { PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+`@expo/ui` 中的通用组件是一个单一 API 层，封装了各平台的原生 UI 工具包。在 Android 上，它们会委托给 [`@expo/ui/jetpack-compose`](../jetpack-compose)。在 iOS 上，它们会委托给 [`@expo/ui/swift-ui`](../swift-ui)。在 Web 上，它们是使用 `react-dom` 或 `react-native-web` 实现的 JS 组件，并会根据控件选择合适的实现。
+
+<PlatformTabsGroup>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+通用组件仍必须包裹在 [`Host`](host) 中，但所有内容（包括 `Host`）都从包根目录导入。通用 `Host` 会在 Android 和 iOS 上分发到对应平台的原生 Host，因此无需直接使用 [`@expo/ui/swift-ui`](../swift-ui) 或 [`@expo/ui/jetpack-compose`](../jetpack-compose)。
+
+<ComponentExample
+  title="UniversalExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-index-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-index-basic-android-dark.webp',
+    alt: '一个 Hello world 标签，上方是一个填充样式的 Material 3 按钮',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-index-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-index-basic-ios-dark.webp',
+    alt: '一个 Hello world 标签，上方是一个填充样式的按钮',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
+import { Host, Column, Button, Text } from '@expo/ui';
+
+export default function UniversalExample() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Column spacing={12} alignment="center">
+        <Text textStyle={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>
+          Hello, world!
+        </Text>
+        <Button label="Press me" onPress={() => alert('Pressed')} />
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## 可用组件
+
+<UniversalCards />
+
+## 何时使用通用组件，而非 `jetpack-compose`/`swift-ui`
+
+- 如果你希望使用同一组件树，并且无需修改即可在 Android、iOS 和 Web 上运行，请选择**通用**组件。由于这些组件在底层委托给 Jetpack Compose/SwiftUI，因此 Android 和 iOS 上会保留各平台原生的外观和体验。
+- 如果你需要通用 API 未提供的平台专属控件、修饰符或行为，请直接使用 **[`@expo/ui/jetpack-compose`](../jetpack-compose)** 或 **[`@expo/ui/swift-ui`](../swift-ui)**。
+
+</PlatformTabsGroup>

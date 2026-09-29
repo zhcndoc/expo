@@ -49,7 +49,9 @@ import { Step } from '~/ui/components/Step';
 
 ## 生产环境
 
-要为生产环境打包你的静态网站，请运行导出命令：
+在 SDK 58 及更高版本中，你可以通过在 `expo-router` 配置插件中设置 `apiRoutes: true`，将静态渲染与 [API routes](/router/web/api-routes/#create-an-api-route) 结合使用。这会将预渲染的 HTML 和 API routes 导出到 **dist/server**，客户端资源则放在 **dist/client**，并且需要部署服务器。
+
+要为生产环境打包静态网站，请运行导出命令：
 
 <Terminal
   cmd={{
@@ -60,8 +62,8 @@ import { Step } from '~/ui/components/Step';
   }}
 />
 
-这将创建一个包含静态渲染网站的 **dist** 目录。如果你在本地 **public** 目录中有文件，这些文件也会一并被复制过去。
-你可以在本地测试生产构建，方法是运行以下命令并在浏览器中打开链接的 URL：
+这会创建一个 **dist** 目录，其中包含静态渲染的网站。如果本地 **public** 目录中有文件，这些文件也会一并复制。
+启用 API routes 后，请使用 `npx expo serve` 在本地测试生产构建。否则，请运行以下命令，并在浏览器中打开链接：
 
 <Terminal
   cmd={{
@@ -72,7 +74,7 @@ import { Step } from '~/ui/components/Step';
   }}
 />
 
-这个项目可以部署到几乎所有托管服务。请注意，这既不是单页应用，也不包含自定义服务器 API。这意味着动态路由（例如 **src/app/[id].tsx**）不会按预期正常工作。你可能需要构建一个无服务器函数来处理动态路由。
+禁用 API routes 后，该项目几乎可以部署到任何托管服务。请注意，这既不是单页应用，也不包含自定义服务器 API。这意味着动态路由（例如 **src/app/[id].tsx**）不会自动生效。你可能需要构建 serverless function 来处理动态路由。
 
 ## 动态路由
 
@@ -324,11 +326,11 @@ export default function App() {
 
 添加自定义服务器没有规定的方式。你可以使用任何你想要的服务器。不过，你需要自己处理动态路由。你可以使用 `generateStaticParams` 函数为已知路由生成静态 HTML 文件。
 
-将来会提供一个服务器 API，以及一种新的 `web.output` 模式，它将生成一个项目，并且（在其他功能中）支持动态路由。
+在 SDK 58 及更高版本中，在 `expo-router` 配置插件中设置 `apiRoutes: true`，即可在静态 HTML 的同时[添加 API routes](/router/web/api-routes/#create-an-api-route)。要在请求时渲染页面，请使用[服务器渲染](/router/web/server-rendering)。
 
 ## 服务端渲染
 
-当 `web.output: 'static'` 时，不支持在请求时进行渲染。要在每次请求时动态渲染页面，请改用 [服务器渲染](/router/web/server-rendering)，并将 `web.output` 设置为 `'server'`。
+当 `web.output: 'static'` 时，不支持在请求时进行渲染。要在每次请求时动态渲染页面，请改用[服务器渲染](/router/web/server-rendering)，并将 `web.output` 设置为 `'server'`。
 
 ### 我可以将静态渲染的网站部署到哪里？
 

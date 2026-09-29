@@ -1,0 +1,166 @@
+---
+title: Material 颜色
+description: 从 JavaScript 读取 Material 3 调色板（包括 Material 3 Dynamic Colors）。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+
+Expo UI Jetpack Compose 暴露了 Jetpack Compose 使用的 [Material 3 配色方案](https://m3.material.io/styles/color/system/overview)，因此你可以选择一种配色方案来源，并让 [`<Host>`](./host) 下的所有组件始终从该方案中获取主题。
+
+配色方案来源取决于你传入的选项：
+
+- **基于壁纸生成：** 在 Android 12 及更高版本中，未提供 `seedColor` 时的默认选项。使用 [Material 3 动态颜色](https://m3.material.io/styles/color/dynamic-color/overview)（Material You）。
+- **静态 [Material 3 基础配色方案](https://m3.material.io/styles/color/roles)：** 在 Android 11 及更低版本中，未提供 `seedColor` 时的默认回退方案。
+- **基于颜色种子生成：** 传入 `seedColor` 时，使用 Material 3 动态颜色为基于壁纸的颜色生成配色方案时所用的相同算法，生成完整的配色方案。适用于所有 Android API 级别，且不受壁纸影响。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 使用颜色种子设置 `<Host>` 的主题
+
+[`Host`](./host) 直接接受 `seedColor` 和 `colorScheme` 属性。这是为 Compose 子树设置主题的推荐方式。此 `Host` 下的原生 Compose 组件会使用基于种子生成的配色方案进行渲染，任何调用 [`useMaterialColors()`](#usematerialcolorsoptions) 且不带参数的后代组件，都会从 Host 的上下文中获得相同的配色方案。
+
+<ComponentExample
+  title="BrandedHostExample.tsx"
+  src="/static/images/expo-ui/examples/colors-branded-host-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/colors-branded-host-android-dark.webp"
+  alt="浅紫色容器中的按钮，带有深紫色文本，主题基于颜色种子">
+
+```tsx
+import { Button, Host, Text } from '@expo/ui/jetpack-compose';
+
+export default function BrandedHostExample() {
+  return (
+    <Host seedColor="#8E24AA" colorScheme="dark" matchContents>
+      <Button onClick={() => {}}>
+        <Text>Themed from the seed</Text>
+      </Button>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 在 Host 内读取当前配色方案
+
+在 [`<Host>`](./host) 内调用不带参数的 [`useMaterialColors()`](#usematerialcolorsoptions)，即可读取 Host 当前的配色方案。此 Hook 会返回一个引用稳定的 [`MaterialColors`](#materialcolors) 对象，并且在重新渲染时不会经过原生桥接。
+
+<ComponentExample
+  title="MaterialColorsExample.tsx"
+  src="/static/images/expo-ui/examples/colors-palette-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/colors-palette-android-dark.webp"
+  alt="表面面板中显示当前主色和表面颜色的十六进制值">
+
+```tsx
+import {
+  Column,
+  Host,
+  Surface,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import { padding } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function MaterialColorsExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <Surface>
+        <PaletteInspector />
+      </Surface>
+    </Host>
+  );
+}
+
+function PaletteInspector() {
+  const colors = useMaterialColors();
+  return (
+    <Column
+      modifiers={[padding(16, 16, 16, 16)]}
+      verticalArrangement={{ spacedBy: 8 }}>
+      <Text>Primary: {colors.primary}</Text>
+      <Text>Surface: {colors.surface}</Text>
+    </Column>
+  );
+}
+```
+
+</ComponentExample>
+
+### 使用参数计算特定配色方案
+
+向 [`useMaterialColors()`](#usematerialcolorsoptions) 传入参数，即可按需计算配色方案，即使在 `<Host>` 外部也可以使用。`colorScheme` 可设为 `'light'` 或 `'dark'`，也可以省略以跟随系统设置。
+
+<ComponentExample
+  title="UseMaterialColorsExample.tsx"
+  src="/static/images/expo-ui/examples/colors-use-material-colors-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/colors-use-material-colors-android-dark.webp"
+  alt="表面面板中显示暗色、品牌色和品牌暗色配色方案的三个主色十六进制值">
+
+```tsx
+import {
+  Column,
+  Host,
+  Surface,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import { padding } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function UseMaterialColorsExample() {
+  const dark = useMaterialColors({ colorScheme: 'dark' });
+  const brand = useMaterialColors({ seedColor: '#8E24AA' });
+  const brandedDark = useMaterialColors({
+    colorScheme: 'dark',
+    seedColor: '#8E24AA',
+  });
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Surface>
+        <Column
+          modifiers={[padding(16, 16, 16, 16)]}
+          verticalArrangement={{ spacedBy: 8 }}>
+          <Text>Dark primary: {dark.primary}</Text>
+          <Text>Brand primary: {brand.primary}</Text>
+          <Text>Branded dark primary: {brandedDark.primary}</Text>
+        </Column>
+      </Surface>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 在 React 组件外读取颜色
+
+```tsx GetMaterialColorsExample.tsx
+import {
+  getMaterialColors,
+  isDynamicColorAvailable,
+} from '@expo/ui/jetpack-compose';
+
+const palette = getMaterialColors({ seedColor: '#8E24AA' });
+console.log(
+  'available:',
+  isDynamicColorAvailable,
+  'primary:',
+  palette.primary
+);
+```
+
+## API
+
+<APISection
+  packageName="expo-ui/jetpack-compose/colors"
+  apiName="MaterialColors"
+/>

@@ -1,0 +1,168 @@
+---
+title: DisclosureGroup
+description: 用于显示可展开内容的 SwiftUI DisclosureGroup 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI DisclosureGroup 与官方 SwiftUI [DisclosureGroup API](https://developer.apple.com/documentation/swiftui/disclosuregroup) 相对应，并显示一个可展开或收起内容的披露指示符。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/disclosuregroup/ios-light.webp"
+  darkSrc="/static/images/expo-ui/disclosuregroup/ios-dark.webp"
+  alt="在 Form 中展开的 DisclosureGroup"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本披露组
+
+`DisclosureGroup` 最常用于 [`Form`](form) 内，以应用标准的 iOS 列表样式和箭头指示符。
+
+<ComponentExample
+  title="BasicDisclosureGroupExample.tsx"
+  src="/static/images/expo-ui/examples/disclosuregroup-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/disclosuregroup-basic-ios-dark.webp"
+  alt="表单中展开的 Advanced settings 组，列出三行设置">
+
+```tsx
+import { useState } from 'react';
+import {
+  DisclosureGroup,
+  Form,
+  Host,
+  Section,
+  Text,
+} from '@expo/ui/swift-ui';
+
+export default function BasicDisclosureGroupExample() {
+  const [isExpanded, setIsExpanded] = useState(true);
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section>
+          <DisclosureGroup
+            label="Advanced settings"
+            isExpanded={isExpanded}
+            onIsExpandedChange={setIsExpanded}>
+            <Text>Auto-update apps</Text>
+            <Text>App downloads</Text>
+            <Text>Offload unused apps</Text>
+          </DisclosureGroup>
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 初始展开
+
+将 `isExpanded` 初始设为 `true`，即可默认显示内容。
+
+<ComponentExample
+  title="InitiallyExpandedExample.tsx"
+  src="/static/images/expo-ui/examples/disclosuregroup-initially-expanded-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/disclosuregroup-initially-expanded-ios-dark.webp"
+  alt="表单外展开的 Details 组，显示一行内容">
+
+```tsx
+import { useState } from 'react';
+import { Host, DisclosureGroup, Text } from '@expo/ui/swift-ui';
+
+export default function InitiallyExpandedExample() {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  // A disclosure group fills the width it is given, so `matchContents` collapses it.
+  return (
+    <Host style={{ flex: 1 }}>
+      <DisclosureGroup
+        label="Details"
+        isExpanded={isExpanded}
+        onIsExpandedChange={setIsExpanded}>
+        <Text>This content is visible by default.</Text>
+      </DisclosureGroup>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义标签
+
+如果标签需要自定义 SwiftUI 内容或修饰符，而不是使用 `label` 字符串属性，请使用 `DisclosureGroup.Label`。
+
+<ComponentExample
+  title="CustomLabelDisclosureGroupExample.tsx"
+  src="/static/images/expo-ui/examples/disclosuregroup-custom-label-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/disclosuregroup-custom-label-ios-dark.webp"
+  alt="表单中收起的组，带有半粗体青绿色 Network options 标签">
+
+```tsx
+import { useState } from 'react';
+import {
+  DisclosureGroup,
+  Form,
+  Host,
+  Section,
+  Text,
+} from '@expo/ui/swift-ui';
+import { font, foregroundStyle } from '@expo/ui/swift-ui/modifiers';
+
+export default function CustomLabelDisclosureGroupExample() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <Section>
+          <DisclosureGroup
+            isExpanded={isExpanded}
+            onIsExpandedChange={setIsExpanded}>
+            <DisclosureGroup.Label>
+              <Text
+                modifiers={[
+                  font({ weight: 'semibold' }),
+                  foregroundStyle('#0a7ea4'),
+                ]}>
+                Network options
+              </Text>
+            </DisclosureGroup.Label>
+            <Text>Wi-Fi</Text>
+            <Text>Bluetooth</Text>
+            <Text>Cellular data</Text>
+          </DisclosureGroup>
+        </Section>
+      </Form>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { DisclosureGroup } from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/disclosuregroup"
+  apiName="DisclosureGroup"
+/>

@@ -8,10 +8,35 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
 
 `List` 提供了一个虚拟化的垂直行容器，通常由 [`ListItem`](#listitem) 子项填充。它提供平台原生的外观样式（分隔线、内边距样式、下拉刷新）。`ListItem` 是一个可点击的行，带有 `leading`/`trailing`/`supportingText` 插槽。
 
 > **info** `List` 目前还不会懒加载渲染各行：React 会预先创建每一行，因此大型列表在挂载时可能会比较慢。我们正在改进这一点。对于大型列表，我们建议使用 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)。
+
+## 原生实现
+
+| 平台 | 底层组件                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Android  | Jetpack Compose [`LazyColumn`](https://developer.android.com/develop/ui/compose/lists#lazy)。当你提供 `onRefresh` 时，`List` 会将其包装在 [`PullToRefreshBox`](<https://developer.android.com/reference/kotlin/androidx/compose/material3/pulltorefresh/package-summary#PullToRefreshBox(kotlin.Boolean,kotlin.Function0,androidx.compose.ui.Modifier,androidx.compose.ui.Alignment,androidx.compose.material3.pulltorefresh.PullToRefreshState,androidx.compose.material3.ExperimentalMaterial3Api,kotlin.Function0)>). |
+| iOS      | SwiftUI [`List`](https://developer.apple.com/documentation/swiftui/list)。当你提供 `onRefresh` 时，`List` 会应用 [`refreshable`](<https://developer.apple.com/documentation/swiftui/view/refreshable(action:)>) 修饰符。                                                                                                                                                                                                                                                                                          |
+| Web      | 带有滚动溢出效果的 React Native [`View`](https://reactnative.dev/docs/view)。                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/list/android-light.webp',
+    darkSrc: '/static/images/expo-ui/list/android-dark.webp',
+    alt: '一个包含 Wi-Fi、Bluetooth 和 Cellular 行的列表，每行都有一个蓝色图标',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/list/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/list/ios-dark.webp',
+    alt: '一个包含 Favorites 和 Recents 分区的列表，每行显示一个彩色 SF Symbol 图标和标签',
+  }}
+/>
 
 ## 安装
 
@@ -21,8 +46,22 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 ### 基础列表
 
-```tsx ListExample.tsx
+<ComponentExample
+  title="ListExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-list-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-list-basic-android-dark.webp',
+    alt: 'Material 3 列表中的三种早餐食品',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-list-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-list-basic-ios-dark.webp',
+    alt: '分组 iOS 列表中的三种早餐食品',
+  }}>
+
+```tsx
 import { useState } from 'react';
+import { useColorScheme } from 'react-native';
 import { Host, List, ListItem, Text } from '@expo/ui';
 
 const ITEMS = [
@@ -33,6 +72,8 @@ const ITEMS = [
 
 export default function ListExample() {
   const [selected, setSelected] = useState<string | null>(null);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
 
   return (
     <Host style={{ flex: 1 }}>
@@ -43,17 +84,32 @@ export default function ListExample() {
           </ListItem>
         ))}
       </List>
-      {selected != null && <Text>已选择：{selected}</Text>}
+      {selected != null && <Text textStyle={ink}>{`Selected: ${selected}`}</Text>}
     </Host>
   );
 }
 ```
 
+</ComponentExample>
+
 ### 带插槽的行
 
 `ListItem` 在常见场景下接受 `leading`、`trailing` 和 `supportingText` 这些简写属性。当需要更丰富的内容时，请为它们传入 `ReactNode`。
 
-```tsx ListItemSlotsExample.tsx
+<ComponentExample
+  title="ListItemSlotsExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-list-slots-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-list-slots-android-dark.webp',
+    alt: '一个带有辅助说明行和箭头的 Profile 行，其下方是 Settings 行',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-list-slots-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-list-slots-ios-dark.webp',
+    alt: '一个带有辅助说明行和箭头的 Profile 行，其下方是 Settings 行',
+  }}>
+
+```tsx
 import { Host, Icon, List, ListItem } from '@expo/ui';
 
 const CHEVRON = Icon.select({
@@ -80,24 +136,48 @@ export default function ListItemSlotsExample() {
 }
 ```
 
-### 复合插槽子元素
+</ComponentExample>
+
+### 复合插槽子项
 
 如需对插槽内容进行完全控制，请使用复合 API：`<ListItem.Leading>`、`<ListItem.Trailing>` 和 `<ListItem.Supporting>`。未被插槽包裹的内容都会成为标题行。
 
-```tsx ListItemCompoundExample.tsx
+<ComponentExample
+  title="ListItemCompoundExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-list-compound-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-list-compound-android-dark.webp',
+    alt: '一行内容包含星形图标、复合标题和辅助文本',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-list-compound-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-list-compound-ios-dark.webp',
+    alt: '一行内容包含星形图标、复合标题和辅助文本',
+  }}>
+
+```tsx
+import { useColorScheme } from 'react-native';
 import { Host, Icon, List, ListItem, Row, Text } from '@expo/ui';
 
+const STAR = Icon.select({
+  ios: 'star.fill',
+  android: require('@expo/material-symbols/star.xml'),
+});
+
 export default function ListItemCompoundExample() {
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
+
   return (
     <Host style={{ flex: 1 }}>
       <List>
         <ListItem onPress={() => {}}>
           <ListItem.Leading>
-            <Icon name="star.fill" size={20} color="#FFD60A" />
+            <Icon name={STAR} size={20} color="#FFD60A" />
           </ListItem.Leading>
           <Row spacing={0}>
             <Text textStyle={{ color: 'gray' }}>{`#42: `}</Text>
-            <Text>复合标题</Text>
+            <Text textStyle={ink}>Composite headline</Text>
           </Row>
           <ListItem.Supporting>更丰富的插槽内容</ListItem.Supporting>
         </ListItem>
@@ -107,11 +187,26 @@ export default function ListItemCompoundExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 下拉刷新
 
 传入一个异步的 `onRefresh` 处理函数。平台原生的刷新指示器会保持可见，直到返回的 promise 结束（resolve 或 reject）。
 
-```tsx ListRefreshExample.tsx
+<ComponentExample
+  title="ListRefreshExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-list-refresh-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-list-refresh-android-dark.webp',
+    alt: '一个包含三个编号项目的列表',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-list-refresh-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-list-refresh-ios-dark.webp',
+    alt: '一个包含三个编号项目的列表',
+  }}>
+
+```tsx
 import { useState } from 'react';
 import { Host, List, ListItem } from '@expo/ui';
 
@@ -135,7 +230,9 @@ export default function ListRefreshExample() {
 }
 ```
 
-> 下拉刷新目前尚未在 web 上实现。该处理函数会被接受以保持 API 一致性，但指示器只会出现在 Android 和 iOS 上。
+</ComponentExample>
+
+> Web 目前尚未实现下拉刷新。为保持 API 一致性，虽然接受该处理函数，但指示器仅会在 Android 和 iOS 上显示。
 
 ## API
 
@@ -146,3 +243,5 @@ import { List, ListItem } from '@expo/ui';
 <APISection packageName="expo-ui/universal/list" apiName="List" />
 
 <APISection packageName="expo-ui/universal/listitem" apiName="ListItem" />
+
+</PlatformTabsGroup>

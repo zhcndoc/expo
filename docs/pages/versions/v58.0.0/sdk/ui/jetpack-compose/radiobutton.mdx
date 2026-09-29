@@ -1,0 +1,139 @@
+---
+title: RadioButton
+description: 用于单选控件的 Jetpack Compose RadioButton 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+用于从一组选项中选择单个选项的单选按钮组件。映射到官方 Jetpack Compose [RadioButton](https://developer.android.com/develop/ui/compose/components/radio-button) API。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/radiobutton/android-light.webp"
+  darkSrc="/static/images/expo-ui/radiobutton/android-dark.webp"
+  alt="已选中和未选中的 Material 3 单选按钮"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本单选按钮
+
+带有 `onClick` 处理函数的独立单选按钮。
+
+<ComponentExample
+  title="BasicRadioButton.tsx"
+  src="/static/images/expo-ui/examples/radiobutton-basic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/radiobutton-basic-android-dark.webp"
+  alt="处于选中状态的单个单选按钮">
+
+```tsx
+import { useState } from 'react';
+import { Host, RadioButton } from '@expo/ui/jetpack-compose';
+
+export default function BasicRadioButton() {
+  const [selected, setSelected] = useState(false);
+
+  return (
+    <Host matchContents>
+      <RadioButton
+        selected={selected}
+        onClick={() => setSelected(!selected)}
+      />
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 单选按钮组（推荐）
+
+单选按钮组推荐遵循 [Compose 无障碍指南](https://developer.android.com/develop/ui/compose/components/radio-button)：
+
+- 使用带有 `selectableGroup()` 修饰符的 `Column` 包裹单选按钮组，以便屏幕阅读器将这些选项视为一个组
+- 在每个 `Row` 上应用带有 `role: 'radioButton'` 的 `selectable` 修饰符，使整行（包括标签）都可以点击
+- 不要向 `RadioButton` 本身传递 `onClick`，由行处理交互。这样可以提供更大的触摸目标
+
+<ComponentExample
+  title="RadioGroup.tsx"
+  src="/static/images/expo-ui/examples/radiobutton-group-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/radiobutton-group-android-dark.webp"
+  alt="三个分别标记为 Calls、Missed 和 Friends 的单选行，其中 Calls 已选中">
+
+```tsx
+import { useState } from 'react';
+import {
+  Host,
+  Column,
+  Row,
+  RadioButton,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import {
+  selectable,
+  selectableGroup,
+  fillMaxWidth,
+  height,
+  padding,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function RadioGroup() {
+  const colors = useMaterialColors();
+  const [selectedOption, setSelectedOption] = useState('Calls');
+  const options = ['Calls', 'Missed', 'Friends'];
+
+  return (
+    <Host matchContents>
+      <Column modifiers={[selectableGroup()]}>
+        {options.map(label => (
+          <Row
+            key={label}
+            verticalAlignment="center"
+            modifiers={[
+              fillMaxWidth(),
+              height(56),
+              selectable(
+                label === selectedOption,
+                () => setSelectedOption(label),
+                'radioButton'
+              ),
+              padding(16, 0, 16, 0),
+            ]}>
+            <RadioButton selected={label === selectedOption} />
+            <Text
+              color={colors.onBackground}
+              modifiers={[padding(16, 0, 0, 0)]}>
+              {label}
+            </Text>
+          </Row>
+        ))}
+      </Column>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { RadioButton } from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/radiobutton"
+  apiName="RadioButton"
+/>

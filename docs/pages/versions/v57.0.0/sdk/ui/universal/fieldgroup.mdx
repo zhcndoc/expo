@@ -8,8 +8,25 @@ platforms: ['android', 'ios', 'web', 'expo-go']
 
 import APISection from '~/components/plugins/APISection';
 import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
 
-一个可滚动的容器，用于分组的设置样式行，外观类似 iOS 设置界面。将 `FieldGroup.Section`（用于显式分组）、`FieldGroup.SectionHeader` 和 `FieldGroup.SectionFooter` 插槽放置其中。
+一个可滚动的容器，用于容纳分组的设置样式行，外观类似 iOS 设置界面。将 `FieldGroup.Section`（用于显式分组）、`FieldGroup.SectionHeader` 和 `FieldGroup.SectionFooter` 插槽放置其中。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/fieldgroup/android-light.webp',
+    darkSrc: '/static/images/expo-ui/fieldgroup/android-dark.webp',
+    alt: '一个包含「推送」和「电子邮件」开关行的「通知」分区',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/fieldgroup/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/fieldgroup/ios-dark.webp',
+    alt: '一个包含「推送」和「电子邮件」开关行的「通知」分区',
+  }}
+/>
 
 ## 安装
 
@@ -19,13 +36,29 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 
 ### 分组表单
 
-```tsx FieldGroupExample.tsx
+<ComponentExample
+  title="FieldGroupExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-fieldgroup-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-fieldgroup-basic-android-dark.webp',
+    alt: '一个「通知」分区，其中「推送」已开启、「电子邮件」已关闭，其下方是一个「About」分区',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-fieldgroup-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-fieldgroup-basic-ios-dark.webp',
+    alt: '一个「通知」分区，其中「推送」已开启、「电子邮件」已关闭，其下方是一个「About」分区',
+  }}>
+
+```tsx
 import { useState } from 'react';
+import { useColorScheme } from 'react-native';
 import { Host, FieldGroup, Switch, Text } from '@expo/ui';
 
 export default function FieldGroupExample() {
   const [notifications, setNotifications] = useState(true);
   const [analytics, setAnalytics] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
 
   return (
     <Host style={{ flex: 1 }}>
@@ -35,8 +68,8 @@ export default function FieldGroupExample() {
           <Switch label="电子邮件" value={analytics} onValueChange={setAnalytics} />
         </FieldGroup.Section>
 
-        <FieldGroup.Section title="关于">
-          <Text>版本 1.0.0</Text>
+        <FieldGroup.Section title="About">
+          <Text textStyle={ink}>Version 1.0.0</Text>
         </FieldGroup.Section>
       </FieldGroup>
     </Host>
@@ -44,23 +77,41 @@ export default function FieldGroupExample() {
 }
 ```
 
+</ComponentExample>
+
 ### 自定义分区标题和页脚
 
-使用 `FieldGroup.SectionHeader` 和 `FieldGroup.SectionFooter`，可以在默认 `title` 文本的位置渲染完全样式化的标题/页脚插槽。
+使用 `FieldGroup.SectionHeader` 和 `FieldGroup.SectionFooter`，可以在默认 `title` 文本的位置渲染完全样式化的标题／页脚插槽。
 
-```tsx FieldGroupSlotsExample.tsx
+<ComponentExample
+  title="FieldGroupSlotsExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/universal-fieldgroup-slots-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-fieldgroup-slots-android-dark.webp',
+    alt: '一个「隐私」分区，包含一个「共享使用情况」开关及其下方的脚注',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/universal-fieldgroup-slots-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/universal-fieldgroup-slots-ios-dark.webp',
+    alt: '一个「隐私」分区，包含一个「共享使用情况」开关及其下方的脚注',
+  }}>
+
+```tsx
 import { useState } from 'react';
+import { useColorScheme } from 'react-native';
 import { Host, FieldGroup, Switch, Text } from '@expo/ui';
 
 export default function FieldGroupSlotsExample() {
   const [enabled, setEnabled] = useState(false);
+  const colorScheme = useColorScheme();
+  const ink = { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' };
 
   return (
     <Host style={{ flex: 1 }}>
       <FieldGroup>
         <FieldGroup.Section>
           <FieldGroup.SectionHeader>
-            <Text textStyle={{ fontSize: 16, fontWeight: '700' }}>隐私</Text>
+            <Text textStyle={{ ...ink, fontSize: 16, fontWeight: '700' }}>Privacy</Text>
           </FieldGroup.SectionHeader>
 
           <Switch label="共享使用情况" value={enabled} onValueChange={setEnabled} />
@@ -77,6 +128,8 @@ export default function FieldGroupSlotsExample() {
 }
 ```
 
+</ComponentExample>
+
 ## API
 
 ```tsx
@@ -84,3 +137,5 @@ import { FieldGroup } from '@expo/ui';
 ```
 
 <APISection packageName="expo-ui/universal/fieldgroup" apiName="FieldGroup" />
+
+</PlatformTabsGroup>

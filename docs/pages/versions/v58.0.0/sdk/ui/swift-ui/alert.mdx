@@ -1,0 +1,185 @@
+---
+title: Alert
+description: 用于呈现原生 iOS 警告对话框的 SwiftUI 警告组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI Alert 与官方 SwiftUI [alert API](<https://developer.apple.com/documentation/swiftui/view/alert(_:ispresented:actions:message:)>) 相匹配，并呈现一个原生 iOS 警告对话框，包含标题、操作按钮和可选消息。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/alert/ios-light.webp"
+  darkSrc="/static/images/expo-ui/alert/ios-dark.webp"
+  alt="提醒用户确认退出登录的警告"
+/>
+
+`Alert` 是 [`ConfirmationDialog`](confirmationdialog) 的居中模态对应组件，后者会从屏幕底部显示为操作表。两者使用相同的触发器/操作/消息插槽模型，因此调用方只需更改组件名称即可在两者之间切换。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本警告
+
+使用 `Alert.Trigger` 定义可见元素，并使用 `Alert.Actions` 提供对话框按钮。
+
+<ComponentExample
+  title="BasicAlertExample.tsx"
+  src="/static/images/expo-ui/examples/alert-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/alert-basic-ios-dark.webp"
+  alt="标题为 Saved、带有一个 OK 按钮的警告，下方是 Show alert 触发器">
+
+```tsx
+import { useState } from 'react';
+import { Host, Alert, Button } from '@expo/ui/swift-ui';
+
+export default function BasicAlertExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Alert
+        title="Saved"
+        isPresented={isPresented}
+        onIsPresentedChange={setIsPresented}>
+        <Alert.Trigger>
+          <Button
+            label="Show alert"
+            onPress={() => setIsPresented(true)}
+          />
+        </Alert.Trigger>
+        <Alert.Actions>
+          <Button
+            label="OK"
+            onPress={() => setIsPresented(false)}
+          />
+        </Alert.Actions>
+      </Alert>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 取消和确认
+
+结合使用 `role="cancel"` 和确认按钮，构建标准的是/否警告。
+
+<ComponentExample
+  title="CancelConfirmAlertExample.tsx"
+  src="/static/images/expo-ui/examples/alert-cancel-confirm-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/alert-cancel-confirm-ios-dark.webp"
+  alt="标题为 Sign out?、带有一条消息以及 Cancel 和 Sign out 按钮的警告">
+
+```tsx
+import { useState } from 'react';
+import { Host, Alert, Button, Text } from '@expo/ui/swift-ui';
+
+export default function CancelConfirmAlertExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Alert
+        title="Sign out?"
+        isPresented={isPresented}
+        onIsPresentedChange={setIsPresented}>
+        <Alert.Trigger>
+          <Button
+            label="Sign out"
+            onPress={() => setIsPresented(true)}
+          />
+        </Alert.Trigger>
+        <Alert.Actions>
+          <Button
+            label="Sign out"
+            onPress={() => console.log('Signed out')}
+          />
+          <Button label="Cancel" role="cancel" />
+        </Alert.Actions>
+        <Alert.Message>
+          <Text>
+            You will need to sign in again to access your account.
+          </Text>
+        </Alert.Message>
+      </Alert>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 破坏性操作
+
+在 `Alert.Actions` 内的 `Button` 上使用 `role="destructive"`，将其样式设为破坏性操作。
+
+<ComponentExample
+  title="DestructiveAlertExample.tsx"
+  src="/static/images/expo-ui/examples/alert-destructive-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/alert-destructive-ios-dark.webp"
+  alt="标题为 Delete account?、带有一条消息、一个 Cancel 按钮和一个红色 Delete 按钮的警告">
+
+```tsx
+import { useState } from 'react';
+import { Host, Alert, Button, Text } from '@expo/ui/swift-ui';
+
+export default function DestructiveAlertExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Alert
+        title="Delete account?"
+        isPresented={isPresented}
+        onIsPresentedChange={setIsPresented}>
+        <Alert.Trigger>
+          <Button
+            label="Delete account"
+            role="destructive"
+            onPress={() => setIsPresented(true)}
+          />
+        </Alert.Trigger>
+        <Alert.Actions>
+          <Button
+            label="Delete"
+            role="destructive"
+            onPress={() => {
+              console.log('Deleted');
+              setIsPresented(false);
+            }}
+          />
+          <Button label="Cancel" role="cancel" />
+        </Alert.Actions>
+        <Alert.Message>
+          <Text>
+            This permanently deletes your account and all data. This
+            cannot be undone.
+          </Text>
+        </Alert.Message>
+      </Alert>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Alert } from '@expo/ui/swift-ui';
+```
+
+<APISection packageName="expo-ui/swift-ui/alert" apiName="Alert" />.

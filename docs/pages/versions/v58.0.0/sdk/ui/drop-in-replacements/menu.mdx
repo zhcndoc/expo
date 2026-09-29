@@ -1,0 +1,262 @@
+---
+title: 菜单
+description: 与 @react-native-menu/menu 兼容的菜单。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'ios', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { PlatformSpotlight, PlatformTabsGroup } from '~/ui/components/PlatformTabs';
+
+一个 API 与 [`@react-native-menu/menu`](https://www.npmjs.com/package/@react-native-menu/menu) 兼容的 `MenuView` 组件。支持单击（默认）和长按（`shouldOpenOnLongPress`）触发。
+
+在底层，此组件封装了平台专属的 `@expo/ui` 基元：
+
+- **Android**：[Jetpack Compose DropdownMenu](../jetpack-compose/dropdownmenu)，锚定到内部的 `Pressable` 触发器。
+- **iOS**：单击触发时使用 [SwiftUI Menu](../swift-ui/menu)，长按触发时使用 [SwiftUI ContextMenu](../swift-ui/contextmenu)。
+
+如果需要更低层级的控制，请直接使用这些基元。
+
+<PlatformTabsGroup>
+
+<PlatformSpotlight
+  android={{
+    src: '/static/images/expo-ui/community-menu/android-light.webp',
+    darkSrc: '/static/images/expo-ui/community-menu/android-dark.webp',
+    alt: '包含“编辑”和“删除”行的打开菜单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/community-menu/ios-light.webp',
+    darkSrc: '/static/images/expo-ui/community-menu/ios-dark.webp',
+    alt: '包含“编辑”行和红色“删除”行的打开菜单',
+  }}
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 从 `@react-native-menu/menu` 迁移
+
+- 将导入语句从 `import { MenuView } from '@react-native-menu/menu'` 更新为 `import { MenuView } from '@expo/ui/community/menu'`。
+- Android 上的 `action.image` 与上游实现不同。`@react-native-menu/menu` 需要一个**可绘制资源名称**字符串（例如 `'ic_menu_add'`），并根据 `android/app/src/main/res/drawable/` 解析该资源。此兼容实现**不会**解析可绘制资源名称——请改为传入 `ImageSourcePropType`（例如 `require('@expo/material-symbols/edit.xml')`）。iOS 上接受字符串值作为 SF Symbol 名称。使用 [`Icon.select`](../universal/icon) 在每个调用位置定义两端的值，以便未使用的平台代码能按平台进行摇树优化。
+- `title` 仅在 iOS 上渲染为分节标题；Android 的 Material `DropdownMenu` 没有标题插槽。
+- 在 Android 上，`MenuView` 会将触发器包裹在自己的 `Pressable` 中以打开菜单，因此，附加到作为 `children` 传入的 `Pressable` 上的 `onPress`/`onLongPress` 处理程序不会触发——外层包装器会捕获手势。请改为将处理程序放入 `onPressAction` 的分支中；或者，如果需要在触发器上保留独立的单击和长按操作，请使用较低层级的 [`DropdownMenu`](../jetpack-compose/dropdownmenu) 基元。
+- 命令式 `ref.show()` API **仅适用于 Android**。SwiftUI `Menu`/`ContextMenu` 没有以编程方式打开菜单的 API，因此在 iOS 上调用此方法不会执行任何操作（并会显示一次性开发警告）。
+- 不支持 `@react-native-menu/menu` 中的以下属性：`themeVariant`、`hitSlop`、`isAnchoredToRight`、`subtitle`、`keepsMenuPresented`、`preferredElementSize` 和 `state: 'mixed'`。
+
+## 基本用法
+
+将任意视图作为触发器传入。`MenuView` 会附加自己的单击或长按处理逻辑。
+
+<ComponentExample
+  title="MenuExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-menu-basic-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-menu-basic-android-dark.webp',
+    alt: '包含“编辑”和“删除”行的打开菜单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-menu-basic-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-menu-basic-ios-dark.webp',
+    alt: '包含“编辑”行和红色“删除”行的打开菜单',
+  }}>
+
+```tsx
+import { Icon } from '@expo/ui';
+import { MenuView } from '@expo/ui/community/menu';
+import { Text, useColorScheme, View } from 'react-native';
+
+const editIcon = Icon.select({
+  ios: 'pencil',
+  android: import('@expo/material-symbols/edit.xml'),
+});
+
+const deleteIcon = Icon.select({
+  ios: 'trash',
+  android: import('@expo/material-symbols/delete.xml'),
+});
+
+export default function MenuExample() {
+  const colorScheme = useColorScheme();
+  return (
+    <MenuView
+      actions={[
+        { id: 'edit', title: 'Edit', image: editIcon },
+        { id: 'delete', title: 'Delete', image: deleteIcon, attributes: { destructive: true } },
+      ]}
+      onPressAction={e => console.log(e.nativeEvent.event)}>
+      <View>
+        <Text style={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>Open menu</Text>
+      </View>
+    </MenuView>
+  );
+}
+```
+
+</ComponentExample>
+
+## 长按（上下文菜单）
+
+设置 `shouldOpenOnLongPress`，将其渲染为上下文菜单。在 Android 上，同一个受控 `DropdownMenu` 会在触发器被长按时打开，而不是单击时打开。在 iOS 上，这会使用 SwiftUI 的 `ContextMenu`，并将触发器显示为模糊预览。
+
+<ComponentExample
+  title="LongPressMenuExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-menu-long-press-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-menu-long-press-android-dark.webp',
+    alt: '包含“复制”和“分享”行的打开菜单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-menu-long-press-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-menu-long-press-ios-dark.webp',
+    alt: '包含“复制”和“分享”行的打开上下文菜单',
+  }}>
+
+```tsx
+import { Icon } from '@expo/ui';
+import { MenuView } from '@expo/ui/community/menu';
+import { Text, useColorScheme, View } from 'react-native';
+
+const copyIcon = Icon.select({
+  ios: 'doc.on.doc',
+  android: import('@expo/material-symbols/content_copy.xml'),
+});
+
+const shareIcon = Icon.select({
+  ios: 'square.and.arrow.up',
+  android: import('@expo/material-symbols/share.xml'),
+});
+
+export default function LongPressMenuExample() {
+  const colorScheme = useColorScheme();
+  return (
+    <MenuView
+      shouldOpenOnLongPress
+      actions={[
+        { id: 'copy', title: 'Copy', image: copyIcon },
+        { id: 'share', title: 'Share', image: shareIcon },
+      ]}
+      onPressAction={e => console.log(e.nativeEvent.event)}>
+      <View style={{ padding: 8 }}>
+        <Text style={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>Long-press me</Text>
+      </View>
+    </MenuView>
+  );
+}
+```
+
+</ComponentExample>
+
+## 子菜单和内嵌分节
+
+默认情况下，`subactions` 会将嵌套操作渲染为子菜单。在父项上设置 `displayInline: true`，则会将子项渲染为内嵌分节，适合用于分组。在 Android 上，只会显示分隔线（Material 的 `DropdownMenu` 没有分节基元）。在 iOS 上，父项的 `title` 会成为分节标题。
+
+<ComponentExample
+  title="SubmenuExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-menu-submenu-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-menu-submenu-android-dark.webp',
+    alt: '已展开“排序方式”子菜单的打开菜单',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-menu-submenu-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-menu-submenu-ios-dark.webp',
+    alt: '已展开“排序方式”子菜单的打开菜单',
+  }}>
+
+```tsx
+import { MenuView } from '@expo/ui/community/menu';
+import { Text, useColorScheme, View } from 'react-native';
+
+export default function SubmenuExample() {
+  const colorScheme = useColorScheme();
+  return (
+    <MenuView
+      actions={[
+        { id: 'rename', title: 'Rename' },
+        {
+          id: 'sort',
+          title: 'Sort by',
+          subactions: [
+            { id: 'sort-name', title: 'Name' },
+            { id: 'sort-date', title: 'Date' },
+            { id: 'sort-size', title: 'Size' },
+          ],
+        },
+        {
+          id: 'share-section',
+          title: 'Share',
+          displayInline: true,
+          subactions: [
+            { id: 'share-airdrop', title: 'AirDrop' },
+            { id: 'share-message', title: 'Message' },
+          ],
+        },
+      ]}
+      onPressAction={e => console.log(e.nativeEvent.event)}>
+      <View>
+        <Text style={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>Open menu</Text>
+      </View>
+    </MenuView>
+  );
+}
+```
+
+</ComponentExample>
+
+## 带勾选标记的切换项
+
+将 `state` 设置为 `'on'` 或 `'off'`，可将操作渲染为可切换项；开启时会显示前置勾选标记。选择该操作会触发 `onPressAction`，调用方负责更新状态。
+
+<ComponentExample
+  title="ToggleMenuExample.tsx"
+  android={{
+    src: '/static/images/expo-ui/examples/community-menu-toggle-android-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-menu-toggle-android-dark.webp',
+    alt: '打开的菜单中，“固定在顶部”旁带有勾选标记',
+  }}
+  ios={{
+    src: '/static/images/expo-ui/examples/community-menu-toggle-ios-light.webp',
+    darkSrc: '/static/images/expo-ui/examples/community-menu-toggle-ios-dark.webp',
+    alt: '打开的菜单中，“固定在顶部”旁带有勾选标记',
+  }}>
+
+```tsx
+import { MenuView } from '@expo/ui/community/menu';
+import { useState } from 'react';
+import { Text, useColorScheme, View } from 'react-native';
+
+export default function ToggleMenuExample() {
+  const colorScheme = useColorScheme();
+  const [pinned, setPinned] = useState(false);
+  return (
+    <MenuView
+      actions={[{ id: 'pin', title: 'Pin to top', state: pinned ? 'on' : 'off' }]}
+      onPressAction={e => {
+        if (e.nativeEvent.event === 'pin') setPinned(p => !p);
+      }}>
+      <View>
+        <Text style={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }}>
+          {pinned ? 'Pinned' : 'Not pinned'}
+        </Text>
+      </View>
+    </MenuView>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { MenuView } from '@expo/ui/community/menu';
+```
+
+<APISection packageName="expo-ui/community/menu" apiName="MenuView" />
+
+</PlatformTabsGroup>

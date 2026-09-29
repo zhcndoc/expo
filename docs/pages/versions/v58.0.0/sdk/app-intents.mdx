@@ -1,0 +1,531 @@
+---
+title: AppIntents
+description: 一个用于从 Expo 应用中公开 Apple App Intents、Siri、Shortcuts、Spotlight 和 Apple Intelligence 入口点的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-app-intents'
+packageName: 'expo-app-intents'
+platforms: ['ios', 'tvos', 'macos']
+isAlpha: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ConfigPluginExample } from '~/ui/components/ConfigSection';
+import { Collapsible } from '~/ui/components/Collapsible';
+import { Terminal } from '~/ui/components/Snippet';
+
+> **重要** **此库目前处于 [alpha](/more/release-statuses/#alpha) 阶段，将经常发生破坏性变更。**
+
+`expo-app-intents` 可从你的应用中公开 Apple App Intents。它将意图声明保存在 Swift [内联模块](/modules/inline-modules-reference/)中，以便 Apple 的构建时元数据提取能够找到它们。该软件包提供 JavaScript API、本机调用队列、实体存储、配置插件，以及用于本机内联模块代码的 **app-intents** 起始目录。
+
+你无法在运行时通过 JavaScript 动态创建 App Intent 类型。请在 Swift 中声明所需的 `AppIntent` 类型。带参数的意图还需要 `AppEntity` 和 `EntityQuery` 类型。如果你的应用公开了快捷指令短语，通常还需要声明一个 `AppShortcutsProvider`。如果你的应用不使用快捷指令短语（例如只公开 schema 意图），则可以省略它。使用此软件包可将调用传递给 JavaScript，并使动态实体值保持同步。
+
+## Apple Intelligence 支持
+
+使用 `expo-app-intents`，你可以实现 Apple Intelligence 功能，包括[屏幕内容智能](https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri)。在 iOS 18.4 及更高版本中，你可以标记视图所代表的实体，以便 Siri 根据可见内容执行操作。在 [`@expo/ui`](/versions/latest/sdk/ui/) 视图上应用 [`appEntityIdentifier()`](#appintentsappentityidentifierentity-id) 修饰符，或使用 [`AppEntityView`](#appentityview) 包装 React Native 视图。两者都要求项目使用 Xcode 27 或更高版本进行编译。使用更早版本的 Xcode 构建项目时，视图仍会正常渲染，但系统无法将其与实体关联。
+
+## 安装
+
+<APIInstallSection />
+
+## 在应用配置中进行配置
+
+初始化程序会为你写入所需配置：
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": ["expo-app-intents"],
+    "experiments": {
+      "inlineModules": {
+        "watchedDirectories": ["app-intents"]
+      }
+    }
+  }
+}
+```
+
+</ConfigPluginExample>
+
+如果使用 **app-intents** 以外的目录，请将相同的目录名称传递给配置插件：
+
+<ConfigPluginExample>
+
+```json app.json
+{
+  "expo": {
+    "plugins": [["expo-app-intents", { "directory": "siri" }]],
+    "experiments": {
+      "inlineModules": {
+        "watchedDirectories": ["siri"]
+      }
+    }
+  }
+}
+```
+
+</ConfigPluginExample>
+
+## 工作原理
+
+App Intents 与大多数 Expo API 不同，因为 Apple 会在构建时发现它们。将用于描述意图、实体、查询和快捷指令短语的 Swift 类型编译到应用目标中。之后，Xcode 的 App Intents 元数据处理器便可以提取这些内容。`expo-app-intents` 使用 Expo 内联模块来处理应用目标中的 Swift 代码，并提供一个 Expo 软件包，用于 JavaScript API、本机存储和事件传递。
+
+Expo 内联模块会监视生成的 **app-intents** 目录，其中包含由你的应用管理的 Swift 代码：
+
+- **AppShortcuts.swift** 会在所选示例使用快捷指令短语时定义具体的 `AppShortcutsProvider`。快捷指令短语属于静态元数据。构建时会将它们编译到应用中，JavaScript 无法动态添加它们。
+- **AppIntentsSetup.swift** 包含所选功能所需的应用目标设置。如果应用有 `AppShortcutsProvider`，此文件会将 `AppShortcuts.updateAppShortcutParameters()` 连接到 `expo-app-intents` 运行时。
+- 其余 Swift 文件定义具体的 `AppIntent`、`AppEntity` 和 `EntityQuery` 类型。它们会编译到应用目标中。只有包含 Expo 模块定义的文件才会由 Expo 注册为模块。
+
+意图运行时，请在其 `perform()` 方法中完成 Siri 或快捷指令所需的本机操作。然后将意图分发给 JavaScript：
+
+```swift
+await AppIntentDispatcher.shared.dispatch(
+  name: "orderFood",
+  params: ["dishId": .string(dish.id), "dishName": .string(dish.name)]
+)
+```
+
+`AppIntentDispatcher` 是一个 Swift actor。它会先将调用记录在本机存储中。如果 JavaScript 运行时正在监听，则随后会发出 `onIntent` 事件。此流程提供至少一次传递。请按 `id` 处理每次调用，并在应用操作后调用 `removePendingInvocationAsync(id)`。
+
+如果 Siri 或快捷指令在 JavaScript 未运行时执行，调用会保留在待处理队列中。应用启动时，`useAppIntents()` 会使用当前待处理调用调用你的处理程序，并将 `newIntent` 设为 `null`。每次实时调用都会再次使用新调用调用处理程序。你也可以通过 `getPendingInvocationsAsync()` 读取队列。
+
+带参数的意图使用本机实体。例如，餐厅模板在 Swift 中定义了 `DishEntity` 和 `DishQuery`。JavaScript 使用 `setEntityCatalogAsync('dish', dishes)` 提供当前菜品列表。本机查询通过 `AppIntentEntityStore.shared` 读取该目录，因此 Siri 和快捷指令可以根据标识符、标题或同义词解析语音输入的值。调用 `setEntityCatalogAsync()` 会替换目录并请求刷新快捷指令参数。每当这些值发生变化时，都要再次调用它。
+
+Schema 意图（例如邮件示例）也在应用目标的 Swift 中定义。Apple 将[应用 schema 领域](https://developer.apple.com/documentation/appintents/app-schema-domains)分为两组。Apple Intelligence 和 Siri 可以发现遵循_主要_领域（例如 `mail`、`photos` 或 `files`）的类型。_仅限快捷指令_的领域（例如 `journal`、`books` 或 `reader`）只会显示在快捷指令应用中。
+
+Schema 意图不需要快捷指令短语。其 schema 遵循关系使其可被发现。Xcode 会在构建时提取 App Intents 元数据，因此 Siri 和快捷指令应用无需在你的 `AppShortcutsProvider` 中添加条目即可使用该操作。因此，邮件示例不会贡献任何 `AppShortcut`。如果你选择的示例都没有贡献 `AppShortcut`，初始化程序就不会写入 **AppShortcuts.swift**。
+
+如果 `AppShortcutsProvider` 的 `appShortcuts` 主体不包含任何 `AppShortcut`，Xcode 会报错：`'AppShortcutsProvider' property 'appShortcuts' requires builder syntax`。有短语需要声明时，请添加 **AppShortcuts.swift**。
+
+只有当你想要编译启动短语（例如“在 MyApp 中订购食物”）时，才添加 `AppShortcut`。你不能有条件地添加短语，因此引用了受可用性限制的意图的提供程序必须使用相同的可用性。在这种情况下，可以考虑编写一个普通的包装意图。
+
+系统还必须能够解析 schema 实体。其默认查询必须是 `EntityStringQuery`，或者实体必须已建立索引。Xcode 提取 App Intents 元数据时，会拒绝普通的 `EntityQuery`。
+
+## 本机 Swift 概念
+
+初始化程序提供了可运行的 Swift 示例，但意图声明属于你的应用。以下各节介绍了用于调整示例或编写自定义意图的主要本机组件。
+
+### 将调用分发给 JavaScript
+
+意图的 `perform()` 方法会在 Swift 中生成 Siri 或快捷指令所需的结果。调用 `AppIntentDispatcher.shared.dispatch()` 还可以为 JavaScript 记录一次调用：
+
+```swift
+import AppIntents
+internal import ExpoAppIntents
+
+struct SaveNoteIntent: AppIntent {
+  static let title: LocalizedStringResource = "Save Note"
+  static let openAppWhenRun = true
+
+  @Parameter(title: "Text")
+  var text: String
+
+  @MainActor
+  func perform() async throws -> some IntentResult & ProvidesDialog {
+    await AppIntentDispatcher.shared.dispatch(
+      name: "saveNote",
+      params: ["text": .string(text)]
+    )
+
+    return .result(dialog: "Your note was saved.")
+  }
+}
+```
+
+分发是单向的。它会保存调用并立即返回，而不会等待 JavaScript，因为该意图可能会在应用关闭时运行。请在 Swift 中返回对话框、值或其他面向系统的结果。应用运行时，使用 JavaScript 处理程序更新应用状态。
+
+`params` 接受与 JSON 兼容的 `AppIntentValue` 值：
+
+| Swift 值                            | JavaScript 值 |
+| ----------------------------------- | ------------- |
+| `.string(String)`                   | `string`      |
+| `.int(Int)` 和 `.double(Double)`    | `number`      |
+| `.bool(Bool)`                       | `boolean`     |
+| `.array([AppIntentValue])`          | array         |
+| `.object([String: AppIntentValue])` | object        |
+| `.null`                             | `null`        |
+
+此值类型也支持 Swift 字面量，因此你可以直接使用 `"note"`、`1`、`true`、数组和字典等值。
+
+### 在 Swift 中读取动态实体
+
+使用 `setEntityCatalogAsync()` 从 JavaScript 发布当前实体值。你的 Swift `EntityQuery` 通过 `AppIntentEntityStore.shared` 读取相同的目录：
+
+```swift
+struct NoteQuery: EntityStringQuery {
+  func entities(for identifiers: [String]) async throws -> [NoteEntity] {
+    return try await AppIntentEntityStore.shared
+      .entities(ofKind: "note", matching: identifiers)
+      .map(NoteEntity.init(record:))
+  }
+
+  func suggestedEntities() async throws -> [NoteEntity] {
+    return try await AppIntentEntityStore.shared
+      .entities(ofKind: "note")
+      .map(NoteEntity.init(record:))
+  }
+}
+```
+
+类别字符串必须与传递给 `setEntityCatalogAsync()` 的值相匹配。每个 `AppIntentEntityRecord` 都包含一个 `id` 和显示用的 `title`。它还可以包含 `subtitle` 和 `synonyms`。通过 `init(record:)` 之类的初始化方法将记录转换为具体的 `AppEntity`。目录存储在设备上，因此请保持精简，只发布 Siri 和快捷指令所需的值。
+
+### 需要时添加快捷指令短语
+
+如果你想要编译启动短语（例如“在 MyApp 中保存笔记”），请使用 `AppShortcutsProvider`。
+
+## 用法
+
+安装软件包后，从项目根目录运行初始化程序：
+
+<Terminal cmd={['$ npx expo-app-intents init']} />
+
+此命令会添加配置插件，为顶层 **app-intents** 目录启用内联模块，并写入起始 Swift 文件。
+
+此命令还会询问要包含哪些示例，默认只选中 `minimal`。此选项会写入设置模块，但不包含意图、快捷指令短语或以下任何示例。传递 `--examples` 可在不显示提示的情况下选择示例。在非交互式运行中，此标志也是选择示例的唯一方式：
+
+<Terminal cmd={['$ npx expo-app-intents init --examples counter restaurant mail']} />
+
+`--examples` 接受 `minimal`、`counter`、`restaurant`、`mail` 或 `all`。`all` 选项会选择本页面介绍的三个示例。当 `CI` 设置为 `1` 或 `true`、`EXPO_NONINTERACTIVE` 存在值，或标准输入未连接到交互式终端时，此命令会以非交互方式运行。在这些情况下，命令会在不显示提示的情况下搭建 `minimal`。
+
+`init` 会保留所选目录中已有的 Swift 文件。如果再次运行以添加其他示例，请在重新构建前查看命令发出的警告。某些现有文件可能需要手动进行少量更新。
+
+传递 `--dir` 可在 **app-intents** 以外的目录中生成模块。初始化程序会将相同的目录名称写入配置插件和受监视目录：
+
+<Terminal cmd={['$ npx expo-app-intents init --dir siri']} />
+
+请将 App Intents 目录放在项目根目录下，与默认的 **app-intents** 目录相同。这个位置便于查找本机声明，并使其与应用的其他部分分开。
+
+将 `--visual-intelligence` 与邮件示例一起使用，可搭建其 Spotlight 集成。此选项会添加本机代码，使草稿可供搜索，并允许系统传递和打开草稿。它还会注册 `mailDraft` 实体类别，以便 [`appEntityIdentifier()`](#appintentsappentityidentifierentity-id) 能够识别视图所代表的草稿。生成的代码会扩展基础邮件类型，因此无论是否使用此标志，该示例都能以相同方式运行。
+
+<Terminal cmd={['$ npx expo-app-intents init --examples mail --visual-intelligence']} />
+
+然后重新构建本机项目：
+
+<Terminal cmd={['$ npx expo prebuild -p ios', '$ npx expo run:ios']} />
+
+现在你的应用已经设置好，可以使用 App Intents。根据所选示例，你可以添加处理程序，也可以通过 JavaScript 填充 App Intents：
+
+<Collapsible summary="将屏幕上的视图关联到实体">
+
+在 iOS 18.4 及更高版本中，`appEntityIdentifier()` 会告知 Siri [`@expo/ui`](/versions/latest/sdk/ui/) SwiftUI 视图所代表的实体；`AppEntityView` 对 React Native 视图也能执行相同操作。两者都要求项目使用 Xcode 27 或更高版本进行编译，因为它们使用的 Apple API 在较早的 SDK 中不可用。本机注册、JavaScript 目录和视图中使用的实体类别和标识符必须相同。
+
+`--visual-intelligence` 邮件示例会在 **AppIntentsSetup.swift** 中注册 `mailDraft`：
+
+```swift
+OnCreate {
+  if #available(iOS 18.0, *) {
+    AppEntityIdentifierRegistry.shared.registerIndexed(
+      "mailDraft",
+      as: MailDraftEntity.self
+    )
+  }
+}
+```
+
+`registerIndexed()` 会让屏幕内容智能能够使用这些标识符，并使 Spotlight 与实体目录保持同步。自定义索引实体必须遵循 `IndexedEntity` 和 `AppIntentEntityRecordConvertible`。若要支持屏幕内容智能但不建立 Spotlight 索引，请改用 `AppEntityIdentifierRegistry.shared.register()` 注册实体。
+
+使用相同的 `mailDraft` 类别从 JavaScript 发布实体：
+
+```ts
+await AppIntents.setEntityCatalogAsync('mailDraft', [
+  {
+    id: 'release-notes',
+    title: 'Release notes for review',
+    subtitle: 'The release notes are ready for a final pass.',
+  },
+]);
+```
+
+然后将匹配的类别和标识符附加到 `@expo/ui` 视图：
+
+```tsx
+import { Column, Host, Text } from '@expo/ui';
+import * as AppIntents from 'expo-app-intents';
+
+export function MailDraftCard({ draft }: { draft: { id: string; subject: string } }) {
+  return (
+    <Host matchContents={{ vertical: true }}>
+      <Column modifiers={[AppIntents.appEntityIdentifier('mailDraft', draft.id)]}>
+        <Text>{draft.subject}</Text>
+      </Column>
+    </Host>
+  );
+}
+```
+
+若要标记 React Native 视图，请使用相同的类别和标识符通过 `AppEntityView` 包装它们：
+
+```tsx
+import { Text } from 'react-native';
+import * as AppIntents from 'expo-app-intents';
+
+export function MailDraftCard({ draft }: { draft: { id: string; subject: string } }) {
+  return (
+    <AppIntents.AppEntityView entity="mailDraft" entityId={draft.id}>
+      <Text>{draft.subject}</Text>
+    </AppIntents.AppEntityView>
+  );
+}
+```
+
+在较早版本的 iOS、使用早于 27 的 Xcode 版本编译的项目中，或类别未注册时，两种视图仍会正常渲染。在这些情况下，系统无法将视图与实体关联，`expo-app-intents` 会记录一次警告。
+
+</Collapsible>
+
+<Collapsible summary="处理计数器示例">
+
+计数器示例会分发一个 `increaseCounter` 调用。在应用根目录附近挂载一次此 Hook。这样，它就能处理 JavaScript 未运行时捕获的待处理调用，以及应用运行时收到的实时调用。
+
+传递至少发生一次，因此同一次调用可能会多次到达你的处理程序。只有在 `removePendingInvocationAsync(id)` 成功完成后，调用才会从待处理队列中移除。每次实时调用都会传递该队列的新快照。
+
+请在 ref 中保留已经应用的调用标识符，并跳过它们。餐厅和邮件示例使用了相同的防重复处理机制。ref 只能在一个会话中对调用去重。如果 `removePendingInvocationAsync()` 失败，该调用会在下次启动时仍保留在待处理队列中，你的处理程序也会再次应用它。如果无法安全地重复应用某项操作，请持久化已处理的标识符。队列最多容纳 100 次调用，达到上限时会丢弃最旧的调用。永不移除调用的应用最终会丢失这些调用。
+
+```tsx
+import { useRef, useState } from 'react';
+import { Text, View } from 'react-native';
+import * as AppIntents from 'expo-app-intents';
+
+export function CounterIntentHandler() {
+  const [count, setCount] = useState(0);
+  const [lastIntentId, setLastIntentId] = useState<string | null>(null);
+  const handledIds = useRef(new Set<string>());
+
+  AppIntents.useAppIntents(async pendingIntents => {
+    for (const invocation of pendingIntents) {
+      if (invocation.name !== 'increaseCounter' || handledIds.current.has(invocation.id)) {
+        continue;
+      }
+      handledIds.current.add(invocation.id);
+
+      setCount(value => value + 1);
+      setLastIntentId(invocation.id);
+      await AppIntents.removePendingInvocationAsync(invocation.id);
+    }
+  });
+
+  return (
+    <View>
+      <Text>Counter: {count}</Text>
+      {lastIntentId ? <Text>Last opened by Siri: {lastIntentId}</Text> : null}
+    </View>
+  );
+}
+```
+
+</Collapsible>
+
+<Collapsible summary="处理餐厅示例">
+
+餐厅示例使用动态的 `dish` 实体目录。应用启动后从 JavaScript 填充目录，然后处理 `orderFood` 调用。调用 `setEntityCatalogAsync()` 会替换本机目录并刷新快捷指令参数。之后，Siri 和快捷指令可以通过标识符、标题或同义词解析菜品。请处理被拒绝的 Promise，以便目录更新失败时能显示在日志中，而不是成为未处理的拒绝。
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { Text, View } from 'react-native';
+import * as AppIntents from 'expo-app-intents';
+
+const dishes = [
+  { id: 'margherita-pizza', title: 'Margherita Pizza', synonyms: ['margherita', 'pizza'] },
+  { id: 'spaghetti-carbonara', title: 'Spaghetti Carbonara', synonyms: ['carbonara'] },
+  { id: 'tiramisu', title: 'Tiramisu', synonyms: ['dessert'] },
+];
+
+export function RestaurantIntentHandler() {
+  const [latestOrder, setLatestOrder] = useState<string | null>(null);
+  const handledIds = useRef(new Set<string>());
+
+  useEffect(() => {
+    AppIntents.setEntityCatalogAsync('dish', dishes).catch(error =>
+      console.warn('Could not publish the dish catalog.', error)
+    );
+  }, []);
+
+  AppIntents.useAppIntents(async pendingIntents => {
+    for (const invocation of pendingIntents) {
+      if (invocation.name !== 'orderFood' || handledIds.current.has(invocation.id)) {
+        continue;
+      }
+      handledIds.current.add(invocation.id);
+
+      setLatestOrder(String(invocation.params.dishName || invocation.params.dishId));
+      await AppIntents.removePendingInvocationAsync(invocation.id);
+    }
+  });
+
+  return (
+    <View>
+      <Text>{latestOrder ? `Latest order: ${latestOrder}` : 'No orders yet.'}</Text>
+    </View>
+  );
+}
+```
+
+</Collapsible>
+
+<Collapsible summary="处理邮件示例">
+
+邮件示例采用 Apple 的 `mail` 架构域，且没有快捷短语。你可以通过 Siri、Apple Intelligence 或快捷指令 App 使用这两个意图。`createMailDraft` 会发送 `id`、`subject`、`body`、`recipients` 和 `attachmentCount`。`deleteMailDrafts` 会发送一个 `ids` 数组。由于删除操作具有破坏性，架构要求进行本地设备身份验证，并在意图运行前显示确认信息。
+
+`DeleteDraftIntent` 接受一个 `MailDraftEntity` 值数组，因此一次调用可以删除多个草稿。`MailDraftEntityQuery` 会从 `mailDraft` 目录中解析这些实体。每当草稿发生变化时，都要发布目录。否则，Siri 和快捷指令 App 无法提供草稿，删除意图也无法运行。每条记录都会将 `title` 映射到主题，将 `subtitle` 映射到正文。原生存储会在重启后保留目录，因此请勿在草稿加载完成前发布空目录。
+
+为每条记录提供非空的 `title`。如果任何实体的 `id` 或 `title` 为空，`setEntityCatalogAsync()` 就会拒绝该目录，因为 Siri 无法解析该实体。此次拒绝会丢弃整个更新并保留之前的目录。创建时没有主题的草稿会提供空的 `subject` 字符串，而不是 `undefined`。回退值请使用 `||`，而不是 `??`，因为 `??` 会保留空字符串。
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { FlatList, Text } from 'react-native';
+import * as AppIntents from 'expo-app-intents';
+
+type MailDraft = {
+  id: string;
+  subject: string;
+  body: string;
+};
+
+export function MailIntentHandler() {
+  const [drafts, setDrafts] = useState<MailDraft[]>([]);
+  const handledIds = useRef(new Set<string>());
+  const hasPublished = useRef(false);
+
+  useEffect(() => {
+    // 原生目录的生命周期比 App 长，但 `drafts` 初始为空，因此首次渲染时发布会清除之前启动时写入的目录。请等待草稿加载。
+    if (drafts.length === 0 && !hasPublished.current) {
+      return;
+    }
+    hasPublished.current = true;
+
+    AppIntents.setEntityCatalogAsync(
+      'mailDraft',
+      drafts.map(draft => ({ id: draft.id, title: draft.subject, subtitle: draft.body }))
+    ).catch(error => console.warn('Could not publish the mail draft catalog.', error));
+  }, [drafts]);
+
+  AppIntents.useAppIntents(async pendingIntents => {
+    for (const invocation of pendingIntents) {
+      const isMailIntent =
+        invocation.name === 'createMailDraft' || invocation.name === 'deleteMailDrafts';
+
+      if (!isMailIntent || handledIds.current.has(invocation.id)) {
+        continue;
+      }
+      handledIds.current.add(invocation.id);
+
+      if (invocation.name === 'createMailDraft') {
+        const body = String(invocation.params.body ?? '');
+        const draft = {
+          id: String(invocation.params.id || invocation.id),
+          // 使用 `||`，而不是 `??`：没有主题的草稿会以空字符串的形式传入。
+          subject: String(invocation.params.subject || body.slice(0, 40) || 'No subject'),
+          body,
+        };
+
+        setDrafts(current => [draft, ...current]);
+      } else {
+        const ids = new Set((invocation.params.ids as string[] | undefined) ?? []);
+
+        setDrafts(current => current.filter(draft => !ids.has(draft.id)));
+      }
+
+      await AppIntents.removePendingInvocationAsync(invocation.id);
+    }
+  });
+
+  return (
+    <FlatList
+      data={drafts}
+      keyExtractor={draft => draft.id}
+      renderItem={({ item }) => (
+        <Text>
+          {item.subject}: {item.body}
+        </Text>
+      )}
+    />
+  );
+}
+```
+
+</Collapsible>
+
+```tsx Basic example
+import * as AppIntents from 'expo-app-intents';
+
+export function AppIntentHandler() {
+  AppIntents.useAppIntents(async (pendingIntents, newIntent) => {
+    for (const invocation of pendingIntents) {
+      switch (invocation.name) {
+        case 'increaseCounter':
+          console.log('Increase counter:', invocation.id === newIntent?.id);
+          break;
+        case 'orderFood':
+          console.log('Dish:', invocation.params.dishName, invocation.id === newIntent?.id);
+          break;
+      }
+
+      await AppIntents.removePendingInvocationAsync(invocation.id);
+    }
+  });
+
+  return null;
+}
+```
+
+从 JavaScript 为带参数的意图提供动态值：
+
+```ts
+await AppIntents.setEntityCatalogAsync('dish', [
+  { id: 'margherita-pizza', title: 'Margherita Pizza', synonyms: ['margherita', 'pizza'] },
+  { id: 'spaghetti-carbonara', title: 'Spaghetti Carbonara', synonyms: ['carbonara'] },
+]);
+```
+
+生成的实体查询会通过 `await AppIntentEntityStore.shared.entities(ofKind:)` 读取这些值。随后，Siri 和快捷指令可以将它们作为意图参数提供和解析。
+
+在实体上设置 `hideInSpotlight`，可以使其不出现在 Spotlight 索引中，同时仍可解析。Siri 仍可将其作为参数提供，并通过标识符打开：
+
+```ts
+await AppIntents.setEntityCatalogAsync('mailDraft', [
+  { id: 'release-notes', title: 'Release notes for review' },
+  { id: 'salary-review', title: 'Salary review', hideInSpotlight: true },
+]);
+```
+
+此标志仅适用于通过 `registerIndexed` 在原生端注册的实体。更改该标志会在下次发布目录时生效，已建立索引的实体则会被移除。如果要完全阻止 Siri 获取某个实体，请将其排除在目录之外。未发布的实体无法被提供、匹配或解析。
+
+传统的 App Shortcut 短语最多可以插入一个非数组参数。生成的餐厅点餐示例声明了四个短语：
+
+```swift
+"Place an order in \(.applicationName)",
+"Order food in \(.applicationName)",
+"Order \(\.$dish) in \(.applicationName)",
+"Place an order for \(\.$dish) in \(.applicationName)"
+```
+
+前两个短语没有插入参数，因此 Siri 会询问你想要哪道菜。后两个短语会插入 `dish` 参数。此参数让 Siri 可以运行一次性命令，例如“在 MyApp 中订购提拉米苏”。带参数的短语可以在快捷指令中创建预填充的磁贴。如果旧版本创建了使用过期参数值的磁贴，请将其删除，以便 iOS 根据当前 App 元数据重新创建。
+
+## 平台限制
+
+- 原生运行时支持 iOS 16.4 及更高版本、tvOS 16.4 及更高版本，以及 macOS 13.4 及更高版本。Expo Go 不支持 `expo-app-intents`。
+- 本页面中的初始化程序、示例和构建命令侧重于 iOS。各项 App Intents API 和架构域可能要求更新的操作系统版本，或无法在其他 Apple 平台上使用。
+- App Shortcut 短语会编译进 App，无法通过 JavaScript 动态添加。
+- 每个 App Shortcut 短语都必须包含 `\(.applicationName)`。
+- 单个 App Shortcut 短语最多可以插入一个非数组参数。
+- App 最多可以定义 10 个 App Shortcut。
+- 架构示例要求 iOS 18 或更高版本，并且必须匹配 Apple 的[支持的 App Intent 域](https://developer.apple.com/documentation/appintents/app-schema-domains)之一。只有主要域可由 Apple Intelligence 和 Siri 发现。
+- 有些架构的要求版本高于其所属域的要求版本。例如，`.mail.openDraft` 和 `.system.open` 要求 iOS 27 或更高版本。
+
+## 其他资源
+
+请从 `npx expo-app-intents init` 生成的计数器示例开始。它演示了 JavaScript 和 Swift 运行时之间的基本连接。然后使用餐厅和邮件示例，了解动态实体和架构意图。
+
+请参阅以下 Apple 资源，进一步了解 App Intent 开发：
+
+- [使用 App Intents 加速 App 交互](https://developer.apple.com/documentation/appintents/acceleratingappinteractionswithappintents)
+- [代码演示：让 Siri 可以使用你的 App](https://developer.apple.com/videos/play/wwdc2026/344/)
+- [让 Apple Intelligence 能够发现操作和内容](https://developer.apple.com/documentation/AppIntents/making-actions-and-content-discoverable-by-apple-intelligence)
+
+## API
+
+```ts
+import * as AppIntents from 'expo-app-intents';
+```
+
+<APISection packageName="expo-app-intents" apiName="AppIntents" />

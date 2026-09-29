@@ -75,12 +75,6 @@ import { Step } from '~/ui/components/Step';
       default: 'false',
     },
     {
-      name: 'useLibSQL',
-      description:
-        '使用 [libSQL](https://github.com/tursodatabase/libsql)，而不是默认的 SQLite。',
-      default: 'false',
-    },
-    {
       name: 'withSQLiteVecExtension',
       description:
         '将 [sqlite-vec](https://github.com/asg017/sqlite-vec) 扩展包含到 [`bundledExtensions`](#sqlitebundledextensions) 中。',
@@ -285,7 +279,7 @@ export function Header() {
       const result = await db.getFirstAsync<{ 'sqlite_version()': string }>(
         'SELECT sqlite_version()'
       );
-      setVersion(result['sqlite_version()']);
+      setVersion(result?.['sqlite_version()'] ?? '');
     }
     setup();
   }, []);
@@ -326,9 +320,8 @@ export function Content() {
 
 async function migrateDbIfNeeded(db: SQLiteDatabase) {
   const DATABASE_VERSION = 1;
-  let { user_version: currentDbVersion } = await db.getFirstAsync<{ user_version: number }>(
-    'PRAGMA user_version'
-  );
+  const result = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+  let currentDbVersion = result?.user_version ?? 0;
   if (currentDbVersion >= DATABASE_VERSION) {
     return;
   }
@@ -364,7 +357,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Suspense fallback={<Fallback />}>
+      <Suspense fallback={<Text>Loading...</Text>}>
         <SQLiteProvider databaseName="test.db" onInit={migrateDbIfNeeded} useSuspense>
           <Header />
           <Content />
@@ -522,7 +515,7 @@ expect(row.data).toEqual(blob);
 `expo-sqlite` 库包含一个内置的 DevTools 检查器插件，会在开发环境中自动启用，并且无需额外配置。它允许你直接在浏览器中浏览表、查看和编辑行、执行 SQL 查询以及导出数据库。要打开它，请在 Expo CLI 终端中按 <kbd>Shift</kbd> + <kbd>M</kbd> 打开开发工具菜单，然后选择 **打开 expo-sqlite** 来启动检查器。
 
 <ContentSpotlight
-  alt="SQLite inspector showing a data browser with table rows, edit/delete actions, and a sidebar listing tables"
+  alt="SQLite 检查器显示一个数据浏览器，其中包含表行、编辑/删除操作，以及列出表的侧边栏"
   src="/static/images/sdk/sqlite/inspector.webp"
 />
 
@@ -544,7 +537,7 @@ const entity = JSON.parse(value);
 console.log(entity); // { entity: 'value' }
 ```
 
-使用 `expo-sqlite/kv-store` 的一个主要优势是它还提供同步 API，使用起来更方便：
+使用 `expo-sqlite/kv-store` 的一个主要优势是它还提供同步 API，使用起来更方便:
 
 ```ts 使用带同步 API 的存储
 // 存储 API 是默认导出，你可以将其命名为 Storage、AsyncStorage 或任何你喜欢的名称。

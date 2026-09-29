@@ -44,7 +44,7 @@ import { Collapsible } from '~/ui/components/Collapsible';
 
 <Collapsible summary="为什么在升级到 React Native 0.73 及以上后，我的 APK 体积增加了？">
 
-React Native 0.73 将 Android 的 `minSdkVersion` 提升到了 `23`。这带来的副作用是将 [`extractNativeLibs`](https://developer.android.com/guide/topics/manifest/application-element#extractNativeLibs`) 的默认值改为了 `false`。
+React Native 0.73 将 Android `minSdkVersion` 提升到了 `23`。这带来的一个副作用是，[`extractNativeLibs`](https://developer.android.com/guide/topics/manifest/application-element#extractNativeLibs) 的默认值变成了 `false`。
 
 > 如果设置为 `false`，你的原生库会以未压缩的形式存储在 APK 中。虽然你的 APK 可能会更大，但你的应用加载会更快，因为这些库会在运行时直接从 APK 中加载。
 
@@ -93,6 +93,30 @@ IPA 文件是包含 `.app` 程序包以及在 iOS 设备上运行应用所需其
 
 - 对于 Android，你可以使用 [Android APK Analyzer](https://developer.android.com/studio/debug/apk-analyzer) 或 [apktool](https://apktool.org/) 来检查应用内容
 - 对于 iOS，将 `app.ipa` 重命名为 `app.zip` 并解压，以检查其内容，使用 macOS 工具 `assetutil` 来检查 **Assets.car**
+
+### React Native 图像格式支持（Android）
+
+Android 模板默认会为 React Native 的 `<Image>` 组件启用 GIF 和 WebP 解码器。如果你的应用使用 [`expo-image`](/versions/latest/sdk/image/)（在 Android 上使用 Glide），或者不使用 React Native 的 `<Image>` 渲染这些格式，则可以通过 [`expo-build-properties`](/versions/latest/sdk/build-properties/) 禁用它们，以减小应用体积：
+
+```json app.json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gifEnabled": false,
+            "webpEnabled": false
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+上述选项对应于 **android/gradle.properties** 中的 `expo.gif.enabled` 和 `expo.webp.enabled` Gradle 属性。动画 WebP 解码器（`expo.webp.animated`）默认处于禁用状态，因为 iOS 上的 React Native `<Image>` 不支持动画 WebP。如果你确实需要在 Android 上使用动画 WebP，请在上面的配置插件中将 `"webpEnabled": true` 和 `"webpAnimated": true` 都设为启用。
 
 ### JavaScript 包大小
 

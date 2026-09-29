@@ -3,7 +3,7 @@ title: metro.config.js
 description: Metro 中可用配置的参考。
 ---
 
-import { BookOpen02Icon } from '@expo/styleguide-icons/outline/BookOpen02Icon';
+import { CodeSquare01Icon } from '@expo/styleguide-icons/outline/CodeSquare01Icon';
 
 import { BoxLink } from '~/ui/components/BoxLink';
 import { FileTree } from '~/ui/components/FileTree';
@@ -11,22 +11,22 @@ import { DiffBlock, Terminal } from '~/ui/components/Snippet';
 
 查看更多关于 **metro.config.js** 的信息，请参阅 [自定义 Metro 指南](/guides/customizing-metro/)。
 
-## Environment Variables
+## 环境变量
 
-Expo CLI can load environment variables from **.env** files. To learn more about how to use environment variables in Expo CLI, see the [Environment Variables guide](/guides/environment-variables/).
+Expo CLI 可以从 **.env** 文件中加载环境变量。要详细了解如何在 Expo CLI 中使用环境变量，请参阅[环境变量指南](/guides/environment-variables/)。
 
-EAS CLI uses a different environment variable mechanism, unless it invokes Expo CLI during compilation and bundling. To learn more about [environment variables in EAS](/eas/environment-variables/).
+EAS CLI 使用不同的环境变量机制，除非它在编译和打包期间调用 Expo CLI。要详细了解 [EAS 中的环境变量](/eas/environment-variables/)。
 
-If you are migrating an older project, you should ignore local env files by adding the following to your **.gitignore**:
+如果你正在迁移较旧的项目，应将本地环境文件添加到 **.gitignore** 中以忽略它们：
 
 ```sh .gitignore
 # Local env files
 .env*.local
 ```
 
-### Disable dotenv files
+### 禁用 dotenv 文件
 
-You can completely disable Expo CLI from loading dotenv files by enabling the `EXPO_NO_DOTENV` environment variable before calling any Expo CLI command.
+你可以通过在调用任何 Expo CLI 命令前启用 `EXPO_NO_DOTENV` 环境变量，完全禁止 Expo CLI 加载 dotenv 文件。
 
 <Terminal
   cmd={[
@@ -37,11 +37,11 @@ You can completely disable Expo CLI from loading dotenv files by enabling the `E
   ]}
 />
 
-### Disable client environment variables prefixed with `EXPO_PUBLIC_`
+### 禁用以 `EXPO_PUBLIC_` 为前缀的客户端环境变量
 
-Environment variables prefixed with `EXPO_PUBLIC_` are exposed to the app at build time. For example, `EXPO_PUBLIC_API_KEY` will be accessible via `process.env.EXPO_PUBLIC_API_KEY`.
+以 `EXPO_PUBLIC_` 为前缀的环境变量会在构建时暴露给应用。例如，`EXPO_PUBLIC_API_KEY` 可以通过 `process.env.EXPO_PUBLIC_API_KEY` 访问。
 
-You can disable client environment variable inlining by using the `EXPO_NO_CLIENT_ENV_VARS=1` environment variable, which must be defined before running any bundling.
+你可以使用 `EXPO_NO_CLIENT_ENV_VARS=1` 环境变量来禁用客户端环境变量内联。该环境变量必须在运行任何打包操作之前定义。
 
 <Terminal
   cmd={[
@@ -223,7 +223,7 @@ Expo Metro 对 SCSS/SASS 提供 _部分_ 支持。
   title="Tailwind CSS"
   description="了解如何在你的 Expo 项目中配置和使用 Tailwind CSS。"
   href="/guides/tailwind/"
-  Icon={BookOpen02Icon}
+  Icon={CodeSquare01Icon}
 />
 
 ## 扩展 Babel 转换器
@@ -419,11 +419,11 @@ Expo 的 Metro 配置会注入构建设置，这些设置可以通过环境变�
 
 ## Bundle Splitting
 
-Expo CLI will automatically split the web bundle into multiple chunks in production based on asynchronous imports. This feature requires installing and importing `@expo/metro-runtime` somewhere in the entry bundle (available by default in Expo Router).
+Expo CLI 会根据异步导入，在生产环境中自动将 web bundle 拆分为多个 chunk。此功能要求在入口 bundle 的某处安装并导入 `@expo/metro-runtime`（Expo Router 默认已提供）。
 
-Shared dependencies in asynchronous bundles will be merged into a single chunk to reduce the number of requests. For example, if you have two asynchronous bundles that import `lodash`, the library will be merged into one initial chunk.
+异步 bundle 中的共享依赖会合并到单个 chunk 中，以减少请求数量。例如，如果你有两个导入 `lodash` 的异步 bundle，该库会被合并到一个初始 chunk 中。
 
-The chunk splitting heuristics cannot be customized. For example:
+无法自定义 chunk 拆分启发式规则。例如：
 
 <FileTree files={['math.js', 'index.js']} />
 
@@ -442,7 +442,7 @@ import('./math').then(math => {
 });
 ```
 
-When you run `npx expo export -p web`, the bundle will be split into multiple files, and the entry bundle will be added to the main HTML file. `@expo/metro-runtime` adds the runtime code used to load and execute asynchronous bundles.
+当你运行 `npx expo export -p web` 时，bundle 会被拆分为多个文件，并且入口 bundle 会添加到主 HTML 文件中。`@expo/metro-runtime` 会添加用于加载和执行异步 bundle 的运行时代码。
 
 ## 源映射 Debug ID
 
@@ -687,17 +687,17 @@ Android 的 **app/build.gradle** 必须配置为在生产打包时使用 Expo CL
 
 在你的 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换以下脚本：
 
-#### "Start Packager" 脚本
+#### “Start Packager” 脚本
 
-移除 **"Start Packager"** 脚本。必须在运行应用之前或之后使用 `npx expo` 启动开发服务器。
+移除 **“Start Packager”** 脚本。必须在运行应用之前或之后使用 `npx expo` 启动开发服务器。
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-remove-start-packager.diff" />
 
-#### "Bundle React Native code and images" 脚本
+#### “Bundle React Native code and images” 脚本
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script.diff" />
 
-或者，在 Xcode 项目中，选择 **"Bundle React Native code and images"** 构建阶段，并添加以下修改：
+或者，在 Xcode 项目中，选择 **“Bundle React Native code and images”** 构建阶段，并添加以下修改：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script-inline.diff" />
 
@@ -717,7 +717,7 @@ Android 的 **app/build.gradle** 必须配置为在生产打包时使用 Expo CL
 
 #### 生产
 
-在你的 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换 **"Bundle React Native code and images"** 脚本，以便根据 Metro 设置 `$ENTRY_FILE`：
+在你的 **ios/&lt;Project&gt;.xcodeproj/project.pbxproj** 文件中，替换 **“Bundle React Native code and images”** 脚本，以便根据 Metro 设置 `$ENTRY_FILE`：
 
 <DiffBlock source="/static/diffs/config/metro-unversioned/ios-bundle-script.diff" />
 

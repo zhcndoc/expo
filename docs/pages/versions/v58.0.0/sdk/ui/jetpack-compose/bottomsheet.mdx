@@ -1,0 +1,668 @@
+---
+title: ModalBottomSheet
+description: 一个从屏幕底部呈现内容的 Jetpack Compose ModalBottomSheet 组件
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['android', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+> **info** 如需跨平台使用，请参阅通用的 [`BottomSheet`](../universal/bottomsheet) — 它会根据平台渲染相应的原生组件。
+
+Expo UI ModalBottomSheet 匹配官方 Jetpack Compose [Bottom Sheet API](https://developer.android.com/develop/ui/compose/components/bottom-sheets)，并在从底部向上滑出的模态表单中显示内容。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/bottomsheet/android-light.webp"
+  darkSrc="/static/images/expo-ui/bottomsheet/android-dark.webp"
+  alt="带有标题、描述和操作按钮的模态底部表单"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 使用
+
+### 基本底部表单
+
+在卸载底部表单之前，使用 `ref.hide()` 以通过动画以编程方式关闭表单。
+
+<ComponentExample
+  title="BasicBottomSheetExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-basic-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-basic-android-dark.webp"
+  alt="一个停留在部分高度、包含两行文本和一个 Close 按钮的底部表单">
+
+```tsx
+import { useRef, useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function BasicBottomSheetExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}>
+          <Column
+            verticalArrangement={{ spacedBy: 12 }}
+            modifiers={[paddingAll(24)]}>
+            <Text>Hello from bottom sheet!</Text>
+            <Text>You can add more content here.</Text>
+            <Button onClick={hideSheet}>
+              <Text>Close</Text>
+            </Button>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 跳过部分展开状态
+
+设置 `skipPartiallyExpanded` 后，表单会直接以完全展开状态打开，而不会先停留在半高位置。
+
+<ComponentExample
+  title="SkipPartiallyExpandedExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-skip-partial-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-skip-partial-android-dark.webp"
+  alt="一个直接打开到完全展开高度的底部表单">
+
+```tsx
+import { useRef, useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import {
+  paddingAll,
+  height,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function SkipPartiallyExpandedExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}
+          skipPartiallyExpanded>
+          <Column
+            verticalArrangement={{ spacedBy: 12 }}
+            modifiers={[paddingAll(24), height(600)]}>
+            <Text>
+              This sheet skips the partially expanded state.
+            </Text>
+            <Text>
+              It opens directly in the fully expanded position.
+            </Text>
+            <Button onClick={hideSheet}>
+              <Text>Close</Text>
+            </Button>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 初始完全展开状态
+
+当 `initialFullyExpanded` 为 `true` 时，表单会在首次组合时直接以完全展开状态打开，同时保留部分展开状态。与 `skipPartiallyExpanded` 不同，用户仍然可以向下拖动到部分展开状态。`partialExpand()` 方法也会继续生效。
+
+<ComponentExample
+  title="InitialFullyExpandedExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-initial-expanded-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-initial-expanded-android-dark.webp"
+  alt="一个完全展开的底部表单，包含收起到部分展开状态和 Close 按钮">
+
+```tsx
+import { useRef, useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function InitialFullyExpandedExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}
+          initialFullyExpanded>
+          <Column
+            verticalArrangement={{ spacedBy: 12 }}
+            modifiers={[paddingAll(24)]}>
+            <Text>This sheet opened fully expanded.</Text>
+            <Text>
+              You can still drag it down to the partial state.
+            </Text>
+            <Button
+              onClick={() => sheetRef.current?.partialExpand()}>
+              <Text>Collapse to partial</Text>
+            </Button>
+            <Button onClick={hideSheet}>
+              <Text>Close</Text>
+            </Button>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义颜色
+
+使用 `containerColor`、`contentColor` 和 `scrimColor` 自定义表单的外观。
+
+<ComponentExample
+  title="CustomColorsExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-custom-colors-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-custom-colors-android-dark.webp"
+  alt="紫色遮罩层后方的深色底部表单">
+
+```tsx
+import { useRef, useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function CustomColorsExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open colored sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}
+          containerColor="#1a1a2e"
+          contentColor="#e0e0e0"
+          scrimColor="#6200EE80">
+          <Column
+            verticalArrangement={{ spacedBy: 12 }}
+            modifiers={[paddingAll(24)]}>
+            <Text>Custom styled bottom sheet.</Text>
+            <Text>Dark container with a purple scrim overlay.</Text>
+            <Button onClick={hideSheet}>
+              <Text>Close</Text>
+            </Button>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 自定义拖动手柄
+
+使用 `ModalBottomSheet.DragHandle` 插槽提供自定义拖动手柄，或设置 `showDragHandle={false}` 将其完全隐藏。
+
+<ComponentExample
+  title="CustomDragHandleExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-drag-handle-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-drag-handle-android-dark.webp"
+  alt="一个使用宽大的紫色拖动手柄替代默认手柄的底部表单">
+
+```tsx
+import { useRef, useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  Box,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import {
+  background,
+  clip,
+  fillMaxWidth,
+  height,
+  padding,
+  Shapes,
+  width,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+export default function CustomDragHandleExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open custom handle sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}>
+          <ModalBottomSheet.DragHandle>
+            <Column
+              horizontalAlignment="center"
+              modifiers={[fillMaxWidth(), padding(0, 12, 0, 8)]}>
+              <Box
+                modifiers={[
+                  width(60),
+                  height(6),
+                  clip(Shapes.Circle),
+                  background('#6200EE'),
+                ]}
+              />
+            </Column>
+          </ModalBottomSheet.DragHandle>
+          <Column
+            verticalArrangement={{ spacedBy: 12 }}
+            modifiers={[padding(16, 16, 16, 16)]}>
+            <Button onClick={hideSheet}>
+              <Text>Close</Text>
+            </Button>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 底部表单中的 React Native 内容
+
+使用 `RNHostView` 在 Compose 底部表单中嵌入交互式 React Native 视图。这样可以将 Compose 布局与 `Pressable` 和 `Text` 等 RN 组件混合使用。
+
+<ComponentExample
+  title="RNContentBottomSheetExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-rn-content-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-rn-content-android-dark.webp"
+  alt="一个混合了 Compose 标签、React Native 标题和蓝色 Close 按钮的底部表单">
+
+```tsx
+import { useRef, useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  RNHostView,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import { padding } from '@expo/ui/jetpack-compose/modifiers';
+import { Pressable, Text as RNText, View } from 'react-native';
+
+export default function RNContentBottomSheetExample() {
+  const colors = useMaterialColors();
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open RN content sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}
+          skipPartiallyExpanded={false}>
+          <Column
+            verticalArrangement={{ spacedBy: 16 }}
+            modifiers={[padding(16, 16, 16, 16)]}>
+            <Text>Mixing Compose + RN in a Bottom Sheet</Text>
+            <RNHostView>
+              <View>
+                <RNText
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    marginBottom: 8,
+                    color: colors.onSurface,
+                  }}>
+                  React Native Content
+                </RNText>
+                <Pressable
+                  style={{
+                    backgroundColor: '#007AFF',
+                    padding: 12,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                  }}
+                  onPress={hideSheet}>
+                  <RNText
+                    style={{ color: 'white', fontWeight: '600' }}>
+                    Close
+                  </RNText>
+                </Pressable>
+              </View>
+            </RNHostView>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 带 flex 的 React Native 内容
+
+使用不带 `matchContents` 的 `RNHostView`，让 RN 视图填充表单中的剩余空间。结合父级 `Column` 上的固定 `height` 修饰符来控制表单大小。
+
+<ComponentExample
+  title="FlexRNContentExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-flex-rn-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-flex-rn-android-dark.webp"
+  alt="一个由紫色 React Native 视图填充、并延展至表单高度的底部表单">
+
+```tsx
+import { useRef, useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  RNHostView,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import {
+  height,
+  padding,
+} from '@expo/ui/jetpack-compose/modifiers';
+import { Text as RNText, View } from 'react-native';
+
+export default function FlexRNContentExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open flex content sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}
+          skipPartiallyExpanded>
+          <Column
+            modifiers={[height(400), padding(16, 16, 16, 16)]}>
+            <Text>RN View with flex: 1</Text>
+            <RNHostView>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: '#9B59B6',
+                  borderRadius: 10,
+                }}>
+                <RNText
+                  style={{
+                    color: 'white',
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    padding: 16,
+                  }}>
+                  React Native Content (flex: 1)
+                </RNText>
+              </View>
+            </RNHostView>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 可滚动的 React Native 内容
+
+使用 `RNHostView` 在表单中嵌套可滚动的 React Native 列表，例如 `FlatList`、`ScrollView`，或 [FlashList](https://shopify.github.io/flash-list/)、[Legend List](https://github.com/LegendApp/legend-list) 等高性能列表。在可滚动组件上设置 `nestedScrollEnabled`，使其先滚动自身内容。到达顶部边缘后，剩余的拖动操作会移动表单。如果没有 `nestedScrollEnabled`，列表会消耗手势，表单将保持不动。
+
+<ComponentExample
+  title="ScrollableContentBottomSheetExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-scrollable-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-scrollable-android-dark.webp"
+  alt="一个包含可滚动 React Native 项目列表的底部表单">
+
+```tsx
+import { useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  RNHostView,
+  Text,
+  useMaterialColors,
+} from '@expo/ui/jetpack-compose';
+import {
+  fillMaxHeight,
+  padding,
+} from '@expo/ui/jetpack-compose/modifiers';
+import { FlatList, Text as RNText } from 'react-native';
+
+const DATA = Array.from({ length: 50 }, (_, i) => `Item ${i + 1}`);
+
+export default function ScrollableContentBottomSheetExample() {
+  const colors = useMaterialColors();
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open scrollable sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          onDismissRequest={() => setVisible(false)}>
+          <Column
+            modifiers={[fillMaxHeight(), padding(16, 16, 16, 16)]}>
+            <RNHostView>
+              <FlatList
+                nestedScrollEnabled
+                style={{ flex: 1 }}
+                data={DATA}
+                keyExtractor={item => item}
+                renderItem={({ item }) => (
+                  <RNText
+                    style={{
+                      paddingVertical: 16,
+                      color: colors.onSurface,
+                    }}>
+                    {item}
+                  </RNText>
+                )}
+              />
+            </RNHostView>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 不可关闭的表单
+
+组合使用 `properties` 和 `sheetGesturesEnabled`，创建一个只能通过编程方式关闭的表单。
+
+<ComponentExample
+  title="NonDismissibleExample.tsx"
+  src="/static/images/expo-ui/examples/composesheet-non-dismissible-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/composesheet-non-dismissible-android-dark.webp"
+  alt="一个只能通过自身 Close 按钮关闭的底部表单">
+
+```tsx
+import { useRef, useState } from 'react';
+import {
+  Host,
+  ModalBottomSheet,
+  Button,
+  Column,
+  Text,
+} from '@expo/ui/jetpack-compose';
+import type { ModalBottomSheetRef } from '@expo/ui/jetpack-compose';
+import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
+
+export default function NonDismissibleExample() {
+  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<ModalBottomSheetRef>(null);
+
+  const hideSheet = async () => {
+    await sheetRef.current?.hide();
+    setVisible(false);
+  };
+
+  return (
+    <Host matchContents>
+      <Button onClick={() => setVisible(true)}>
+        <Text>Open Non-Dismissible Sheet</Text>
+      </Button>
+      {visible && (
+        <ModalBottomSheet
+          ref={sheetRef}
+          onDismissRequest={() => setVisible(false)}
+          sheetGesturesEnabled={false}
+          properties={{
+            shouldDismissOnBackPress: false,
+            shouldDismissOnClickOutside: false,
+          }}>
+          <Column
+            verticalArrangement={{ spacedBy: 12 }}
+            modifiers={[paddingAll(24)]}>
+            <Text>
+              This sheet cannot be dismissed by swiping, back press,
+              or tapping outside.
+            </Text>
+            <Text>Only the button below will close it.</Text>
+            <Button onClick={hideSheet}>
+              <Text>Close</Text>
+            </Button>
+          </Column>
+        </ModalBottomSheet>
+      )}
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { ModalBottomSheet } from '@expo/ui/jetpack-compose';
+```
+
+<APISection
+  packageName="expo-ui/jetpack-compose/bottomsheet"
+  apiName="BottomSheet"
+/>
