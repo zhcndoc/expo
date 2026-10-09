@@ -1,0 +1,56 @@
+---
+title: Hinge
+description: 提供 Android 折叠设备和 iPhone Duo 设备铰链角度与状态的库。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-hinge'
+packageName: 'expo-hinge'
+platforms: ['android', 'ios']
+isNew: true
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+
+`expo-hinge` 将折叠设备的铰链（例如 Android 折叠设备或 iPhone Duo）暴露给整个应用。它会报告角度（单位为度），以及铰链是闭合、部分打开还是完全打开。在 Android 上，铰链角度传感器提供角度，Jetpack WindowManager 的 [`FoldingFeature`](https://developer.android.com/reference/androidx/window/layout/FoldingFeature) 提供状态。在 iOS 上，应用窗口中的 [`UIHingeInteraction`](https://developer.apple.com/documentation/uikit/uihingeinteraction) 提供这些值。如果只需要在一个 SwiftUI 视图中响应铰链变化，请改用 `@expo/ui` 的 [`onHingeChange`](./ui/swift-ui/modifiers/#onhingechangehandler) 修饰符。
+
+> **重要** 在 Android 上，铰链更新需要 Android 11（API level 30）或更高版本。在 iOS 上，需要 iOS 27.1 或更高版本，以及使用 Xcode 27.1 或更高版本构建的应用。在较旧的构建版本和系统上，以及没有铰链的设备上，铰链值为 `null`。请将铰链状态用于交互和效果，不要用于布局。
+
+## Android 上的状态
+
+Android 没有用于报告铰链闭合状态的公共 API，因此 Android 上的状态永远不会是 `closed`。只有当应用窗口跨越折叠处时，Android 才会报告铰链状态。其他情况下（例如设备闭合时的外屏），状态为 `unknown`，但 Android 仍会报告角度。要在 Android 上检测设备是否闭合，请检查接近 `0` 的角度。请选择适合应用的阈值，因为设备制造商定义的角度范围各不相同。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+```tsx
+import { useHinge } from 'expo-hinge';
+import { StyleSheet, Text, View } from 'react-native';
+
+export default function App() {
+  const hinge = useHinge();
+
+  return (
+    <View style={styles.container}>
+      <Text>{hinge ? `${hinge.status} at ${Math.round(hinge.angle)}°` : 'No hinge'}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+```
+
+## API
+
+```ts
+import * as Hinge from 'expo-hinge';
+```
+
+<APISection packageName="expo-hinge" />

@@ -1,0 +1,670 @@
+---
+title: 使用 TesterArmy
+description: 了解如何使用 EAS Build 和 EAS Workflows，在每次 push 和 pull request 时使用 TesterArmy 测试 Expo 应用。
+hasVideoLink: true
+---
+
+import { GithubIcon } from '@expo/styleguide-icons/custom/GithubIcon';
+import { Globe01Icon } from '@expo/styleguide-icons/outline/Globe01Icon';
+
+import { BoxLink } from '~/ui/components/BoxLink';
+import { Prerequisites, Requirement } from '~/ui/components/Prerequisites';
+import { Terminal } from '~/ui/components/Snippet';
+import { Step } from '~/ui/components/Step';
+import { VideoBoxLink } from '~/ui/components/VideoBoxLink';
+
+[TesterArmy](https://tester.army/) 是一个使用 AI 代理测试应用的托管测试平台。代理会打开应用，像用户一样点击完成流程，并检查结果。TesterArmy 会在云端 Android Emulators 和 iOS Simulators 上运行已保存的测试和探索代理。
+
+本指南介绍如何使用 [EAS Build](/build/introduction/) 构建应用，并通过 [EAS Workflows](/eas/workflows/introduction/) 在每次 push 和 pull request 时运行 TesterArmy 测试。要使用 TesterArmy 的开源 e2e 框架在本地模拟器上运行测试，请参阅[使用 TesterArmy 的 e2e](/guides/using-e2e/)。
+
+<VideoBoxLink
+  videoId="yrtWWbhTsHE"
+  title="使用 TesterArmy 为 Expo 应用构建代理式 CI"
+  description="使用 EAS Workflows 构建或重新打包应用，并让 TesterArmy 代理在云端模拟器上测试每个 pull request。"
+/>
+
+---
+
+<Prerequisites>
+  <Requirement title="包含测试的 TesterArmy 移动项目">
+    在 [tester.army](https://tester.army/) 注册并创建移动项目。至少向测试组添加一个测试，并从 TesterArmy 控制台运行一次测试，确认它可以正常工作。
+  </Requirement>
+  <Requirement title="已链接到 EAS 项目的 GitHub 仓库">
+    EAS Workflows 会响应来自 GitHub 的 push 和 pull request 事件。请参阅[将 GitHub 仓库链接到 Expo
+    项目](/build/building-from-github/#link-your-github-repository-to-your-expo-project)。
+  </Requirement>
+  <Requirement title="TesterArmy GitHub 集成">
+    在 TesterArmy 项目的 **Integrations** 标签页中连接仓库。没有此集成，TesterArmy 无法在 pull request 上发布检查或评论。
+  </Requirement>
+</Prerequisites>
+
+## 在 EAS Workflows 上运行 TesterArmy 测试
+
+<Step label="1">
+
+### 添加构建配置文件
+
+TesterArmy 运行 Android APK（**.apk**）和 iOS Simulator 构建（**.app**）。它不接受 **.aab** 或 **.ipa**。Android 构建还需要在[应用配置](/workflow/configuration/)中设置 `android.package`。将两个构建配置文件添加到 **eas.json**：
+
+```json eas.json
+{
+  "build": {
+    "testerarmy-ios-simulator": {
+      "ios": {
+        "simulator": true
+      }
+    },
+    "testerarmy-android-apk": {
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}
+```
+
+</Step>
+
+<Step label="2">
+
+### 添加环境变量
+
+工作流从 EAS 项目的 `preview` 环境读取以下变量：
+
+| 变量                              | 值                                                                              | TesterArmy 控制台中的位置                       |
+| ---------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `TESTERARMY_API_KEY`               | TesterArmy API 密钥                                                             | **Settings** > **API Keys**                     |
+| `TESTERARMY_PROJECT_ID`            | 要运行测试的项目                                                                | **Project Settings**                            |
+| `TESTERARMY_GROUP_ID`              | 要运行的测试组                                                                  | **Test** 标签页中测试组的菜单                   |
+| `TESTERARMY_DYNAMIC_AGENT_ENABLED` | 可选。设置为 `false` 可关闭探索代理，默认为 `true`。                            | 不适用                                          |
+
+在 [EAS 控制台或使用 EAS CLI](/eas/environment-variables/manage/#create-environment-variables) 中创建变量。将 `TESTERARMY_API_KEY` 的可见性设置为 [Secret](/eas/environment-variables/#visibility-settings-for-environment-variables)，不要为它添加 `EXPO_PUBLIC_` 前缀。
+
+</Step>
+
+<Step label="3">
+
+### 添加工作流
+
+使用以下工作流创建 **.eas/workflows/testerarmy-mobile-tests.yml**。它会响应 `main` 分支的 push 和 pull request 事件，也支持手动运行。对于每个平台，它会运行以下 job：
+
+1. [`build`](/eas/workflows/pre-packaged-jobs/#build) job 使用 TesterArmy 构建配置文件创建应用。
+2. 上传 job 使用 [`eas/download_build`](/eas/workflows/syntax/#easdownload_build) 下载应用，并运行 `npx testerarmy upload-app`。
+3. 测试 job 使用测试组运行 `npx testerarmy ci`。工作流在 pull request 上运行时，TesterArmy 会在 pull request 上发布 GitHub check 和评论；在 push 到 `main` 时运行，则会在提交上发布 GitHub check。
+
+```yaml .eas/workflows/testerarmy-mobile-tests.yml|collapseHeight=300
+name: TesterArmy Mobile Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  build_ios:
+    name: Build iOS Simulator app
+    type: build
+    environment: preview
+    params:
+      platform: ios
+      profile: testerarmy-ios-simulator
+
+  build_android:
+    name: Build Android app
+    type: build
+    environment: preview
+    params:
+      platform: android
+      profile: testerarmy-android-apk
+
+  upload_ios_app:
+    name: Upload iOS app to TesterArmy
+    needs: [build_ios]
+    environment: preview
+    outputs:
+      app_id: ${{ fromJSON(steps.upload_app.outputs.upload_result).uploadedAppId }}
+    steps:
+      - uses: eas/checkout
+
+      - uses: eas/download_build
+        id: download_build
+        with:
+          build_id: ${{ needs.build_ios.outputs.build_id }}
+          extensions:
+            - app
+
+      - name: Upload app
+        id: upload_app
+        run: |
+          set -euo pipefail
+
+          APP_PATH="${{ steps.download_build.outputs.artifact_path }}"
+
+          mkdir -p .testerarmy
+
+          npx --yes testerarmy@latest upload-app \
+            --app-path "$APP_PATH" \
+            --project "$TESTERARMY_PROJECT_ID" \
+            --output .testerarmy/upload.json
+
+          set-output upload_result "$(tr -d '\n' < .testerarmy/upload.json)"
+
+  upload_android_app:
+    name: Upload Android app to TesterArmy
+    needs: [build_android]
+    environment: preview
+    outputs:
+      app_id: ${{ fromJSON(steps.upload_app.outputs.upload_result).uploadedAppId }}
+    steps:
+      - uses: eas/checkout
+
+      - uses: eas/download_build
+        id: download_build
+        with:
+          build_id: ${{ needs.build_android.outputs.build_id }}
+          extensions:
+            - apk
+
+      - name: Upload app
+        id: upload_app
+        run: |
+          set -euo pipefail
+
+          APP_PATH="${{ steps.download_build.outputs.artifact_path }}"
+
+          mkdir -p .testerarmy
+
+          npx --yes testerarmy@latest upload-app \
+            --app-path "$APP_PATH" \
+            --project "$TESTERARMY_PROJECT_ID" \
+            --output .testerarmy/upload.json
+
+          set-output upload_result "$(tr -d '\n' < .testerarmy/upload.json)"
+
+  run_ios_tests:
+    name: Run iOS TesterArmy tests
+    needs: [upload_ios_app]
+    environment: preview
+    steps:
+      - uses: eas/checkout
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+
+          APP_ID="${{ needs.upload_ios_app.outputs.app_id }}"
+          COMMIT_SHA="${{ github.sha }}"
+          EVENT_NAME="${{ github.event_name }}"
+          PR_NUMBER="${{ github.event.pull_request.number || '' }}"
+          TIMEOUT_MS="1800000"
+          POLL_INTERVAL_SECONDS="10"
+
+          mkdir -p .testerarmy
+
+          args=(
+            ci
+            --group "$TESTERARMY_GROUP_ID"
+            --project "$TESTERARMY_PROJECT_ID"
+            --platform ios
+            --app-id "$APP_ID"
+            --commit-sha "$COMMIT_SHA"
+            --timeout "$TIMEOUT_MS"
+            --poll-interval-seconds "$POLL_INTERVAL_SECONDS"
+            --output .testerarmy/ci-result.json
+            --delete-app-after-run
+          )
+
+          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_NUMBER" ]; then
+            args+=(--pr-number "$PR_NUMBER")
+          fi
+
+          npx --yes testerarmy@latest "${args[@]}"
+
+  run_android_tests:
+    name: Run Android TesterArmy tests
+    needs: [upload_android_app]
+    environment: preview
+    steps:
+      - uses: eas/checkout
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+
+          APP_ID="${{ needs.upload_android_app.outputs.app_id }}"
+          COMMIT_SHA="${{ github.sha }}"
+          EVENT_NAME="${{ github.event_name }}"
+          PR_NUMBER="${{ github.event.pull_request.number || '' }}"
+          TIMEOUT_MS="1800000"
+          POLL_INTERVAL_SECONDS="10"
+
+          mkdir -p .testerarmy
+
+          args=(
+            ci
+            --group "$TESTERARMY_GROUP_ID"
+            --project "$TESTERARMY_PROJECT_ID"
+            --platform android
+            --app-id "$APP_ID"
+            --commit-sha "$COMMIT_SHA"
+            --timeout "$TIMEOUT_MS"
+            --poll-interval-seconds "$POLL_INTERVAL_SECONDS"
+            --output .testerarmy/ci-result.json
+            --delete-app-after-run
+          )
+
+          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_NUMBER" ]; then
+            args+=(--pr-number "$PR_NUMBER")
+          fi
+
+          npx --yes testerarmy@latest "${args[@]}"
+```
+
+要在没有 push 的情况下启动工作流，请运行：
+
+<Terminal cmd={['$ eas workflow:run .eas/workflows/testerarmy-mobile-tests.yml']} />
+
+</Step>
+
+<Step label="4">
+
+### 使用 fingerprint 和 repack 跳过原生构建
+
+每次运行都进行完整原生构建会很慢。如果更改只涉及 JavaScript，工作流可以复用现有构建。将以下 job 添加到 `build` job 之前：
+
+1. 一个 [`fingerprint`](/eas/workflows/pre-packaged-jobs/#fingerprint) job 为每个平台计算应用原生代码的哈希值。
+2. 对于每个平台，一个 [`get-build`](/eas/workflows/pre-packaged-jobs/#get-build) job 会查找具有相同哈希和构建配置文件的现有构建。
+3. 如果构建存在，[`repack`](/eas/workflows/pre-packaged-jobs/#repack) job 会将当前 JavaScript bundle 添加到该构建中。否则，`build` job 会运行并创建新构建。
+
+随后，上传 job 会在创建构建的 `repack` 或 `build` job 之后运行。请确保 `fingerprint` job 的 `environment` 与构建配置文件使用的环境相同。
+
+```yaml .eas/workflows/testerarmy-mobile-tests.yml|collapseHeight=300
+name: TesterArmy Mobile Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  fingerprint:
+    name: Calculate app fingerprints
+    type: fingerprint
+    environment: preview
+
+  get_ios_build:
+    name: Find matching iOS Simulator build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      platform: ios
+      profile: testerarmy-ios-simulator
+      simulator: true
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      wait_for_in_progress: true
+
+  get_android_build:
+    name: Find matching Android app build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      platform: android
+      profile: testerarmy-android-apk
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      wait_for_in_progress: true
+
+  repack_ios:
+    name: Repack iOS app
+    needs: [get_ios_build]
+    if: ${{ needs.get_ios_build.outputs.build_id }}
+    type: repack
+    params:
+      build_id: ${{ needs.get_ios_build.outputs.build_id }}
+
+  repack_android:
+    name: Repack Android app
+    needs: [get_android_build]
+    if: ${{ needs.get_android_build.outputs.build_id }}
+    type: repack
+    params:
+      build_id: ${{ needs.get_android_build.outputs.build_id }}
+
+  build_ios:
+    name: Build iOS Simulator app
+    needs: [get_ios_build]
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    type: build
+    environment: preview
+    params:
+      platform: ios
+      profile: testerarmy-ios-simulator
+
+  build_android:
+    name: Build Android app
+    needs: [get_android_build]
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    type: build
+    environment: preview
+    params:
+      platform: android
+      profile: testerarmy-android-apk
+
+  upload_ios_app:
+    name: Upload iOS app to TesterArmy
+    after: [repack_ios, build_ios]
+    if: ${{ after.repack_ios.outputs.build_id || after.build_ios.outputs.build_id }}
+    environment: preview
+    outputs:
+      app_id: ${{ fromJSON(steps.upload_app.outputs.upload_result).uploadedAppId }}
+    steps:
+      - uses: eas/checkout
+
+      - uses: eas/download_build
+        id: download_build
+        with:
+          build_id: ${{ after.repack_ios.outputs.build_id || after.build_ios.outputs.build_id }}
+          extensions:
+            - app
+
+      - name: Upload app
+        id: upload_app
+        run: |
+          set -euo pipefail
+
+          APP_PATH="${{ steps.download_build.outputs.artifact_path }}"
+
+          mkdir -p .testerarmy
+
+          npx --yes testerarmy@latest upload-app \
+            --app-path "$APP_PATH" \
+            --project "$TESTERARMY_PROJECT_ID" \
+            --remove-after 86400 \
+            --output .testerarmy/upload.json
+
+          set-output upload_result "$(tr -d '\n' < .testerarmy/upload.json)"
+
+  upload_android_app:
+    name: Upload Android app to TesterArmy
+    after: [repack_android, build_android]
+    if: ${{ after.repack_android.outputs.build_id || after.build_android.outputs.build_id }}
+    environment: preview
+    outputs:
+      app_id: ${{ fromJSON(steps.upload_app.outputs.upload_result).uploadedAppId }}
+    steps:
+      - uses: eas/checkout
+
+      - uses: eas/download_build
+        id: download_build
+        with:
+          build_id: ${{ after.repack_android.outputs.build_id || after.build_android.outputs.build_id }}
+          extensions:
+            - apk
+
+      - name: Upload app
+        id: upload_app
+        run: |
+          set -euo pipefail
+
+          APP_PATH="${{ steps.download_build.outputs.artifact_path }}"
+
+          mkdir -p .testerarmy
+
+          npx --yes testerarmy@latest upload-app \
+            --app-path "$APP_PATH" \
+            --project "$TESTERARMY_PROJECT_ID" \
+            --remove-after 86400 \
+            --output .testerarmy/upload.json
+
+          set-output upload_result "$(tr -d '\n' < .testerarmy/upload.json)"
+
+  run_ios_tests:
+    name: Run iOS TesterArmy tests
+    needs: [upload_ios_app]
+    environment: preview
+    steps:
+      - uses: eas/checkout
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+
+          APP_ID="${{ needs.upload_ios_app.outputs.app_id }}"
+          COMMIT_SHA="${{ github.sha }}"
+          EVENT_NAME="${{ github.event_name }}"
+          PR_NUMBER="${{ github.event.pull_request.number || '' }}"
+          TIMEOUT_MS="1800000"
+          POLL_INTERVAL_SECONDS="10"
+
+          mkdir -p .testerarmy
+
+          args=(
+            ci
+            --group "$TESTERARMY_GROUP_ID"
+            --project "$TESTERARMY_PROJECT_ID"
+            --platform ios
+            --app-id "$APP_ID"
+            --commit-sha "$COMMIT_SHA"
+            --timeout "$TIMEOUT_MS"
+            --poll-interval-seconds "$POLL_INTERVAL_SECONDS"
+            --output .testerarmy/ci-result.json
+            --delete-app-after-run
+          )
+
+          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_NUMBER" ]; then
+            args+=(--pr-number "$PR_NUMBER")
+          fi
+
+          npx --yes testerarmy@latest "${args[@]}"
+
+  run_android_tests:
+    name: Run Android TesterArmy tests
+    needs: [upload_android_app]
+    environment: preview
+    steps:
+      - uses: eas/checkout
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+
+          APP_ID="${{ needs.upload_android_app.outputs.app_id }}"
+          COMMIT_SHA="${{ github.sha }}"
+          EVENT_NAME="${{ github.event_name }}"
+          PR_NUMBER="${{ github.event.pull_request.number || '' }}"
+          TIMEOUT_MS="1800000"
+          POLL_INTERVAL_SECONDS="10"
+
+          mkdir -p .testerarmy
+
+          args=(
+            ci
+            --group "$TESTERARMY_GROUP_ID"
+            --project "$TESTERARMY_PROJECT_ID"
+            --platform android
+            --app-id "$APP_ID"
+            --commit-sha "$COMMIT_SHA"
+            --timeout "$TIMEOUT_MS"
+            --poll-interval-seconds "$POLL_INTERVAL_SECONDS"
+            --output .testerarmy/ci-result.json
+            --delete-app-after-run
+          )
+
+          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_NUMBER" ]; then
+            args+=(--pr-number "$PR_NUMBER")
+          fi
+
+          npx --yes testerarmy@latest "${args[@]}"
+```
+
+`fingerprint` job 仅支持 [Continuous Native Generation（CNG）](/workflow/continuous-native-generation/)。如果提交了 **android** 和 **ios** 目录，请使用上一步的工作流。
+
+</Step>
+
+<Step label="5">
+
+### 使用探索代理测试 pull request
+
+探索代理只在 pull request 上运行。它会读取 pull request 的标题、描述和更改，并自行编写测试步骤。它在已上传的应用上运行这些步骤，然后使用每个步骤的结果和视频更新 pull request 评论。
+
+将这些 job 添加到第 3 步或第 4 步的工作流中。它们会使用上传 job 发送给 TesterArmy 的应用：
+
+```yaml .eas/workflows/testerarmy-mobile-tests.yml|collapseHeight=300
+jobs:
+  run_ios_dynamic_agent:
+    name: Run iOS TesterArmy exploration agent
+    needs: [upload_ios_app]
+    if: ${{ github.event_name == 'pull_request' }}
+    environment: preview
+    env:
+      APP_ID: ${{ needs.upload_ios_app.outputs.app_id }}
+      COMMIT_SHA: ${{ github.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+      PR_TITLE: ${{ github.event.pull_request.title || '' }}
+      PR_DESCRIPTION: ${{ github.event.pull_request.body || '' }}
+      BASE_BRANCH: ${{ github.event.pull_request.base.ref || '' }}
+      HEAD_BRANCH: ${{ github.event.pull_request.head.ref || '' }}
+    steps:
+      - uses: eas/checkout
+
+      - name: Run exploration agent
+        run: |
+          set -euo pipefail
+
+          if [ "${TESTERARMY_DYNAMIC_AGENT_ENABLED:-true}" = "false" ]; then
+            echo "TesterArmy exploration agent is disabled because TESTERARMY_DYNAMIC_AGENT_ENABLED=false."
+            exit 0
+          fi
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No pull request number found; skipping TesterArmy exploration agent."
+            exit 0
+          fi
+
+          mkdir -p .testerarmy
+          rm -f .testerarmy/dynamic-result.json
+
+          dynamic_pr_title="$PR_TITLE"
+          if [ -z "$dynamic_pr_title" ]; then
+            dynamic_pr_title="Pull request #$PR_NUMBER"
+          fi
+
+          args=(
+            pr
+            run-dynamic
+            --project "$TESTERARMY_PROJECT_ID"
+            --platform ios
+            --app-id "$APP_ID"
+            --pr-number "$PR_NUMBER"
+            --pr-title "$dynamic_pr_title"
+            --commit-sha "$COMMIT_SHA"
+            --output .testerarmy/dynamic-result.json
+          )
+
+          if [ -n "$PR_DESCRIPTION" ]; then
+            args+=(--pr-description "$PR_DESCRIPTION")
+          fi
+
+          if [ -n "$BASE_BRANCH" ]; then
+            args+=(--base-branch "$BASE_BRANCH")
+          fi
+
+          if [ -n "$HEAD_BRANCH" ]; then
+            args+=(--head-branch "$HEAD_BRANCH")
+          fi
+
+          npx --yes testerarmy@latest "${args[@]}"
+
+  run_android_dynamic_agent:
+    name: Run Android TesterArmy exploration agent
+    needs: [upload_android_app]
+    if: ${{ github.event_name == 'pull_request' }}
+    environment: preview
+    env:
+      APP_ID: ${{ needs.upload_android_app.outputs.app_id }}
+      COMMIT_SHA: ${{ github.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+      PR_TITLE: ${{ github.event.pull_request.title || '' }}
+      PR_DESCRIPTION: ${{ github.event.pull_request.body || '' }}
+      BASE_BRANCH: ${{ github.event.pull_request.base.ref || '' }}
+      HEAD_BRANCH: ${{ github.event.pull_request.head.ref || '' }}
+    steps:
+      - uses: eas/checkout
+
+      - name: Run exploration agent
+        run: |
+          set -euo pipefail
+
+          if [ "${TESTERARMY_DYNAMIC_AGENT_ENABLED:-true}" = "false" ]; then
+            echo "TesterArmy exploration agent is disabled because TESTERARMY_DYNAMIC_AGENT_ENABLED=false."
+            exit 0
+          fi
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No pull request number found; skipping TesterArmy exploration agent."
+            exit 0
+          fi
+
+          mkdir -p .testerarmy
+          rm -f .testerarmy/dynamic-result.json
+
+          dynamic_pr_title="$PR_TITLE"
+          if [ -z "$dynamic_pr_title" ]; then
+            dynamic_pr_title="Pull request #$PR_NUMBER"
+          fi
+
+          args=(
+            pr
+            run-dynamic
+            --project "$TESTERARMY_PROJECT_ID"
+            --platform android
+            --app-id "$APP_ID"
+            --pr-number "$PR_NUMBER"
+            --pr-title "$dynamic_pr_title"
+            --commit-sha "$COMMIT_SHA"
+            --output .testerarmy/dynamic-result.json
+          )
+
+          if [ -n "$PR_DESCRIPTION" ]; then
+            args+=(--pr-description "$PR_DESCRIPTION")
+          fi
+
+          if [ -n "$BASE_BRANCH" ]; then
+            args+=(--base-branch "$BASE_BRANCH")
+          fi
+
+          if [ -n "$HEAD_BRANCH" ]; then
+            args+=(--head-branch "$HEAD_BRANCH")
+          fi
+
+          npx --yes testerarmy@latest "${args[@]}"
+```
+
+运行开始前，TesterArmy 会检查更改。pull request 可能没有用户可见的更改，例如文档或配置更改。此时 check 会显示 `Tests skipped` 及原因。TesterArmy 会针对每个平台分别做出判断。默认情况下，TesterArmy check 不会阻止合并。
+
+如果由编码代理编写 pull request，请将 [TesterArmy 测试说明](https://docs.tester.army/run/pull-request-testing#guide-the-planner-from-your-pr-description)添加到 **AGENTS.md** 或 **CLAUDE.md**。这样，代理会在每个 pull request 描述末尾添加探索代理可以遵循的步骤。
+
+</Step>
+
+## 其他资源
+
+<BoxLink
+  title="TesterArmy Expo EAS 指南"
+  description="在 EAS Workflows 上运行 TesterArmy 平台测试，使用 fingerprint 和 repack、探索代理，以及面向编码代理的设置提示。"
+  href="https://docs.tester.army/mobile/expo-eas"
+  Icon={Globe01Icon}
+/>
+
+<BoxLink
+  title="TesterArmy 移动示例"
+  description="包含 TesterArmy 构建配置文件和工作流的 Expo 应用。"
+  href="https://github.com/tester-army/mobile-example"
+  Icon={GithubIcon}
+/>

@@ -15,8 +15,6 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 Expo UI List 与官方 SwiftUI [List API](https://developer.apple.com/documentation/swiftui/list) 相匹配，并支持通过 [`listStyle`](modifiers/#liststylestyle) 修饰符、各种行和分区修饰符，以及选择、重新排序和编辑功能进行样式设置。
 
-> **info** `List` 目前尚不支持延迟渲染行：React 会预先创建每一行，因此大型列表的挂载速度可能较慢。我们正在改进这一点。对于大型列表，我们建议使用 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)。
-
 <ContentSpotlight
   variant="component"
   aspect="landscape"
@@ -98,11 +96,64 @@ export default function ListWithLabelsExample() {
 
 </ComponentExample>
 
+### 大型列表
+
+使用 [`List.ForEach`](#listforeach) 从数组渲染行。将项目作为 `data` 传入，使用 `keyExtractor` 为每个项目提供唯一键，并传入一个返回项目行的 `children` 函数。`List.ForEach` 只渲染可见区域附近的行，并在滚动时复用这些行。
+
+<ComponentExample
+  title="LargeListExample.tsx"
+  src="/static/images/expo-ui/examples/list-large-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/list-large-ios-dark.webp"
+  alt="显示一万名联系人的前几行的列表">
+
+```tsx
+import { Host, List, Text } from '@expo/ui/swift-ui';
+
+type Contact = { id: string; name: string };
+
+const contacts: Contact[] = Array.from(
+  { length: 10000 },
+  (_, i) => ({
+    id: String(i),
+    name: `Contact ${i + 1}`,
+  })
+);
+
+function renderContact({ item }: { item: Contact }) {
+  return <Text>{item.name}</Text>;
+}
+
+export default function LargeListExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <List>
+        <List.ForEach
+          data={contacts}
+          keyExtractor={contact => contact.id}>
+          {renderContact}
+        </List.ForEach>
+      </List>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+渲染行时请遵循以下规则：
+
+- 在组件外定义 `children` 函数，或使用 `useCallback` 包装它。否则，每次组件渲染时，可见区域附近的行都会重新渲染。
+- 复用的行会保留之前显示项目的本地状态（`useState`）。项目变化时重置状态，或将状态保存在行外部。
+- 尚未准备好的行会显示空占位符。将 `estimatedItemSize` 设置为接近行内容高度的值（不包括 `List` 内边距），单位为点。
+- 使用 `overscanCount` 在可见行的上方和下方预先准备更多行。
+- 要更新行，请传入新的 `data` 数组。不要原地修改数组。
+- 设置 `recycling={false}` 可预先渲染每一行。
+
 ### 列表样式
 
 使用 [`listStyle`](modifiers/#liststylestyle) 修饰符更改列表的外观。
 
-> **Note：** tvOS 不支持 `inset`、`insetGrouped` 和 `sidebar` 样式。
+> **注意：** tvOS 不支持 `inset`、`insetGrouped` 和 `sidebar` 样式。
 
 <ComponentExample
   title="ListStylesExample.tsx"
@@ -171,7 +222,7 @@ export default function ListStylesExample() {
 使用复合组件 [`List.ForEach`](#listforeach) 的 `onDelete` 和 `onMove` 属性启用列表项的选择、删除和重新排序。
 
 - 使用 [`environment`](modifiers/#environmentkey-value) 修饰符启用编辑模式
-- 使用 [`tag`](modifiers/#tagtag) 修饰符标识项目
+- 使用 `keyExtractor` 属性标识项目
 - 使用 [`selection`](#selection) 属性控制所选项目
 - 使用 [`moveDisabled`](modifiers/#movedisableddisabled) 和 [`deleteDisabled`](modifiers/#deletedisableddisabled) 修饰符，禁用单个项目上的这些操作
 
@@ -191,7 +242,7 @@ import {
   Button,
   Toggle,
 } from '@expo/ui/swift-ui';
-import { environment, tag } from '@expo/ui/swift-ui/modifiers';
+import { environment } from '@expo/ui/swift-ui/modifiers';
 
 type Task = { id: string; title: string };
 
@@ -201,6 +252,10 @@ const INITIAL_TASKS: Task[] = [
   { id: '3', title: 'Task 3' },
   { id: '4', title: 'Task 4' },
 ];
+
+function renderTask({ item }: { item: Task }) {
+  return <Label title={item.title} />;
+}
 
 export default function EditableListExample() {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
@@ -243,14 +298,12 @@ export default function EditableListExample() {
           />
         </Section>
         <Section title="Tasks">
-          <List.ForEach onDelete={handleDelete} onMove={handleMove}>
-            {tasks.map(task => (
-              <Label
-                key={task.id}
-                title={task.title}
-                modifiers={[tag(task.id)]}
-              />
-            ))}
+          <List.ForEach
+            data={tasks}
+            keyExtractor={task => task.id}
+            onDelete={handleDelete}
+            onMove={handleMove}>
+            {renderTask}
           </List.ForEach>
         </Section>
       </List>

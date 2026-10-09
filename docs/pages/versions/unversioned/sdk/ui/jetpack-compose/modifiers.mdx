@@ -153,11 +153,30 @@ import { fillMaxWidth } from '@expo/ui/jetpack-compose/modifiers';
 
 ### `width(value)`
 
-设置精确宽度。
+设置精确宽度，或内容的最小或最大[固有宽度](https://developer.android.com/develop/ui/compose/layouts/intrinsic-measurements)。传入的约束仍可能使视图比该宽度更窄或更宽。
 
-| 参数    | 类型     | 描述           |
-| ------- | -------- | -------------- |
-| `value`   | `number` | 宽度，单位为 dp。 |
+| 参数    | 类型                      | 描述                                                                                                                                                                                                                                                       |
+| ------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value` | `number \| IntrinsicSize` | 以 dp 为单位的宽度，或 `IntrinsicSize`。`IntrinsicSize.Min` 使用最小固有宽度，即内容仍能正确绘制时的最小宽度（对于文本来说是最宽的单词）。`IntrinsicSize.Max` 使用最大固有宽度，即不受限制时内容所需的宽度（对于文本来说是一行文本的宽度）。 |
+
+一种情况是带有 `matchContents` 的 `Host`：可用宽度没有限制，因此 `Row` 中带有 `weight` 的子项没有空间。在下面的示例中，`width(IntrinsicSize.Max)` 为 `Row` 提供内容所需的宽度，前面的 `fillMaxWidth()` 让行保持填满有界宽度，而 `weight(1)` 为标签提供开关旁边的剩余空间：
+
+```tsx
+import { Host, Row, Switch, Text } from '@expo/ui/jetpack-compose';
+import {
+  fillMaxWidth,
+  IntrinsicSize,
+  weight,
+  width,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+<Host matchContents>
+  <Row modifiers={[fillMaxWidth(), width(IntrinsicSize.Max)]}>
+    <Text modifiers={[weight(1)]}>Errors only</Text>
+    <Switch value={checked} onCheckedChange={setChecked} />
+  </Row>
+</Host>;
+```
 
 ### `height(value)`
 

@@ -403,6 +403,10 @@ export const general = [
     makeGroup('功能开关', [makePage('guides/using-feature-flags.mdx')]),
     makeGroup('应用内购买', [makePage('guides/in-app-purchases.mdx')]),
     makeGroup('推送通知', [makePage('guides/using-push-notifications-services.mdx')]),
+    makeGroup('测试', [
+      makePage('guides/using-e2e.mdx'),
+      makePage('guides/using-testerarmy.mdx'),
+    ]),
     makeGroup('工具', [makePage('guides/using-eslint.mdx'), makePage('guides/typescript.mdx')]),
     makeGroup('TV 应用', [makePage('guides/building-for-tv.mdx')]),
     makeGroup('Web 应用', [makePage('guides/using-nextjs.mdx')]),

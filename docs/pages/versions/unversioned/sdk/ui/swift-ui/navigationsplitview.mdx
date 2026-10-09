@@ -1,0 +1,141 @@
+---
+title: NavigationSplitView
+description: 并排呈现两列或三列的 SwiftUI NavigationSplitView 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI NavigationSplitView 与官方 SwiftUI [NavigationSplitView API](https://developer.apple.com/documentation/swiftui/navigationsplitview) 一致，并将两列或三列并排显示。空间不足时，列会折叠为一列。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/navigationsplitview/ios-light.webp"
+  darkSrc="/static/images/expo-ui/navigationsplitview/ios-dark.webp"
+  alt="笔记侧边栏旁显示所选笔记的详情"
+/>
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 两列
+
+提供 `NavigationSplitView.Sidebar` 和 `NavigationSplitView.Detail`。使用 [`navigationTitle`](modifiers/#navigationtitletitle) 修饰符设置每列的标题。
+
+在 iPhone 上只显示侧边栏。在 iOS 17 及更高版本中，将 `preferredCompactColumn` 设置为 `'detail'`，即可在点击时打开详情。将 `onPreferredCompactColumnChange` 中的值传回组件，以确保返回按钮正常工作。
+
+<ComponentExample
+  title="NavigationSplitViewExample.tsx"
+  src="/static/images/expo-ui/examples/navigationsplitview-two-columns-duo-light.webp"
+  darkSrc="/static/images/expo-ui/examples/navigationsplitview-two-columns-duo-dark.webp"
+  alt="笔记侧边栏旁显示所选珊瑚礁笔记的详情">
+
+```tsx
+import {
+  Button,
+  Host,
+  List,
+  NavigationSplitView,
+  type NavigationSplitViewColumn,
+  Text,
+} from '@expo/ui/swift-ui';
+import {
+  buttonStyle,
+  frame,
+  navigationTitle,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+import { useState } from 'react';
+
+const NOTES = [
+  {
+    id: 'reef',
+    title: 'Coral reef',
+    body: 'The reef is loudest an hour after sunrise.',
+  },
+  {
+    id: 'forest',
+    title: 'Cloud forest',
+    body: 'Mist arrives every afternoon, like clockwork.',
+  },
+  {
+    id: 'dunes',
+    title: 'Sand dunes',
+    body: 'The ridge moves about four metres a year.',
+  },
+];
+
+export default function NavigationSplitViewExample() {
+  const [selectedId, setSelectedId] = useState(NOTES[0].id);
+  const [compactColumn, setCompactColumn] =
+    useState<NavigationSplitViewColumn>('sidebar');
+  const selected =
+    NOTES.find(note => note.id === selectedId) ?? NOTES[0];
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <NavigationSplitView
+        preferredCompactColumn={compactColumn}
+        onPreferredCompactColumnChange={setCompactColumn}>
+        <NavigationSplitView.Sidebar>
+          <List modifiers={[navigationTitle('Notes')]}>
+            {NOTES.map(note => (
+              <Button
+                key={note.id}
+                modifiers={[buttonStyle('plain')]}
+                onPress={() => {
+                  setSelectedId(note.id);
+                  setCompactColumn('detail');
+                }}>
+                <Text>{note.title}</Text>
+              </Button>
+            ))}
+          </List>
+        </NavigationSplitView.Sidebar>
+        <NavigationSplitView.Detail>
+          <Text
+            modifiers={[
+              padding({ all: 24 }),
+              frame({
+                maxWidth: Infinity,
+                maxHeight: Infinity,
+                alignment: 'topLeading',
+              }),
+              navigationTitle(selected.title),
+            ]}>
+            {selected.body}
+          </Text>
+        </NavigationSplitView.Detail>
+      </NavigationSplitView>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 三列
+
+在侧边栏和详情之间添加 `NavigationSplitView.Content`。使用 [`navigationSplitViewColumnWidth`](modifiers/#navigationsplitviewcolumnwidthwidth) 修饰符设置列宽，使用 [`navigationSplitViewStyle`](modifiers/#navigationsplitviewstylestyle) 修饰符设置各列如何共享空间。
+
+分栏视图默认选择可见列。将 `columnVisibility` 设置为 `'all'` 可显示所有列，设置为 `'detailOnly'` 则只显示详情。空间不足时，显示的列会减少。将 `onColumnVisibilityChange` 中的值传回组件，否则拖动分隔线不会生效。
+
+## API
+
+```tsx
+import { NavigationSplitView } from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/navigationsplitview"
+  apiName="NavigationSplitView"
+/>

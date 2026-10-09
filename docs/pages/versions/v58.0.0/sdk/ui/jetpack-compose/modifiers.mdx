@@ -153,11 +153,30 @@ import { fillMaxWidth } from '@expo/ui/jetpack-compose/modifiers';
 
 ### `width(value)`
 
-设置精确宽度。
+设置精确宽度，或内容的最小或最大[固有宽度](https://developer.android.com/develop/ui/compose/layouts/intrinsic-measurements)。传入的约束仍可能使视图比该宽度更窄或更宽。
 
-| 参数    | 类型     | 描述              |
-| ------- | -------- | ----------------- |
-| `value` | `number` | 宽度，单位为 dp。 |
+| 参数    | 类型                      | 描述                                                                                                                                                                                                                                                       |
+| ------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value` | `number \| IntrinsicSize` | 以 dp 为单位的宽度，或 `IntrinsicSize`。`IntrinsicSize.Min` 使用最小固有宽度，即内容仍能正确绘制时的最小宽度（对于文本来说是最宽的单词）。`IntrinsicSize.Max` 使用最大固有宽度，即不受限制时内容所需的宽度（对于文本来说是一行文本的宽度）。 |
+
+一种情况是带有 `matchContents` 的 `Host`：可用宽度没有限制，因此 `Row` 中带有 `weight` 的子项没有空间。在下面的示例中，`width(IntrinsicSize.Max)` 为 `Row` 提供内容所需的宽度，前面的 `fillMaxWidth()` 让行保持填满有界宽度，而 `weight(1)` 为标签提供开关旁边的剩余空间：
+
+```tsx
+import { Host, Row, Switch, Text } from '@expo/ui/jetpack-compose';
+import {
+  fillMaxWidth,
+  IntrinsicSize,
+  weight,
+  width,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+<Host matchContents>
+  <Row modifiers={[fillMaxWidth(), width(IntrinsicSize.Max)]}>
+    <Text modifiers={[weight(1)]}>Errors only</Text>
+    <Switch value={checked} onCheckedChange={setChecked} />
+  </Row>
+</Host>;
+```
 
 ### `height(value)`
 
@@ -344,6 +363,27 @@ import { alpha } from '@expo/ui/jetpack-compose/modifiers';
 import { blur } from '@expo/ui/jetpack-compose/modifiers';
 
 <Button modifiers={[blur(4)]}>Blurred button</Button>;
+```
+
+### `cornerRadius(radius)`
+
+为组件添加圆角。
+
+> **信息** 仅适用于使用 `expo-widgets` 构建的 Android 小组件，且需要 Android 12（API 级别 31）及更高版本。
+
+Jetpack Compose 没有与 Glance 的 `cornerRadius` 完全对应的功能，因此 Expo UI 会忽略此修饰符。在应用中可以使用 [`clip(Shapes.RoundedCorner(radius))`](#clipshape) 添加圆角。
+
+| 参数     | 类型     | 描述             |
+| -------- | -------- | ---------------- |
+| `radius` | `number` | 圆角半径，单位为 dp。 |
+
+```tsx
+import {
+  background,
+  cornerRadius,
+} from '@expo/ui/jetpack-compose/modifiers';
+
+<Box modifiers={[cornerRadius(12), background('#3498DB')]} />;
 ```
 
 ## 阴影样式
@@ -625,6 +665,24 @@ import { Shapes } from '@expo/ui/jetpack-compose/modifiers';
 import { testID } from '@expo/ui/jetpack-compose/modifiers';
 
 <Button modifiers={[testID('submit-button')]}>Submit</Button>;
+```
+
+### `semantics(params)`
+
+设置无障碍和自动填充服务读取的语义属性。
+
+| 参数                   | 类型     | 描述                                                                                 |
+| --------------------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `params.contentDescription` | `string` | TalkBack 为该元素播报的内容，用于替代不适合朗读的内容。 |
+| `params.contentType`        | `string` | 自动填充提示，例如 `'email'` 或 `'password'`。                                        |
+
+```tsx
+import { semantics } from '@expo/ui/jetpack-compose/modifiers';
+
+// The visible label is an abbreviation; TalkBack reads the full phrase.
+<Text modifiers={[semantics({ contentDescription: '1 week' })]}>
+  1W
+</Text>;
 ```
 
 ## API

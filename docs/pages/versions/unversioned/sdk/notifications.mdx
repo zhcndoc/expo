@@ -388,6 +388,13 @@ export default function App() {
         '可用作自定义通知声音的本地声音文件路径数组（建议使用 .wav）。当专注模式不允许或静音模式开启时，将不会播放声音。',
     },
     {
+      name: 'enableRemoteNotifications',
+      default: 'true',
+      platform: 'ios',
+      description:
+        '是否启用远程通知。设置为 `false` 时，插件不会添加 APNs 权限，这适用于只使用本地通知的应用。在这种情况下，远程通知无法工作。',
+    },
+    {
       name: 'enableBackgroundRemoteNotifications',
       default: 'false',
       platform: 'ios',
@@ -414,6 +421,7 @@ export default function App() {
             "./local/assets/notification_sound.wav",
             "./local/assets/notification_sound_other.wav"
           ],
+          "enableRemoteNotifications": true,
           "enableBackgroundRemoteNotifications": false
         }
       ]
@@ -422,8 +430,8 @@ export default function App() {
 }
 ```
 
-> iOS APNs 权利始终设置为“development”。Xcode 会在发布版本构建生成的归档中自动将其更改为“production”。
-> 请参阅[关于 APNs 权利的 Stack Overflow 回答](https://stackoverflow.com/a/42293632/4047926)。
+> 当 `enableRemoteNotifications` 设置为 `true`（默认值）时，iOS APNs 权利会设置为 `development`。Xcode 会在发布版本构建生成的归档中自动将其更改为 `production`。
+> 请参阅[关于 APNs 权利的 Stack Overflow 回答](https://stackoverflow.com/a/42293632/4047926)。当 `enableRemoteNotifications` 为 `false` 时，插件不会添加 APNs 权利。
 
 <ConfigReactNative>
 
@@ -441,8 +449,8 @@ export default function App() {
 - 从 Android 12（API 级别 31）起，要安排在精确时间触发的通知，需要将
   `<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>` 添加到 **AndroidManifest.xml**。
   请阅读[精确闹钟权限](https://developer.android.com/about/versions/12/behavior-changes-12#exact-alarm-permission)的更多信息。
-  `delivery: 'alarmClock'` 触发选项也需要精确闹钟权限。在 Android 13（API 级别 33）及更高版本上，闹钟、计时器和日历应用
-  可以改为声明 `<uses-permission android:name="android.permission.USE_EXACT_ALARM"/>`。系统会在无需用户提示的情况下授予此权限。
+  Android 14（API 级别 34）及更高版本默认会拒绝新安装应用的此权限。请使用 [`getExactAlarmPermissionsAsync`](#getexactalarmpermissionsasync) 和 [`requestExactAlarmPermissionsAsync`](#requestexactalarmpermissionsasync) 检查并请求权限。
+  `delivery: 'alarmClock'` 触发选项也需要精确闹钟权限。在 Android 13（API 级别 33）及更高版本上，闹钟、计时器和日历应用可以改为声明 `<uses-permission android:name="android.permission.USE_EXACT_ALARM"/>`。系统会在无需用户提示的情况下授予此权限。
   [Google Play 的精确闹钟政策](https://support.google.com/googleplay/android-developer/answer/13161072) 将 `USE_EXACT_ALARM` 限定用于这些应用类别。
 
 - 在 Android 13 上，应用用户必须通过操作系统自动触发的权限提示选择接收通知。

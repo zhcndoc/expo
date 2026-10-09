@@ -1,0 +1,227 @@
+---
+title: Toolbar
+description: 将项目放入所包装视图工具栏中的 SwiftUI Toolbar 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI Toolbar 与官方 SwiftUI [`toolbar(content:)` API](<https://developer.apple.com/documentation/swiftui/view/toolbar(content:)>) 一致，并为所包装的视图添加工具栏。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/toolbar/ios-light.webp"
+  darkSrc="/static/images/expo-ui/toolbar/ios-dark.webp"
+  alt="一个鸟类列表，导航栏中有排序按钮"
+/>
+
+将工具栏项目放入 [`Toolbar.Content`](#toolbarcontent)。`Toolbar` 中的其他内容就是工具栏所属的视图。在 [`NavigationStack`](navigationstack) 中，项目会显示在导航栏中。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 导航栏中的按钮
+
+在 `Toolbar` 上使用 [`navigationTitle`](modifiers/#navigationtitletitle) 修饰符设置标题。
+
+<ComponentExample
+  title="ToolbarExample.tsx"
+  src="/static/images/expo-ui/examples/toolbar-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toolbar-basic-ios-dark.webp"
+  alt="一个鸟类列表，导航栏中有排序按钮">
+
+```tsx
+import {
+  Button,
+  Host,
+  List,
+  NavigationStack,
+  Text,
+  Toolbar,
+} from '@expo/ui/swift-ui';
+import { navigationTitle } from '@expo/ui/swift-ui/modifiers';
+import { useState } from 'react';
+
+const BIRDS = ['Goldcrest', 'Barn Swallow', 'Grey Heron'];
+
+export default function ToolbarExample() {
+  const [descending, setDescending] = useState(false);
+
+  const sorted = [...BIRDS].sort((a, b) =>
+    descending ? b.localeCompare(a) : a.localeCompare(b)
+  );
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <NavigationStack>
+        <Toolbar modifiers={[navigationTitle('Birds')]}>
+          <List>
+            {sorted.map(bird => (
+              <Text key={bird}>{bird}</Text>
+            ))}
+          </List>
+          <Toolbar.Content>
+            <Button
+              systemImage="arrow.up.arrow.down"
+              label={descending ? 'Sort Z to A' : 'Sort A to Z'}
+              onPress={() => setDescending(value => !value)}
+            />
+          </Toolbar.Content>
+        </Toolbar>
+      </NavigationStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 工具栏项目位置
+
+使用 [`ToolbarItem`](#toolbaritem) 包装项目并设置其 `placement`。未使用 `ToolbarItem` 的项目使用 `automatic` 位置。
+
+<ComponentExample
+  title="ToolbarItemExample.tsx"
+  src="/static/images/expo-ui/examples/toolbar-item-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toolbar-item-ios-dark.webp"
+  alt="一个鸟类列表，导航栏中有分享按钮，底部栏中有添加按钮">
+
+```tsx
+import {
+  Button,
+  Host,
+  List,
+  NavigationStack,
+  Text,
+  Toolbar,
+  ToolbarItem,
+} from '@expo/ui/swift-ui';
+import { navigationTitle } from '@expo/ui/swift-ui/modifiers';
+
+const BIRDS = ['Goldcrest', 'Barn Swallow', 'Grey Heron'];
+
+export default function ToolbarItemExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <NavigationStack>
+        <Toolbar modifiers={[navigationTitle('Birds')]}>
+          <List>
+            {BIRDS.map(bird => (
+              <Text key={bird}>{bird}</Text>
+            ))}
+          </List>
+          <Toolbar.Content>
+            <ToolbarItem placement="topBarTrailing">
+              <Button
+                systemImage="square.and.arrow.up"
+                label="Share"
+                onPress={() => {}}
+              />
+            </ToolbarItem>
+            <ToolbarItem placement="bottomBar">
+              <Button
+                systemImage="plus"
+                label="Add bird"
+                onPress={() => {}}
+              />
+            </ToolbarItem>
+          </Toolbar.Content>
+        </Toolbar>
+      </NavigationStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+`ToolbarItem` 必须位于 `Toolbar.Content` 内。如果当前平台或操作系统版本不提供某个位置，项目会使用 `automatic`。
+
+### 弹窗中的关闭按钮
+
+底部弹窗没有自己的导航栏，因此请为其内容添加 [`NavigationStack`](navigationstack)。在 iOS 26 及更高版本中，不带 `label` 或子项且 `role="close"` 的 [`Button`](button) 会显示为关闭（X）图标。在更早的版本中，请改为设置 `label` 和 `systemImage="xmark"`。
+
+<ComponentExample
+  title="ToolbarCloseButtonExample.tsx"
+  src="/static/images/expo-ui/examples/toolbar-sheet-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/toolbar-sheet-ios-dark.webp"
+  alt="一个标题为灰鹭的弹窗，导航栏中有关闭按钮">
+
+```tsx
+import {
+  BottomSheet,
+  Button,
+  Host,
+  NavigationStack,
+  Text,
+  Toolbar,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  navigationTitle,
+  padding,
+  presentationDetents,
+} from '@expo/ui/swift-ui/modifiers';
+import { useState } from 'react';
+
+export default function ToolbarCloseButtonExample() {
+  const [isPresented, setIsPresented] = useState(false);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <BottomSheet
+        isPresented={isPresented}
+        onIsPresentedChange={setIsPresented}
+        anchor={
+          <Button
+            label="Show details"
+            onPress={() => setIsPresented(true)}
+          />
+        }>
+        <NavigationStack
+          modifiers={[presentationDetents(['medium'])]}>
+          <Toolbar modifiers={[navigationTitle('Grey Heron')]}>
+            <VStack
+              alignment="leading"
+              spacing={12}
+              modifiers={[padding({ all: 20 })]}>
+              <Text>
+                Stands still at the water's edge for long spells,
+                then strikes at fish with its dagger bill.
+              </Text>
+            </VStack>
+            <Toolbar.Content>
+              <Button
+                role="close"
+                onPress={() => setIsPresented(false)}
+              />
+            </Toolbar.Content>
+          </Toolbar>
+        </NavigationStack>
+      </BottomSheet>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { Toolbar, ToolbarItem } from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/toolbar"
+  apiName="Toolbar"
+/>

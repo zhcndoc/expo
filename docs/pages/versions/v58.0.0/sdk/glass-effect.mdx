@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
 
 ### 透明度动画变通方案
 
-由于将 `GlassView` 或其父视图的 `opacity` 设为 `0` 会导致玻璃效果完全无法渲染，因此你可以使用 Reanimated 为包装视图的透明度添加动画，同时在所需样式与 `'none'` 之间切换 `glassEffectStyle`。
+Apple 不建议将 `GlassView` 或其父视图的 `opacity` 设为小于 `1` 的值，详见 [设置正确的 alpha 值](https://developer.apple.com/documentation/uikit/uivisualeffectview#Set-the-correct-alpha-value)。透明度过低时，玻璃效果不会渲染。如果仍要为透明度添加动画，请使用 Reanimated 为包装视图的透明度添加动画，同时在所需样式与 `'none'` 之间切换 `glassEffectStyle`。
 
 <SnackInline label='玻璃效果透明度动画变通方案' dependencies={['expo-glass-effect', 'react-native-reanimated']} platforms={['ios']}>
 
@@ -259,7 +259,7 @@ export default function GlassOpacityAnimationExample() {
   const fadeOpacity = useSharedValue(0);
 
   const glassViewProps = useAnimatedProps(() => {
-    const glassEffectStyle = fadeOpacity.value > 0.01 ? 'regular' : 'none';
+    const glassEffectStyle = fadeOpacity.value > 0.02 ? 'regular' : 'none';
     return {
       glassEffectStyle,
       style: {

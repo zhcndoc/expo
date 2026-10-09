@@ -1,0 +1,230 @@
+---
+title: ArrangementView
+description: 以自适应布局排列主视图和次视图的 SwiftUI ArrangementView 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/sdk-58/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
+
+Expo UI ArrangementView 与官方 SwiftUI [ArrangementView API](https://developer.apple.com/documentation/swiftui/arrangementview) 一致，并排列主视图和次视图。布局会根据可用空间和硬件特性（例如折叠屏）进行调整。
+
+<ContentSpotlight
+  variant="component"
+  aspect="landscape"
+  src="/static/images/expo-ui/arrangementview/ios-light.webp"
+  darkSrc="/static/images/expo-ui/arrangementview/ios-dark.webp"
+  alt="左侧为照片占位符，右侧为详情表单"
+/>
+
+> **信息** ArrangementView 需要 iOS 27.1 或更高版本。在更早的版本中，子项会直接渲染，不包含容器。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+将视图放入 `ArrangementView.Primary` 和 `ArrangementView.Secondary`，并使用 [`arrangementViewStyle`](modifiers/#arrangementviewstylestyle) 修饰符选择布局。
+
+### 分栏
+
+`'split'` 样式会将两个视图并排放置。使用 [`splitArrangementLayoutSize`](modifiers/#splitarrangementlayoutsizeconstraints) 修饰符限制视图大小，另一个视图会占用剩余空间。
+
+<ComponentExample
+  title="SplitArrangementExample.tsx"
+  src="/static/images/expo-ui/examples/arrangementview-split-duo-light.webp"
+  darkSrc="/static/images/expo-ui/examples/arrangementview-split-duo-dark.webp"
+  alt="左侧为照片占位符，右侧为详情表单">
+
+```tsx
+import {
+  ArrangementView,
+  Form,
+  Host,
+  Image,
+  LabeledContent,
+  Section,
+  Text,
+  ZStack,
+} from '@expo/ui/swift-ui';
+import {
+  arrangementViewStyle,
+  background,
+  frame,
+  listSectionMargins,
+  splitArrangementLayoutSize,
+} from '@expo/ui/swift-ui/modifiers';
+
+const fill = frame({ maxWidth: Infinity, maxHeight: Infinity });
+const sectionMargin = listSectionMargins({
+  edges: 'leading',
+  length: 20,
+});
+
+export default function SplitArrangementExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <ArrangementView
+        modifiers={[arrangementViewStyle('split'), fill]}>
+        <ArrangementView.Primary>
+          <ZStack
+            modifiers={[
+              fill,
+              background({
+                type: 'linearGradient',
+                colors: ['#F6D365', '#FDA085', '#5B86E5'],
+                startPoint: { x: 0, y: 0 },
+                endPoint: { x: 0, y: 1 },
+              }),
+            ]}>
+            <Image
+              systemName="mountain.2.fill"
+              size={96}
+              color="#FFFFFF"
+            />
+          </ZStack>
+        </ArrangementView.Primary>
+        <ArrangementView.Secondary>
+          <Form
+            modifiers={[
+              splitArrangementLayoutSize({
+                minWidth: 260,
+                idealWidth: 320,
+                maxWidth: 400,
+              }),
+            ]}>
+            <Section title="Details" modifiers={[sectionMargin]}>
+              <LabeledContent label="Taken">
+                <Text>Sep 28 at 18:42</Text>
+              </LabeledContent>
+              <LabeledContent label="Location">
+                <Text>Glacier Point</Text>
+              </LabeledContent>
+            </Section>
+            <Section title="Camera" modifiers={[sectionMargin]}>
+              <LabeledContent label="Lens">
+                <Text>Main, 24 mm</Text>
+              </LabeledContent>
+              <LabeledContent label="Exposure">
+                <Text>ƒ1.8 · 1/250 s</Text>
+              </LabeledContent>
+              <LabeledContent label="ISO">
+                <Text>80</Text>
+              </LabeledContent>
+            </Section>
+          </Form>
+        </ArrangementView.Secondary>
+      </ArrangementView>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 覆盖
+
+`'overlay'` 样式会将主视图叠加在次视图上。使用 [`overlayArrangementEdge`](modifiers/#overlayarrangementedgeedge) 修饰符，设置布局切换为水平或垂直排列时视图所在的边缘。
+
+<ComponentExample
+  title="OverlayArrangementExample.tsx"
+  src="/static/images/expo-ui/examples/arrangementview-overlay-duo-light.webp"
+  darkSrc="/static/images/expo-ui/examples/arrangementview-overlay-duo-dark.webp"
+  alt="视频占位符上方模糊面板中的播放控制项">
+
+```tsx
+import {
+  ArrangementView,
+  Button,
+  Host,
+  HStack,
+  Image,
+  Spacer,
+  Text,
+  VStack,
+  ZStack,
+} from '@expo/ui/swift-ui';
+import {
+  arrangementViewStyle,
+  background,
+  font,
+  frame,
+  labelStyle,
+  overlayArrangementEdge,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+
+const fill = frame({ maxWidth: Infinity, maxHeight: Infinity });
+
+export default function OverlayArrangementExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <ArrangementView
+        modifiers={[arrangementViewStyle('overlay'), fill]}>
+        <ArrangementView.Primary>
+          <VStack modifiers={[overlayArrangementEdge('bottom')]}>
+            <Spacer />
+            <VStack
+              spacing={12}
+              modifiers={[
+                padding({ all: 20 }),
+                frame({ maxWidth: Infinity }),
+                background({ type: 'material', material: 'thin' }),
+              ]}>
+              <Text modifiers={[font({ textStyle: 'headline' })]}>
+                Episode 4: The Long Way Round
+              </Text>
+              <HStack
+                spacing={32}
+                modifiers={[labelStyle('iconOnly')]}>
+                <Button
+                  label="Back 10 seconds"
+                  systemImage="gobackward.10"
+                  onPress={() => {}}
+                />
+                <Button
+                  label="Play"
+                  systemImage="play.fill"
+                  onPress={() => {}}
+                />
+                <Button
+                  label="Forward 10 seconds"
+                  systemImage="goforward.10"
+                  onPress={() => {}}
+                />
+              </HStack>
+            </VStack>
+          </VStack>
+        </ArrangementView.Primary>
+        <ArrangementView.Secondary>
+          <ZStack modifiers={[fill, background('#3A1C71')]}>
+            <Image
+              systemName="play.rectangle.fill"
+              size={72}
+              color="#FFFFFF"
+            />
+          </ZStack>
+        </ArrangementView.Secondary>
+      </ArrangementView>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+## API
+
+```tsx
+import { ArrangementView } from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/arrangementview"
+  apiName="ArrangementView"
+/>

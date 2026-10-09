@@ -38,7 +38,11 @@ https://u.expo.dev/F767ADF57-B487-4D8F-9522-85549C39F43F?channel-name=main
 
 ### 深入链接到更新的 URL
 
-你可以通过打开形如 `{scheme}://expo-development-client/?url={manifestUrl}` 的 URL，在具有与你的自定义客户端兼容构建的设备上加载你的应用。你需要传递以下参数：
+你可以通过打开包含 `__expo_url` 查询参数的启动 URL，在具有兼容开发构建的设备上加载你的应用。在 SDK 58 及更高版本中，URL 采用以下形式：
+
+```text
+{scheme}://?__expo_url={manifestUrl}
+```
 
 | 参数           | 值                                                                                                                                     |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
@@ -48,22 +52,29 @@ https://u.expo.dev/F767ADF57-B487-4D8F-9522-85549C39F43F?channel-name=main
 示例：
 
 ```text
-exp+app-slug://expo-development-client/?url=https%3A%2F%2Fu.expo.dev%2F767ADF57-B487-4D8F-9522-85549C39F43F%2F%3Fchannel-name%3Dmain
+exp+app-slug://?__expo_url=https%3A%2F%2Fu.expo.dev%2F767ADF57-B487-4D8F-9522-85549C39F43F%2F%3Fchannel-name%3Dmain
 ```
 
 在上面的示例中，`scheme` 是 `exp+app-slug`，而 `manifestUrl` 是一个 ID 为 `F767ADF57-B487-4D8F-9522-85549C39F43F`、频道为 `main` 的项目。
 
-#### 在自动化场景中使用更新深层链接
+`__expo_url` 是启动器保留的查询参数之一，保留参数均以 `__expo_` 开头。启动器会在 URL 到达应用前处理包含至少一个 `__expo_*` 参数的 URL。所有保留参数都是可选且相互独立的。启动器会在应用接收 URL 前移除这些参数，因此它们不会到达应用的深层链接处理逻辑或开发服务器。
 
-在使用自动化工具（例如 CI/CD 工作流或端到端测试）启动开发构建时，你可以使用以下查询参数。为确保跨平台行为，请在将应用 URL 编码为 `url` 值之前，将 `disableOnboarding=1` 添加到该 URL 中。将 `disableFab=1` 和 `disableAutoLaunch=1` 添加到开发客户端深层链接本身，与 `url` 并列。
+| 参数                          | 值                                                                                                  |
+| ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| `__expo_url`                  | 要加载的项目或更新清单的 URL 编码 URL。                                                             |
+| `__expo_disable_onboarding=1` | 跳过开发构建安装后首次启动时显示的引导屏幕。                                                        |
+| `__expo_disable_fab=1`        | 在本次启动中隐藏 Tools 按钮（用于打开开发菜单的悬浮按钮）。                                         |
+| `__expo_disable_auto_launch=1` | 阻止开发菜单在应用启动时打开，仅对本次启动有效。                                                   |
 
-| 参数                   | 值                                                                                                              |
-| --------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `disableOnboarding=1` | 跳过开发构建安装后的首次启动时显示的引导屏幕。 |
-| `disableFab=1`        | 隐藏 Tools 按钮（用于打开开发菜单的悬浮按钮）。 |
-| `disableAutoLaunch=1` | 阻止应用启动时打开开发菜单。 |
+`__expo_disable_fab` 和 `__expo_disable_auto_launch` 仅对启动的进程生效，绝不会更改已保存的开发菜单设置。之后打开应用时，用户仍会看到菜单和 Tools 按钮。旧版的 `disableFab=1` 和 `disableAutoLaunch=1` 参数仍会更新已保存的设置。
 
-`disableFab` 和 `disableAutoLaunch` 会更新保存的开发菜单设置。这在实体设备上很有用，因为自动化无法从开发机器更改这些设置。你可以在开发菜单中重新启用任一设置。
+同样的参数也适用于 Expo Go 启动 URL，例如 `exp://192.168.1.10:8081?__expo_disable_auto_launch=1`。
+
+> **信息** SDK 57 及更低版本仅支持旧版形式 `{scheme}://expo-development-client/?url={manifestUrl}`。在 SDK 58 及更高版本中，旧版形式以及放在 `url` 旁边的 `disableOnboarding=1`、`disableFab=1` 和 `disableAutoLaunch=1` 参数仍然有效，此时 `npx expo start` 会生成 `__expo_url` 形式的 URL。
+
+#### 在自动化场景中使用启动 URL
+
+使用自动化工具（例如 CI/CD 工作流、端到端测试或代理循环）启动开发构建时，请将 `__expo_disable_onboarding=1`、`__expo_disable_fab=1` 和 `__expo_disable_auto_launch=1` 添加到启动 URL。在启动 Expo CLI 时设置 `EXPO_NO_DEV_MENU=1`，即可将这些参数添加到本次会话的每个启动 URL、二维码和重定向中。在 CI 或没有 TTY 等非交互模式下，Expo CLI 默认会执行此操作。设置 `EXPO_NO_DEV_MENU=0` 可以选择退出。
 
 #### 应用特定的深层链接
 

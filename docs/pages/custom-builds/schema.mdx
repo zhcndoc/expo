@@ -388,6 +388,354 @@ functions:
 {/* prettier-ignore */}
 > **警告** 你的项目必须配置为使用旧版构建基础设施才能启动 Android Emulator。前往[项目设置](https://expo.dev/accounts/[account]/projects/[project]/settings)进行配置。有关更多信息，请参阅[此变更日志文章](https://expo.dev/changelog/2024-08-29-c3d-default)。
 
+#### `inputs[].required`
+
+用于指示输入值是否必填的布尔值。例如，某个函数可以没有必填输入值：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    inputs:
+      - name: name
+        # @info #
+        required: false
+        # @end #
+```
+
+#### `inputs[].type`
+
+输入值的类型。可以是 `string`、`num` 或 `json`。
+
+函数调用中设置的输入值，以及函数的 `default_value` 和 `allowed_values`，都会根据该类型进行验证。
+
+输入值的默认 `type` 为 `string`。
+
+例如，函数包含 `string`、`num` 和 `json` 类型的输入值：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    inputs:
+      - name: name
+        # @info #
+        type: string
+        # @end #
+      - name: age
+        # @info #
+        type: num
+        # @end #
+      - name: other_data
+        # @info #
+        type: json
+        # @end #
+```
+
+#### `inputs[].default_value`
+
+你可以使用 `default_value` 提供一个默认输入值。例如，函数的默认值为 `Hello world`：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    inputs:
+      - name: name
+        # @info #
+        default_value: Hello world
+        # @end #
+```
+
+#### `inputs[].allowed_values`
+
+你可以使用 `allowed_values` 在数组中提供多个值。例如，函数有多个允许值：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    inputs:
+      - name: name
+        default_value: Hello world
+        # @info #
+        allowed_values: [Hi, Hello, Hey]
+        # @end #
+        type: string
+```
+
+#### 多个输入值
+
+可以向函数提供多个输入值。
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    # @info #
+    inputs:
+      - name: name
+        default_value: Expo
+      - name: greeting
+        default_value: Hi
+        allowed_values: [Hi, Hello]
+    # @end #
+    command: echo "${ inputs.greeting }, ${ inputs.name }!"
+```
+
+### `functions.[function_name].outputs`
+
+函数可以返回一个输出值。例如，函数返回值为 `Hello world` 的输出值：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    # @info #
+    outputs: [value]
+    # @end #
+    command: set-output value "Hello world"
+```
+
+#### `outputs[].name`
+
+输出值的名称。它用作标识符，以便在其他步骤中访问该输出值：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    outputs:
+      # @info #
+      - name: name
+      # @end #
+```
+
+#### `outputs[].required`
+
+用于指示输出值是否必填的布尔值。例如，某个函数可以没有必填输出值：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    outputs:
+      - name: value
+        # @info #
+        required: false
+        # @end #
+```
+
+### `functions.[function_name].command`
+
+用于定义函数执行时运行的命令，使函数可以作为简单的 shell 脚本使用。每个函数都**必须**定义 `command`，或定义指向 JS/TS 模块的 `path`。例如，可以使用 `echo "Hello world"` 命令打印消息：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    # @info #
+    command: echo "Hi!"
+    # @end #
+```
+
+### `functions.[function_name].path`
+
+用于定义实现函数的 JavaScript/TypeScript 模块路径。每个函数都**必须**定义 `command` 或 `path` 属性。例如，使用路径 `./greetings` 执行 `greetings` 模块中声明的 `greetings` 函数：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    # @info #
+    path: ./greetings
+    # @end #
+```
+
+> [详细了解如何构建和使用自定义 TypeScript/JavaScript 函数](/custom-builds/functions/)。
+
+### `functions.[function_name].shell`
+
+用于定义执行函数的步骤所使用的默认 shell。例如，将步骤的 shell 设置为 `/bin/sh`：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    # @info #
+    shell: /bin/sh
+    # @end #
+    command: echo "Hi!"
+```
+
+### `functions.[function_name].supported_platforms`
+
+用于定义函数支持的平台。默认为所有平台。允许的平台为 `darwin` 和 `linux`。
+
+例如，函数支持的平台为 `darwin`（macOS）：
+
+```yaml
+functions:
+  greetings:
+    name: Say Hi!
+    # @info #
+    supported_platforms: [darwin]
+    # @end #
+    command: echo "Hi!"
+```
+
+## `import`
+
+用于从其他配置文件导入函数的配置文件路径列表。被导入的文件不能包含 `build` 部分。
+
+例如，以下构建配置导入两个文件，并调用两个导入的函数：`say_hi` 和 `say_bye`。
+
+```yaml build-and-test.yml
+import:
+  - common-functions.yml
+  - another-file.yml
+
+build:
+  steps:
+    - say_hi
+    - say_bye
+```
+
+```yaml common-functions.yml
+functions:
+  say_hi:
+    name: Say Hi!
+    command: echo "Hi!"
+```
+
+```yaml another-file.yml
+functions:
+  say_bye:
+    name: Say bye :(
+    command: echo "Bye!"
+```
+
+## 函数
+
+### EAS 内置函数
+
+EAS 提供了一组可复用的内置函数，你可以在构建配置中直接使用，无需定义函数。
+
+> **信息** **提示：** EAS 提供的任何内置函数都必须以 `eas/` 前缀开头。
+
+#### `eas/build`
+
+封装整个 EAS Build 流程的一体化函数。它根据构建配置文件中 [**eas.json**](/eas/json/) 的设置解析最佳构建配置。
+
+如果你希望完成构建而无需手动修改和配置构建流程，那么此函数非常适合你。如果你想在构建流程前后使用其他自定义步骤，但不想更改构建流程本身，它也可以作为自定义构建配置的良好起点。
+
+```yaml example.yml
+build:
+  name: Run a build using a single command
+  steps:
+    - eas/build
+```
+
+如需更好地控制构建流程并按需自定义，请参阅以下由 `eas/build` 在后台运行的自定义函数和步骤。它们会根据构建配置文件的配置作为构建流程的一部分执行。
+
+##### Android
+
+当构建配置使用 [`withoutCredentials`](/eas/json/#withoutcredentials) 时：
+
+- [`eas/checkout`](#eascheckout)
+- [`eas/use_npm_token`](#easuse_npm_token)
+- [`eas/install_node_modules`](#easinstall_node_modules)
+- [`eas/resolve_build_config`](#easresolve_build_config)
+- [`eas/prebuild`](#easprebuild)
+- [`eas/configure_eas_update`](#easconfigure_eas_update)
+- [`eas/run_gradle`](#easrun_gradle)
+- [`eas/find_and_upload_build_artifacts`](#easfind_and_upload_build_artifacts)
+- [`eas/upload_embedded_bundle`](#easupload_embedded_bundle)，前提是已启用[内嵌 bundle 上传](/eas-update/bundle-diffing/#patches-from-the-embedded-bundle)
+
+当构建配置使用凭据（适用于 `internal` 和 `store` [distribution](/eas/json/#distribution) 构建）时：
+
+- [`eas/checkout`](#eascheckout)
+- [`eas/use_npm_token`](#easuse_npm_token)
+- [`eas/install_node_modules`](#easinstall_node_modules)
+- [`eas/resolve_build_config`](#easresolve_build_config)
+- [`eas/prebuild`](#easprebuild)
+- [`eas/configure_eas_update`](#easconfigure_eas_update)
+- [`eas/inject_android_credentials`](#easinject_android_credentials)
+- [`eas/configure_android_version`](#easconfigure_android_version)
+- [`eas/run_gradle`](#easrun_gradle)
+- [`eas/find_and_upload_build_artifacts`](#easfind_and_upload_build_artifacts)
+- [`eas/upload_embedded_bundle`](#easupload_embedded_bundle)，前提是已启用[内嵌 bundle 上传](/eas-update/bundle-diffing/#patches-from-the-embedded-bundle)
+
+##### iOS
+
+当构建配置使用 [`withoutCredentials`](/eas/json/#withoutcredentials) 或 [`simulator`](/eas/json/#simulator) 时：
+
+- [`eas/checkout`](#eascheckout)
+- [`eas/use_npm_token`](#easuse_npm_token)
+- [`eas/install_node_modules`](#easinstall_node_modules)
+- [`eas/resolve_build_config`](#easresolve_build_config)
+- [`eas/prebuild`](#easprebuild)
+- 使用 `pod install` 命令安装 pods
+- [`eas/configure_eas_update`](#easconfigure_eas_update)
+- [`eas/generate_gymfile_from_template`](#easgenerate_gymfile_from_template)
+- [`eas/run_fastlane`](#easrun_fastlane)
+- [`eas/find_and_upload_build_artifacts`](#easfind_and_upload_build_artifacts)
+
+当构建配置使用凭据（适用于 `internal` 和 `store` [distribution](/eas/json/#distribution) 构建）时：
+
+- [`eas/checkout`](#eascheckout)
+- [`eas/use_npm_token`](#easuse_npm_token)
+- [`eas/install_node_modules`](#easinstall_node_modules)
+- [`eas/resolve_build_config`](#easresolve_build_config)
+- [`eas/resolve_apple_team_id_from_credentials`](#easresolve_apple_team_id_from_credentials)
+- [`eas/prebuild`](#easprebuild)
+- 使用 `pod install` 命令安装 pods
+- [`eas/configure_eas_update`](#easconfigure_eas_update)
+- [`eas/configure_ios_credentials`](#easconfigure_ios_credentials)
+- [`eas/configure_ios_version`](#easconfigure_ios_version)
+- [`eas/generate_gymfile_from_template`](#easgenerate_gymfile_from_template)
+- [`eas/run_fastlane`](#easrun_fastlane)
+- [`eas/find_and_upload_build_artifacts`](#easfind_and_upload_build_artifacts)
+- [`eas/upload_embedded_bundle`](#easupload_embedded_bundle)，前提是已启用[内嵌 bundle 上传](/eas-update/bundle-diffing/#patches-from-the-embedded-bundle)
+
+你可以在 YAML 配置文件中使用以下步骤替换 `eas/build` 命令调用：
+
+<BoxLink
+  title="ios-simulator-build.yml"
+  description="查看示例仓库中 `eas/build` 函数为 iOS 模拟器构建在后台执行的步骤。"
+  Icon={GithubIcon}
+  href="https://github.com/expo/eas-custom-builds-example/blob/main/.eas/build/ios-simulator-build.yml"
+/>
+<BoxLink
+  title="ios-credentials-build.yml"
+  description="查看示例仓库中 `eas/build` 函数为使用凭据的 iOS 构建在后台执行的步骤。"
+  Icon={GithubIcon}
+  href="https://github.com/expo/eas-custom-builds-example/blob/main/.eas/build/ios-build-with-credentials.yml"
+/>
+<BoxLink
+  title="android-build-without-credentials.yml"
+  description="查看示例仓库中 `eas/build` 函数为不使用凭据的 Android 构建在后台执行的步骤。"
+  Icon={GithubIcon}
+  href="https://github.com/expo/eas-custom-builds-example/blob/main/.eas/build/android-build-without-credentials.yml"
+/>
+<BoxLink
+  title="android-build-with-credentials.yml"
+  description="查看示例仓库中 `eas/build` 函数为使用凭据的 Android 构建在后台执行的步骤。"
+  Icon={GithubIcon}
+  href="https://github.com/expo/eas-custom-builds-example/blob/main/.eas/build/android-build-with-credentials.yml"
+/>
+
+##### 已知限制
+
+- 它不接受任何输入，解析后的构建流程会根据 [**eas.json**](/eas/json/) 中的构建配置文件进行配置。
+- `eas/build` 生成的构建流程不可配置，因此无法自定义。如果需要自定义构建流程，请使用此函数在后台执行的部分函数和步骤，并按照上面的示例在 YAML 配置文件中手动配置它们。
+
+#### `eas/maestro_test`
+
+一体化函数，用于安装 Maestro、准备测试环境（Android Emulator 或 iOS Simulator）并测试应用。
+
+> **警告** 你的项目必须配置为使用旧版构建基础设施才能启动 Android Emulator。前往[项目设置](https://expo.dev/accounts/[account]/projects/[project]/settings)进行配置。有关更多信息，请参阅[此变更日志文章](https://expo.dev/changelog/2024-08-29-c3d-default)。
+
 | 输入       | 类型     | 必填    | 描述                                                                                                                                                                                                                        |
 | ----------- | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `flow_path` | `string` | <YesIcon /> | 要运行的 [Maestro 流程](https://docs.maestro.dev/getting-started/writing-your-first-flow)的路径（或多个路径，每个路径占一行）                                                                                     |
@@ -395,11 +743,182 @@ functions:
 
 > **警告** 我们观察到，如果在安装了 Xcode 15.0 或 15.2 的镜像上运行，Maestro 测试经常会超时。请使用 `latest` 镜像以避免任何问题。
 
+```yaml build-and-test.yml
+build:
+  name: Build and test
+  steps:
+    - eas/build
+    # @info #
+    - eas/maestro_test:
+        inputs:
+          flow_path: |
+            maestro/sign_in.yml
+            maestro/create_post.yml
+            maestro/sign_out.yml
+    # @end #
+```
+
+```yaml test-ios-simulator-app.yml
+build:
+  name: Build and test iOS simulator app
+  steps:
+    - eas/checkout
+    # @info #
+    - eas/maestro_test:
+        app_path: ./fixtures/my_app.app
+        inputs:
+          flow_path: |
+            maestro/sign_in.yml
+            maestro/create_post.yml
+            maestro/sign_out.yml
+    # @end #
+```
+
+```yaml test-android-emulator-app.yml
+build:
+  name: Build and test Android emulator app
+  steps:
+    - eas/checkout
+    # @info #
+    - eas/maestro_test:
+        app_path: ./fixtures/my_app.apk
+        inputs:
+          flow_path: |
+            maestro/sign_in.yml
+            maestro/create_post.yml
+            maestro/sign_out.yml
+    # @end #
+```
+
+它在后台使用以下步骤：
+
+- [`eas/install_maestro`](#easinstall_maestro) 安装 Maestro
+- [`eas/start_android_emulator`](#easstart_android_emulator) 在需要时启动 Android Emulator
+- [`eas/start_ios_simulator`](#easstart_ios_simulator) 在需要时启动 iOS Simulator
+- 自定义 `run`，将 **.apk** 安装到正在运行的 Android Emulator，将 **.app** 安装到 iOS Simulator
+- 一系列 `run`，为提供的每个流程执行 `maestro test`
+- [`eas/upload_artifact`](#easupload_artifact) 将 Maestro 测试产物作为构建产物上传
+
+> **警告** 我们观察到，如果在安装了 Xcode 15.0 或 15.2 的镜像上运行，Maestro 测试经常会超时。请使用 `latest` 镜像以避免任何问题。
+
+如果需要自定义 Maestro 版本、运行特定的 Android Emulator 或 iOS Simulator，或上传多个构建产物，则需要自行编写这一系列步骤。
+
+<Collapsible summary={<>展开了 <code>eas/maestro_test</code> 的 Android 构建配置示例</>}>
+
+```yaml build-and-test-android-expanded.yml
+build:
+  name: Build and test (Android, expanded)
+  steps:
+    - eas/build
+    # @info #
+    - eas/install_maestro
+    - eas/start_android_emulator:
+        inputs:
+          system_package_name: system-images;android-34;default;x86_64
+    - run:
+        command: |
+          # shopt -s globstar is necessary to add /**/ support
+          shopt -s globstar
+          # shopt -s nullglob is necessary not to try to install
+          # SEARCH_PATH literally if there are no matching files.
+          shopt -s nullglob
+
+          SEARCH_PATH="android/app/build/outputs/**/*.apk"
+          FILES_FOUND=false
+
+          for APP_PATH in $SEARCH_PATH; do
+            FILES_FOUND=true
+            echo "Installing \\"$APP_PATH\\""
+            adb install "$APP_PATH"
+          done
+
+          if ! $FILES_FOUND; then
+            echo "No files found matching \\"$SEARCH_PATH\\". Are you sure you've built an Emulator app?"
+            exit 1
+          fi
+    - run:
+        command: |
+          maestro test maestro/flow.yml
+    - eas/upload_artifact:
+        name: Upload test artifact
+        if: ${ always() }
+        inputs:
+          type: build-artifact
+          path: ${ eas.env.HOME }/.maestro/tests
+    # @end #
+```
+
+</Collapsible>
+
+<Collapsible summary={<>展开了 <code>eas/maestro_test</code> 的 iOS 构建配置示例</>}>
+
+```yaml build-and-test-ios-expanded.yml
+build:
+name: Build and test (iOS, expanded)
+steps:
+  - eas/build
+  # @info #
+  - eas/install_maestro
+  - eas/start_ios_simulator
+  - run:
+      command: |
+        # shopt -s nullglob is necessary not to try to install
+        # SEARCH_PATH literally if there are no matching files.
+        shopt -s nullglob
+
+        SEARCH_PATH="ios/build/Build/Products/*simulator/*.app"
+        FILES_FOUND=false
+
+        for APP_PATH in $SEARCH_PATH; do
+          FILES_FOUND=true
+          echo "Installing \\"$APP_PATH\\""
+          xcrun simctl install booted "$APP_PATH"
+        done
+
+        if ! $FILES_FOUND; then
+          echo "No files found matching \\"$SEARCH_PATH\\". Are you sure you've built a Simulator app?"
+          exit 1
+        fi
+  - run:
+      command: |
+        maestro test maestro/flow.yml
+  - eas/upload_artifact:
+      name: Upload test artifact
+      if: ${ always() }
+      inputs:
+        type: build-artifact
+        path: ${ eas.env.HOME }/.maestro/tests
+# @end #
+```
+
+</Collapsible>
+
+<BoxLink
+  title="eas/maestro_test 源代码"
+  description="在 GitHub 上查看 eas/maestro_test 函数的源代码。"
+  Icon={GithubIcon}
+  href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functionGroups/maestroTest.ts"
+/>
+
+#### `eas/checkout`
+
+检出项目源文件。
+
+```yaml upload.yml
+build:
+  name: List files
+  steps:
+    - eas/checkout
+    - run:
+        name: List assets
+        run: ls assets
+```
+
 对于基于 Git 的项目源，默认情况下，该步骤会使用构建记录的提交。使用 `ref` 可以检出其他分支、标签或提交：
 
 ```yaml example.yml
 build:
-  name: 检出特定 ref
+  name: Check out a specific ref
   steps:
     # @info #
     - eas/checkout:
@@ -415,7 +934,7 @@ build:
 - 标签，例如 `refs/tags/v1.2.3` 这样的限定 ref。最终仓库会处于分离的 `HEAD` 状态
 - 完整的提交 SHA。最终仓库会处于分离的 `HEAD` 状态
 
-只有当项目源来自 Git 仓库时，`ref` 输入才有效，例如通过 GitHub 集成触发的构建。本地构建和上传的项目 tarball 不支持该输入。请将此步骤放在 [`eas/build`](#easbuild) 之前，因为后者会在内部检出项目
+只有当项目源来自 Git 仓库时，`ref` 输入才有效，例如通过 GitHub 集成触发的构建。本地构建和上传的项目 tarball 不支持该输入。请将此步骤放在 [`eas/build`](#easbuild) 之前，因为后者会在内部检出项目。
 
 <EASFunctionDescription name="checkout" />
 
@@ -1169,6 +1688,65 @@ build:
   description="在 GitHub 上查看 eas/find_and_upload_build_artifacts 函数的源代码。"
   Icon={GithubIcon}
   href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/findAndUploadBuildArtifacts.ts"
+/>
+
+#### `eas/upload_embedded_bundle`
+
+上传构建生成的应用中的内嵌 bundle。之后，EAS Update 可以将你稍后发布到同一频道的更新作为相对于它的[补丁](/eas-update/bundle-diffing/#patches-from-the-embedded-bundle)提供。
+
+启用上传后，`eas/build` 会自动为你运行此步骤。如果配置使用独立步骤构建应用，而不是使用 `eas/build`，请自行添加此步骤。请在构建应用的步骤（例如 `eas/run_gradle` 或 `eas/run_fastlane`）之后运行它。
+
+```yaml example.yml
+build:
+  name: Build Android app
+  steps:
+    - eas/checkout
+    - eas/install_node_modules
+    - eas/prebuild
+    - eas/configure_eas_update
+    - eas/inject_android_credentials
+    - eas/run_gradle
+    - eas/find_and_upload_build_artifacts
+    # @info #
+    - eas/upload_embedded_bundle
+    # @end #
+```
+
+与 `eas/build` 不同，此步骤不会检查 SDK 版本，也不会检查 `EAS_UPDATE_UPLOAD_EMBEDDED_BUNDLE` 和 `EAS_UPDATE_EXPERIMENTAL_UPLOAD_EMBEDDED_BUNDLE` 环境变量。在以下情况下，它会跳过上传：
+
+- 项目未配置 EAS Update。
+- 构建是开发构建。
+- 构建是 iOS 模拟器构建。
+
+此步骤会在构建配置文件设置的 `applicationArchivePath` 中查找应用。如果没有该属性，此步骤会在默认构建输出目录中查找。此步骤会将 bundle 上传到同一配置文件中设置的 [`channel`](/eas/json/#channel)，而不是上传到 `eas/configure_eas_update` 的 `channel` 输入值。
+
+上传失败时，此步骤会使构建失败。例如，构建配置文件没有 `channel`，或此步骤找不到应用时，都会失败。当 `eas/build` 运行此步骤时，上传失败只会记录警告。要在自己的配置中记录失败并继续构建，请将 `ignore_error` 设置为 `true`：
+
+```yaml example.yml
+build:
+  name: Build Android app
+  steps:
+    # ...
+    - eas/find_and_upload_build_artifacts
+    # @info #
+    - eas/upload_embedded_bundle:
+        inputs:
+          ignore_error: true
+    # @end #
+```
+
+> **警告** 启用上传时，不要将此步骤添加到使用 `eas/build` 的配置中。`eas/build` 已经会上传 bundle。再次上传同一个 bundle 会导致此步骤失败。
+
+| 属性                  | 类型      | 必填       | 描述                                                                                                              |
+| --------------------- | --------- | ---------- | ----------------------------------------------------------------------------------------------------------------- |
+| `name`                | -         | <NoIcon /> | 可复用函数中显示在构建日志里的步骤名称。默认为 `Upload embedded bundle`。                                      |
+| `inputs.ignore_error` | `boolean` | <NoIcon /> | 为 `true` 时，此步骤会记录上传失败，但不会使构建失败。默认为 `false`。                                         |
+
+<BoxLink
+  title="eas/upload_embedded_bundle 源代码"
+  description="在 GitHub 上查看 eas/upload_embedded_bundle 函数的源代码。"
+  Icon={GithubIcon}
+  href="https://github.com/expo/eas-cli/blob/main/packages/build-tools/src/steps/functions/uploadEmbeddedBundle.ts"
 />
 
 #### `eas/upload_artifact`

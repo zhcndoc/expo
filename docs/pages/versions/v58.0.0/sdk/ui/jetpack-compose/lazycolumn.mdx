@@ -11,9 +11,7 @@ import { APIInstallSection } from '~/components/plugins/InstallSection';
 import { ComponentExample } from '~/ui/components/ComponentExample';
 import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
-一种延迟加载的垂直列表组件，仅渲染可见项，以实现高效滚动。如需了解更多信息，请参阅[官方 Jetpack Compose 文档](https://developer.android.com/develop/ui/compose/lists)。
-
-> **信息** `LazyColumn` 目前还不是真正的延迟加载：原生端只会组合可见项，但 React 仍会预先创建所有子项，因此大型列表挂载速度可能较慢。我们正在努力改进这一点。对于大型列表，我们推荐使用 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)。
+Expo UI LazyColumn 与官方 Jetpack Compose [LazyColumn API](https://developer.android.com/develop/ui/compose/lists) 一致，并显示垂直滚动列表。
 
 <ContentSpotlight
   variant="component"
@@ -31,11 +29,13 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 ### 基本延迟加载列
 
+[`LazyColumn`](#lazycolumn) 的每个子项都是一行。使用 `verticalArrangement` 属性设置行之间的间距，使用 `contentPadding` 属性为列表内容添加内边距。
+
 <ComponentExample
   title="BasicLazyColumn.tsx"
-  src="/static/images/expo-ui/examples/lazycolumn-basic-android-light.webp"
-  darkSrc="/static/images/expo-ui/examples/lazycolumn-basic-android-dark.webp"
-  alt="可滚动列表，显示一百个项目中的前七个">
+  src="/static/images/expo-ui/examples/lazycolumn-static-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/lazycolumn-static-android-dark.webp"
+  alt="包含三个设置行的列表，每行都有标题和描述">
 
 ```tsx
 import {
@@ -45,22 +45,89 @@ import {
   Text,
 } from '@expo/ui/jetpack-compose';
 
-const items = Array.from(
-  { length: 100 },
-  (_, i) => `Item ${i + 1}`
-);
-
 export default function BasicLazyColumn() {
   return (
     <Host style={{ height: 400 }}>
+      <LazyColumn verticalArrangement={{ spacedBy: 8 }}>
+        <ListItem>
+          <ListItem.HeadlineContent>
+            <Text>Wi-Fi</Text>
+          </ListItem.HeadlineContent>
+          <ListItem.SupportingContent>
+            <Text>Connected to Home</Text>
+          </ListItem.SupportingContent>
+        </ListItem>
+        <ListItem>
+          <ListItem.HeadlineContent>
+            <Text>Bluetooth</Text>
+          </ListItem.HeadlineContent>
+          <ListItem.SupportingContent>
+            <Text>On</Text>
+          </ListItem.SupportingContent>
+        </ListItem>
+        <ListItem>
+          <ListItem.HeadlineContent>
+            <Text>Notifications</Text>
+          </ListItem.HeadlineContent>
+          <ListItem.SupportingContent>
+            <Text>Allowed for all apps</Text>
+          </ListItem.SupportingContent>
+        </ListItem>
+      </LazyColumn>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 大型列表
+
+使用 [`LazyColumn.Items`](#lazyitems) 从数组渲染行。将项目作为 `data` 传入，使用 `keyExtractor` 为每个项目提供唯一键，并传入一个返回项目行的 `children` 函数。`LazyColumn.Items` 只渲染可见区域附近的行，并在滚动时复用这些行。
+
+<ComponentExample
+  title="LargeLazyColumn.tsx"
+  src="/static/images/expo-ui/examples/lazycolumn-large-android-light.webp"
+  darkSrc="/static/images/expo-ui/examples/lazycolumn-large-android-dark.webp"
+  alt="显示一万名联系人的前七行的可滚动列表">
+
+```tsx
+import {
+  Host,
+  LazyColumn,
+  ListItem,
+  Text,
+} from '@expo/ui/jetpack-compose';
+
+type Contact = { id: string; name: string };
+
+const contacts: Contact[] = Array.from(
+  { length: 10000 },
+  (_, i) => ({
+    id: String(i),
+    name: `Contact ${i + 1}`,
+  })
+);
+
+function renderContact({ item }: { item: Contact }) {
+  return (
+    <ListItem>
+      <ListItem.HeadlineContent>
+        <Text>{item.name}</Text>
+      </ListItem.HeadlineContent>
+    </ListItem>
+  );
+}
+
+export default function LargeLazyColumn() {
+  return (
+    <Host style={{ height: 400 }}>
       <LazyColumn>
-        {items.map(item => (
-          <ListItem key={item}>
-            <ListItem.HeadlineContent>
-              <Text>{item}</Text>
-            </ListItem.HeadlineContent>
-          </ListItem>
-        ))}
+        <LazyColumn.Items
+          data={contacts}
+          keyExtractor={contact => contact.id}>
+          {renderContact}
+        </LazyColumn.Items>
       </LazyColumn>
     </Host>
   );
@@ -161,6 +228,14 @@ export default function LazyColumnPadding() {
 ```
 
 </ComponentExample>
+渲染行时请遵循以下规则：
+
+- 在组件外定义 `children` 函数，或使用 `useCallback` 包装它。否则，每次组件渲染时，可见区域附近的行都会重新渲染。
+- 复用的行会保留之前显示项目的本地状态（`useState`）。项目变化时重置状态，或将状态保存在行外部。
+- 尚未准备好的行会显示空占位符。将 `estimatedItemSize` 设置为接近行高的值，单位为密度无关像素（dp）。
+- 使用 `overscanCount` 在可见行的上方和下方预先准备更多行。
+- 要更新行，请传入新的 `data` 数组。不要原地修改数组。
+- 设置 `recycling={false}` 可预先渲染每一行。
 
 ## API
 

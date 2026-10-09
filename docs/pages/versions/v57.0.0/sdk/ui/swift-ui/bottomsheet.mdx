@@ -261,6 +261,58 @@ export default function BottomSheetBackgroundColorExample() {
 
 </ComponentExample>
 
+### 颜色方案
+
+底部弹窗默认跟随设备的浅色或深色外观。若要改用应用的外观，请将 [`preferredColorScheme`](modifiers/#preferredcolorschemecolorscheme) 修饰器添加到 `Group`。`Host` 的 `colorScheme` 属性会更改弹窗内容的外观，但不会更改其背景。
+
+```tsx BottomSheetColorSchemeExample.tsx
+import { useState } from 'react';
+import {
+  Host,
+  BottomSheet,
+  Button,
+  Group,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  padding,
+  preferredColorScheme,
+  presentationDetents,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function BottomSheetColorSchemeExample() {
+  const [isPresented, setIsPresented] = useState(false);
+  const appearance = 'dark';
+
+  return (
+    <Host style={{ flex: 1 }} colorScheme={appearance}>
+      <VStack>
+        <BottomSheet
+          isPresented={isPresented}
+          onIsPresentedChange={setIsPresented}
+          anchor={
+            <Button
+              label="Open sheet"
+              onPress={() => setIsPresented(true)}
+            />
+          }>
+          <Group
+            modifiers={[
+              presentationDetents(['medium']),
+              preferredColorScheme(appearance),
+            ]}>
+            <VStack modifiers={[padding({ all: 20 })]}>
+              <Text>This sheet is always dark.</Text>
+            </VStack>
+          </Group>
+        </BottomSheet>
+      </VStack>
+    </Host>
+  );
+}
+```
+
 ### 带有 presentation detents 的底部弹窗
 
 在 `Group` 上使用 [`presentationDetents`](modifiers/#presentationdetentsdetents-options) 修饰器来控制可用高度。你可以使用：

@@ -99,6 +99,27 @@ export default function Layout() {
 }
 ```
 
+### 设置原生标题栏的界面样式
+
+> **信息** 此选项仅在 **SDK 58** 及更高版本的 iOS 上可用。
+
+使用 `headerUserInterfaceStyle` 将屏幕的原生标题栏设置为 `'light'` 或 `'dark'`，而不更改导航主题。例如，详情屏幕可以使用深色标题栏，而栈的其余部分保留基于主题的样式：
+
+```tsx src/app/_layout.tsx
+import { Stack } from 'expo-router';
+
+export default function Layout() {
+  return (
+    <Stack>
+      <Stack.Screen name="index" options={{ headerLargeTitleEnabled: true }} />
+      <Stack.Screen name="details" options={{ headerUserInterfaceStyle: 'dark' }} />
+    </Stack>
+  );
+}
+```
+
+你也可以在整个栈的 `screenOptions` 中设置此选项。`Stack.Screen` 的选项会覆盖该屏幕的设置。省略此选项时，原生标题栏会遵循导航主题。屏幕可见时，原生标题栏不支持更改此选项。此选项仅影响原生标题栏；如有需要，请单独设置标题栏颜色。
+
 ### 动态设置屏幕选项
 
 要动态配置某个路由的选项，你可以使用组合组件或基于 options 的 API。
@@ -405,7 +426,7 @@ export default function Settings() {
 
 ### `dismissAll` 操作
 
-返回到最近堆栈中的第一屏。这类似于 [`popToTop`](https://reactnavigation.org/docs/stack-actions/#poptotop) 堆栈操作。
+`dismissAll` 操作会关闭最近栈中第一屏以上的所有屏幕，返回到第一屏。
 
 例如，`home` 路由是第一屏，而 `settings` 是最后一屏。要从 `settings` 回到 `home` 路由，你必须先回到 `details`。然而，使用 `dismissAll` 操作后，你可以从 `settings` 回到 `home`，并关闭中间的任意屏幕。
 

@@ -187,7 +187,9 @@ await src.write(await response.bytes());
 
 <Collapsible summary="预览文件">
 
-使用 `File.preview()` 通过平台的文件预览流程打开本地文件。文件预览目前支持 Android 和 iOS。在 iOS 上，这会展示 Quick Look，它支持许多常见文件类型，例如 PDF、图片、文本文件、CSV 文件和 Office 文档。在 Android 上，这会打开一个 `ACTION_VIEW` intent，因此支持情况取决于设备上已安装且能够处理该文件 MIME 类型的应用。
+使用 `File.preview()` 通过平台的文件预览流程打开本地文件。文件预览目前支持 Android 和 iOS。在 iOS 上，这会展示 Quick Look，它支持许多常见文件类型，例如 PDF、图片、文本文件、CSV 文件和 Office 文档。在 Android 上，这会打开一个支持文件 MIME 类型的已安装应用。
+
+`File.preview()` 和 `File.canPreview()` 接受 `File` 或有序的 `File[]`。对于单个文件，也可以直接调用 `file.preview()` 和 `file.canPreview()`。
 
 ```ts example.ts
 import { File, Paths } from 'expo-file-system';
@@ -197,16 +199,32 @@ const file = await File.downloadFileAsync(
   new File(Paths.cache, 'sample.pdf')
 );
 
-if (await file.canPreview()) {
-  await file.preview({ title: 'Sample PDF' });
+if (await File.canPreview(file)) {
+  await File.preview(file, { title: 'Sample PDF' });
 }
 ```
 
-`mimeType` 选项默认使用文件的 `type` 属性。如果文件扩展名未能正确识别类型，请显式传入 `mimeType`，尤其是在 Android 上，因为 MIME 类型会用于查找兼容的应用。当 Android 无法解析 MIME 类型时，`canPreview()` 会解析为 `false`，并且 `preview()` 会拒绝。
+**仅 iOS 支持多个文件。** 以下示例会先打开笔记，然后允许用户导航到 PDF：
+
+```ts example.ts
+const notes = new File(Paths.cache, 'notes.txt');
+await notes.write('Notes about the PDF');
+const files = [file, notes];
+
+if (await File.canPreview(files)) {
+  await File.preview(files, { initialIndex: 1 });
+}
+```
+
+`initialIndex` 从零开始，默认为 `0`。包含一个文件的数组在两个平台上都有效。在 Android 上，传递多个文件会使 `File.canPreview()` 解析为 `false`，并使 `File.preview()` 拒绝。
+
+传递多个文件时，`File.preview()` 会拒绝 `title` 或 `mimeType`；`File.canPreview()` 会拒绝 `mimeType`。对于单个文件，`mimeType` 默认使用文件的 `type` 属性。如果文件扩展名未能正确识别类型，请显式传入 `mimeType`，尤其是在 Android 上。
 
 如果文件无效或无法读取，`canPreview()` 会拒绝。当文件不存在或平台无法预览时，它会解析为 `false`。
 
-`preview()` 会在原生预览已展示或已交由其他应用处理后解析完成。如果文件不存在、无法读取或没有可用预览，它会拒绝。它不会等待用户关闭查看器。
+`File.canPreview()` 在不支持预览、检查的文件缺失或文件不受支持时解析为 `false`。遇到无效或无法读取的文件时会拒绝。任一文件无法预览或 `initialIndex` 无效时，`File.preview()` 会拒绝。两个方法都会拒绝空数组。
+
+请在查看器关闭前保持文件可用。`File.preview()` 会在预览已展示或已交由其他应用处理后解析完成。
 
 如果你的应用中分享面板很有用，那么在预览失败时，你可以结合使用 [`expo-sharing`](./sharing/)：
 

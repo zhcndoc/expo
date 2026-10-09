@@ -15,8 +15,6 @@ import { ContentSpotlight } from '~/ui/components/ContentSpotlight';
 
 Expo UI List 与官方 SwiftUI [List API](https://developer.apple.com/documentation/swiftui/list) 保持一致，并支持通过 [`listStyle`](modifiers/#liststylestyle) 修饰符、各种行/分区修饰符，以及选择、重新排序和编辑功能进行样式设置。
 
-> **info** `List` 目前还不会延迟渲染各行：React 会预先创建每一行，因此大型列表在挂载时可能会很慢。我们正在改进这一点。对于大型列表，我们推荐使用 [FlashList](https://shopify.github.io/flash-list/) 或 [Legend List](https://github.com/LegendApp/legend-list)。
-
 <ContentSpotlight
   variant="component"
   aspect="landscape"
@@ -97,6 +95,59 @@ export default function ListWithLabelsExample() {
 ```
 
 </ComponentExample>
+
+### 大型列表
+
+使用 [`List.ForEach`](#listforeach) 从数组渲染行。将项目作为 `data` 传入，使用 `keyExtractor` 为每个项目提供唯一键，并传入一个返回项目行的 `children` 函数。`List.ForEach` 只渲染可见区域附近的行，并在滚动时复用这些行。
+
+<ComponentExample
+  title="LargeListExample.tsx"
+  src="/static/images/expo-ui/examples/list-large-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/list-large-ios-dark.webp"
+  alt="显示一万名联系人的前几行的列表">
+
+```tsx
+import { Host, List, Text } from '@expo/ui/swift-ui';
+
+type Contact = { id: string; name: string };
+
+const contacts: Contact[] = Array.from(
+  { length: 10000 },
+  (_, i) => ({
+    id: String(i),
+    name: `Contact ${i + 1}`,
+  })
+);
+
+function renderContact({ item }: { item: Contact }) {
+  return <Text>{item.name}</Text>;
+}
+
+export default function LargeListExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <List>
+        <List.ForEach
+          data={contacts}
+          keyExtractor={contact => contact.id}>
+          {renderContact}
+        </List.ForEach>
+      </List>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+渲染行时请遵循以下规则：
+
+- 在组件外定义 `children` 函数，或使用 `useCallback` 包装它。否则，每次组件渲染时，可见区域附近的行都会重新渲染。
+- 复用的行会保留之前显示项目的本地状态（`useState`）。项目变化时重置状态，或将状态保存在行外部。
+- 尚未准备好的行会显示空占位符。将 `estimatedItemSize` 设置为接近行内容高度的值（不包括 `List` 内边距），单位为点。
+- 使用 `overscanCount` 在可见行的上方和下方预先准备更多行。
+- 要更新行，请传入新的 `data` 数组。不要原地修改数组。
+- 设置 `recycling={false}` 可预先渲染每一行。
 
 ### 列表样式
 
@@ -202,6 +253,10 @@ const INITIAL_TASKS: Task[] = [
   { id: '4', title: '任务 4' },
 ];
 
+function renderTask({ item }: { item: Task }) {
+  return <Label title={item.title} />;
+}
+
 export default function EditableListExample() {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -248,7 +303,7 @@ export default function EditableListExample() {
             keyExtractor={task => task.id}
             onDelete={handleDelete}
             onMove={handleMove}>
-            {({ item }) => <Label title={item.title} />}
+            {renderTask}
           </List.ForEach>
         </Section>
       </List>

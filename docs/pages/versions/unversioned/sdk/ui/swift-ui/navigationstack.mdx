@@ -1,0 +1,259 @@
+---
+title: NavigationStack
+description: 包含链接和目标视图、可将视图推入导航栈的 SwiftUI NavigationStack 组件。
+sourceCodeUrl: 'https://github.com/expo/expo/tree/main/packages/expo-ui'
+packageName: '@expo/ui'
+platforms: ['ios', 'tvos', 'expo-go']
+---
+
+import APISection from '~/components/plugins/APISection';
+import { APIInstallSection } from '~/components/plugins/InstallSection';
+import { ComponentExample } from '~/ui/components/ComponentExample';
+
+Expo UI NavigationStack 与官方 SwiftUI [NavigationStack API](https://developer.apple.com/documentation/swiftui/navigationstack) 一致，并显示一个可以将其他视图推入其上的根视图。
+
+点击 [`NavigationLink`](#navigationlink) 会推入具有相同 `value` 的 [`NavigationDestination`](#navigationdestination)。
+
+## 安装
+
+<APIInstallSection />
+
+## 用法
+
+### 基本导航
+
+将根视图和目标视图放入导航栈中。为链接及其目标视图设置相同的 `value`。使用 [`navigationTitle`](modifiers/#navigationtitletitle) 修饰符设置每个屏幕的标题。
+
+<ComponentExample
+  title="NavigationStackExample.tsx"
+  src="/static/images/expo-ui/examples/navigationstack-basic-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/navigationstack-basic-ios-dark.webp"
+  alt="一个包含账户和通知行的设置列表，每行带有箭头">
+
+```tsx
+import {
+  Host,
+  List,
+  NavigationDestination,
+  NavigationLink,
+  NavigationStack,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  navigationTitle,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function NavigationStackExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <NavigationStack>
+        <List modifiers={[navigationTitle('Settings')]}>
+          <NavigationLink value="account">
+            <Text>Account</Text>
+          </NavigationLink>
+          <NavigationLink value="notifications">
+            <Text>Notifications</Text>
+          </NavigationLink>
+        </List>
+        <NavigationDestination value="account">
+          <VStack
+            modifiers={[
+              padding({ all: 20 }),
+              navigationTitle('Account'),
+            ]}>
+            <Text>Signed in as bird@example.com</Text>
+          </VStack>
+        </NavigationDestination>
+        <NavigationDestination value="notifications">
+          <VStack
+            modifiers={[
+              padding({ all: 20 }),
+              navigationTitle('Notifications'),
+            ]}>
+            <Text>All notifications are on.</Text>
+          </VStack>
+        </NavigationDestination>
+      </NavigationStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+在 [`List`](list) 中，链接会渲染为带箭头的一行。无论推入该目标视图的链接嵌套多深，目标视图都必须是导航栈的直接子项。
+
+> **信息** 将链接保留在 `NavigationStack` 内部。从导航栈呈现的内容（例如 [`BottomSheet`](bottomsheet) 或 [`Popover`](popover)）需要拥有自己的 `NavigationStack` 和目标视图。
+
+### 将任意视图作为链接
+
+链接可以包装任意视图。
+
+<ComponentExample
+  title="NavigationLinkCardExample.tsx"
+  src="/static/images/expo-ui/examples/navigationstack-link-card-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/navigationstack-link-card-ios-dark.webp"
+  alt="一个今天屏幕，其中每周报告卡片作为导航链接">
+
+```tsx
+import {
+  Host,
+  HStack,
+  Image,
+  NavigationDestination,
+  NavigationLink,
+  NavigationStack,
+  Spacer,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  font,
+  foregroundStyle,
+  navigationTitle,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+
+export default function NavigationLinkCardExample() {
+  return (
+    <Host style={{ flex: 1 }}>
+      <NavigationStack>
+        <VStack
+          modifiers={[
+            padding({ all: 20 }),
+            navigationTitle('Today'),
+          ]}>
+          <NavigationLink value="report">
+            <HStack spacing={12}>
+              <Image systemName="chart.bar.fill" size={28} />
+              <VStack alignment="leading" spacing={2}>
+                <Text modifiers={[font({ textStyle: 'headline' })]}>
+                  Weekly report
+                </Text>
+                <Text
+                  modifiers={[
+                    font({ textStyle: 'caption' }),
+                    foregroundStyle('secondaryLabel'),
+                  ]}>
+                  Ready to read
+                </Text>
+              </VStack>
+              <Spacer />
+            </HStack>
+          </NavigationLink>
+        </VStack>
+        <NavigationDestination value="report">
+          <VStack
+            modifiers={[
+              padding({ all: 20 }),
+              navigationTitle('Weekly report'),
+            ]}>
+            <Text>Sessions are up by 12% on last week.</Text>
+          </VStack>
+        </NavigationDestination>
+      </NavigationStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 读取和设置路径
+
+导航栈默认维护自己的路径。传入 `path` 和 `onPathChange`，即可通过状态驱动导航栈。路径按推入顺序保存每个视图的 `value`。将其设为空数组即可返回根视图。
+
+<ComponentExample
+  title="NavigationStackPathExample.tsx"
+  src="/static/images/expo-ui/examples/navigationstack-path-ios-light.webp"
+  darkSrc="/static/images/expo-ui/examples/navigationstack-path-ios-dark.webp"
+  alt="已推入的嵌套屏幕，包含返回按钮和返回文章按钮">
+
+```tsx
+import {
+  Button,
+  Host,
+  List,
+  NavigationDestination,
+  NavigationLink,
+  NavigationStack,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  navigationTitle,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
+import { useState } from 'react';
+
+const ARTICLES = ['Nesting', 'Migration', 'Song'];
+
+export default function NavigationStackPathExample() {
+  const [path, setPath] = useState<string[]>([]);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <NavigationStack path={path} onPathChange={setPath}>
+        <List modifiers={[navigationTitle('Articles')]}>
+          {ARTICLES.map(article => (
+            <NavigationLink key={article} value={article}>
+              <Text>{article}</Text>
+            </NavigationLink>
+          ))}
+        </List>
+        {ARTICLES.map(article => (
+          <NavigationDestination key={article} value={article}>
+            <VStack
+              spacing={12}
+              modifiers={[
+                padding({ all: 20 }),
+                navigationTitle(article),
+              ]}>
+              <Text>
+                The chapter about {article.toLowerCase()}.
+              </Text>
+              <Button
+                label="Back to the articles"
+                onPress={() => setPath([])}
+              />
+            </VStack>
+          </NavigationDestination>
+        ))}
+      </NavigationStack>
+    </Host>
+  );
+}
+```
+
+</ComponentExample>
+
+### 向导航栏添加按钮
+
+使用 [`Toolbar`](toolbar) 包装内容，并将按钮放入 `Toolbar.Content`。
+
+## API
+
+```tsx
+import {
+  NavigationDestination,
+  NavigationLink,
+  NavigationStack,
+} from '@expo/ui/swift-ui';
+```
+
+<APISection
+  packageName="expo-ui/swift-ui/navigationstack"
+  apiName="NavigationStack"
+/>
+
+<APISection
+  packageName="expo-ui/swift-ui/navigationlink"
+  apiName="NavigationLink"
+/>
+
+<APISection
+  packageName="expo-ui/swift-ui/navigationdestination"
+  apiName="NavigationDestination"
+/>

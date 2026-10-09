@@ -72,6 +72,37 @@ export default function WorkletPhoneMaskExample() {
 }
 ```
 
+### Worklet 回调
+
+报告变更的修饰符（例如 [`onHingeChange`](modifiers/#onhingechangehandler)）可以接收普通函数（在 JavaScript 线程上运行），也可以接收 `useWorkletCallback` 返回的回调（在 UI 线程上同步运行）。将其与 `useNativeState` 配合使用，即可在每次变更时更新视图，而无需触发 React 渲染。
+
+```tsx WorkletHingeExample.tsx
+import {
+  Host,
+  Text,
+  useNativeState,
+  useWorkletCallback,
+  VStack,
+} from '@expo/ui/swift-ui';
+import { onHingeChange } from '@expo/ui/swift-ui/modifiers';
+
+export default function WorkletHingeExample() {
+  const isFullyOpen = useNativeState(false);
+  const onHinge = useWorkletCallback((_, newContext) => {
+    'worklet';
+    isFullyOpen.value = newContext.hinge?.status === 'fullyOpen';
+  });
+
+  return (
+    <Host matchContents>
+      <VStack modifiers={[onHingeChange(onHinge)]}>
+        <Text>Fold the device</Text>
+      </VStack>
+    </Host>
+  );
+}
+```
+
 ## API
 
 ```tsx

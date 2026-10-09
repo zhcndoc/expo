@@ -314,6 +314,71 @@ EAS CLI 会将 `APPIUM_URL` 和 `APPIUM_CAPS` 写入 **.env.eas-simulator**。`s
 
 会话活动描述控制器的操作和交互。它不能替代应用程序运行时日志。
 
+## 记录网络流量
+
+在 iOS 上，会话可以记录设备上应用发出的 HTTP 和 HTTPS 请求。启动会话时添加 `--network-capture`：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type web-preview-only --build-id <build-id> --network-capture --non-interactive',
+  ]}
+/>
+
+会话运行期间，网页预览会在 **Tools** 面板的 **Network requests** 下列出每个请求。
+
+> **警告** 网络捕获会解密 HTTPS。它不会编辑你保留的正文和查询值，因此其中可能包含明文凭据。只保留所需字段，并将预览链接和下载的文件视为机密。
+
+### 记录的内容
+
+捕获功能会记录应用通过其创建的 `URLSession` 发送的 HTTP 和 HTTPS 请求。React Native 的 `fetch` 和图像加载会以这种方式发送请求。捕获功能还会记录创建自身 `URLSession` 的库和 SDK 发出的请求，例如 `expo-updates` 的更新检查。
+
+- 重新启动已经运行的应用，以记录其流量。在 agent-device 和 Argent 会话中，捕获可以在已安装应用首次启动后开始。在这种情况下，捕获会遗漏应用仅在启动时发送的请求。重新启动应用不一定会再次发送这些请求。
+- 捕获不会记录 Apple 系统应用（例如 Safari）的流量，也不会记录使用 `URLSession.shared` 的请求。
+- Android 上以及会话通过 `--egress local` 将流量发送到你的计算机时，都无法使用网络捕获。如果同时传递 `--network-capture` 和 `--egress local`，`eas simulator:start` 会失败并显示错误。
+
+### 选择保留的内容
+
+默认情况下，记录只保留每个请求的方法、URL、状态、时间和大小，并编辑 URL 中的查询值。使用 `--network-capture-field` 可保留更多内容：
+
+| 字段            | 记录还会保留的内容                                                     |
+| --------------- | ---------------------------------------------------------------------- |
+| `header`        | 请求和响应标头。通常包含凭据的标头（例如 `Authorization`）会被编辑。   |
+| `query`         | URL 中的查询值                                                        |
+| `request-body`  | 请求正文                                                              |
+| `response-body` | 响应正文                                                              |
+
+重复使用该标志，或传递逗号分隔的列表：
+
+<Terminal
+  cmd={[
+    '$ eas simulator:start --platform ios --type web-preview-only --expo-go --network-capture --network-capture-field header,response-body --non-interactive',
+  ]}
+/>
+
+### 下载记录
+
+记录仅在开启捕获期间存在。EAS 不会将其保存为会话构件。请在停止会话或在 **Network requests** 下选择 **Turn off and restart** 之前下载它，因为这两个操作都会删除记录。下载的文件是 HTTP Archive（HAR）文件，可以使用浏览器开发者工具和 HTTP 调试工具打开。
+
+要在浏览器中下载，请在网页预览中打开 **Tools** 面板。在 **Network requests** 下选择下载图标，其工具提示为 **Download session as HAR**。
+
+要从命令行下载，请获取会话的预览 API URL：
+
+<Terminal cmd={['$ eas simulator:get --json']} />
+
+从输出中复制 `remoteConfig.previewApiUrl`。它的形式为 `https://<preview-host>/?token=<token>`。请在 `Authorization` 标头中发送令牌，因为捕获路由不接受 URL 中的令牌：
+
+<Terminal
+  cmd={[
+    '$ curl -fsS -H "Authorization: Bearer <token>" -o capture.har "https://<preview-host>/network-capture.har"',
+  ]}
+/>
+
+文件中的每个条目都包含请求和响应、状态和时间信息，以及你选择保留的标头和正文。
+
+### 排查捕获期间失败的应用
+
+捕获功能会将应用流量通过会话计算机上的代理发送并解密。某些应用会对此作出反应：固定服务器证书的应用无法连接，其他请求也可能失败或超时。如果应用在开启捕获时行为异常，请在不使用 `--network-capture` 的情况下启动新会话，以检查是否由捕获功能导致。不需要时请关闭捕获。
+
 ## 使用 iOS 浏览器预览
 
 受支持的 iOS 会话会返回一个 `webPreviewUrl`。在会话处于活动状态时，在桌面浏览器中打开它。

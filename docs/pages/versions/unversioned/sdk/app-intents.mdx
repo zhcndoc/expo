@@ -170,6 +170,41 @@ struct NoteQuery: EntityStringQuery {
 
 kind 字符串必须与传递给 `setEntityCatalogAsync()` 的值一致。每个 `AppIntentEntityRecord` 都包含 `id` 和显示用的 `title`。它还可以包含 `subtitle` 和 `synonyms`。请在 `init(record:)` 等初始化器中将记录转换为具体的 `AppEntity`。设备会存储目录，因此请保持目录精简，只发布 Siri 和快捷指令所需的值。
 
+### 捐赠 intent
+
+捐赠会告知系统用户在应用中执行了 intent 的操作。系统会从捐赠中学习，并可稍后在锁定屏幕、Siri 建议和 Spotlight 中推荐该操作。只有 Swift 可以创建 intent，因此请让 intent 遵循 `DonatableAppIntent`，并根据 JavaScript 传入的参数构建它。使用带有 `@Field` 属性的 `DonationParams` 记录声明这些参数：
+
+```swift
+extension SaveNoteIntent: DonatableAppIntent {
+  struct DonationParams: Record {
+    @Field(.required) var text: String = ""
+  }
+
+  init(donationParams: DonationParams) {
+    self.init()
+    self.text = donationParams.text
+  }
+}
+```
+
+在 `AppIntentsSetup` 模块的 `OnCreate` 中注册 intent。JavaScript 使用注册的名称进行捐赠。该名称不必与 intent 传递给 `dispatch()` 的名称匹配，但复用该名称可以让每个 intent 在 JavaScript 中只有一个名称：
+
+```swift
+AppIntentDonationRegistry.shared.register("saveNote", as: SaveNoteIntent.self)
+```
+
+用户在应用中保存笔记后，调用 `donateIntentAsync()`。捐赠不再适用时调用 `deleteDonationsAsync()`，例如用户退出登录后：
+
+```ts
+await AppIntents.donateIntentAsync('saveNote', { text: 'Buy milk' });
+
+await AppIntents.deleteDonationsAsync({ intent: 'saveNote' });
+```
+
+缺少 `DonationParams` 的必填字段或字段类型错误时，捐赠会被拒绝。没有参数的 intent 只需遵循 `DonatableAppIntent`。
+
+`donateIntentAsync()` 还会返回捐赠的 ID。将其传递给 `deleteDonationsAsync({ ids })`，即可只删除该捐赠。
+
 ### 按需添加快捷指令短语
 
 如果你想要编译启动短语（例如“在 MyApp 中保存笔记”），请使用 `AppShortcutsProvider`。
@@ -199,6 +234,10 @@ kind 字符串必须与传递给 `setEntityCatalogAsync()` 的值一致。每个
 在邮件示例中传入 `--visual-intelligence`，即可生成其 Spotlight 集成代码。这会添加原生代码，使草稿可供搜索，并允许系统传递和打开草稿。它还会注册 `mailDraft` 实体 kind，以便 [`appEntityIdentifier()`](#appintentsappentityidentifierentity-id) 可以标识视图所表示的草稿。生成的代码扩展了基础邮件类型，因此无论是否使用此标志，示例都能以相同方式运行。
 
 <Terminal cmd={['$ npx expo-app-intents init --examples mail --visual-intelligence']} />
+
+传入 `--donations` 可生成原生代码，让 JavaScript [捐赠](#捐赠-intent)所选示例中的 intent。这会为每个示例 intent 添加一个 `DonatableAppIntent` 扩展，并在 **AppIntentsSetup.swift** 中使用它们 dispatch 时的名称（例如 `orderFood`）注册 intent。选择示例后，交互式提示会询问是否启用此选项。与 `--visual-intelligence` 一样，生成的代码会扩展基础类型，因此无论是否使用此标志，每个示例都以相同方式运行。
+
+<Terminal cmd={['$ npx expo-app-intents init --examples restaurant --donations']} />
 
 然后重新构建原生项目：
 
